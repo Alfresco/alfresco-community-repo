@@ -60,17 +60,22 @@ public interface LockDAO
     
     /**
      * Release a lock.  The lock token must still apply and all the shared and exclusive
-     * locks need to still be present.  Lock expiration does not prevent this operation
-     * from succeeding.
-     * <p>
+     * locks need to still be present, unless the method is optimistic, in which case the
+     * unlock is considered to be a success.<br/>
+     * Lock expiration does not prevent this operation from succeeding.
+     * <p/>
      * Note: Failure to release a lock due to a exception condition is dealt with by
      *       passing the exception out.
      * 
      * @param lockQName             the unique name of the lock to release
      * @param lockToken             the current lock token
-     * @return                      Returns <tt>true</tt> if all the required locks were
-     *                              (still) held under the lock token and were
-     *                              valid at the time of release, otherwise <tt>false</tt>
+     * @param optimistic            <tt>true</tt> if the release attempt is enough even
+     *                              if the number of released locks was incorrect.
+     * @return                      <tt>true</tt> if the lock was successfully (and completely)
+     *                              released or <tt>false</tt> if the lock was no longer valid
+     *                              <b>and the method was being called optimistically.</b>
+     * @throws LockAcquisitionException     if the number of locks released was incorrect
+     *                              and pessimistic release is requested.
      */
-    void releaseLock(QName lockQName, String lockToken);
+    boolean releaseLock(QName lockQName, String lockToken, boolean optimistic);
 }

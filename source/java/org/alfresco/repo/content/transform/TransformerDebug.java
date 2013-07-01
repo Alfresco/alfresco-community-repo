@@ -18,22 +18,41 @@
  */
 package org.alfresco.repo.content.transform;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.LogTee;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.ResourceUtils;
 
 /**
  * Debugs transformers selection and activity.<p>
@@ -55,9 +74,11 @@ import org.apache.commons.logging.LogFactory;
  */
 public class TransformerDebug
 {
-    private static final Log logger = LogFactory.getLog(TransformerDebug.class);
-    private static final TransformerLog info = new TransformerLog();
+    private static final String FINISHED_IN = "Finished in ";
     private static final String NO_TRANSFORMERS = "No transformers";
+
+    private final Log logger;
+    private final Log info;
 
     private enum Call
     {
@@ -80,6 +101,7 @@ public class TransformerDebug
         private final Deque<Frame> stack = new ArrayDeque<Frame>();
         private final Deque<String> isTransformableStack = new ArrayDeque<String>();
         private boolean debugOutput = true;
+        private StringBuilder sb;
         
         public static Deque<Frame> getStack()
         {
@@ -102,6 +124,16 @@ public class TransformerDebug
             boolean orig = thisThreadInfo.debugOutput;
             thisThreadInfo.debugOutput = debugOutput;
             return orig;
+        }
+        
+        public static StringBuilder getStringBuilder()
+        {
+            return threadInfo.get().sb;
+        }
+
+        public static void setStringBuilder(StringBuilder sb)
+        {
+            threadInfo.get().sb = sb;
         }
     }
     
@@ -225,16 +257,29 @@ public class TransformerDebug
     
     private final NodeService nodeService;
     private final MimetypeService mimetypeService;
+    private final ContentTransformerRegistry transformerRegistry;
     private final TransformerConfig transformerConfig;
+    private ContentService contentService;
     
     /**
      * Constructor
      */
-    public TransformerDebug(NodeService nodeService, MimetypeService mimetypeService, TransformerConfig transformerConfig)
+    public TransformerDebug(NodeService nodeService, MimetypeService mimetypeService, 
+            ContentTransformerRegistry transformerRegistry, TransformerConfig transformerConfig,
+            Log transformerLog, Log transformerDebugLog)
     {
         this.nodeService = nodeService;
         this.mimetypeService = mimetypeService;
+        this.transformerRegistry = transformerRegistry;
         this.transformerConfig = transformerConfig;
+        
+        logger = new LogTee(LogFactory.getLog(TransformerDebug.class), transformerDebugLog);
+        info = new LogTee(LogFactory.getLog(TransformerLog.class), transformerLog);
+    }
+
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
 
     /**
@@ -307,7 +352,7 @@ public class TransformerDebug
         if (callType == Call.TRANSFORM)
         {
             // Log the basic info about this transformation
-            logBasicDetails(frame, sourceSize, transformerName, (ourStack.size() == 1));
+            logBasicDetails(frame, sourceSize, options.getUse(), transformerName, (ourStack.size() == 1));
         }
     }
     
@@ -341,7 +386,8 @@ public class TransformerDebug
     /**
      * Called once all available transformers have been identified.
      */
-    public void availableTransformers(List<ContentTransformer> transformers, long sourceSize, String calledFrom)
+    public void availableTransformers(List<ContentTransformer> transformers, long sourceSize, 
+            TransformationOptions options, String calledFrom)
     {
         if (isEnabled())
         {
@@ -363,9 +409,8 @@ public class TransformerDebug
             frame.setSourceSize(sourceSize);
             
             // Log the basic info about this transformation
-            logBasicDetails(frame, sourceSize,
-                    calledFrom + ((transformers.size() == 0) ? " NO transformers" : ""),
-                    firstLevel);
+            logBasicDetails(frame, sourceSize, options.getUse(),
+                    calledFrom + ((transformers.size() == 0) ? " NO transformers" : ""), firstLevel);
 
             // Report available and unavailable transformers
             char c = 'a';
@@ -395,8 +440,13 @@ public class TransformerDebug
 
     private String gePriority(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
     {
-        String priority = '[' + Integer.toString(transformerConfig.getPriority(transformer, sourceMimetype, targetMimetype)) + ']';
-        priority = spaces(4-priority.length())+priority;
+        String priority =
+            '[' +
+             (isComponentTransformer(transformer)
+             ? "---"
+             : Integer.toString(transformerConfig.getPriority(transformer, sourceMimetype, targetMimetype))) +
+            ']';
+        priority = spaces(5-priority.length())+priority;
         return priority;
     }
 
@@ -457,7 +507,7 @@ public class TransformerDebug
         return longestNameLength;
     }
     
-    private void logBasicDetails(Frame frame, long sourceSize, String message, boolean firstLevel)
+    private void logBasicDetails(Frame frame, long sourceSize, String use, String message, boolean firstLevel)
     {
         // Log the source URL, but there is no point if the parent has logged it
         if (frame.fromUrl != null && (firstLevel || frame.id != 1))
@@ -469,7 +519,8 @@ public class TransformerDebug
         String fileName = getFileName(frame.options, firstLevel, sourceSize);
         log(getMimetypeExt(frame.sourceMimetype)+getMimetypeExt(frame.targetMimetype) +
                 ((fileName != null) ? fileName+' ' : "")+
-                ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") + message);
+                ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
+                (firstLevel && use != null ? "-- "+use+" -- " : "") + message);
     }
 
     /**
@@ -536,7 +587,7 @@ public class TransformerDebug
                 boolean firstLevel = size == 1;
                 if (!suppressFinish && (firstLevel || logger.isTraceEnabled()))
                 {
-                    log("Finished in " + ms +
+                    log(FINISHED_IN + ms +
                         (frame.callType == Call.AVAILABLE ? " Transformer NOT called" : "") +
                         (firstLevel ? "\n" : ""), 
                         firstLevel);
@@ -566,18 +617,24 @@ public class TransformerDebug
                 debug = firstLevel;
                 level = "INFO";
                 failureReason = NO_TRANSFORMERS;
-                if (frame.unavailableTransformers != null)
+                
+                // If trace and trace is disabled do nothing
+                if (debug || info.isTraceEnabled())
                 {
-                    level = "WARN";
-                    long smallestMaxSourceSizeKBytes = Long.MAX_VALUE;
-                    for (UnavailableTransformer unavailable: frame.unavailableTransformers)
+                    // Work out size reason that there are no transformers
+                    if (frame.unavailableTransformers != null)
                     {
-                        if (smallestMaxSourceSizeKBytes > unavailable.maxSourceSizeKBytes)
+                        level = "WARN";
+                        long smallestMaxSourceSizeKBytes = Long.MAX_VALUE;
+                        for (UnavailableTransformer unavailable: frame.unavailableTransformers)
                         {
-                            smallestMaxSourceSizeKBytes = unavailable.maxSourceSizeKBytes;
+                            if (smallestMaxSourceSizeKBytes > unavailable.maxSourceSizeKBytes)
+                            {
+                                smallestMaxSourceSizeKBytes = unavailable.maxSourceSizeKBytes;
+                            }
                         }
+                        failureReason = "No transformers as file is > "+fileSize(smallestMaxSourceSizeKBytes*1024);
                     }
-                    failureReason = "No transformers as file is > "+fileSize(smallestMaxSourceSizeKBytes*1024);
                 }
             }
             else if (frame.callType == Call.TRANSFORM)
@@ -587,10 +644,17 @@ public class TransformerDebug
                 // Use TRACE logging for all but the first TRANSFORM
                 debug = size == 1 || (size == 2 && ThreadInfo.getStack().peekLast().callType != Call.TRANSFORM);
             }
+// Comment out for the moment
+//            else if (firstLevel && frame.callType == Call.AVAILABLE)
+//            {
+//                level = "INFO";
+//                debug = true;
+//                failureReason = "checking availability";
+//            }
             
             if (level != null)
             {
-                infoLog(getReference(debug), sourceExt, targetExt, level, fileName, sourceSize, transformerName, failureReason, ms, debug);
+                infoLog(getReference(debug, false), sourceExt, targetExt, level, fileName, sourceSize, transformerName, failureReason, ms, debug);
             }
         }
     }
@@ -599,16 +663,23 @@ public class TransformerDebug
             long sourceSize, String transformerName, String failureReason, String ms, boolean debug)
     {
         String message =
-                "  "+reference +
+                reference +
                 sourceExt +
                 targetExt +
                 (level == null ? "" : level+' ') +
                 (fileName == null ? "" : fileName) +
                 (sourceSize >= 0 ? ' '+fileSize(sourceSize) : "") +
-                (transformerName == null ? "" : ' '+transformerName) +
                 ' '+ms +
-                (failureReason == null ? "" : '\n'+failureReason.trim());
-        info.log(message,  debug);
+                (transformerName == null ? "" : ' '+transformerName) +
+                (failureReason == null ? "" : ' '+failureReason.trim());
+        if (debug)
+        {
+            info.debug(message);
+        }
+        else
+        {
+            info.trace(message);
+        }
     }
 
     /**
@@ -617,7 +688,7 @@ public class TransformerDebug
     public boolean isEnabled()
     {
         // Don't check ThreadInfo.getDebugOutput() as availableTransformers() may upgrade from trace to debug.
-        return logger.isDebugEnabled() || info.isDebugEnabled();
+        return logger.isDebugEnabled() || info.isDebugEnabled() || ThreadInfo.getStringBuilder() != null;
     }
     
     /**
@@ -711,11 +782,26 @@ public class TransformerDebug
     {
         if (debug && ThreadInfo.getDebugOutput() && logger.isDebugEnabled())
         {
-            logger.debug(getReference(false)+message, t);
+            logger.debug(getReference(false, false)+message, t);
         }
         else if (logger.isTraceEnabled())
         {
-            logger.trace(getReference(false)+message, t);
+            logger.trace(getReference(false, false)+message, t);
+        }
+
+        if (debug)
+        {
+            StringBuilder sb = ThreadInfo.getStringBuilder();
+            if (sb != null)
+            {
+                sb.append(getReference(false, true));
+                sb.append(message);
+                if (t != null)
+                {
+                    sb.append(t.getMessage());
+                }
+                sb.append('\n');
+            }
         }
     }
 
@@ -730,22 +816,309 @@ public class TransformerDebug
     }
     
     /**
+     * Returns the current StringBuilder (if any) being used to capture debug
+     * information for the current Thread.
+     */
+    public StringBuilder getStringBuilder()
+    {
+        return ThreadInfo.getStringBuilder();
+    }
+
+    /**
+     * Sets the StringBuilder to be used to capture debug information for the
+     * current Thread.
+     */
+    public void setStringBuilder(StringBuilder sb)
+    {
+        ThreadInfo.setStringBuilder(sb);
+    }
+    
+    /**
+     * Returns a String and /or debug that provides a list of supported transformations for each
+     * transformer.
+     * @param transformerName restricts the list to one transformer. Unrestricted if null.
+     * @param toString indicates that a String value should be returned in addition to any debug.
+     * @param format42 indicates the old 4.1.4 format should be used which did not order the transformers
+     *        and only included top level transformers.
+     * @param use to which the transformation will be put (such as "Index", "Preview", null).
+     */
+    public String transformationsByTransformer(String transformerName, boolean toString, boolean format42, String use)
+    {
+        // Do not generate this type of debug if already generating other debug to a StringBuilder
+        // (for example a test transform). 
+        if (getStringBuilder() != null)
+        {
+            return null;
+        }
+        
+        Collection<ContentTransformer> transformers = format42 || transformerName != null
+                ? sortTransformersByName(transformerName)
+                : transformerRegistry.getTransformers();
+        Collection<String> sourceMimetypes = format42
+                ? getSourceMimetypes(null)
+                : mimetypeService.getMimetypes();
+        Collection<String> targetMimetypes = format42
+                ? sourceMimetypes
+                : mimetypeService.getMimetypes();
+        
+        TransformationOptions options = new TransformationOptions();
+        options.setUse(use);
+        StringBuilder sb = null;
+        try
+        {
+            if (toString)
+            {
+                sb = new StringBuilder();
+                setStringBuilder(sb);
+            }
+            pushMisc();
+            for (ContentTransformer transformer: transformers)
+            {
+                try
+                {
+                    pushMisc();
+                    int mimetypePairCount = 0;
+                    boolean first = true;
+                    for (String sourceMimetype: sourceMimetypes)
+                    {
+                        for (String targetMimetype: targetMimetypes)
+                        {
+                            if (transformer.isTransformable(sourceMimetype, -1, targetMimetype, options))
+                            {
+                                long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(
+                                        sourceMimetype, targetMimetype, options);
+                                activeTransformer(++mimetypePairCount, transformer,
+                                        sourceMimetype, targetMimetype, maxSourceSizeKBytes, first);
+                                first = false;
+                            }
+                        }
+                    }
+                    if (first)
+                    {
+                        inactiveTransformer(transformer);
+                    }
+                }
+                finally
+                {
+                    popMisc();
+                }
+            }
+        }
+        finally
+        {
+            popMisc();
+            setStringBuilder(null);
+        }
+        stripFinishedLine(sb);
+        return stripLeadingNumber(sb);
+    }
+
+    /**
+     * Returns a String and /or debug that provides a list of supported transformations
+     * sorted by source and target mimetype extension.
+     * @param sourceExtension restricts the list to one source extension. Unrestricted if null. 
+     * @param targetExtension restricts the list to one target extension. Unrestricted if null.
+     * @param toString indicates that a String value should be returned in addition to any debug.
+     * @param format42 indicates the new 4.2 rather than older 4.1.4 format should be used.
+     *        The 4.1.4 format did not order the transformers or mimetypes and only included top
+     *        level transformers.
+     * @param onlyNonDeterministic if true only report transformations where there is more than
+     *        one transformer available with the same priority.
+     * @param use to which the transformation will be put (such as "Index", "Preview", null).
+     */
+    public String transformationsByExtension(String sourceExtension, String targetExtension, boolean toString,
+            boolean format42, boolean onlyNonDeterministic, String use)
+    {
+        // Do not generate this type of debug if already generating other debug to a StringBuilder
+        // (for example a test transform). 
+        if (getStringBuilder() != null)
+        {
+            return null;
+        }
+
+        Collection<ContentTransformer> transformers = format42 && !onlyNonDeterministic
+                ? sortTransformersByName(null)
+                : transformerRegistry.getTransformers();
+        Collection<String> sourceMimetypes = format42 || sourceExtension != null
+                ? getSourceMimetypes(sourceExtension)
+                : mimetypeService.getMimetypes();
+        Collection<String> targetMimetypes = format42 || targetExtension != null
+                ? getTargetMimetypes(sourceExtension, targetExtension, sourceMimetypes)
+                : mimetypeService.getMimetypes();
+
+        TransformationOptions options = new TransformationOptions();
+        options.setUse(use);
+        StringBuilder sb = null;
+        try
+        {
+            if (toString)
+            {
+                sb = new StringBuilder();
+                setStringBuilder(sb);
+            }
+            pushMisc();
+            for (String sourceMimetype: sourceMimetypes)
+            {
+                for (String targetMimetype: targetMimetypes)
+                {
+                    // Find available transformers
+                    List<ContentTransformer> availableTransformer = new ArrayList<ContentTransformer>();
+                    for (ContentTransformer transformer: transformers)
+                    {
+                        if (transformer.isTransformable(sourceMimetype, -1, targetMimetype, options))
+                        {
+                            availableTransformer.add(transformer);
+                        }
+                    }
+
+                    // Sort by priority
+                    final String currSourceMimetype = sourceExtension;
+                    final String currTargetMimetype = targetExtension;
+                    Collections.sort(availableTransformer, new Comparator<ContentTransformer>()
+                    {
+                        @Override
+                        public int compare(ContentTransformer transformer1, ContentTransformer transformer2)
+                        {
+                            return transformerConfig.getPriority(transformer1, currSourceMimetype, currTargetMimetype) -
+                                   transformerConfig.getPriority(transformer2, currSourceMimetype, currTargetMimetype);
+                        }
+                    });
+
+                    // Do we need to produce any output?
+                    int size = availableTransformer.size();
+                    int priority = size >= 2
+                            ? transformerConfig.getPriority(availableTransformer.get(0), sourceMimetype, targetMimetype)
+                            : -1;
+                    if (!onlyNonDeterministic || (size >= 2 && priority ==
+                         transformerConfig.getPriority(availableTransformer.get(1), sourceMimetype, targetMimetype)))
+                    {
+                        // Log the transformers
+                        try
+                        {
+                            pushMisc();
+                            int transformerCount = 0;
+                            for (ContentTransformer transformer: availableTransformer)
+                            {
+                                if (!onlyNonDeterministic || transformerCount < 2 ||
+                                        priority == transformerConfig.getPriority(transformer, sourceMimetype, targetMimetype))
+                                {
+                                    long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(
+                                            sourceMimetype, targetMimetype, options);
+                                    activeTransformer(sourceMimetype, targetMimetype,
+                                            transformerCount, transformer, maxSourceSizeKBytes, transformerCount++ == 0);
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            popMisc();
+                        }
+                    }
+                }
+            }
+        }
+        finally
+        {
+            popMisc();
+            setStringBuilder(null);
+        }
+        stripFinishedLine(sb);
+        return stripLeadingNumber(sb);
+    }
+    
+    /**
+     * Removes the final "Finished in..." message from a StringBuilder
+     * @param sb
+     */
+    private void stripFinishedLine(StringBuilder sb)
+    {
+        if (sb != null)
+        {
+            int i = sb.lastIndexOf(FINISHED_IN);
+            if (i != -1)
+            {
+                sb.setLength(i);
+                i = sb.lastIndexOf("\n", i);
+                sb.setLength(i != -1 ? i : 0);
+            }
+        }
+    }
+    
+    /**
+     * Strips the leading number in a reference
+     */
+    private String stripLeadingNumber(StringBuilder sb)
+    {
+        return sb == null
+            ? null
+            : Pattern.compile("^\\d+\\.", Pattern.MULTILINE).matcher(sb).replaceAll("");
+    }
+
+    /**
+     * Returns a collection of mimetypes ordered by extension, but unlike the version in MimetypeService
+     * throws an exception if the sourceExtension is supplied but does not match a mimetype.
+     * @param sourceExtension to restrict the collection to one entry
+     * @throws IllegalArgumentException if there is no match. The message indicates this.
+     */
+    public Collection<String> getSourceMimetypes(String sourceExtension)
+    {
+        Collection<String> sourceMimetypes = mimetypeService.getMimetypes(sourceExtension);
+        if (sourceMimetypes.isEmpty())
+        {
+            throw new IllegalArgumentException("Unknown source extension "+sourceExtension);
+        }
+        return sourceMimetypes;
+    }
+
+    /**
+     * Identical to getSourceMimetypes for the target, but avoids doing the look up if the sourceExtension
+     * is the same as the tragetExtension, so will have the same result.
+     * @param sourceExtension used to restrict the sourceMimetypes
+     * @param targetExtension to restrict the collection to one entry
+     * @param sourceMimetypes that match the sourceExtension
+     * @throws IllegalArgumentException if there is no match. The message indicates this.
+     */
+    public Collection<String> getTargetMimetypes(String sourceExtension, String targetExtension,
+            Collection<String> sourceMimetypes)
+    {
+        Collection<String> targetMimetypes =
+                (targetExtension == null && sourceExtension == null) ||
+                (targetExtension != null && targetExtension.equals(sourceExtension))
+                ? sourceMimetypes
+                : mimetypeService.getMimetypes(targetExtension);
+        if (targetMimetypes.isEmpty())
+        {
+            throw new IllegalArgumentException("Unknown target extension "+targetExtension);
+        }
+        return targetMimetypes;
+    }
+    
+    /**
      * Returns a N.N.N style reference to the transformation.
-     * @param firstLevelOnly indicates if only the top level should be included.
+     * @param firstLevelOnly indicates if only the top level should be included and no extra padding.
+     * @param overrideFirstLevel if the first level id should just be set to 1 (used in test methods)
      * @return a padded (fixed length) reference.
      */
-    private String getReference(boolean firstLevelOnly)
+    private String getReference(boolean firstLevelOnly, boolean overrideFirstLevel)
     {
         StringBuilder sb = new StringBuilder("");
         Frame frame = null;
         Iterator<Frame> iterator = ThreadInfo.getStack().descendingIterator();
         int lengthOfFirstId = 0;
+        boolean firstLevel = true;
         while (iterator.hasNext())
         {
             frame = iterator.next();
-            if (sb.length() == 0)
+            if (firstLevel)
             {
-                sb.append(frame.getId());
+                if (!overrideFirstLevel)
+                {
+                    sb.append(frame.getId());
+                }
+                else
+                {
+                    sb.append("1");
+                }
                 lengthOfFirstId = sb.length();
                 if (firstLevelOnly)
                 {
@@ -754,35 +1127,68 @@ public class TransformerDebug
             }
             else
             {
-                sb.append('.');
+                if (sb.length() != 0)
+                {
+                    sb.append('.');
+                }
                 sb.append(frame.getId());
             }
+            firstLevel = false;
         }
         if (frame != null)
         {
+            if (firstLevelOnly)
+            {
+                sb.append(' ');
+            }
+            else
+            {
             sb.append(spaces(13-sb.length()+lengthOfFirstId)); // Try to pad to level 7
+            }
         }
         return sb.toString();
     }
 
-    public String getName(ContentTransformer transformer)
+    private String getName(ContentTransformer transformer)
     {
-        return
-            (transformer instanceof AbstractContentTransformer2
-             ? ((AbstractContentTransformerLimits)transformer).getBeanName()
-             : transformer.getClass().getSimpleName())+
-            
-            (transformer instanceof ComplexContentTransformer
-             ? "<<Complex>>"
-             : transformer instanceof FailoverContentTransformer
-             ? "<<Failover>>"
-             : transformer instanceof ProxyContentTransformer
-             ? (((ProxyContentTransformer)transformer).getWorker() instanceof RuntimeExecutableContentTransformerWorker)
-               ? "<<Runtime>>"
-               : "<<Proxy>>"
-             : "");
+        String name =
+                transformer instanceof ContentTransformerHelper
+                ? ContentTransformerHelper.getSimpleName(transformer)
+                : transformer.getClass().getSimpleName();
+        
+        String type =
+                (transformer instanceof ComplexContentTransformer
+                ? "Complex"
+                : transformer instanceof FailoverContentTransformer
+                ? "Failover"
+                : transformer instanceof ProxyContentTransformer
+                ? (((ProxyContentTransformer)transformer).getWorker() instanceof RuntimeExecutableContentTransformerWorker)
+                  ? "Runtime"
+                  : "Proxy"
+                : "");
+
+        boolean componentTransformer = isComponentTransformer(transformer);
+        
+        StringBuilder sb = new StringBuilder(name);
+        if (componentTransformer || type.length() > 0)
+        {
+            sb.append("<<");
+            sb.append(type);
+            if (componentTransformer)
+            {
+                sb.append("Component");
+            }
+            sb.append(">>");
+        }
+        
+        return sb.toString();
     }
     
+
+    private boolean isComponentTransformer(ContentTransformer transformer)
+    {
+        return !transformerRegistry.getTransformers().contains(transformer);
+    }
 
     public String getFileName(TransformationOptions options, boolean firstLevel, long sourceSize)
     {
@@ -886,31 +1292,153 @@ public class TransformerDebug
 
         return sb.toString();
     }
-}
-
-class TransformerLog
-{
-    private static final Log logger = LogFactory.getLog(TransformerLog.class);
-
-    void log(String message, boolean debug)
+    
+    /**
+     * Returns a sorted list of all transformers sorted by name.
+     * @param transformerName to restrict the collection to one entry
+     * @return a new Collection of sorted transformers
+     * @throws IllegalArgumentException if transformerName is not found.
+     */
+    public Collection<ContentTransformer> sortTransformersByName(String transformerName)
     {
-        if (debug)
+        Collection<ContentTransformer> transformers = (transformerName != null)
+                ? Collections.singleton(transformerRegistry.getTransformer(transformerName))
+                : transformerRegistry.getAllTransformers();
+
+        SortedMap<String, ContentTransformer> map = new TreeMap<String, ContentTransformer>();
+        for (ContentTransformer transformer: transformers)
         {
-            logger.debug(message);
+            String name = transformer.getName();
+            map.put(name, transformer);
         }
-        else
-        {
-            logger.trace(message);
-        }
+        Collection<ContentTransformer> sorted = map.values();
+        return sorted;
     }
 
-    public boolean isDebugEnabled()
+    public String testTransform(String sourceExtension, String targetExtension, String use)
     {
-        return logger.isDebugEnabled();
+        return new TestTransform()
+        {
+            protected void transform(ContentReader reader, ContentWriter writer, TransformationOptions options)
+            {
+                contentService.transform(reader, writer, options);
+            }
+        }.run(sourceExtension, targetExtension, use);
     }
-
-    public boolean isTraceEnabled()
+    
+    public String testTransform(final String transformerName, String sourceExtension,
+            String targetExtension, String use)
     {
-        return logger.isTraceEnabled();
+        final ContentTransformer transformer = transformerRegistry.getTransformer(transformerName);
+        return new TestTransform()
+        {
+            protected String isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
+            {
+                return transformer.isTransformable(sourceMimetype, sourceSize, targetMimetype, options)
+                    ? null
+                    : transformerName+" does not support this transformation.";
+            }
+
+            protected void transform(ContentReader reader, ContentWriter writer, TransformationOptions options)
+            {
+                transformer.transform(reader, writer, options);
+            }
+        }.run(sourceExtension, targetExtension, use);
+    }
+    
+    private abstract class TestTransform
+    {
+        String run(String sourceExtension, String targetExtension, String use)
+        {
+            String debug;
+            
+            String sourceMimetype = getMimetype(sourceExtension, true);
+            String targetMimetype = getMimetype(targetExtension, false);
+            File sourceFile = loadQuickTestFile(sourceExtension);
+            if (sourceFile == null)
+            {
+                throw new IllegalArgumentException("There is no test file with a "+sourceExtension+" extension.");
+            }
+
+            ContentReader reader = new FileContentReader(sourceFile);
+            reader.setMimetype(sourceMimetype);
+            File tempFile = TempFileProvider.createTempFile(
+                    "TestTransform_" + sourceExtension + "_", "." + targetExtension);
+            ContentWriter writer = new FileContentWriter(tempFile);
+            writer.setMimetype(targetMimetype);
+
+            long sourceSize = reader.getSize();
+            TransformationOptions options = new TransformationOptions();
+            options.setUse(use);
+
+            debug = isTransformable(sourceMimetype, sourceSize, targetMimetype, options);
+            if (debug == null)
+            {
+                StringBuilder sb = new StringBuilder();
+                try
+                {
+                    setStringBuilder(sb);
+                    transform(reader, writer, options);
+                }
+                catch (AlfrescoRuntimeException e)
+                {
+                    sb.append(e.getMessage());
+                }
+                finally
+                {
+                    setStringBuilder(null);
+                }
+                debug = sb.toString();
+            }
+            return debug;
+        }
+        
+        private String getMimetype(String extension, boolean isSource)
+        {
+            String mimetype = null;
+            if (extension != null)
+            {
+                Iterator<String> iterator = mimetypeService.getMimetypes(extension).iterator();
+                if (iterator.hasNext())
+                {
+                    mimetype = iterator.next(); 
+                }
+            }
+            if (mimetype == null)
+            {
+                throw new IllegalArgumentException("Unknown "+(isSource ? "source" : "target")+" extension: "+extension);
+            }
+            return mimetype;
+        }
+
+        protected String isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
+        {
+            return null;
+        }
+        
+        protected abstract void transform(ContentReader reader, ContentWriter writer, TransformationOptions options);
+        
+        /**
+         * Load one of the "The quick brown fox" files from the classpath.
+         * @param extension required, eg <b>txt</b> for the file quick.txt
+         * @return Returns a test resource loaded from the classpath or <tt>null</tt> if
+         *      no resource could be found.
+         */
+        private File loadQuickTestFile(String extension)
+        {
+            try
+            {
+                URL url = this.getClass().getClassLoader().getResource("quick/quick." + extension);
+                if (url == null)
+                {
+                    return null;
+                }
+                return ResourceUtils.getFile(url);
+            }
+            catch (IOException e)
+            {
+                return null;
+            }
+        }
     }
 }

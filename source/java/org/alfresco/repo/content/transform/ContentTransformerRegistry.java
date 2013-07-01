@@ -20,10 +20,7 @@ package org.alfresco.repo.content.transform;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
@@ -48,6 +45,7 @@ public class ContentTransformerRegistry
     private static final Log logger = LogFactory.getLog(ContentTransformerRegistry.class);
     
     private List<ContentTransformer> transformers;
+    private List<ContentTransformer> allTransformers;
     
     private final TransformerSelector transformerSelector;
     
@@ -58,6 +56,7 @@ public class ContentTransformerRegistry
     {
         this.transformerSelector = transformerSelector;
         this.transformers = new ArrayList<ContentTransformer>(70);
+        this.allTransformers = new ArrayList<ContentTransformer>(70);
     }
     
     /**
@@ -68,17 +67,63 @@ public class ContentTransformerRegistry
     public void addTransformer(ContentTransformer transformer)
     {
         transformers.add(transformer);
+        allTransformers.add(transformer);
         // done
         if (logger.isDebugEnabled())
         {
             logger.debug("Registered general transformer: \n" +
-                    "   transformer: " + transformer);
+                    "   transformer: " + transformer.getName() + " (" + transformer + ")");
         }
     }
     
+    /**
+     * Records a transformer that can NOT be queried for applicability, but may be
+     * included as a component of complex transformers.
+     * @param transformer a content transformer
+     */
+    public void addComponentTransformer(ContentTransformer transformer)
+    {
+        allTransformers.add(transformer);
+    }
+
+    /**
+     * @return a list of transformers that may be queried to check for applicability.
+     */
     public List<ContentTransformer> getTransformers()
     {
         return Collections.unmodifiableList(transformers);
+    }
+    
+    /**
+     * @return a list of all transformers, including those that only exist as a
+     *         component of another transformer.
+     */
+    public List<ContentTransformer> getAllTransformers()
+    {
+        return Collections.unmodifiableList(allTransformers);
+    }
+    
+    /**
+     * Returns a transformer identified by name.
+     * @throws IllegalArgumentException if transformerName is not found.
+     */
+    public ContentTransformer getTransformer(String transformerName)
+    {
+        if (transformerName != null)
+        {
+            for (ContentTransformer transformer: allTransformers)
+            {
+                if (transformerName.equals(transformer.getName()))
+                {
+                    return transformer;
+                }
+            }
+            throw new IllegalArgumentException("Unknown transformer: "+
+                    (transformerName.startsWith(TransformerConfig.TRANSFORMER)
+                    ? transformerName.substring(TransformerConfig.TRANSFORMER.length())
+                    : transformerName));
+        }
+        return null;
     }
     
     /**

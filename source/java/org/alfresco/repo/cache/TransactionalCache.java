@@ -71,7 +71,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Derek Hulley
  */
 public class TransactionalCache<K extends Serializable, V extends Object>
-        implements SimpleCache<K, V>, TransactionListener, InitializingBean
+        implements LockingCache<K, V>, TransactionListener, InitializingBean
 {
     private static final String RESOURCE_KEY_TXN_DATA = "TransactionalCache.TxnData";
     
@@ -246,6 +246,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             // create and initialize caches
             data.updatedItemsCache = new LRULinkedHashMap<Serializable, CacheBucket<V>>(23);
             data.removedItemsCache = new HashSet<Serializable>(13);
+            data.lockedItemsCache = new HashSet<Serializable>(13);
             data.isReadOnly = AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
 
             // ensure that we get the transaction callbacks as we have bound the unique
@@ -256,6 +257,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         return data;
     }
     
+    /**
+     * @see #setDisableSharedCacheReadForTransaction(boolean)
+     */
     public boolean getDisableSharedCacheReadForTransaction()
     {
         if (AlfrescoTransactionSupport.getTransactionId() != null)
@@ -364,7 +368,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 Collection<Serializable> backingCacheKeys = new HashSet<Serializable>(backingKeys.size());
                 for (K backingKey : backingKeys)
                 {
-                    backingCacheKeys.add(getCacheKey(backingKey));
+                    backingCacheKeys.add(getTenantAwareCacheKey(backingKey));
                 }
                 keys.addAll(backingCacheKeys);
             }
@@ -412,6 +416,75 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     {
         return (V) sharedCache.get(key);
     }
+    
+    /**
+     * @param txnData       the existing data associated with the transaction
+     * @param key           a tenant-aware key
+     * @return              <tt>true</tt> if the key is locked
+     * 
+     * @see HashSet#contains(Object)
+     * @see HashSet#size()
+     */
+    private final boolean isValueLocked(TransactionData txnData, Serializable key)
+    {
+        /*
+         * Locking will be very infrequent.  Calculating the hashcode of the key
+         * and using it to determine whether the lockedItemsCache contains the key is an
+         * unnecessary overhead; use the size() method for a slightly faster answer
+         * in the bulk of cases.
+         */
+        return (txnData.lockedItemsCache.size() > 0 && txnData.lockedItemsCache.contains(key));
+    }
+    
+    @Override
+    public boolean isValueLocked(K keyIn)
+    {
+        if (AlfrescoTransactionSupport.getTransactionId() != null)
+        {
+            final Serializable key = getTenantAwareCacheKey(keyIn);
+            TransactionData txnData = getTransactionData();
+            return txnData.lockedItemsCache.contains(key);
+        }
+        else
+        {
+            // No transaction; we can't have locked it
+            return false;
+        }
+    }
+
+    @Override
+    public void lockValue(K keyIn)
+    {
+        if (AlfrescoTransactionSupport.getTransactionId() != null)
+        {
+            final Serializable key = getTenantAwareCacheKey(keyIn);
+            TransactionData txnData = getTransactionData();
+            txnData.lockedItemsCache.add(key);
+            return;
+        }
+        else
+        {
+            // No transaction; we can't lock it
+            return;
+        }
+    }
+
+    @Override
+    public void unlockValue(K keyIn)
+    {
+        if (AlfrescoTransactionSupport.getTransactionId() != null)
+        {
+            final Serializable key = getTenantAwareCacheKey(keyIn);
+            TransactionData txnData = getTransactionData();
+            txnData.lockedItemsCache.remove(key);
+            return;
+        }
+        else
+        {
+            // No transaction; we can't unlock it
+            return;
+        }
+    }
 
     /**
      * Checks the per-transaction caches for the object before going to the shared cache.
@@ -419,7 +492,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      */
     public V get(K keyIn)
     {
-        final Serializable key = getCacheKey(keyIn);
+        final Serializable key = getTenantAwareCacheKey(keyIn);
         
         boolean ignoreSharedCache = false;
         // are we in a transaction?
@@ -520,7 +593,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     @SuppressWarnings("unchecked")
     public void put(K keyIn, V value)
     {
-        final Serializable key = getCacheKey(keyIn);
+        final Serializable key = getTenantAwareCacheKey(keyIn);
         
         // are we in a transaction?
         if (AlfrescoTransactionSupport.getTransactionId() == null)  // not in transaction
@@ -546,6 +619,18 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 {
                     logger.debug(
                             "In post-commit add: \n" +
+                            "   cache: " + this + "\n" +
+                            "   key: " + key + "\n" +
+                            "   value: " + value);
+                }
+            }
+            else if (isValueLocked(txnData, key))
+            {
+                // The key has been locked
+                if (isDebugEnabled)
+                {
+                    logger.debug(
+                            "Ignoring put after detecting locked key: \n" +
                             "   cache: " + this + "\n" +
                             "   key: " + key + "\n" +
                             "   value: " + value);
@@ -607,7 +692,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      */
     public void remove(K keyIn)
     {
-        final Serializable key = getCacheKey(keyIn);
+        final Serializable key = getTenantAwareCacheKey(keyIn);
         
         // are we in a transaction?
         if (AlfrescoTransactionSupport.getTransactionId() == null)  // not in transaction
@@ -632,6 +717,17 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 {
                     logger.debug(
                             "In post-commit remove: \n" +
+                            "   cache: " + this + "\n" +
+                            "   key: " + key);
+                }
+            }
+            else if (isValueLocked(txnData, key))
+            {
+                // The key has been locked
+                if (isDebugEnabled)
+                {
+                    logger.debug(
+                            "Ignoring remove after detecting locked key: \n" +
                             "   cache: " + this + "\n" +
                             "   key: " + key);
                 }
@@ -705,9 +801,10 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             }
             else
             {
-                // the shared cache must be cleared at the end of the transaction
+                // The shared cache must be cleared at the end of the transaction
                 // and also serves to ensure that the shared cache will be ignored
-                // for the remainder of the transaction
+                // for the remainder of the transaction.
+                // We do, however, keep all locked values locked.
                 txnData.isClearOn = true;
                 txnData.updatedItemsCache.clear();
                 txnData.removedItemsCache.clear();
@@ -1115,6 +1212,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     {
         private LRULinkedHashMap<Serializable, CacheBucket<V>> updatedItemsCache;
         private Set<Serializable> removedItemsCache;
+        private Set<Serializable> lockedItemsCache;
         private boolean haveIssuedFullWarning;
         private boolean isClearOn;
         private boolean isClosed;
@@ -1150,7 +1248,14 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         }
     }
     
-    private Serializable getCacheKey(final K key)
+    /**
+     * Convert the key to a tenant-specific key if the cache is tenant-aware and
+     * the current thread is running in the context of a tenant.
+     * 
+     * @param key           the key to convert
+     * @return              a key that separates tenant-specific values
+     */
+    private Serializable getTenantAwareCacheKey(final K key)
     {
         if (isTenantAware)
         {

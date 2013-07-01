@@ -23,10 +23,9 @@ import static org.alfresco.repo.content.transform.TransformerConfig.DEFAULT_TRAN
 import static org.alfresco.repo.content.transform.TransformerConfig.LIMIT_SUFFIXES;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 
@@ -37,99 +36,190 @@ import org.alfresco.service.cmr.repository.TransformationOptionLimits;
  */
 public class TransformerConfigLimits extends TransformerPropertyNameExtractor
 {
-    // Holds configured (entries only exist if configured rather than for all possible combinations)
-    // limits for for transformer, sourceMimeType and targetMimetype combination.
+    // Initially only holds configured (entries only exist if configured rather than for
+    // all possible combinations) limits for each use, transformer, sourceMimeType and targetMimetype
+    // combination. These initial entries are added to as other combinations are requested.
     // A null transformer is the system wide value. SourceMimeType and targetMimetype may be 'ANY'
     // values to act as wild cards.
-    private Map<String, DoubleMap<String, String, TransformationOptionLimits>> limits;
+    private Map<String, Map<String, DoubleMap<String, String, TransformationOptionLimits>>> limitsMap;
 
-    public TransformerConfigLimits(ChildApplicationContextFactory subsystem, MimetypeService mimetypeService)
+    public TransformerConfigLimits(TransformerProperties transformerProperties, MimetypeService mimetypeService)
     {
-        setLimits(subsystem, mimetypeService);
+        setLimits(transformerProperties, mimetypeService);
     }
 
     /**
      * Sets the transformer limits created from system properties.  
      */
-    private void setLimits(ChildApplicationContextFactory subsystem, MimetypeService mimetypeService)
+    private void setLimits(TransformerProperties transformerProperties, MimetypeService mimetypeService)
     {
-        limits = new HashMap<String, DoubleMap<String, String, TransformationOptionLimits>>();
+        limitsMap = new ConcurrentHashMap<String, Map<String, DoubleMap<String, String, TransformationOptionLimits>>>();
 
         // Gets all the transformer, source and target combinations in properties that define limits.
+        Map<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue>
+                transformerSourceTargetSuffixValues =
+                        getTransformerSourceTargetValuesMap(LIMIT_SUFFIXES, true, true, transformerProperties, mimetypeService);
         Collection<TransformerSourceTargetSuffixValue> properties =
-                getTransformerSourceTargetValues(LIMIT_SUFFIXES, true, subsystem, mimetypeService);
+                transformerSourceTargetSuffixValues.values();
 
         // Add the system wide default just in case it is not included, as we always need this one
-        TransformationOptionLimits options = getOrCreateTransformerOptionLimits(DEFAULT_TRANSFORMER, ANY, ANY);
-        
-        // Populate the transformer limits
-        for (TransformerSourceTargetSuffixValue property: properties)
+        TransformationOptionLimits limits = getOrCreateTransformerOptionLimits(DEFAULT_TRANSFORMER, ANY, ANY, null);
+
+        // Populate the transformer limits. Done in several passes so that values may be defaulted
+        // from one level to the next.
+        for (int pass=0; pass<=7; pass++)
         {
-            options = getOrCreateTransformerOptionLimits(property.transformerName,
-                    property.sourceMimetype, property.targetMimetype);
-            setTransformationOptionsFromProperties(options, property.value, property.suffix);
+            for (TransformerSourceTargetSuffixValue property: properties)
+            {
+                int origLevel = getLevel(property.transformerName, property.sourceMimetype, property.use);
+                if (pass == origLevel)
+                {
+                    String transformerName = (property.transformerName == null)
+                            ? DEFAULT_TRANSFORMER : property.transformerName;
+                    limits = getOrCreateTransformerOptionLimits(transformerName,
+                            property.sourceMimetype, property.targetMimetype, property.use);
+                    setTransformationLimitsFromProperties(limits, property.value, property.suffix);
+                }
+            }
         }
     }
 
     /**
-     * Returns the TransformationOptionLimits for the transformer and mimetype combination,
+     * Returns the TransformationOptionLimits for the use, transformer and mimetype combination,
      * creating and adding one if not already included.
      */
     private TransformationOptionLimits getOrCreateTransformerOptionLimits(String transformerName,
-            String sourceMimetype, String targetMimetype)
+            String sourceMimetype, String targetMimetype, String use)
     {
-        DoubleMap<String, String, TransformationOptionLimits> mimetypeLimits;
-        mimetypeLimits = limits.get(transformerName);
+        use = use == null ? ANY : use; 
+        return getOrCreateTransformerOptionLimitsInternal(transformerName, sourceMimetype, targetMimetype, use, use);
+    }
+    
+    private TransformationOptionLimits getOrCreateTransformerOptionLimitsInternal(String transformerName,
+            String sourceMimetype, String targetMimetype, String origUse, String use)
+    {
+        Map<String, DoubleMap<String, String, TransformationOptionLimits>> transformerLimits = limitsMap.get(origUse);
+        if (transformerLimits == null)
+        {
+            transformerLimits = new ConcurrentHashMap<String, DoubleMap<String, String, TransformationOptionLimits>>();
+            limitsMap.put(origUse, transformerLimits);
+        }
+        
+        DoubleMap<String, String, TransformationOptionLimits> mimetypeLimits = transformerLimits.get(transformerName);
         if (mimetypeLimits == null)
         {
             mimetypeLimits = new DoubleMap<String, String, TransformationOptionLimits>(ANY, ANY);
-            limits.put(transformerName, mimetypeLimits);
+            transformerLimits.put(transformerName, mimetypeLimits);
         }
         
-        TransformationOptionLimits options = mimetypeLimits.getNoWildcards(sourceMimetype, targetMimetype);
-        if (options == null)
+        TransformationOptionLimits limits = mimetypeLimits.getNoWildcards(sourceMimetype, targetMimetype);
+        if (limits == null)
         {
-            options = new TransformationOptionLimits();
-            mimetypeLimits.put(sourceMimetype, targetMimetype, options);
+            // Try the wildcard version, and use any match as the basis for a new entry
+            limits = mimetypeLimits.get(sourceMimetype, targetMimetype);
+
+            limits = newTransformationOptionLimits(transformerName, sourceMimetype, targetMimetype, limits, origUse, use);
+            mimetypeLimits.put(sourceMimetype, targetMimetype, limits);
         }
-        return options;
+        return limits;
     }
     
-    private void setTransformationOptionsFromProperties(TransformationOptionLimits options,
+    /**
+     * Creates a new TransformationOptionLimits for the use, transformer and mimetype combination,
+     * defaulting values from lower levels.
+     * @param wildCardLimits if not null this is a limit found using a wildcard so should
+     *        form the basis of the new object.
+     */
+    private TransformationOptionLimits newTransformationOptionLimits(String transformerName,
+            String sourceMimetype, String targetMimetype, TransformationOptionLimits wildCardLimits,
+            String origUse, String use)
+    {
+        int origLevel = getLevel(transformerName, sourceMimetype, use);
+
+        TransformationOptionLimits limits = new TransformationOptionLimits();
+        if (wildCardLimits != null)
+        {
+            wildCardLimits.defaultTo(limits);
+        }
+
+        int inc = (origLevel+1) % 2 + 1; // step = 1 if use is set otherwise 2
+        for (int level=0; level<origLevel; level += inc)
+        {
+              TransformationOptionLimits defaultLimits =
+                    level < 4
+                    ? level < 2
+                      ? level == 0
+                        ? getOrCreateTransformerOptionLimitsInternal(DEFAULT_TRANSFORMER, ANY, ANY, origUse, ANY) // 0
+                        : getOrCreateTransformerOptionLimitsInternal(DEFAULT_TRANSFORMER, ANY, ANY, origUse, use) // 1
+                      : level == 2
+                        ? getOrCreateTransformerOptionLimitsInternal(DEFAULT_TRANSFORMER, sourceMimetype, targetMimetype, origUse, ANY) // 2
+                        : getOrCreateTransformerOptionLimitsInternal(DEFAULT_TRANSFORMER, sourceMimetype, targetMimetype, origUse, use) // 3
+                    : level < 6
+                      ? level == 4
+                        ? getOrCreateTransformerOptionLimitsInternal(transformerName, ANY, ANY, origUse, ANY) // 4
+                        : getOrCreateTransformerOptionLimitsInternal(transformerName, ANY, ANY, origUse, use) // 5
+                      : getOrCreateTransformerOptionLimitsInternal(transformerName, sourceMimetype, targetMimetype, origUse, ANY); // 6
+
+             defaultLimits.defaultTo(limits);
+        }
+        return limits;
+    }
+
+    private int getLevel(String transformerName, String sourceMimetype, String use)
+    {
+        boolean defaultUse = use == null || use.equals(ANY);
+        boolean defaultMimetypes = sourceMimetype == null || sourceMimetype.equals(ANY);
+        int level = transformerName == null || DEFAULT_TRANSFORMER.equals(transformerName)
+                ? defaultMimetypes
+                ? defaultUse ? 0 : 1
+                : defaultUse ? 2 : 3
+                : defaultMimetypes
+                ? defaultUse ? 4 : 5
+                : defaultUse ? 6 : 7;
+        return level;
+    }
+    
+    private void setTransformationLimitsFromProperties(TransformationOptionLimits limits,
             String value, String suffix)
     {
         long l = Long.parseLong(value);
         if (suffix == TransformerConfig.MAX_SOURCE_SIZE_K_BYTES)
         {
-            options.setMaxSourceSizeKBytes(l);
+            limits.setReadLimitKBytes(-1);
+            limits.setMaxSourceSizeKBytes(l);
         }
         else if (suffix == TransformerConfig.TIMEOUT_MS)
         {
-            options.setTimeoutMs(l);
+            limits.setReadLimitTimeMs(-1);
+            limits.setTimeoutMs(l);
         }
         else if (suffix == TransformerConfig.MAX_PAGES)
         {
-            options.setMaxPages((int)l);
+            limits.setPageLimit(-1);
+            limits.setMaxPages((int)l);
         }
         else if (suffix == TransformerConfig.READ_LIMIT_K_BYTES)
         {
-            options.setReadLimitKBytes(l);
+            limits.setMaxSourceSizeKBytes(-1);
+            limits.setReadLimitKBytes(l);
         }
         else if (suffix == TransformerConfig.READ_LIMIT_TIME_MS)
         {
-            options.setReadLimitTimeMs(l);
+            limits.setTimeoutMs(-1);
+            limits.setReadLimitTimeMs(l);
         }
         else // if (suffix == TransformerConfig.PAGE_LIMIT)
         {
-            options.setPageLimit((int)l);
+            limits.setMaxPages(-1);
+            limits.setPageLimit((int)l);
         }
     }
     
     /**
-     * See {@link TransformerConfig#getLimits(ContentTransformer, String, String)}.
+     * See {@link TransformerConfig#getLimits(ContentTransformer, String, String, String)}.
      */
     public TransformationOptionLimits getLimits(ContentTransformer transformer, String sourceMimetype,
-            String targetMimetype)
+            String targetMimetype, String use)
     {
         if (sourceMimetype == null)
         {
@@ -141,24 +231,8 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
             targetMimetype = ANY;
         }
         
-        String name = (transformer == null) ? DEFAULT_TRANSFORMER : transformer.getName();
+        String transformerName = (transformer == null) ? DEFAULT_TRANSFORMER : transformer.getName();
 
-        DoubleMap<String, String, TransformationOptionLimits> transformerLimits = limits.get(name);
-        
-        TransformationOptionLimits limits = (transformerLimits == null) ? null : transformerLimits.get(sourceMimetype, targetMimetype);
-        
-        // Individual transformer limits might not exist.
-        TransformationOptionLimits transformerWideLimits = (transformerLimits == null) ? null : transformerLimits.get(ANY, ANY);
-        limits = (limits == null) ? transformerWideLimits : transformerWideLimits == null ? limits : transformerWideLimits.combine(limits);
-        
-        // If a non recursive call
-        if (transformer != null)
-        {
-            // System wide 'default' limits should exist.
-            TransformationOptionLimits systemWideLimits = getLimits(null, sourceMimetype, targetMimetype);
-            limits = (limits == null) ? systemWideLimits : systemWideLimits.combine(limits);
-        }
-        
-        return limits;
+        return getOrCreateTransformerOptionLimits(transformerName, sourceMimetype, targetMimetype, use);
     }
 }

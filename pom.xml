@@ -851,7 +851,6 @@
                                 <exclude>**/org/alfresco/util/schemacomp/model/AbstractDbObjectTest.*</exclude>
 
                                 <!-- TODO tests which pass with Ant, but not here. To investigate -->
-                                <exclude>**/org/alfresco/cmis/changelog/CMISChangeLogServiceTest.*</exclude>
                                 <exclude>**/org/alfresco/cmis/renditions/CMISRenditionServiceTest.*</exclude>
                                 <exclude>**/org/alfresco/filesys/FTPServerTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/avm/AVMServiceTest.*</exclude>

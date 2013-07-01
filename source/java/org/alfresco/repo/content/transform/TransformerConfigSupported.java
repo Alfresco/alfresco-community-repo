@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
@@ -43,22 +42,22 @@ public class TransformerConfigSupported extends TransformerPropertyNameExtractor
     // SourceMimetype and targetMimetype may be 'ANY' values to act as wild cards.
     private Map<String, SupportedAndUnsupportedTransformations> supported;
 
-    public TransformerConfigSupported(ChildApplicationContextFactory subsystem, MimetypeService mimetypeService)
+    public TransformerConfigSupported(TransformerProperties transformerProperties, MimetypeService mimetypeService)
     {
-        setSupported(subsystem, mimetypeService);
+        setSupported(transformerProperties, mimetypeService);
     }
     
     /**
      * Sets the supported/unsupported mimetype transformations created from system properties.  
      */
-    private void setSupported(ChildApplicationContextFactory subsystem, MimetypeService mimetypeService)
+    private void setSupported(TransformerProperties transformerProperties, MimetypeService mimetypeService)
     {
         supported = new HashMap<String, SupportedAndUnsupportedTransformations>();
 
         // Gets all the supported and unsupported transformer, source and target combinations
         Collection<TransformerSourceTargetSuffixValue> properties =
                 getTransformerSourceTargetValues(Collections.singletonList(SUPPORTED),
-                false, subsystem, mimetypeService);
+                false, false, transformerProperties, mimetypeService);
         
         // Populate the transformer values
         for (TransformerSourceTargetSuffixValue property: properties)

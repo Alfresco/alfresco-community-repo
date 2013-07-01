@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -178,6 +178,9 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         }
 
         options = newTransformationOptions(ruleAction, actionedUponNodeRef);
+        // getExecuteAsychronously() is not true for async convert content rules, so using Thread name
+        //        options.setUse(ruleAction.getExecuteAsychronously() ? "asyncRule" :"syncRule");
+        options.setUse(Thread.currentThread().getName().contains("Async") ? "asyncRule" :"syncRule");
         if (null == contentService.getTransformer(contentReader.getContentUrl(), contentReader.getMimetype(), contentReader.getSize(), mimeType, options))
         {
             throw new RuleServiceException(String.format(TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN, contentReader.getMimetype(), mimeType));

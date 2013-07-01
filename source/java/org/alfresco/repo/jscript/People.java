@@ -34,6 +34,7 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.security.authority.AuthorityDAO;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.person.PersonServiceImpl;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.repo.tenant.TenantDomainMismatchException;
@@ -43,6 +44,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
@@ -687,6 +689,8 @@ public class People extends BaseScopableProcessorExtension implements Initializi
         SearchParameters params = new SearchParameters();
         params.addQueryTemplate("_PERSON", "|%firstName OR |%lastName OR |%userName");
         params.setDefaultFieldName("_PERSON");
+        params.setExcludeTenantFilter(getExcludeTenantFilter());
+        params.setPermissionEvaluation(getPermissionEvaluationMode());
         
         StringBuilder query = new StringBuilder(256);
         
@@ -769,7 +773,8 @@ public class People extends BaseScopableProcessorExtension implements Initializi
                    query.append(term.substring(0, propIndex+1))
                         .append('"')
                         .append(term.substring(propIndex+1))
-                        .append('"');
+                        .append('"')
+                        .append(' ');
                    
                    propertySearch = true;
                }
@@ -854,12 +859,20 @@ public class People extends BaseScopableProcessorExtension implements Initializi
        return personRefs;
     }
     
-    private List<NodeRef> getSortedPeopleObjects(List<NodeRef> peopleRefs, final String sortBy, boolean sortAsc)
+    private List<NodeRef> getSortedPeopleObjects(List<NodeRef> peopleRefs, final String sortBy, Boolean sortAsc)
     {
+        if(sortBy == null)
+        {
+            return peopleRefs;
+        }
+        
+        
+        //make copy of peopleRefs because it can be unmodifiable list.
+        List<NodeRef> sortedPeopleRefs = new ArrayList<NodeRef>(peopleRefs);
         final Collator col = Collator.getInstance(I18NUtil.getLocale());
         final NodeService nodeService = services.getNodeService();
-        final int orderMultiplicator = sortAsc ? 1 : -1;
-        Collections.sort(peopleRefs, new Comparator<NodeRef>()
+        final int orderMultiplicator = ((sortAsc == null) || sortAsc)  ? 1 : -1;
+        Collections.sort(sortedPeopleRefs, new Comparator<NodeRef>()
         {
             @Override
             public int compare(NodeRef n1, NodeRef n2)
@@ -918,7 +931,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
 
         });
         
-        return peopleRefs;
+        return sortedPeopleRefs;
     }
     
     /**
@@ -929,8 +942,18 @@ public class People extends BaseScopableProcessorExtension implements Initializi
      */
     public ScriptNode getPerson(final String username)
     {
+    	NodeRef personRef = null;
+
         ParameterCheck.mandatoryString("Username", username);
-        final NodeRef personRef = personService.getPersonOrNull(username);
+        try
+        {
+	        personRef = personService.getPersonOrNull(username);
+        }
+        catch(AccessDeniedException e)
+        {
+        	// ok, just return null to indicate not found
+        }
+
         return personRef == null ? null : new ScriptNode(personRef, services, getScope());
     }
     
@@ -1246,5 +1269,15 @@ public class People extends BaseScopableProcessorExtension implements Initializi
         }
         
         return members != null ? members : new Object[0];
+    }
+    
+    public boolean getExcludeTenantFilter()
+    {
+        return false;
+    }
+    
+    public PermissionEvaluationMode getPermissionEvaluationMode()
+    {
+        return PermissionEvaluationMode.EAGER;
     }
 }

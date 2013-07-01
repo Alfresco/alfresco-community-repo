@@ -44,7 +44,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     private static Log logger = LogFactory.getLog(AbstractFeedGenerator.class);
 
     /** The name of the lock used to ensure that feed generator does not run on more than one node at the same time */
-    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "org.alfresco.repo.activities.feed.AbstractFeedGenerator");
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "FeedGenerator");
     
     /** The time this lock will persist in the database (60 sec but refreshed at regular intervals) */
     private static final long LOCK_TTL = 1000 * 60;
@@ -164,7 +164,6 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         }
 
         LockCallback lockCallback =  new LockCallback();
-
         String lockToken = null;
         try
         {
@@ -190,7 +189,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
             // Job being done by another process
             if (logger.isDebugEnabled())
             {
-                logger.debug("Activities feed generator already underway");
+                logger.debug("Activities feed generator already underway: " + LOCK_QNAME);
             }
         }
         catch (Throwable e)
@@ -229,7 +228,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
             running.set(false);
             if (logger.isDebugEnabled())
             {
-                logger.debug("Lock released : " + LOCK_QNAME);
+                logger.debug("Lock release notification: " + LOCK_QNAME);
             }
         }
     }
@@ -244,7 +243,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("lock aquired:  " + lockToken);
+            logger.debug("lock acquired: " + LOCK_QNAME + ": " + lockToken);
         }
         
         return lockToken;
@@ -252,18 +251,28 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     
     private void releaseLock(LockCallback lockCallback, String lockToken)
     {
-        if (lockCallback != null)
+        try
         {
-            lockCallback.running.set(false);
-        }
-        
-        if(lockToken != null)
-        { 
-            jobLockService.releaseLock(lockToken, LOCK_QNAME);
-            
-            if (logger.isInfoEnabled())
+            if (lockCallback != null)
             {
-                logger.debug("Lock released (refresh failed): " + LOCK_QNAME + ", lock token " + lockToken);
+                lockCallback.running.set(false);
+            }
+            
+            if (lockToken != null)
+            { 
+                jobLockService.releaseLock(lockToken, LOCK_QNAME);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Lock released: " + LOCK_QNAME + ": " + lockToken);
+                }
+            }
+        }
+        catch (LockAcquisitionException e)
+        {
+            // Ignore
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Lock release failed: " + LOCK_QNAME + ": " + lockToken + "(" + e.getMessage() + ")");
             }
         }
     }

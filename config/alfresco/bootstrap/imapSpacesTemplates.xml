@@ -423,5 +423,211 @@
         <view:associations></view:associations>
     </cm:content>
  
- 
+    <!-- NL locale -->
+   <cm:content view:childName="cm:emailbody_textplain_share_nl.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for share - ${version.dutch}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_nl.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=nl</cm:content>
+            <cm:title>emailbody_textplain_share_nl.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_textplain_share_nl.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+    
+    <cm:content view:childName="cm:emailbody_textplain_alfresco_nl.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for explorer - ${version.dutch}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_nl.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=nl</cm:content>
+            <cm:title>emailbody_textplain_alfresco_nl.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_textplain_alfresco_nl.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+    
+    <cm:content view:childName="cm:emailbody_texthtml_alfresco_nl.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for explorer - ${version.dutch}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_nl.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=nl</cm:content>
+            <cm:title>emailbody_texthtml_alfresco_nl.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_texthtml_alfresco_nl.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+    
+    <cm:content view:childName="cm:emailbody_texthtml_share_nl.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for share - ${version.dutch}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_nl.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=nl</cm:content>
+            <cm:title>emailbody_texthtml_share_nl.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_texthtml_share_nl.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+
+    <!-- RU locale -->
+   <cm:content view:childName="cm:emailbody_textplain_share_ru.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for share - ${version.russian}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_ru.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=ru</cm:content>
+            <cm:title>emailbody_textplain_share_ru.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_textplain_share_ru.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+    
+    <cm:content view:childName="cm:emailbody_textplain_alfresco_ru.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for explorer - ${version.russian}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_ru.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=ru</cm:content>
+            <cm:title>emailbody_textplain_alfresco_ru.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_textplain_alfresco_ru.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+    
+    <cm:content view:childName="cm:emailbody_texthtml_alfresco_ru.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for explorer - ${version.russian}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_ru.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=ru</cm:content>
+            <cm:title>emailbody_texthtml_alfresco_ru.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_texthtml_alfresco_ru.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+    
+    <cm:content view:childName="cm:emailbody_texthtml_share_ru.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for share - ${version.russian}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_ru.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=ru</cm:content>
+            <cm:title>emailbody_texthtml_share_ru.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_texthtml_share_ru.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+
+    <!-- zh_CN locale -->
+   <cm:content view:childName="cm:emailbody_textplain_share_zh_CN.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for share - ${version.chinese}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_zh_CN.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=zh_CN</cm:content>
+            <cm:title>emailbody_textplain_share_zh_CN.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_textplain_share_zh_CN.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+    
+    <cm:content view:childName="cm:emailbody_textplain_alfresco_zh_CN.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for explorer - ${version.chinese}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_zh_CN.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=zh_CN</cm:content>
+            <cm:title>emailbody_textplain_alfresco_zh_CN.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_textplain_alfresco_zh_CN.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+    
+    <cm:content view:childName="cm:emailbody_texthtml_alfresco_zh_CN.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for explorer - ${version.chinese}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_zh_CN.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=zh_CN</cm:content>
+            <cm:title>emailbody_texthtml_alfresco_zh_CN.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_texthtml_alfresco_zh_CN.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+    
+    <cm:content view:childName="cm:emailbody_texthtml_share_zh_CN.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for share - ${version.chinese}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_zh_CN.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=zh_CN</cm:content>
+            <cm:title>emailbody_texthtml_share_zh_CN.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_texthtml_share_zh_CN.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+	
  </view:view>

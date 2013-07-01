@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +109,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private ContentTransformer imageMagickContentTransformer;
     /** Should we consider zero byte content to be the same as no content? */
     private boolean ignoreEmptyContent;
-    private boolean transformerFailover;
+    private boolean transformerFailover = true;
     
     /**
      * The policy component
@@ -183,8 +182,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * Allows fail over form one transformer to another when there is
      * more than one transformer available. The cost is that the output
      * of the transformer must go to a temporary file in case it fails.
-     * @param transformerFailover {@code true} indicate that fail over 
-     *        should take place.
+     * @param transformerFailover {@code true} (the default) indicate
+     *        that fail over should take place.
      */
     public void setTransformerFailover(boolean transformerFailover)
     {
@@ -611,7 +610,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             // look for a transformer
             transformerDebug.pushAvailable(reader.getContentUrl(), sourceMimetype, targetMimetype, options);
             List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
-            transformerDebug.availableTransformers(transformers, sourceSize, "ContentService.transform(...)");
+            transformerDebug.availableTransformers(transformers, sourceSize, options, "ContentService.transform(...)");
             
             int count = transformers.size(); 
             if (count == 0)
@@ -634,7 +633,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             if (transformerDebug.isEnabled())
             {
                 transformerDebug.popAvailable();
-                debugActiveTransformers(sourceMimetype, targetMimetype, sourceSize, options);
+                debugTransformations(sourceMimetype, targetMimetype, sourceSize, options);
             }
         }
     }
@@ -785,7 +784,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             // look for a transformer
             transformerDebug.pushAvailable(sourceUrl, sourceMimetype, targetMimetype, options);
             List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
-            transformerDebug.availableTransformers(transformers, sourceSize, "ContentService.getTransformer(...)");
+            transformerDebug.availableTransformers(transformers, sourceSize, options, "ContentService.getTransformer(...)");
             return transformers.isEmpty() ? null : transformers;
         }
         finally
@@ -799,108 +798,19 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * if it is creates TransformerDebug that lists all the supported mimetype transformation for
      * each transformer.
      */
-    private void debugActiveTransformers(String sourceMimetype, String targetMimetype,
+    private void debugTransformations(String sourceMimetype, String targetMimetype,
             long sourceSize, TransformationOptions transformOptions)
     {
         // check the file name
         if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(sourceMimetype) &&
-            MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype) &&
-            transformerDebug.getFileName(transformOptions, true, 0).contains("debugTransformers.txt"))
+            MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype))
         {
-            debugActiveTransformersByTransformer();
-            debugActiveTransformersByMimetypes();
-        }
-    }
-    
-    /**
-     * Creates TransformerDebug that lists all the supported mimetype transformation for each transformer.
-     */
-    private void debugActiveTransformersByTransformer()
-    {
-        try
-        {
-            transformerDebug.pushMisc();
-            transformerDebug.debug("Active and inactive transformers");
-            TransformationOptions options = new TransformationOptions();
-
-            for (ContentTransformer transformer: transformerRegistry.getTransformers())
+            String fileName = transformerDebug.getFileName(transformOptions, true, 0);
+            if (fileName != null && fileName.contains("debugTransformers.txt"))
             {
-                try
-                {
-                    transformerDebug.pushMisc();
-                    int mimetypePairCount = 0;
-                    boolean first = true;
-                    for (String sourceMimetype : mimetypeService.getMimetypes())
-                    {
-                        for (String targetMimetype : mimetypeService.getMimetypes())
-                        {
-                            if (transformer.isTransformable(sourceMimetype, -1, targetMimetype, options))
-                            {
-                                long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(
-                                        sourceMimetype, targetMimetype, options);
-                                transformerDebug.activeTransformer(++mimetypePairCount, transformer,
-                                        sourceMimetype, targetMimetype, maxSourceSizeKBytes, first);
-                                first = false;
-                            }
-                        }
-                    }
-                    if (first)
-                    {
-                        transformerDebug.inactiveTransformer(transformer);
-                    }
-                }
-                finally
-                {
-                    transformerDebug.popMisc();
-                }
+                transformerDebug.transformationsByTransformer(null, false, false, null);
+                transformerDebug.transformationsByExtension(null, null, false, false, false, null);
             }
-        }
-        finally
-        {
-            transformerDebug.popMisc();
-        }
-    }
-
-    /**
-     * Creates TransformerDebug that lists all available transformers for each mimetype combination.
-     */
-    private void debugActiveTransformersByMimetypes()
-    {
-        try
-        {
-            transformerDebug.pushMisc();
-            transformerDebug.debug("Transformers for each mimetype combination");
-            TransformationOptions options = new TransformationOptions();
-
-            for (String sourceMimetype : mimetypeService.getMimetypes())
-            {
-                for (String targetMimetype : mimetypeService.getMimetypes())
-                {
-                    try
-                    {
-                        transformerDebug.pushMisc();
-                        int transformerCount = 0;
-                        for (ContentTransformer transformer: transformerRegistry.getTransformers())
-                        {
-                            if (transformer.isTransformable(sourceMimetype, -1, targetMimetype, options))
-                            {
-                                long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(
-                                        sourceMimetype, targetMimetype, options);
-                               transformerDebug.activeTransformer(sourceMimetype, targetMimetype,
-                                        transformerCount, transformer, maxSourceSizeKBytes, transformerCount++ == 0);
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        transformerDebug.popMisc();
-                    }
-                }
-            }
-        }
-        finally
-        {
-            transformerDebug.popMisc();
         }
     }
     
@@ -932,7 +842,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             }
             if (transformerDebug.isEnabled())
             {
-                transformerDebug.availableTransformers(transformers, -1,
+                transformerDebug.availableTransformers(transformers, -1, options,
                     "ContentService.getMaxSourceSizeBytes() = "+transformerDebug.fileSize(maxSourceSize*1024));
             }
             return (maxSourceSize > 0) ? maxSourceSize * 1024 : maxSourceSize;
@@ -993,7 +903,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             // look for a transformer
             transformerDebug.pushAvailable(reader.getContentUrl(), sourceMimetype, targetMimetype, options);
             List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
-            transformerDebug.availableTransformers(transformers, sourceSize, "ContentService.isTransformable(...)");
+            transformerDebug.availableTransformers(transformers, sourceSize, options, "ContentService.isTransformable(...)");
             
             return transformers.size() > 0; 
         }

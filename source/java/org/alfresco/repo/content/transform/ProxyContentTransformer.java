@@ -64,6 +64,15 @@ public class ProxyContentTransformer extends AbstractContentTransformer2
         return this.worker.isTransformable(sourceMimetype, targetMimetype, options);
     }
 
+    @Override
+    public String getComments(boolean available)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.getComments(available));
+        sb.append(worker.getComments(false));
+        return sb.toString();
+    }
+
     protected void transformInternal(ContentReader reader, ContentWriter writer, TransformationOptions options)
             throws Exception
     {

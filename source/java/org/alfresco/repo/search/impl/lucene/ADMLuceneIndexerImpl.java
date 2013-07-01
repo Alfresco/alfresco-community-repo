@@ -1461,11 +1461,12 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             {
                                 // get the transformer
                                 TransformationOptions options = new TransformationOptions();
+                                options.setUse("index");
                                 options.setSourceNodeRef(nodeRef);
                                 transformerDebug.pushAvailable(reader.getContentUrl(), sourceMimetype, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
                                 long sourceSize = reader.getSize();
                                 List<ContentTransformer> transformers = contentService.getActiveTransformers(sourceMimetype, sourceSize, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
-                                transformerDebug.availableTransformers(transformers, sourceSize, "ADMLuceneIndexer");
+                                transformerDebug.availableTransformers(transformers, sourceSize, options, "ADMLuceneIndexer");
 
                                 if (transformers.isEmpty())
                                 {

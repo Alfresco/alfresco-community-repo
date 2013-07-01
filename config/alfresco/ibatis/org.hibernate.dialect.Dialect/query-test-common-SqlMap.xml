@@ -84,4 +84,17 @@
         ]]>
     </select>
 
+    <select id="select_NodeServiceTest_testLinkToDeletedNodeRecovery_GetDeletedChildrenCannedQuery" parameterType="Node" resultType="Long" >
+        select
+            ca.child_node_id
+        from
+            alf_node n
+            join alf_child_assoc ca on (ca.child_node_id = n.id)
+        where
+            n.type_qname_id = #{typeQNameId} and
+            n.id > #{id}
+        order by
+            ca.child_node_id
+    </select>
+
 </mapper>

@@ -19,6 +19,7 @@
 package org.alfresco.repo.node.db;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +30,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.cleanup.NodeCleanupRegistry;
@@ -43,6 +45,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -356,12 +359,51 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
             assertNotNull(newStatus);
             // check
             assertEquals("Change didn't update status", currentTxnId, newStatus.getChangeTxnId());
+            
+            // Make sure we can pre-load the node i.e. nodes in all state need to be pre-loadable
+            // See CLOUD-1807
+            Long nodeId = newStatus.getDbId();
+            nodeDAO.getParentAssocs(nodeId, null, null, null, new DummyChildAssocRefQueryCallback());
+            nodeDAO.cacheNodesById(Collections.singletonList(nodeId));
+            
             txn.commit();
         }
         catch (Throwable e)
         {
             try { txn.rollback(); } catch (Throwable ee) {}
             throw e;
+        }
+    }
+
+    /**
+     * Dummy implementation that does nothing with the results
+     * @author Derek Hulley
+     * @since 4.2
+     */
+    public static class DummyChildAssocRefQueryCallback implements ChildAssocRefQueryCallback
+    {
+        @Override
+        public boolean preLoadNodes()
+        {
+            return true;
+        }
+        @Override
+        public boolean orderResults()
+        {
+            return false;
+        }
+        
+        @Override
+        public boolean handle(
+                Pair<Long, ChildAssociationRef> childAssocPair,
+                Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+        {
+            return true;
+        }
+        
+        @Override
+        public void done()
+        {
         }
     }
     

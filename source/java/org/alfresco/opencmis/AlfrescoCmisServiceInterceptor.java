@@ -32,6 +32,8 @@ import java.util.List;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.TempFileProvider;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -127,11 +129,15 @@ public class AlfrescoCmisServiceInterceptor implements MethodInterceptor
                 		persistedContentStreams.add(persistedContentStream);
                 	}
                 }
+                
+                FileFilterMode.setClient(Client.cmis);
 
                 ret = invocation.proceed();
             }
             finally
             {
+            	FileFilterMode.clearClient();
+
                 service.afterCall();
 
                 // cleanup persisted content streams
@@ -169,6 +175,12 @@ public class AlfrescoCmisServiceInterceptor implements MethodInterceptor
         }
     }
     
+    /**
+     * Persisted content stream, for use in retrying transactions.
+     * 
+     * @author steveglover
+     *
+     */
     private static class PersistedContentStream implements ContentStream
     {
         private File tempFile = null;
@@ -250,7 +262,10 @@ public class AlfrescoCmisServiceInterceptor implements MethodInterceptor
                 if (stream.getStream() != null)
                 {
                     OutputStream out = new BufferedOutputStream(new FileOutputStream(tempFile), bufferSize);
-                    InputStream in = new BufferedInputStream(stream.getStream(), bufferSize);
+                    //InputStream in = new BufferedInputStream(stream.getStream(), bufferSize);
+                    // Temporary work around for bug in InternalTempFileInputStream which auto closes during read
+                    // BufferedInputStream subsequent use of available() throws an exception.
+                    InputStream in = stream.getStream();
 
                     byte[] buffer = new byte[bufferSize];
                     int i;

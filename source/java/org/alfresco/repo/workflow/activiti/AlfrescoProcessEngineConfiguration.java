@@ -28,6 +28,7 @@ import org.activiti.engine.impl.jobexecutor.TimerExecuteNestedActivityJobHandler
 import org.activiti.engine.impl.variable.SerializableType;
 import org.activiti.engine.impl.variable.VariableType;
 import org.activiti.spring.SpringProcessEngineConfiguration;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.NodeService;
 
 /**
@@ -39,6 +40,13 @@ public class AlfrescoProcessEngineConfiguration extends SpringProcessEngineConfi
 {
     private List<VariableType> customTypes;
     private NodeService unprotectedNodeService;
+    
+    public AlfrescoProcessEngineConfiguration()
+    {
+        // Make sure the synchornizationAdapter is run before the AlfrescoTransactionSupport (and also before the
+        // myBatis synchonisation, which unbinds the neccesairy sqlSession used by the JobFailedListener)
+        this.transactionSynchronizationAdapterOrder = AlfrescoTransactionSupport.SESSION_SYNCHRONIZATION_ORDER - 100;
+    }
     
     @Override
     protected void initVariableTypes()

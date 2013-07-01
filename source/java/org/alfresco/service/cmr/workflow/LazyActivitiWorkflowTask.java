@@ -29,7 +29,6 @@ import org.activiti.engine.task.Task;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
-import org.alfresco.repo.workflow.WorkflowConstants;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiTypeConverter;
@@ -180,20 +179,17 @@ public class LazyActivitiWorkflowTask extends WorkflowTask
 			{
 				return getPriority();
 			}
-			else if(WorkflowModel.PROP_STATUS.equals(key)) 
-			{
-				switch(getState())
-				{
-				case COMPLETED:
-					return WorkflowConstants.TASK_STATUS_COMPLETED;
-				case IN_PROGRESS:
-					return WorkflowConstants.TASK_STATUS_IN_PROGRESS;
-				}
-				return getState();
-			} 
 			else if(WorkflowModel.PROP_DESCRIPTION.equals(key)) 
 			{
-				return getDescription();
+				// Description-property is based on the task.getDescription(). Revert to the default task(type) description, if missing.
+				if(task != null) 
+				{
+					return (task.getDescription() != null && !task.getDescription().isEmpty()) ? task.getDescription() : getDescription();
+				}
+				else
+				{
+					return (historicTask.getDescription() != null && !historicTask.getDescription().isEmpty()) ? historicTask.getDescription() : getDescription();
+				}
 			} 
 			else if(ContentModel.PROP_CREATED.equals(key) || WorkflowModel.PROP_START_DATE.equals(key)) 
 			{

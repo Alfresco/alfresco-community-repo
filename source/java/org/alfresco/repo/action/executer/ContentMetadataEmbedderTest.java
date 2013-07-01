@@ -66,6 +66,7 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
     private ContentService contentService;
     private DictionaryService dictionaryService;
     private MimetypeService mimetypeService;
+    private MetadataExtracterRegistry metadataExtracterRegistry;
     private StoreRef testStoreRef;
     private NodeRef rootNodeRef;
     private NodeRef nodeRef;
@@ -81,6 +82,7 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
         this.contentService = (ContentService) this.applicationContext.getBean("contentService");
         this.dictionaryService = (DictionaryService) this.applicationContext.getBean("dictionaryService");
         this.mimetypeService = (MimetypeService) this.applicationContext.getBean("mimetypeService");
+        this.metadataExtracterRegistry  = (MetadataExtracterRegistry) this.applicationContext.getBean("metadataExtracterRegistry");
         
         AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
@@ -103,7 +105,11 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
         cw.putContent(AbstractContentTransformerTest.loadQuickTestFile("pdf"));
 
         // Get the executer instance
-        this.executer = (ContentMetadataEmbedder) this.applicationContext.getBean("embed-metadata");
+        this.executer = new ContentMetadataEmbedder();
+        this.executer.setNodeService(nodeService);
+        this.executer.setContentService(contentService);
+        this.executer.setMetadataExtracterRegistry(metadataExtracterRegistry);
+        this.executer.setApplicableTypes(new String[] { ContentModel.TYPE_CONTENT.toString() });
     }
 
     /**

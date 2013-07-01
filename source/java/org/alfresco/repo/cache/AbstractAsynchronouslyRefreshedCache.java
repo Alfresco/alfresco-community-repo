@@ -463,13 +463,14 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
     private void doCall() throws Exception
     {
         Refresh refresh = setUpRefresh();
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Building cache for tenant" + refresh.getTenantId());
-        }
         if (refresh == null)
         {
             return;
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Building cache for tenant" + refresh.getTenantId());
         }
 
         try

@@ -106,7 +106,10 @@ public class SitesCannedQuery extends AbstractCannedQuery<SiteMembership>
             	if(siteInfo != null)
             	{
 	        		String role = siteService.getMembersRole(siteName, userName);
-	        		siteMembers.add(new SiteMembership(siteName, siteInfo.getTitle(), authority, SiteRole.valueOf(role)));
+	        		if(role != null)
+	        		{
+	        			siteMembers.add(new SiteMembership(siteInfo, authority, SiteRole.valueOf(role)));
+	        		}
             	}
             }
 
@@ -208,16 +211,18 @@ public class SitesCannedQuery extends AbstractCannedQuery<SiteMembership>
     	{
     		String personId1 = o1.getPersonId();
     		String personId2 = o2.getPersonId();
-    		String shortName1 = o1.getSiteShortName();
-    		String shortName2 = o2.getSiteShortName();
+    		SiteInfo siteInfo1 = o1.getSiteInfo();
+    		SiteInfo siteInfo2 = o2.getSiteInfo();
+    		String shortName1 = siteInfo1.getShortName();
+    		String shortName2 = siteInfo2.getShortName();
     		String firstName1 = o1.getFirstName();
     		String firstName2 = o2.getFirstName();
     		String lastName1 = o1.getLastName();
     		String lastName2 = o2.getLastName();
     		SiteRole siteRole1 = o1.getRole();
     		SiteRole siteRole2 = o2.getRole();
-    		String siteTitle1 = o1.getSiteTitle();
-    		String siteTitle2 = o2.getSiteTitle();
+    		String siteTitle1 = siteInfo1.getTitle();
+    		String siteTitle2 = siteInfo2.getTitle();
 
     		int personId = safeCompare(personId1, personId2);
     		int firstName = safeCompare(firstName1, firstName2);

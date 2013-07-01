@@ -54,6 +54,7 @@ public class TextToPdfContentTransformerTest extends AbstractContentTransformerT
         transformer.setStandardFont("Times-Roman");
         transformer.setFontSize(20);
         transformer.setPageLimit(-1);
+        transformer.setBeanName("transformer.test"+System.currentTimeMillis()%100000);
         transformer.register();
     }
     

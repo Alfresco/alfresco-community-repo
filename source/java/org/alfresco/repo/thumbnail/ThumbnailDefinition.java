@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -87,6 +87,7 @@ public class ThumbnailDefinition
     {
         this(mimetype, options);
         this.name= thumbnailName;
+        options.setUse(thumbnailName);
     }
     
     /**
@@ -101,6 +102,7 @@ public class ThumbnailDefinition
     {
         this(mimetype, options, thumbnailName);
         this.placeHolderResourcePath = placeHolderResourcePath;
+        options.setUse(thumbnailName);
     }
     
     /**

@@ -57,5 +57,5 @@ public interface ActivityFeedDAO extends ActivitiesDAO
 
     public List<ActivityFeedEntity> selectSiteFeedEntries(String siteUserId, String format, int maxFeedItems) throws SQLException;
     
-    public PagingResults<ActivityFeedEntity> selectPagedUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest) throws SQLException;
+    public PagingResults<ActivityFeedEntity> selectPagedUserFeedEntries(String feedUserId, String networkId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest) throws SQLException;
 }

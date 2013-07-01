@@ -138,6 +138,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private LocaleDAO localeDAO;
     private UsageDAO usageDAO;
     private NodeIndexer nodeIndexer; 
+    
+    private int cachingThreshold = 10;
 
     /**
      * Cache for the Store root nodes by StoreRef:<br/>
@@ -225,6 +227,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     {
         this.dictionaryService = dictionaryService;
     }
+    
+    public void setCachingThreshold(int cachingThreshold)
+	{
+		this.cachingThreshold = cachingThreshold;
+	}
 
     /**
      * @param policyBehaviourFilter     the service to determine the behaviour for <b>cm:auditable</b> and
@@ -1022,9 +1029,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // The cache says that the node is not there or is deleted.
             // We double check by going to the DB
             Node dbNode = selectNodeByNodeRef(nodeRef);
-            if (dbNode == null || dbNode.getDeleted(qnameDAO))
+            if (dbNode == null)
             {
-                // The DB agrees. This is an invalid noderef.
+                // The DB agrees. This is an invalid noderef. Why are you trying to use it?
+                return null;
+            }
+            else if (dbNode.getDeleted(qnameDAO))
+            {
+                // We may have reached this deleted node via an invalid association; trigger a post transaction prune of
+                // any associations that point to this deleted one
+                pruneDanglingAssocs(dbNode.getId());
+
+                // The DB agrees. This is a deleted noderef.
                 return null;
             }
             else
@@ -1067,7 +1083,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
                     Pair<Long, NodeRef> childNodePair)
             {
-                bindFixAssocAndCollectLostAndFound(childNodePair, "childNodeWithDeletedParent", childAssocPair.getFirst(), childAssocPair.getSecond().isPrimary());                        
+                bindFixAssocAndCollectLostAndFound(childNodePair, "childNodeWithDeletedParent", childAssocPair.getFirst(), childAssocPair.getSecond().isPrimary() && exists(childAssocPair.getFirst()));                        
                 return true;
             }
             
@@ -1115,9 +1131,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // The cache says that the node is not there or is deleted.
             // We double check by going to the DB
             Node dbNode = selectNodeById(nodeId);
-            if (dbNode == null || dbNode.getDeleted(qnameDAO))
+            if (dbNode == null)
             {
-                // The DB agrees. This is an invalid noderef.
+                // The DB agrees. This is an invalid noderef. Why are you trying to use it?
+                return null;
+            }
+            else if (dbNode.getDeleted(qnameDAO))
+            {
+                // We may have reached this deleted node via an invalid association; trigger a post transaction prune of
+                // any associations that point to this deleted one
+                pruneDanglingAssocs(dbNode.getId());
+
+                // The DB agrees. This is a deleted noderef.
                 return null;
             }
             else
@@ -3736,6 +3761,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             @Override
             public void afterRollback()
             {
+                afterCommit();
+            }
+
+            @Override
+            public void afterCommit()
+            {
                 if (transactionService.getAllowWrite())
                 {
                     // New transaction
@@ -4213,7 +4244,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         
         // We have already validated on loading that we have a list in sync with the child node, so if the list is still
         // empty we have an integrity problem
-        if (value.getPrimaryParentAssoc() == null && !value.isStoreRoot())
+        if (value.getPrimaryParentAssoc() == null && !node.getDeleted(qnameDAO) && !value.isStoreRoot())
         {
             Pair<Long, NodeRef> currentNodePair = node.getNodePair();
             // We have a corrupt repository - non-root node has a missing parent ?!
@@ -4291,11 +4322,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Now check if we are seeing the correct version of the node
         if (assocs.isEmpty())
         {
-            // No results.  Currently Alfresco has very few parentless nodes (root nodes)
-            // and the lack of parent associations will be cached, anyway.
-            // But to match earlier fixes of ALF-12393, we do a double-check of the node's details
+            // No results.
+            // Nodes without parents are root nodes or deleted nodes.  The latter will not normally
+            // be accessed here but it is possible.
+            // To match earlier fixes of ALF-12393, we do a double-check of the node's details.
             NodeEntity nodeCheckFromDb = selectNodeById(nodeId);
-            if (nodeCheckFromDb == null || nodeCheckFromDb.getDeleted(qnameDAO) || !nodeCheckFromDb.getNodeVersionKey().equals(nodeVersionKey))
+            if (nodeCheckFromDb == null || !nodeCheckFromDb.getNodeVersionKey().equals(nodeVersionKey))
             {
                 // The node is gone or has moved on in version
                 invalidateNodeCaches(nodeId);
@@ -4452,7 +4484,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
 
-    /**
+	/**
      * {@inheritDoc}
      * <p/>
      * Loads properties, aspects, parent associations and the ID-noderef cache.
@@ -4475,7 +4507,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
          * no results.  To avoid unnecessary checking when the cache is PROBABLY cold, we
          * examine the ratio of hits/misses at regular intervals.
          */
-        if (nodeRefs.size() < 10)
+        if (nodeRefs.size() < cachingThreshold)
         {
             // We only cache where the number of results is potentially
             // a problem for the N+1 loading that might result.

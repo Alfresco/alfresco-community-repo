@@ -76,6 +76,17 @@ public class StringExtractingContentTransformer extends AbstractContentTransform
         }
     }
 
+    @Override
+    public String getComments(boolean available)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.getComments(available));
+        sb.append("# Only supports transformation of js and mimetypes starting with \"");
+        sb.append(PREFIX_TEXT);
+        sb.append("\" to txt.\n");
+        return sb.toString();
+    }
+
     /**
      * Text to text conversions are done directly using the content reader and writer string
      * manipulation methods.

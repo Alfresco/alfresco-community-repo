@@ -21,11 +21,14 @@ package org.alfresco.util.schemacomp;
 
 import static org.junit.Assert.fail;
 
+import java.io.CharArrayWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -65,14 +68,14 @@ public class SchemaReferenceFileTest
     @Test
     public void checkReferenceFile()
     {
-        String filePrefix = getClass().getSimpleName() + "-{0}-{1}-";
-        int numProblems = schemaBootstrap.validateSchema(filePrefix);
+        Writer buff = new CharArrayWriter(1024);
+        PrintWriter out = new PrintWriter(buff);
+        int numProblems = schemaBootstrap.validateSchema(null, out);
+        out.flush();
         
         if (numProblems > 0)
         {
-            fail("Schema check failed with " + numProblems +
-                 " potential problems. Do you need to generate a" +
-                 " new schema reference file? Results are in temp file prefixed with " + filePrefix);
+            fail(buff.toString());
         }
     }
 }

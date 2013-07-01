@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,6 +23,7 @@ import java.util.Collection;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.content.transform.TransformerConfig;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -79,6 +80,11 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
      * pages should be read in order to create an image.
      */
     public static final String PARAM_PAGE_LIMIT = TransformationOptionLimits.OPT_PAGE_LIMIT;
+
+    /**
+     * This optional {@link String} parameter specifies the type (or use) of the rendition.
+     */
+    public static final String PARAM_USE = TransformerConfig.USE.replaceAll("\\.", "");
 
     /* Error messages */
     private static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN = "Transformer for '%s' source mime type and '%s' target mime type was not found. Operation can't be performed";
@@ -199,6 +205,12 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
             options.setPageLimit(pageLimit);
         }
         
+        String use = context.getCheckedParam(PARAM_USE, String.class);
+        if (use != null)
+        {
+            options.setUse(use);
+        }
+        
         if (getSourceOptionsSerializers() != null)
         {
             for (TransformationSourceOptionsSerializer sourceSerializer : getSourceOptionsSerializers())
@@ -233,6 +245,8 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                 getParamDisplayLabel(PARAM_MAX_PAGES)));
         paramList.add(new ParameterDefinitionImpl(PARAM_PAGE_LIMIT, DataTypeDefinition.INT, false,
                 getParamDisplayLabel(PARAM_PAGE_LIMIT)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_USE, DataTypeDefinition.TEXT, false,
+                getParamDisplayLabel(PARAM_USE)));
         
         return paramList;
     }

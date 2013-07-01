@@ -242,6 +242,16 @@ public interface SiteService
     String getSiteShortName(NodeRef nodeRef);
     
     /**
+     * Returns true if the site exists. This allows create scripts to confirm the existence of private sites - they
+     * would not normally be returned from getSite() if the user does not have permission on the site noderef.
+     * 
+     * @param shortName     the site short name
+     * @return true if the site exists, false otherwise
+     */
+    @NotAuditable
+    boolean hasSite(String shortName);
+    
+    /**
      * Update the site information.
      * <P>
      * Note that the short name and site preset of a site can not be updated once the site has been created.
@@ -492,4 +502,7 @@ public interface SiteService
     
     @NotAuditable
     String getMembersRole(String shortName, String authorityName);
+
+    @NotAuditable
+    int countAuthoritiesWithRole(String shortName, String role);
 }

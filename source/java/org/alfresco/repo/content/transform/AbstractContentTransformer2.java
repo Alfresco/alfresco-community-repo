@@ -28,7 +28,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Provides basic services for {@link org.alfresco.repo.content.transform.ContentTransformer}
@@ -45,8 +44,9 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     private static final Log logger = LogFactory.getLog(AbstractContentTransformer2.class);
     
     private ContentTransformerRegistry registry;
+    private boolean registerTransformer;
 
-    private ThreadLocal<Integer> depth = new ThreadLocal<Integer>()
+    private static ThreadLocal<Integer> depth = new ThreadLocal<Integer>()
     {
         @Override
         protected Integer initialValue()
@@ -74,12 +74,22 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
         this.registry = registry;
     }    
 
+    /**
+     * @param registerTransformer as been available for selection.
+     *        If {@code false} this indicates that the transformer may only be
+     *        used as part of another transformer.
+     */
+    public void setRegisterTransformer(boolean registerTransformer)
+    {
+        this.registerTransformer = registerTransformer;
+    }
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
         sb.append(this.getClass().getSimpleName())
-          .append("[ average=").append(transformerConfig.getStatistics(this, null, null).getAverageTime()).append("ms")
+          .append("[ average=").append(transformerConfig.getStatistics(this, null, null, true).getAverageTime()).append("ms")
           .append("]");
         return sb.toString();
     }
@@ -93,16 +103,21 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     public void register()
     {
         super.register();
-        
         if (registry == null)
         {
             logger.warn("Property 'registry' has not been set.  Ignoring auto-registration: \n" +
-                    "   transformer: " + this);
-            return;
+                    "   transformer: " + this.getName());
         }
-
-        // register this instance for the fallback case
-        registry.addTransformer(this);
+        else if (registerTransformer)
+        {
+            registry.addTransformer(this);
+        }
+        else
+        {
+            registry.addComponentTransformer(this);
+            logger.debug("Property 'registerTransformer' have not been set, so transformer (" +
+                    this.getName() + ") may only be used as a component of a complex transformer.");
+        }
     }
     
     /**
@@ -198,6 +213,10 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
 
                 // Transform
                 transformInternal(reader, writer, options);
+                
+                // record time
+                long after = System.currentTimeMillis();
+                recordTime(sourceMimetype, targetMimetype, after - before);
             }
             catch (ContentServiceTransientException cste)
             {
@@ -227,7 +246,8 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
                 // Make sure that this transformation gets set back i.t.o. time taken.
                 // This will ensure that transformers that compete for the same transformation
                 // will be prejudiced against transformers that tend to fail
-                recordError(sourceMimetype, targetMimetype);
+                long after = System.currentTimeMillis();
+                recordError(sourceMimetype, targetMimetype, after - before);
                 
                 // Ask Tika to detect the document, and report back on if
                 //  the current mime type is plausible
@@ -276,10 +296,6 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
                 }
             }
             
-            // record time
-            long after = System.currentTimeMillis();
-            recordTime(sourceMimetype, targetMimetype, after - before);
-            
             // done
             if (logger.isDebugEnabled())
             {
@@ -292,7 +308,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
         }
         finally
         {
-            depth.set(depth.get()+1);
+            depth.set(depth.get()-1);
         }
     }
 
@@ -309,7 +325,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
      */
     public synchronized long getTransformationTime()
     {
-        return transformerConfig.getStatistics(this, null, null).getAverageTime();
+        return transformerConfig.getStatistics(this, null, null, true).getAverageTime();
     }
 
     /**
@@ -317,7 +333,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
      */
     public synchronized long getTransformationTime(String sourceMimetype, String targetMimetype)
     {
-        return transformerConfig.getStatistics(this, sourceMimetype, targetMimetype).getAverageTime();
+        return transformerConfig.getStatistics(this, sourceMimetype, targetMimetype, true).getAverageTime();
     }
 
     /**
@@ -340,15 +356,14 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
      * @param sourceMimetype
      * @param targetMimetype
      * @param transformationTime the time it took to perform the transformation.
-     *      The value may be 0.
      */
     protected final synchronized void recordTime(String sourceMimetype, String targetMimetype,
             long transformationTime)
     {
-        transformerConfig.getStatistics(this, sourceMimetype, targetMimetype).recordTime(transformationTime);
+        transformerConfig.getStatistics(this, sourceMimetype, targetMimetype, true).recordTime(transformationTime);
         if (depth.get() == 1)
         {
-            transformerConfig.getStatistics(null, sourceMimetype, targetMimetype).recordTime(transformationTime);
+            transformerConfig.getStatistics(null, sourceMimetype, targetMimetype, true).recordTime(transformationTime);
         }
     }
     
@@ -357,13 +372,15 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
      * long time, so that it is less likely to be called again.
      * @param sourceMimetype
      * @param targetMimetype
+     * @param transformationTime the time it took to perform the transformation.
      */
-    protected final synchronized void recordError(String sourceMimetype, String targetMimetype)
+    protected final synchronized void recordError(String sourceMimetype, String targetMimetype,
+            long transformationTime)
     {
-        transformerConfig.getStatistics(this, sourceMimetype, targetMimetype).recordError();
+        transformerConfig.getStatistics(this, sourceMimetype, targetMimetype, true).recordError(transformationTime);
         if (depth.get() == 1)
         {
-            transformerConfig.getStatistics(null, sourceMimetype, targetMimetype).recordError();
+            transformerConfig.getStatistics(null, sourceMimetype, targetMimetype, true).recordError(transformationTime);
         }
     }
 }

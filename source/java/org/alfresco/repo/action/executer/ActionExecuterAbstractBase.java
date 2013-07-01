@@ -47,6 +47,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     private LockService lockService;
     private NodeService baseNodeService;
     private DictionaryService dictionaryService;
+    private NodeService mlAwareNodeService;
     
     /** Indicate if the action status should be tracked or not (default <tt>false</tt>) */
     private boolean trackStatus = false;
@@ -74,7 +75,12 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         }
     }
     
-    public void setLockService(LockService lockService) 
+    public void setMlAwareNodeService(NodeService mlAwareNodeService)
+    {
+		this.mlAwareNodeService = mlAwareNodeService;
+	}
+
+	public void setLockService(LockService lockService) 
     {
         this.lockService = lockService;
     }
@@ -235,7 +241,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         
         // Only execute the action if this action is read only or the actioned upon node reference doesn't
         // have a lock applied for this user.
-        if ((baseNodeService == null || actionedUponNodeRef == null || baseNodeService.exists(actionedUponNodeRef)) && // Not all actions are node based
+        if ((baseNodeService == null || actionedUponNodeRef == null || mlAwareNodeService.exists(actionedUponNodeRef)) && // Not all actions are node based
             (ignoreLock || !LockUtils.isLockedAndReadOnly(actionedUponNodeRef, lockService)))
         {
             // Execute the implementation

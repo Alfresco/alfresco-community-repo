@@ -5,10 +5,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.transaction.NotSupportedException;
 import javax.transaction.Status;
@@ -31,6 +34,9 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -38,6 +44,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -67,6 +74,7 @@ public class HiddenAspectTest
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     private MutableAuthenticationService authenticationService;
+    private PermissionService permissionService;
     private UserTransaction txn;
 
     private SearchService searchService;
@@ -79,9 +87,11 @@ public class HiddenAspectTest
     private NodeRef rootNodeRef;
     private NodeRef topNodeRef;
 
+    private boolean imapEnabled;
+
     private final String MAILBOX_NAME_A = "mailbox_a";
     private final String MAILBOX_NAME_B = ".mailbox_a";
-    private String anotherUserName;
+    private String username;
     private AlfrescoImapUser user;
 
     @Before
@@ -98,19 +108,41 @@ public class HiddenAspectTest
         imapService = serviceRegistry.getImapService();
         personService = serviceRegistry.getPersonService();
         searchService = serviceRegistry.getSearchService();
+        permissionService = serviceRegistry.getPermissionService();
+        imapEnabled = serviceRegistry.getImapService().getImapServerEnabled();
+        
         nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
         
         // start the transaction
         txn = transactionService.getUserTransaction();
         txn.begin();
+        
+        username = "user" + System.currentTimeMillis();
+        
+        PropertyMap testUser = new PropertyMap();
+        testUser.put(ContentModel.PROP_USERNAME, username);
+        testUser.put(ContentModel.PROP_FIRSTNAME, username);
+        testUser.put(ContentModel.PROP_LASTNAME, username);
+        testUser.put(ContentModel.PROP_EMAIL, username + "@alfresco.com");
+        testUser.put(ContentModel.PROP_JOBTITLE, "jobTitle");
 
         // authenticate
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        
+        personService.createPerson(testUser);
+        
+        // create the ACEGI Authentication instance for the new user
+        authenticationService.createAuthentication(username, username.toCharArray());
+        
+        user = new AlfrescoImapUser(username + "@alfresco.com", username, username);
 
         // create a test store
         storeRef = nodeService
                 .createStore(StoreRef.PROTOCOL_WORKSPACE, getName() + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
+        permissionService.setPermission(rootNodeRef, username, PermissionService.CREATE_CHILDREN, true);
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(username);
         
         topNodeRef = nodeService.createNode(
                 rootNodeRef,
@@ -118,21 +150,7 @@ public class HiddenAspectTest
                 QName.createQName(NamespaceService.ALFRESCO_URI, "working root"),
                 ContentModel.TYPE_FOLDER).getChildRef();
         
-        anotherUserName = "user" + System.currentTimeMillis();
-        
-        PropertyMap testUser = new PropertyMap();
-        testUser.put(ContentModel.PROP_USERNAME, anotherUserName);
-        testUser.put(ContentModel.PROP_FIRSTNAME, anotherUserName);
-        testUser.put(ContentModel.PROP_LASTNAME, anotherUserName);
-        testUser.put(ContentModel.PROP_EMAIL, anotherUserName + "@alfresco.com");
-        testUser.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-        
-        personService.createPerson(testUser);
-        
-        // create the ACEGI Authentication instance for the new user
-        authenticationService.createAuthentication(anotherUserName, anotherUserName.toCharArray());
-        
-        user = new AlfrescoImapUser(anotherUserName + "@alfresco.com", anotherUserName, anotherUserName);
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
     }
     
     private String getName()
@@ -147,7 +165,7 @@ public class HiddenAspectTest
         {
             if (txn.getStatus() != Status.STATUS_ROLLEDBACK && txn.getStatus() != Status.STATUS_COMMITTED)
             {
-                txn.rollback();
+                txn.commit();
             }
         }
         catch (Throwable e)
@@ -223,7 +241,10 @@ public class HiddenAspectTest
             assertEquals("", 0, results.length());
             for(Client client : hiddenAspect.getClients())
             {
-                assertEquals(Visibility.NotVisible, hiddenAspect.getVisibility(client, node));
+            	if(!client.equals(Client.admin))
+            	{
+            		assertEquals(Visibility.NotVisible, hiddenAspect.getVisibility(client, node));
+            	}
             }
             
             // .DS_Store is a system path and so is visible in nfs and webdav, as a hidden file in cifs and hidden to all other clients
@@ -242,7 +263,7 @@ public class HiddenAspectTest
                 {
                     assertEquals("Should be visible for client " + client, Visibility.Visible, hiddenAspect.getVisibility(client, node));
                 }
-                else
+                else if(client != Client.admin)
                 {
                     assertEquals("Should not be visible for client " + client, Visibility.NotVisible, hiddenAspect.getVisibility(client, node));
                 }
@@ -256,7 +277,10 @@ public class HiddenAspectTest
             assertEquals("", 0, results.length());
             for(Client client : hiddenAspect.getClients())
             {
-                assertEquals("Client " + client.toString(), Visibility.NotVisible, hiddenAspect.getVisibility(client, node));
+            	if(client != Client.admin)
+            	{
+            		assertEquals("Client " + client.toString(), Visibility.NotVisible, hiddenAspect.getVisibility(client, node));
+            	}
             }
         }
         finally
@@ -266,24 +290,179 @@ public class HiddenAspectTest
     }
 
     @Test
+    public void testClientControlled() throws Exception
+    {
+        // test that a client controlled hidden node is not subject to hidden file patterns
+    	{
+    		// node does not match a hidden file pattern
+        	String nodeName = GUID.generate();
+        	String hiddenNodeName = nodeName;
+            Map<QName, Serializable> properties = new HashMap<QName, Serializable>(11);
+            properties.put(ContentModel.PROP_NAME, hiddenNodeName);
+
+            // create the node
+            QName assocQName = QName.createQName(
+                    NamespaceService.CONTENT_MODEL_1_0_URI,
+                    QName.createValidLocalName(hiddenNodeName));
+            ChildAssociationRef assocRef = null;
+            try
+            {
+                assocRef = nodeService.createNode(
+                        topNodeRef,
+                        ContentModel.ASSOC_CONTAINS,
+                        assocQName,
+                        ContentModel.TYPE_FOLDER,
+                        properties);
+            }
+            catch (DuplicateChildNodeNameException e)
+            {
+                throw new FileExistsException(topNodeRef, hiddenNodeName);
+            }
+
+            NodeRef parent = assocRef.getChildRef();
+            NodeRef child = null;
+            NodeRef child1 = null;
+
+            Client saveClient = FileFilterMode.setClient(Client.cmis);
+            try
+            {
+	            hiddenAspect.hideNode(parent, true, true, true);
+
+	            child = fileFolderService.create(parent, "folder11", ContentModel.TYPE_FOLDER).getNodeRef();
+	            child1 = fileFolderService.create(child, "folder21", ContentModel.TYPE_FOLDER).getNodeRef();
+	            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
+	            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
+	            assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_HIDDEN));
+	            assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_INDEX_CONTROL));
+
+	            // renaming from a hidden file pattern to a non-hidden file pattern should leave the node as hidden
+	            // because it is client-controlled.
+	            fileFolderService.rename(parent, nodeName);
+
+	            assertTrue(nodeService.hasAspect(parent, ContentModel.ASPECT_HIDDEN));
+	            assertTrue(nodeService.hasAspect(parent, ContentModel.ASPECT_INDEX_CONTROL));
+	            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
+	            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
+	            assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_HIDDEN));
+	            assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_INDEX_CONTROL));
+            }
+            finally
+            {
+                FileFilterMode.setClient(saveClient);
+            }
+
+            List<FileInfo> children = fileFolderService.list(parent);
+            assertEquals(0, children.size());
+
+            saveClient = FileFilterMode.setClient(Client.script);
+            try
+            {
+                children = fileFolderService.list(parent);
+            }
+            finally
+            {
+                FileFilterMode.setClient(saveClient);
+            }
+            assertEquals(0, children.size());
+
+            saveClient = FileFilterMode.setClient(Client.cmis);
+            try
+            {
+                children = fileFolderService.list(parent);
+            }
+            finally
+            {
+                FileFilterMode.setClient(saveClient);
+            }
+            assertEquals(0, children.size());
+
+            // remove the client-controlled hidden aspect from the parent and check that it is no longer hidden
+            saveClient = FileFilterMode.setClient(Client.cmis);
+            try
+            {
+            	nodeService.removeAspect(parent, ContentModel.ASPECT_HIDDEN);
+
+	            assertFalse(nodeService.hasAspect(parent, ContentModel.ASPECT_HIDDEN));
+            }
+            finally
+            {
+                FileFilterMode.setClient(saveClient);
+            }
+    	}
+
+        // test that a cascading hidden pattern defined in model-specific-services-content.xml results in hidden files
+    	// (node is not client-controlled hidden)
+        {
+            NodeRef parent = null;
+            NodeRef child = null;
+            NodeRef child1 = null;
+
+            Client saveClient = FileFilterMode.setClient(Client.cmis);
+            try
+            {
+                parent = fileFolderService.create(topNodeRef, "." + GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                child = fileFolderService.create(parent, "folder11", ContentModel.TYPE_FOLDER).getNodeRef();
+                child1 = fileFolderService.create(child, "folder21", ContentModel.TYPE_FOLDER).getNodeRef();
+            }
+            finally
+            {
+                FileFilterMode.setClient(saveClient);
+            }
+
+            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
+            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
+            assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_HIDDEN));
+            assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_INDEX_CONTROL));
+
+            List<FileInfo> children = fileFolderService.list(parent);
+            assertEquals(0, children.size());
+
+            saveClient = FileFilterMode.setClient(Client.script);
+            try
+            {
+                children = fileFolderService.list(parent);
+            }
+            finally
+            {
+                FileFilterMode.setClient(saveClient);
+            }
+            assertEquals(0, children.size());
+
+            saveClient = FileFilterMode.setClient(Client.cmis);
+            try
+            {
+                children = fileFolderService.list(parent);
+            }
+            finally
+            {
+                FileFilterMode.setClient(saveClient);
+            }
+            assertEquals(0, children.size());
+        }
+    }
+
+    @Test
     public void testImap()
     {
-        FileFilterMode.setClient(Client.webdav);
-
-        try
-        {
-            // Test that hidden files don't apply to imap service
-            imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
-            imapService.renameMailbox(user, MAILBOX_NAME_A, MAILBOX_NAME_B);
-            assertFalse("Can't rename mailbox", checkMailbox(user, MAILBOX_NAME_A));
-            assertTrue("Can't rename mailbox", checkMailbox(user, MAILBOX_NAME_B));
-            assertEquals("Can't rename mailbox", 0, numMailboxes(user, MAILBOX_NAME_A));
-            assertEquals("Can't rename mailbox", 1, numMailboxes(user, MAILBOX_NAME_B));
-        }
-        finally
-        {
-            FileFilterMode.clearClient();
-        }
+    	if(imapEnabled)
+    	{
+	        FileFilterMode.setClient(Client.webdav);
+	
+	        try
+	        {
+	            // Test that hidden files don't apply to imap service
+	            imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
+	            imapService.renameMailbox(user, MAILBOX_NAME_A, MAILBOX_NAME_B);
+	            assertFalse("Can't rename mailbox", checkMailbox(user, MAILBOX_NAME_A));
+	            assertTrue("Can't rename mailbox", checkMailbox(user, MAILBOX_NAME_B));
+	            assertEquals("Can't rename mailbox", 0, numMailboxes(user, MAILBOX_NAME_A));
+	            assertEquals("Can't rename mailbox", 1, numMailboxes(user, MAILBOX_NAME_B));
+	        }
+	        finally
+	        {
+	            FileFilterMode.clearClient();
+	        }
+		}
     }
 
     @Test
@@ -366,7 +545,7 @@ public class HiddenAspectTest
             {
                 fail();
             }
-    
+
             assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
             assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
             assertFalse(nodeService.hasAspect(node11, ContentModel.ASPECT_HIDDEN));
@@ -381,7 +560,7 @@ public class HiddenAspectTest
             assertTrue(nodeService.hasAspect(node31, ContentModel.ASPECT_INDEX_CONTROL));
             assertTrue(nodeService.hasAspect(node41, ContentModel.ASPECT_HIDDEN));
             assertTrue(nodeService.hasAspect(node41, ContentModel.ASPECT_INDEX_CONTROL));
-    
+
             results = searchForName(nodeName);
             assertEquals("", 1, results.length());
         }
@@ -394,129 +573,133 @@ public class HiddenAspectTest
     @Test
     public void testHiddenFilesBasicClient()
     {
-        FileFilterMode.setClient(Client.imap);
-
-        try
-        {
-            // check temporary file
-            NodeRef parent = fileFolderService.create(topNodeRef, "New Folder", ContentModel.TYPE_FOLDER).getNodeRef();
-            NodeRef child = fileFolderService.create(parent, "file.tmp", ContentModel.TYPE_CONTENT).getNodeRef();
-            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_TEMPORARY));
-            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
-            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
-            ResultSet results = searchForName("file.tmp");
-            assertEquals("", 1, results.length());
-            List<FileInfo> children = fileFolderService.list(parent);
-            assertEquals(1, children.size());
-
-            // check hidden files - should not be hidden for a basic client
-            parent = fileFolderService.create(topNodeRef, ".TemporaryItems", ContentModel.TYPE_FOLDER).getNodeRef();
-            child = fileFolderService.create(parent, "inTemporaryItems", ContentModel.TYPE_FOLDER).getNodeRef();
-            assertFalse(nodeService.hasAspect(parent, ContentModel.ASPECT_TEMPORARY));
-            assertFalse(nodeService.hasAspect(parent, ContentModel.ASPECT_HIDDEN));
-            assertFalse(nodeService.hasAspect(parent, ContentModel.ASPECT_INDEX_CONTROL));
-            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_TEMPORARY));
-            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
-            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
-            results = searchForName(".TemporaryItems");
-            assertEquals("", 1, results.length());
-            children = fileFolderService.list(parent);
-            assertEquals(1, children.size());
-
-            parent = fileFolderService.create(topNodeRef, "Folder 2", ContentModel.TYPE_FOLDER).getNodeRef();
-            child = fileFolderService.create(parent, "Thumbs.db", ContentModel.TYPE_CONTENT).getNodeRef();
-            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_TEMPORARY));
-            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
-            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
-            results = searchForName("Thumbs.db");
-            assertEquals("", 1, results.length());
-            children = fileFolderService.list(parent);
-            assertEquals(1, children.size());
-
-            NodeRef node = fileFolderService.create(topNodeRef, "surf-config", ContentModel.TYPE_FOLDER).getNodeRef();
-            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
-            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-            results = searchForName("surf-config");
-            assertEquals("", 1, results.length());
-            
-            node = fileFolderService.create(topNodeRef, ".DS_Store", ContentModel.TYPE_CONTENT).getNodeRef();
-            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
-            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-            results = searchForName(".DS_Store");
-            assertEquals("", 1, results.length());
-            for(Client client : hiddenAspect.getClients())
-            {
-                assertEquals("Should be visible for client " + client, Visibility.Visible, hiddenAspect.getVisibility(client, node));
-            }
-
-            node = fileFolderService.create(topNodeRef, "._resourceFork", ContentModel.TYPE_FOLDER).getNodeRef();
-            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
-            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-            results = searchForName("._resourceFork");
-            assertEquals("", 1, results.length());
-
-            children = fileFolderService.list(parent);
-            assertEquals(1, children.size());
-            
-
-            String nodeName = "Node" + System.currentTimeMillis();
-            node = fileFolderService.create(topNodeRef, nodeName, ContentModel.TYPE_CONTENT).getNodeRef();
-            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
-            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-            results = searchForName(nodeName);
-            assertEquals("", 1, results.length());
-            try
-            {
-                fileFolderService.rename(node, "." + nodeName);
-            }
-            catch (FileExistsException e)
-            {
-                fail();
-            }
-            catch (FileNotFoundException e)
-            {
-                fail();
-            }
-            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
-            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-
-            results = searchForName(nodeName);
-            assertEquals("", 1, results.length());
-
-            results = searchForName("." + nodeName);
-            assertEquals("", 1, results.length());
-            
-            try
-            {
-                fileFolderService.rename(node, nodeName);
-            }
-            catch (FileExistsException e)
-            {
-                fail();
-            }
-            catch (FileNotFoundException e)
-            {
-                fail();
-            }
-            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
-            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-
-            results = searchForName("." + nodeName);
-            assertEquals("", 1, results.length());
-
-            imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
-            imapService.renameMailbox(user, MAILBOX_NAME_A, MAILBOX_NAME_B);
-            assertFalse("Can't rename mailbox", checkMailbox(user, MAILBOX_NAME_A));
-            assertTrue("Can't rename mailbox", checkMailbox(user, MAILBOX_NAME_B));
-            assertEquals("Can't rename mailbox", 0, numMailboxes(user, MAILBOX_NAME_A));
-            assertEquals("Can't rename mailbox", 1, numMailboxes(user, MAILBOX_NAME_B));
-        }
-        finally
-        {
-            FileFilterMode.clearClient();
-        }
+    	if(imapEnabled)
+    	{
+	        FileFilterMode.setClient(Client.imap);
+	
+	        try
+	        {
+	            // check temporary file
+	            NodeRef parent = fileFolderService.create(topNodeRef, "New Folder", ContentModel.TYPE_FOLDER).getNodeRef();
+	            NodeRef child = fileFolderService.create(parent, "file.tmp", ContentModel.TYPE_CONTENT).getNodeRef();
+	            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_TEMPORARY));
+	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
+	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
+	            ResultSet results = searchForName("file.tmp");
+	            assertEquals("", 1, results.length());
+	            List<FileInfo> children = fileFolderService.list(parent);
+	            assertEquals(1, children.size());
+	
+	            // check hidden files - should not be hidden for a basic client
+	            parent = fileFolderService.create(topNodeRef, ".TemporaryItems", ContentModel.TYPE_FOLDER).getNodeRef();
+	            child = fileFolderService.create(parent, "inTemporaryItems", ContentModel.TYPE_FOLDER).getNodeRef();
+	            assertFalse(nodeService.hasAspect(parent, ContentModel.ASPECT_TEMPORARY));
+	            assertFalse(nodeService.hasAspect(parent, ContentModel.ASPECT_HIDDEN));
+	            assertFalse(nodeService.hasAspect(parent, ContentModel.ASPECT_INDEX_CONTROL));
+	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_TEMPORARY));
+	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
+	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
+	            results = searchForName(".TemporaryItems");
+	            assertEquals("", 1, results.length());
+	            children = fileFolderService.list(parent);
+	            assertEquals(1, children.size());
+	
+	            parent = fileFolderService.create(topNodeRef, "Folder 2", ContentModel.TYPE_FOLDER).getNodeRef();
+	            child = fileFolderService.create(parent, "Thumbs.db", ContentModel.TYPE_CONTENT).getNodeRef();
+	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_TEMPORARY));
+	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
+	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
+	            results = searchForName("Thumbs.db");
+	            assertEquals("", 1, results.length());
+	            children = fileFolderService.list(parent);
+	            assertEquals(1, children.size());
+	
+	            NodeRef node = fileFolderService.create(topNodeRef, "surf-config", ContentModel.TYPE_FOLDER).getNodeRef();
+	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
+	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
+	            results = searchForName("surf-config");
+	            assertEquals("", 1, results.length());
+	            
+	            node = fileFolderService.create(topNodeRef, ".DS_Store", ContentModel.TYPE_CONTENT).getNodeRef();
+	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
+	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
+	            results = searchForName(".DS_Store");
+	            assertEquals("", 1, results.length());
+	            for(Client client : hiddenAspect.getClients())
+	            {
+	                assertEquals("Should be visible for client " + client, Visibility.Visible, hiddenAspect.getVisibility(client, node));
+	            }
+	
+	            node = fileFolderService.create(topNodeRef, "._resourceFork", ContentModel.TYPE_FOLDER).getNodeRef();
+	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
+	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
+	            results = searchForName("._resourceFork");
+	            assertEquals("", 1, results.length());
+	
+	            children = fileFolderService.list(parent);
+	            assertEquals(1, children.size());
+	            
+	
+	            String nodeName = "Node" + System.currentTimeMillis();
+	            node = fileFolderService.create(topNodeRef, nodeName, ContentModel.TYPE_CONTENT).getNodeRef();
+	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
+	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
+	            results = searchForName(nodeName);
+	            assertEquals("", 1, results.length());
+	            try
+	            {
+	                fileFolderService.rename(node, "." + nodeName);
+	            }
+	            catch (FileExistsException e)
+	            {
+	                fail();
+	            }
+	            catch (FileNotFoundException e)
+	            {
+	                fail();
+	            }
+	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
+	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
+	
+	            results = searchForName(nodeName);
+	            assertEquals("", 1, results.length());
+	
+	            results = searchForName("." + nodeName);
+	            assertEquals("", 1, results.length());
+	            
+	            try
+	            {
+	                fileFolderService.rename(node, nodeName);
+	            }
+	            catch (FileExistsException e)
+	            {
+	                fail();
+	            }
+	            catch (FileNotFoundException e)
+	            {
+	                fail();
+	            }
+	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
+	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
+	
+	            results = searchForName("." + nodeName);
+	            assertEquals("", 1, results.length());
+	
+	            imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
+	            imapService.renameMailbox(user, MAILBOX_NAME_A, MAILBOX_NAME_B);
+	            assertFalse("Can't rename mailbox", checkMailbox(user, MAILBOX_NAME_A));
+	            assertTrue("Can't rename mailbox", checkMailbox(user, MAILBOX_NAME_B));
+	            assertEquals("Can't rename mailbox", 0, numMailboxes(user, MAILBOX_NAME_A));
+	            assertEquals("Can't rename mailbox", 1, numMailboxes(user, MAILBOX_NAME_B));
+	        }
+	        finally
+	        {
+	            FileFilterMode.clearClient();
+	        }
+		}
     }
 
+    @SuppressWarnings("unused")
     @Test
     public void testCheckHidden() throws Exception
     {
@@ -578,7 +761,7 @@ public class HiddenAspectTest
             
             
             // call checkHidden to maks sure it does not make a mistake
-            hiddenAspect.checkHidden(childA, true);
+            hiddenAspect.checkHidden(childA, true, false);
 //            hiddenAspect.checkHidden(childB, true);
             
             {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,10 +20,7 @@ package org.alfresco.repo.content.transform;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
@@ -64,6 +61,8 @@ public class TransformerSelectorImpl implements TransformerSelector
             String targetMimetype, TransformationOptions options)
     {
         // TODO cache results for reuse. This was a heavy operation in the past and still is.
+        
+        // TODO cache results of last few successful transforms as we tend to repeat some of them as part of compound transforms.
         
         List<ContentTransformer> transformers = contentTransformerRegistry.getTransformers();
         List<TransformerSortData> possibleTransformers = findTransformers(transformers, sourceMimetype, sourceSize, targetMimetype, options);
@@ -110,16 +109,18 @@ public class TransformerSelectorImpl implements TransformerSelector
     {
         private final ContentTransformer transformer;
         private final int priority;
-        private long averageTime = -1;
+        private final long averageTime;
+        private final long count;
         
         TransformerSortData(ContentTransformer transformer, String sourceMimetype, String targetMimetype, int priority)
         {
             this.transformer = transformer;
             this.priority = priority;
             
-            TransformerStatistics stats = transformerConfig.getStatistics(transformer, sourceMimetype, targetMimetype);
-            long threashold = transformerConfig.getThresholdCount(transformer, sourceMimetype, targetMimetype);
-            averageTime = (stats.getCount() < threashold) ? 0 : stats.getAverageTime();
+            TransformerStatistics stats = transformerConfig.getStatistics(transformer, sourceMimetype, targetMimetype, true);
+            int threashold = transformerConfig.getThresholdCount(transformer, sourceMimetype, targetMimetype);
+            count = stats.getCount();
+            averageTime = (count < threashold) ? 0 : stats.getAverageTime();
         }
 
         @Override
@@ -141,14 +142,22 @@ public class TransformerSelectorImpl implements TransformerSelector
         @Override
         public int compareTo(TransformerSortData that)
         {
-            int relativePriority = priority - that.priority;
-            if (relativePriority != 0)
+            int relativeInt = priority - that.priority;
+            if (relativeInt != 0)
             {
-                return relativePriority;
+                return relativeInt;
             }
             
-            long relativeTime = averageTime - that.averageTime;
-            return relativeTime > 0L ? 1 : relativeTime < 0L ? -1 : 0;
+            long relativeLong = averageTime - that.averageTime;
+            relativeInt = relativeLong > 0L ? 1 : relativeLong < 0L ? -1 : 0;
+            if (relativeInt != 0)
+            {
+                return relativeInt;
+            }
+
+            relativeLong = count - that.count;
+            relativeInt = relativeLong > 0L ? 1 : relativeLong < 0L ? -1 : 0;
+            return relativeInt;
         }
     }
 }

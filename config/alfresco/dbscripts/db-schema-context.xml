@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+
+<!--
+    Database scripts and patches
+-->
+
+<beans>
+
+    <bean id="schema.create.core" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
+        <property name="schemaBootstrap" ref="schemaBootstrap" />
+        <property name="preCreateScriptUrls">
+            <list>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-RepoTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-LockTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ContentTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-PropertyValueTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AuditTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ActivityTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-UsageTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-SubscriptionTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-TenantTables.sql</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="schema.create.avm" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
+        <property name="schemaBootstrap" ref="schemaBootstrap" />
+        <property name="preCreateScriptUrls">
+            <list>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AvmTables.sql</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="schema.create.jbpm" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
+        <property name="schemaBootstrap" ref="schemaBootstrap" />
+        <property name="postCreateScriptUrls">
+            <list>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-Extra.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-FK-indexes.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-varinst-indexes.sql</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="schema.upgrade.core" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
+        <property name="schemaBootstrap" ref="schemaBootstrap" />
+        <property name="preUpdateScriptPatches">
+            <list>
+                <ref bean="patch.db-V2.2-ACL-From-2.1-A" />
+                <ref bean="patch.db-V2.2-ACL" />
+                <ref bean="patch.db-V2.2-CleanNodeStatuses" />
+                <ref bean="patch.db-V2.2-0-CreateMissingTables" />
+                <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
+                <ref bean="patch.db-V2.2-Upgrade-From-2.2SP1" />
+                <ref bean="patch.db-V2.2-Person-3" />
+                <ref bean="patch.db-V3.2-LockTables" />
+                <ref bean="patch.db-V3.2-ContentTables" />
+                <ref bean="patch.db-V3.2-ContentTables2" />
+                <ref bean="patch.db-V3.2-PropertyValueTables" />
+                <ref bean="patch.db-V3.2-AuditTables" />
+                <ref bean="patch.db-V3.2-Child-Assoc-QName-CRC" />
+                <ref bean="patch.db-V3.3-modify-index-permission_id" />
+                <ref bean="patch.db-V3.2-AddFKIndexes" />
+                <ref bean="patch.db-V3.2-AddFKIndexes-2" />
+            </list>
+        </property>
+        <property name="postUpdateScriptPatches">
+            <list>
+                <ref bean="patch.db-V3.1-Allow-IPv6" />
+                <ref bean="patch.db-V3.3-Remove-VersionCount" />
+                <ref bean="patch.db-V3.3-Fix-Repo-Seqs" />
+                <ref bean="patch.db-V3.3-Node-Prop-Serializable" />
+                <ref bean="patch.db-V3.4-property-unique-ctx-value" />
+                <ref bean="patch.db-V3.4-property-unique-ctx-idx" />
+                <ref bean="patch.db-V3.4-authority-unique-idx" />
+                <ref bean="patch.db-V3.4-child-assoc-indexes" />
+                <ref bean="patch.db-V3.4-VarcharFieldSizesQuadrupleIncreasing" />
+                <ref bean="patch.db-V4.0-AclChangeSet" />
+                <ref bean="patch.db-V4.0-NodeAssoc-Ordering" />
+                <ref bean="patch.db-V4.0-Node-Locale" />
+                <ref bean="patch.db-V4.0-SubscriptionTables" />
+                <ref bean="patch.db-V4.0-SolrTracking" />
+                <ref bean="patch.db-V4.0-AclChangeSet2" />
+                <ref bean="patch.db-V4.0-TenantTables" />
+                <ref bean="patch.db-V4.1-NodeDeleted" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="schema.upgrade.avm" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
+        <property name="schemaBootstrap" ref="schemaBootstrap" />
+        <property name="postUpdateScriptPatches">
+            <list>
+                <ref bean="patch.db-V3.2-Remove-AVM-Issuer" />
+                <ref bean="patch.db-V3.2-Modify-AVM-MimeType" />
+                <ref bean="patch.db-V3.3-Fix-AVM-Seqs" />
+                <ref bean="patch.db-V3.4-RemovingLinkValidationMetadata" />
+                <ref bean="patch.db-V3.4-AVM-rename-dupes" />
+                <ref bean="patch.db-V3.4-AVM-index-child-entries-lower" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="schema.upgrade.activiti" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
+        <property name="schemaBootstrap" ref="schemaBootstrap" />
+        <property name="preUpdateScriptPatches">
+            <list>
+                <ref bean="patch.db-V3.0-ActivityTables" />
+            </list>
+        </property>
+        <property name="updateActivitiScriptPatches">
+            <list>
+                <ref bean="patch.db-V4.0-Activiti-task-id-indexes" />
+                <ref bean="patch.db-V4.1-increase-column-size-activiti" />
+                <ref bean="patch.db-V4.1-remove-column-activiti" />
+                <ref bean="patch.db-V4.2-upgrade-to-activiti-5.10" />
+                <ref bean="patch.db-V4.1-rename-constraint-activiti" />
+                <ref bean="patch.db-V4.2-add-activti-index-historic-activity" />
+                <ref bean="patch.db-V4.2-upgrade-to-activiti-5.11" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="schema.upgrade.jbpm" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
+        <property name="schemaBootstrap" ref="schemaBootstrap" />
+        <property name="postUpdateScriptPatches">
+            <list>
+                <ref bean="patch.db-V3.3-JBPM-Extra" />
+                <ref bean="patch.db-V3.4-JBPM-FK-indexes" />
+                <ref bean="patch.db-V3.4-Upgrade-JBPM" />
+                <ref bean="patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar" />
+                <ref bean="patch.db-V3.4-JBPM-varinst-indexes" />
+                <ref bean="patch.db-V3.4-remove-redundant-jbpm-indexes" />
+            </list>
+        </property>
+    </bean>
+
+</beans>

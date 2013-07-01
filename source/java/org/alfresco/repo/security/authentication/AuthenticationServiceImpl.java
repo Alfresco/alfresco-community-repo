@@ -61,10 +61,17 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     {
         try
         {
+            String tenant = getPrevalidationTenantDomain();
             // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'validate' below
-            //clearCurrentSecurityContext();
+            clearCurrentSecurityContext();
             preAuthenticationCheck(userName);
-        	authenticationComponent.authenticate(userName, password);
+            authenticationComponent.authenticate(userName, password);
+            if (tenant == null)
+            {
+                Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(userName);
+                tenant = userTenant.getSecond();
+            }
+            TenantContextHolder.setTenantDomain(tenant);
         }
         catch(AuthenticationException ae)
         {
@@ -111,7 +118,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         String currentUser = null;
         try
         {
-            String tenant = TenantContextHolder.getTenantDomain();
+            String tenant = getPrevalidationTenantDomain();
             
             // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'authenticate' above
             clearCurrentSecurityContext();
@@ -123,7 +130,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
                 Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(currentUser);
                 tenant = userTenant.getSecond();
             }
-            
             TenantContextHolder.setTenantDomain(tenant);
         }
         catch (AuthenticationException ae)
@@ -131,6 +137,18 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             clearCurrentSecurityContext();
             throw ae;
         }
+    }
+    
+    /**
+     * This method is called from the {@#validate(String)} method. If this method returns null then
+     * the user's tenant will be obtained from the username. This is generally correct in the case where the user can be
+     * associated with just one tenant.
+     * Override this method in order to force the selection of a different tenant (for whatever reason).
+     * @return
+     */
+    protected String getPrevalidationTenantDomain()
+    {
+        return null;
     }
 
     public String getCurrentTicket() throws AuthenticationException

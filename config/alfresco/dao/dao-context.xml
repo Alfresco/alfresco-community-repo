@@ -35,6 +35,8 @@
    
    <bean id="feedDAO" class="org.alfresco.repo.domain.activities.ibatis.ActivityFeedDAOImpl">
       <property name="sqlSessionTemplate" ref="activitiesSqlSessionTemplate"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="fetchBatchSize" value="${activities.feed.fetchBatchSize}"/>
    </bean>
    
    <bean id="feedControlDAO" class="org.alfresco.repo.domain.activities.ibatis.FeedControlDAOImpl">
@@ -123,6 +125,7 @@
       <property name="parentAssocsCacheSize" value="${system.cache.parentAssocs.maxSize}"/>
       <property name="parentAssocsCacheLimitFactor" value="${system.cache.parentAssocs.limitFactor}"/>
       <property name="childByNameCache" ref="node.childByNameCache"/>
+      <property name="cachingThreshold" value="${nodes.bulkLoad.cachingThreshold}"/>
    </bean>
    <bean id="nodeDAO.org.hibernate.dialect.Dialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" parent="nodeDAObase" />
    <bean id="nodeDAO.org.hibernate.dialect.MySQLInnoDBDialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl$MySQL" parent="nodeDAO.org.hibernate.dialect.Dialect" />

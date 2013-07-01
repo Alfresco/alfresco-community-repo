@@ -239,10 +239,10 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     	            	ret = runAsSystem(invocation);
     	            	FileInfoImpl fileInfo = (FileInfoImpl)ret;
     		            permissionService.setPermission(fileInfo.getNodeRef(), PermissionService.ALL_AUTHORITIES, PermissionService.FULL_CONTROL, true);	            
-    		            
+
     		            // it's always marked temporary and hidden
     		            checkTemporaryAspect(true, fileInfo);
-    		            hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask());
+    		            hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask(), false, false, false);
     	            }
     	            else
     	            {
@@ -255,14 +255,18 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     	            	{
     	                    // it's on a system path, check whether temporary, hidden and noindex aspects need to be applied
     	            		checkTemporaryAspect(true, fileInfo);
-    	            		hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask());
+    	            		hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask(), false, false, false);
     	            	}
     	            	else
     	            	{
     	            	    // check whether it's a temporary or hidden file
                            FileInfo sourceInfo = (FileInfo)ret;
     			            checkTemporaryAspect(isNameOfTmporaryObject(filename, sourceInfo.getNodeRef()), sourceInfo);
-    			            hiddenAspect.checkHidden(fileInfo, false);
+    			            boolean isHidden = hiddenAspect.checkHidden(fileInfo, false, false);
+			                if(isHidden && fileInfo instanceof FileInfoImpl)
+			                {
+			                    ((FileInfoImpl)fileInfo).setHidden(true);
+			                }
     	            	}
     	            }
                 }
@@ -293,7 +297,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 
                 if(getMode() == Mode.ENHANCED)
                 {
-                    hiddenAspect.checkHidden(sourceNodeRef, true);
+                    hiddenAspect.checkHidden(sourceNodeRef, true, true);
                 }
             }
             else if (methodName.startsWith("copy"))
@@ -312,7 +316,11 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                 checkTemporaryAspect(isNameOfTmporaryObject(filename, fileInfo.getNodeRef()), fileInfo);
                 if(getMode() == Mode.ENHANCED)
                 {
-                    hiddenAspect.checkHidden(fileInfo, true);
+                    boolean isHidden = hiddenAspect.checkHidden(fileInfo, true, true);
+                    if(isHidden && fileInfo instanceof FileInfoImpl)
+                    {
+                        ((FileInfoImpl)fileInfo).setHidden(true);
+                    }
                 }
                 /*
                  * TODO should these two calls be before the proceed?   However its the same problem as create
@@ -343,7 +351,11 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 
                     if(getMode() == Mode.ENHANCED)
                     {
-                        hiddenAspect.checkHidden(sourceNodeRef, true);
+                        boolean isHidden = hiddenAspect.checkHidden(sourceNodeRef, true, true);
+                        if(isHidden && ret instanceof FileInfoImpl)
+                        {
+                            ((FileInfoImpl)ret).setHidden(true);
+                        }
                     }
 
                     return ret;

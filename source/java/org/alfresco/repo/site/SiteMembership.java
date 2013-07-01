@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.site;
 
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteRole;
 
 /**
@@ -28,17 +29,16 @@ import org.alfresco.service.cmr.site.SiteRole;
  */
 public class SiteMembership
 {
-	private String siteShortName;
-	private String siteTitle;
+	private SiteInfo siteInfo;
 	private String personId;
 	private String firstName;
 	private String lastName;
 	private SiteRole role;
 
-	public SiteMembership(String siteShortName, String siteTitle, String personId, String firstName, String lastName, SiteRole role)
+	public SiteMembership(SiteInfo siteInfo, String personId, String firstName, String lastName, SiteRole role)
 	{
 		super();
-		if(siteShortName == null)
+		if(siteInfo == null)
 		{
 			throw new java.lang.IllegalArgumentException();
 		}
@@ -58,18 +58,17 @@ public class SiteMembership
 		{
 			throw new java.lang.IllegalArgumentException();
 		}
-		this.siteShortName = siteShortName;
-		this.siteTitle = siteTitle;
+		this.siteInfo = siteInfo;
 		this.personId = personId;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.role = role;
 	}
 
-	public SiteMembership(String siteShortName, String siteTitle, String personId, SiteRole role)
+	public SiteMembership(SiteInfo siteInfo, String personId, SiteRole role)
 	{
 		super();
-		if(siteShortName == null)
+		if(siteInfo == null)
 		{
 			throw new java.lang.IllegalArgumentException();
 		}
@@ -82,20 +81,14 @@ public class SiteMembership
 			throw new java.lang.IllegalArgumentException();
 		}
 
-		this.siteShortName = siteShortName;
+		this.siteInfo = siteInfo;
 		this.personId = personId;
-		this.siteTitle = siteTitle;
 		this.role = role;
 	}
 
-	public String getSiteShortName()
+	public SiteInfo getSiteInfo()
 	{
-		return siteShortName;
-	}
-
-	public String getSiteTitle()
-	{
-		return siteTitle;
+		return siteInfo;
 	}
 
 	public String getPersonId()
@@ -127,7 +120,7 @@ public class SiteMembership
 				+ ((personId == null) ? 0 : personId.hashCode());
 		result = prime * result + ((role == null) ? 0 : role.hashCode());
 		result = prime * result
-				+ ((siteShortName == null) ? 0 : siteShortName.hashCode());
+				+ ((getSiteInfo() == null) ? 0 : getSiteInfo().hashCode());
 		return result;
 	}
 
@@ -148,10 +141,10 @@ public class SiteMembership
 			return false;
 		if (role != other.role)
 			return false;
-		if (siteShortName == null) {
-			if (other.siteShortName != null)
+		if (getSiteInfo() == null) {
+			if (other.getSiteInfo() != null)
 				return false;
-		} else if (!siteShortName.equals(other.siteShortName))
+		} else if (!getSiteInfo().equals(other.getSiteInfo()))
 			return false;
 		return true;
 	}
@@ -159,7 +152,7 @@ public class SiteMembership
 	@Override
 	public String toString()
 	{
-		return "SiteMembership [siteShortName=" + siteShortName
+		return "SiteMembership [siteInfo=" + getSiteInfo()
 				+ ", personId=" + personId + ", firstName=" + firstName
 				+ ", lastName=" + lastName + ", role=" + role + "]";
 	}

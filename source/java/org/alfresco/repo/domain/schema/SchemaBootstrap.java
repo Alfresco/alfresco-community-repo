@@ -159,6 +159,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String DEBUG_SCHEMA_COMP_NO_REF_FILE = "system.schema_comp.debug.no_ref_file";
     private static final String INFO_SCHEMA_COMP_ALL_OK = "system.schema_comp.info.all_ok";
     private static final String WARN_SCHEMA_COMP_PROBLEMS_FOUND = "system.schema_comp.warn.problems_found";
+    private static final String WARN_SCHEMA_COMP_PROBLEMS_FOUND_NO_FILE = "system.schema_comp.warn.problems_found_no_file";
     private static final String DEBUG_SCHEMA_COMP_TIME_TAKEN = "system.schema_comp.debug.time_taken";
     
     public static final int DEFAULT_LOCK_RETRY_COUNT = 24;
@@ -166,14 +167,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     
     public static final int DEFAULT_MAX_STRING_LENGTH = 1024;
 
-
-
-
     private static volatile int maxStringLength = DEFAULT_MAX_STRING_LENGTH;
     private Dialect dialect;
         
     private ResourcePatternResolver rpr = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
-      
 
     /**
      * @see PropertyValue#DEFAULT_MAX_STRING_LENGTH
@@ -250,9 +247,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private List<String> preCreateScriptUrls;
     private List<String> postCreateScriptUrls;
     private List<String> schemaReferenceUrls;
-    private List<SchemaUpgradeScriptPatch> validateUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> preUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> postUpdateScriptPatches;
+    private List<SchemaUpgradeScriptPatch> updateActivitiScriptPatches;
     private int schemaUpdateLockRetryCount = DEFAULT_LOCK_RETRY_COUNT;
     private int schemaUpdateLockRetryWaitSeconds = DEFAULT_LOCK_RETRY_WAIT_SECONDS;
     private int maximumStringLength;
@@ -264,9 +261,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     {
         preCreateScriptUrls = new ArrayList<String>(1);
         postCreateScriptUrls = new ArrayList<String>(1);
-        validateUpdateScriptPatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
         preUpdateScriptPatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
         postUpdateScriptPatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
+        updateActivitiScriptPatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
         maximumStringLength = -1;
         globalProperties = new Properties();
     }
@@ -323,31 +320,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Set the scripts that must be executed <b>before</b> the schema has been created.
-     * 
-     * @param postCreateScriptUrls file URLs
-     * 
-     * @see #PLACEHOLDER_DIALECT
-     */
-    public void setPreCreateScriptUrls(List<String> preUpdateScriptUrls)
-    {
-        this.preCreateScriptUrls = preUpdateScriptUrls;
-    }
-
-    /**
-     * Set the scripts that must be executed <b>after</b> the schema has been created.
-     * 
-     * @param postCreateScriptUrls file URLs
-     * 
-     * @see #PLACEHOLDER_DIALECT
-     */
-    public void setPostCreateScriptUrls(List<String> postUpdateScriptUrls)
-    {
-        this.postCreateScriptUrls = postUpdateScriptUrls;
-    }
-
-    
-    /**
      * Specifies the schema reference files that will be used to validate the repository
      * schema whenever changes have been made. The database dialect placeholder will be
      * resolved so that the correct reference files are loaded for the current database
@@ -360,41 +332,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     {
         this.schemaReferenceUrls = schemaReferenceUrls;
     }
-
-    /**
-     * Set the schema script patches that must have been applied.  These will not be
-     * applied to the database.  These can be used where the script <u>cannot</u> be
-     * applied automatically or where a particular upgrade path is no longer supported.
-     * For example, at version 3.0, the upgrade scripts for version 1.4 may be considered
-     * unsupported - this doesn't prevent the manual application of the scripts, though.
-     * 
-     * @param scriptPatches a list of schema patches to check
-     */
-    public void setValidateUpdateScriptPatches(List<SchemaUpgradeScriptPatch> scriptPatches)
-    {
-        this.validateUpdateScriptPatches = scriptPatches;
-    }
-
-    /**
-     * Set the schema script patches that may be applied prior to the auto-update process.
-     * 
-     * @param scriptPatches a list of schema patches to check
-     */
-    public void setPreUpdateScriptPatches(List<SchemaUpgradeScriptPatch> scriptPatches)
-    {
-        this.preUpdateScriptPatches = scriptPatches;
-    }
-
-    /**
-     * Set the schema script patches that may be applied after the auto-update process.
-     * 
-     * @param postUpdateScriptPatches a list of schema patches to check
-     */
-    public void setPostUpdateScriptPatches(List<SchemaUpgradeScriptPatch> scriptPatches)
-    {
-        this.postUpdateScriptPatches = scriptPatches;
-    }
-
+    
     /**
      * Set the number times that the DB must be checked for the presence of the table
      * indicating that a schema change is in progress.
@@ -476,6 +414,78 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         return (SessionFactory) localSessionFactory.getObject();
     }
     
+    /**
+     * Register a new script for execution when creating a clean schema.  The order of registration
+     * determines the order of execution.
+     * 
+     * @param preCreateScriptUrl            the script URL, possibly containing the <b>${db.script.dialect}</b> placeholder
+     */
+    public void addPreCreateScriptUrl(String preCreateScriptUrl)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Registered create script URL (pre-Hibernate): " + preCreateScriptUrl);
+        }
+        this.preCreateScriptUrls.add(preCreateScriptUrl);
+    }
+
+    /**
+     * Register a new script for execution after the Hibernate schema creation phase.  The order of registration
+     * determines the order of execution.
+     * 
+     * @param postCreateScriptUrl           the script URL, possibly containing the <b>${db.script.dialect}</b> placeholder
+     */
+    public void addPostCreateScriptUrl(String postUpdateScriptUrl)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Registered create script URL (post-Hibernate): " + postUpdateScriptUrl);
+        }
+        this.postCreateScriptUrls.add(postUpdateScriptUrl);
+    }
+
+    /**
+     * Register a new SQL-based patch for consideration against the instance (before Hibernate execution)
+     *  
+     * @param scriptPatch                   the patch that will be examined for execution
+     */
+    public void addPreUpdateScriptPatch(SchemaUpgradeScriptPatch scriptPatch)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Registered script patch (pre-Hibernate): " + scriptPatch.getId());
+        }
+        this.preUpdateScriptPatches.add(scriptPatch);
+    }
+
+    /**
+     * Register a new SQL-based patch for consideration against the instance (after Hibernate execution)
+     *  
+     * @param scriptPatch                   the patch that will be examined for execution
+     */
+    public void addPostUpdateScriptPatch(SchemaUpgradeScriptPatch scriptPatch)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Registered script patch (post-Hibernate): " + scriptPatch.getId());
+        }
+        this.postUpdateScriptPatches.add(scriptPatch);
+    }
+
+    /**
+     * Register a new SQL-based patch for consideration against the Activiti instance
+     *  
+     * @param scriptPatch                   the patch that will be examined for execution
+     */
+    public void addUpdateActivitiScriptPatch(SchemaUpgradeScriptPatch scriptPatch)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Registered Activiti script patch: " + scriptPatch.getId());
+        }
+        this.updateActivitiScriptPatches.add(scriptPatch);
+    }
+
     private static class NoSchemaException extends Exception
     {
         private static final long serialVersionUID = 5574280159910824660L;
@@ -600,6 +610,40 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             // The applied patches table is not present
             throw new NoSchemaException();
+        }
+    }
+    
+    
+    /**
+     * Check whether Activiti tables already created in db.
+     * 
+     * @param cfg           The Hibernate config
+     * @param connection    a valid database connection
+     * @return <code>true</code> if Activiti tables already created in schema, otherwise <code>false</code>
+     */
+    private boolean checkActivitiTablesExists(Configuration cfg, Connection connection)
+    {
+        Statement stmt = null;
+        try
+        {
+            stmt = connection.createStatement();
+            stmt.executeQuery("select count(id_) from act_ru_task");
+            return true;
+        }
+        catch (SQLException e)
+        {
+            return false;
+        }
+        finally
+        {
+            try
+            {
+                if (stmt != null)
+                {
+                    stmt.close();
+                }
+            }
+            catch (Throwable e) {}
         }
     }
     
@@ -785,11 +829,19 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         String dialectStr = dialect.getClass().getSimpleName();
 
         // Initialise Activiti DB, using an unclosable connection
-        if(create)
+        if(!checkActivitiTablesExists(cfg, connection))
         {
         	// Activiti DB updates are performed as patches in alfresco, only give
         	// control to activiti when creating new one.
         	initialiseActivitiDBSchema(new UnclosableConnection(connection));
+        }
+        else
+        {
+            // Execute any auto-update scripts for Activiti tables
+            checkSchemaPatchScripts(cfg, connection, updateActivitiScriptPatches, true);
+
+            // verify that all Activiti patches have been applied correctly
+            checkSchemaPatchScripts(cfg, connection, updateActivitiScriptPatches, false);
         }
         
         if (create)
@@ -841,8 +893,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         else
         {
-            // Check for scripts that must have been run
-            checkSchemaPatchScripts(cfg, connection, validateUpdateScriptPatches, false);
             // Execute any pre-auto-update scripts
             checkSchemaPatchScripts(cfg, connection, preUpdateScriptPatches, true);
             
@@ -1090,7 +1140,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         if (executedStatements == null)
         {
             // Validate the schema, pre-upgrade
-            validateSchema("Alfresco-{0}-Validation-Pre-Upgrade-{1}-");
+            validateSchema("Alfresco-{0}-Validation-Pre-Upgrade-{1}-", null);
             
             dumpSchema("pre-upgrade");
 
@@ -1492,7 +1542,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     @Override
     public synchronized void onBootstrap(ApplicationEvent event)
     {
-        // from Thor
         if (event != null)
         {
             // Use the application context to load resources
@@ -1579,7 +1628,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 if (! createdSchema)
                 {
                     // verify that all patches have been applied correctly 
-                    checkSchemaPatchScripts(cfg, connection, validateUpdateScriptPatches, false);  // check scripts
                     checkSchemaPatchScripts(cfg, connection, preUpdateScriptPatches, false);       // check scripts
                     checkSchemaPatchScripts(cfg, connection, postUpdateScriptPatches, false);      // check scripts
                 }
@@ -1595,7 +1643,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 if (executedStatements != null)
                 {
                     // Validate the schema, post-upgrade
-                    validateSchema("Alfresco-{0}-Validation-Post-Upgrade-{1}-");
+                    validateSchema("Alfresco-{0}-Validation-Post-Upgrade-{1}-", null);
                     
                     // 4.0+ schema dump
                     dumpSchema("post-upgrade");
@@ -1666,7 +1714,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * @param outputFileNameTemplate
      * @return the number of potential problems found.
      */
-    public synchronized int validateSchema(String outputFileNameTemplate)
+    public synchronized int validateSchema(String outputFileNameTemplate, PrintWriter out)
     {
         int totalProblems = 0;
         
@@ -1684,7 +1732,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             else
             {
                 // Validate schema against each reference file
-                int problems = validateSchema(referenceResource, outputFileNameTemplate);
+                int problems = validateSchema(referenceResource, outputFileNameTemplate, out);
                 totalProblems += problems;
             }
         }
@@ -1693,11 +1741,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         return totalProblems;
     }
     
-    private int validateSchema(Resource referenceResource, String outputFileNameTemplate)
+    private int validateSchema(Resource referenceResource, String outputFileNameTemplate, PrintWriter out)
     {
         try
         {
-            return attemptValidateSchema(referenceResource, outputFileNameTemplate);
+            return attemptValidateSchema(referenceResource, outputFileNameTemplate, out);
         }
         catch (Throwable e)
         {
@@ -1709,7 +1757,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
     }
     
-    private int attemptValidateSchema(Resource referenceResource, String outputFileNameTemplate)
+    private int attemptValidateSchema(Resource referenceResource, String outputFileNameTemplate, PrintWriter out)
     {
         Date startTime = new Date(); 
         
@@ -1745,22 +1793,30 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     dialect.getClass().getSimpleName(),
                     reference.getDbPrefix()
         };
-        String outputFileName = MessageFormat.format(outputFileNameTemplate, outputFileNameParams);
-        
-        File outputFile = TempFileProvider.createTempFile(outputFileName, ".txt");
-        
-        PrintWriter pw = null;
-        try
+        PrintWriter pw;
+        File outputFile = null;
+        if (out == null)
         {
-            pw = new PrintWriter(outputFile, SchemaComparator.CHAR_SET);
+            String outputFileName = MessageFormat.format(outputFileNameTemplate, outputFileNameParams);
+
+            outputFile = TempFileProvider.createTempFile(outputFileName, ".txt");
+
+            try
+            {
+                pw = new PrintWriter(outputFile, SchemaComparator.CHAR_SET);
+            }
+            catch (FileNotFoundException error)
+            {
+                throw new RuntimeException("Unable to open file for writing: " + outputFile);
+            }
+            catch (UnsupportedEncodingException error)
+            {
+                throw new RuntimeException("Unsupported char set: " + SchemaComparator.CHAR_SET, error);
+            }
         }
-        catch (FileNotFoundException error)
+        else
         {
-            throw new RuntimeException("Unable to open file for writing: " + outputFile);
-        }
-        catch (UnsupportedEncodingException error)
-        {
-            throw new RuntimeException("Unsupported char set: " + SchemaComparator.CHAR_SET, error);
+            pw = out;
         }
         
         // Populate the file with details of the comparison's results.
@@ -1779,7 +1835,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         else
         {
             int numProblems = results.size();
-            LogUtil.warn(logger, WARN_SCHEMA_COMP_PROBLEMS_FOUND, numProblems, outputFile);
+            if (outputFile == null)
+            {
+                LogUtil.warn(logger, WARN_SCHEMA_COMP_PROBLEMS_FOUND_NO_FILE, numProblems);
+            }
+            else
+            {
+                LogUtil.warn(logger, WARN_SCHEMA_COMP_PROBLEMS_FOUND, numProblems, outputFile);                
+            }
         }
         Date endTime = new Date();
         long durationMillis = endTime.getTime() - startTime.getTime();

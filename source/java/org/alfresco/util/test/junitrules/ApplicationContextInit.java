@@ -52,6 +52,8 @@ import org.springframework.context.ApplicationContext;
  */
 public class ApplicationContextInit extends ExternalResource
 {
+    public static final String GLOBAL_INTEGRATION_TEST_CONFIG = "classpath:alfresco/test/global-integration-test-context.xml";
+    
     /**
      * The locations for the application context configurations.
      */
@@ -67,7 +69,7 @@ public class ApplicationContextInit extends ExternalResource
      */
     public ApplicationContextInit()
     {
-        this(new String[0]);
+        this(ApplicationContextHelper.CONFIG_LOCATIONS);
     }
     
     /**
@@ -77,7 +79,16 @@ public class ApplicationContextInit extends ExternalResource
      */
     public ApplicationContextInit(String... configLocations)
     {
-        this.configLocations = configLocations;
+        List<String> requestedConfigs = new ArrayList<String>();
+        requestedConfigs.addAll(Arrays.asList(configLocations));
+        
+        // No matter what spring contexts are provided in construction of this object, we always
+        // add the global test integration config to the end.
+        // Yes, this will mean that devs cannot override that context file, but it's almost empty anyway.
+        // We may have to change how this class handles this, but for now: keep it simple, s.
+        requestedConfigs.add(GLOBAL_INTEGRATION_TEST_CONFIG);
+        
+        this.configLocations = requestedConfigs.toArray(new String[0]);
     }
     
     /**
@@ -110,20 +121,9 @@ public class ApplicationContextInit extends ExternalResource
     
     @Override protected void before()
     {
-        // Were any context locations specified in the constructor?
-        if (configLocations.length > 0)
-        {
-            log.debug("Initialising custom Spring Configuration: " + Arrays.asList(configLocations).toString());
-            
-            appContext = ApplicationContextHelper.getApplicationContext(configLocations);
-        }
-        // if not, use the Alfresco default
-        else
-        {
-            log.debug("Initialising default Alfresco Spring Configuration");
-            
-            appContext = ApplicationContextHelper.getApplicationContext();
-        }
+        log.debug("Initialising custom Spring Configuration: " + Arrays.asList(configLocations).toString());
+        
+        appContext = ApplicationContextHelper.getApplicationContext(configLocations);
     }
     
     @Override protected void after()

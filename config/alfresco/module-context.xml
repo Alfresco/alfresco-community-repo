@@ -24,7 +24,7 @@
    </bean>
 
    <!-- Import of installed modules -->
-   <import resource="classpath*:alfresco/module/*/module-context.xml"/>    
+   <import resource="classpath*:alfresco/module/*/module-context.xml"/>
    <import resource="classpath*:alfresco/module/*/module-uninstall-context.xml"/>
 
 </beans>

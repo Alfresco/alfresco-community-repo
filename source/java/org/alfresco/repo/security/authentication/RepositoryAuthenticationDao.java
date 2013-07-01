@@ -34,6 +34,7 @@ import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -747,10 +748,10 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                 nodeService.setProperty(userNode, ContentModel.PROP_USER_USERNAME, uidAfter);
                 nodeService.moveNode(userNode, nodeService.getPrimaryParent(userNode).getParentRef(),
                         ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI, uidAfter));
-                authenticationCache.remove(uidBefore);
+                removeAuthenticationFromCache(uidBefore);
             }
         }
-        authenticationCache.remove(uidAfter);
+        removeAuthenticationFromCache(uidAfter);
     }
     
     public void onUpdateUserProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
@@ -758,7 +759,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         String uidBefore = DefaultTypeConverter.INSTANCE.convert(String.class, before.get(ContentModel.PROP_USER_USERNAME));
         if (uidBefore != null)
         {
-            authenticationCache.remove(uidBefore);
+            removeAuthenticationFromCache(uidBefore);
         }
     }
 
@@ -768,9 +769,24 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         String userName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_USER_USERNAME);
         if (userName != null)
         {
-            authenticationCache.remove(userName);
+            removeAuthenticationFromCache(userName);
         }
     }        
+    
+    /**
+     * Remove from the cache and lock the value for the transaction
+     * @param key
+     * @param lock
+     */
+    private void removeAuthenticationFromCache(String key)
+    {
+        authenticationCache.remove(key);
+        if (authenticationCache instanceof TransactionalCache)
+        {
+            TransactionalCache<String, CacheEntry> authenticationCacheTxn = (TransactionalCache<String, CacheEntry>) authenticationCache;
+            authenticationCacheTxn.lockValue(key);
+        }
+    }
     
     static class CacheEntry
     {

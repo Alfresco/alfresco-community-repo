@@ -19,7 +19,6 @@
 package org.alfresco.opencmis;
 
 import org.alfresco.opencmis.ActivityPosterImpl.ActivityInfo;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -30,7 +29,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 // TODO consolidate with ActivityPost for WebDAV
 public interface ActivityPoster
 {
-    void postFileFolderAdded(FileInfo fileInfo);
+	void postFileFolderAdded(NodeRef nodeRef);
     
     void postFileFolderUpdated(boolean isFolder, NodeRef nodeRef);
     

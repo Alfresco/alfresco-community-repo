@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Iterator;
@@ -45,7 +44,6 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -508,5 +506,38 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
     public List<String> getIntermediateMimetypes()
     {
        return Collections.unmodifiableList(intermediateMimetypes);
+    }
+    
+    /**
+     * Returns the transformer properties predefined (hard coded or implied) by this transformer.
+     */
+    @Override
+    public String getComments(boolean available)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.getComments(available));
+        sb.append("# ");
+        sb.append(TransformerConfig.CONTENT);
+        sb.append(getName());
+        sb.append(TransformerConfig.PIPELINE);
+        sb.append('=');
+        Iterator<String> iterator = intermediateMimetypes.iterator();
+        for (ContentTransformer transformer: transformers)
+        {
+            sb.append(transformer != null ? getSimpleName(transformer) : TransformerConfig.ANY);
+            if (iterator.hasNext())
+            {
+                sb.append(TransformerConfig.PIPE);
+                String mimetype = iterator.next();
+                if (mimetype != null && mimetype.length() != 0)
+                {
+                    String extension = getMimetypeService().getExtension(mimetype);
+                    sb.append(extension);
+                }
+                sb.append(TransformerConfig.PIPE);
+            }
+        }
+        sb.append('\n');
+        return sb.toString();
     }
 }

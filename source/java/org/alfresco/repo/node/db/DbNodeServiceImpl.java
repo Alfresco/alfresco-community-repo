@@ -1605,7 +1605,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * If any of the values are null, a marker object is put in to mimic nulls.  They will be turned back into
      * a real nulls when the properties are requested again.
      * 
-     * @see Node#getProperties()
+     * @see Node#getProperties(boolean)
      */
     public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {

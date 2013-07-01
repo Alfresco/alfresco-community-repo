@@ -911,9 +911,11 @@
     <!-- Workflow Service -->
     <!-- ================ -->
 
-    <!-- TODO: Add workflow security -->
-
-    <bean id="WorkflowService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    <bean id="WorkflowService_security" class="org.alfresco.service.cmr.workflow.WorkflowPermissionInterceptor" >
+      <property name="personService"><ref bean="personService"/></property>
+      <property name="authorityService"><ref bean="authorityService"/></property>
+      <property name="workflowService"><ref bean="workflowServiceImpl" /></property>
+    </bean>
 
     <!-- ============= -->
     <!-- Audit Service -->
@@ -980,6 +982,7 @@
                org.alfresco.service.cmr.site.SiteService.getSiteRoot=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.hasContainer=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.hasCreateSitePermissions=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.hasSite=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.isMember=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.listMembers=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.listMembersInfo=ACL_ALLOW

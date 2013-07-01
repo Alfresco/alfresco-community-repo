@@ -615,6 +615,42 @@ public class MultiTServiceImpl implements TenantService
         return DEFAULT_DOMAIN; // default domain - non-tenant user
     }
     
+    /**
+     * Get the primary domain for the given user, if a tenant for that domain exists.
+     * 
+     * For user names of the form "user@tenantdomain", the tenant domain the part of the string 
+     * after the @ symbol. A check is then made to see if tenant with that domain name exists.  
+     * If it does, then the identified domain is returned. If no tenant exists then null is 
+     * returned.
+     * 
+     * If the username does not end with a domain, as described above, then the default domain is 
+     * returned. 
+     */
+    @Override public String getPrimaryDomain(String username)
+    {
+    	String result = null;
+        // can be null (e.g. for System user / during app ctx init)
+        if (username != null) 
+        {
+            int idx = username.lastIndexOf(SEPARATOR);
+            if ((idx > 0) && (idx < (username.length()-1)))
+            {
+               String tenantDomain = getTenantDomain(username.substring(idx+1));
+               
+               if (getTenant(tenantDomain) != null)
+               {
+            	   result = tenantDomain;
+               }
+            }
+            else
+            {
+            	result = DEFAULT_DOMAIN;
+            }
+        }
+        
+        return result; // default domain - non-tenant user
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.tenant.TenantUserService#getCurrentUserDomain()
      */

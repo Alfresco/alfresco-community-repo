@@ -169,12 +169,14 @@ public interface JobLockService
     void refreshLock(String lockToken, QName lockQName, long timeToLive, JobLockRefreshCallback callback);
     
     /**
-     * Release the lock using a valid lock token.
+     * Release the lock using a valid lock token.  The lock can have expired or even been taken
+     * by another processes (i.e. the lock token will no longer be valid); none of this will
+     * prevent the method from succeeding.
      * 
      * @param lockToken             the lock token returned when the lock was acquired
      * @param lockQName             the name of the previously-acquired lock
      */
-    void releaseLock(String lockToken, QName lockQName);
+    boolean releaseLock(String lockToken, QName lockQName);
     
     /**
      * Interface for implementations that need a timed callback in order to refresh the lock.
@@ -200,7 +202,7 @@ public interface JobLockService
         /**
          * Timed callback from the service to determine if the lock is still required.
          * <p/>
-         * <b>IMPORTANT:</b> Do not block calls to this method for any reason and do perform any
+         * <b>IMPORTANT:</b> Do not block calls to this method for any reason and do not perform any
          *                   non-trivial determination of state i.e. have the answer to this
          *                   method immediately available at all times.  Failure to observe this
          *                   will lead to warnings and lock termination.

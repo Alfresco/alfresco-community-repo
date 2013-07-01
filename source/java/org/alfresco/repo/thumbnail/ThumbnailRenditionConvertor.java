@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -152,6 +152,8 @@ public class ThumbnailRenditionConvertor
         putParameterIfNotNull(AbstractTransformationRenderingEngine.PARAM_READ_LIMIT_K_BYTES, transformationOptions.getReadLimitKBytes(), parameters);
         putParameterIfNotNull(AbstractTransformationRenderingEngine.PARAM_MAX_PAGES, transformationOptions.getMaxPages(), parameters);
         putParameterIfNotNull(AbstractTransformationRenderingEngine.PARAM_PAGE_LIMIT, transformationOptions.getPageLimit(), parameters);
+
+        putParameterIfNotNull(AbstractTransformationRenderingEngine.PARAM_USE, transformationOptions.getUse(), parameters);
 
         if (transformationOptions instanceof SWFTransformationOptions)
         {

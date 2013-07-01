@@ -29,9 +29,9 @@ import org.alfresco.repo.invitation.script.ScriptInvitation;
 import org.alfresco.repo.invitation.script.ScriptInvitationFactory;
 import org.alfresco.repo.jscript.ContentAwareScriptableQNameMap;
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.jscript.ScriptNode.NodeValueConverter;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.jscript.ScriptableQNameMap;
-import org.alfresco.repo.jscript.ScriptNode.NodeValueConverter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -40,8 +40,8 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationException;
-import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria.InvitationType;
+import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -626,43 +626,52 @@ public class Site implements Serializable
         
         if (permissions != null && permissions instanceof ScriptableObject)
         {
-            // Get the permission service
             final PermissionService permissionService = this.serviceRegistry.getPermissionService();
-            
-            if (!permissionService.getInheritParentPermissions(nodeRef))
+            // ensure the user has permission to Change Permissions
+            if (permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS).equals(AccessStatus.ALLOWED))
             {
-                // remove existing permissions
-                permissionService.deletePermissions(nodeRef);
-            }
-            
-            // Assign the correct permissions
-            ScriptableObject scriptable = (ScriptableObject)permissions;
-            Object[] propIds = scriptable.getIds();
-            for (int i = 0; i < propIds.length; i++)
-            {
-                // Work on each key in turn
-                Object propId = propIds[i];
-                
-                // Only interested in keys that are formed of Strings
-                if (propId instanceof String)
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
                 {
-                    // Get the value out for the specified key - it must be String
-                    final String key = (String)propId;
-                    final Object value = scriptable.get(key, scriptable);
-                    if (value instanceof String)
-                    {                                   
-                        // Set the permission on the node
-                        permissionService.setPermission(nodeRef, key, (String)value, true);
+                    public Void doWork() throws Exception
+                    {
+                        if (!permissionService.getInheritParentPermissions(nodeRef))
+                        {
+                            // remove existing permissions
+                            permissionService.deletePermissions(nodeRef);
+                        }
+                        
+                        // Assign the correct permissions
+                        ScriptableObject scriptable = (ScriptableObject)permissions;
+                        Object[] propIds = scriptable.getIds();
+                        for (int i = 0; i < propIds.length; i++)
+                        {
+                            // Work on each key in turn
+                            Object propId = propIds[i];
+                            
+                            // Only interested in keys that are formed of Strings
+                            if (propId instanceof String)
+                            {
+                                // Get the value out for the specified key - it must be String
+                                final String key = (String)propId;
+                                final Object value = scriptable.get(key, scriptable);
+                                if (value instanceof String)
+                                {                                   
+                                    // Set the permission on the node
+                                    permissionService.setPermission(nodeRef, key, (String)value, true);
+                                }
+                            }
+                        }
+                        
+                        // always add the site managers group with SiteManager permission
+                        String managers = siteService.getSiteRoleGroup(getShortName(), SiteModel.SITE_MANAGER);
+                        permissionService.setPermission(nodeRef, managers, SiteModel.SITE_MANAGER, true);
+                        
+                        // now turn off inherit to finalize our permission changes
+                        permissionService.setInheritParentPermissions(nodeRef, false);
+                        return null;
                     }
-                }
+                }, AuthenticationUtil.SYSTEM_USER_NAME);
             }
-            
-            // always add the site managers group with SiteManager permission
-            String managers = this.siteService.getSiteRoleGroup(getShortName(), SiteModel.SITE_MANAGER);
-            permissionService.setPermission(nodeRef, managers, SiteModel.SITE_MANAGER, true);
-            
-            // now turn off inherit to finalize our permission changes
-            permissionService.setInheritParentPermissions(nodeRef, false);
         }
         else
         {
@@ -682,19 +691,27 @@ public class Site implements Serializable
     {
         final NodeRef nodeRef = node.getNodeRef();
         
-        PermissionService permissionService = serviceRegistry.getPermissionService();
-        try
+        // ensure the user has permission to Change Permissions
+        final PermissionService permissionService = serviceRegistry.getPermissionService();
+        if (permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS).equals(AccessStatus.ALLOWED))
         {
-            // Ensure node isn't inheriting permissions from an ancestor before deleting
-            if (!permissionService.getInheritParentPermissions(nodeRef))
+            AuthenticationUtil.runAs(new RunAsWork<Void>()
             {
-                permissionService.deletePermissions(nodeRef);
-                permissionService.setInheritParentPermissions(nodeRef, true);
-            }
+                public Void doWork() throws Exception
+                {
+                    // Ensure node isn't inheriting permissions from an ancestor before deleting
+                    if (!permissionService.getInheritParentPermissions(nodeRef))
+                    {
+                        permissionService.deletePermissions(nodeRef);
+                        permissionService.setInheritParentPermissions(nodeRef, true);
+                    }
+                    return null;
+                }
+            }, AuthenticationUtil.SYSTEM_USER_NAME);
         }
-        catch (AccessDeniedException e)
+        else
         {
-            throw new AlfrescoRuntimeException("You do not have the authority to update permissions on this node.", e);
+            throw new AlfrescoRuntimeException("You do not have the authority to update permissions on this node.");
         }
     }  
     

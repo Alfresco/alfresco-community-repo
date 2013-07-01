@@ -26,7 +26,6 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Base registry implementation 
- * (Should be genericised somewhere..)
  * 
  * @author Andy
  */
@@ -36,17 +35,12 @@ public class DefaultAsynchronouslyRefreshedCacheRegistry implements Asynchronous
     
     private List<RefreshableCacheListener> listeners = new LinkedList<RefreshableCacheListener>();
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.cache.AsynchronouslyRefreshedCacheRegistry#register(org.alfresco.repo.cache.
-     * RefreshableCacheListener)
-     */
     @Override
     public void register(RefreshableCacheListener listener)
     {
         if(logger.isDebugEnabled())
         {
-            logger.debug("Listener added for "+listener.getCacheId());
+            logger.debug("Listener added for " + listener.getCacheId());
         }
         listeners.add(listener);
     }
@@ -54,14 +48,13 @@ public class DefaultAsynchronouslyRefreshedCacheRegistry implements Asynchronous
     public void broadcastEvent(RefreshableCacheEvent event, boolean toAll)
     {
         // If the system is up and running, broadcast the event immediately
-
         for (RefreshableCacheListener listener : this.listeners)
         {
             if (toAll)
             {
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("Delivering to "+listener);
+                    logger.debug("Delivering event (" + event + ") to listener (" + listener + ").");
                 }
                 listener.onRefreshableCacheEvent(event);
             }
@@ -71,13 +64,11 @@ public class DefaultAsynchronouslyRefreshedCacheRegistry implements Asynchronous
                 {
                     if(logger.isDebugEnabled())
                     {
-                        logger.debug("Specific Delivery to "+listener);
+                        logger.debug("Delivering event (" + event + ") to listener (" + listener + ").");
                     }
                     listener.onRefreshableCacheEvent(event);
                 }
             }
         }
-
     }
-
 }

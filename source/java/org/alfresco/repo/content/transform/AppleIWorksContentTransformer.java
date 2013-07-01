@@ -63,7 +63,13 @@ public class AppleIWorksContentTransformer extends AbstractContentTransformer2
         // This is because iWorks 09+ files are zip files containing embedded jpeg/pdf previews.
         return TARGET_MIMETYPES.contains(targetMimetype) && IWORKS_MIMETYPES.contains(sourceMimetype);
     }
-    
+
+    @Override
+    public String getComments(boolean available)
+    {
+        return getCommentsOnlySupports(IWORKS_MIMETYPES, TARGET_MIMETYPES, available);
+    }
+
     @Override
     protected void transformInternal(ContentReader reader,
                                      ContentWriter writer,

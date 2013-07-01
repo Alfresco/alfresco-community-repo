@@ -21,7 +21,6 @@ package org.alfresco.repo.content.transform;
 import static org.alfresco.repo.content.transform.TransformerConfig.ANY;
 
 import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 
 
 /**
@@ -29,7 +28,6 @@ import org.alfresco.service.cmr.repository.TransformationOptionLimits;
  * 
  * @author Alan Davis
  */
-// TODO These values should be made visible via JMX.
 public class TransformerStatisticsImpl implements TransformerStatistics
 {
     private final MimetypeService mimetypeService;
@@ -97,19 +95,19 @@ public class TransformerStatisticsImpl implements TransformerStatistics
     }
 
     @Override
-    public synchronized void recordError()
+    public synchronized void recordError(long transformationTime)
     {
         if (errorCount < Long.MAX_VALUE)
         {
             errorCount++;
         }
-        if (errorTime > 0)
-        {
-            recordTime(errorTime);
-        }
+
+        // Error time is only recorded for transformer, source and target combinations
+        recordTime((parent == null || transformer == null || errorTime <= 0 ? transformationTime : errorTime));
+
         if (parent != null)
         {
-            parent.recordError();
+            parent.recordError(transformationTime);
         }
     }
     
@@ -153,144 +151,4 @@ public class TransformerStatisticsImpl implements TransformerStatistics
     {
         return TransformerConfig.ANY.equals(sourceMimetype) && TransformerConfig.ANY.equals(targetMimetype);
     }
-    
-    
-    
-    
-    
-    
-    //////////////////////////////////////// TODO Split into summary class ///////////////////////////////////
-    
-    
-    
-    
-    
-//    private enum Property
-//    {
-//        priority(true)
-//        {
-//            String getValue(TransformerData bean)
-//            {
-//                return Integer.toString(bean.getPriority());
-//            }
-//            void setValue(TransformerData bean, String value)
-//            {
-//                bean.setPriority(Integer.valueOf(value));
-//            }
-//        },
-//        
-//        averageTime(false)
-//        {
-//            String getValue(TransformerData bean)
-//            {
-//                return Integer.toString(bean.getPriority());
-//            }
-//        },
-//        
-//        count(false)
-//        {
-//            String getValue(TransformerData bean)
-//            {
-//                return Integer.toString(bean.getPriority());
-//            }
-//        },
-//        
-//        errors(false)
-//        {
-//            String getValue(TransformerData bean)
-//            {
-//                return Integer.toString(bean.getPriority());
-//            }
-//        };
-//        
-//        private final boolean updatable;
-//
-//        Property(boolean updatable)
-//        {
-//            this.updatable = updatable;
-//        }
-//        
-//        abstract String getValue(TransformerData bean);
-//
-//        void setValue(TransformerData bean, String value)
-//        {
-//        }
-//        
-//        public boolean isUpdatable()
-//        {
-//            return updatable;
-//        }
-//
-//        public static Set<String> getNames()
-//        {
-//            Set<String> names = new HashSet<String>();
-//            for (Property property: Property.class.getEnumConstants())
-//            {
-//                names.add(property.name());
-//            }
-//            return names;
-//        }
-//    };
-//    
-//    public List<String> getId()
-//    {
-//        List<String> id = super.getId();
-//        
-//        id.add(transformerName);
-//        
-//        if (TransformerConfig.ANY.equals(sourceExt))
-//        {
-//            id.add(sourceExt);
-//        }
-//        
-//        if (TransformerConfig.ANY.equals(targetExt))
-//        {
-//            id.add(targetExt);
-//        }
-//
-//        return id;
-//    }
-//    
-//    public boolean isUpdateable(String name)
-//    {
-//        return Enum.valueOf(Property.class, name).isUpdatable();
-//    }
-//
-//    @Override
-//    protected PropertyBackedBeanState createInitialState() throws IOException
-//    {
-//        return new PropertyBackedBeanState()
-//        {
-//
-//            @Override
-//            public Set<String> getPropertyNames()
-//            {
-//                return Property.getNames();
-//            }
-//
-//            @Override
-//            public String getProperty(String name)
-//            {
-//                return Enum.valueOf(Property.class, name).getValue(TransformerDataImpl.this);
-//            }
-//
-//            @Override
-//            public void setProperty(String name, String value)
-//            {
-//                Enum.valueOf(Property.class, name).setValue(TransformerDataImpl.this, value);
-//            }
-//
-//            @Override
-//            public void start()
-//            {
-//                ;
-//            }
-//
-//            @Override
-//            public void stop()
-//            {
-//                ;
-//            }
-//        };
-//    }
 }

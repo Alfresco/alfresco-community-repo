@@ -180,7 +180,7 @@ public class NodeEntity implements Node, PermissionCheckValue
     {
         NodeRef nodeRef = new NodeRef(store.getStoreRef(), uuid);
         boolean deleted = getDeleted(qnameDAO);
-        return new NodeRef.Status(nodeRef, transaction.getChangeTxnId(), transaction.getId(), deleted);
+        return new NodeRef.Status(id, nodeRef, transaction.getChangeTxnId(), transaction.getId(), deleted);
     }
     
     @Override

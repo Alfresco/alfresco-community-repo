@@ -306,7 +306,7 @@
       <property name="name">
          <value>org.alfresco.nodeOwnerTransactionalCache</value>
       </property>
-      <property name="maxCacheSize" value="20000" />
+      <property name="maxCacheSize" value="40000" />
       <property name="mutable" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>

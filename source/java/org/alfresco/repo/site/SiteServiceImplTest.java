@@ -231,8 +231,22 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         {
             // Expected
         }
-         
-        
+    }
+    
+    public void testHasSite() throws Exception
+    {
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+        // Create a Public site
+        createSite("publicsite1", "doclib", SiteVisibility.PUBLIC);
+        // Create a Private site
+        createSite("privatesite1", "doclib", SiteVisibility.PRIVATE);
+
+        // ensure USER_TWO has correct visibility - can "get" public site but not a private one, can "has" exist check both
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        assertTrue(this.siteService.getSite("publicsite1") != null);
+        assertTrue(this.siteService.getSite("privatesite1") == null);  // should not be visible to get()
+        assertTrue(this.siteService.hasSite("publicsite1"));
+        assertTrue(this.siteService.hasSite("privatesite1"));   // should be visible to has() exist check
     }
     
     /**
@@ -242,7 +256,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testETHREEOH_2133() throws Exception
     {
-           
         // Test for duplicate site error with a private site
         
         this.siteService.createSite(TEST_SITE_PRESET, "wibble", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);

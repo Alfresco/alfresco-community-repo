@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1143,11 +1143,12 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                             {
                                 // get the transformer
                             TransformationOptions options = new TransformationOptions();
+                            options.setUse("index");
                             options.setSourceNodeRef(banana); // TODO check it is OK to use this noderef
                             transformerDebug.pushAvailable(reader.getContentUrl(), reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
                                 long sourceSize = reader.getSize();
                             List<ContentTransformer> transformers = contentService.getActiveTransformers(reader.getMimetype(), sourceSize, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
-                                transformerDebug.availableTransformers(transformers, sourceSize, "AVMLuceneIndexer");
+                                transformerDebug.availableTransformers(transformers, sourceSize, options, "AVMLuceneIndexer");
 
                                 if (transformers.isEmpty())
                                 {

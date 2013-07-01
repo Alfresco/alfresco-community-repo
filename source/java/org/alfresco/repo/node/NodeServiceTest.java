@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,6 +65,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
@@ -81,6 +83,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.dialect.Dialect;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -1285,6 +1288,159 @@ public class NodeServiceTest extends TestCase
     }
     
     /**
+     * Test for MNT-8494 - we should be able to recover when indexing encounters a node with deleted ancestors
+     */
+    public void testLinkToDeletedNodeRecovery() throws Throwable
+    {
+        QNameDAO qnameDAO = (QNameDAO) ctx.getBean("qnameDAO");
+        Long deletedTypeQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_DELETED).getFirst();
+        // First find any broken links to start with
+        final NodeEntity params = new NodeEntity();
+        params.setId(0L);
+        params.setTypeQNameId(deletedTypeQNameId);
+
+        List<Long> nodesWithDeletedParents = getChildNodesWithDeletedParentNode(params, 0);
+        List<Long> deletedChildren = getDeletedChildren(params, 0);
+        List<Long> nodesWithNoParents = getChildNodesWithNoParentNode(params, 0);
+
+        logger.debug("Found child nodes with deleted parent node (before): " + nodesWithDeletedParents);
+
+        final NodeRef[] nodeRefs = new NodeRef[10];
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        buildNodeHierarchy(workspaceRootNodeRef, nodeRefs);
+
+        int cnt = 5;
+        final List<NodeRef> childNodeRefs = new ArrayList<NodeRef>(cnt);
+
+        final NodeDAO nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
+
+        for (int i = 0; i < cnt; i++)
+        {
+            // create some pseudo- thumnails
+            String randomName = getName() + "-" + System.nanoTime();
+            QName randomQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, randomName);
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+            props.put(ContentModel.PROP_NAME, randomName);
+
+            // Choose a random parent node from the hierarchy
+            int random = new Random().nextInt(10);
+            NodeRef parentNodeRef = nodeRefs[random];
+
+            NodeRef childNodeRef = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, randomQName,
+                    ContentModel.TYPE_THUMBNAIL, props).getChildRef();
+
+            childNodeRefs.add(childNodeRef);
+        }
+
+        // forcefully delete the root, a random connecting one, and a random leaf
+        // We'll need to disable indexing to do this or the transaction will be thrown out
+        nodeIndexer.setDisabled(true);
+        try
+        {
+            txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    Long nodeId = (Long) nodeService.getProperty(nodeRefs[0], ContentModel.PROP_NODE_DBID);
+                    nodeDAO.updateNode(nodeId, ContentModel.TYPE_DELETED, null);
+                    nodeDAO.removeNodeAspects(nodeId);
+                    nodeDAO.removeNodeProperties(nodeId, nodeDAO.getNodeProperties(nodeId).keySet());
+                    nodeId = (Long) nodeService.getProperty(nodeRefs[2], ContentModel.PROP_NODE_DBID);
+                    nodeDAO.updateNode(nodeId, ContentModel.TYPE_DELETED, null);
+                    nodeDAO.removeNodeAspects(nodeId);
+                    nodeDAO.removeNodeProperties(nodeId, nodeDAO.getNodeProperties(nodeId).keySet());
+                    nodeId = (Long) nodeService.getProperty(childNodeRefs.get(childNodeRefs.size() - 1),
+                            ContentModel.PROP_NODE_DBID);
+                    nodeDAO.updateNode(nodeId, ContentModel.TYPE_DELETED, null);
+                    nodeDAO.removeNodeAspects(nodeId);
+                    nodeDAO.removeNodeProperties(nodeId, nodeDAO.getNodeProperties(nodeId).keySet());
+                    return null;
+                }
+            });
+        }
+        finally
+        {
+            nodeIndexer.setDisabled(false);
+        }
+
+        // Now need to identify the problem nodes
+        final List<Long> childNodeIds = getChildNodesWithDeletedParentNode(params, nodesWithDeletedParents.size());
+        assertFalse(childNodeIds.isEmpty());
+        logger.debug("Found child nodes with deleted parent node (after): " + childNodeIds);
+
+        // Now visit the nodes in reverse order and do indexing-like things
+        List<NodeRef> allNodeRefs = new ArrayList<NodeRef>(nodeRefs.length + childNodeRefs.size());
+        allNodeRefs.addAll(Arrays.asList(nodeRefs));
+        allNodeRefs.addAll(childNodeRefs);
+        Collections.reverse(allNodeRefs);
+        for (final NodeRef nodeRef : allNodeRefs)
+        {
+            txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    if (nodeService.exists(nodeRef))
+                    {
+                        try
+                        {
+                            for (ChildAssociationRef parentRef : nodeService.getParentAssocs(nodeRef))
+                            {
+                                nodeService.getPath(parentRef.getParentRef());
+                            }
+                            nodeService.getPath(nodeRef); // ignore return
+                        }
+                        catch (InvalidNodeRefException e)
+                        {
+                            throw new ConcurrencyFailureException("Deleted node - should be healed on retry", e);
+                        }
+                    }
+                    return null;
+                }
+            });
+        }
+        
+        // Let's fix up the deleted child nodes indexing might not spot, but hierarchy traversal (e.g. getChildAssocs)
+        // might
+        for (final NodeRef nodeRef : allNodeRefs)
+        {
+            txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    nodeDAO.getNodePair(nodeRef);
+                    return null;
+                }
+            });
+        }
+
+        // Check again
+        List<Long> nodeIds = getDeletedChildren(params, deletedChildren.size());
+        assertTrue("The following deleted nodes still have parents: " + nodeIds, nodeIds.isEmpty());
+        nodeIds = getChildNodesWithDeletedParentNode(params, nodesWithDeletedParents.size());
+        assertTrue("The following child nodes have deleted parent nodes: " + nodeIds, nodeIds.isEmpty());
+        nodeIds = getChildNodesWithNoParentNode(params, nodesWithNoParents.size());
+        assertTrue("The following child nodes have no parent node: " + nodeIds, nodeIds.isEmpty());
+
+        // check lost_found ...
+        List<NodeRef> lostAndFoundNodeRefs = getLostAndFoundNodes();
+        assertFalse(lostAndFoundNodeRefs.isEmpty());
+
+        List<Long> lostAndFoundNodeIds = new ArrayList<Long>(lostAndFoundNodeRefs.size());
+        for (NodeRef nodeRef : lostAndFoundNodeRefs)
+        {
+            lostAndFoundNodeIds.add(nodeDAO.getNodePair(nodeRef).getFirst());
+        }
+
+        for (Long childNodeId : childNodeIds)
+        {
+            assertTrue("Not found: "+childNodeId, lostAndFoundNodeIds.contains(childNodeId) || !nodeDAO.exists(childNodeId));
+        }
+    }
+
+    /**
      * Pending repeatable test - force issue ALF-ALF-13066 (non-root node with no parent)
      */
     public void testForceNonRootNodeWithNoParentNode() throws Throwable
@@ -1392,7 +1548,7 @@ public class NodeServiceTest extends TestCase
         
         for (Long childNodeId : childNodeIds)
         {
-            assertTrue("Not found: "+childNodeId, lostAndFoundNodeIds.contains(childNodeId));
+            assertTrue("Not found: "+childNodeId, lostAndFoundNodeIds.contains(childNodeId) || !nodeDAO.exists(childNodeId));
         }
     }
     
@@ -1416,6 +1572,16 @@ public class NodeServiceTest extends TestCase
                 Integer.MAX_VALUE);
     }
     
+    private List<Long> getDeletedChildren(NodeEntity params, int idsToSkip)
+    {
+        return cannedQueryDAO.executeQuery(
+                "alfresco.query.test",
+                "select_NodeServiceTest_testLinkToDeletedNodeRecovery_GetDeletedChildrenCannedQuery",
+                params,
+                idsToSkip,
+                Integer.MAX_VALUE);
+    }
+
     private List<NodeRef> getLostAndFoundNodes()
     {
         Set<QName> childNodeTypeQNames = new HashSet<QName>(1);

@@ -132,6 +132,17 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     }
     
     /**
+     * Site existence check. Allows private site existence to be tested.
+     * 
+     * @param shortName     site short name
+     * @return true if the site exists, false otherwise.
+     */
+    public boolean hasSite(String shortName)
+    {
+        return this.siteService.hasSite(shortName);
+    }
+    
+    /**
      * This method checks if the currently authenticated user has permission to create sites.
      * 
      * @return <code>true</code> if the current user is a Contributor to "Sites" node, else <code>false</code>.

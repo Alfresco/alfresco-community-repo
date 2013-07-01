@@ -46,9 +46,16 @@ public interface ContentTransformerWorker
     public String getVersionString();
 
     /**
-     * @see ContentTransformer#isTransformable(String, String, TransformationOptions)
+     * Unlike {@link ContentTransformer#isTransformable(String, String, TransformationOptions)} 
+     * should not include the transformer name, as that is added by the ContentTransformer in
+     * the parent context.
      */
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options);    
+
+    /**
+     * @see ContentTransformer#getComments(boolean)
+     */
+    public String getComments(boolean available);
 
     /**
      * @see ContentTransformer#transform(ContentReader, ContentWriter, TransformationOptions)

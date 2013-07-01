@@ -505,7 +505,8 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             }, AuthenticationUtil.getSystemUserName());
 
             // final node must be accessible to the user via the usual ACL permission checks
-            if (result != null && AccessStatus.ALLOWED != services.getPermissionService().hasPermission(result, PermissionService.READ_PROPERTIES))
+            if (result != null
+                    && services.getPublicServiceAccessService().hasAccess("NodeService", "getProperties", result) != AccessStatus.ALLOWED)
             {
                 result = null;
             }

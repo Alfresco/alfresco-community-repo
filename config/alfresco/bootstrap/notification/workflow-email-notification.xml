@@ -45,7 +45,7 @@
                         <cm:name>wf-email_de.html.ftl</cm:name>
                         <cm:title>wf-email_de.html.ftl</cm:title>
                         <cm:description>${spaces.templates.email.generate_the_wf_notification_email.description} - ${version.default}</cm:description>
-                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email.html_de.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
+                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email_de.html.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
                     </view:properties>
                 </cm:content>
                 <cm:content view:childName="cm:invite-email_es.html.ftl">
@@ -60,7 +60,7 @@
                         <cm:name>wf-email_es.html.ftl</cm:name>
                         <cm:title>wf-email_es.html.ftl</cm:title>
                         <cm:description>${spaces.templates.email.generate_the_wf_notification_email.description} - ${version.default}</cm:description>
-                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email.html_es.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
+                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email_es.html.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
                     </view:properties>
                 </cm:content>
                 <cm:content view:childName="cm:invite-email_fr.html.ftl">
@@ -75,7 +75,7 @@
                         <cm:name>wf-email_fr.html.ftl</cm:name>
                         <cm:title>wf-email_fr.html.ftl</cm:title>
                         <cm:description>${spaces.templates.email.generate_the_wf_notification_email.description} - ${version.default}</cm:description>
-                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email.html_fr.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
+                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email_fr.html.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
                     </view:properties>
                 </cm:content>
                 <cm:content view:childName="cm:invite-email_it.html.ftl">
@@ -90,7 +90,7 @@
                         <cm:name>wf-email_it.html.ftl</cm:name>
                         <cm:title>wf-email_it.html.ftl</cm:title>
                         <cm:description>${spaces.templates.email.generate_the_wf_notification_email.description} - ${version.default}</cm:description>
-                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email.html_it.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
+                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email_it.html.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
                     </view:properties>
                 </cm:content>
                 <cm:content view:childName="cm:invite-email_ja.html.ftl">
@@ -105,7 +105,7 @@
                         <cm:name>wf-email_ja.html.ftl</cm:name>
                         <cm:title>wf-email_ja.html.ftl</cm:title>
                         <cm:description>${spaces.templates.email.generate_the_wf_notification_email.description} - ${version.default}</cm:description>
-                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email.html_ja.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
+                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email_ja.html.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
                     </view:properties>
                 </cm:content>
                 <cm:content view:childName="cm:wf-email_nl.html.ftl">
@@ -120,7 +120,7 @@
                         <cm:name>wf-email_nl.html.ftl</cm:name>
                         <cm:title>wf-email_nl.html.ftl</cm:title>
                         <cm:description>${spaces.templates.email.generate_the_wf_notification_email.description} - ${version.default}</cm:description>
-                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email.html_nl.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
+                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email_nl.html.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
                     </view:properties>
                 </cm:content>
             </cm:contains>

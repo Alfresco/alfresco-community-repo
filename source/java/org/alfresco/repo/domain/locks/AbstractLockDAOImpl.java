@@ -58,6 +58,7 @@ public abstract class AbstractLockDAOImpl implements LockDAO
         this.qnameDAO = qnameDAO;
     }
     
+    @Override
     public void getLock(QName lockQName, String lockToken, long timeToLive)
     {
         String qnameNamespaceUri = lockQName.getNamespaceURI();
@@ -162,21 +163,33 @@ public abstract class AbstractLockDAOImpl implements LockDAO
         // Done
     }
     
+    @Override
     public void refreshLock(QName lockQName, String lockToken, long timeToLive)
     {
-        updateLocks(lockQName, lockToken, lockToken, timeToLive);
+        updateLocks(lockQName, lockToken, lockToken, timeToLive, false);
     }
     
-    public void releaseLock(QName lockQName, String lockToken)
+    @Override
+    public boolean releaseLock(QName lockQName, String lockToken, boolean optimistic)
     {
-        updateLocks(lockQName, lockToken, LOCK_TOKEN_RELEASED, 0L);
+        return updateLocks(lockQName, lockToken, LOCK_TOKEN_RELEASED, 0L, optimistic);
     }
     
     /**
      * Put new values against the given exclusive lock.  This works against the related locks as well.
-     * @throws LockAcquisitionException     on failure
+     * @param optimistic                    <tt>true</tt> if a mismatch in the number of locked rows should
+     *                                      be ignored.
+     * @return                              <tt>true</tt> if the lock was successfully and fully updated
+     *                                      using the lock token provided
+     * @throws LockAcquisitionException     if the method is pessimistic and the number of rows does not
+     *                                      correspond to the number expected
      */
-    private void updateLocks(QName lockQName, String lockToken, String newLockToken, long timeToLive)
+    private boolean updateLocks(
+            QName lockQName,
+            String lockToken,
+            String newLockToken,
+            long timeToLive,
+            boolean optimistic)
     {
         String qnameNamespaceUri = lockQName.getNamespaceURI();
         String qnameLocalName = lockQName.getLocalName();
@@ -213,6 +226,12 @@ public abstract class AbstractLockDAOImpl implements LockDAO
         // Check
         if (updateCount != requiredUpdateCount)
         {
+            if (optimistic)
+            {
+                // We don't mind.  Assume success but report that the lock was not removed by us.
+                return false;
+            }
+            // Fall through to error states (pessimistic)
             if (LOCK_TOKEN_RELEASED.equals(newLockToken))
             {
                 throw new LockAcquisitionException(
@@ -225,6 +244,11 @@ public abstract class AbstractLockDAOImpl implements LockDAO
                         LockAcquisitionException.ERR_LOCK_UPDATE_COUNT,
                         lockQName, lockToken, new Integer(updateCount), new Integer(requiredUpdateCount));
             }
+        }
+        else
+        {
+            // All updated successfully
+            return true;
         }
         // Done
     }

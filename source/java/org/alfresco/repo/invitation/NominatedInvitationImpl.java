@@ -79,9 +79,9 @@ import org.alfresco.service.namespace.QName;
         this.sentInviteDate =inviteDate;
     }
     
-    private static Map<String, String> getConstructorProps(String inviteId, Map<QName, Serializable> props)
+    private static Map<String, Serializable> getConstructorProps(String inviteId, Map<QName, Serializable> props)
     {
-        Map<String, String> parentProps = new HashMap<String, String>();
+        Map<String, Serializable> parentProps = new HashMap<String, Serializable>();
         parentProps.put(ID_KEY, inviteId);
         parentProps.put(INVITEE_KEY, (String) props.get(WF_PROP_INVITEE_USER_NAME));
         parentProps.put(ROLE_KEY,(String)props.get(WF_PROP_INVITEE_ROLE));

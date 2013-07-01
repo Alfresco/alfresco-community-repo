@@ -160,7 +160,7 @@ public class LockDAOTest extends TestCase
         {
             public Boolean execute() throws Throwable
             {
-                lockDAO.releaseLock(lockName, lockToken);
+                lockDAO.releaseLock(lockName, lockToken, false);
                 return Boolean.TRUE;
             }
         };
@@ -235,6 +235,32 @@ public class LockDAOTest extends TestCase
         String token = lock(lockAAA, 500000L, true);
         release(lockAAA, token, true);
         token = lock(lockAAA, 0L, true);
+    }
+    
+    public void testReleaseLockRepeated() throws Exception
+    {
+        String token = lock(lockAAA, 500000L, true);
+        release(lockAAA, token, true);
+        release(lockAAA, token, false);
+        try
+        {
+            lockDAO.releaseLock(lockAAA, token, false);
+            fail("Pessimistic lock release should have failed.");
+        }
+        catch (LockAcquisitionException e)
+        {
+            // Expected
+        }
+        try
+        {
+            boolean released = lockDAO.releaseLock(lockAAA, token, true);
+            // Expected
+            assertFalse("Release should have been negative.", released);
+        }
+        catch (LockAcquisitionException e)
+        {
+            fail("Optimistic lock release should have succeeded.");
+        }
     }
     
     public void testSharedLockAndRelease() throws Exception

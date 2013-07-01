@@ -20,6 +20,7 @@ package org.alfresco.repo.action.executer;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -109,4 +110,5 @@ class DummyMimetypeService implements MimetypeService
     public String guessMimetype(String filename,ContentReader reader){ return null; }
     public boolean isText(String mimetype)                       { return false; }
     public String getMimetypeIfNotMatches(ContentReader reader)  { return null;  }
+    public Collection<String> getMimetypes(String extension)     { return null;  }
 }

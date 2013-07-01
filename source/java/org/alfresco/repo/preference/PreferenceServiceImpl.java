@@ -19,16 +19,14 @@
 package org.alfresco.repo.preference;
 
 import java.io.Serializable;
-import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -50,8 +48,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,18 +60,24 @@ import org.json.JSONObject;
  */
 public class PreferenceServiceImpl implements PreferenceService
 {
-    private static final String FAVOURITE_SITES_PREFIX = "org.alfresco.share.sites.favourites.";
-    private static final int FAVOURITE_SITES_PREFIX_LENGTH = FAVOURITE_SITES_PREFIX.length();
-    
+
+	private static final String SHARE_SITES_PREFERENCE_KEY = "org.alfresco.share.sites.favourites.";
+	private static final int SHARE_SITES_PREFERENCE_KEY_LEN = SHARE_SITES_PREFERENCE_KEY.length();
+	private static final String EXT_SITES_PREFERENCE_KEY = "org.alfresco.ext.sites.favourites.";
+	
+    /** Node service */    
     private NodeService nodeService;
     private ContentService contentService;
     private PersonService personService;
-    private SiteService siteService;
     private PermissionService permissionService;
     private AuthenticationContext authenticationContext;
-    
     private AuthorityService authorityService;
     
+	/**
+     * Set the node service
+     * 
+     * @param nodeService   the node service
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -84,12 +87,12 @@ public class PreferenceServiceImpl implements PreferenceService
     {
         this.contentService = contentService;
     }
-    
-    public void setSiteService(SiteService siteService)
-    {
-        this.siteService = siteService;
-    }
-    
+
+	/**
+     * Set the person service
+     * 
+     * @param personService     the person service
+     */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
@@ -118,59 +121,6 @@ public class PreferenceServiceImpl implements PreferenceService
     {
         return getPreferences(userName, null);
     }
-
-    /**
-     * @see org.alfresco.repo.person.PersonService#getPreferences(java.lang.String, java.lang.String)
-     *      java.lang.String)
-     */
-    @SuppressWarnings("unchecked")
-    public Map<String, Serializable> getPreferences(String userName, String preferenceFilter)
-    {
-        Map<String, Serializable> preferences = new TreeMap<String, Serializable>();
-        
-        try
-        {
-            JSONObject jsonPrefs = getPreferencesObject(userName);
-            if(jsonPrefs != null)
-            {
-                // Build hash from preferences stored in the repository
-                Iterator<String> keys = jsonPrefs.keys();
-                while (keys.hasNext())
-                {
-                    String key = (String)keys.next();
-                    
-                    if (preferenceFilter == null ||
-                        preferenceFilter.length() == 0 ||
-                        matchPreferenceNames(key, preferenceFilter) == true)
-                    {
-                        preferences.put(key, (Serializable)jsonPrefs.get(key));
-                    }
-                }
-            }
-        }
-        catch (JSONException exception)
-        {
-            throw new AlfrescoRuntimeException("Can not get preferences for " + userName + " because there was an error pasing the JSON data.", exception);
-        }
-        
-        return preferences;
-    }
-    
-    private PageDetails getPageDetails(PagingRequest pagingRequest, int totalSize)
-    {
-        int skipCount = pagingRequest.getSkipCount();
-        int maxItems = pagingRequest.getMaxItems();
-        int end = maxItems == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? totalSize : skipCount + maxItems;
-    	int pageSize = (maxItems == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? totalSize : maxItems);
-    	if(pageSize > totalSize - skipCount)
-    	{
-    		pageSize = totalSize - skipCount;
-    	}
-
-        boolean hasMoreItems = end < totalSize;
-        
-    	return new PageDetails(pageSize, hasMoreItems, skipCount, maxItems, end);
-    }
     
     private JSONObject getPreferencesObject(String userName) throws JSONException
     {
@@ -185,10 +135,10 @@ public class PreferenceServiceImpl implements PreferenceService
         }
 
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (userName.equals(currentUserName) ||
-            personService.getUserIdentifier(userName).equals(personService.getUserIdentifier(currentUserName)) ||
-            authenticationContext.isSystemUserName(currentUserName) ||
-            authorityService.isAdminAuthority(currentUserName))
+        boolean isSystem = AuthenticationUtil.isRunAsUserTheSystemUser() || authenticationContext.isSystemUserName(currentUserName);
+        if (isSystem || userName.equals(currentUserName)
+                    || personService.getUserIdentifier(userName).equals(personService.getUserIdentifier(currentUserName))
+                    || authorityService.isAdminAuthority(currentUserName))
         {
             // Check for preferences aspect
             if (this.nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PREFERENCES) == true)
@@ -216,7 +166,6 @@ public class PreferenceServiceImpl implements PreferenceService
     public Serializable getPreference(String userName, String preferenceName)
     {
     	String preferenceValue = null;
-
         try
         {
 	        JSONObject jsonPrefs = getPreferencesObject(userName);
@@ -234,6 +183,80 @@ public class PreferenceServiceImpl implements PreferenceService
         }
 
         return preferenceValue;
+    }
+
+    /**
+     * @see org.alfresco.repo.person.PersonService#getPreferences(java.lang.String, java.lang.String)
+     */
+    @SuppressWarnings({ "unchecked" })
+    public Map<String, Serializable> getPreferences(String userName, String preferenceFilter)
+    {
+        Map<String, Serializable> preferences = new TreeMap<String, Serializable>();
+        
+        try
+        {
+        	Set<String> siteIds = new HashSet<String>();
+
+	        JSONObject jsonPrefs = getPreferencesObject(userName);
+	        if(jsonPrefs != null)
+	        {
+	            // Build hash from preferences stored in the repository
+	            Iterator<String> keys = jsonPrefs.keys();
+	            while (keys.hasNext())
+	            {
+	                String key = (String)keys.next();
+                	Serializable value = (Serializable)jsonPrefs.get(key);
+
+                	if(key.startsWith(SHARE_SITES_PREFERENCE_KEY))
+                	{
+                    	// CLOUD-1518: convert site preferences on the fly
+                    	// convert keys as follows:
+                    	//   <SHARE_SITES_PREFERENCE_KEY>.<siteId>.favourited -> <SHARE_SITES_PREFERENCE_KEY>.<siteId>
+                    	//   <SHARE_SITES_PREFERENCE_KEY>.<siteId>.createdAt -> <EXT_SITES_PREFERENCE_KEY>.<siteId>.createdAt
+                		if(key.endsWith(".favourited"))
+                		{
+	                		int idx = key.indexOf(".favourited");
+	                		String siteId = key.substring(SHARE_SITES_PREFERENCE_KEY_LEN, idx);
+	                		StringBuilder sb = new StringBuilder(SHARE_SITES_PREFERENCE_KEY);
+	                		sb.append(siteId);
+	                		siteIds.add(siteId);
+	                		key = sb.toString();
+                		}
+	
+	                	else if(key.endsWith(".createdAt"))
+	                	{
+	                		int idx = key.indexOf(".createdAt");
+	                		String siteId = key.substring(SHARE_SITES_PREFERENCE_KEY_LEN, idx);
+	                		StringBuilder sb = new StringBuilder(EXT_SITES_PREFERENCE_KEY);
+	                		sb.append(siteId);
+	                		sb.append(".createdAt");
+	                		siteIds.add(siteId);
+	                		key = sb.toString();
+	                	}
+	                	else if(preferences.containsKey(key))
+	                	{
+	                    	// Ensure that the values of the following form (the only other important form in this case) does not
+	                		// override those on the lhs from above:
+	                		//   <SHARE_SITES_PREFERENCE_KEY>.<siteId>
+	                		continue;
+	                	}
+                	}
+
+	                if (preferenceFilter == null ||
+	                    preferenceFilter.length() == 0 ||
+	                    matchPreferenceNames(key, preferenceFilter))
+	                {
+	                	preferences.put(key, value);
+	                }
+	            }
+            }
+        }
+        catch (JSONException exception)
+        {
+            throw new AlfrescoRuntimeException("Can not get preferences for " + userName + " because there was an error pasing the JSON data.", exception);
+        }
+
+        return preferences;
     }
     
     public PagingResults<Pair<String, Serializable>> getPagedPreferences(String userName, String preferenceFilter, PagingRequest pagingRequest)
@@ -312,6 +335,11 @@ public class PreferenceServiceImpl implements PreferenceService
         matchTo = matchTo.replace(".", "+");
         String[] matchToArr = matchTo.split("\\+");
 
+        if(matchToArr.length > nameArr.length)
+        {
+        	return false;
+        }
+
         int index = 0;
         for (String matchToElement : matchToArr)
         {
@@ -368,7 +396,40 @@ public class PreferenceServiceImpl implements PreferenceService
                         // Update with the new preference values
                         for (Map.Entry<String, Serializable> entry : preferences.entrySet())
                         {
-                            jsonPrefs.put(entry.getKey(), entry.getValue());
+                        	String key = entry.getKey();
+
+                        	// CLOUD-1518: remove extraneous site preferences, if present
+                        	if(key.startsWith(SHARE_SITES_PREFERENCE_KEY))
+                        	{
+                        		// remove any extraneous keys, if present
+                        		String siteId = key.substring(SHARE_SITES_PREFERENCE_KEY_LEN);
+
+                        		StringBuilder sb = new StringBuilder(SHARE_SITES_PREFERENCE_KEY);
+                        		sb.append(siteId);
+                        		sb.append(".favourited");
+                        		String testKey = sb.toString();
+                        		if(jsonPrefs.has(testKey))
+                        		{
+                        			jsonPrefs.remove(testKey);
+                        		}
+                        		
+                        		sb = new StringBuilder(SHARE_SITES_PREFERENCE_KEY);
+                        		sb.append(siteId);
+                        		sb.append(".createdAt");
+                        		testKey = sb.toString();
+                        		if(jsonPrefs.has(testKey))
+                        		{
+                        			jsonPrefs.remove(testKey);
+                        		}
+                        	}
+                        	
+                        	Serializable value = entry.getValue();
+                        	if(value != null && value.equals("CURRENT_DATE"))
+                        	{
+                        		Date date = new Date();
+                	    		value = ISO8601DateFormat.format(date);
+                        	}
+                            jsonPrefs.put(key, value);
                         }
 
                         // Save the updated preferences
@@ -443,6 +504,7 @@ public class PreferenceServiceImpl implements PreferenceService
 
                                 // Remove the prefs that match the filter
                                 List<String> removeKeys = new ArrayList<String>(10);
+                                @SuppressWarnings("unchecked")
                                 Iterator<String> keys = jsonPrefs.keys();
                                 while (keys.hasNext())
                                 {
@@ -504,6 +566,7 @@ public class PreferenceServiceImpl implements PreferenceService
                 authenticationContext.isSystemUserName(currentUserName) ||
                 permissionService.hasPermission(personNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED);
     }
+    
     public static class PageDetails
     {
     	private boolean hasMoreItems = false;
@@ -546,128 +609,5 @@ public class PreferenceServiceImpl implements PreferenceService
 		{
 			return pageSize;
 		}
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.site.SiteService#isFavouriteSite(java.lang.String, java.lang.String)
-     */
-    public boolean isFavouriteSite(String userName, String siteShortName)
-    {
-		StringBuilder prefKey = new StringBuilder(FAVOURITE_SITES_PREFIX);
-		prefKey.append(siteShortName);
-
-    	String value = (String)getPreference(userName, prefKey.toString());
-    	return (value == null ? false : value.equalsIgnoreCase("true"));
-    }
-
-    /**
-     * @see org.alfresco.service.cmr.preference.PreferenceService#addFavouriteSite(java.lang.String, java.lang.String)
-     */
-    public void addFavouriteSite(String userName, String siteShortName)
-    {
-		StringBuilder prefKey = new StringBuilder(FAVOURITE_SITES_PREFIX);
-		prefKey.append(siteShortName);
-
-		Map<String, Serializable> preferences = new HashMap<String, Serializable>(1);
-		preferences.put(prefKey.toString(), Boolean.TRUE);
-		setPreferences(userName, preferences);
-    }
-
-    /**
-     * @see org.alfresco.service.cmr.preference.PreferenceService#removeFavouriteSite(java.lang.String, java.lang.String)
-     */
-    public void removeFavouriteSite(String userName, String siteShortName)
-    {
-		StringBuilder prefKey = new StringBuilder(FAVOURITE_SITES_PREFIX);
-		prefKey.append(siteShortName);
-
-		clearPreferences(userName, prefKey.toString());
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.site.SiteService#getFavouriteSites(java.lang.String, org.alfresco.query.PagingRequest)
-     */
-    public PagingResults<SiteInfo> getFavouriteSites(String userName, PagingRequest pagingRequest)
-    {
-    	final Collator collator = Collator.getInstance();
-
-        final Set<SiteInfo> sortedFavouriteSites = new TreeSet<SiteInfo>(new Comparator<SiteInfo>()
-        {
-			@Override
-			public int compare(SiteInfo o1, SiteInfo o2)
-			{
-				return collator.compare(o1.getTitle(), o2.getTitle());
-			}
-		});
-
-        Map<String, Serializable> prefs = getPreferences(userName, FAVOURITE_SITES_PREFIX);
-        for(String key : prefs.keySet())
-        {
-        	boolean isFavourite = false;
-        	Serializable s = prefs.get(key);
-        	if(s instanceof Boolean)
-        	{
-        		isFavourite = (Boolean)s;
-        	}
-        	if(isFavourite)
-        	{
-	        	String siteShortName = key.substring(FAVOURITE_SITES_PREFIX_LENGTH);
-	        	SiteInfo siteInfo = siteService.getSite(siteShortName);
-	        	if(siteInfo != null)
-	        	{
-	        		sortedFavouriteSites.add(siteInfo);
-	        	}
-        	}
-        }
-
-        int totalSize = sortedFavouriteSites.size();
-        final PageDetails pageDetails = getPageDetails(pagingRequest, totalSize);
-
-		final List<SiteInfo> page = new ArrayList<SiteInfo>(pageDetails.getPageSize());
-		Iterator<SiteInfo> it = sortedFavouriteSites.iterator();
-        for(int counter = 0; counter < pageDetails.getEnd() && it.hasNext(); counter++)
-        {
-        	SiteInfo favouriteSite = it.next();
-
-			if(counter < pageDetails.getSkipCount())
-			{
-				continue;
-			}
-			
-			if(counter > pageDetails.getEnd() - 1)
-			{
-				break;
-			}
-
-			page.add(favouriteSite);
-        }
-
-        return new PagingResults<SiteInfo>()
-        {
-			@Override
-			public List<SiteInfo> getPage()
-			{
-				return page;
-			}
-
-			@Override
-			public boolean hasMoreItems()
-			{
-				return pageDetails.hasMoreItems();
-			}
-
-			@Override
-			public Pair<Integer, Integer> getTotalResultCount()
-			{
-				Integer total = Integer.valueOf(sortedFavouriteSites.size());
-				return new Pair<Integer, Integer>(total, total);
-			}
-
-			@Override
-			public String getQueryExecutionId()
-			{
-				return null;
-			}
-        };
     }
 }

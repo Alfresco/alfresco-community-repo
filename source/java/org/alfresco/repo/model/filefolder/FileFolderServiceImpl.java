@@ -1622,7 +1622,7 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         else
         {
-            hiddenAspect.hideNode(nodeRef, mask);
+            hiddenAspect.hideNode(nodeRef, mask, true, true, false);
         }
     }
 

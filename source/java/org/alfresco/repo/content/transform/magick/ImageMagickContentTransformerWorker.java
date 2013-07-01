@@ -306,12 +306,14 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
     private boolean isSingleSourcePageRangeRequired(String sourceMimetype, String targetMimetype)
     {
         // Need a page source if we're transforming from PDF or TIFF to an image other than TIFF
+        // or from PSD
         return ((sourceMimetype.equals(MimetypeMap.MIMETYPE_PDF) || 
                 sourceMimetype.equals(MimetypeMap.MIMETYPE_IMAGE_TIFF)) && 
                 ((!targetMimetype.equals(MimetypeMap.MIMETYPE_IMAGE_TIFF) 
                 && targetMimetype.contains(MIMETYPE_IMAGE_PREFIX)) ||
                 targetMimetype.equals(MimetypeMap.MIMETYPE_APPLICATION_PHOTOSHOP) ||
-                targetMimetype.equals(MimetypeMap.MIMETYPE_APPLICATION_EPS)));
+                targetMimetype.equals(MimetypeMap.MIMETYPE_APPLICATION_EPS)) ||
+                sourceMimetype.equals(MimetypeMap.MIMETYPE_APPLICATION_PHOTOSHOP));
     }
     
     /**

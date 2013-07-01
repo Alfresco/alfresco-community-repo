@@ -18,6 +18,8 @@
  */
 package org.alfresco.service.cmr.invitation;
 
+import java.util.Date;
+
 
 /**
  * The invitation request is a command object for who, needs to be added or removed 
@@ -84,4 +86,8 @@ public interface Invitation
      * @return the roleName
      */
     public String getRoleName();
+    
+    Date getCreatedAt();
+    
+    Date getModifiedAt();
 }

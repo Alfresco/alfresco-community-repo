@@ -21,6 +21,7 @@ package org.alfresco.repo.content.transform;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Properties;
 
 import javax.mail.MessagingException;
@@ -60,6 +61,12 @@ public class EMLTransformer extends AbstractContentTransformer2
         {
             return true;
         }
+    }
+
+    @Override
+    public String getComments(boolean available)
+    {
+        return onlySupports(MimetypeMap.MIMETYPE_RFC822, MimetypeMap.MIMETYPE_TEXT_PLAIN, available);
     }
 
     @Override

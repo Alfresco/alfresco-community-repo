@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.content.transform;
 
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.content.ContentWorker;
@@ -70,6 +71,22 @@ public interface ContentTransformer extends ContentWorker
      * @return boolean                  true if this content transformer can satify the mimetypes, false otherwise
      */
     public boolean isTransformableSize(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options);
+
+    /**
+     * Overridden to supply a comment or String of commented out transformation properties
+     * that specify any (hard coded or implied) supported transformations. Used
+     * when providing a list of properties to an administrators who may be setting
+     * other transformation properties, via JMX. Consider overriding if
+     * {link {@link AbstractContentTransformerLimits#isTransformableMimetype(String, String, TransformationOptions)}
+     * or {@link ContentTransformerWorker#isTransformable(String, String, TransformationOptions)}
+     * have been overridden.
+     * See {@link #getCommentsOnlySupports(List, List, boolean)} which may be used to help construct a comment.
+     * @param available indicates if the transformer has been registered and is available to be selected.
+     *                  {@code false} indicates that the transformer is only available as a component of a
+     *                  complex transformer.
+     * @return one line per property. The simple transformer name is returned by default as a comment.
+     */
+    public String getComments(boolean available);
 
     /**
      * Returns the maximum source size (in KBytes) allowed given the supplied values.

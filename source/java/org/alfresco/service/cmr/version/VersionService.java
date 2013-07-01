@@ -171,6 +171,8 @@ public interface VersionService
 	public Version getCurrentVersion(NodeRef nodeRef);
 	
 	/**
+	 * Revert the state of the node to the current version.
+	 * <p>
 	 * The node reference will be reverted to the current version.
      * <p>
      * A deep revert will be performed.
@@ -183,17 +185,21 @@ public interface VersionService
 	public void revert(NodeRef nodeRef);
     
     /**
-     * The node reference will be reverted to the current version.
+     * Revert the state of the node to the current version.
+     * <p>
+     * The node will be reverted to the current version.
      * 
      * @see VersionService#revert(NodeRef, Version, boolean)
      * 
      * @param nodeRef                       the node reference
-     * @param deep                          true if a deep revert is to be performed, flase otherwise
+     * @param deep                          true if a deep revert is to be performed, false otherwise
      */
     @Auditable(parameters = {"nodeRef", "deep"})
     public void revert(NodeRef nodeRef, boolean deep);
     
     /**
+     * Revert the state of the node to the specified version. 
+     * <p>
      * A deep revert will take place by default.
      * 
      * @see VersionService#revert(NodeRef, Version, boolean)

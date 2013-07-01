@@ -21,6 +21,8 @@ package org.alfresco.repo.domain.activities.ibatis;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -31,13 +33,28 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityFeedQueryEntity;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.util.Pair;
 import org.apache.ibatis.session.RowBounds;
 
 public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFeedDAO
 {
-    @Override
-    public long insertFeedEntry(ActivityFeedEntity activityFeed) throws SQLException
+	private static final int DEFAULT_FETCH_BATCH_SIZE = 150;
+
+    private TenantService tenantService;
+    private int fetchBatchSize = DEFAULT_FETCH_BATCH_SIZE;
+    
+    public void setTenantService(TenantService tenantService)
+    {
+		this.tenantService = tenantService;
+	}
+
+	public void setFetchBatchSize(int fetchBatchSize)
+	{
+		this.fetchBatchSize = fetchBatchSize;
+	}
+
+	public long insertFeedEntry(ActivityFeedEntity activityFeed) throws SQLException
     {
         // ALF-17455 temporary assertion that the format is "json" 
         // TODO remove the summary format completely.
@@ -45,7 +62,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         {
             throw new AlfrescoRuntimeException("Obsolete summary format specified - only json expected");
         }
-        
+
         template.insert("alfresco.activities.insert.insert_activity_feed", activityFeed);
         Long id = activityFeed.getId();
         return (id != null ? id : -1);
@@ -121,8 +138,70 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     {
         return (List<ActivityFeedEntity>)template.selectList("alfresco.activities.select_activity_user_feeds_greater_than_max", maxFeedSize);
     }
+
+        public Long countUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, int maxFeedSize) throws SQLException
+    {
+        ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
+        params.setFeedUserId(feedUserId);
+        params.setActivitySummaryFormat(format);
+        
+        if (minFeedId > -1)
+        {
+            params.setMinId(minFeedId);
+        }
+        
+        if (siteId != null)
+        {
+            if (excludeThisUser && excludeOtherUsers)
+            {
+            	return Long.valueOf(0);
+            }
+            if ((!excludeThisUser) && (!excludeOtherUsers))
+            {
+                // no excludes => everyone => where feed user is me
+                return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_feeduser_and_site", params);
+            }
+            else if ((excludeThisUser) && (!excludeOtherUsers))
+            {
+                // exclude feed user => others => where feed user is me and post user is not me
+                return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_feeduser_others_and_site", params);
+            }
+            else if ((excludeOtherUsers) && (!excludeThisUser))
+            {
+                // exclude others => me => where feed user is me and post user is me
+                return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_feeduser_me_and_site", params);
+            }
+        }
+        else
+        {
+            // all sites
+            
+            if (excludeThisUser && excludeOtherUsers)
+            {
+                // effectively NOOP - return empty feed
+            	return Long.valueOf(0);
+            }
+            if (!excludeThisUser && !excludeOtherUsers)
+            {
+                // no excludes => everyone => where feed user is me
+                return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_feeduser", params);
+            }
+            else if (excludeThisUser)
+            {
+                // exclude feed user => others => where feed user is me and post user is not me
+                return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_feeduser_others", params);
+            }
+            else if (excludeOtherUsers)
+            {
+                // exclude others => me => where feed user is me and post user is me
+                return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_feeduser_me", params);
+            }
+        }
+
+        // belts-and-braces
+        throw new AlfrescoRuntimeException("Unexpected: invalid arguments");
+    }
     
-    @SuppressWarnings("unchecked")
     @Override
     public List<ActivityFeedEntity> selectSiteFeedsToClean(int maxFeedSize) throws SQLException
     {
@@ -238,8 +317,76 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     	};
     }
     
+    /*
+     * Get a paged list of activities, filtering out those activities that do not belong to the network "networkId".
+     */
     @SuppressWarnings("unchecked")
-    public PagingResults<ActivityFeedEntity> selectPagedUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest) throws SQLException
+	private List<ActivityFeedEntity> filterByNetwork(String networkId, String siteId, String sql, ActivityFeedQueryEntity params, PagingRequest pagingRequest)
+    {
+    	int expectedSkipCount = pagingRequest.getSkipCount();
+    	// +1 to calculate hasMoreItems
+    	int expectedMaxItems = (pagingRequest.getMaxItems() == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? pagingRequest.getMaxItems() : pagingRequest.getMaxItems() + 1);
+
+    	int skipCount = 0;
+    	int maxItems = fetchBatchSize;
+
+    	List<ActivityFeedEntity> ret = new LinkedList<ActivityFeedEntity>();
+
+    	int numMatchingItems = 0;
+    	int numAddedItems = 0;
+    	boolean skipping = true;
+
+    	List<ActivityFeedEntity> feedEntries = null;
+
+    	// fetch activities in batches of size "maxItems"
+    	// iterate through them, filtering out any that don't match the networkId
+    	do
+    	{
+	        RowBounds rowBounds = new RowBounds(skipCount, maxItems);
+
+	        feedEntries = (List<ActivityFeedEntity>)template.selectList(sql, params, rowBounds);
+	        Iterator<ActivityFeedEntity> feedEntriesIt = feedEntries.iterator();
+
+	    	while(feedEntriesIt.hasNext() && numAddedItems < expectedMaxItems)
+	    	{
+	    		ActivityFeedEntity activityFeedEntry = feedEntriesIt.next();
+	    		
+	            if(siteId == null)
+	            {
+	                // note: pending requirements for THOR-224, for now assume all activities are within context of site and filter by current tenant
+	                if(!networkId.equals(tenantService.getDomain(activityFeedEntry.getSiteNetwork())))
+	                {
+	                    continue;
+	                }
+	            }
+
+	            numMatchingItems++;
+
+	            if(skipping)
+	            {
+            		if(numMatchingItems > expectedSkipCount)
+            		{
+            			skipping = false;
+            		}
+            		else
+            		{
+            			continue;
+            		}
+	            }
+
+	            ret.add(activityFeedEntry);
+	            
+	            numAddedItems++;
+	    	}
+
+	    	skipCount += maxItems;
+    	}
+    	while(feedEntries != null && feedEntries.size() > 0 && numAddedItems < expectedMaxItems);
+
+    	return ret;
+    }
+
+    public PagingResults<ActivityFeedEntity> selectPagedUserFeedEntries(String feedUserId, String networkId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest) throws SQLException
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
         params.setFeedUserId(feedUserId);
@@ -249,13 +396,6 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         {
             params.setMinId(minFeedId);
         }
-
-        int skipCount = pagingRequest.getSkipCount();
-        int maxItems = pagingRequest.getMaxItems();
-
-        RowBounds rowBounds = (maxItems == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ?
-        		new RowBounds(skipCount, RowBounds.NO_ROW_LIMIT) :
-        		new RowBounds(skipCount, maxItems + 1)); // +1 to check for more items
 
         if (siteId != null)
         {
@@ -270,17 +410,17 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
             if ((!excludeThisUser) && (!excludeOtherUsers))
             {
                 // no excludes => everyone => where feed user is me
-                return getPagingResults(pagingRequest, (List<ActivityFeedEntity>)template.selectList("alfresco.activities.select_activity_feed_for_feeduser_and_site", params, rowBounds));
+                return getPagingResults(pagingRequest, filterByNetwork(networkId, siteId, "alfresco.activities.select_activity_feed_for_feeduser_and_site", params, pagingRequest));
             }
             else if ((excludeThisUser) && (!excludeOtherUsers))
             {
                 // exclude feed user => others => where feed user is me and post user is not me
-                return getPagingResults(pagingRequest, (List<ActivityFeedEntity>)template.selectList("alfresco.activities.select_activity_feed_for_feeduser_others_and_site", params, rowBounds));
+                return getPagingResults(pagingRequest, filterByNetwork(networkId, siteId, "alfresco.activities.select_activity_feed_for_feeduser_others_and_site", params, pagingRequest));
             }
             else if ((excludeOtherUsers) && (!excludeThisUser))
             {
                 // exclude others => me => where feed user is me and post user is me
-                return getPagingResults(pagingRequest, (List<ActivityFeedEntity>)template.selectList("alfresco.activities.select_activity_feed_for_feeduser_me_and_site", params, rowBounds));
+                return getPagingResults(pagingRequest, filterByNetwork(networkId, siteId, "alfresco.activities.select_activity_feed_for_feeduser_me_and_site", params, pagingRequest));
             }
         }
         else
@@ -295,17 +435,17 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
             if (!excludeThisUser && !excludeOtherUsers)
             {
                 // no excludes => everyone => where feed user is me
-                return getPagingResults(pagingRequest, (List<ActivityFeedEntity>)template.selectList("alfresco.activities.select_activity_feed_for_feeduser", params, rowBounds));
+                return getPagingResults(pagingRequest, filterByNetwork(networkId, siteId, "alfresco.activities.select_activity_feed_for_feeduser", params, pagingRequest));
             }
             else if (excludeThisUser)
             {
                 // exclude feed user => others => where feed user is me and post user is not me
-                return getPagingResults(pagingRequest, (List<ActivityFeedEntity>)template.selectList("alfresco.activities.select_activity_feed_for_feeduser_others", params, rowBounds));
+                return getPagingResults(pagingRequest, filterByNetwork(networkId, siteId, "alfresco.activities.select_activity_feed_for_feeduser_others", params, pagingRequest));
             }
             else if (excludeOtherUsers)
             {
                 // exclude others => me => where feed user is me and post user is me
-                return getPagingResults(pagingRequest, (List<ActivityFeedEntity>)template.selectList("alfresco.activities.select_activity_feed_for_feeduser_me", params, rowBounds));
+                return getPagingResults(pagingRequest, filterByNetwork(networkId, siteId, "alfresco.activities.select_activity_feed_for_feeduser_me", params, pagingRequest));
             }
         }
 
@@ -313,7 +453,6 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         throw new AlfrescoRuntimeException("Unexpected: invalid arguments");
     }
 
-    @SuppressWarnings("unchecked")
     public Long countSiteFeedEntries(String siteId, String format, int maxFeedSize) throws SQLException
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();

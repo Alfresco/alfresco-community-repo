@@ -38,6 +38,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodePolicy;
@@ -55,6 +56,7 @@ import org.alfresco.repo.tenant.TenantDomainMismatchException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
@@ -108,8 +110,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                                                                              
 {
     private static Log logger = LogFactory.getLog(PersonServiceImpl.class);
-    
-    private static String DELETING_PERSON_SET_RESOURCE = "DeletingPersonSetResource";
     
     private static final String CANNED_QUERY_PEOPLE_LIST = "getPeopleCannedQueryFactory";
 
@@ -579,7 +579,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             if (addToCache)
             {
                 // Don't bother caching unless we get a result that doesn't need duplicate processing
-                putToCache(searchUserName, allRefs);
+                putToCache(searchUserName, allRefs, false);
             }
         }
         return returnRef;
@@ -980,7 +980,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         }
         
-        removeFromCache(userName);
+        removeFromCache(userName, false);
         
         return personRef;
     }
@@ -1720,7 +1720,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         
         if (getPeopleContainer().equals(childAssocRef.getParentRef()))
         {
-            removeFromCache(userName);
+            // The value is stale.  However, we have already made the data change and
+            // therefore do not need to lock the removal from further changes.
+            removeFromCache(userName, false);
         }
         
         permissionsManager.setPermissions(personRef, userName, userName);
@@ -1779,7 +1781,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             parentRef = parentAssocRef.getParentRef();
             if (getPeopleContainer().equals(parentRef))
             {
-                removeFromCache(userName);
+                // Remove the cache entry.
+                // Note that the associated node has not been deleted and is therefore still
+                // visible to any other code that attempts to see it.  We therefore need to
+                // prevent the value from being added back before the node is actually
+                // deleted.
+                removeFromCache(userName, true);
             }
         }
     }
@@ -1807,21 +1814,35 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         return this.personCache.get(userName.toLowerCase());
     }
-    
-    private void putToCache(String userName, Set<NodeRef> refs)
+
+    /**
+     * Put a value into the {@link #setPersonCache(SimpleCache) personCache}, optionally
+     * locking the value against any changes.
+     */
+    private void putToCache(String userName, Set<NodeRef> refs, boolean lock)
     {
         String key = userName.toLowerCase();
-        if (AlfrescoTransactionSupport.getTransactionId() != null && !TransactionalResourceHelper.getSet(DELETING_PERSON_SET_RESOURCE).contains(key))
+        this.personCache.put(key, refs);
+        if (lock && personCache instanceof TransactionalCache)
         {
-            this.personCache.put(key, refs);
+            TransactionalCache<String, Set<NodeRef>> personCacheTxn = (TransactionalCache<String, Set<NodeRef>>) personCache;
+            personCacheTxn.lockValue(key);
         }
     }
     
-    private void removeFromCache(String userName)
+    /**
+     * Remove a value from the {@link #setPersonCache(SimpleCache) personCache}, optionally
+     * locking the value against any changes.
+     */
+    private void removeFromCache(String userName, boolean lock)
     {
         String key = userName.toLowerCase();
-        TransactionalResourceHelper.getSet(DELETING_PERSON_SET_RESOURCE).add(key);
-        this.personCache.remove(key);
+        personCache.remove(key);
+        if (lock && personCache instanceof TransactionalCache)
+        {
+            TransactionalCache<String, Set<NodeRef>> personCacheTxn = (TransactionalCache<String, Set<NodeRef>>) personCache;
+            personCacheTxn.lockValue(key);
+        }
     }
 
     /**
@@ -1932,7 +1953,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 }
                 
                 // Fix cache
-                removeFromCache(uidBefore);
+                // We are going to be pessimistic here.  Even though the properties have changed and
+                // should always be seen correctly by other policy listeners, we are not entirely sure
+                // that there won't be some sort of corruption i.e. the behaviour was pessimistic before
+                // this change so I'm leaving it that way.
+                removeFromCache(uidBefore, true);
             }
             else
             {

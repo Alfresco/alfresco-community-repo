@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
@@ -70,8 +71,8 @@ public class PostLookup
     /** The name of the lock used to ensure that post lookup does not run on more than one node at the same time */
     private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ActivityPostLookup");
     
-    /** The time this lock will persist in the database (30 sec but refreshed at regular intervals) */
-    private static final long LOCK_TTL = 1000 * 30;
+    /** The time this lock will persist in the database (60 sec but refreshed at regular intervals) */
+    private static final long LOCK_TTL = 1000 * 60;
     
     private ActivityPostDAO postDAO;
     private NodeService nodeService;
@@ -81,8 +82,6 @@ public class PostLookup
     private TenantService tenantService;
     private SiteService siteService;
     private JobLockService jobLockService;
-    
-    private volatile boolean busy;
     
     public static final String JSON_NODEREF_LOOKUP = "nodeRefL"; // requires additional lookup
     
@@ -184,22 +183,23 @@ public class PostLookup
     {
         checkProperties();
         
-        if (busy)
+        // Avoid running when in read-only mode
+        if (!transactionService.getAllowWrite())
         {
-            if (logger.isInfoEnabled())
+            if (logger.isTraceEnabled())
             {
-                logger.info("Still busy ...");
+                logger.trace("Post lookup not running due to read-only server");
             }
             return;
         }
-        
+
         long start = System.currentTimeMillis();
         String lockToken = null;
+        LockCallback lockCallback =  new LockCallback();
         try
         {
             if (jobLockService != null)
             {
-                JobLockRefreshCallback lockCallback = new LockCallback();
                 lockToken = acquireLock(lockCallback);
             }
             
@@ -279,7 +279,7 @@ public class PostLookup
         }
         finally
         {
-            releaseLock(lockToken);
+            releaseLock(lockCallback, lockToken);
         }
     }
     
@@ -764,29 +764,26 @@ public class PostLookup
     
     private class LockCallback implements JobLockRefreshCallback
     {
+        final AtomicBoolean running = new AtomicBoolean(true);
+        
         @Override
         public boolean isActive()
         {
-            return busy;
+            return running.get();
         }
         
         @Override
-        public void lockReleased()
+        public synchronized void lockReleased()
         {
-            // note: currently the cycle will try to complete (even if refresh failed)
-            synchronized(this)
+            if (logger.isDebugEnabled())
             {
-                if (logger.isTraceEnabled())
-                {
-                    logger.trace("Lock released (refresh failed): " + LOCK_QNAME);
-                }
-                
-                busy = false;
+                logger.debug("Lock release notification: " + LOCK_QNAME);
             }
+            running.set(false);
         }
     }
     
-    private String acquireLock(JobLockRefreshCallback lockCallback) throws LockAcquisitionException
+    private synchronized String acquireLock(LockCallback lockCallback) throws LockAcquisitionException
     {
         // Try to get lock
         String lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
@@ -794,30 +791,38 @@ public class PostLookup
         // Got the lock - now register the refresh callback which will keep the lock alive
         jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, lockCallback);
         
-        busy = true;
-        
-        if (logger.isTraceEnabled())
+        if (logger.isDebugEnabled())
         {
-            logger.trace("Lock aquired:  " + lockToken);
+            logger.debug("Lock acquired: " + LOCK_QNAME + ": "+ lockToken);
         }
         
         return lockToken;
     }
     
-    private void releaseLock(String lockToken)
+    private synchronized void releaseLock(LockCallback lockCallback, String lockToken)
     {
         try
         {
-            busy = false;
+            if (lockCallback != null)
+            {
+                lockCallback.running.set(false);
+            }
             
-            if (lockToken != null ) { jobLockService.releaseLock(lockToken, LOCK_QNAME); }
+            if (lockToken != null )
+            {
+                jobLockService.releaseLock(lockToken, LOCK_QNAME);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Lock released: " + LOCK_QNAME + ": " + lockToken);
+                }
+            }
         }
         catch (LockAcquisitionException e)
         {
             // Ignore
-            if (logger.isTraceEnabled())
+            if (logger.isDebugEnabled())
             {
-                logger.trace("Can't release lock: "+e);
+                logger.debug("Lock release failed: " + LOCK_QNAME + ": " + lockToken + "(" + e.getMessage() + ")");
             }
         }
     }

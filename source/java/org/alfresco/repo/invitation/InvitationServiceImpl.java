@@ -50,11 +50,13 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionNotFound;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
+import org.alfresco.service.cmr.invitation.InvitationSearchCriteria.InvitationType;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
@@ -398,7 +400,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     public Invitation approve(String invitationId, String reason)
     {
         WorkflowTask startTask = getStartTask(invitationId);
-        ModeratedInvitation invitation = getModeratedInvitation(startTask);
+        ModeratedInvitation invitation = getModeratedInvitation(invitationId);
         if(invitation == null)
         {
             String msg = "State error, can only call approve on a Moderated invitation.";
@@ -439,7 +441,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     private Invitation rejectModeratedInvitation(WorkflowTask startTask, String reason)
     {
-        ModeratedInvitation invitation = getModeratedInvitation(startTask);
+        ModeratedInvitation invitation = getModeratedInvitation(startTask.getPath().getId());
         // Check rejecter is a site manager and throw and exception if not
         String rejecterUserName = this.authenticationService.getCurrentUserName();
         checkManagerRole(rejecterUserName, invitation.getResourceType(), invitation.getResourceName());
@@ -490,7 +492,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     private Invitation cancelModeratedInvitation(WorkflowTask startTask)
     {
-        ModeratedInvitation invitation = getModeratedInvitation(startTask);
+        ModeratedInvitation invitation = getModeratedInvitation(startTask.getPath().getId());
         String currentUserName = this.authenticationService.getCurrentUserName();
         if (!AuthenticationUtil.isRunAsUserTheSystemUser())
         {
@@ -549,7 +551,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         Invitation invitation = getNominatedInvitation(startTask);
         if(invitation == null)
         {
-            invitation = getModeratedInvitation(startTask);
+            invitation = getModeratedInvitation(startTask.getPath().getId());
         }
         return invitation;
     }
@@ -581,15 +583,71 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         
         return result;
     }
+    
+	private WorkflowTask getModeratedInvitationReviewTask(String inviteeId, String siteShortName)
+    {
+		WorkflowTask reviewTask = null;
 
-    private ModeratedInvitation getModeratedInvitation(WorkflowTask startTask)
+		// Is there an outstanding site invite request for the invitee?
+		InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();
+		criteria.setInvitationType(InvitationType.MODERATED);
+		criteria.setInvitee(inviteeId);
+		criteria.setResourceName(siteShortName);
+		criteria.setResourceType(ResourceType.WEB_SITE);
+		
+		// should be at most 1 invite
+		List<String> invitationIds = searchInvitationsForIds(criteria, 1);
+		if(invitationIds.size() == 1)
+		{
+			reviewTask = getModeratedInvitationReviewTask(invitationIds.get(0));
+		}
+
+		return reviewTask;
+//		List<Invitation> invitations = searchInvitation(criteria);
+//		if(invitations.size() > 1)
+//		{
+//			throw new AlfrescoRuntimeException("There should be only one outstanding site invitation");
+//		}
+//		return (invitations.size() == 0 ? null : (ModeratedInvitation)invitations.get(0));
+    }
+    
+    private WorkflowTask getModeratedInvitationReviewTask(String invitationId)
+    {
+    	WorkflowTask reviewTask = null;
+
+    	// since the invitation may have been updated e.g. invitee comments (and therefore modified date)
+    	// we need to get the properties from the review task (which should be the only active
+    	// task)
+        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(invitationId);
+        for(WorkflowTask task : tasks)
+        {
+        	if(taskTypeMatches(task, WorkflowModelModeratedInvitation.WF_ACTIVITI_REVIEW_TASK))
+        	{
+        		reviewTask = task;
+        		break;
+        	}
+        }
+
+        return reviewTask;
+    }
+
+    private ModeratedInvitation getModeratedInvitation(String invitationId)
+    {
+        WorkflowTask reviewTask = getModeratedInvitationReviewTask(invitationId);
+        ModeratedInvitation invitation = getModeratedInvitation(invitationId, reviewTask);
+        return invitation;
+    }
+    
+    private ModeratedInvitation getModeratedInvitation(String invitationId, WorkflowTask reviewTask)
     {
         ModeratedInvitation invitation = null;
-        if (taskTypeMatches(startTask, WorkflowModelModeratedInvitation.WF_START_TASK))
+
+        if(reviewTask != null)
         {
-            String invitationId = startTask.getPath().getInstance().getId();
-            invitation = new ModeratedInvitationImpl(invitationId, startTask.getProperties());
+        	Map<QName, Serializable> properties = reviewTask.getProperties();
+        	invitation = new ModeratedInvitationImpl(invitationId, properties);
         }
+
         return invitation;
     }
 
@@ -641,6 +699,15 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         InvitationSearchCriteriaImpl crit = new InvitationSearchCriteriaImpl();
         crit.setInvitationType(InvitationSearchCriteria.InvitationType.ALL);
         crit.setInvitee(invitee);
+        return searchInvitation(crit);
+    }
+    
+    public List<Invitation> listPendingInvitationsForInvitee(String invitee, Invitation.ResourceType resourceType)
+    {
+        InvitationSearchCriteriaImpl crit = new InvitationSearchCriteriaImpl();
+        crit.setInvitationType(InvitationSearchCriteria.InvitationType.ALL);
+        crit.setInvitee(invitee);
+        crit.setResourceType(resourceType);
         return searchInvitation(crit);
     }
 
@@ -1321,6 +1388,38 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         return (NominatedInvitation) startWorkflow(wfDefinition, workflowProps);
     }
 
+    @Override
+    public ModeratedInvitation updateModeratedInvitation(String inviteeId, String siteShortName, String inviteeComments)
+    {
+    	ModeratedInvitation ret = null;
+
+    	// find and update the review task with the new property values
+    	WorkflowTask reviewTask = getModeratedInvitationReviewTask(inviteeId, siteShortName);
+    	if(reviewTask == null)
+    	{
+            Object objs[] = { siteShortName, inviteeId };
+            throw new InvitationExceptionNotFound("invitation.error.not_found_by_invitee", objs);
+    	}
+    	else
+    	{
+        	String invitationId = reviewTask.getPath().getInstance().getId();
+
+        	if(inviteeComments != null)
+        	{
+	        	// update the properties on the review task
+		        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+		        properties.put(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_COMMENTS, inviteeComments);
+		        Date time = new Date();
+		        properties.put(WorkflowModelModeratedInvitation.WF_PROP_MODIFIED_AT, time);
+		        reviewTask = workflowService.updateTask(reviewTask.getId(), properties, null, null);
+        	}
+
+	    	ret = getModeratedInvitation(invitationId, reviewTask);
+        }
+
+        return ret;
+    }
+
     private Invitation startWorkflow(WorkflowDefinition wfDefinition, Map<QName, Serializable> workflowProps)
     {
         NodeRef wfPackage = workflowService.createPackage(null);
@@ -1354,6 +1453,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 logger.debug("Failed - caught error during Invite workflow transition: " + err.getMessage());
             throw err;
         }
+
         Invitation invitation = getInvitation(startTask);
         return invitation;
     }

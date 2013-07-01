@@ -32,16 +32,24 @@ public abstract class AbstractTransformationSourceOptions implements Transformat
 {
 
     /** The list of applicable mimetypes */
-    private List<String> applicabledMimetypes;
+    private List<String> applicableMimetypes;
 
+    /**
+     * @deprecated
+     */
+    public List<String> getApplicabledMimetypes()
+    {
+        return this.getApplicableMimetypes();
+    }
+    
     /**
      * Gets the list of applicable mimetypes
      * 
      * @return the applicable mimetypes
      */
-    public List<String> getApplicabledMimetypes()
+    public List<String> getApplicableMimetypes()
     {
-        return applicabledMimetypes;
+        return applicableMimetypes;
     }
 
     /**
@@ -49,9 +57,9 @@ public abstract class AbstractTransformationSourceOptions implements Transformat
      * 
      * @param applicableMimetypes the applicable mimetypes
      */
-    public void setApplicableMimetypes(List<String> applicabledMimetypes)
+    public void setApplicableMimetypes(List<String> applicableMimetypes)
     {
-        this.applicabledMimetypes = applicabledMimetypes;
+        this.applicableMimetypes = applicableMimetypes;
     }
 
     /**
@@ -63,7 +71,7 @@ public abstract class AbstractTransformationSourceOptions implements Transformat
      */
     public boolean isApplicableForMimetype(String mimetype)
     {
-        if (mimetype != null && applicabledMimetypes != null) { return applicabledMimetypes.contains(mimetype); }
+        if (mimetype != null && applicableMimetypes != null) { return applicableMimetypes.contains(mimetype); }
         return false;
     }
 

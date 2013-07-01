@@ -163,7 +163,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
     {
         if (policyList.size() == 1)
         {
-            return policyList.iterator().next();
+        	P policy = (policyList.iterator()).next();
+        	return (P)Proxy.newProxyInstance(policyClass.getClassLoader(), 
+   					new Class[]{policyClass}, new SingleHandler<P>(policy));
         }
         else if (policyList.size() == 0)
         {
@@ -207,6 +209,70 @@ import org.alfresco.service.cmr.repository.StoreRef;
         }
     }
     
+    /**
+     * @author mrogers
+     *
+     * @param <P>
+     */
+    private static class SingleHandler<P extends Policy> implements InvocationHandler
+    {
+        private P policyInterface;
+        
+        /**
+         * Construct
+         * 
+         * @param policyInterfaces  the collection of policy implementations
+         */
+        public SingleHandler(P policyInterface)
+        {
+            this.policyInterface = policyInterface;
+        }
+        
+        /* (non-Javadoc)
+         * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+         */
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+        {
+            if ((tenantService != null) && (tenantService.isEnabled()) && (args != null))
+            {
+                // Convert each of the arguments to the spoofed (no tenant prefix) reference
+            	convertMTArgs(args);
+            }
+            
+            // Handle PolicyList level methods
+            if (method.getDeclaringClass().equals(PolicyList.class))
+            {
+                return method.invoke(this, args);
+            }
+            
+            // Handle Object level methods
+            if (method.getName().equals("toString"))
+            {
+                return toString() + ": wrapped " + 1 + " policy";
+            }
+            else if (method.getName().equals("hashCode"))
+            {
+                return hashCode();
+            }
+            else if (method.getName().equals("equals"))
+            {
+                return equals(args[0]);
+            }
+
+            // Invoke each wrapped policy in turn
+            try
+            {
+                Object result = null;
+                result = method.invoke(policyInterface, args);
+                return result;
+            }
+            catch (InvocationTargetException e)
+            {
+                throw e.getTargetException();
+            }
+        }
+    }
+    
 
     /**
      * Multi-policy Invocation Handler.
@@ -237,38 +303,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
             if ((tenantService != null) && (tenantService.isEnabled()) && (args != null))
             {
                 // Convert each of the arguments to the spoofed (no tenant prefix) reference
-                for (int i = 0; i < args.length; i++)
-                {
-                    Object arg = args[i];
-                    Object newArg = arg;
-                    if (arg == null)
-                    {
-                        // No conversion possible
-                    }
-                    if (arg instanceof StoreRef)
-                    {
-                        StoreRef ref = (StoreRef) arg;
-                        newArg = tenantService.getBaseName(ref);
-                    }
-                    else if (arg instanceof NodeRef)
-                    {
-                        NodeRef ref = (NodeRef) arg;
-                        newArg = tenantService.getBaseName(ref);
-                    }
-                    else if (arg instanceof ChildAssociationRef)
-                    {
-                        ChildAssociationRef ref = (ChildAssociationRef) arg;
-                        newArg = tenantService.getBaseName(ref);
-                    }
-                    else if (arg instanceof AssociationRef)
-                    {
-                        AssociationRef ref = (AssociationRef) arg;
-                        newArg = tenantService.getBaseName(ref);
-                    }
-                    
-                    // Substitute the new value
-                    args[i] = newArg;
-                }
+            	convertMTArgs(args);
             }
             
             // Handle PolicyList level methods
@@ -316,4 +351,47 @@ import org.alfresco.service.cmr.repository.StoreRef;
         }
     }
     
+    /**
+     * Convert each of the arguments to the spoofed (no tenant prefix) reference.
+     * 
+     * Converts arguments of Type NodeRef to base name etc.
+     * 
+     * @param args list of non final arguments - the arguments are updated in place
+     */
+    protected static void convertMTArgs (Object[] args)
+    {
+        // Convert each of the arguments to the spoofed (no tenant prefix) reference
+        for (int i = 0; i < args.length; i++)
+        {
+            Object arg = args[i];
+            Object newArg = arg;
+            if (arg == null)
+            {
+                // No conversion possible
+            }
+            if (arg instanceof StoreRef)
+            {
+                StoreRef ref = (StoreRef) arg;
+                newArg = tenantService.getBaseName(ref);
+            }
+            else if (arg instanceof NodeRef)
+            {
+                NodeRef ref = (NodeRef) arg;
+                newArg = tenantService.getBaseName(ref);
+            }
+            else if (arg instanceof ChildAssociationRef)
+            {
+                ChildAssociationRef ref = (ChildAssociationRef) arg;
+                newArg = tenantService.getBaseName(ref);
+            }
+            else if (arg instanceof AssociationRef)
+            {
+                AssociationRef ref = (AssociationRef) arg;
+                newArg = tenantService.getBaseName(ref);
+            }
+            
+            // Substitute the new value
+            args[i] = newArg;
+        }    
+    }
 }

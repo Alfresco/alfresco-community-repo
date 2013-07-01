@@ -142,23 +142,19 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
     public void testPerformanceRetrieval() throws Exception
     {
         // Until the threshold (3) is reached by each transformer with the same priority it will
-        // be tried that many times in the order defined. 20, 30, 10, 25, 25
+        // be tried that many times in the order defined. 20, 30, 10, 25a, 25b
         for (int i=1; i<=3; i++)
         {
             long expectedTime = i == 1 ? 0L : 20L;
             ContentTransformer transformer1 = dummyRegistry.getTransformer(A, -1, D, OPTIONS);
             assertEquals(i+" incorrect transformation time", expectedTime, transformer1.getTransformationTime(A, D));
             ad20.transformInternal(null, null, null);
-        }
-        for (int i=1; i<=3; i++)
-        {
-            long expectedTime = i == 1 ? 0L : 30L;
-            ContentTransformer transformer1 = dummyRegistry.getTransformer(A, -1, D, OPTIONS);
+
+            expectedTime = i == 1 ? 0L : 30L;
+            transformer1 = dummyRegistry.getTransformer(A, -1, D, OPTIONS);
             assertEquals(i+" incorrect transformation time", expectedTime, transformer1.getTransformationTime(A, D));
             ad30.transformInternal(null, null, null);
-        }
-        for (int i=1; i<=3; i++)
-        {
+
             ad10.transformInternal(null, null, null);
             ad25a.transformInternal(null, null, null);
             ad25b.transformInternal(null, null, null);
@@ -258,6 +254,7 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
             this.sourceMimetype = sourceMimetype;
             this.targetMimetype = targetMimetype;
             this.transformationTime = transformationTime;
+            setRegisterTransformer(true);
             setBeanName(name+'.'+System.currentTimeMillis()%100000);
 
             // register
@@ -297,14 +294,6 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
             // just update the transformation time
             super.recordTime(sourceMimetype, targetMimetype, transformationTime);
         }
-
-//        /**
-//         * @return Returns the fixed dummy average transformation time
-//         */
-//        public synchronized long getTransformationTime(String sourceMimetype, String targetMimetype)
-//        {
-//            return transformationTime;
-//        }
     }
 
     @Override

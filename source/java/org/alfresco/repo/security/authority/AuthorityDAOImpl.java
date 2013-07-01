@@ -43,6 +43,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.cache.RefreshableCacheEvent;
 import org.alfresco.repo.cache.RefreshableCacheListener;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -88,8 +89,6 @@ import org.springframework.beans.factory.InitializingBean;
 public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.BeforeDeleteNodePolicy, NodeServicePolicies.OnUpdatePropertiesPolicy, RefreshableCacheListener, InitializingBean
 {
     private static Log logger = LogFactory.getLog(AuthorityDAOImpl.class);
-    
-    private static String DELETING_AUTHORITY_SET_RESOURCE = "DeletingAuthoritySetResource";
     
     private static String PARENTS_OF_DELETING_CHILDREN_SET_RESOURCE = "ParentsOfDeletingChildrenSetResource";
     
@@ -367,7 +366,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             zoneAuthorityCache.remove(new Pair<String, String>(currentUserDomain, authorityZone));
         }
         zoneAuthorityCache.remove(new Pair<String, String>(currentUserDomain, null));
-        removeParentsFromChildAuthorityCache(nodeRef);
+        removeParentsFromChildAuthorityCache(nodeRef, false);
         authorityLookupCache.remove(cacheKey(name));
         userAuthorityCache.clear();
         authorityBridgeTableCache.refresh();
@@ -746,7 +745,9 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
     }
 
-   
+    /**
+     * Explicitly use the bridge table to list authorities.
+     */
     private void listAuthoritiesByBridgeTable(Set<String> authorities, String name)
     {
         BridgeTable<String> bridgeTable = authorityBridgeTableCache.get();
@@ -754,6 +755,9 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         AuthorityType type = AuthorityType.getAuthorityType(name);
         switch(type)
         {
+        case WILDCARD:
+            // Dual use of the enum means that this value should not be received
+            logger.warn("Found an authority with type '" + AuthorityType.WILDCARD + "': " + name);
         case ADMIN:
         case GUEST:
         case USER:
@@ -780,9 +784,9 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }        
     }
     
+    @Override
     public Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate)
     {
-       
         // Optimize for the case where we want all the authorities that a user belongs to
         if (!immediate && AuthorityType.getAuthorityType(name) == AuthorityType.USER)
         {
@@ -799,10 +803,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 {
                     listAuthorities(null, name, authorities, true, true);
                 }
-                if(AlfrescoTransactionSupport.getTransactionId() != null && !TransactionalResourceHelper.getSet(DELETING_AUTHORITY_SET_RESOURCE).contains(name))
-                {
-                    userAuthorityCache.put(name, Collections.unmodifiableSet(authorities));
-                }
+                // Add the set back to the cache.  If the value is locked then nothing will happen.
+                userAuthorityCache.put(name, Collections.unmodifiableSet(authorities));
             }
             // If we wanted the unfiltered set we are done
             if (type == null)
@@ -962,7 +964,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
     }
 
-    private void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type)
+    protected void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type)
     {
         if (type == null || AuthorityType.getAuthorityType(authorityName).equals(type))
         {
@@ -970,7 +972,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
     }
     
-    private void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type, Pattern pattern)
+    protected void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type, Pattern pattern)
     {
         if (type == null || AuthorityType.getAuthorityType(authorityName).equals(type))
         {
@@ -1170,8 +1172,22 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         return false;
     }
     
-    private void removeParentsFromChildAuthorityCache(NodeRef nodeRef)
+    /**
+     * Remove entries for the parents of the given node.
+     * 
+     * @param lock          <tt>true</tt> if the cache modifications need to be locked
+     *                      i.e. if the caller is handling a <b>beforeXYZ</b> callback.
+     */
+    private void removeParentsFromChildAuthorityCache(NodeRef nodeRef, boolean lock)
     {
+        // Get the transactional version of the cache if we need locking
+        TransactionalCache<NodeRef, Pair<Map<NodeRef,String>, List<NodeRef>>> childAuthorityCacheTxn = null;
+        if (lock && childAuthorityCache instanceof TransactionalCache)
+        {
+            childAuthorityCacheTxn = (TransactionalCache<NodeRef, Pair<Map<NodeRef,String>, List<NodeRef>>>) childAuthorityCache;
+        }
+        
+        // Iterate over all relevant parents of the given node
         for (ChildAssociationRef car: nodeService.getParentAssocs(nodeRef))
         {
             NodeRef parentRef = car.getParentRef();
@@ -1179,6 +1195,10 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             {
                 TransactionalResourceHelper.getSet(PARENTS_OF_DELETING_CHILDREN_SET_RESOURCE).add(parentRef);
                 childAuthorityCache.remove(parentRef);
+                if (childAuthorityCacheTxn != null)
+                {
+                    childAuthorityCacheTxn.lockValue(parentRef);
+                }
             }
         }
     }
@@ -1456,13 +1476,25 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         return authorities;
     }
     
-    // Listen out for person removals so that we can clear cached authorities
+    /**
+     * Listen out for person removals so that we can clear cached authorities.
+     */
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         String authorityName = getAuthorityName(nodeRef);
-        TransactionalResourceHelper.getSet(DELETING_AUTHORITY_SET_RESOURCE).add(authorityName);
         userAuthorityCache.remove(authorityName);
-        removeParentsFromChildAuthorityCache(nodeRef);
+        if (userAuthorityCache instanceof TransactionalCache)
+        {
+            /*
+             * We lock the removal for the duration of the transaction as the node has not
+             * yet been deleted, leaving scope for some other code to come along and add the
+             * value back before the deletion can actually take place.
+             */
+            TransactionalCache<String, Set<String>> userAuthorityCacheTxn = (TransactionalCache<String, Set<String>>) userAuthorityCache;
+            userAuthorityCacheTxn.lockValue(authorityName);
+        }
+        // Remove cache elements for the parents, ensuring that we lock because the data still exists
+        removeParentsFromChildAuthorityCache(nodeRef, true);
     }
 
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
@@ -1516,7 +1548,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 {
                     userAuthorityCache.remove(authBefore);
                 }
-                removeParentsFromChildAuthorityCache(nodeRef);
+                // Remove cache entires for the parents.  No need to lock because the data has already been updated.
+                removeParentsFromChildAuthorityCache(nodeRef, false);
             }
             else
             {

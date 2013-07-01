@@ -629,7 +629,7 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                 surfConfigRef = ref.getChildRef();
                 
                 // surf-config needs to be hidden - applies index control aspect as part of the hidden aspect
-                hiddenAspect.hideNode(ref.getChildRef());
+                hiddenAspect.hideNode(ref.getChildRef(), false, false, false);
             }
             catch (DuplicateChildNodeNameException dupErr)
             {

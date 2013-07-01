@@ -257,6 +257,8 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
             if (status == Status.STATUS_FORBIDDEN ||
                 status == Status.STATUS_UNAUTHORIZED)
             {
+            	// TODO Forbidden may need to be handled differently.
+            	// TODO Need to get error message into the AuthenticationException
                 throw new AuthenticationException(statusText);
             }
             

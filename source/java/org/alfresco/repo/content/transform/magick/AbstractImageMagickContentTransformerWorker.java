@@ -212,6 +212,24 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
         }
     }
     
+    @Override
+    public String getComments(boolean available)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# Supports transformations between mimetypes starting with \"image/\", but not\n");
+        sb.append("# \"");
+        sb.append(MimetypeMap.MIMETYPE_IMAGE_RGB);
+        sb.append("\", \"");
+        sb.append(MimetypeMap.MIMETYPE_IMAGE_SVG);
+        sb.append("\" or \"");
+        sb.append(MimetypeMap.MIMETYPE_IMG_DWG);
+        sb.append("\".\n");
+        sb.append("# eps as source or target.\n");
+        sb.append("# pdf or ai to png.\n");
+        sb.append("# tiff to pdf.\n");
+        return sb.toString();
+    }
+
     /**
      * @see #transformInternal(File, File)
      */

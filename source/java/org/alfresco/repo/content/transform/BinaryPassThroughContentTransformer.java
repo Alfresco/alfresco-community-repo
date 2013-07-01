@@ -79,4 +79,13 @@ public class BinaryPassThroughContentTransformer extends AbstractContentTransfor
             }
         }
     }
+    
+    @Override
+    public String getComments(boolean available)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.getComments(available));
+        sb.append("# Only supports streaming to the same type but excludes txt\n");
+        return sb.toString();
+    }
 }

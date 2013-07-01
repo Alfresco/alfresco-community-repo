@@ -21,16 +21,14 @@ package org.alfresco.repo.content.transform;
 import static org.alfresco.repo.content.transform.TransformerConfig.ANY;
 import static org.alfresco.repo.content.transform.TransformerConfig.DEFAULT_TRANSFORMER;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.service.cmr.repository.MimetypeService;
 
 /**
- * Provides access to single transformer configuration property depending on the
+ * Provides access to a single transformer configuration property depending on the
  * transformer and source and target mimetypes, falling back to defaults.
  *  
  * @author Alan Davis
@@ -39,43 +37,44 @@ public class TransformerConfigProperty  extends TransformerPropertyNameExtractor
 {
     private Map<String, DoubleMap<String, String, String>> values;
 
-    public TransformerConfigProperty(ChildApplicationContextFactory subsystem,
+    public TransformerConfigProperty(TransformerProperties transformerProperties,
             MimetypeService mimetypeService, String propertySuffix, String defaultValue)
     {
-        setValues(subsystem, mimetypeService, propertySuffix, defaultValue);
+        setValues(transformerProperties, mimetypeService, propertySuffix, defaultValue);
     }
 
     /**
      * Sets the transformer values created from system properties.  
      */
-    private void setValues(ChildApplicationContextFactory subsystem, MimetypeService mimetypeService,
+    private void setValues(TransformerProperties transformerProperties, MimetypeService mimetypeService,
             String suffix, String defaultValue)
     {
         values = new HashMap<String, DoubleMap<String, String, String>>();
 
         // Gets all the transformer, source and target combinations in properties that define
         // this value.
-        Collection<TransformerSourceTargetSuffixValue> properties =
-                getTransformerSourceTargetValues(Collections.singletonList(suffix), true, subsystem, mimetypeService);
+        Map<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue> properties =
+                getTransformerSourceTargetValuesMap(Collections.singletonList(suffix), true, false, transformerProperties, mimetypeService);
 
         // Add the system wide default if it does not exist, as we always need this one
         TransformerSourceTargetSuffixValue transformerSourceTargetValue = 
-                new TransformerSourceTargetSuffixValue(DEFAULT_TRANSFORMER, ANY, ANY, suffix, defaultValue, mimetypeService);
-        if (properties.contains(transformerSourceTargetValue.key()))
+                new TransformerSourceTargetSuffixValue(DEFAULT_TRANSFORMER, ANY, ANY, suffix, null, defaultValue, mimetypeService);
+        TransformerSourceTargetSuffixKey key = transformerSourceTargetValue.key();
+        if (!properties.containsKey(key))
         {
-            properties.add(transformerSourceTargetValue);
+            properties.put(key, transformerSourceTargetValue);
         }
         
         // Populate the transformer values
-        for (TransformerSourceTargetSuffixValue property: properties)
+        for (TransformerSourceTargetSuffixValue property: properties.values())
         {
-            DoubleMap<String, String, String> mimetypeLimits = this.values.get(property.transformerName);
-            if (mimetypeLimits == null)
+            DoubleMap<String, String, String> mimetypeValues = values.get(property.transformerName);
+            if (mimetypeValues == null)
             {
-                mimetypeLimits = new DoubleMap<String, String, String>(ANY, ANY);
-                this.values.put(property.transformerName, mimetypeLimits);
+                mimetypeValues = new DoubleMap<String, String, String>(ANY, ANY);
+                values.put(property.transformerName, mimetypeValues);
             }
-            mimetypeLimits.put(property.sourceMimetype, property.targetMimetype, property.value);
+            mimetypeValues.put(property.sourceMimetype, property.targetMimetype, property.value);
         }
     }
     
@@ -108,11 +107,13 @@ public class TransformerConfigProperty  extends TransformerPropertyNameExtractor
     }
 
     public long getLong(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
+        throws NumberFormatException
     {
         return Long.parseLong(getString(transformer, sourceMimetype, targetMimetype));
     }
     
     public int getInt(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
+        throws NumberFormatException
     {
         return Integer.parseInt(getString(transformer, sourceMimetype, targetMimetype));
     }

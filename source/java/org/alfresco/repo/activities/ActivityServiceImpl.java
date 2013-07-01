@@ -245,6 +245,15 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
     {
     	try
     	{
+            // NOTE: siteId is optional
+            ParameterCheck.mandatoryString("feedUserId", feedUserId);
+            ParameterCheck.mandatoryString("format", format);
+            
+            if(!userNamesAreCaseSensitive)
+            {
+                feedUserId = feedUserId.toLowerCase();
+            }
+
             String currentUser = getCurrentUser();
             if (! ((currentUser == null) || 
                    (authorityService.isAdminAuthority(currentUser)) ||
@@ -259,7 +268,9 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                 siteId = tenantService.getName(siteId);
             }
 
-	    	PagingResults<ActivityFeedEntity> activityFeedEntries = feedDAO.selectPagedUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers, minFeedId, pagingRequest);
+            String networkId = tenantService.getCurrentUserDomain();
+
+	    	PagingResults<ActivityFeedEntity> activityFeedEntries = feedDAO.selectPagedUserFeedEntries(feedUserId, networkId, format, siteId, excludeThisUser, excludeOtherUsers, minFeedId, pagingRequest);
 	        return activityFeedEntries;
         }
         catch (SQLException se)
@@ -285,7 +296,7 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
         {
             feedUserId = feedUserId.toLowerCase();
         }
-        
+
         String currentUser = getCurrentUser();
         if (! ((currentUser == null) || 
                (authorityService.isAdminAuthority(currentUser)) ||

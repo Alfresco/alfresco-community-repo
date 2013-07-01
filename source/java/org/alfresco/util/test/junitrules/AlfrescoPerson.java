@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2005-2012
- Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -104,7 +103,7 @@ public class AlfrescoPerson extends AbstractPersonRule
         this.userName = userName;
     }
     
-    @Override protected void before() throws Throwable
+    @Override protected void before()
     {
         ApplicationContext ctxt = getApplicationContext();
         RetryingTransactionHelper transactionHelper = (RetryingTransactionHelper) ctxt.getBean("retryingTransactionHelper");
@@ -142,14 +141,6 @@ public class AlfrescoPerson extends AbstractPersonRule
     public String getUsername()
     {
         return this.userName;
-    }
-    
-    /**
-     * @return the password of the person created by this rule.
-     */
-    public String getPassword()
-    {
-        return PASSWORD;
     }
     
     /**

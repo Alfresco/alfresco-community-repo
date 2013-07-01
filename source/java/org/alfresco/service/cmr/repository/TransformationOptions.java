@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -44,6 +44,7 @@ public class TransformationOptions implements Cloneable
     public static final String OPT_TARGET_NODEREF = "contentWriterNodeRef";
     public static final String OPT_TARGET_CONTENT_PROPERTY = "targetContentProperty";
     public static final String OPT_INCLUDE_EMBEDDED = "includeEmbedded"; 
+    public static final String OPT_USE = "use"; 
     
     /** The source node reference */
     private NodeRef sourceNodeRef;
@@ -59,6 +60,9 @@ public class TransformationOptions implements Cloneable
     
     /** The include embedded resources yes/no */
     private Boolean includeEmbedded;
+    
+    /** The use to which the transform will be put. */
+    private String use;
     
     /** Time, KBytes and page limits */
     private TransformationOptionLimits limits = new TransformationOptionLimits();
@@ -160,6 +164,7 @@ public class TransformationOptions implements Cloneable
         this.targetNodeRef = (NodeRef)optionsMap.get(OPT_TARGET_NODEREF);
         this.targetContentProperty = (QName)optionsMap.get(OPT_TARGET_CONTENT_PROPERTY);
         this.includeEmbedded = (Boolean)optionsMap.get(OPT_INCLUDE_EMBEDDED);
+        this.use = (String)optionsMap.get(OPT_USE);
         limits.set(optionsMap);
     }
     
@@ -269,6 +274,30 @@ public class TransformationOptions implements Cloneable
     public Boolean getIncludeEmbedded() 
     {
         return includeEmbedded;
+    }
+
+    /**
+     * The use to which the transform will be put.
+     * Initially used to select different transformation limits depending on the
+     * use: "Index", "Preview"...
+     *  
+     * @param use to which the transform will be put.
+     */
+    public void setUse(String use) 
+    {
+       this.use = use;
+    }
+
+    /**
+     * The use to which the transform will be put.
+     * Initially used to select different transformation limits depending on the
+     * use: "Index", "Preview"...
+     * 
+     * @return the use - may be null
+     */
+    public String getUse() 
+    {
+        return use;
     }
 
     // --------------- Time ---------------
@@ -515,6 +544,7 @@ public class TransformationOptions implements Cloneable
      *   <li>{@link #OPT_TARGET_NODEREF}</li>
      *   <li>{@link #OPT_TARGET_CONTENT_PROPERTY}</li>
      *   <li>{@link #OPT_INCLUDE_EMBEDDED}</li>
+     *   <li>{@link #OPT_USE}</li>
      *   <li>{@link TransformationOptionLimits#OPT_TIMEOUT_MS}</li>
      *   <li>{@link TransformationOptionLimits#OPT_READ_LIMIT_TIME_MS}</li>
      *   <li>{@link TransformationOptionLimits#OPT_MAX_SOURCE_SIZE_K_BYTES</li>
@@ -534,6 +564,7 @@ public class TransformationOptions implements Cloneable
         optionsMap.put(OPT_TARGET_NODEREF, targetNodeRef);
         optionsMap.put(OPT_TARGET_CONTENT_PROPERTY, targetContentProperty);
         optionsMap.put(OPT_INCLUDE_EMBEDDED, includeEmbedded);
+        optionsMap.put(OPT_USE, use);
         limits.toMap(optionsMap);
         return optionsMap;
     }
@@ -570,4 +601,58 @@ public class TransformationOptions implements Cloneable
             return Boolean.FALSE;
         }
     };
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((this.includeEmbedded == null) ? 0 : this.includeEmbedded.hashCode());
+        result = prime * result + ((this.limits == null) ? 0 : this.limits.hashCode());
+        result = prime * result + ((this.sourceContentProperty == null) ? 0 : this.sourceContentProperty.hashCode());
+        result = prime * result + ((this.sourceNodeRef == null) ? 0 : this.sourceNodeRef.hashCode());
+        result = prime * result + ((this.targetContentProperty == null) ? 0 : this.targetContentProperty.hashCode());
+        result = prime * result + ((this.targetNodeRef == null) ? 0 : this.targetNodeRef.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        TransformationOptions other = (TransformationOptions) obj;
+        if (this.includeEmbedded == null)
+        {
+            if (other.includeEmbedded != null) return false;
+        }
+        else if (!this.includeEmbedded.equals(other.includeEmbedded)) return false;
+        if (this.limits == null)
+        {
+            if (other.limits != null) return false;
+        }
+        else if (!this.limits.equals(other.limits)) return false;
+        if (this.sourceContentProperty == null)
+        {
+            if (other.sourceContentProperty != null) return false;
+        }
+        else if (!this.sourceContentProperty.equals(other.sourceContentProperty)) return false;
+        if (this.sourceNodeRef == null)
+        {
+            if (other.sourceNodeRef != null) return false;
+        }
+        else if (!this.sourceNodeRef.equals(other.sourceNodeRef)) return false;
+        if (this.targetContentProperty == null)
+        {
+            if (other.targetContentProperty != null) return false;
+        }
+        else if (!this.targetContentProperty.equals(other.targetContentProperty)) return false;
+        if (this.targetNodeRef == null)
+        {
+            if (other.targetNodeRef != null) return false;
+        }
+        else if (!this.targetNodeRef.equals(other.targetNodeRef)) return false;
+        return true;
+    }
 }

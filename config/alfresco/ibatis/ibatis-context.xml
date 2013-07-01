@@ -19,47 +19,8 @@
             </bean>
         </property>
     </bean>
-    
-    <!-- CLOUD-452: Activities (comment-out Activities-specific domain/datasource) -->
-    
-    <!-- MyBatis config for Activities domain -->
-    <!--
-    <bean id="activitiesDataSource" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>javax.sql.DataSource</value>
-        </property>
-        <property name="target"><ref bean="dataSource"/></property>
-        <property name="interceptorNames">
-            <list>
-                <idref local="activitiesDataSource_autoCommit" />
-            </list>
-        </property>
-    </bean>
-    
-    <bean id="activitiesDataSource_autoCommit" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
-        <property name="advice">
-            <bean class="org.alfresco.util.AutoCommitInterceptor" />
-        </property>
-        <property name="mappedName">
-            <value>getConnection</value>
-        </property>
-    </bean>
-    
-    <bean id="activitiesSqlSessionFactory" class="org.alfresco.ibatis.HierarchicalSqlSessionFactoryBean">
-        <property name="useLocalCaches" value="${mybatis.useLocalCaches}"/>
-        <property name="resourceLoader" ref="dialectResourceLoader"/>
-        <property name="dataSource" ref="activitiesDataSource"/>
-        <property name="configLocation">
-            <value>classpath:alfresco/ibatis/activities-SqlMapConfig.xml</value>
-        </property>
-    </bean>
-    
-    <bean id="activitiesSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
-        <constructor-arg index="0" ref="activitiesSqlSessionFactory"/>
-    </bean>
-    -->
-    
-    <!-- CLOUD-452: Activities (see also alfresco-SqlMapConfig.xml) -->
+        
+    <!-- Activities -->
     <bean id="activitiesSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg index="0" ref="repoSqlSessionFactory"/>
     </bean>

@@ -113,7 +113,7 @@ public class SiteMembersCannedQuery extends AbstractCannedQuery<SiteMembership>
 				lastName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_LASTNAME);
 			}
 
-			SiteMembership siteMember = new SiteMembership(siteShortName, siteInfo.getTitle(), authority, firstName, lastName, SiteRole.valueOf(permission));
+			SiteMembership siteMember = new SiteMembership(siteInfo, authority, firstName, lastName, SiteRole.valueOf(permission));
     		siteMembers.add(siteMember);
 		}
 
@@ -221,8 +221,10 @@ public class SiteMembersCannedQuery extends AbstractCannedQuery<SiteMembership>
     	{
     		String personId1 = o1.getPersonId();
     		String personId2 = o2.getPersonId();
-    		String shortName1 = o1.getSiteShortName();
-    		String shortName2 = o2.getSiteShortName();
+    		SiteInfo siteInfo1 = o1.getSiteInfo();
+    		SiteInfo siteInfo2 = o2.getSiteInfo();
+    		String shortName1 = siteInfo1.getShortName();
+    		String shortName2 = siteInfo2.getShortName();
     		String firstName1 = o1.getFirstName();
     		String firstName2 = o2.getFirstName();
     		String lastName1 = o1.getLastName();

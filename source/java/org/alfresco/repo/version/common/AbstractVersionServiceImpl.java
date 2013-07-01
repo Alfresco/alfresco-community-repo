@@ -19,6 +19,7 @@
 package org.alfresco.repo.version.common;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -26,11 +27,16 @@ import java.util.Set;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
+import org.alfresco.repo.version.VersionRevertCallback;
+import org.alfresco.repo.version.VersionRevertCallback.RevertAspectAction;
+import org.alfresco.repo.version.VersionRevertCallback.RevertAssocAction;
+import org.alfresco.repo.version.VersionRevertDetails;
 import org.alfresco.repo.version.VersionServicePolicies;
 import org.alfresco.repo.version.VersionServicePolicies.AfterCreateVersionPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.BeforeCreateVersionPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.OnCreateVersionPolicy;
+import org.alfresco.repo.version.VersionServicePolicies.OnRevertVersionPolicy;
 import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -69,6 +75,7 @@ public abstract class AbstractVersionServiceImpl
 	private ClassPolicyDelegate<AfterCreateVersionPolicy> afterCreateVersionDelegate;
 	private ClassPolicyDelegate<OnCreateVersionPolicy> onCreateVersionDelegate;
 	private ClassPolicyDelegate<CalculateVersionLabelPolicy> calculateVersionLabelDelegate;
+	private ClassPolicyDelegate<OnRevertVersionPolicy> onRevertVersionDelegate;
     
 	/**
      * Sets the general node service
@@ -109,7 +116,8 @@ public abstract class AbstractVersionServiceImpl
         this.beforeCreateVersionDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.BeforeCreateVersionPolicy.class);
         this.afterCreateVersionDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.AfterCreateVersionPolicy.class);
 		this.onCreateVersionDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.OnCreateVersionPolicy.class);
-		this.calculateVersionLabelDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.CalculateVersionLabelPolicy.class);		
+		this.calculateVersionLabelDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.CalculateVersionLabelPolicy.class);	
+		this.onRevertVersionDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.OnRevertVersionPolicy.class);	
     }	
 	
 	/**
@@ -164,6 +172,59 @@ public abstract class AbstractVersionServiceImpl
 		}
 		
 	}
+		
+	/**
+	 * How should revert deal with this aspect?
+	 * @param aspectName
+	 * @param revertDetails
+	 * @return the action to be taken
+	 */
+	protected RevertAspectAction getRevertAspectAction(QName aspectName,  VersionRevertDetails revertDetails)
+	{
+		// first check for a policy for the node type
+		Collection<OnRevertVersionPolicy> policies = onRevertVersionDelegate.getList(aspectName);
+		for(OnRevertVersionPolicy policy : policies)
+		{
+			VersionRevertCallback cb = policy.getRevertVersionCallback(aspectName, revertDetails);
+			if(cb != null)
+			{
+				RevertAspectAction action = cb.getRevertAspectAction(aspectName, revertDetails);
+				if(action != null && action == RevertAspectAction.IGNORE)
+				{   
+					// ignore always wins
+				    return action;
+				}
+			}
+		}
+		return RevertAspectAction.REVERT;
+	}
+	
+	/**
+	 * How should revert deal with this association
+	 * @param className
+	 * @param assocName
+	 * @param revertDetails
+	 * @return the action to be taken
+	 */
+	protected RevertAssocAction getRevertAssocAction(QName className, QName assocName,  VersionRevertDetails revertDetails)
+	{
+		Collection<OnRevertVersionPolicy> policies = onRevertVersionDelegate.getList(className);
+		for(OnRevertVersionPolicy policy : policies)
+		{
+			VersionRevertCallback cb = policy.getRevertVersionCallback(className, revertDetails);
+			if(cb != null)
+			{
+				RevertAssocAction action = cb.getRevertAssocAction(assocName, revertDetails);
+				if(action != null && action == RevertAssocAction.IGNORE)
+				{   
+					// ignore always wins
+				    return action;
+				}
+			}		
+		}
+		return RevertAssocAction.REVERT;
+	}
+
 	
 	/**
 	 * Invokes the on create version policy behaviour for a given type 

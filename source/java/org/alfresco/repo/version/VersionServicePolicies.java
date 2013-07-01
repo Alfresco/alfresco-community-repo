@@ -95,6 +95,26 @@ public interface VersionServicePolicies
 	}
 	
 	/**
+	 * 
+     * Called for all types and aspects before reverting a node.
+     * 
+     * @param classRef                the type or aspect qualified name
+     * @param revertDetails           the details of the impending revert
+     * @return                        Return the callback that will be used to modify the revert behaviour for this
+     *                                type or aspect.  Return <tt>null</tt> to assume the default.
+     * 
+     * 
+     * @since V4.2
+ 	 */
+	public interface OnRevertVersionPolicy extends ClassPolicy
+	{
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "getRevertVersionCallback");
+        
+        VersionRevertCallback getRevertVersionCallback(QName classRef, VersionRevertDetails copyDetails);
+	}
+
+	
+	/**
 	 * Calculate version lable policy interface
 	 */
 	public interface CalculateVersionLabelPolicy extends ClassPolicy

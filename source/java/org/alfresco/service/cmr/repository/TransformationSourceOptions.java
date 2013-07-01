@@ -42,8 +42,16 @@ public interface TransformationSourceOptions
      * Gets the list of applicable mimetypes
      * 
      * @return the applicable mimetypes
+     * @deprecated Use {@link #getApplicableMimetypes()} instead.
      */
     public List<String> getApplicabledMimetypes();
+    
+    /**
+     * Gets the list of applicable mimetypes
+     * 
+     * @return the applicable mimetypes
+     */
+    public List<String> getApplicableMimetypes();
 
     /**
      * Gets whether or not these transformation source options apply for the

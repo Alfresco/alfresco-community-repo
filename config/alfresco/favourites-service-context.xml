@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <!-- Favourites Service Bean -->
+    <bean id="FavouritesService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.favourites.FavouritesService</value>
+        </property>
+        <property name="target">
+            <ref bean="favouritesService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="FavouritesService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="FavouritesService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Preference service transaction bean -->
+    <bean id="FavouritesService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <!-- Favourites service security bean -->
+    <bean id="FavouritesService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
+    <!-- Favourites service implemenation bean -->
+    <bean id="favouritesService" class="org.alfresco.repo.favourites.FavouritesServiceImpl" init-method="init">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="preferenceService" ref="PreferenceService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="policyComponent" ref="policyComponent"/>
+        <property name="personService" ref="PersonService"/>        
+        <property name="permissionService" ref="PermissionService"/>        
+        <property name="authenticationContext" ref="authenticationContext"/>
+    </bean>   
+</beans>

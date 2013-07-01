@@ -7,6 +7,18 @@
       <property name="mimetypeService">
          <ref bean="mimetypeService"/>
       </property>
+      <property name="contentTransformerRegistry">
+         <ref bean="contentTransformerRegistry" />
+      </property>
+      <property name="transformerLog">
+         <ref bean="transformerLog" />
+      </property>
+      <property name="transformerDebugLog">
+         <ref bean="transformerDebugLog" />
+      </property>
+       <property name="globalProperties">
+         <ref bean="global-properties" />
+       </property>
    </bean>
 
    <!-- Selects the transformer to be used -->
@@ -19,4 +31,46 @@
       </property>
    </bean>
 
+   <!-- JMX bean (in addition to sub system properties) -->
+   <bean id="transformerConfigMBean" class="org.alfresco.repo.content.transform.TransformerConfigMBeanImpl" >
+      <property name="transformerDebug">
+         <ref bean="transformerDebug" />
+      </property>
+      <property name="transformerConfig">
+         <ref bean="transformerConfig" />
+      </property>
+      <property name="mimetypeService">
+         <ref bean="mimetypeService" />
+      </property>
+      <property name="contentTransformerRegistry">
+         <ref bean="contentTransformerRegistry" />
+      </property>
+      <property name="transformerLog">
+         <ref bean="transformerLog" />
+      </property>
+      <property name="transformerDebugLog">
+         <ref bean="transformerDebugLog" />
+      </property>
+   </bean>
+   
+   <!-- Logger for transformer debug that may be accessed via JMX -->
+   <bean id="transformerDebugLog" class="org.alfresco.repo.content.transform.TransformerDebugLog" >
+      <property name="transformerDebug">
+         <ref bean="transformerDebug" />
+      </property>
+      <property name="transformerConfig">
+         <ref bean="transformerConfig" />
+      </property>
+   </bean>
+   
+   <!-- Logger for transformer log that may be accessed via JMX -->
+   <bean id="transformerLog" class="org.alfresco.repo.content.transform.TransformerLog" >
+      <property name="transformerDebug">
+         <ref bean="transformerDebug" />
+      </property>
+      <property name="transformerConfig">
+         <ref bean="transformerConfig" />
+      </property>
+   </bean>
+   
 </beans>

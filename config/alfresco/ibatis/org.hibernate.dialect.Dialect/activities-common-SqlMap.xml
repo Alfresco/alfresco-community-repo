@@ -92,6 +92,7 @@
       <![CDATA[
       select feed_user_id as feedUserId
       from alf_activity_feed
+      where feed_user_id IS NOT NULL AND ('' IS NULL OR '' != feed_user_id)
       group by feed_user_id
       having count(*) > #{maxFeedSize}
       ]]>
@@ -170,7 +171,7 @@
       <![CDATA[
       select id as id
       from alf_activity_feed_control
-      where feed_user_id = #{feedUserId}
+      where (feed_user_id IS NULL and #{feedUserId} IS NULL OR feed_user_id = #{feedUserId})
       and ((site_network = #{siteNetwork}) or ((#{siteNetwork} is null) and (site_network is null)))
       and ((app_tool = #{appTool}) or ((#{appTool} is null) and (app_tool is null)))
       ]]>
@@ -180,7 +181,7 @@
       <![CDATA[
       select id as id, feed_user_id as feedUserId, site_network as siteNetwork, app_tool as appTool
       from alf_activity_feed_control
-      where feed_user_id = #{feedUserId}
+      where (feed_user_id IS NULL and #{feedUserId} IS NULL OR feed_user_id = #{feedUserId})
       ]]>
    </select>
    
@@ -218,20 +219,20 @@
       <![CDATA[
       delete from alf_activity_feed 
       where post_date < #{postDate}
-      and feed_user_id = #{feedUserId}
+      and (feed_user_id IS NULL and #{feedUserId} IS NULL OR feed_user_id = #{feedUserId})
       and activity_format = #{activitySummaryFormat}
       ]]>
    </delete>
    
    <delete id="delete_activity_feed_for_feeduser_entries" parameterType="ActivityFeed">
       delete from alf_activity_feed
-      where feed_user_id = #{feedUserId}
+      where (feed_user_id IS NULL and #{feedUserId} IS NULL OR feed_user_id = #{feedUserId})
    </delete>
    
    <delete id="delete_activity_feedcontrol" parameterType="FeedControl">
       <![CDATA[
       delete from alf_activity_feed_control
-      where feed_user_id = #{feedUserId}
+      where (feed_user_id IS NULL and #{feedUserId} IS NULL OR feed_user_id = #{feedUserId})
       and ((site_network = #{siteNetwork}) or ((#{siteNetwork} is null) and (site_network is null)))
       and ((app_tool = #{appTool}) or ((#{appTool} is null) and (app_tool is null)))
       ]]>

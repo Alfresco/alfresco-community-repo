@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -57,7 +58,7 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
     
     public TextToPdfContentTransformer()
     {
-        setPageLimitsSuported(true);
+        setPageLimitsSupported(true);
         transformer = new PagedTextToPDF();
     }
     
@@ -115,6 +116,14 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
         {
             return true;
         }
+    }
+
+    @Override
+    public String getComments(boolean available)
+    {
+        return getCommentsOnlySupports(
+                Arrays.asList(new String[] {MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_TEXT_CSV, MimetypeMap.MIMETYPE_XML}),
+                Arrays.asList(new String[] {MimetypeMap.MIMETYPE_PDF}), available);
     }
 
     @Override

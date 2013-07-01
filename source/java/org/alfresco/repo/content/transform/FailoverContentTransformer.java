@@ -22,7 +22,6 @@ import java.io.File;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -143,6 +142,7 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
         return result;
     }
     
+    @SuppressWarnings("deprecation")
     public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
     	boolean result = true;
@@ -248,5 +248,32 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
             }
             throw transformationException;
         }
+    }
+
+    /**
+     * Returns the transformer properties predefined (hard coded or implied) by this transformer.
+     */
+    @Override
+    public String getComments(boolean available)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.getComments(available));
+        sb.append("# ");
+        sb.append(TransformerConfig.CONTENT);
+        sb.append(getName());
+        sb.append(TransformerConfig.FAILOVER);
+        sb.append('=');
+        boolean first = true;
+        for (ContentTransformer transformer: transformers)
+        {
+            if (!first)
+            {
+                sb.append(TransformerConfig.PIPE);
+            }
+            first = false;
+            sb.append(transformer != null ? getSimpleName(transformer) : TransformerConfig.ANY);
+        }
+        sb.append('\n');
+        return sb.toString();
     }
 }

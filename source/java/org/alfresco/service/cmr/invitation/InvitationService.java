@@ -40,7 +40,7 @@ public interface InvitationService
 	 * 
 	 * @return the names of the workkflows managed by the invitation service.
 	 */
-   @NotAuditable
+	@NotAuditable
 	public List<String> getInvitationServiceWorkflowNames();
    
    /**
@@ -212,7 +212,17 @@ public interface InvitationService
 			Invitation.ResourceType resourceType,
 			String resourceName, 
 			String inviteeRole);
-	
+	/**
+	 * Update the invitee comments for an existing moderated invitation
+	 * 
+	 * @param inviteeId
+	 * @param siteShortName
+	 * @param inviteeComments
+	 * @return the invitation
+	 */
+    @Auditable(parameters = {"inviteeId", "siteShortName", "inviteeComments"})    
+    ModeratedInvitation updateModeratedInvitation(String inviteeId, String siteShortName, String inviteeComments);
+    
 	/**
 	 * For a Nominated Invitation invitee accepts this invitation
 	 * 
@@ -262,6 +272,9 @@ public interface InvitationService
    @NotAuditable
 	public List<Invitation> listPendingInvitationsForInvitee(String invitee);
 	
+   @NotAuditable
+   public List<Invitation> listPendingInvitationsForInvitee(String invitee, Invitation.ResourceType resourceType);
+   
 	/**
 	 * list Invitations for a specific resource
 	 * @param resourceType

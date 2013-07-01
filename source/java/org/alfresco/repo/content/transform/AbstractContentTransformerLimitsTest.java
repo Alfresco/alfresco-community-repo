@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -272,26 +272,6 @@ public class AbstractContentTransformerLimitsTest
     }
     
     @Test
-    // Combination where transformer limit is used
-    public void testGetMaxSourceSizeKBytesCombinationTransUsed() throws Exception
-    {
-        long kValue = 12;
-        long byteValue = kValue*1024;
-
-        // Not set mimetype limits yet
-        assertTrue("No limits so should have been ok",
-                transformer.isTransformableSize(A, byteValue+1, B, options));
-
-        transformer.setMaxSourceSizeKBytes(kValue);
-        limits.setMaxSourceSizeKBytes(kValue+1);
-        addMimetypeLimits(A, B, limits);
-        transformer.setMimetypeLimits(mimetypeLimits);
-        transformer.register();
-        assertEquals("Expected to have transformer set value returned", kValue,
-                transformer.getMaxSourceSizeKBytes(A, B, options));
-    }
-    
-    @Test
     // Combination where mimetype limit is used
     public void testGetMaxSourceSizeKBytesCombinationMimetypeUsed() throws Exception
     {
@@ -310,7 +290,7 @@ public class AbstractContentTransformerLimitsTest
         assertEquals("Expected to have transformer set value returned", kValue,
                 transformer.getMaxSourceSizeKBytes(A, B, options));
     }
-    
+
     @Test
     // Check no limit when page limit set on a transformer that does not support page limit
     // maxSourceSizeKbytes value should be ignored if a page limit is in use
@@ -323,16 +303,17 @@ public class AbstractContentTransformerLimitsTest
         assertTrue("No limits so should have been ok",
                 transformer.isTransformableSize(A, byteValue+1, B, options));
 
-        transformer.setPageLimitsSuported(false);
+        transformer.setPageLimitsSupported(false);
         transformer.setMaxSourceSizeKBytes(kValue);
         limits.setMaxSourceSizeKBytes(kValue+1);
         limits.setPageLimit(1);
         addMimetypeLimits(A, B, limits);
         transformer.setMimetypeLimits(mimetypeLimits);
         transformer.register();
-        assertEquals("Expected to ignore the page limit as the transformer does not support it", kValue,
+        assertEquals("Expected to ignore the page limit as the transformer does not support it", kValue+1,
                 transformer.getMaxSourceSizeKBytes(A, B, options));
     }
+    
     @Test
     // Check no limit when page limit set on a transformer that does support page limit
     // maxSourceSizeKbytes value should be ignored if a page limit is in use
@@ -345,7 +326,7 @@ public class AbstractContentTransformerLimitsTest
         assertTrue("No limits so should have been ok",
                 transformer.isTransformableSize(A, byteValue+1, B, options));
 
-        transformer.setPageLimitsSuported(true);
+        transformer.setPageLimitsSupported(true);
         transformer.setMaxSourceSizeKBytes(kValue);
         limits.setMaxSourceSizeKBytes(kValue+1);
         limits.setPageLimit(1);
@@ -407,28 +388,6 @@ public class AbstractContentTransformerLimitsTest
         assertFalse("Size is greater than limit so should have failed",
                 transformer.isTransformableSize(A, byteValue+1, B, options));
     }
-    
-    @Test
-    // Combination where transformer limit is used
-    public void testIsTransformableSizeCombinationTransUsed() throws Exception
-    {
-        long kValue = 12;
-        long byteValue = kValue*1024;
-
-        // Not set mimetype limits yet
-        assertTrue("No limits so should have been ok",
-                transformer.isTransformableSize(A, byteValue+1, B, options));
-
-        transformer.setMaxSourceSizeKBytes(kValue);
-        limits.setMaxSourceSizeKBytes(kValue+1);
-        addMimetypeLimits(A, B, limits);
-        transformer.setMimetypeLimits(mimetypeLimits);
-        transformer.register();
-        assertTrue("Size is equal to limit so should have been ok",
-                transformer.isTransformableSize(A, byteValue, B, options));
-        assertFalse("Size is greater than limit so should have failed",
-                transformer.isTransformableSize(A, byteValue+1, B, options));
-    }
         
     @Test
     // Combination where mimetype limit is used
@@ -459,7 +418,7 @@ public class AbstractContentTransformerLimitsTest
         long byteValue = kValue*1024;
         
         transformer.setMaxSourceSizeKBytes(kValue);
-        transformer.setPageLimitsSuported(true);
+        transformer.setPageLimitsSupported(true);
         transformer.register();
 
         // Test works as normal before setting the pageLimit

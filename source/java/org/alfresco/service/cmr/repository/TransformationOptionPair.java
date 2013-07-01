@@ -19,11 +19,10 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.repo.content.transform.TransformerDebug;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A pair of transformation options that specify
@@ -40,8 +39,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Alan Davis
  */
-public class TransformationOptionPair
+public class TransformationOptionPair implements Serializable
 {
+    private static final long serialVersionUID = 1L;
+
     /**
      * Action to take place for a given pair of values. 
      */
@@ -82,7 +83,13 @@ public class TransformationOptionPair
         {
             throw new IllegalArgumentException(exceptionMessage);
         }
+        setMax(max);
+    }
+
+    private void setMax(long max)
+    {
         this.max = max;
+        this.limit = -1;
     }
     
     public long getLimit()
@@ -96,6 +103,12 @@ public class TransformationOptionPair
         {
             throw new IllegalArgumentException(exceptionMessage);
         }
+        setLimit(limit);
+    }
+    
+    private void setLimit(long limit)
+    {
+        this.max = -1;
         this.limit = limit;
     }
     
@@ -121,7 +134,29 @@ public class TransformationOptionPair
             (getLimit() >= 0) ? Action.RETURN_EOF
                         : null;
     }
-    
+
+    /**
+     * Defaults values that are set in this pair into the
+     * supplied pair.
+     * @param pair to be set
+     */
+    public void defaultTo(TransformationOptionPair pair)
+    {
+        long max = getMax();
+        if (max >= 0)
+        {
+            pair.setMax(max);
+        }
+        else
+        {
+            long limit = getLimit();
+            if (limit >= 0)
+            {
+                pair.setLimit(limit);
+            }
+        }
+    }
+
     public String toString(String max, String limit)
     {
         if (getMax() >= 0)
@@ -172,6 +207,37 @@ public class TransformationOptionPair
         return optionsMap;
     }
 
+    public void append(StringBuilder sb, String optMaxKey, String optLimitKey)
+    {
+        long max = getMax();
+        if (max >= 0)
+        {
+            if (sb.length() > 1)
+            {
+                sb.append(", ");
+            }
+            
+            sb.append(optMaxKey);
+            sb.append('=');
+            sb.append(max);
+        }
+        else
+        {
+            long limit = getLimit();
+            if (limit >= 0)
+            {
+                if (sb.length() > 1)
+                {
+                    sb.append(", ");
+                }
+                
+                sb.append(optLimitKey);
+                sb.append('=');
+                sb.append(limit);
+            }
+        }
+    }
+    
     public void set(Map<String, Object> optionsMap, String optMaxKey, String optLimitKey,
             String exceptionMessage)
     {

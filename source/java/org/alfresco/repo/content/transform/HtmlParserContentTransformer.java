@@ -20,6 +20,7 @@ package org.alfresco.repo.content.transform;
 
 import java.io.File;
 import java.net.URLConnection;
+import java.util.Arrays;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -76,6 +77,12 @@ public class HtmlParserContentTransformer extends AbstractContentTransformer2
         {
             return true;
         }
+    }
+
+    @Override
+    public String getComments(boolean available)
+    {
+        return onlySupports(MimetypeMap.MIMETYPE_HTML, MimetypeMap.MIMETYPE_TEXT_PLAIN, available);
     }
 
     public void transformInternal(ContentReader reader, ContentWriter writer,  TransformationOptions options)

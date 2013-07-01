@@ -1064,28 +1064,14 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         FileInfo fileInfo = connector.getFileFolderService().create(
                 parentInfo.getNodeRef(), name, type.getAlfrescoClass());
         NodeRef nodeRef = fileInfo.getNodeRef();
-        
 
         connector.setProperties(nodeRef, type, properties, new String[] { PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
         connector.applyPolicies(nodeRef, type, policies);
         connector.applyACL(nodeRef, type, addAces, removeAces);
         
-        connector.getActivityPoster().postFileFolderAdded(fileInfo);
+        connector.getActivityPoster().postFileFolderAdded(nodeRef);
 
         return nodeRef.getId();
-    }
-
-    private String stripEncoding(String mimeType)
-    {
-        String ret = mimeType;
-
-        int idx = mimeType.indexOf(";");
-        if(idx != -1)
-        {
-            ret = mimeType.substring(0, idx);
-        }
-
-        return ret;
     }
 
     @Override
@@ -1128,27 +1114,40 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisConstraintException("This document type is not versionable!");
         }
 
-        // copy stream to temp file
-        // OpenCMIS does this for us ....
-        final File tempFile = copyToTempFile(contentStream);
-        final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
-
         FileInfo fileInfo = connector.getFileFolderService().create(
                 parentInfo.getNodeRef(), name, type.getAlfrescoClass());
         NodeRef nodeRef = fileInfo.getNodeRef();
+
         connector.setProperties(nodeRef, type, properties, new String[] { PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
         connector.applyPolicies(nodeRef, type, policies);
         connector.applyACL(nodeRef, type, addAces, removeAces);
 
         // handle content
-        if (contentStream != null)
+        File tempFile = null;
+        try
         {
-            // write content
-            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-            String mimeType = stripEncoding(contentStream.getMimeType());
-            writer.setMimetype(mimeType);
-            writer.setEncoding(encoding.name());
-            writer.putContent(tempFile);
+	        if (contentStream != null)
+	        {
+	            // write content
+	            String mimeType = parseMimeType(contentStream);
+
+	            // copy stream to temp file
+	            // OpenCMIS does this for us ....
+	            tempFile = copyToTempFile(contentStream);
+	            final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
+	                
+	            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
+	            writer.setMimetype(mimeType);
+	            writer.setEncoding(encoding.name());
+	            writer.putContent(tempFile);
+	        }
+        }
+        finally
+        {
+        	if(tempFile != null)
+        	{
+        		removeTempFile(tempFile);
+        	}
         }
 
         connector.extractMetadata(nodeRef);
@@ -1158,11 +1157,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         connector.applyVersioningState(nodeRef, versioningState);
 
-        removeTempFile(tempFile);
-
         String objectId = connector.createObjectId(nodeRef);
 
-        connector.getActivityPoster().postFileFolderAdded(fileInfo);
+        connector.getActivityPoster().postFileFolderAdded(nodeRef);
 
         return objectId;
     }
@@ -1214,7 +1211,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
             connector.applyVersioningState(nodeRef, versioningState);
 
-            connector.getActivityPoster().postFileFolderAdded(fileInfo);
+            connector.getActivityPoster().postFileFolderAdded(nodeRef);
 
             return connector.createObjectId(nodeRef);
         }
@@ -1309,6 +1306,27 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
         }
     }
+    
+    private String parseMimeType(ContentStream contentStream)
+    {
+    	String mimeType = null;
+
+    	String tmp = contentStream.getMimeType();
+    	if(tmp != null)
+    	{
+    		int idx = tmp.indexOf(";");
+    		if(idx != -1)
+    		{
+    			mimeType = tmp.substring(0, idx).trim();
+    		}
+    		else
+    		{
+    			mimeType = tmp;
+    		}
+    	}
+
+    	return mimeType;
+    }
 
     @Override
     public void setContentStream(
@@ -1349,7 +1367,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         try
         {
             ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-            writer.setMimetype(contentStream.getMimeType());
+            String mimeType = parseMimeType(contentStream);
+            writer.setMimetype(mimeType);
             writer.setEncoding(encoding.name());
             writer.putContent(tempFile);
         }
@@ -1897,7 +1916,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             // write content
             ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-            writer.setMimetype(contentStream.getMimeType());
+            writer.setMimetype(parseMimeType(contentStream));
             writer.setEncoding(encoding.name());
             writer.putContent(tempFile);
         }

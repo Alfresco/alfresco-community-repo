@@ -125,6 +125,7 @@ public class RetryingTransactionHelper
      * 
      * @return List of enterprise exception classes or empty list if not available.
      */
+    @SuppressWarnings("unchecked")
     private static List<Class<?>> enterpriseRetryExceptions()
     {
         List<Class<?>> retryExceptions = null;

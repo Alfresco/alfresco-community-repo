@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
 

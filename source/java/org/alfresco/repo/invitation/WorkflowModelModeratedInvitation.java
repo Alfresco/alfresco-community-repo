@@ -59,7 +59,8 @@ public interface WorkflowModelModeratedInvitation
     public static final QName WF_PROP_RESOURCE_TYPE= QName.createQName(NAMESPACE_URI, "resourceType");
     public static final QName WF_PROP_REVIEW_COMMENTS= QName.createQName(NAMESPACE_URI, "reviewComments");
     public static final QName WF_PROP_REVIEWER= QName.createQName(NAMESPACE_URI, "reviewer");
-    
+    public static final QName WF_PROP_MODIFIED_AT= QName.createQName(NAMESPACE_URI, "modifiedAt");
+
     // workflow execution context variable names
     public static final String wfVarInviteeUserName = "imwf_inviteeUserName";
     public static final String wfVarInviteeRole = "imwf_inviteeRole";

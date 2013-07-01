@@ -416,7 +416,15 @@ public interface FileFolderService
     @Auditable(parameters = {"typeQName"})
     public FileFolderServiceType getType(QName typeQName);
     
+    /**
+     * @deprecated  <a href="https://issues.alfresco.com/jira/browse/MNT-8704">MNT-8704: WebDAV:Content does not disappear after being deleted</a>
+     */
+    @Deprecated
     public boolean isHidden(NodeRef nodeRef);
     
+    /**
+     * @deprecated  <a href="https://issues.alfresco.com/jira/browse/MNT-8704">MNT-8704: WebDAV:Content does not disappear after being deleted</a>
+     */
+    @Deprecated
     public void setHidden(NodeRef nodeRef, boolean isHidden);
 }

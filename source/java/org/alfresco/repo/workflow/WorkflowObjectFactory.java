@@ -234,7 +234,8 @@ public class WorkflowObjectFactory
     String processKey =  getProcessKey(workflowDefinitionName) + ".task." + name;
     TypeDefinition metadata = taskDef.getMetadata();
     String title = getLabel(processKey, TITLE_LABEL, metadata.getTitle(dictionaryService), defaultTitle, name);
-    String description = getLabel(processKey, DESC_LABEL, metadata.getDescription(dictionaryService), defaultDescription, title);
+    defaultDescription = (defaultDescription !=null && defaultDescription.trim().length() == 0) ? null : defaultDescription;
+    String description = getLabel(processKey, DESC_LABEL, defaultDescription, metadata.getDescription(dictionaryService), title);
     return new WorkflowTask(actualId,
                 taskDef, name, title, description,
                 state, path, properties);

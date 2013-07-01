@@ -203,28 +203,55 @@ public class CMISTest
             RepositoryInfo repo = repositories.get(0);
             repositoryId = repo.getId();
 
-            // create content properties
+            // create simple text plain content
             PropertiesImpl properties = new PropertiesImpl();
             String objectTypeId = "cmis:document";
             properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, objectTypeId));
             String fileName = "textFile" + GUID.generate();
             properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, fileName));
-
-            // create content stream
             ContentStreamImpl contentStream = new ContentStreamImpl(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Simple text plain document");
-
-            // create simple text plain content
             String objectId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().getId(), contentStream, VersioningState.MAJOR, null, null);
 
             Holder<String> objectIdHolder = new Holder<String>(objectId);
+            String path = "/" + fileName;
 
             // create content stream with undefined mimetype and file name
-            ContentStreamImpl contentStreamHTML = new ContentStreamImpl(null, null, "<html><head><title> Hello </title></head><body><p> Test html</p></body></html></body></html>");
-            cmisService.setContentStream(repositoryId, objectIdHolder, true, null, contentStreamHTML, null);
+            {
+	            ContentStreamImpl contentStreamHTML = new ContentStreamImpl(null, null, "<html><head><title> Hello </title></head><body><p> Test html</p></body></html></body></html>");
+	            cmisService.setContentStream(repositoryId, objectIdHolder, true, null, contentStreamHTML, null);
+	
+	            // check mimetype
+	            ObjectData objectData = cmisService.getObjectByPath(repositoryId, path, null, false, IncludeRelationships.NONE, null, false, false, null);
+	            objectId = objectData.getId();
+	            String contentType = cmisService.getObjectInfo(repositoryId, objectId).getContentType();
+	            assertEquals("Mimetype is not defined correctly.", MimetypeMap.MIMETYPE_HTML, contentType);
+            }
 
-            // check mimetype
-            boolean mimetypeHTML = cmisService.getObjectInfo(repositoryId, objectId).getContentType().equals(MimetypeMap.MIMETYPE_HTML);
-            assertTrue("Mimetype is not defined correctly.", mimetypeHTML);
+            // create content stream with mimetype and encoding
+            {
+	            String mimeType = MimetypeMap.MIMETYPE_TEXT_PLAIN + "; charset=UTF-8";
+	            ContentStreamImpl contentStreamHTML = new ContentStreamImpl(null, mimeType, "<html><head><title> Hello </title></head><body><p> Test html</p></body></html></body></html>");
+	            cmisService.setContentStream(repositoryId, objectIdHolder, true, null, contentStreamHTML, null);
+	
+	            // check mimetype
+	            ObjectData objectData = cmisService.getObjectByPath(repositoryId, path, null, false, IncludeRelationships.NONE, null, false, false, null);
+	            String contentType = cmisService.getObjectInfo(repositoryId, objectData.getId()).getContentType();
+	            assertEquals("Mimetype is not defined correctly.", MimetypeMap.MIMETYPE_TEXT_PLAIN, contentType);
+	        }
+
+            // checkout/checkin object with mimetype and encoding
+            {
+	            objectIdHolder.setValue(objectId);
+	            cmisService.checkOut(repositoryId, objectIdHolder, null, new Holder<Boolean>());
+	            String mimeType = MimetypeMap.MIMETYPE_HTML + "; charset=UTF-8";
+	            ContentStreamImpl contentStreamHTML = new ContentStreamImpl(null, mimeType, "<html><head><title> Hello </title></head><body><p> Test html</p></body></html></body></html>");            
+	            cmisService.checkIn(repositoryId, objectIdHolder, false, null, contentStreamHTML, "checkin", null, null, null, null);
+	
+	            // check mimetype
+	            ObjectData objectData = cmisService.getObjectByPath(repositoryId, path, null, false, IncludeRelationships.NONE, null, false, false, null);
+	            String contentType = cmisService.getObjectInfo(repositoryId, objectData.getId()).getContentType();
+	            assertEquals("Mimetype is not defined correctly.", MimetypeMap.MIMETYPE_HTML, contentType);
+            }
         }
         finally
         {

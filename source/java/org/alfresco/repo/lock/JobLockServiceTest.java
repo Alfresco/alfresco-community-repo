@@ -40,6 +40,7 @@ import org.springframework.context.ApplicationContext;
  * @author Derek Hulley
  * @since 3.2
  */
+@SuppressWarnings("unused")
 public class JobLockServiceTest extends TestCase
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/JobLockServiceTest";
@@ -376,7 +377,7 @@ public class JobLockServiceTest extends TestCase
         // The first refresh will occur in 500ms
         wait(1000L);
         // Should NOT get a callback saying that the lock has been released
-        assertFalse("DID NOT expect lockReleased to have been called", released[0] > 0);
+        assertTrue("Lock should be optimistically released", released[0] > 0);
         try
         {
             jobLockService.getLock(lockQName, lockTTL);

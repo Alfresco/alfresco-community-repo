@@ -27,9 +27,17 @@ import java.util.Map;
 import org.alfresco.service.cmr.repository.MimetypeService;
 
 /**
- * Provides a place to store and access statistics about transformers, source and target mimetypes combinations.
- * It also provides summaries for transformers as a whole and the system as a whole.
- *  
+ * Provides a place to store statistics about:
+ * a) the combination of transformer, source and target mimetype;
+ * b) a summary for each transformer;
+ * c) a summary of top level transformations (++) for each combination of
+ *    source and target mimetype;
+ * d) a summary of all top level transformations.
+ * These values are not shared across the cluster but are node specific.<p>
+ * 
+ * ++ Top level transformations don't include transformations performed as part
+ * of another transformation.
+ *
  * @author Alan Davis
  */
 public class TransformerConfigStatistics
@@ -42,7 +50,7 @@ public class TransformerConfigStatistics
     // transformer wide summaries.
     private Map<String, DoubleMap<String, String, TransformerStatistics>> statistics =
             new HashMap<String, DoubleMap<String, String, TransformerStatistics>>();
-
+            
     public TransformerConfigStatistics(TransformerConfigImpl transformerConfigImpl,
             MimetypeService mimetypeService)
     {
@@ -50,7 +58,7 @@ public class TransformerConfigStatistics
         this.mimetypeService = mimetypeService;
     }
 
-    public TransformerStatistics getStatistics(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
+    public TransformerStatistics getStatistics(ContentTransformer transformer, String sourceMimetype, String targetMimetype, boolean createNew)
     {
         if (sourceMimetype == null)
         {
@@ -67,6 +75,14 @@ public class TransformerConfigStatistics
         String name = (transformer == null) ? SUMMARY_TRANSFORMER_NAME : transformer.getName();
         DoubleMap<String, String, TransformerStatistics> mimetypeStatistics = statistics.get(name);
 
+        if (!createNew)
+        {
+            transformerStatistics = (mimetypeStatistics == null)
+                    ? null
+                    : mimetypeStatistics.getNoWildcards(sourceMimetype, targetMimetype);
+            return transformerStatistics;
+        }
+        
         if (mimetypeStatistics == null)
         {
             // Create the summary for the transformer as a whole
@@ -82,7 +98,7 @@ public class TransformerConfigStatistics
         }
         else
         {
-            // Not looking for the summary, so will have to create if not found or the summary is returned 
+            // Not looking for the summary, so will have to create it if not found or the summary is returned 
             transformerStatistics = mimetypeStatistics.get(sourceMimetype, targetMimetype);
             if (transformerStatistics == null || transformerStatistics.isSummary())
             {
@@ -109,5 +125,4 @@ public class TransformerConfigStatistics
 
         return transformerStatistics;
     }
-    
 }

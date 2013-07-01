@@ -16,7 +16,10 @@ Inbound settings from iBatis
 
     <typeAliases>
     
-        <!-- CLOUD-452: Activities -->
+        <!-- General -->
+        <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
+    
+        <!-- Activities -->
         <typeAlias alias="ActivityFeedQuery" type="org.alfresco.repo.domain.activities.ActivityFeedQueryEntity"/>
         <typeAlias alias="ActivityFeed" type="org.alfresco.repo.domain.activities.ActivityFeedEntity"/>
         <typeAlias alias="FeedControl" type="org.alfresco.repo.domain.activities.FeedControlEntity"/>
@@ -42,7 +45,6 @@ Inbound settings from iBatis
         <typeAlias alias="ContentUrlUpdate" type="org.alfresco.repo.domain.contentdata.ContentUrlUpdateEntity"/>
         <typeAlias alias="ContentData" type="org.alfresco.repo.domain.contentdata.ContentDataEntity"/>
         <typeAlias alias="ContentUrlOrphanQuery" type="org.alfresco.repo.domain.contentdata.ContentUrlOrphanQuery"/>
-        <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
         
         <!-- Locale -->
         
@@ -105,7 +107,6 @@ Inbound settings from iBatis
         
         <!-- Patch -->
         
-        <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
         <typeAlias alias="SizeCurrentParams" type="org.alfresco.repo.domain.patch.ibatis.SizeCurrentParams"/>
         
         <!-- Permissions -->
@@ -170,7 +171,6 @@ Inbound settings from iBatis
         <!-- Canned Queries Test -->
         
         <typeAlias alias="TestOne" type="org.alfresco.repo.domain.query.CannedQueryDAOTest$TestOneParams"/>
-        <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
         
         <!-- Subscriptions -->
         
@@ -188,7 +188,7 @@ Inbound settings from iBatis
     </typeHandlers>
         
     <mappers>
-        <!-- CLOUD-452: Activities -->
+        <!-- Activities -->
         <mapper resource="alfresco/ibatis/#resource.dialect#/activities-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/activities-insert-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/activities-select-SqlMap.xml"/>

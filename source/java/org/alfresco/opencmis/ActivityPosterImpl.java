@@ -24,17 +24,17 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
-import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.util.FileFilterMode.Client;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -162,15 +162,22 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
         return tenantDomain;
     }
     
+    private boolean isFolder(NodeRef nodeRef)
+    {
+	    QName typeQName = nodeService.getType(nodeRef);
+	    FileFolderServiceType type = fileFolderService.getType(typeQName);
+	    boolean isFolder = type.equals(FileFolderServiceType.FOLDER);
+	    return isFolder;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
-    public void postFileFolderAdded(FileInfo fileInfo)
+    public void postFileFolderAdded(NodeRef nodeRef)
     {
-    	if(activitiesEnabled && !fileInfo.isHidden())
+    	if(activitiesEnabled && !hiddenAspect.hasHiddenAspect(nodeRef))
     	{
-    		NodeRef nodeRef = fileInfo.getNodeRef();
         	SiteInfo siteInfo = siteService.getSite(nodeRef);
         	String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
     		
@@ -178,9 +185,12 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
     		{
         		// post only for nodes within sites
     			NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
-    			
+
     			String path = null;
-    			if (fileInfo.isFolder())
+    			boolean isFolder = isFolder(nodeRef);
+    			String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+
+    			if(isFolder)
     			{
     			    NodeRef documentLibrary = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);
     	            path = "/";
@@ -196,7 +206,7 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
     	                }
     	            }
     			}
-    			postFileFolderActivity((fileInfo.isFolder() ? ActivityType.FOLDER_ADDED : ActivityType.FILE_ADDED), path, parentNodeRef, nodeRef, siteId, fileInfo.getName());
+    			postFileFolderActivity((isFolder ? ActivityType.FOLDER_ADDED : ActivityType.FILE_ADDED), path, parentNodeRef, nodeRef, siteId, name);
     		}
     	}
     }
@@ -207,7 +217,7 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
     @Override
     public void postFileFolderUpdated(boolean isFolder, NodeRef nodeRef)
     {
-    	if(activitiesEnabled && hiddenAspect.getVisibility(Client.cmis, nodeRef) == Visibility.Visible)
+    	if(activitiesEnabled && !hiddenAspect.hasHiddenAspect(nodeRef))
     	{
         	SiteInfo siteInfo = siteService.getSite(nodeRef);
         	String siteId = (siteInfo != null ? siteInfo.getShortName() : null);

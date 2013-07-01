@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentServiceTransientException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -176,7 +177,8 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
             // Create the thumbnail
             try
             {
-                this.thumbnailService.createThumbnail(actionedUponNodeRef, contentProperty, details.getMimetype(), details.getTransformationOptions(), thumbnailName, null);
+                TransformationOptions options = details.getTransformationOptions();
+                this.thumbnailService.createThumbnail(actionedUponNodeRef, contentProperty, details.getMimetype(), options, thumbnailName, null);
             }
             catch (ContentServiceTransientException cste)
             {

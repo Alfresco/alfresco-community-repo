@@ -1431,10 +1431,10 @@ public class FileFolderServiceImplTest extends TestCase
                 fileFolderService.create(nodeRef1, "visiblechild" + i, ContentModel.TYPE_CONTENT).getNodeRef();
             }
 
-            // switch to a client that should not see the hidden files
-            saveClient = FileFilterMode.setClient(Client.cmis);
-            PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE);
-            pagingRequest.setRequestTotalCountMax(10000); // need this so that total count is set
+	    	// switch to a client that should not see the hidden files
+	    	saveClient = FileFilterMode.setClient(Client.script);
+    		PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE);
+    		pagingRequest.setRequestTotalCountMax(10000); // need this so that total count is set
 
             PagingResults<FileInfo> results = fileFolderService.list(nodeRef1, true, true, null, null, pagingRequest);
             Pair<Integer, Integer> totalResultCount = results.getTotalResultCount();

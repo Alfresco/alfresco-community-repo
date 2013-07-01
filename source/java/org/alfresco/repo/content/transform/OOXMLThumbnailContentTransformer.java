@@ -83,6 +83,15 @@ public class OOXMLThumbnailContentTransformer extends AbstractContentTransformer
     }
     
     @Override
+    public String getComments(boolean available)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.getComments(available));
+        sb.append("# Only supports extraction of embedded jpegs from OOXML formats\n");
+        return sb.toString();
+    }
+
+    @Override
     protected void transformInternal(ContentReader reader,
                                      ContentWriter writer,
                                      TransformationOptions options) throws Exception

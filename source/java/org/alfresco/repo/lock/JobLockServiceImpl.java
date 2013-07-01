@@ -397,7 +397,7 @@ public class JobLockServiceImpl implements JobLockService
             // indication that the isActive implementation is performing complex state determination,
             // which is specifically referenced in the API doc.
             throw new RuntimeException(
-                    "isActive check took " + timeWastedMs + " to return, which is too long.");
+                    "isActive check took " + timeWastedMs + "ms to return, which is too long.");
         }
         return isActive;
     }
@@ -419,17 +419,16 @@ public class JobLockServiceImpl implements JobLockService
     /**
      * {@inheritDoc}
      */
-    public void releaseLock(final String lockToken, final QName lockQName)
+    public boolean releaseLock(final String lockToken, final QName lockQName)
     {
-        RetryingTransactionCallback<Void> releaseCallback = new RetryingTransactionCallback<Void>()
+        RetryingTransactionCallback<Boolean> releaseCallback = new RetryingTransactionCallback<Boolean>()
         {
-            public Void execute() throws Throwable
+            public Boolean execute() throws Throwable
             {
-                lockDAO.releaseLock(lockQName, lockToken);
-                return null;
+                return lockDAO.releaseLock(lockQName, lockToken, true);
             }
         };
-        retryingTransactionHelper.doInTransaction(releaseCallback, false, true);
+        return retryingTransactionHelper.doInTransaction(releaseCallback, false, true);
     }
 
     /**
@@ -567,7 +566,7 @@ public class JobLockServiceImpl implements JobLockService
                     // Any one of the them could fail
                     for (QName lockQName : heldLocks)
                     {
-                        lockDAO.releaseLock(lockQName, txnId);
+                        lockDAO.releaseLock(lockQName, txnId, false);
                     }
                     return null;
                 }
@@ -599,7 +598,7 @@ public class JobLockServiceImpl implements JobLockService
                 {
                     public Object execute() throws Throwable
                     {
-                        lockDAO.releaseLock(lockQName, txnId);
+                        lockDAO.releaseLock(lockQName, txnId, false);
                         return null;
                     }
                 };

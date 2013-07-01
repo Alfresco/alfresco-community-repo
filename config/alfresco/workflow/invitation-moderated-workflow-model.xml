@@ -88,6 +88,9 @@
                 <property name="imwf:reviewComments">
                     <type>d:text</type>
                 </property>
+                <property name="imwf:modifiedAt">
+                    <type>d:date</type>
+                </property>
             </properties>
         </aspect>
     </aspects>

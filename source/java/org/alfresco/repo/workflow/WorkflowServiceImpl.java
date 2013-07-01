@@ -983,6 +983,12 @@ public class WorkflowServiceImpl implements WorkflowService
     		task = getTaskById(task.getId()); // Refresh the task.
     	}
          
+        // if task is null just return false
+        if (task == null)
+        {
+            return false;
+        }
+        
         // if the task is complete it is not editable
         if (task.getState() == WorkflowTaskState.COMPLETED)
         {
@@ -1025,6 +1031,12 @@ public class WorkflowServiceImpl implements WorkflowService
     	{
     		task = getTaskById(task.getId()); // Refresh the task.
     	}
+        
+        // if task is null just return false
+        if (task == null)
+        {
+            return false;
+        }
         
         // if the task is complete it is not reassignable
         if (task.getState() == WorkflowTaskState.COMPLETED)
@@ -1080,6 +1092,12 @@ public class WorkflowServiceImpl implements WorkflowService
     		task = getTaskById(task.getId()); // Refresh the task.
     	}
         
+        // if task is null just return false
+        if (task == null)
+        {
+            return false;
+        }
+        
         // if the task is complete it is not claimable
         if (task.getState() == WorkflowTaskState.COMPLETED)
         {
@@ -1112,6 +1130,12 @@ public class WorkflowServiceImpl implements WorkflowService
     	{
     		task = getTaskById(task.getId()); // Refresh the task.
     	}
+        // if task is null just return false
+        if (task == null)
+        {
+            return false;
+        }
+        
         // if the task is complete it is not releasable
         if (task.getState() == WorkflowTaskState.COMPLETED)
         {

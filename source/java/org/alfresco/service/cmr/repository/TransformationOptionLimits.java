@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,8 +31,10 @@ import org.alfresco.util.EqualsHelper;
  * 
  * @author Alan Davis
  */
-public class TransformationOptionLimits
+public class TransformationOptionLimits implements Serializable
 {
+    private static final long serialVersionUID = 1L;
+
     public static final String OPT_TIMEOUT_MS = "timeoutMs";
     public static final String OPT_READ_LIMIT_TIME_MS = "readLimitTimeMs";
     
@@ -72,6 +75,18 @@ public class TransformationOptionLimits
         }
     }
     
+    /**
+     * Defaults values that are set in this object into the
+     * supplied limits.
+     * @param limits to be set
+     */
+    public void defaultTo(TransformationOptionLimits limits)
+    {
+        time.defaultTo(limits.time);
+        kbytes.defaultTo(limits.kbytes);
+        pages.defaultTo(limits.pages);
+    }
+
     // --------------- Time ---------------
     public TransformationOptionPair getTimePair()
     {
@@ -191,7 +206,12 @@ public class TransformationOptionLimits
     
     public String toString()
     {
-        return toMap(new HashMap<String, Object>()).toString();
+        StringBuilder sb = new StringBuilder("{");
+        time.append(sb, OPT_TIMEOUT_MS, OPT_READ_LIMIT_TIME_MS);
+        kbytes.append(sb, OPT_MAX_SOURCE_SIZE_K_BYTES, OPT_READ_LIMIT_K_BYTES);
+        pages.append(sb, OPT_MAX_PAGES, OPT_PAGE_LIMIT);
+        sb.append("}");
+        return sb.length() == 2 ? "" : sb.toString();
     }
 
     /**
@@ -217,6 +237,8 @@ public class TransformationOptionLimits
     {
         return new TransformationOptionLimits(this, that, lower)
         {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void setTimeoutMs(long timeoutMs)
             {

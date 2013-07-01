@@ -33,10 +33,14 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.version.VersionRevertCallback.RevertAspectAction;
+import org.alfresco.repo.version.VersionRevertCallback.RevertAssocAction;
 import org.alfresco.repo.version.common.VersionHistoryImpl;
 import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -1080,6 +1084,11 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     public void revert(NodeRef nodeRef, Version version, boolean deep)
     {
+    	if(logger.isDebugEnabled())
+    	{
+    	     logger.debug("revert nodeRef:" + nodeRef);
+    	}
+    	
         if (useDeprecatedV1)
         {
             super.revert(nodeRef, version, deep);
@@ -1100,37 +1109,95 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             // Turn off any auto-version policy behaviours
             this.policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
             try
-            {
+            {                
+                // The current (old) values
+                Map<QName, Serializable> oldProps = this.nodeService.getProperties(nodeRef);
+                Set<QName> oldAspectQNames = this.nodeService.getAspects(nodeRef);
+                QName oldNodeTypeQName = nodeService.getType(nodeRef);
                 // Store the current version label
                 String currentVersionLabel = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-    
+
+                // The frozen (which will become new) values
                 // Get the node that represents the frozen state
                 NodeRef versionNodeRef = version.getFrozenStateNodeRef();
-    
-                // Revert the property values
-                Map<QName, Serializable> props = this.nodeService.getProperties(versionNodeRef);
-                VersionUtil.convertFrozenToOriginalProps(props);
+                Map<QName, Serializable> newProps = this.nodeService.getProperties(versionNodeRef);
+                VersionUtil.convertFrozenToOriginalProps(newProps);
+                Set<QName> newAspectQNames = this.nodeService.getAspects(versionNodeRef);
                 
-                this.nodeService.setProperties(nodeRef, props);
-    
-                // Apply/remove the aspects as required
-                Set<QName> aspects = new HashSet<QName>(this.nodeService.getAspects(nodeRef));
-                for (QName versionAspect : this.nodeService.getAspects(versionNodeRef))
+                // RevertDetails - given to policy behaviours
+                VersionRevertDetailsImpl revertDetails = new VersionRevertDetailsImpl();
+                revertDetails.setNodeRef(nodeRef);
+                revertDetails.setNodeType(oldNodeTypeQName);
+                
+                //  Do we want to maintain any existing property values?
+                Collection<QName> propsToLeaveAlone = new ArrayList<QName>();
+                Collection<QName> assocsToLeaveAlone = new ArrayList<QName>();
+                
+                TypeDefinition typeDef = dictionaryService.getType(oldNodeTypeQName);
+                if(typeDef != null)
                 {
-                    if (aspects.contains(versionAspect) == false)
-                    {
-                        this.nodeService.addAspect(nodeRef, versionAspect, null);
-                    }
-                    else
-                    {
-                        aspects.remove(versionAspect);
-                    }
+                	for(QName assocName : typeDef.getAssociations().keySet())
+                	{
+        		    	if(getRevertAssocAction(oldNodeTypeQName, assocName, revertDetails) == RevertAssocAction.IGNORE)
+        		    	{
+        		            assocsToLeaveAlone.add(assocName);
+        		    	}                		
+                	}
                 }
-                for (QName aspect : aspects)
+                
+            	for (QName aspect : oldAspectQNames)
+            	{
+            		AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
+            		if(aspectDef != null)
+            		{
+            		    if (getRevertAspectAction(aspect, revertDetails) == RevertAspectAction.IGNORE)
+            		    {
+            			     propsToLeaveAlone.addAll(aspectDef.getProperties().keySet());
+            			}
+            		    for(QName assocName : aspectDef.getAssociations().keySet())
+            		    {
+            		    	if(getRevertAssocAction(aspect, assocName, revertDetails) == RevertAssocAction.IGNORE)
+            		    	{
+            		            assocsToLeaveAlone.addAll(aspectDef.getAssociations().keySet());
+            		    	}
+            		    }
+            		}
+            	}
+            	
+			    for(QName prop : propsToLeaveAlone)
+			    {
+				    if(oldProps.containsKey(prop))
+				    {
+				        newProps.put(prop, oldProps.get(prop));
+				    }
+			    }
+                
+                this.nodeService.setProperties(nodeRef, newProps);
+
+                Set<QName> aspectsToRemove = new HashSet<QName>(oldAspectQNames);
+            	aspectsToRemove.removeAll(newAspectQNames);
+            	
+            	Set<QName> aspectsToAdd = new HashSet<QName>(newAspectQNames);
+            	aspectsToAdd.removeAll(oldAspectQNames);
+            	
+            	// add aspects that are not on the current node
+            	for (QName aspect : aspectsToAdd)
+            	{
+            		if (getRevertAspectAction(aspect, revertDetails) != RevertAspectAction.IGNORE)
+            		{
+            	        this.nodeService.addAspect(nodeRef, aspect, null);
+            		}
+            	}
+            	
+                // remove aspects that are not on the frozen node
+                for (QName aspect : aspectsToRemove)
                 {
-                    this.nodeService.removeAspect(nodeRef, aspect);
+                	if (getRevertAspectAction(aspect, revertDetails) != RevertAspectAction.IGNORE)
+                	{
+                		this.nodeService.removeAspect(nodeRef, aspect);
+                	}
                 }
-    
+            	  
                 // Re-add the versionable aspect to the reverted node
                 if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == false)
                 {
@@ -1187,24 +1254,34 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                     else
                     {
                         children.remove(versionedChild);
-                    }
+                    } 
                 }
                 for (ChildAssociationRef ref : children)
                 {
-                    this.nodeService.removeChild(nodeRef, ref.getChildRef());
+                	if (!assocsToLeaveAlone.contains(ref.getTypeQName()))
+                	{
+                        this.nodeService.removeChild(nodeRef, ref.getChildRef());
+                	}
                 }
                 
                 // Add/remove the target associations
                 for (AssociationRef assocRef : this.nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL))
                 {
-                    this.nodeService.removeAssociation(assocRef.getSourceRef(), assocRef.getTargetRef(), assocRef.getTypeQName());
+                	if (!assocsToLeaveAlone.contains(assocRef.getTypeQName()))
+                	{
+                		this.nodeService.removeAssociation(assocRef.getSourceRef(), assocRef.getTargetRef(), assocRef.getTypeQName());
+                	}
                 }
                 for (AssociationRef versionedAssoc : this.nodeService.getTargetAssocs(versionNodeRef, RegexQNamePattern.MATCH_ALL))
                 {
-                    if (this.nodeService.exists(versionedAssoc.getTargetRef()) == true)
-                    {
-                        this.nodeService.createAssociation(nodeRef, versionedAssoc.getTargetRef(), versionedAssoc.getTypeQName());
-                    }
+                	if (!assocsToLeaveAlone.contains(versionedAssoc.getTypeQName()))
+                	{
+
+                        if (this.nodeService.exists(versionedAssoc.getTargetRef()) == true)
+                        {
+                            this.nodeService.createAssociation(nodeRef, versionedAssoc.getTargetRef(), versionedAssoc.getTypeQName());
+                        }
+                	}
                     
                     // else
                     // Since the target of the assoc no longer exists we can't recreate the assoc

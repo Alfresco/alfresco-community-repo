@@ -855,7 +855,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         ActivityInfo activityInfo = null;
 
         // post activity after removal of the node
-        postActivity &= hiddenAspect.getVisibility(Client.cmis, nodeRef) == Visibility.Visible;
+        postActivity &= !hiddenAspect.hasHiddenAspect(nodeRef);
     	if(postActivity)
     	{
         	// get this information before the node is deleted
@@ -1080,9 +1080,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>();
                 props.put(ContentModel.PROP_INITIAL_VERSION, false);
-                props.put(ContentModel.PROP_AUTO_VERSION, false);
+                props.put(ContentModel.PROP_AUTO_VERSION, true);
                 nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
             }
+
+            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(5);
+            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+            versionProperties.put(VersionModel.PROP_DESCRIPTION, "Initial Version");
+
+            versionService.createVersion(nodeRef, versionProperties);
+            
             getCheckOutCheckInService().checkout(nodeRef);
         }
         else if ((versioningState == VersioningState.MAJOR) || (versioningState == VersioningState.MINOR))
@@ -1091,7 +1098,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>();
                 props.put(ContentModel.PROP_INITIAL_VERSION, false);
-                props.put(ContentModel.PROP_AUTO_VERSION, false);
+                props.put(ContentModel.PROP_AUTO_VERSION, true);
                 nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
             }
 
@@ -1567,8 +1574,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 for (Object o : ((List) value))
                 {
-                    propertyValues.add(new CmisExtensionElementImpl(CMIS_NAMESPACE, "value", null,
-                            convertAspectPropertyValue(o)));
+                	if(o != null)
+                	{
+                		propertyValues.add(new CmisExtensionElementImpl(CMIS_NAMESPACE, "value", null,
+                				convertAspectPropertyValue(o)));
+                	}
+                	else
+                	{
+                		logger.warn("Unexpected null entry in list value for property " + propertyDefintion.getDisplayName()
+                				+ ", value = " + value);
+                	}
                 }
             }
             else
@@ -1812,16 +1827,17 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
             try
             {
-                result.add(createCMISObject(createNodeInfo(assocRef), null, false, IncludeRelationships.NONE,
-                    RENDITION_NONE, false, false));
+	            result.add(createCMISObject(createNodeInfo(assocRef), null, false, IncludeRelationships.NONE,
+	                    RENDITION_NONE, false, false));
+            }
+            catch(AccessDeniedException e)
+            {
+            	// PUBLICAPI-110
+            	// ok, just skip it
             }
             catch(CmisObjectNotFoundException e)
             {
                 // ignore objects that have not been found (perhaps because their type is unknown to CMIS)
-            }
-            catch (AccessDeniedException e)
-            {
-                // skip
             }
             // TODO: Somewhere this has not been wrapped correctly
             catch (net.sf.acegisecurity.AccessDeniedException e)
@@ -2447,19 +2463,21 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         List<CmisExtensionElement> extensions = properties.getExtensions();
         if (extensions != null)
         {
+        	boolean isNameChanging = properties.getProperties().containsKey(PropertyIds.NAME);
+
             for (CmisExtensionElement extension : extensions)
             {
                 if (ALFRESCO_EXTENSION_NAMESPACE.equals(extension.getNamespace())
                         && SET_ASPECTS.equals(extension.getName()))
                 {
-                    setAspectProperties(nodeRef, extension);
+                    setAspectProperties(nodeRef, isNameChanging, extension);
                     break;
                 }
             }
         }
     }
 
-    private void setAspectProperties(NodeRef nodeRef, CmisExtensionElement aspectExtension)
+    private void setAspectProperties(NodeRef nodeRef, boolean isNameChanging, CmisExtensionElement aspectExtension)
     {
         if (aspectExtension.getChildren() == null)
         {
@@ -2576,24 +2594,68 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             for (String aspect : aspectsToRemove)
             {
                 aspectType = aspect;
+
                 TypeDefinitionWrapper type = getType(aspect);
                 if (type == null)
                 {
                     throw new CmisInvalidArgumentException("Invalid aspect: " + aspectType);
                 }
-                nodeService.removeAspect(nodeRef, type.getAlfrescoName());
+
+                QName typeName = type.getAlfrescoName();
+                // if aspect is hidden aspect, remove only if hidden node is not client controlled
+                if(typeName.equals(ContentModel.ASPECT_HIDDEN))
+                {
+                	if(hiddenAspect.isClientControlled(nodeRef) || aspectProperties.containsKey(ContentModel.PROP_CLIENT_CONTROLLED))
+                	{
+                		// manipulate hidden aspect only if client controlled
+                		nodeService.removeAspect(nodeRef, typeName);	
+                	}
+                	
+                	
+                	
+//                	if(!isNameChanging && !hiddenAspect.isClientControlled(nodeRef) && !aspectProperties.containsKey(ContentModel.PROP_CLIENT_CONTROLLED))
+//                	{
+//                    	nodeService.removeAspect(nodeRef, typeName);	
+//                	}
+                }
+                else
+                {
+                	nodeService.removeAspect(nodeRef, typeName);
+                }
             }
 
             for (String aspect : aspectsToAdd)
             {
                 aspectType = aspect;
+
                 TypeDefinitionWrapper type = getType(aspect);
                 if (type == null)
                 {
                     throw new CmisInvalidArgumentException("Invalid aspect: " + aspectType);
                 }
-                nodeService.addAspect(nodeRef, type.getAlfrescoName(),
-                        Collections.<QName, Serializable> emptyMap());
+
+                QName typeName = type.getAlfrescoName();
+                // if aspect is hidden aspect, remove only if hidden node is not client controlled
+                if(typeName.equals(ContentModel.ASPECT_HIDDEN))
+                {
+                	if(hiddenAspect.isClientControlled(nodeRef) || aspectProperties.containsKey(ContentModel.PROP_CLIENT_CONTROLLED))
+                	{
+                		// manipulate hidden aspect only if client controlled
+                		nodeService.addAspect(nodeRef, type.getAlfrescoName(),
+    	                        Collections.<QName, Serializable> emptyMap());	
+                	}
+                	
+//                	if(!isNameChanging && !hiddenAspect.isClientControlled(nodeRef) && !aspectProperties.containsKey(ContentModel.PROP_CLIENT_CONTROLLED))
+//                	{
+//                		nodeService.addAspect(nodeRef, type.getAlfrescoName(),
+//    	                        Collections.<QName, Serializable> emptyMap());	
+//                	}
+                }
+                else
+                {
+                	nodeService.addAspect(nodeRef, type.getAlfrescoName(),
+	                        Collections.<QName, Serializable> emptyMap());
+                }
             }
         }
         catch (InvalidAspectException e)
@@ -2610,12 +2672,35 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             if (property.getValue().isEmpty())
             {
-                nodeService.removeProperty(nodeRef, property.getKey());
+                if(HiddenAspect.HIDDEN_PROPERTIES.contains(property.getKey()))
+                {
+                	if(hiddenAspect.isClientControlled(nodeRef) || aspectProperties.containsKey(ContentModel.PROP_CLIENT_CONTROLLED))
+                	{
+                		// manipulate hidden aspect property only if client controlled
+                		nodeService.removeProperty(nodeRef, property.getKey());
+                	}
+                }
+                else
+                {
+                	nodeService.removeProperty(nodeRef, property.getKey());	
+                }
             }
             else
             {
-                nodeService.setProperty(nodeRef, property.getKey(), property.getValue().size() == 1 ? property
-                        .getValue().get(0) : (Serializable) property.getValue());
+                if(HiddenAspect.HIDDEN_PROPERTIES.contains(property.getKey()))
+                {
+                	if(hiddenAspect.isClientControlled(nodeRef) || aspectProperties.containsKey(ContentModel.PROP_CLIENT_CONTROLLED))
+                	{
+                		// manipulate hidden aspect property only if client controlled
+                    	nodeService.setProperty(nodeRef, property.getKey(), property.getValue().size() == 1 ? property
+                    			.getValue().get(0) : (Serializable) property.getValue());
+                	}
+                }
+                else
+                {
+                	nodeService.setProperty(nodeRef, property.getKey(), property.getValue().size() == 1 ? property
+                			.getValue().get(0) : (Serializable) property.getValue());
+                }
             }
         }
     }

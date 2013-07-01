@@ -206,6 +206,12 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
         }
     }
     
+    @Override
+    public String getComments(boolean available)
+    {
+        return "# Transformations supported by OpenOffice/LibreOffice\n";
+    }
+
     /**
      * This method produces an empty PDF file at the specified File location.
      * Apache's PDFBox is used to create the PDF file.

@@ -22,6 +22,7 @@ import info.bliki.wiki.filter.Encoder;
 import info.bliki.wiki.model.WikiModel;
 import info.bliki.wiki.tags.ATag;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.repo.content.MimetypeMap;
@@ -92,6 +93,12 @@ public class MediaWikiContentTransformer extends AbstractContentTransformer2
         }
     }
     
+    @Override
+    public String getComments(boolean available)
+    {
+        return onlySupports(MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI, MimetypeMap.MIMETYPE_HTML, available);
+    }
+
      /**
       * @see org.alfresco.repo.content.transform.AbstractContentTransformer2#transformInternal(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter, org.alfresco.service.cmr.repository.TransformationOptions)
       */

@@ -18,12 +18,12 @@
  */
 package org.alfresco.repo.content.transform;
 
+import java.util.Properties;
+
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
@@ -35,6 +35,14 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class TransformerConfigImpl extends AbstractLifecycleBean implements TransformerConfig
 {
     private MimetypeService mimetypeService;
+    
+    private ContentTransformerRegistry transformerRegistry;
+
+    // Log
+    private TransformerLog transformerLog;
+    
+    // Log Debug
+    private TransformerDebugLog transformerDebugLog;
 
     // Holds statistics about each transformer, sourceMimeType and targetMimetype combination.
     // A null transformer is the system wide value. Null sourceMimeType and targetMimetype values are
@@ -64,9 +72,16 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     private TransformerConfigProperty initialAverageTimes;
     private TransformerConfigProperty initialCounts;
     
+    private TransformerPropertySetter propertySetter;
+    
     // Needed to read properties.
     private ChildApplicationContextFactory subsystemFactory;
     
+    // Needed to read global properties.
+    private Properties globalProperties;
+    
+    private TransformerProperties transformerProperties;
+
     /**
      * Sets of the mimetype service.
      * 
@@ -77,25 +92,51 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
         this.mimetypeService = mimetypeService;
     }
 
+    public void setContentTransformerRegistry(ContentTransformerRegistry transformerRegistry)
+    {
+        this.transformerRegistry = transformerRegistry;
+    }
+
+    public void setTransformerLog(TransformerLog transformerLog)
+    {
+        this.transformerLog = transformerLog;
+    }
+
+    public void setTransformerDebugLog(TransformerDebugLog transformerDebugLog)
+    {
+        this.transformerDebugLog = transformerDebugLog;
+    }
+
+    public void setGlobalProperties(Properties globalProperties)
+    {
+        this.globalProperties = globalProperties;
+    }
+
     /**
      * Called by spring after bean is initialised.
      */
     public void initialise()
     {
+        ChildApplicationContextFactory subsystem = getSubsystem();
+        transformerProperties = new TransformerProperties(subsystem, globalProperties);
+        
+        // TODO add dynamic 'pipeline' and 'failover' transformers
+
         statistics= new TransformerConfigStatistics(this, mimetypeService);
-        limits = new TransformerConfigLimits(getSubsystem(), mimetypeService);
-        supported = new TransformerConfigSupported(getSubsystem(), mimetypeService);
-        priorities = new TransformerConfigProperty(getSubsystem(), mimetypeService, PRIORITY, Integer.toString(PRIORITY_DEFAULT));
-        thresholdCounts = new TransformerConfigProperty(getSubsystem(), mimetypeService, THRESHOLD_COUNT, "3");
-        errorTimes = new TransformerConfigProperty(getSubsystem(), mimetypeService, ERROR_TIME, "120000");
-        initialAverageTimes = new TransformerConfigProperty(getSubsystem(), mimetypeService, INITIAL_TIME, "0");
-        initialCounts = new TransformerConfigProperty(getSubsystem(), mimetypeService, INITIAL_COUNT, "100000");
+        limits = new TransformerConfigLimits(transformerProperties, mimetypeService);
+        supported = new TransformerConfigSupported(transformerProperties, mimetypeService);
+        priorities = new TransformerConfigProperty(transformerProperties, mimetypeService, PRIORITY, Integer.toString(PRIORITY_DEFAULT));
+        thresholdCounts = new TransformerConfigProperty(transformerProperties, mimetypeService, THRESHOLD_COUNT, "3");
+        errorTimes = new TransformerConfigProperty(transformerProperties, mimetypeService, ERROR_TIME, "120000");
+        initialAverageTimes = new TransformerConfigProperty(transformerProperties, mimetypeService, INITIAL_TIME, "0");
+        initialCounts = new TransformerConfigProperty(transformerProperties, mimetypeService, INITIAL_COUNT, "100000");
+        propertySetter = new TransformerPropertySetter(transformerProperties, mimetypeService, transformerRegistry);
     }
     
     /**
      * Returns the 'transformers' subsystem which among other things holds transformer properties.  
      */
-    private synchronized ChildApplicationContextFactory getSubsystem()
+    synchronized ChildApplicationContextFactory getSubsystem()
     {
         if (subsystemFactory == null)
         {
@@ -120,28 +161,38 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     @Override
     public String getProperty(String name)
     {
-        return getSubsystem().getProperty(name);
+        return transformerProperties.getProperty(name);
+    }
+    
+    @Override
+    public String getProperties(boolean changesOnly)
+    {
+        return new TransformerPropertyGetter(changesOnly, transformerProperties, mimetypeService,
+                transformerRegistry, transformerLog, transformerDebugLog).toString();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setProperty(String propertyNameAndValue)
+    public int setProperties(String propertyNamesAndValues)
     {
-        int i = propertyNameAndValue.indexOf('=');
-        String name = i != -1 ? propertyNameAndValue.substring(0, i) : propertyNameAndValue;
-        String value = i != -1 ? propertyNameAndValue.substring(i+1) : "";
-        getSubsystem().setProperty(name, value);
+        return propertySetter.setProperties(propertyNamesAndValues);
     }
 
+    @Override
+    public int removeProperties(String propertyNames)
+    {
+        return propertySetter.removeProperties(propertyNames);
+    }
+    
     /**
      * {@inheritDoc}
      */
     @Override
-    public TransformerStatistics getStatistics(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
+    public TransformerStatistics getStatistics(ContentTransformer transformer, String sourceMimetype, String targetMimetype, boolean createNew)
     {
-        return statistics.getStatistics(transformer, sourceMimetype, targetMimetype);
+        return statistics.getStatistics(transformer, sourceMimetype, targetMimetype, createNew);
     }
     
     /**
@@ -149,9 +200,9 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
      */
     @Override
     public TransformationOptionLimits getLimits(ContentTransformer transformer, String sourceMimetype,
-            String targetMimetype)
+            String targetMimetype, String use)
     {
-        return limits.getLimits(transformer, sourceMimetype, targetMimetype);
+        return limits.getLimits(transformer, sourceMimetype, targetMimetype, use);
     }
     
     /**
@@ -170,7 +221,21 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     @Override
     public int getPriority(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
     {
-        return priorities.getInt(transformer, sourceMimetype, targetMimetype);
+        try
+        {
+            return priorities.getInt(transformer, sourceMimetype, targetMimetype);
+        }
+        catch (NumberFormatException e1)
+        {
+            try
+            {
+                return priorities.getInt(null, null, null);
+            }
+            catch (NumberFormatException e2)
+            {
+                return 0;
+            }
+        }
     }
     
     /**
@@ -179,7 +244,21 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     @Override
     public int getThresholdCount(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
     {
-        return thresholdCounts.getInt(transformer, sourceMimetype, targetMimetype);
+        try
+        {
+            return thresholdCounts.getInt(transformer, sourceMimetype, targetMimetype);
+        }
+        catch (NumberFormatException e1)
+        {
+            try
+            {
+                return thresholdCounts.getInt(null, null, null);
+            }
+            catch (NumberFormatException e2)
+            {
+                return 0;
+            }
+        }
     }
     
     /**
@@ -187,7 +266,21 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
      */
     long getErrorTime(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
     {
-        return errorTimes.getLong(transformer, sourceMimetype, targetMimetype);
+        try
+        {
+            return errorTimes.getLong(transformer, sourceMimetype, targetMimetype);
+        }
+        catch (NumberFormatException e1)
+        {
+            try
+            {
+                return errorTimes.getInt(null, null, null);
+            }
+            catch (NumberFormatException e2)
+            {
+                return 0;
+            }
+        }
     }
     
     /**
@@ -196,7 +289,21 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
      */
     long getInitialAverageTime(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
     {
-        return initialAverageTimes.getLong(transformer, sourceMimetype, targetMimetype);
+        try
+        {
+            return initialAverageTimes.getLong(transformer, sourceMimetype, targetMimetype);
+        }
+        catch (NumberFormatException e1)
+        {
+            try
+            {
+                return initialAverageTimes.getInt(null, null, null);
+            }
+            catch (NumberFormatException e2)
+            {
+                return 0;
+            }
+        }
     }
     
     /**
@@ -205,6 +312,20 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
      */
     int getInitialCount(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
     {
-        return initialCounts.getInt(transformer, sourceMimetype, targetMimetype);
+        try
+        {
+            return initialCounts.getInt(transformer, sourceMimetype, targetMimetype);
+        }
+        catch (NumberFormatException e1)
+        {
+            try
+            {
+                return initialCounts.getInt(null, null, null);
+            }
+            catch (NumberFormatException e2)
+            {
+                return 0;
+            }
+        }
     }
 }

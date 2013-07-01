@@ -31,7 +31,6 @@ import java.util.Map.Entry;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
@@ -66,7 +65,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     /**
      * Indicates if 'page' limits are supported.
      */
-    public void setPageLimitsSuported(boolean pageLimitsSupported)
+    public void setPageLimitsSupported(boolean pageLimitsSupported)
     {
         this.pageLimitsSupported = pageLimitsSupported;
     }
@@ -106,7 +105,8 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
 
     /**
      * Indicates if this transformer is able to transform the given source mimetype 
-     * to the target mimetype.
+     * to the target mimetype. If overridden, consider also overriding
+     * {@link ContentTransformerHelper#getComments(boolean)}.
      */
     @Override
     public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
@@ -161,10 +161,8 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * Gets the timeout (ms) on the InputStream after which an IOExecption is thrown
-     * to terminate very slow transformations or a subprocess is terminated (killed).
-     * @return timeoutMs in milliseconds. If less than or equal to zero (the default)
-     *         there is no timeout.
+     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)#getTimeoutMs()}
+     *             which allows the limits to be selected based on mimetype and use.
      */
     protected long getTimeoutMs()
     {
@@ -180,10 +178,8 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
     
     /**
-     * Gets the limit in terms of the amount of data read (by time) to limit transformations where
-     * only the start of the content is needed. After this limit is reached the InputStream reports
-     * end of file.
-     * @return readLimitBytes if less than or equal to zero (the default) there is no limit.
+     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)#getReadLimitTimeMs()}
+     *             which allows the limits to be selected based on mimetype and use.
      */
     protected long getReadLimitTimeMs()
     {
@@ -199,10 +195,8 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * Gets the maximum source content size, to skip transformations where
-     * the source is just too large to expect it to perform. If the source is larger
-     * the transformer indicates it is not available.
-     * @return maxSourceSizeKBytes if less than or equal to zero (the default) there is no limit.
+     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)#getMaxSourceSizeKBytes()}
+     *             which allows the limits to be selected based on mimetype and use.
      */
     protected long getMaxSourceSizeKBytes()
     {
@@ -218,10 +212,8 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * Gets the limit in terms of the about of data read to limit transformations where
-     * only the start of the content is needed. After this limit is reached the InputStream reports
-     * end of file.
-     * @return readLimitKBytes if less than or equal to zero (the default) no limit should be applied.
+     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)#getReadLimitKBytes()}
+     *             which allows the limits to be selected based on mimetype and use.
      */
     protected long getReadLimitKBytes()
     {
@@ -237,8 +229,8 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * Get the maximum number of pages read before an exception is thrown.
-     * @return If less than or equal to zero (the default) no limit should be applied.
+     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)#getMaxPages()}
+     *             which allows the limits to be selected based on mimetype and use.
      */
     protected int getMaxPages()
     {
@@ -254,8 +246,8 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * Get the page limit before returning EOF.
-     * @return If less than or equal to zero (the default) no limit should be applied.
+     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)#getPageLimit()}
+     *             which allows the limits to be selected based on mimetype and use.
      */
     protected int getPageLimit()
     {
@@ -271,11 +263,12 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * Returns max and limit values for time, size and pages in a single operation. 
+     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)} which allows the
+     *             limits to be selected based on mimetype and use.
      */
     protected TransformationOptionLimits getLimits()
     {
-        return transformerConfig.getLimits(this, null, null);
+        return transformerConfig.getLimits(this, null, null, null);
     }
     
     /**
@@ -337,7 +330,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
             TransformationOptions options)
     {
         return (reader == null || writer == null)
-            ? getLimits().combine(options.getLimits())
+            ? transformerConfig.getLimits(this, null, null, options.getUse()).combine(options.getLimits())
             : getLimits(reader.getMimetype(), writer.getMimetype(), options);
     }
 
@@ -349,7 +342,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     protected TransformationOptionLimits getLimits(String sourceMimetype, String targetMimetype,
             TransformationOptions options)
     {
-        TransformationOptionLimits limits = transformerConfig.getLimits(this, sourceMimetype, targetMimetype);
+        TransformationOptionLimits limits = transformerConfig.getLimits(this, sourceMimetype, targetMimetype, (options == null ? null : options.getUse()));
         return (options == null) ? limits : limits.combine(options.getLimits());
     }
 

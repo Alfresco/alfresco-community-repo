@@ -168,10 +168,13 @@ public class AuthenticatedTimerJobHandler implements JobHandler
     
     protected String getInitiator(ActivitiScriptNode initiatorNode)
     {
-        NodeRef ref = initiatorNode.getNodeRef();
-        if(unprotectedNodeService.exists(ref))
+        if(initiatorNode != null) 
         {
-            return (String) unprotectedNodeService.getProperty(ref, ContentModel.PROP_USERNAME);
+            NodeRef ref = initiatorNode.getNodeRef();
+            if(unprotectedNodeService.exists(ref))
+            {
+                return (String) unprotectedNodeService.getProperty(ref, ContentModel.PROP_USERNAME);
+            }
         }
         return null;
     }

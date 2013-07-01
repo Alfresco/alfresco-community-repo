@@ -173,6 +173,12 @@ public class RuntimeExecutableContentTransformerWorker extends ContentTransforme
         return available;
     }
     
+    @Override
+    public String getComments(boolean available)
+    {
+        return "";
+    }
+    
     /**
      * Signals whether this transformer is available.
      * 

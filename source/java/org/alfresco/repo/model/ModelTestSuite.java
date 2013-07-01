@@ -20,48 +20,37 @@ package org.alfresco.repo.model;
 
 import org.alfresco.repo.model.filefolder.FileFolderDuplicateChildTest;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImplTest;
+import org.alfresco.repo.model.filefolder.HiddenAspectTest;
 import org.alfresco.repo.model.ml.tools.ContentFilterLanguagesMapTest;
 import org.alfresco.repo.model.ml.tools.EditionServiceImplTest;
 import org.alfresco.repo.model.ml.tools.EmptyTranslationAspectTest;
 import org.alfresco.repo.model.ml.tools.MLContainerTypeTest;
 import org.alfresco.repo.model.ml.tools.MultilingualContentServiceImplTest;
 import org.alfresco.repo.model.ml.tools.MultilingualDocumentAspectTest;
-import org.alfresco.util.ApplicationContextHelper;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
  * Model test suite
  */
-public class ModelTestSuite extends TestSuite
+@RunWith(Suite.class)
+@SuiteClasses({
+    ContentFilterLanguagesMapTest.class,
+    EmptyTranslationAspectTest.class,
+    MLContainerTypeTest.class,
+    MultilingualContentServiceImplTest.class,
+    MultilingualDocumentAspectTest.class,
+    EditionServiceImplTest.class,
+    
+	HiddenAspectTest.class,
+	
+    // Add the file folder tests
+    // These need to come afterwards, as they insert extra
+    //  interceptors which would otherwise confuse things
+    FileFolderServiceImplTest.class,
+    FileFolderDuplicateChildTest.class,
+})
+public class ModelTestSuite
 {
-    /**
-     * Creates the test suite
-     *
-     * @return  the test suite
-     */
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-
-        // Ensure that the default context is available
-        ApplicationContextHelper.getApplicationContext();
-
-        // Add the multilingual tests
-        suite.addTestSuite( ContentFilterLanguagesMapTest.class );
-        suite.addTestSuite( EmptyTranslationAspectTest.class );
-        suite.addTestSuite( MLContainerTypeTest.class );
-        suite.addTestSuite( MultilingualContentServiceImplTest.class );
-        suite.addTestSuite( MultilingualDocumentAspectTest.class );
-        suite.addTestSuite( EditionServiceImplTest.class );
-        
-        // Add the file folder tests
-        // These need to come afterwards, as they insert extra
-        //  interceptors which would otherwise confuse things
-        suite.addTestSuite( FileFolderServiceImplTest.class );
-        suite.addTestSuite( FileFolderDuplicateChildTest.class );
-
-        return suite;
-    }
 }

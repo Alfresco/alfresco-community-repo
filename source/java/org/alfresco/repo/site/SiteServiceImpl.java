@@ -1346,6 +1346,15 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     }
     
     /**
+     * @see org.alfresco.service.cmr.site.SiteService#hasSite(java.lang.String)
+     */
+    @Override
+    public boolean hasSite(String shortName)
+    {
+        return (getSiteNodeRef(shortName, false) != null);
+    }
+    
+    /**
      * @see org.alfresco.service.cmr.site.SiteService#updateSite(org.alfresco.service.cmr.site.SiteInfo)
      */
     public void updateSite(SiteInfo siteInfo)
@@ -1777,17 +1786,17 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     
     protected Map<String, String> listMembersImpl(String shortName, String nameFilter, String roleFilter, int size, boolean collapseGroups)
     {
-        Map<String, String> members = new HashMap<String, String>(32);
-
         List<SiteMemberInfo> list = listMembersInfoImpl(shortName, nameFilter, roleFilter, size,
                     collapseGroups);
+        Map<String, String> members = new HashMap<String, String>(list.size());
+        
         for (SiteMemberInfo info : list)
             members.put(info.getMemberName(), info.getMemberRole());
 
         return members;
     }
     
-    private List<SiteMemberInfo> listMembersInfoImpl(String shortName, String nameFilter,
+    protected List<SiteMemberInfo> listMembersInfoImpl(String shortName, String nameFilter,
                 String roleFilter, int size, boolean collapseGroups)
     {
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
@@ -2801,6 +2810,17 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         }
     }
     
+    public int countAuthoritiesWithRole(String shortName, String role)
+    {
+        // Check that we are not about to remove the last site manager
+        String group = getSiteRoleGroup(shortName, role, true);
+        Set<String> siteUsers = this.authorityService.getContainedAuthorities(
+                AuthorityType.USER, group, true);
+        Set<String> siteGroups = this.authorityService.getContainedAuthorities(
+                AuthorityType.GROUP, group, true);
+        return siteUsers.size() + siteGroups.size();
+    }
+
     /**
      * Helper to check that we are not removing the last Site Manager from a site
      * 
@@ -2813,19 +2833,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // Check that we are not about to remove the last site manager
         if (SiteModel.SITE_MANAGER.equals(role) == true)
         {
-            String mgrGroup = getSiteRoleGroup(shortName, SITE_MANAGER, true);
-            Set<String> siteUserMangers = this.authorityService.getContainedAuthorities(
-                    AuthorityType.USER, mgrGroup, true);
-            if (siteUserMangers.size() <= 1)
+        	int siteAuthorities = countAuthoritiesWithRole(shortName, SiteModel.SITE_MANAGER);
+            if (siteAuthorities <= 1)
             {
-                Set<String> siteGroupManagers = this.authorityService.getContainedAuthorities(
-                        AuthorityType.GROUP, mgrGroup, true);
-                
-                if (siteUserMangers.size() + siteGroupManagers.size() == 1)
-                {
-                    throw new SiteServiceException(MSG_DO_NOT_CHANGE_MGR, new Object[] {authorityName});
-                }
-            }
+            	throw new SiteServiceException(MSG_DO_NOT_CHANGE_MGR, new Object[] {authorityName});
+            }   	
         }
     }
 

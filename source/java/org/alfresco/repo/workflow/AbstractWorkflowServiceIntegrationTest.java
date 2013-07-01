@@ -33,6 +33,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.person.TestGroupManager;
 import org.alfresco.repo.security.person.TestPersonManager;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -74,6 +75,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     protected final static String USER1 = "WFUser1" + GUID.generate();
     protected final static String USER2 = "WFUser2" + GUID.generate();
     protected final static String USER3 = "WFUser3" + GUID.generate();
+    protected final static String USER4 = "WFUser4" + GUID.generate();
     protected final static String GROUP = "WFGroup" + GUID.generate();
     protected final static String SUB_GROUP = "WFSubGroup" + GUID.generate();
     protected final static QName customStringProp = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "customStringProp");
@@ -876,6 +878,98 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         assertEquals(1, tasks.size());
     }
 
+    public void testActionVsPermissions()
+    {
+        // Start adhoc Workflow
+        WorkflowDefinition workflowDef = deployDefinition(getAdhocDefinitionPath());
+        assertNotNull(workflowDef);
+        
+        String workflowInstanceId = startAdhocWorkflow(workflowDef, USER2);
+        
+        // End start task to progress workflow
+        WorkflowTask startTask = null;
+        try
+        {
+            personManager.setUser(USER4);
+            startTask = workflowService.getStartTask(workflowInstanceId);
+            fail();
+        }
+        catch (AccessDeniedException e)
+        {
+            personManager.setUser(USER2);
+        }
+       
+        startTask = workflowService.getStartTask(workflowInstanceId);
+        final String startTaskId = startTask.getId();
+        try
+        {
+            personManager.setUser(USER4);
+            workflowService.endTask(startTaskId, null);
+            fail();
+        }
+        catch (AccessDeniedException e)
+        {
+            personManager.setUser(USER2);
+        }
+        
+        workflowService.endTask(startTaskId, null);
+        
+        WorkflowTask theTask = getNextTaskForWorkflow(workflowInstanceId);
+        
+        // Set some custom properties on the task
+        HashMap<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(customStringProp, "stringValue");
+        try
+        {
+            personManager.setUser(USER4);
+            workflowService.updateTask(theTask.getId(), params, null, null);
+            fail();
+        }
+        catch (AccessDeniedException e)
+        {
+            personManager.setUser(USER2);
+        }
+        workflowService.updateTask(theTask.getId(), params, null, null);
+        
+        // Test all query features for running tasks
+        checkTaskQueryInProgress(workflowInstanceId, theTask, workflowInstanceId);
+
+        // Test all query features for the start-task
+        checkTaskQueryStartTaskCompleted(workflowInstanceId, startTask);
+        
+        // Finish the task adhoc-task
+        try
+        {
+            personManager.setUser(USER4);
+            workflowService.endTask(theTask.getId(), null);
+            fail();
+        }
+        catch (AccessDeniedException e)
+        {
+            personManager.setUser(USER2);
+        }
+        workflowService.endTask(theTask.getId(), null);
+        
+        // Test all query features for completed tasks
+        checkTaskQueryTaskCompleted(workflowInstanceId, theTask, startTask);
+        
+        // Finally end the workflow and check the querying isActive == false
+        WorkflowTask lastTask = getNextTaskForWorkflow(workflowInstanceId);
+        try
+        {
+            personManager.setUser(USER4);
+            workflowService.endTask(lastTask.getId(), null);
+            fail();
+        }
+        catch (AccessDeniedException e)
+        {
+            personManager.setUser(USER2);
+        }
+        workflowService.endTask(lastTask.getId(), null);
+        
+        checkQueryTasksInactiveWorkflow(workflowInstanceId);
+    }
+
     public void checkCompletedWorkflows(String defId, String... expectedIds)
     {
         List<WorkflowInstance> workflows = workflowService.getCompletedWorkflows(defId);
@@ -1234,6 +1328,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         personManager.createPerson(USER1);
         personManager.createPerson(USER2);
         personManager.createPerson(USER3);
+        personManager.createPerson(USER4);
 
         // create test groups
         groupManager.addGroupToParent(GROUP, SUB_GROUP);

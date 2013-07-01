@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2005-2012
- Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,17 +18,8 @@
  */
 package org.alfresco.util.test.junitrules;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.ParameterCheck;
-import org.alfresco.util.PropertyMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.rules.ExternalResource;
+import org.alfresco.util.test.testusers.TestUserComponent;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -39,20 +29,8 @@ import org.springframework.context.ApplicationContext;
  * @author Neil Mc Erlean
  * @since Odin
  */
-public abstract class AbstractPersonRule extends ExternalResource
+public abstract class AbstractPersonRule extends AbstractRule
 {
-    private static final Log log = LogFactory.getLog(AbstractPersonRule.class);
-    
-    // Fixed defaults for the usual Alfresco cm:person metadata.
-    protected static final String PASSWORD   = "PWD";
-    protected static final String FIRST_NAME = "firstName";
-    protected static final String LAST_NAME  = "lastName";
-    protected static final String EMAIL      = "email@email.com";
-    protected static final String JOB_TITLE  = "jobTitle";
-    
-    protected final ApplicationContext appContext;
-    protected final ApplicationContextInit appContextRule;
-    
     /**
      * Constructs a person rule with the specified spring context, which will be necessary
      * to actually create and delete the users.
@@ -61,10 +39,7 @@ public abstract class AbstractPersonRule extends ExternalResource
      */
     public AbstractPersonRule(ApplicationContext appContext)
     {
-        ParameterCheck.mandatory("appContext", appContext);
-        
-        this.appContext = appContext;
-        this.appContextRule = null;
+    	super(appContext);
     }
     
     /**
@@ -75,42 +50,7 @@ public abstract class AbstractPersonRule extends ExternalResource
      */
     public AbstractPersonRule(ApplicationContextInit appContextRule)
     {
-        ParameterCheck.mandatory("appContextRule", appContextRule);
-        
-        this.appContext = null;
-        this.appContextRule = appContextRule;
-    }
-    
-    /**
-     * This method retrieves the spring application context given to this rule.
-     * 
-     * @return the spring application context
-     * @throws NullPointerException if the application context has not been initialised when requested.
-     */
-    protected ApplicationContext getApplicationContext()
-    {
-        ApplicationContext result = null;
-        
-        // The app context is either provided explicitly:
-        if (appContext != null)
-        {
-            result = appContext;
-        }
-        // or is implicitly accessed via another rule:
-        else 
-        {
-            ApplicationContext contextFromRule = appContextRule.getApplicationContext();
-            if (contextFromRule != null)
-            {
-                result = contextFromRule;
-            }
-            else
-            {
-                throw new NullPointerException("Cannot retrieve application context from provided rule.");
-            }
-        }
-        
-        return result;
+    	super(appContextRule);
     }
     
     /**
@@ -128,37 +68,9 @@ public abstract class AbstractPersonRule extends ExternalResource
         final ApplicationContext ctxt = getApplicationContext();
         
         // Extract required service beans
-        final MutableAuthenticationService authService = (MutableAuthenticationService) ctxt.getBean("authenticationService");
-        final PersonService personService = (PersonService) ctxt.getBean("personService");
+        final TestUserComponent testUserComponent = (TestUserComponent) ctxt.getBean("testUserComponent");
         
-        // Pre-create a person, if not already created.
-        if (! authService.authenticationExists(userName))
-        {
-            log.debug("Creating authentication " + userName + "...");
-            authService.createAuthentication(userName, PASSWORD.toCharArray());
-        }
-        
-        NodeRef person;
-        
-        if (personService.personExists(userName))
-        {
-            person = personService.getPerson(userName, false);
-        }
-        else
-        {
-            log.debug("Creating personNode " + userName + "...");
-            
-            PropertyMap ppOne = new PropertyMap();
-            ppOne.put(ContentModel.PROP_USERNAME,  userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, FIRST_NAME);
-            ppOne.put(ContentModel.PROP_LASTNAME,  LAST_NAME);
-            ppOne.put(ContentModel.PROP_EMAIL,     EMAIL);
-            ppOne.put(ContentModel.PROP_JOBTITLE,  JOB_TITLE);
-            
-            person = personService.createPerson(ppOne);
-        }
-        
-        return person;
+        return testUserComponent.createTestUser(userName);
     }
     
     /**
@@ -174,21 +86,8 @@ public abstract class AbstractPersonRule extends ExternalResource
         final ApplicationContext ctxt = getApplicationContext();
         
         // Extract required service beans
-        final PersonService personService = (PersonService) ctxt.getBean("personService");
+        final TestUserComponent testUserComponent = (TestUserComponent) ctxt.getBean("testUserComponent");
         
-        
-        // And tear down afterwards.
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override public Void doWork() throws Exception
-            {
-                if (personService.personExists(userName))
-                {
-                    log.debug("Deleting person " + userName + "...");
-                    personService.deletePerson(userName);
-                }
-                return null;
-            }
-        }, AuthenticationUtil.getAdminUserName());
+        testUserComponent.deleteTestUser(userName);
     }
 }

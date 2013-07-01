@@ -62,6 +62,12 @@ import org.xml.sax.ContentHandler;
 public abstract class TikaPoweredContentTransformer extends AbstractContentTransformer2
 {
     private static final Log logger = LogFactory.getLog(TikaPoweredContentTransformer.class);
+    private static final List<String> TARGET_MIMETYPES = Arrays.asList(new String[] { 
+            MimetypeMap.MIMETYPE_TEXT_PLAIN,
+            MimetypeMap.MIMETYPE_HTML,
+            MimetypeMap.MIMETYPE_XHTML,
+            MimetypeMap.MIMETYPE_XML});
+
     protected List<String> sourceMimeTypes;
     
     /**
@@ -70,7 +76,7 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
     protected static final String LINE_BREAK = "\r\n";
     public static final String WRONG_FORMAT_MESSAGE_ID = "transform.err.format_or_password";
     
-    protected TikaPoweredContentTransformer(List<String> sourceMimeTypes) {
+        protected TikaPoweredContentTransformer(List<String> sourceMimeTypes) {
        this.sourceMimeTypes = sourceMimeTypes;
     }
     protected TikaPoweredContentTransformer(String[] sourceMimeTypes) {
@@ -99,10 +105,7 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
           return false;
        }
        
-       if(MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype) ||
-             MimetypeMap.MIMETYPE_HTML.equals(targetMimetype) ||
-             MimetypeMap.MIMETYPE_XHTML.equals(targetMimetype) ||
-             MimetypeMap.MIMETYPE_XML.equals(targetMimetype))
+       if (TARGET_MIMETYPES.contains(targetMimetype))
        {
           // We can output to this
           return true;
@@ -112,6 +115,12 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
           // We support the source, but not the target
           return false;
        }
+    }
+    
+    @Override
+    public String getComments(boolean available)
+    {
+        return getCommentsOnlySupports(sourceMimeTypes, TARGET_MIMETYPES, available);
     }
     
     /**

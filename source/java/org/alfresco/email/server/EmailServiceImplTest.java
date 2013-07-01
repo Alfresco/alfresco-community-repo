@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -55,9 +55,9 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ApplicationContextHelper;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.springframework.context.ApplicationContext;
 
 import com.sun.mail.smtp.SMTPMessage;
@@ -196,7 +196,7 @@ public class EmailServiceImplTest extends TestCase
            StringBuffer sb = new StringBuffer();
            ByteArrayOutputStream bos = new ByteArrayOutputStream();
            msg.writeTo(bos);
-           InputStream is = new StringInputStream(bos.toString());
+           InputStream is = IOUtils.toInputStream(bos.toString());
            assertNotNull("is is null", is);
        
            SubethaEmailMessage m = new SubethaEmailMessage(is); 
@@ -237,7 +237,7 @@ public class EmailServiceImplTest extends TestCase
        StringBuffer sb = new StringBuffer();
        ByteArrayOutputStream bos = new ByteArrayOutputStream();
        msg.writeTo(bos);
-       InputStream is = new StringInputStream(bos.toString());
+       InputStream is = IOUtils.toInputStream(bos.toString());
        assertNotNull("is is null", is);
    
        SubethaEmailMessage m = new SubethaEmailMessage(is);  
@@ -276,7 +276,7 @@ public class EmailServiceImplTest extends TestCase
            ByteArrayOutputStream bos = new ByteArrayOutputStream();
            msg.writeTo(System.out);
            msg.writeTo(bos);
-           InputStream is = new StringInputStream(bos.toString());
+           InputStream is = IOUtils.toInputStream(bos.toString());
            assertNotNull("is is null", is);
    
            SubethaEmailMessage m = new SubethaEmailMessage(is);
@@ -314,7 +314,7 @@ public class EmailServiceImplTest extends TestCase
            ByteArrayOutputStream bos = new ByteArrayOutputStream();
            msg.writeTo(System.out);
            msg.writeTo(bos);
-           InputStream is = new StringInputStream(bos.toString());
+           InputStream is = IOUtils.toInputStream(bos.toString());
            assertNotNull("is is null", is);
    
            SubethaEmailMessage m = new SubethaEmailMessage(is);
@@ -436,7 +436,7 @@ public class EmailServiceImplTest extends TestCase
         StringBuffer sb = new StringBuffer();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         msg.writeTo(bos);
-        InputStream is = new StringInputStream(bos.toString());
+        InputStream is = IOUtils.toInputStream(bos.toString());
         assertNotNull("is is null", is);
     
         SubethaEmailMessage m = new SubethaEmailMessage(is);   
@@ -460,7 +460,7 @@ public class EmailServiceImplTest extends TestCase
             StringBuffer sb = new StringBuffer();
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             msg.writeTo(bos);
-            InputStream is = new StringInputStream(bos.toString());
+            InputStream is = IOUtils.toInputStream(bos.toString());
             assertNotNull("is is null", is);
         
             SubethaEmailMessage m = new SubethaEmailMessage(is);   
@@ -484,7 +484,7 @@ public class EmailServiceImplTest extends TestCase
             StringBuffer sb = new StringBuffer();
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             msg.writeTo(bos);
-            InputStream is = new StringInputStream(bos.toString());
+            InputStream is = IOUtils.toInputStream(bos.toString());
             assertNotNull("is is null", is);
         
             SubethaEmailMessage m = new SubethaEmailMessage(is);   
@@ -509,7 +509,7 @@ public class EmailServiceImplTest extends TestCase
             StringBuffer sb = new StringBuffer();
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             msg.writeTo(bos);
-            InputStream is = new StringInputStream(bos.toString());
+            InputStream is = IOUtils.toInputStream(bos.toString());
             assertNotNull("is is null", is);
         
             SubethaEmailMessage m = new SubethaEmailMessage(is);   
@@ -533,7 +533,7 @@ public class EmailServiceImplTest extends TestCase
             StringBuffer sb = new StringBuffer();
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             msg.writeTo(bos);
-            InputStream is = new StringInputStream(bos.toString());
+            InputStream is = IOUtils.toInputStream(bos.toString());
             assertNotNull("is is null", is);
         
             SubethaEmailMessage m = new SubethaEmailMessage(is);   
@@ -557,7 +557,7 @@ public class EmailServiceImplTest extends TestCase
             StringBuffer sb = new StringBuffer();
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             msg.writeTo(bos);
-            InputStream is = new StringInputStream(bos.toString());
+            InputStream is = IOUtils.toInputStream(bos.toString());
             assertNotNull("is is null", is);
         
             SubethaEmailMessage m = new SubethaEmailMessage(is);   
@@ -581,7 +581,7 @@ public class EmailServiceImplTest extends TestCase
             StringBuffer sb = new StringBuffer();
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             msg.writeTo(bos);
-            InputStream is = new StringInputStream(bos.toString());
+            InputStream is = IOUtils.toInputStream(bos.toString());
             assertNotNull("is is null", is);
         
             SubethaEmailMessage m = new SubethaEmailMessage(is);   
@@ -666,7 +666,7 @@ public class EmailServiceImplTest extends TestCase
            
        ByteArrayOutputStream bos = new ByteArrayOutputStream();
        msg.writeTo(bos);
-       InputStream is = new StringInputStream(bos.toString());
+       InputStream is = IOUtils.toInputStream(bos.toString());
        assertNotNull("is is null", is);
    
        SubethaEmailMessage m = new SubethaEmailMessage(is);   
@@ -706,7 +706,7 @@ public class EmailServiceImplTest extends TestCase
        msg.setSubject(TEST_LONG_SUBJECT);
        ByteArrayOutputStream bos2 = new ByteArrayOutputStream();
        msg.writeTo(bos2);
-       is = new StringInputStream(bos2.toString());
+       is = IOUtils.toInputStream(bos2.toString());
        assertNotNull("is is null", is);
        m = new SubethaEmailMessage(is);   
        
@@ -728,7 +728,7 @@ public class EmailServiceImplTest extends TestCase
        msg.setSubject(EXT_NAME);
        ByteArrayOutputStream bos3 = new ByteArrayOutputStream();
        msg.writeTo(bos3);
-       is = new StringInputStream(bos3.toString());
+       is = IOUtils.toInputStream(bos3.toString());
        assertNotNull("is is null", is);
        m = new SubethaEmailMessage(is);  
        folderEmailMessageHandler.setOverwriteDuplicates(false);
@@ -836,7 +836,7 @@ public class EmailServiceImplTest extends TestCase
           
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       msg.writeTo(bos);
-      InputStream is = new StringInputStream(bos.toString());
+      InputStream is = IOUtils.toInputStream(bos.toString());
       assertNotNull("is is null", is);
   
       SubethaEmailMessage m = new SubethaEmailMessage(is);   
@@ -940,7 +940,7 @@ public class EmailServiceImplTest extends TestCase
          
      ByteArrayOutputStream bos = new ByteArrayOutputStream();
      msg.writeTo(bos);
-     InputStream is = new StringInputStream(bos.toString());
+     InputStream is = IOUtils.toInputStream(bos.toString());
      assertNotNull("is is null", is);
  
      SubethaEmailMessage m = new SubethaEmailMessage(is);   
@@ -1033,7 +1033,7 @@ public class EmailServiceImplTest extends TestCase
        StringBuffer sb = new StringBuffer();
        ByteArrayOutputStream bos = new ByteArrayOutputStream();
        msg.writeTo(bos);
-       InputStream is = new StringInputStream(bos.toString());
+       InputStream is = IOUtils.toInputStream(bos.toString());
        assertNotNull("is is null", is);
        
        SubethaEmailMessage m = new SubethaEmailMessage(is);  

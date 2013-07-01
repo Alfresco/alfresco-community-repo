@@ -86,5 +86,5 @@ public interface TransformerStatistics
     /**
      * Adds 1 to the error count of this TransformationData and its parents.
      */
-    public void recordError();
+    public void recordError(long transformationTime);
 }

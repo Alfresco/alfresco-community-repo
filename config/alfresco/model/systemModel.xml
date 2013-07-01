@@ -195,7 +195,23 @@
 	         <property name="sys:hiddenFlag">
                <type>d:boolean</type>
                <mandatory>false</mandatory>
-            </property>
+             </property>
+	         <!-- Should the hidden aspect cascade to child nodes? -->
+             <property name="sys:cascadeHidden">
+                <type>d:boolean</type>
+                <mandatory>false</mandatory>
+                <default>false</default>
+             </property>
+             <!-- Should the index control aspect cascade to child nodes? -->
+             <property name="sys:cascadeIndexControl">
+                <type>d:boolean</type>
+                <mandatory>false</mandatory>
+                <default>false</default>
+             </property>
+             <property name="sys:clientControlled">
+               <type>d:boolean</type>
+               <mandatory>false</mandatory>
+             </property>
          </properties>
       </aspect>
       

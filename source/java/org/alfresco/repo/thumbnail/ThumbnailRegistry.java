@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -145,7 +145,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
             {
                 throw new ThumbnailException("When adding a thumbnail details object make sure the name is set.");
             }
-            
+            td.getTransformationOptions().setUse(thumbnailName);
             this.thumbnailDefinitions.put(thumbnailName, td);
         }
     }

@@ -3101,7 +3101,7 @@
     <bean id="patch.db-V4.0-Activiti-task-id-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id" value="patch.db-V4.0-Activiti-task-id-indexes" />
         <property name="description" value="patch.schemaUpgradeScript.description" />
-        <property name="fixesFromSchema" value="0" />
+        <property name="fixesFromSchema" value="5000" />
         <property name="fixesToSchema" value="6003" />
         <property name="targetSchema" value="6004" />
         <property name="scriptUrl">
@@ -3270,7 +3270,7 @@
     <bean id="patch.db-V4.1-increase-column-size-activiti" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id" value="patch.db-V4.1-increase-column-size-activiti" />
         <property name="description" value="patch.increaseColumnSizeActiviti.description" />
-        <property name="fixesFromSchema" value="0" />
+        <property name="fixesFromSchema" value="5000" />
         <property name="fixesToSchema" value="6012" />
         <property name="targetSchema" value="6013" />
         <property name="scriptUrl">
@@ -3377,7 +3377,7 @@
     <bean id="patch.db-V4.1-remove-column-activiti" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id" value="patch.db-V4.1-remove-column-activiti" />
         <property name="description" value="patch.removeColumnActiviti.description" />
-        <property name="fixesFromSchema" value="0" />
+        <property name="fixesFromSchema" value="5000" />
         <property name="fixesToSchema" value="6017" />
         <property name="targetSchema" value="6018" />
         <property name="scriptUrl">
@@ -3388,7 +3388,7 @@
     <bean id="patch.db-V4.2-upgrade-to-activiti-5.10" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V4.2-upgrade-to-activiti-5.10</value></property>
         <property name="description"><value>patch.upgradeToActiviti5-10.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesFromSchema"><value>5000</value></property>
         <property name="fixesToSchema"><value>6018</value></property>
         <property name="targetSchema"><value>6019</value></property>
         <property name="scriptUrl">
@@ -3422,7 +3422,7 @@
     <bean id="patch.db-V4.1-rename-constraint-activiti" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V4.1-rename-constraint-activiti</value></property>
         <property name="description"><value>patch.renameConstraintActiviti.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesFromSchema"><value>5000</value></property>
         <property name="fixesToSchema"><value>6020</value></property>
         <property name="targetSchema"><value>6021</value></property>
         <property name="scriptUrl">
@@ -3433,7 +3433,7 @@
     <bean id="patch.db-V4.2-add-activti-index-historic-activity" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id" value="patch.db-V4.2-add-activti-index-historic-activity" />
         <property name="description" value="patch.addActivtiIndexHistoricActivity.description" />
-        <property name="fixesFromSchema" value="0" />
+        <property name="fixesFromSchema" value="5000" />
         <property name="fixesToSchema" value="6021" />
         <property name="targetSchema" value="6022" />
         <property name="scriptUrl">
@@ -3444,7 +3444,7 @@
      <bean id="patch.db-V4.2-upgrade-to-activiti-5.11" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V4.2-upgrade-to-activiti-5.11</value></property>
         <property name="description"><value>patch.upgradeToActiviti5-11.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesFromSchema"><value>5000</value></property>
         <property name="fixesToSchema"><value>6022</value></property>
         <property name="targetSchema"><value>6023</value></property>
         <property name="scriptUrl">

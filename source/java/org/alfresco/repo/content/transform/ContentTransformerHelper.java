@@ -21,6 +21,7 @@ package org.alfresco.repo.content.transform;
 import static org.alfresco.repo.content.transform.TransformerConfig.ANY;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -75,7 +76,7 @@ public class ContentTransformerHelper implements BeanNameAware
         deprecatedSupportedTransformations(explicitTransformations, null);
         // TODO Should suggest properties that indicate lower priority transformers should be unsupported.
         //      This is for completeness rather than needed as the priority will avoid the non explicit
-        //      transformers from being used. Explicit transformers are given a priority of 5 rather than 10.
+        //      transformers from being used. Explicit transformers are given a priority of 50 rather than 100.
     }
 
     /**
@@ -169,6 +170,18 @@ public class ContentTransformerHelper implements BeanNameAware
     }
 
     /**
+     * Returns the simple form of the transformer name, which has had the normal
+     * "transformer." prefix to the Spring bean name removed.
+     */
+    public static String getSimpleName(ContentTransformer transformer)
+    {
+        String transformerName = transformer.getName();
+        return transformerName.startsWith(TransformerConfig.TRANSFORMER)
+                ? transformerName.substring(TransformerConfig.TRANSFORMER.length())
+                : transformerName;
+    }
+    
+    /**
      * Called by deprecated property setter methods that should no longer be called
      * by Spring configuration as the values are now set using global properties.
      * @param suffixAndValue that should have been used. The first part of the
@@ -194,6 +207,7 @@ public class ContentTransformerHelper implements BeanNameAware
     {
         if (deprecatedSetterMessages != null)
         {
+            StringBuilder sb = new StringBuilder();
             for (String suffixAndValue: deprecatedSetterMessages)
             {
                 String propertyNameAndValue = TransformerConfig.CONTENT+beanName+'.'+suffixAndValue;
@@ -214,9 +228,8 @@ public class ContentTransformerHelper implements BeanNameAware
                     }
                     logger.error(propertyNameAndValue);
                     
-                    // Add them to the subsystem's properties anyway (even though an MBean reset would clear them),
-                    // so that existing unit tests work.
-                    transformerConfig.setProperty(propertyNameAndValue);
+                    sb.append(propertyNameAndValue);
+                    sb.append('\n');
                 }
                 else
                 {
@@ -224,6 +237,12 @@ public class ContentTransformerHelper implements BeanNameAware
                 }
             }
             deprecatedSetterMessages = null;
+            if (sb.length() > 0)
+            {
+                // Add subsystem's properties anyway (even though an MBean reset would clear them),
+                // so that existing unit tests work.
+                transformerConfig.setProperties(sb.toString());
+            }
         }
     }
 
@@ -253,5 +272,148 @@ public class ContentTransformerHelper implements BeanNameAware
     public String toString()
     {
         return getName();
+    }
+    
+    /**
+     * Overridden to supply a comment or String of commented out transformation properties
+     * that specify any (hard coded or implied) supported transformations. Used
+     * when providing a list of properties to an administrators who may be setting
+     * other transformation properties, via JMX. Consider overriding if
+     * {link {@link AbstractContentTransformerLimits#isTransformableMimetype(String, String, TransformationOptions)}
+     * or {@link ContentTransformerWorker#isTransformable(String, String, TransformationOptions)}
+     * have been overridden.
+     * See {@link #getCommentsOnlySupports(List, List, boolean)} which may be used to help construct a comment.
+     * @param available indicates if the transformer has been registered and is available to be selected.
+     *                  {@code false} indicates that the transformer is only available as a component of a
+     *                  complex transformer.
+     * @return one line per property. The simple transformer name is returned by default as a comment.
+     */
+    public String getComments(boolean available)
+    {
+        return getCommentNameAndAvailable(available);
+    }
+
+    /**
+     * Helper method for {@link #getComments(boolean) to
+     * create a line that indicates which source and target mimetypes
+     * it supports.
+     * @param sourceMimetypes
+     * @param targetMimetypes
+     * @param available TODO
+     * @return a String of the form "# only supports xxx, yyy or zzz to aaa or bb\n".
+     */
+    protected String getCommentsOnlySupports(List<String> sourceMimetypes, List<String> targetMimetypes, boolean available)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getCommentNameAndAvailable(available));
+        sb.append("# Only supports ");
+        sb.append(getExtensions(sourceMimetypes));
+        sb.append(" to ");
+        sb.append(getExtensions(targetMimetypes));
+        sb.append("\n");
+        return sb.toString();
+    }
+
+    /**
+     * Returns the transformer's simple name and an indication if the transformer is not
+     * available for selection.
+     */
+    private String getCommentNameAndAvailable(boolean available)
+    {
+        String name = this instanceof ContentTransformer ? getSimpleName((ContentTransformer)this) : getName();
+        StringBuilder sb = new StringBuilder();
+        sb.append(getCommentName(name));
+        if (!available)
+        {
+            sb.append("# ");
+            sb.append(TransformerConfig.CONTENT);
+            sb.append(getName());
+            sb.append(TransformerConfig.AVAILABLE);
+            sb.append("=false\n");
+        }
+        return sb.toString();
+    }
+
+    static String getCommentName(String name)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# ");
+        sb.append(name);
+        sb.append('\n');
+        sb.append("# ");
+        for (int i = name.length(); i > 0; i--)
+        {
+            sb.append('-');
+        }
+        sb.append('\n');
+        return sb.toString();
+    }
+
+    /**
+     * Helper method for {@link #getComments(boolean) to
+     * create a line that indicates which source and target mimetypes
+     * it supports.
+     * @param sourceMimetype
+     * @param targetMimetype
+     * @param available TODO
+     * @return a String of the form "# only supports xxx to aaa\n".
+     */
+    protected String onlySupports(String sourceMimetype, String targetMimetype, boolean available)
+    {
+        return getCommentsOnlySupports(
+                Arrays.asList(new String[] {sourceMimetype}),
+                Arrays.asList(new String[] {targetMimetype}), available);
+    }
+    
+    /**
+     * Returns a comma separated String of mimetype file extensions. 
+     */
+    private String getExtensions(List<String> origMimetypes)
+    {
+        // Only use the mimetypes we have registered
+        List<String> mimetypes = new ArrayList<String>(origMimetypes);
+        mimetypes.retainAll(getMimetypeService().getMimetypes());
+        
+        StringBuilder sb = new StringBuilder();
+        int j = mimetypes.size();
+        int i=1;
+        for (String mimetype: mimetypes)
+        {
+            sb.append(getMimetypeService().getExtension(mimetype));
+            if (i < j)
+            {
+                sb.append(++i < j ? ", " : " or ");
+            }
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((beanName == null) ? 0 : beanName.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ContentTransformerHelper other = (ContentTransformerHelper) obj;
+        if (beanName == null)
+        {
+            if (other.beanName != null)
+                return false;
+        }
+        else if (!beanName.equals(other.beanName))
+            return false;
+        return true;
     }
 }

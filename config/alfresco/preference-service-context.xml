@@ -43,7 +43,6 @@
         <property name="personService" ref="PersonService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="authenticationContext" ref="authenticationContext"/>
-        <property name="siteService" ref="SiteService"/>
         <property name="authorityService" ref="AuthorityService"/>
     </bean>
     

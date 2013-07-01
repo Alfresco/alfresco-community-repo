@@ -31,6 +31,7 @@ import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.repo.forms.processor.node.ContentModelFormProcessor;
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.util.ParameterCheck;
@@ -102,6 +103,10 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
         {
             ParameterCheck.mandatory("item", item);
             return getTypedItemForDecodedId(item.getId());
+        }
+        catch (AccessDeniedException ade)
+        {
+            throw ade;
         }
         catch (Exception e)
         {

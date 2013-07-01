@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -51,6 +51,7 @@ import org.alfresco.repo.content.transform.StringExtractingContentTransformerTes
 import org.alfresco.repo.content.transform.TextMiningContentTransformerTest;
 import org.alfresco.repo.content.transform.TextToPdfContentTransformerTest;
 import org.alfresco.repo.content.transform.TikaAutoContentTransformerTest;
+import org.alfresco.repo.content.transform.TransformerConfigTestSuite;
 import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerTest;
 import org.alfresco.service.cmr.repository.TemporalSourceOptionsTest;
 import org.alfresco.service.cmr.repository.TransformationOptionLimitsTest;
@@ -95,6 +96,9 @@ public class ContentMinimalContextTestSuite extends TestSuite
        suite.addTest(new JUnit4TestAdapter(AbstractContentTransformerLimitsTest.class));
        suite.addTest(new JUnit4TestAdapter(TransformationOptionLimitsTest.class));
        suite.addTest(new JUnit4TestAdapter(TransformationOptionPairTest.class));
+       
+       // Transformer Config
+       suite.addTest(new JUnit4TestAdapter(TransformerConfigTestSuite.class));
        
        // Source options
        suite.addTest(new JUnit4TestAdapter(TemporalSourceOptionsTest.class));

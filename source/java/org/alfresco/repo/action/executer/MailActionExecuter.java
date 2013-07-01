@@ -538,6 +538,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 if (to != null && to.length() != 0)
                 {
                     messageRef[0].setTo(to);
+                    
+                    // Note: there is no validation on the username to check that it actually is an email address.
+                    // TODO Fix this.
                 }
                 else
                 {
@@ -560,9 +563,15 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     if (authorities != null && authorities.size() != 0)
                     {
                         List<String> recipients = new ArrayList<String>(authorities.size());
+                        
+                        if (logger.isTraceEnabled()) { logger.trace(authorities.size() + " recipient(s) for mail"); }
+                        
                         for (String authority : authorities)
                         {
-                            AuthorityType authType = AuthorityType.getAuthorityType(authority);
+                            final AuthorityType authType = AuthorityType.getAuthorityType(authority);
+                            
+                            if (logger.isTraceEnabled()) { logger.trace(" authority type: " + authType); }
+                            
                             if (authType.equals(AuthorityType.USER))
                             {
                                 if (personService.personExists(authority) == true)
@@ -571,12 +580,25 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                     String address = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
                                     if (address != null && address.length() != 0 && validateAddress(address))
                                     {
+                                        if (logger.isTraceEnabled()) { logger.trace("Recipient (person) exists in Alfresco with known email."); }
                                         recipients.add(address);
                                     }
+                                    else
+                                    {
+                                        if (logger.isTraceEnabled()) { logger.trace("Recipient (person) exists in Alfresco without known email."); }
+                                        // If the username looks like an email address, we'll use that.
+                                        if (validateAddress(authority)) { recipients.add(authority); }
+                                    }
+                                }
+                                else
+                                {
+                                    if (logger.isTraceEnabled()) { logger.trace("Recipient does not exist in Alfresco."); }
+                                    if (validateAddress(authority)) { recipients.add(authority); }
                                 }
                             }
                             else if (authType.equals(AuthorityType.GROUP) || authType.equals(AuthorityType.EVERYONE))
                             {
+                                if (logger.isTraceEnabled()) { logger.trace("Recipient is a group..."); }
                                 // Notify all members of the group
                                 Set<String> users;
                                 if (authType.equals(AuthorityType.GROUP))
@@ -597,11 +619,24 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                         if (address != null && address.length() != 0)
                                         {
                                             recipients.add(address);
+                                            if (logger.isTraceEnabled()) { logger.trace("   Group member email is known."); }
                                         }
+                                        else
+                                        {
+                                            if (logger.isTraceEnabled()) { logger.trace("   Group member email not known."); }
+                                            if (validateAddress(authority)) { recipients.add(userAuth); }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (logger.isTraceEnabled()) { logger.trace("   Group member person not found"); }
+                                        if (validateAddress(authority)) { recipients.add(userAuth); }
                                     }
                                 }
                             }
                         }
+                        
+                        if (logger.isTraceEnabled()) { logger.trace(recipients.size() + " valid recipient(s)."); }
                         
                         if(recipients.size() > 0)
                         {
@@ -997,6 +1032,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         }
     }
     
+    @SuppressWarnings("unchecked")
     private List<Pair<String, Locale>> getRecipients(Action ruleAction) 
     {
     	
@@ -1038,13 +1074,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     AuthorityType authType = AuthorityType.getAuthorityType(authority);
                     if (authType.equals(AuthorityType.USER))
                     {
-                        if (personExists(authority))
+                        // Formerly, this code checked personExists(auth) but we now support emailing addresses who are not yet Alfresco users.
+                        if (authority != null && authority.length() != 0 && validateAddress(authority))
                         {
-                            if (authority != null && authority.length() != 0 && validateAddress(authority))
-                            {
-                            	Locale locale = getLocaleForUser(authority);
-                                recipients.add(new Pair<String, Locale>(authority, locale));
-                            }
+                        	Locale locale = getLocaleForUser(authority);
+                            recipients.add(new Pair<String, Locale>(authority, locale));
                         }
                     }
                     else if (authType.equals(AuthorityType.GROUP) || authType.equals(AuthorityType.EVERYONE))
@@ -1092,20 +1126,19 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         return recipients;
     }
     
-    @SuppressWarnings("deprecation")
     public boolean personExists(final String user)
     {
         boolean exists = false;
-        String domain = getDomain(user);
-        if (tenantService.getTenant(domain) != null)
-        {
-            exists = TenantUtil.runAsTenant(new TenantRunAsWork<Boolean>()
-            {
-                public Boolean doWork() throws Exception
-                {
-                    return personService.personExists(user);
-                }
-            }, domain);
+        String domain = tenantService.getPrimaryDomain(user); // get primary tenant 
+        if (domain != null) 
+        { 
+	        exists = TenantUtil.runAsTenant(new TenantRunAsWork<Boolean>()
+	        {
+	            public Boolean doWork() throws Exception
+	            {
+	                return personService.personExists(user);
+	            }
+	        }, domain);
         }
         else
         {
@@ -1114,20 +1147,19 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         return exists;
     }
     
-    @SuppressWarnings("deprecation")
     public NodeRef getPerson(final String user)
     {
         NodeRef person = null;
-        String domain = getDomain(user);
-        if (tenantService.getTenant(domain) != null)
-        {
-            person = TenantUtil.runAsTenant(new TenantRunAsWork<NodeRef>()
-            {
-                public NodeRef doWork() throws Exception
-                {
-                    return personService.getPerson(user);
-                }
-            }, domain);
+        String domain = tenantService.getPrimaryDomain(user); // get primary tenant 
+        if (domain != null) 
+        { 
+	        person = TenantUtil.runAsTenant(new TenantRunAsWork<NodeRef>()
+	        {
+	            public NodeRef doWork() throws Exception
+	            {
+	                return personService.getPerson(user);
+	            }
+	        }, domain);
         }
         else
         {
@@ -1136,43 +1168,54 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         return person;
     }
     
-    @SuppressWarnings("deprecation")
+    /**
+     * Gets the specified user's preferred locale, if available.
+     * 
+     * @param user the username of the user whose locale is sought.
+     * @return the preferred locale for that user, if available, else <tt>null</tt>. The result would be <tt>null</tt>
+     *         e.g. if the user does not exist in the system.
+     */
     private Locale getLocaleForUser(final String user)
     {
         Locale locale = null;
-        String domain = getDomain(user);
-        if (tenantService.getTenant(domain) != null)
-        {
-            locale = TenantUtil.runAsTenant(new TenantRunAsWork<Locale>()
+        String localeString = null;
+        
+        // get primary tenant for the specified user.
+        //
+        // This can have one of (at least) 3 values currently:
+        // 1. In single-tenant (community/enterprise) this will be the empty string.
+        // 2. In the cloud, for a username such as this: joe.soap@acme.com:
+        //    2A. If the acme.com tenant exists in the system, the primary domain is "acme.com"
+        //    2B. Id the acme.xom tenant does not exist in the system, the primary domain is null.
+        String domain = tenantService.getPrimaryDomain(user);
+        
+        if (domain != null) 
+        { 
+            // If the domain is not null, then the user exists in the system and we may get a preferred locale.
+            localeString = TenantUtil.runAsSystemTenant(new TenantRunAsWork<String>()
             {
-                public Locale doWork() throws Exception
+                public String doWork() throws Exception
                 {
-                    return getLocaleForUserImpl(user);
+                    return (String) preferenceService.getPreference(user, "locale");
                 }
             }, domain);
         }
         else
         {
-            return getLocaleForUserImpl(user);
+            // If the domain is null, then the beahviour here varies depending on whether it's a single tenant or multi-tenant cloud.
+            if (personExists(user))
+            {
+                localeString = (String) preferenceService.getPreference(user, "locale");
+            }
+            // else leave it as null - there's no tenant, no user for that username, so we can't get a preferred locale.
         }
-        return locale;
-    }
-
-    private Locale getLocaleForUserImpl(String user)
-    {
-        Locale locale = null;
-        String localeString = (String)preferenceService.getPreference(user, "locale");
+        
         if (localeString != null)
         {
             locale = StringUtils.parseLocaleString(localeString);
         }
-        return locale;
-    }
 
-    private String getDomain(String user)
-    {
-        String[] parts = user.split("@");
-        return parts.length == 1 ? "" : parts[1].toLowerCase(I18NUtil.getLocale());
+        return locale;
     }
     
     /**

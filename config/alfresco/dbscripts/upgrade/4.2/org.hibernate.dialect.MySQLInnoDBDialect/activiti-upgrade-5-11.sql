@@ -118,5 +118,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V4.2-upgrade-to-activiti-5.11', 'Manually executed script upgrade V4.2: Upgraded Activiti tables to 5.11 version',
-    0, 6023, -1, 6024, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
+    0, 5111, -1, 5112, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
   );

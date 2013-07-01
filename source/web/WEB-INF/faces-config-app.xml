@@ -13,10 +13,12 @@
    </application>
    
    <!-- ==================== LIFECYCLE ==================== -->
-   <!--
    <lifecycle>
+      <!--
       <phase-listener>org.alfresco.web.app.DebugPhaseListener</phase-listener>
+      -->
+
+      <phase-listener>org.alfresco.web.app.servlet.SecurityContextCleanupPhaseListener</phase-listener>
    </lifecycle>
-   -->
    
 </faces-config>

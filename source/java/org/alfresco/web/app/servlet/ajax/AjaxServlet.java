@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,8 @@ import javax.faces.context.FacesContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import net.sf.acegisecurity.context.ContextHolder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.app.servlet.AuthenticationStatus;
@@ -152,6 +154,8 @@ public class AjaxServlet extends BaseServlet
          {
             perfLogger.debug("Time to execute command: " + (System.currentTimeMillis() - startTime) + "ms");
          }
+
+         ContextHolder.setContext(null);
       }
    }
    

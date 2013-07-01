@@ -351,7 +351,7 @@ public class LoginBean implements Serializable
          {
             // Perform a full session invalidation to ensure no cached data is left around
             // - important if the login page has been accessed directly rather than via the Login/out action links
-            Application.logOut(fc);
+            logout();
             
             // Authenticate via the authentication service, then save the details of user in an object
             // in the session - this is used by the servlet filter etc. on each page to check for login

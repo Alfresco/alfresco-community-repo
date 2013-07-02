@@ -227,7 +227,7 @@ subprojects {
 		copy {
 			from "${configModuleDir}"
 			include "${moduleProperties}"
-			include "${fileMapping}"			
+			include "${fileMapping}"	
 			into assembleDir
 		}
 	
@@ -239,7 +239,8 @@ subprojects {
 		copy {
 			from configDir
 			exclude "**/${moduleProperties}"
-			exclude "**/${fileMapping}"
+			exclude "**/${fileMapping}"			
+			exclude "**/dev-context.xml"
 			into "${assembleDir}/config"		
 		}
 		

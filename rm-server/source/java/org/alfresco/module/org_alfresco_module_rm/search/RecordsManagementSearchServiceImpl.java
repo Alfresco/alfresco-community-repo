@@ -182,9 +182,9 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
         searchParameters.setNamespace(RecordsManagementModel.RM_URI);
         
         // set sort
-        for(Entry<QName, Boolean> entry : rmSearchParameters.getSortOrder().entrySet())
+        for(SortItem entry : rmSearchParameters.getSortOrder())
         {
-            searchParameters.addSort(entry.getKey().toPrefixString(namespaceService), entry.getValue().booleanValue());
+            searchParameters.addSort(entry.property.toPrefixString(namespaceService), entry.assc);
         }
         
         // set templates

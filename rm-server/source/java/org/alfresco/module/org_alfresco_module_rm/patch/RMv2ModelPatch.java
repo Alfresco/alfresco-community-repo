@@ -80,7 +80,7 @@ public class RMv2ModelPatch extends AbstractModuleComponent
     {
         if (logger.isDebugEnabled() == true)
         {
-            logger.debug("RM Module NotificationTemplatePatch ...");
+            logger.debug("RM Module RMv2ModelPatch ...");
         }
         
         updateQName(QName.createQName(DOD_URI, "filePlan"), TYPE_FILE_PLAN, "TYPE");

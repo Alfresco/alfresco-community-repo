@@ -3,20 +3,20 @@
 
 <beans>
 
+    <!-- Abstract parent bean for many RM get and post beans -->
+    <bean id="rmBaseWebscript" parent="webscript" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="namespaceService" ref="NamespaceService"/>
+        <property name="recordsManagementService" ref="RecordsManagementService"/>
+        <property name="dispositionService" ref="DispositionService"/>
+    </bean>
+
    <!-- REST impl for RM Action Service -->
    <bean id="webscript.org.alfresco.rma.rmaction.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.RmActionPost"
       parent="webscript">
       <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
       <property name="nodeService" ref="NodeService" />
-   </bean>
-
-   <!-- Abstract parent bean for many RM get and post beans -->
-   <bean id="rmBaseWebscript" parent="webscript" abstract="true">
-      <property name="nodeService" ref="NodeService" />
-      <property name="namespaceService" ref="NamespaceService" />
-      <property name="recordsManagementService" ref="RecordsManagementService" />
-      <property name="dispositionService" ref="DispositionService" />
    </bean>
 
    <!-- REST impl for GET DOD Custom Types -->
@@ -167,17 +167,6 @@
       <property name="recordService" ref="RecordService" />
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="namespaceService" ref="NamespaceService" />
-   </bean>
-
-   <!-- REST impl for GET Audit Log -->
-   <bean id="webscript.org.alfresco.rma.rmauditlog.get"
-      class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogGet"
-      parent="webscript">
-      <property name="nodeService" ref="nodeService" />
-      <property name="contentService" ref="ContentService" />
-      <property name="permissionService" ref="PermissionService" />
-      <property name="mimetypeService" ref="mimetypeService" />
-      <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
    </bean>
 
    <bean id="webscript.org.alfresco.rma.rmauditlogstatus.get"
@@ -523,10 +512,21 @@
     <!-- REST impl for GET Action Condition Defitions for RM -->
     <bean id="webscript.org.alfresco.repository.rule.rm-actionconditiondefinitions.get"
           class="org.alfresco.repo.web.scripts.rule.RmActionConditionDefinitionsGet"
-          parent="webscript">
- 	   <property name="actionService" ref="ActionService"/>
+ 	   	  parent="webscript">
+ 	   <property name="actionService" ref="ActionService"/>	  
  	   <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
  	</bean>
+
+
+
+    <!-- REST impl for GET Audit Log -->
+    <bean id="webscript.org.alfresco.rma.rmauditlog.get" class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogGet" parent="webscript">
+        <property name="nodeService" ref="nodeService"/>
+        <property name="contentService" ref="ContentService"/>
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="mimetypeService" ref="mimetypeService"/>
+        <property name="recordsManagementAuditService" ref="RecordsManagementAuditService"/>
+    </bean>
 
    <!-- REST impl for GET Class Definitions for RM/DM -->
    <bean id="webscript.org.alfresco.repository.dictionary.rm-classes.get"
@@ -558,6 +558,6 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />
       <property name="authorityService" ref="AuthorityService" />
-   </bean>
+   </bean> 
 
 </beans>

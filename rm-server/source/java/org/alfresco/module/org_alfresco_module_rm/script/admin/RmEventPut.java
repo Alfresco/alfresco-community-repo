@@ -41,6 +41,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class RmEventPut extends RMEventBase
 {
+	/** Parameter names */
+	public static final String PARAM_EVENTNAME = "eventname";
+	
     /** Records management event service */
     private RecordsManagementEventService rmEventService;
 
@@ -72,8 +75,14 @@ public class RmEventPut extends RMEventBase
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
 
             // Check the event name
-            String eventName = getValue(json, "eventName");
-            doCheck(eventName, "No event name was provided.");
+            Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+            String eventName = templateVars.get(PARAM_EVENTNAME);
+            if (eventName == null || 
+                eventName.isEmpty() || 
+                rmEventService.existsEvent(eventName) == false)
+            {
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "No event name was provided.");
+            }
 
             // Check the event display label
             String eventDisplayLabel = getValue(json, "eventDisplayLabel");

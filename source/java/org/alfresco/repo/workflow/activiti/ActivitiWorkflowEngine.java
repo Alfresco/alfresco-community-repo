@@ -1469,7 +1469,15 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private void addTasksForCandidateGroups(List<String> groupNames, Map<String, Task> resultingTasks)
     {
         if(groupNames != null && groupNames.size() > 0) {
-            List<Task> tasks = taskService.createTaskQuery().taskCandidateGroupIn(groupNames).list();
+            
+            TaskQuery query = taskService.createTaskQuery().taskCandidateGroupIn(groupNames);
+            
+            // Additional filtering on the tenant-property in case workflow-definitions are shared across tenants
+            if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && tenantService.isEnabled()) {
+                query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+            }
+            
+            List<Task> tasks =query.list();
             for(Task task : tasks)
             {
                 resultingTasks.put(task.getId(), task);
@@ -1479,7 +1487,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
     private void addTasksForCandidateUser(String userName, Map<String, Task> resultingTasks)
     {
-        List<Task> tasks = taskService.createTaskQuery().taskCandidateUser(userName).list();
+        TaskQuery query = taskService.createTaskQuery().taskCandidateUser(userName);
+        
+        // Additional filtering on the tenant-property in case workflow-definitions are shared across tenants
+        if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && tenantService.isEnabled()) {
+            query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+        }
+        
+        List<Task> tasks = query.list();
         for(Task task : tasks)
         {
             resultingTasks.put(task.getId(), task);

@@ -627,7 +627,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         try
         {
             stmt = connection.createStatement();
-            stmt.executeQuery("select count(id_) from act_ru_task");
+            stmt.executeQuery("select count(id_) from ACT_RU_TASK");
             return true;
         }
         catch (SQLException e)

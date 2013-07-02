@@ -818,7 +818,7 @@ public class RecordsManagementAuditServiceImpl
                     if (nodeTypeQname != null)
                     {
                         TypeDefinition typeDef = dictionaryService.getType(nodeTypeQname);
-                        nodeType = (typeDef != null) ? typeDef.getTitle() : null;
+                        nodeType = (typeDef != null) ? typeDef.getTitle(dictionaryService) : null;
                     }
                 }
                 else if (values.containsKey(RecordsManagementAuditService.RM_AUDIT_DATA_LOGIN_USERNAME))

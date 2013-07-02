@@ -850,6 +850,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             throw new ConcurrencyFailureException("Store not updated: " + oldStoreRef);
         }
+        // Bring all the associated nodes into the current transaction
+        Long txnId = getCurrentTransaction().getId();
+        Long storeId = store.getId();
+        updateNodesInStore(txnId, storeId);
+        
         // All the NodeRef-based caches are invalid.  ID-based caches are fine.
         rootNodesCache.removeByKey(oldStoreRef);
         allRootNodesCache.remove(oldStoreRef);
@@ -4827,6 +4832,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract Long insertStore(StoreEntity store);
     protected abstract int updateStoreRoot(StoreEntity store);
     protected abstract int updateStore(StoreEntity store);
+    protected abstract int updateNodesInStore(Long txnId, Long storeId);
     protected abstract Long insertNode(NodeEntity node);
     protected abstract int updateNode(NodeUpdateEntity nodeUpdate);
     protected abstract int updateNodes(Long txnId, List<Long> nodeIds);

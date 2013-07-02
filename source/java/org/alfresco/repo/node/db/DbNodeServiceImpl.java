@@ -263,7 +263,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         // Delete the index
         nodeIndexer.indexDeleteStore(storeRef);
-        // Rename the store
+        // Cannot delete the root node but we can delete, without archive, all immediate children
+        NodeRef rootNodeRef = nodeDAO.getRootNode(storeRef).getSecond();
+        List<ChildAssociationRef> childAssocRefs = getChildAssocs(rootNodeRef);
+        for (ChildAssociationRef childAssocRef : childAssocRefs)
+        {
+            NodeRef childNodeRef = childAssocRef.getChildRef();
+            // We do NOT want to archive these, so mark them as temporary
+            deleteNode(childNodeRef, false);
+        }
+        // Rename the store.  This takes all the nodes with it.
         StoreRef deletedStoreRef = new StoreRef(StoreRef.PROTOCOL_DELETED, GUID.generate());
         nodeDAO.moveStore(storeRef, deletedStoreRef);
         
@@ -1044,7 +1053,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     /**
      * Delete Node
      */
+    @Override
     public void deleteNode(NodeRef nodeRef)
+    {
+        deleteNode(nodeRef, true);
+    }
+    
+    /**
+     * Delete a node
+     * 
+     * @param nodeRef           the node to delete
+     * @param allowArchival     <tt>true</tt> if normal archival may occur or
+     *                          <tt>false</tt> if the node must be forcibly deleted
+     */
+    private void deleteNode(NodeRef nodeRef, boolean allowArchival)
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(nodeRef);
@@ -1055,13 +1077,21 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
         Boolean requiresDelete = null;
 
-        // get the primary parent-child relationship before it is gone
-        Pair<Long, ChildAssociationRef> childAssocPair = nodeDAO.getPrimaryParentAssoc(nodeId);
-        ChildAssociationRef childAssocRef = childAssocPair.getSecond();
         // get type and aspect QNames as they will be unavailable after the delete
         QName nodeTypeQName = nodeDAO.getNodeType(nodeId);
         Set<QName> nodeAspectQNames = nodeDAO.getNodeAspects(nodeId);
 
+        // Have we been asked to delete a store?
+        if (nodeTypeQName.equals(ContentModel.TYPE_STOREROOT))
+        {
+            throw new IllegalArgumentException("A store root node cannot be deleted: " + nodeRef);
+        }
+
+        // get the primary parent-child relationship before it is gone
+        Pair<Long, ChildAssociationRef> childAssocPair = nodeDAO.getPrimaryParentAssoc(nodeId);
+        ChildAssociationRef childAssocRef = childAssocPair.getSecond();
+
+        // Is this store 
         StoreRef storeRef = nodeRef.getStoreRef();
         StoreRef archiveStoreRef = storeArchiveMap.get(storeRef);
 
@@ -1079,7 +1109,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         nodesPendingDeleteTxn.addAll(nodesPendingDelete);           // We need to remove these later, again
         
         // Work out whether we need to archive or delete the node.
-        if (archiveStoreRef == null)
+        if (!allowArchival)
+        {
+            // No archival allowed
+            requiresDelete = true;
+        }
+        else if (archiveStoreRef == null)
         {
             // The store does not specify archiving
             requiresDelete = true;
@@ -1162,6 +1197,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 }
                 invokeBeforeDeleteChildAssociation(secondaryParentAssocPair.getSecond());
             }
+            
             // Primary child associations
             if (archive)
             {

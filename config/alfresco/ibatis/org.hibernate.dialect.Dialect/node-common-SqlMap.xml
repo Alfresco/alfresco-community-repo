@@ -384,6 +384,14 @@
             id = #{id}
     </update>
     
+    <update id="update_NodesInStore" parameterType="Ids">
+        update alf_node set
+            version = version + 1,
+            transaction_id = #{idOne}
+        where
+            store_id = #{idTwo}
+    </update>
+    
     <update id="update_Node" parameterType="NodeUpdate">
         update alf_node set
                                                     version           = #{version}

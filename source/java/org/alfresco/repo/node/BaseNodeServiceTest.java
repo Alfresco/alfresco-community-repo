@@ -485,6 +485,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         List<StoreRef> storeRefs = nodeService.getStores();
         // check that the store ref is present
         assertTrue("New store not present in list of stores", storeRefs.contains(storeRef));
+        // Get the root node
+        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+        assertTrue("Store should still exist", nodeService.exists(storeRef));
+        assertTrue("Node should still exist", nodeService.exists(rootNodeRef));
         // Delete it
         nodeService.deleteStore(storeRef);
         storeRefs = nodeService.getStores();
@@ -497,6 +501,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 fail("NodeService should not have returned 'deleted' stores." + storeRefs);
             }
         }
+        // They should not exist as far as external code is concerned
+        assertFalse("Store should still exist", nodeService.exists(storeRef));
+        assertFalse("Node should still exist", nodeService.exists(rootNodeRef));
 
         // Commit to ensure all is well
         setComplete();

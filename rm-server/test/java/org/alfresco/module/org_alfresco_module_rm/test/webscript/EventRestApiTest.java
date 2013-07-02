@@ -181,6 +181,11 @@ public class EventRestApiTest extends BaseRMWebScriptTestCase implements Records
             assertEquals(EVENT_TYPE, eventObj.get(KEY_EVENT_TYPE));     
             
             // Bad requests
+            obj = new JSONObject();
+            obj.put(KEY_EVENT_NAME, "cheese");
+            obj.put(KEY_EVENT_DISPLAY_LABEL, "whatever");
+            obj.put(KEY_EVENT_TYPE, EVENT_TYPE);
+            
             sendRequest(new PutRequest(GET_EVENTS_URL + "/cheese", obj.toString(), APPLICATION_JSON), 404);   
         }
         finally

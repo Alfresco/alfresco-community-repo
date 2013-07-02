@@ -68,7 +68,7 @@ public class IsKindEvaluator extends RecordsManagementActionConditionEvaluatorAb
 
         FilePlanComponentKind filePlanComponentKind = rmService.getFilePlanComponentKind(actionedUponNodeRef);
 
-        if (filePlanComponentKind.equals(kind))
+        if (filePlanComponentKind.toString().equals(kind))
         {
                 result = true;
         }

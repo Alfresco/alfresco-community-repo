@@ -21,6 +21,10 @@ package org.alfresco.module.org_alfresco_module_rm.action;
 import java.util.List;
 
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.springframework.beans.factory.BeanNameAware;
@@ -44,6 +48,8 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     /** public condition */
     protected boolean publicCondition = true;
     
+    private RetryingTransactionHelper retryingTransactionHelper;
+
     /**
      * @param recordsManagementActionService    records management action service
      */
@@ -51,7 +57,15 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     {
         this.recordsManagementActionService = recordsManagementActionService;
     }
-    
+
+    /**
+     * @param retryingTransactionHelper
+     */
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    {
+        this.retryingTransactionHelper = retryingTransactionHelper;
+    }
+
     /**
      * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#init()
      */
@@ -59,7 +73,27 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     public void init()
     {
         // override to prevent condition being registered with the core action service
-        recordsManagementActionService.register(this);
+
+        // run the following code as System
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork()
+            {
+                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        recordsManagementActionService.register(RecordsManagementActionConditionEvaluatorAbstractBase.this);
+
+                        return null;
+                    }
+                };
+
+                retryingTransactionHelper.doInTransaction(callback);
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
     }
     
     @Override

@@ -21,7 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.action.evaluator;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionConditionEvaluatorAbstractBase;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -41,7 +41,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * @author ctan
  */
-public class IsRecordTypeEvaluator extends RecordsManagementActionConditionEvaluatorAbstractBase implements RecordsManagementModel
+public class IsRecordTypeEvaluator extends RecordsManagementActionConditionEvaluatorAbstractBase implements DOD5015Model
 {
     /**
      * Evaluator constants
@@ -68,7 +68,7 @@ public class IsRecordTypeEvaluator extends RecordsManagementActionConditionEvalu
 
         if (type != null)
         {
-            result = nodeService.hasAspect(actionedUponNodeRef, QName.createQName(RM_URI, type));
+            result = nodeService.hasAspect(actionedUponNodeRef, QName.createQName(DOD_URI, type));
         }
 
         return result;

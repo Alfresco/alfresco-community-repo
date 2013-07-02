@@ -663,7 +663,11 @@ public class CacheTest extends TestCase
             }
             
             txn.commit();
-            
+
+            // Check post-commit values
+            assertEquals("Definitive change not written through.", DEFINITIVE_ONE, backingCache.get(DEFINITIVE_ONE));
+            assertEquals("Definitive change not written through.", DEFINITIVE_TWO, backingCache.get(DEFINITIVE_TWO));
+            assertEquals("Definitive change not written through.", null, backingCache.get(DEFINITIVE_THREE));
         }
         finally
         {

@@ -799,6 +799,12 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             this.nodeRef = nodeRef;
             this.userDetails = userDetails;
             this.credentialExpiryDate = credentialExpiryDate;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "CacheEntry [nodeRef=" + nodeRef + ", userDetails=" + userDetails + "]";
         }        
     }
 }

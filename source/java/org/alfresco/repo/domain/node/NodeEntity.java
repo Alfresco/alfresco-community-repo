@@ -22,6 +22,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
@@ -192,6 +193,13 @@ public class NodeEntity implements Node, PermissionCheckValue
     @Override
     public boolean getDeleted(QNameDAO qnameDAO)
     {
+        // First check if it belongs to the 'deleted' stores
+        if (store.getProtocol().equals(StoreRef.PROTOCOL_DELETED))
+        {
+            // The store has been deleted
+            return true;
+        }
+        // Now check the type
         Pair<Long, QName> deletedTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
         return  deletedTypeQNamePair != null &&
                 deletedTypeQNamePair.getFirst().equals(typeQNameId);

@@ -94,7 +94,7 @@ public class RecordMetaDataAspectsGet extends DeclarativeWebScript
             if (aspectDefinition != null)
             {
                 // Fet the label from the aspect definition
-                label = aspectDefinition.getTitle();
+                label = aspectDefinition.getTitle(dictionaryService);
             }            
             aspect.put("value", label);
             

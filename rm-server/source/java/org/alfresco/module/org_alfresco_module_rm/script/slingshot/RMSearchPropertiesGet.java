@@ -105,7 +105,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
             }
 
             AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
-            Group group = new Group(aspect.getLocalName(), aspectDefinition.getTitle(), propObjs);
+            Group group = new Group(aspect.getLocalName(), aspectDefinition.getTitle(dictionaryService), propObjs);    
             groups.add(group);
         }
 

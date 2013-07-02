@@ -70,49 +70,52 @@ public class HasDispositionActionEvaluator extends RecordsManagementActionCondit
         String action = ((QName) actionCondition.getParameterValue(PARAM_DISPOSITION_ACTION)).getLocalName();
 
 
-        if (position.equals(DispositionActionRelativePositions.ANY.toString()))
+        if (dispositionService.isDisposableItem(actionedUponNodeRef) == true)
         {
 
-            DispositionSchedule dispositionSchedule = dispositionService.getDispositionSchedule(actionedUponNodeRef);
-            if (dispositionSchedule != null)
+            if (position.equals(DispositionActionRelativePositions.ANY.toString()))
             {
-                for (DispositionActionDefinition dispositionActionDefinition : dispositionSchedule.getDispositionActionDefinitions())
+
+                DispositionSchedule dispositionSchedule = dispositionService.getDispositionSchedule(actionedUponNodeRef);
+                if (dispositionSchedule != null)
                 {
-                    if (dispositionActionDefinition.getName().equals(action) == true)
+                    for (DispositionActionDefinition dispositionActionDefinition : dispositionSchedule.getDispositionActionDefinitions())
+                    {
+                        if (dispositionActionDefinition.getName().equals(action) == true)
+                        {
+                            result = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (position.equals(DispositionActionRelativePositions.NEXT.toString()))
+            {
+                DispositionAction nextDispositionAction = dispositionService.getNextDispositionAction(actionedUponNodeRef);
+                if (nextDispositionAction != null)
+                {
+                    // Get the disposition actions name
+                    String actionName = nextDispositionAction.getName();
+                    if (actionName.equals(action) == true)
                     {
                         result = true;
-                        break;
+                    }
+                }
+            }
+            else if (position.equals(DispositionActionRelativePositions.PREVIOUS.toString()))
+            {
+                DispositionAction lastCompletedDispositionAction = dispositionService.getLastCompletedDispostionAction(actionedUponNodeRef);
+                if (lastCompletedDispositionAction != null)
+                {
+                    // Get the disposition actions name
+                    String actionName = lastCompletedDispositionAction.getName();
+                    if (actionName.equals(action) == true)
+                    {
+                        result = true;
                     }
                 }
             }
         }
-        else if (position.equals(DispositionActionRelativePositions.NEXT.toString()))
-        {
-            DispositionAction nextDispositionAction = dispositionService.getNextDispositionAction(actionedUponNodeRef);
-            if (nextDispositionAction != null)
-            {
-                // Get the disposition actions name
-                String actionName = nextDispositionAction.getName();
-                if (actionName.equals(action) == true)
-                {
-                    result = true;
-                }
-            }
-        }
-        else if (position.equals(DispositionActionRelativePositions.PREVIOUS.toString()))
-        {
-            DispositionAction lastCompletedDispositionAction = dispositionService.getLastCompletedDispostionAction(actionedUponNodeRef);
-            if (lastCompletedDispositionAction != null)
-            {
-                // Get the disposition actions name
-                String actionName = lastCompletedDispositionAction.getName();
-                if (actionName.equals(action) == true)
-                {
-                    result = true;
-                }
-            }
-        }
-
         return result;
     }
 

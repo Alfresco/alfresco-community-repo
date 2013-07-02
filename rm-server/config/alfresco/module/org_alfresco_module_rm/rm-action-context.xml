@@ -16,7 +16,6 @@
    <bean id="rm-ac-is-kind-kinds" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.CustomParameterConstraint" parent="action-constraint">
       <property name="parameterValues">
          <list>
-            <value>FILE_PLAN</value>
             <value>RECORD_CATEGORY</value>
             <value>RECORD_FOLDER</value>
             <value>RECORD</value>
@@ -61,27 +60,31 @@
          parent="action-condition-evaluator"
          abstract="true"
          class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.CapabilityConditionEvaluator">
-      <property name="recordsManagementActionService" ref="recordsManagementActionService" />
+      <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />      
    </bean>
 
    <bean id="isKind" 
          parent="action-condition-evaluator" 
          class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.IsKindEvaluator">
-      <property name="recordsManagementActionService" ref="recordsManagementActionService" />
+      <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
       <property name="recordsManagementService" ref="RecordsManagementService" />
    </bean>
 
    <bean id="hasDispositionAction" 
          parent="action-condition-evaluator" 
          class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.HasDispositionActionEvaluator">
-      <property name="recordsManagementActionService" ref="recordsManagementActionService" />
+      <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
       <property name="dispositionService" ref="DispositionService" />
    </bean>
 
    <bean id="isRecordType" 
          parent="action-condition-evaluator" 
          class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.IsRecordTypeEvaluator">
-      <property name="recordsManagementActionService" ref="recordsManagementActionService" />
+      <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
       <property name="nodeService" ref="NodeService" />
    </bean>
    

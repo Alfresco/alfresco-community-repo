@@ -1246,7 +1246,8 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         String compoundID = this.getCompoundIdFor(source, target);
         if (existsLabel(compoundID))
         {
-           throw new IllegalArgumentException(I18NUtil.getMessage(MSG_REF_LABEL_IN_USE, compoundID));
+            return null;
+           //throw new IllegalArgumentException(I18NUtil.getMessage(MSG_REF_LABEL_IN_USE, compoundID));
         }
 
         NodeRef modelRef = getCustomModelRef(""); // defaults to RM_CUSTOM_URI

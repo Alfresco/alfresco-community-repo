@@ -21,9 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.search;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.namespace.NamespaceService;
@@ -128,10 +126,6 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
             {
                 includedContainerTypes.add(TYPE_RECORD_CATEGORY);
             }
-//            else if ("series".equals(paramName) == true && Boolean.parseBoolean(paramValue) == true)
-//            {
-//                includedContainerTypes.add(DOD5015Model.TYPE_RECORD_SERIES);
-//            }
         }
         result.setIncludedContainerTypes(includedContainerTypes);
         
@@ -139,7 +133,7 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
         {
             // Map the sort string into the search details
             String[] sortPairs = sort.split(",");
-            Map<QName, Boolean> sortOrder = new HashMap<QName, Boolean>(sortPairs.length);
+            List<SortItem> sortOrder = new ArrayList<SortItem>(sortPairs.length);
             for (String sortPairString : sortPairs)
             {
                 String[] sortPair = sortPairString.split("/");
@@ -149,7 +143,7 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
                 {
                     isAcsending = Boolean.TRUE;
                 }
-                sortOrder.put(field, isAcsending);
+                sortOrder.add(new SortItem(field, isAcsending));
             }
             result.setSortOrder(sortOrder);
         }
@@ -178,7 +172,7 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
     {
         StringBuilder builder = new StringBuilder(64);
         
-        for (Map.Entry<QName, Boolean> entry : this.savedSearchDetails.getSearchParameters().getSortOrder().entrySet())
+        for (SortItem entry : this.savedSearchDetails.getSearchParameters().getSortOrder())
         {
             if (builder.length() !=0)
             {
@@ -186,11 +180,11 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
             }
             
             String order = "desc";
-            if (Boolean.TRUE.equals(entry.getValue()) == true)
+            if (entry.assc == true)
             {
                 order = "asc";
             }
-            builder.append(entry.getKey().toPrefixString(this.namespaceService))
+            builder.append(entry.property.toPrefixString(this.namespaceService))
                    .append("/")
                    .append(order);
         }

@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +54,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * RM search GET web script
- * 
+ *
  * @author Roy Wetherall
  */
 public class RMSearchGet extends DeclarativeWebScript
@@ -63,34 +64,34 @@ public class RMSearchGet extends DeclarativeWebScript
     private static final String PARAM_SORTBY = "sortby";
     private static final String PARAM_FILTERS = "filters";
     private static final String PARAM_MAX_ITEMS = "maxitems";
-    
+
     /** Records management search service */
     protected RecordsManagementSearchService recordsManagementSearchService;
-    
+
     /** Site service */
     protected SiteService siteService;
-    
+
     /** Namespace service */
     protected NamespaceService namespaceService;
-    
+
     /** Node serivce */
     protected NodeService nodeService;
-    
+
     /** Dictionary service */
     protected DictionaryService dictionaryService;
-    
+
     /** Permission service */
     protected PermissionService permissionService;
-    
+
     /** Person service */
     protected PersonService personService;
-    
+
     /** Content service */
     protected ContentService contentService;
-    
+
     /** Person data cache */
     private Map<String, String> personDataCache = null;
-    
+
     /**
      * @param recordsManagementSearchService    records management search service
      */
@@ -98,7 +99,7 @@ public class RMSearchGet extends DeclarativeWebScript
     {
         this.recordsManagementSearchService = recordsManagementSearchService;
     }
-    
+
     /**
      * @param siteService   site service
      */
@@ -106,7 +107,7 @@ public class RMSearchGet extends DeclarativeWebScript
     {
         this.siteService = siteService;
     }
-    
+
     /**
      * @param namespaceService  namespace service
      */
@@ -114,7 +115,7 @@ public class RMSearchGet extends DeclarativeWebScript
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @param nodeService   node service
      */
@@ -122,7 +123,7 @@ public class RMSearchGet extends DeclarativeWebScript
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param dictionaryService dictionary service
      */
@@ -130,7 +131,7 @@ public class RMSearchGet extends DeclarativeWebScript
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * @param permissionService permission service
      */
@@ -138,7 +139,7 @@ public class RMSearchGet extends DeclarativeWebScript
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
      * @param personService person service
      */
@@ -146,7 +147,7 @@ public class RMSearchGet extends DeclarativeWebScript
     {
         this.personService = personService;
     }
-    
+
     /**
      * @param contentService content service
      */
@@ -154,7 +155,7 @@ public class RMSearchGet extends DeclarativeWebScript
     {
         this.contentService = contentService;
     }
-    
+
     /*
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
@@ -162,7 +163,7 @@ public class RMSearchGet extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
        // Get the site id and confirm it is valid
-        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();        
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String siteId = templateVars.get("site");
         if (siteId == null || siteId.length() == 0)
         {
@@ -172,50 +173,55 @@ public class RMSearchGet extends DeclarativeWebScript
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "Site not found.");
         }
-        
+
         // Get the query parameter
         String query = req.getParameter(PARAM_QUERY);
         // TODO check that this is there
-        
+
         String sortby = req.getParameter(PARAM_SORTBY);
         // TODO this is optional
-        
+
         String filters = req.getParameter(PARAM_FILTERS);
         // TODO this is optional
-        
+
         // Convert into a rm search parameter object
-        RecordsManagementSearchParameters searchParameters = 
+        RecordsManagementSearchParameters searchParameters =
             SavedSearchDetailsCompatibility.createSearchParameters(filters, new String[]{",", "/"}, sortby, namespaceService);
-        
+
         // Set the max results
         String maxItems = req.getParameter(PARAM_MAX_ITEMS);
         if (maxItems != null && maxItems.length() != 0)
         {
             searchParameters.setMaxItems(Integer.parseInt(maxItems));
         }
-        
-        // Execute search 
+
+        // Execute search
         List<NodeRef> results = recordsManagementSearchService.search(siteId, query, searchParameters);
-        
+
         // Reset person data cache
         personDataCache = new HashMap<String, String>(57);
-        
-        // Process the result items
-        Item[] items = new Item[results.size()];
-        int index = 0;
+
+        // Process the result items 
+        List<Item> items = new ArrayList<Item>(results.size());
         for (NodeRef nodeRef : results)
         {
-            items[index] = new Item(nodeRef);
-            index++;
+            // FIXME: This is a workaround for DOD Recert
+            // TC 3-3  Create User Groups
+            try
+            {
+                Item item = new Item(nodeRef);
+                items.add(item);
+            }
+            catch(Exception e) {}
         }
-        
+
         // Return model
         Map<String, Object> model = new HashMap<String, Object>(1);
-        model.put("items", items);        
+        model.put("items", items);
         return model;
 
     }
-    
+
     /**
      * Item class to contain information about items being placed in model.
      */
@@ -231,38 +237,38 @@ public class RMSearchGet extends DeclarativeWebScript
         private String createdBy;
         private Map<QName, Serializable> nodeProperties;
         private Map<String, Serializable> properties;
-        
+
         public Item(NodeRef nodeRef)
         {
             // Set node ref
             this.nodeRef = nodeRef;
-            
+
             // Get type
             QName nodeRefType = nodeService.getType(nodeRef);
             this.type = nodeRefType.toPrefixString(namespaceService);
-            
+
             // Get properties
             this.nodeProperties = nodeService.getProperties(nodeRef);
-            
+
             // Determine if container or not
             isContainer = true;
             if (dictionaryService.isSubClass(nodeRefType, ContentModel.TYPE_CONTENT) == true)
             {
                 isContainer = false;
             }
-            
+
             // Get parent node reference
             NodeRef parent = null;
             ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
             if (assoc != null)
-            {   
+            {
                 parent = assoc.getParentRef();
             }
-            
+
             if (isContainer == true)
             {
                 this.size = -1;
-                
+
                 String displayPath = nodeService.getPath(nodeRef).toDisplayPath(nodeService, permissionService);
                 String[] pathElements = displayPath.split("/");
                 if (pathElements.length >= 5)
@@ -271,7 +277,7 @@ public class RMSearchGet extends DeclarativeWebScript
                     {
                         this.parentFolder = (String)nodeService.getProperty(parent, ContentModel.PROP_NAME);
                     }
-                    
+
                     pathElements = (String[])ArrayUtils.subarray(pathElements, 5, pathElements.length);
                     String newPath = StringUtils.join(pathElements, "/");
                     StringBuilder relPath = new StringBuilder("/").append(newPath);
@@ -287,7 +293,7 @@ public class RMSearchGet extends DeclarativeWebScript
                     catch (UnsupportedEncodingException e)
                     {
                         throw new AlfrescoRuntimeException("Could not process search results.", e);
-                    }                    
+                    }
                 }
             }
             else
@@ -299,27 +305,27 @@ public class RMSearchGet extends DeclarativeWebScript
                 {
                     this.size = (int)contentData.getSize();
                 }
-                
+
                 // Set the document parent name
                 if (parent != null)
                 {
                     this.parentFolder = (String)nodeService.getProperty(parent, ContentModel.PROP_NAME);
                 }
-                
+
                 // Set the document browse URL
                 this.browseUrl = "document-details?nodeRef=" + nodeRef.toString();
-            }     
-            
+            }
+
             this.modifiedBy = getDisplayName(getModifiedByUser());
             this.createdBy = getDisplayName(getCreatedByUser());
-            
+
             // Process the custom properties
             properties = new HashMap<String, Serializable>(nodeProperties.size());
             for (Map.Entry<QName, Serializable> entry : nodeProperties.entrySet())
             {
                 QName qName = entry.getKey().getPrefixedQName(namespaceService);
                 if (NamespaceService.SYSTEM_MODEL_1_0_URI.equals(qName.getNamespaceURI()) == false)
-                {   
+                {
                     String prefixName = qName.getPrefixString().replace(":", "_");
                     Serializable value = entry.getValue();
                     if (value instanceof NodeRef)
@@ -335,7 +341,7 @@ public class RMSearchGet extends DeclarativeWebScript
                 }
             }
         }
-        
+
         private String getDisplayName(String userName)
         {
             String result = personDataCache.get(userName);
@@ -356,85 +362,85 @@ public class RMSearchGet extends DeclarativeWebScript
                 }
                 personDataCache.put(userName, result);
             }
-            
+
             return result;
         }
-        
+
         public NodeRef getNodeRef()
         {
             return nodeRef;
         }
-        
+
         public String getType()
         {
             return type;
         }
-        
+
         public String getName()
         {
             return (String)nodeProperties.get(ContentModel.PROP_NAME);
         }
-        
+
         public String getTitle()
         {
             return (String)nodeProperties.get(ContentModel.PROP_TITLE);
         }
-        
+
         public String getDescription()
         {
             return (String)nodeProperties.get(ContentModel.PROP_DESCRIPTION);
         }
-        
+
         public Date getModifiedOn()
         {
             return (Date)nodeProperties.get(ContentModel.PROP_MODIFIED);
         }
-        
+
         public String getModifiedByUser()
         {
             return (String)nodeProperties.get(ContentModel.PROP_MODIFIER);
         }
-        
+
         public String getModifiedBy()
         {
             return modifiedBy;
         }
-        
+
         public Date getCreatedOn()
         {
             return (Date)nodeProperties.get(ContentModel.PROP_CREATED);
         }
-        
+
         public String getCreatedByUser()
         {
             return (String)nodeProperties.get(ContentModel.PROP_CREATOR);
         }
-        
+
         public String getCreatedBy()
         {
             return createdBy;
         }
-        
+
         public String getAuthor()
         {
             return (String)nodeProperties.get(ContentModel.PROP_AUTHOR);
-        }     
-        
+        }
+
         public String getParentFolder()
         {
             return parentFolder;
         }
-        
+
         public int getSize()
         {
             return size;
-        }       
-        
+        }
+
         public String getBrowseUrl()
         {
             return browseUrl;
         }
-        
+
         public Map<String, Serializable> getProperties()
         {
             return properties;

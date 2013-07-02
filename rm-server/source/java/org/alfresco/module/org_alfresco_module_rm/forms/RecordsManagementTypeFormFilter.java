@@ -26,6 +26,7 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.forms.Field;
+import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
@@ -84,8 +85,12 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
      * java.util.List, java.util.List, org.alfresco.repo.forms.Form,
      * java.util.Map)
      */
-    public void afterGenerate(TypeDefinition type, List<String> fields, List<String> forcedFields, Form form,
-                Map<String, Object> context)
+    public void afterGenerate(
+                    TypeDefinition type, 
+                    List<String> fields, 
+                    List<String> forcedFields, 
+                    Form form,
+                    Map<String, Object> context)
     {
         QName typeName = type.getName();
         if (rmAdminService.isCustomisable(typeName) == true)
@@ -100,6 +105,18 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
             if (rmAdminService.isCustomisable(aspect) == true)
             {
                 addCustomRMProperties(aspect, form);
+            }
+        }
+
+        // set the id 
+        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        for (FieldDefinition fieldDef : fieldDefs)
+        {
+            String prefixName = fieldDef.getName();                       
+            if (prefixName.equals("rma:identifier"))
+            {
+                String defaultId = identifierService.generateIdentifier(typeName, null);                
+                fieldDef.setDefaultValue(defaultId);
             }
         }
     }
@@ -140,5 +157,4 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
     public void afterPersist(TypeDefinition item, FormData data, final NodeRef nodeRef)
     {
     }
-
 }

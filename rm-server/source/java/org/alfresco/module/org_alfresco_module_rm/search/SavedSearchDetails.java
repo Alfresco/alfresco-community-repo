@@ -89,6 +89,8 @@ public class SavedSearchDetails extends ReportDetails
     public static final String SORT = "sort";
     public static final String PARAMS = "params";
     
+    private static final String DEFAULT_SITE_ID = "rm";
+    
     /** Site id */
 	private String siteId;
 		
@@ -117,11 +119,11 @@ public class SavedSearchDetails extends ReportDetails
     	    JSONObject search = new JSONObject(jsonString);
     	    
     	    // Get the site id
-    	    if (search.has(SITE_ID) == false)
+    	    String siteId = DEFAULT_SITE_ID;
+    	    if (search.has(SITE_ID) == true)
     	    {
-    	        throw new AlfrescoRuntimeException("Can not create saved search details from json, because required siteid is not present. " + jsonString);
-    	    }
-    	    String siteId = search.getString(SITE_ID);
+    	        siteId = search.getString(SITE_ID);
+    	    } 
     	    
     	    // Get the name
     	    if (search.has(NAME) == false)

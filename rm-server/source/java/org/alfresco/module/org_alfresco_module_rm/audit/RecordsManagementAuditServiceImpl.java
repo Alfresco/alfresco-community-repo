@@ -322,6 +322,10 @@ public class RecordsManagementAuditServiceImpl
                     new AuditEvent("unfreeze", MSG_UNFREEZE));
         this.auditEvents.put("reject",
                 new AuditEvent("reject", MSG_REJECT_RECORD));
+        
+        // Added for DOD compliance
+        this.auditEvents.put("createPerson", 
+                    new AuditEvent("createPerson", "User Created"));
     }
 
     @Override
@@ -341,7 +345,11 @@ public class RecordsManagementAuditServiceImpl
         policyComponent.bindClassBehaviour(
                 BeforeDeleteNodePolicy.QNAME,
                 RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID,
-                new JavaBehaviour(this, "beforeDeleteNode"));
+                new JavaBehaviour(this, "beforeDeleteNode"));   
+        policyComponent.bindClassBehaviour(
+                OnCreateNodePolicy.QNAME,
+                ContentModel.TYPE_PERSON,
+                new JavaBehaviour(this, "onCreatePersonNode"));  
     }
 
     @Override
@@ -473,7 +481,12 @@ public class RecordsManagementAuditServiceImpl
     {
         auditRMEvent(childAssocRef.getChildRef(), RM_AUDIT_EVENT_CREATE_RM_OBJECT, null, null);
     }
-
+    
+    public void onCreatePersonNode(ChildAssociationRef childAssocRef)
+    {
+        auditRMEvent(childAssocRef.getChildRef(), "createPerson", null, null);
+    }
+    
     /**
      * {@inheritDoc}
      * @since 3.2
@@ -505,19 +518,9 @@ public class RecordsManagementAuditServiceImpl
         {
             // Deleted nodes will not be available at the end of the transaction.  The data needs to
             // be extracted now and the audit entry needs to be created now.
-            Map<String, Serializable> auditMap = new HashMap<String, Serializable>(13);
-            auditMap.put(
-                    AuditApplication.buildPath(
-                            RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
-                            RecordsManagementAuditService.RM_AUDIT_SNIPPET_NAME),
-                    eventName);
-            // Action node
-            auditMap.put(
-                    AuditApplication.buildPath(
-                            RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
-                            RecordsManagementAuditService.RM_AUDIT_SNIPPET_NODE),
-                    nodeRef);
+            Map<String, Serializable> auditMap = buildAuditMap(nodeRef, eventName);
             auditMap = auditComponent.recordAuditValues(RecordsManagementAuditService.RM_AUDIT_PATH_ROOT, auditMap);
+            
             if (logger.isDebugEnabled())
             {
                 logger.debug("RM Audit: Audited node deletion: \n" + auditMap);
@@ -554,6 +557,31 @@ public class RecordsManagementAuditServiceImpl
             }
             // That is it.  The values are queued for the end of the transaction.
         }
+    }
+    
+    /**
+     * Helper method to build audit map
+     * 
+     * @param nodeRef
+     * @param eventName
+     * @return
+     * @since 2.0.3
+     */
+    private Map<String, Serializable> buildAuditMap(NodeRef nodeRef, String eventName)
+    {
+        Map<String, Serializable> auditMap = new HashMap<String, Serializable>(13);
+        auditMap.put(
+                AuditApplication.buildPath(
+                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
+                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_NAME),
+                        eventName);
+        // Action node
+        auditMap.put(
+                AuditApplication.buildPath(
+                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
+                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_NODE),
+                        nodeRef);        
+      return auditMap;  
     }
 
     /**
@@ -615,20 +643,13 @@ public class RecordsManagementAuditServiceImpl
 
                 RMAuditNode auditedNode = entry.getValue();
 
-                Map<String, Serializable> auditMap = new HashMap<String, Serializable>(13);
                 // Action description
                 String eventName = auditedNode.getEventName();
-                auditMap.put(
-                        AuditApplication.buildPath(
-                                RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
-                                RecordsManagementAuditService.RM_AUDIT_SNIPPET_NAME),
-                        eventName);
-                // Action node
-                auditMap.put(
-                        AuditApplication.buildPath(
-                                RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
-                                RecordsManagementAuditService.RM_AUDIT_SNIPPET_NODE),
-                        nodeRef);
+                
+                Map<String, Serializable> auditMap = buildAuditMap(nodeRef, eventName);
+                
+                // TODO do we care if the before and after are null??
+                
                 // Property changes
                 Map<QName, Serializable> propertiesBefore = auditedNode.getNodePropertiesBefore();
                 Map<QName, Serializable> propertiesAfter = auditedNode.getNodePropertiesAfter();
@@ -648,6 +669,7 @@ public class RecordsManagementAuditServiceImpl
                                 RecordsManagementAuditService.RM_AUDIT_SNIPPET_CHANGES,
                                 RecordsManagementAuditService.RM_AUDIT_SNIPPET_AFTER),
                         (Serializable) deltaPair.getSecond());
+                
                 // Audit it
                 if (logger.isDebugEnabled())
                 {
@@ -742,7 +764,7 @@ public class RecordsManagementAuditServiceImpl
      * @param reportFormat          Format to write the audit trail in, ignored if writer is <code>null</code>
      */
     private void getAuditTrailImpl(
-            RecordsManagementAuditQueryParameters params,
+            final RecordsManagementAuditQueryParameters params,
             final List<RecordsManagementAuditEntry> results,
             final Writer writer,
             final ReportFormat reportFormat)
@@ -785,6 +807,7 @@ public class RecordsManagementAuditServiceImpl
                     return false;
                 }
 
+                
                 Date timestamp = new Date(time);
                 String eventName = null;
                 String fullName = null;
@@ -846,6 +869,22 @@ public class RecordsManagementAuditServiceImpl
                     return true;
                 }
 
+                // filter out events if set
+                if (params.getEvent() != null &&
+                    params.getEvent().endsWith(eventName) == false)
+                {
+                    // skip it
+                    return true;
+                }
+                
+                
+                if (params.getProperty() != null &&
+                    getChangedProperties(beforeProperties, afterProperties).contains(params.getProperty()) == false)
+                {
+                    // skip it
+                    return false;
+                }
+                
                 // TODO: Refactor this to use the builder pattern
                 RecordsManagementAuditEntry entry = new RecordsManagementAuditEntry(
                         timestamp,
@@ -878,6 +917,32 @@ public class RecordsManagementAuditServiceImpl
                 return true;
             }
 
+            private List<QName> getChangedProperties(Map<QName, Serializable> beforeProperties, Map<QName, Serializable> afterProperties)
+            {
+                List<QName> changedProperties = new ArrayList<QName>(21);
+                
+                if (beforeProperties != null && afterProperties != null)
+                {
+                    // add all the properties present before the audited action
+                    for (QName valuePropName : beforeProperties.keySet())
+                    {
+                        changedProperties.add(valuePropName);
+                    }
+                    
+                    // add all the properties present after the audited action that
+                    // have not already been added
+                    for (QName valuePropName : afterProperties.keySet())
+                    {
+                        if (!beforeProperties.containsKey(valuePropName))
+                        {
+                            changedProperties.add(valuePropName);
+                        }
+                    }
+                }
+                
+                return changedProperties;
+            }
+            
             private void writeEntryToFile(RecordsManagementAuditEntry entry)
             {
                 if (writer == null)
@@ -1215,7 +1280,18 @@ public class RecordsManagementAuditServiceImpl
                 json.put("userRole", entry.getUserRole() == null ? "": entry.getUserRole());
                 json.put("fullName", entry.getFullName() == null ? "": entry.getFullName());
                 json.put("nodeRef", entry.getNodeRef() == null ? "": entry.getNodeRef());
-                json.put("nodeName", entry.getNodeName() == null ? "": entry.getNodeName());
+                
+                if (entry.getEvent().equals("createPerson") == true && entry.getNodeRef() != null)
+                {
+                    NodeRef nodeRef = entry.getNodeRef();
+                    String userName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
+                    json.put("nodeName", userName == null ? "": userName);
+                }
+                else
+                {
+                    json.put("nodeName", entry.getNodeName() == null ? "": entry.getNodeName());
+                }
+                
                 json.put("nodeType", entry.getNodeType() == null ? "": entry.getNodeType());
                 json.put("event", entry.getEvent() == null ? "": getAuditEventLabel(entry.getEvent()));
                 json.put("identifier", entry.getIdentifier() == null ? "": entry.getIdentifier());

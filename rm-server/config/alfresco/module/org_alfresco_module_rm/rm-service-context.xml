@@ -175,7 +175,6 @@
     </bean>
 
     <!--  Disposition Service -->
-
     <bean id="dispositionService" class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl" init-method="init">
         <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
         <property name="nodeService" ref="NodeService"/>
@@ -554,6 +553,7 @@
         <property name="policyComponent" ref="policyComponent"/>
         <property name="filePlanService" ref="FilePlanService" />
         <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
+
     </bean>
 
     <bean id="FilePlanRoleService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -595,7 +595,7 @@
         </property>
         <property name="objectDefinitionSource">
             <value>
-                <![CDATA[
+               <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRoles=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRolesByUser=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRole=RM_ALLOW
@@ -615,7 +615,6 @@
             </value>
         </property>
     </bean>
-
 
 
     <!--  Records Management Extended Security Service -->
@@ -840,7 +839,8 @@
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.addEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.removeEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.existsEvent=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.existsEventDisplayLabel=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.canCreateEvent=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.canEditEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.*=RM_DENY
                 ]]>
             </value>
@@ -1197,9 +1197,9 @@
         </property>
     </bean>
 
-    <!--  Custom EMail Mapping Service -->
 
-   <bean id="customEmailMappingService"
+    <!--  Custom EMail Mapping Service -->
+    <bean id="customEmailMappingService"
       class="org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingServiceImpl" >
       <property name="extracter" ref="extracter.RFC822" />
       <property name="nodeService" ref="nodeService" />
@@ -1220,7 +1220,6 @@
          </list>
       </property>
    </bean>
-
 
     <bean id="CustomEmailMappingService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
@@ -1276,7 +1275,6 @@
     </bean>
 
     <!--  RM Notification Helper -->
-
     <bean id="recordsManagementNotificationHelper" class="org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper" >
         <property name="filePlanRoleService" ref="FilePlanRoleService"/>
     	<property name="notificationService" ref="NotificationService"/>

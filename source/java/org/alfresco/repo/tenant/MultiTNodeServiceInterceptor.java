@@ -141,7 +141,10 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
         }
         catch (InvalidNodeRefException inre)
         {
-            throw new InvalidNodeRefException(inre.getMessage(), tenantService.getBaseName(inre.getNodeRef()));
+            throw new InvalidNodeRefException(
+                    "Failed invocation: " + invocation,
+                    tenantService.getBaseName(inre.getNodeRef()),
+                    inre);
         }
         
         if (methodName.equals("getProperty"))

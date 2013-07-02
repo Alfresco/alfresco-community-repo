@@ -41,6 +41,8 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy;
 import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -481,12 +483,32 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public void testDeleteStore() throws Exception
     {
         StoreRef storeRef = createStore();
+        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+
+        // Add a node into the store and listen for the node's deletion
+        NodeRef nodeRef = nodeService.createNode(rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        List<NodeRef> beforeDeleteNodeRefs = new ArrayList<NodeRef>();
+        List<NodeRef> onDeleteNodeRefs = new ArrayList<NodeRef>();
+        BadOnDeleteNodePolicy policy = new BadOnDeleteNodePolicy(nodeService, beforeDeleteNodeRefs, onDeleteNodeRefs);
+        policy.setOnDeleteCreateChild(false);
+        policy.setBeforeDeleteCreateChild(false);
+        policyComponent.bindClassBehaviour(
+                OnDeleteNodePolicy.QNAME,
+                policy,
+                new JavaBehaviour(policy, "onDeleteNode"));   
+        policyComponent.bindClassBehaviour(
+                BeforeDeleteNodePolicy.QNAME,
+                policy,
+                new JavaBehaviour(policy, "beforeDeleteNode"));   
+        
         // get all stores
         List<StoreRef> storeRefs = nodeService.getStores();
         // check that the store ref is present
         assertTrue("New store not present in list of stores", storeRefs.contains(storeRef));
         // Get the root node
-        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
         assertTrue("Store should still exist", nodeService.exists(storeRef));
         assertTrue("Node should still exist", nodeService.exists(rootNodeRef));
         // Delete it
@@ -504,6 +526,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // They should not exist as far as external code is concerned
         assertFalse("Store should still exist", nodeService.exists(storeRef));
         assertFalse("Node should still exist", nodeService.exists(rootNodeRef));
+        
+        // Check that we received callbacks
+        assertEquals("Incorrect number of node beforeDelete notifications", 1, beforeDeleteNodeRefs.size());
+        assertEquals("Incorrect node for beforeDelete callback", nodeRef, beforeDeleteNodeRefs.get(0));
+        assertEquals("Incorrect number of node onDelete notifications", 1, onDeleteNodeRefs.size());
+        assertEquals("Incorrect node for onDelete callback", nodeRef, onDeleteNodeRefs.get(0));
 
         // Commit to ensure all is well
         setComplete();
@@ -1088,8 +1116,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 List<NodeRef> beforeDeleteNodeRefs, 
                 List<NodeRef> deletedNodeRefs)
         {
-
-            
             this.nodeService = nodeService;
             this.beforeDeleteNodeRefs = beforeDeleteNodeRefs;
             this.deletedNodeRefs = deletedNodeRefs;
@@ -1170,12 +1196,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 
         // bind to listen to the deletion of a node
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
+                OnDeleteNodePolicy.QNAME,
                 policy,
                 new JavaBehaviour(policy, "onDeleteNode"));   
         
         policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
+                BeforeDeleteNodePolicy.QNAME,
                 policy,
                 new JavaBehaviour(policy, "beforeDeleteNode"));   
         

@@ -34,14 +34,10 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.TenantAdminService;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.discussion.DiscussionService;
 import org.alfresco.service.cmr.discussion.PostInfo;
 import org.alfresco.service.cmr.discussion.PostWithReplies;
@@ -83,7 +79,6 @@ public class DiscussionServiceImplTest
     // injected services
     private static MutableAuthenticationService AUTHENTICATION_SERVICE;
     private static BehaviourFilter              BEHAVIOUR_FILTER;
-    private static DictionaryService            DICTIONARY_SERVICE;
     private static DiscussionService            DISCUSSION_SERVICE;
     private static NodeService                  NODE_SERVICE;
     private static NodeService                  PUBLIC_NODE_SERVICE;
@@ -117,7 +112,6 @@ public class DiscussionServiceImplTest
         AUTHENTICATION_SERVICE = (MutableAuthenticationService)testContext.getBean("authenticationService");
         BEHAVIOUR_FILTER       = (BehaviourFilter)testContext.getBean("policyBehaviourFilter");
         DISCUSSION_SERVICE     = (DiscussionService)testContext.getBean("DiscussionService");
-        DICTIONARY_SERVICE     = (DictionaryService)testContext.getBean("dictionaryService");
         NODE_SERVICE           = (NodeService)testContext.getBean("nodeService");
         PUBLIC_NODE_SERVICE    = (NodeService)testContext.getBean("NodeService");
         PERSON_SERVICE         = (PersonService)testContext.getBean("personService");
@@ -1900,8 +1894,14 @@ public class DiscussionServiceImplTest
            @Override
            public Void execute() throws Throwable
            {
-               TENANT_ADMIN_SERVICE.deleteTenant(TENANT_DOMAIN);
-               return null;
+               // TODO: WARNING: HACK for ALF-19155: MT deleteTenant does not work
+               //       MultiTNodeServiceInterceptor.exists does not work is tenant has been deleted.
+               //       beforeCommit code breaks on NodeService.exists calls
+               {
+                   return null;
+               }
+//               TENANT_ADMIN_SERVICE.deleteTenant(TENANT_DOMAIN);
+//               return null;
            }
         });
     }

@@ -43,6 +43,8 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.repo.node.index.FullIndexRecoveryComponent;
+import org.alfresco.repo.node.index.IndexTransactionTracker;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
@@ -252,6 +254,12 @@ public class MultiTDemoTest extends TestCase
                     {
                         if (tenantAdminService.existsTenant(tenantDomain))
                         {
+                            // TODO: WARNING: HACK for ALF-19155: MT deleteTenant does not work
+                            //       PersonService prevents 'guest' authorities from being deleted
+                            {
+                                BehaviourFilter behaviourFilter = (BehaviourFilter) ctx.getBean("policyBehaviourFilter");
+                                behaviourFilter.disableBehaviour(ContentModel.TYPE_PERSON);
+                            }
                             tenantAdminService.deleteTenant(tenantDomain);
                             
                             logger.info("Deleted tenant " + tenantDomain);

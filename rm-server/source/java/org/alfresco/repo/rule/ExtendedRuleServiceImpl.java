@@ -95,26 +95,24 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
 
         // The dispositionSchedule node will not be executed by rules
         if (recordsManagementService.isFilePlanComponent(nodeRef) == true
-                && typeQName.equals(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE) == false)
+                && typeQName.equals(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE) == false
+                && isFilePlanComponentRule(rule) == true && runAsRmAdmin == true)
         {
-            if (isFilePlanComponentRule(rule) == true && runAsRmAdmin == true)
+            String user = AuthenticationUtil.getFullyAuthenticatedUser();
+            try
             {
-                String user = AuthenticationUtil.getFullyAuthenticatedUser();
-                try
-                {
-                    AuthenticationUtil.setFullyAuthenticatedUser(filePlanAuthenticationService.getRmAdminUserName());
-                    ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
-                }
-                finally
-                {
-                    AuthenticationUtil.setFullyAuthenticatedUser(user);
-                }
+                AuthenticationUtil.setFullyAuthenticatedUser(filePlanAuthenticationService.getRmAdminUserName());
+                ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
             }
-            else
+            finally
             {
-                // just execute the rule as the current user
-                super.executeRule(rule, nodeRef, executedRules);
+                AuthenticationUtil.setFullyAuthenticatedUser(user);
             }
+        }
+        else
+        {
+            // just execute the rule as the current user
+            super.executeRule(rule, nodeRef, executedRules);
         }
     }
 

@@ -6,6 +6,12 @@
    are defined in tx-cache-context.xml
 -->
 <beans>
+   <!--
+    TEMP: This doesn't strictly belong here, but must be loaded before the enterprise/cluster/cluster-context.xml
+    file is imported (so that it overrides this bean correctly.
+    -->
+   <bean id="webdavLockStoreFactory" class="org.alfresco.repo.webdav.SimpleLockStoreFactory"/>
+
    <!-- ===================================== -->
    <!-- Property Values Cache                 -->
    <!-- ===================================== -->

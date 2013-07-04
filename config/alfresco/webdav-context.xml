@@ -24,8 +24,6 @@
         <property name="enabled"><value>${system.webdav.servlet.enabled}</value></property>
         <property name="activitiesEnabled" value="${system.webdav.activities.enabled}"/>
     </bean>
-    
-    <bean id="webdavLockStoreFactory" class="org.alfresco.repo.webdav.SimpleLockStoreFactory"/>
 
     <!-- Configure remote-api source related beans in remote-api-context.xml to ensure no dependency problems -->
 </beans>

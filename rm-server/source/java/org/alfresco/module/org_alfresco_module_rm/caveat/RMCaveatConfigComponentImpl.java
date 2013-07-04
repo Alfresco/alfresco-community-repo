@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,18 +22,22 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -97,16 +101,25 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
     
     private static final QName DATATYPE_TEXT = DataTypeDefinition.TEXT;
     
+    /**
+     * Lock objects
+     */
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private Lock readLock = lock.readLock();
+    private Lock writeLock = lock.writeLock();
     
     /*
-     * Caveat Config
+     * Caveat Config (Shared) config
      * first string is property name
      * second string is authority name (user or group full name)
      * third string is list of values of property 
-     */
+     */    
+    private SimpleCache<String, Map<String, List<String>>> caveatConfig;
     
-    // TODO - convert to SimpleCache to be cluster-aware (for dynamic changes to caveat config across a cluster)
-    private Map<String, Map<String, List<String>>> caveatConfig = new ConcurrentHashMap<String, Map<String, List<String>>>(2);
+    public void setCaveatConfig(SimpleCache<String, Map<String, List<String>>> caveatConfig)
+    {
+        this.caveatConfig = caveatConfig;
+    }
     
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -252,6 +265,12 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         validateAndReset(childAssocRef.getChildRef());
     }
     
+    /**
+     * Validate the caveat config and optionally update the cache.
+     *
+     * @param nodeRef The nodeRef of the config
+     * @param updateCache Set to <code>true</code> to update the cache
+    */
     @SuppressWarnings("unchecked")
     protected void validateAndReset(NodeRef nodeRef)
     {
@@ -409,15 +428,29 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                         }
                     }
                     
-                    // Valid, so update
-                    caveatConfig.clear();
-                    
-                    for (Map.Entry<String, Object> conEntry : caveatConfigMap.entrySet())
+                    try
                     {
-                        String conStr = conEntry.getKey();
-                        Map<String, List<String>> caveatMap = (Map<String, List<String>>)conEntry.getValue();
+                        writeLock.lock();
+                        // we can't just clear the cache, as all puts to the cache afterwards in this transaction will be ignored
+                        // first delete all keys that are now not in the config
+                        caveatConfig.getKeys().retainAll(caveatConfigMap.keySet());
                         
-                        caveatConfig.put(conStr, caveatMap);
+                        for (Map.Entry<String, Object> conEntry : caveatConfigMap.entrySet())
+                        {
+                            String conStr = conEntry.getKey();
+                            Map<String, List<String>> caveatMap = (Map<String, List<String>>)conEntry.getValue();
+                            
+                            Map<String, List<String>> cacheValue = caveatConfig.get(conStr);
+                            if (cacheValue == null || !cacheValue.equals(caveatMap))
+                            {
+                                // update the cache
+                                caveatConfig.put(conStr, caveatMap);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        writeLock.unlock();
                     }
                 }
                 catch (JSONException e)
@@ -495,9 +528,19 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
     }
     
     // Get list of all caveat qualified names
-    public Set<String> getRMConstraintNames()
+    public Collection<String> getRMConstraintNames()
     {
-        return caveatConfig.keySet();
+        Collection<String> rmConstraintNames = Collections.emptySet();
+        try
+        {
+            readLock.lock();
+            rmConstraintNames = caveatConfig.getKeys();
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+        return Collections.unmodifiableCollection(rmConstraintNames);
     }
     
     // Get allowed values for given caveat (for current user)
@@ -510,8 +553,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         {
             if (! (AuthenticationUtil.isMtEnabled() && AuthenticationUtil.isRunAsUserTheSystemUser()))
             {
-                // note: userName and userGroupNames must not be null
-                Map<String, List<String>> caveatConstraintDef = caveatConfig.get(constraintName);                
+                // note: userName and userGroupNames must not be null              
                 Set<String> userGroupFullNames = authorityService.getAuthoritiesForUser(userName);
                 allowedValues = getRMAllowedValues(userName, userGroupFullNames, constraintName);
             }
@@ -525,7 +567,16 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         Set<String>allowedValues = new HashSet<String>();
         
         // note: userName and userGroupNames must not be null
-        Map<String, List<String>> caveatConstraintDef = caveatConfig.get(constraintName);
+        Map<String, List<String>> caveatConstraintDef = null;
+        try
+        {
+            readLock.lock();
+            caveatConstraintDef = caveatConfig.get(constraintName);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
         
         if (caveatConstraintDef != null)
         {
@@ -547,7 +598,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         
         List<String>ret = new ArrayList<String>();
         ret.addAll(allowedValues);
-        return ret;
+        return Collections.unmodifiableList(ret);
     }
     
     /**
@@ -692,23 +743,53 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
      * 
      * @param listName the name of the RMConstraintList
      * @param authorityName
-     * @param values
+     * @param value
      * @throws AlfrescoRuntimeException if either the list or the authority do not already exist.
      */
     public void addRMConstraintListValue(String listName, String authorityName, String value)
     {
-        Map<String, List<String>> members = caveatConfig.get(listName);
-        if(members == null) 
+        Map<String, List<String>> members = null;
+        try
         {
-            throw new AlfrescoRuntimeException("unable to add to list, list not defined:"+ listName);
+            readLock.lock();
+            members = caveatConfig.get(listName);
+            if(members == null)
+            {
+                throw new AlfrescoRuntimeException("unable to add to list, list not defined:"+ listName);
+            }
+            
+            try
+            {
+                readLock.unlock();
+                writeLock.lock();
+                // check again
+                members = caveatConfig.get(listName);
+                if(members == null)
+                {
+                    throw new AlfrescoRuntimeException("unable to add to list, list not defined:"+ listName);
+                }
+
+                List<String> values = members.get(authorityName);
+                if(values == null)
+                {
+                    throw new AlfrescoRuntimeException("Unable to add to authority in list.   Authority not member listName: "+ listName + " authorityName:" +authorityName);
+                }
+                values.add(value);
+
+                caveatConfig.put(listName, members);
+                updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
+            }
+            finally
+            {
+                readLock.lock();
+                writeLock.unlock();        
+            }
+
         }
-        List<String> values = members.get(authorityName);
-        if(values == null)
+        finally
         {
-            throw new AlfrescoRuntimeException("Unable to add to authority in list.   Authority not member listName: "+ listName + " authorityName:" +authorityName);
+            readLock.unlock();
         }
-        values.add(value);
-        updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
     }
     
     /**
@@ -718,7 +799,24 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
      */
     public Map<String, List<String>> getListDetails(String listName)
     {
-        return caveatConfig.get(listName);
+        Map<String, List<String>> listDetails = null;
+        try
+        {
+            readLock.lock();
+            listDetails = caveatConfig.get(listName);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+        if (listDetails == null)
+        {
+            return Collections.emptyMap();
+        }
+        else
+        {
+            return Collections.unmodifiableMap(listDetails);
+        }
     }
     
     public List<QName> getRMCaveatModels()
@@ -738,20 +836,30 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
      */
     public void updateRMConstraintListAuthority(String listName, String authorityName, List<String>values)
     {
-        Map<String, List<String>> members = caveatConfig.get(listName);
-        if(members == null) 
+        Map<String, List<String>> members = null;
+        try
         {
-            // Create the new list, with the authority name
-            Map<String, List<String>> constraint =  new HashMap<String, List<String>>(0);
-            constraint.put(authorityName, values);
-            caveatConfig.put(listName, constraint);
-        }
-        else
-        {
-            members.put(authorityName, values);
-        }
+            writeLock.lock();
+            members = caveatConfig.get(listName);
+            if(members == null) 
+            {
+                // Create the new list, with the authority name
+                Map<String, List<String>> constraint =  new HashMap<String, List<String>>(0);
+                constraint.put(authorityName, new ArrayList<String>(values));
+                members = constraint;
+            }
+            else
+            {
+                members.put(authorityName, new ArrayList<String>(values));
+            }
       
-        updateOrCreateCaveatConfig(convertToJSONString(caveatConfig)); 
+            caveatConfig.put(listName, members);
+            updateOrCreateCaveatConfig(convertToJSONString(caveatConfig)); 
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
     }
     
     /**
@@ -764,57 +872,19 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
     public void updateRMConstraintListValue(String listName, String valueName, List<String>authorities)
     {
         
-        // members contains member, values[]
-        Map<String, List<String>> members = caveatConfig.get(listName);
-        
-        if(members == null)
+        Map<String, List<String>> members = null;
+        try
         {
-            // Members List does not exist
-            Map<String, List<String>> emptyConstraint =  new HashMap<String, List<String>>(0);
-            caveatConfig.put(listName, emptyConstraint);
-            members = emptyConstraint;
-            
-        }
-        // authorities contains authority, values[]
-        // pivot contains value, members[]
-        Map<String, List<String>> pivot = PivotUtil.getPivot(members);
+            writeLock.lock();
         
-        // remove all authorities which have this value
-        List<String> existingAuthorities = pivot.get(valueName);
-        if(existingAuthorities != null)
-        {
-            for(String authority : existingAuthorities)
+            if(members == null)
             {
-                List<String> vals = members.get(authority);
-                vals.remove(valueName);
+                // Members List does not exist
+                Map<String, List<String>> emptyConstraint =  new HashMap<String, List<String>>(0);
+                caveatConfig.put(listName, emptyConstraint);
+                members = emptyConstraint;
+                
             }
-        }
-        // add the new authorities for this value
-        for(String authority : authorities)
-        {
-            List<String> vals = members.get(authority);
-            if(vals == null)
-            {
-                vals= new ArrayList<String>();
-                members.put(authority, vals);
-            }
-            vals.add(valueName);
-        }
-        
-        updateOrCreateCaveatConfig(convertToJSONString(caveatConfig)); 
-    }
-    
-    public void removeRMConstraintListValue(String listName, String valueName)
-    {
-        // members contains member, values[]
-        Map<String, List<String>> members = caveatConfig.get(listName);
-        
-        if(members == null)
-        {
-            // list does not exist
-        }
-        else
-        {
             // authorities contains authority, values[]
             // pivot contains value, members[]
             Map<String, List<String>> pivot = PivotUtil.getPivot(members);
@@ -829,8 +899,82 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                     vals.remove(valueName);
                 }
             }
-            
-            updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
+            // add the new authorities for this value
+            for(String authority : authorities)
+            {
+                List<String> vals = members.get(authority);
+                if(vals == null)
+                {
+                    vals= new ArrayList<String>();
+                    members.put(authority, vals);
+                }
+                vals.add(valueName);
+            }
+            caveatConfig.put(listName, members);
+            updateOrCreateCaveatConfig(convertToJSONString(caveatConfig)); 
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
+    }
+    
+    public void removeRMConstraintListValue(String listName, String valueName)
+    {
+        Map<String, List<String>> members = null;
+        try
+        {
+            readLock.lock();
+        
+            members = caveatConfig.get(listName);
+            if(members == null)
+            {
+                // list does not exist
+            }
+            else
+            {
+                try
+                {
+                    readLock.unlock();
+                    writeLock.lock();
+                    // check again
+                    members = caveatConfig.get(listName);
+                    if(members == null)
+                    {
+                        // list does not exist
+                    }
+                    else
+                    {
+                        // authorities contains authority, values[]
+                        // pivot contains value, members[]
+                        Map<String, List<String>> pivot = PivotUtil.getPivot(members);
+                        
+                        // remove all authorities which have this value
+                        List<String> existingAuthorities = pivot.get(valueName);
+                        if(existingAuthorities != null)
+                        {
+                            for(String authority : existingAuthorities)
+                            {
+                                List<String> vals = members.get(authority);
+                                vals.remove(valueName);
+                            }
+                            caveatConfig.put(listName, members);
+                        }
+                    }
+                    
+                    updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
+                }
+                finally
+                {
+                    readLock.lock();
+                    writeLock.unlock();
+                }
+
+            }
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
     
@@ -843,26 +987,37 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
      */
     public void removeRMConstraintListAuthority(String listName, String authorityName)
     {
-        Map<String, List<String>> members = caveatConfig.get(listName);
-        if(members != null)
+        Map<String, List<String>> members = null;
+        try
         {
-            members.remove(listName);
+            writeLock.lock();
+            members = caveatConfig.get(listName);
+            if(members != null)
+            {
+                members.remove(listName);
+            }
+            
+            caveatConfig.put(listName, members);
+            updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
+
         }
-        
-        updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
-    }
+        finally
+        {
+            writeLock.unlock();
+        }
+}
     
     /**
      * @param config the configuration to convert
      * @return a String containing the JSON representation of the configuration.
      */
-    private String convertToJSONString(Map<String, Map<String, List<String>>> config)
+    private String convertToJSONString(SimpleCache<String, Map<String, List<String>>> config)
     {
         JSONObject obj = new JSONObject();
         
         try 
         {
-            Set<String> listNames = config.keySet();
+            Collection<String> listNames = config.getKeys();
             for(String listName : listNames)
             {
                 Map<String, List<String>> members = config.get(listName);
@@ -932,14 +1087,30 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
     
     public void deleteRMConstraint(String listName)
     {
-        caveatConfig.remove(listName);
-        updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
+        try
+        {
+            writeLock.lock();        
+            caveatConfig.remove(listName);
+            updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
+        }
+        finally
+        {
+            writeLock.unlock();            
+        }
     }
     
     public void addRMConstraint(String listName)
     {
-        Map<String, List<String>> emptyConstraint =  new HashMap<String, List<String>>(0);
-        caveatConfig.put(listName, emptyConstraint);
-        updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
+        try
+        {
+            writeLock.lock(); 
+            Map<String, List<String>> emptyConstraint =  new HashMap<String, List<String>>(0);
+            caveatConfig.put(listName, emptyConstraint);
+            updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
+        }
+        finally
+        {
+            writeLock.unlock();            
+        }
     }
 }

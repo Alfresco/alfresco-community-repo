@@ -241,8 +241,18 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         
         // Only execute the action if this action is read only or the actioned upon node reference doesn't
         // have a lock applied for this user.
-        if ((baseNodeService == null || actionedUponNodeRef == null || mlAwareNodeService.exists(actionedUponNodeRef)) && // Not all actions are node based
-            (ignoreLock || !LockUtils.isLockedAndReadOnly(actionedUponNodeRef, lockService)))
+        boolean nodeIsLockedForThisUser = false;
+        
+        // null nodeRefs can't be locked and some actions can be run against 'null' nodes.
+        // non-existent nodes can't be locked.
+        if (!ignoreLock &&
+            actionedUponNodeRef != null &&
+            mlAwareNodeService.exists(actionedUponNodeRef))
+        {
+            nodeIsLockedForThisUser = LockUtils.isLockedAndReadOnly(actionedUponNodeRef, lockService);
+        }
+        
+        if ( !nodeIsLockedForThisUser)
         {
             // Execute the implementation
             executeImpl(action, actionedUponNodeRef);

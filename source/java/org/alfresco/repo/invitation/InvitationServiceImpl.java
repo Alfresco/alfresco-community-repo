@@ -808,6 +808,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 }
             } 
         }
+        
         return invitationIds;
 
     }
@@ -887,15 +888,19 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             if(jbpmTasks !=null)
             {
                 results.addAll(jbpmTasks);
-            }
+                
+                if (logger.isTraceEnabled()) { logger.trace("Found " + jbpmTasks.size() + " jBPM moderated invitation tasks."); }
+           }
         }
         if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
         {
             query.setTaskName(WorkflowModelModeratedInvitation.WF_ACTIVITI_REVIEW_TASK);
-            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query, true);
-            if(jbpmTasks !=null)
+            List<WorkflowTask> activitiTasks = this.workflowService.queryTasks(query, true);
+            if(activitiTasks !=null)
             {
-                results.addAll(jbpmTasks);
+                results.addAll(activitiTasks);
+                
+                if (logger.isTraceEnabled()) { logger.trace("Found " + activitiTasks.size() + " Activiti moderated invitation tasks."); }
             }
         }
         if (logger.isDebugEnabled())
@@ -948,15 +953,19 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             if(jbpmTasks !=null)
             {
                 results.addAll(jbpmTasks);
+                
+                if (logger.isTraceEnabled()) { logger.trace("Found " + jbpmTasks.size() + " jBPM nominated invitation tasks."); }
             }
         }
         if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
         {
             query.setTaskName(WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
-            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query, true);
-            if(jbpmTasks !=null)
+            List<WorkflowTask> activitiTasks = this.workflowService.queryTasks(query, true);
+            if(activitiTasks !=null)
             {
-                results.addAll(jbpmTasks);
+                results.addAll(activitiTasks);
+                
+                if (logger.isTraceEnabled()) { logger.trace("Found " + activitiTasks.size() + " Activiti nominated invitation tasks."); }
             }
         }
         if (logger.isDebugEnabled())
@@ -1547,7 +1556,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        logger.debug("beforeDeleteNode");
+        if (logger.isDebugEnabled()) { logger.debug("beforeDeleteNode"); }
 
         final NodeRef siteRef = nodeRef;
 
@@ -1567,7 +1576,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                         long start =0;
                         if (logger.isDebugEnabled())
                         {
-                            logger.debug("Invitation service delete node fired " + type + ", " + siteName);
+                            logger.debug("Invitation service beforeDeleteNode fired " + type + ", " + siteName);
                             start = System.currentTimeMillis();
                         }
                         InvitationSearchCriteriaImpl criteria =
@@ -1585,13 +1594,13 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                         Action action = actionService.createAction(CancelWorkflowActionExecuter.NAME);
                         action.setParameterValue(CancelWorkflowActionExecuter.PARAM_WORKFLOW_ID_LIST, (Serializable)invitationIds);
                                                 
-                        // Cancel the workflows asynchronously
-                        actionService.executeAction(action, siteRef, false, true);        
+                        // Cancel the workflows asynchronously - see ALF-11872 (svn rev 32936 for details on why this is asynchronous).
+                        actionService.executeAction(action, siteRef, false, true); // FIXME Here's the fix - make the steRef null
                         
                         if (logger.isDebugEnabled())
                         {
                             long end = System.currentTimeMillis();
-                            logger.debug("Invitations cancelled: " + invitationIds.size() + " in "+ (end-start) + " ms");
+                            logger.debug("Invitation cancellations requested: " + invitationIds.size() + " in "+ (end-start) + " ms");
                         }
                     }
                 }

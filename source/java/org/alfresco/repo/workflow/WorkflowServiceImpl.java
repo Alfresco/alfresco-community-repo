@@ -570,6 +570,8 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public List<WorkflowInstance> cancelWorkflows(List<String> workflowIds)
     {
+        if (logger.isTraceEnabled()) { logger.trace("Cancelling " + (workflowIds == null ? 0 : workflowIds.size()) + " workflowIds..."); }
+        
         List<WorkflowInstance> result = new ArrayList<WorkflowInstance>(workflowIds.size());
         
         // Batch the workflow IDs by engine ID

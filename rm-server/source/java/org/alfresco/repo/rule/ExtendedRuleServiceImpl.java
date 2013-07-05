@@ -89,6 +89,28 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     }
 
     @Override
+    public void removeRule(final NodeRef nodeRef, final Rule rule)
+    {
+        if (recordsManagementService.isFilePlanComponent(nodeRef) == true && runAsRmAdmin == true)
+        {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    ExtendedRuleServiceImpl.super.removeRule(nodeRef, rule);
+                    return null;
+                }
+
+            });
+        }
+        else
+        {
+            super.removeRule(nodeRef, rule);
+        }
+    }
+
+    @Override
     public void executeRule(final Rule rule, final NodeRef nodeRef, final Set<ExecutedRuleData> executedRules)
     {
         QName typeQName = nodeService.getType(nodeRef);

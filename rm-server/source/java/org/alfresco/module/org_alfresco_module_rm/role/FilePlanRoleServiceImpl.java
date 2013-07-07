@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -50,6 +51,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -401,37 +403,54 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
+     * Helper method for retrieving the system roles
+     *
+     *  @return Returns the system roles
+     */
+    private List<String> getSystemRoles()
+    {
+        return Arrays.asList(
+            FilePlanRoleService.ROLE_EXTENDED_READERS,
+            FilePlanRoleService.ROLE_EXTENDED_WRITERS
+        );
+    }
+
+    /**
+     * Helper method to check whether the current authority is a system role or not
+     *
+     * @param roleAuthority The role to check
+     * @return Returns true if roleAuthority is a system role, false otherwise
+     */
+    private boolean isSystemRole(String roleAuthority)
+    {
+        boolean isSystemRole = false;
+        List<String> systemRoles = getSystemRoles();
+
+        for (String systemRole : systemRoles)
+        {
+            if (StringUtils.contains(roleAuthority, systemRole))
+            {
+                isSystemRole = true;
+                break;
+            }
+        }
+
+        return isSystemRole;
+    }
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getRoles()
      */
     public Set<Role> getRoles(final NodeRef rmRootNode)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<Role>>()
-        {
-            public Set<Role> doWork() throws Exception
-            {
-                Set<Role> result = new HashSet<Role>(13);
-
-                Set<String> roleAuthorities = authorityService.getAllAuthoritiesInZone(getZoneName(rmRootNode), AuthorityType.GROUP);
-                for (String roleAuthority : roleAuthorities)
-                {
-                    String groupShortName = authorityService.getShortName(roleAuthority);
-                    String name = getShortRoleName(groupShortName, rmRootNode);
-                    String displayLabel = authorityService.getAuthorityDisplayName(roleAuthority);
-                    Set<Capability> capabilities = getCapabilitiesImpl(rmRootNode, roleAuthority);
-
-                    Role role = new Role(name, displayLabel, capabilities, roleAuthority, groupShortName);
-                    result.add(role);
-                }
-
-                return result;
-            }
-        }, AuthenticationUtil.getSystemUserName());
+        return getRoles(rmRootNode, true);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getRolesByUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#getRoles(NodeRef, boolean)
      */
-    public Set<Role> getRolesByUser(final NodeRef rmRootNode, final String user)
+    @Override
+    public Set<Role> getRoles(final NodeRef rmRootNode, final boolean includeSystemRoles)
     {
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<Role>>()
         {
@@ -442,8 +461,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 Set<String> roleAuthorities = authorityService.getAllAuthoritiesInZone(getZoneName(rmRootNode), AuthorityType.GROUP);
                 for (String roleAuthority : roleAuthorities)
                 {
-                    Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, roleAuthority, false);
-                    if (users.contains(user) == true)
+                    if (includeSystemRoles == true || isSystemRole(roleAuthority) == false)
                     {
                         String groupShortName = authorityService.getShortName(roleAuthority);
                         String name = getShortRoleName(groupShortName, rmRootNode);
@@ -459,6 +477,47 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
             }
         }, AuthenticationUtil.getSystemUserName());
     }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getRolesByUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    public Set<Role> getRolesByUser(final NodeRef rmRootNode, final String user)
+    {
+        return getRolesByUser(rmRootNode, user, true);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#getRolesByUser(NodeRef, String, boolean)
+     */
+    @Override
+    public Set<Role> getRolesByUser(final NodeRef rmRootNode, final String user, final boolean includeSystemRoles)
+    {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<Role>>()
+        {
+            public Set<Role> doWork() throws Exception
+            {
+                Set<Role> result = new HashSet<Role>(13);
+
+                Set<String> roleAuthorities = authorityService.getAllAuthoritiesInZone(getZoneName(rmRootNode), AuthorityType.GROUP);
+                for (String roleAuthority : roleAuthorities)
+                {
+                    Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, roleAuthority, false);
+                    if (users.contains(user) == true && (includeSystemRoles == true || isSystemRole(roleAuthority) == false))
+                    {
+                        String groupShortName = authorityService.getShortName(roleAuthority);
+                        String name = getShortRoleName(groupShortName, rmRootNode);
+                        String displayLabel = authorityService.getAuthorityDisplayName(roleAuthority);
+                        Set<Capability> capabilities = getCapabilitiesImpl(rmRootNode, roleAuthority);
+
+                        Role role = new Role(name, displayLabel, capabilities, roleAuthority, groupShortName);
+                        result.add(role);
+                    }
+                }
+
+                return result;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    };
 
     /**
      *

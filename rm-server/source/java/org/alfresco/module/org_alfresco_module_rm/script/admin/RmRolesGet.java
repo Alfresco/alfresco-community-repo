@@ -33,7 +33,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Get information about record management roles
- * 
+ *
  * @author Roy Wetherall
  */
 public class RmRolesGet extends RoleDeclarativeWebScript
@@ -62,13 +62,13 @@ public class RmRolesGet extends RoleDeclarativeWebScript
         String user = req.getParameter("user");
         if (user != null && user.length() != 0)
         {
-            roles = filePlanRoleService.getRolesByUser(filePlan, user);
+            roles = filePlanRoleService.getRolesByUser(filePlan, user, false);
         }
         else
         {
-            roles = filePlanRoleService.getRoles(filePlan);
+            roles = filePlanRoleService.getRoles(filePlan, false);
         }
-        
+
         // get the auths parameter
         boolean showAuths = false;
         String auths = req.getParameter("auths");
@@ -76,7 +76,7 @@ public class RmRolesGet extends RoleDeclarativeWebScript
         {
             showAuths = Boolean.parseBoolean(auths);
         }
-  
+
         Set<RoleItem> items = createRoleItems(filePlan, roles, showAuths);
         model.put("roles", items);
         return model;

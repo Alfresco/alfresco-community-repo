@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 
@@ -68,6 +69,12 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
                 assertNotNull(rolesIncludingSystemRoles);
                 assertTrue(roles.size() != 0);
                 assertTrue(roles.size() == rolesIncludingSystemRoles.size());
+
+                Set<Role> rolesWithoutSystemRoles = filePlanRoleService.getRoles(filePlan, false);
+                assertNotNull(rolesWithoutSystemRoles);
+                assertTrue(rolesWithoutSystemRoles.size() != 0);
+                assertTrue(rolesIncludingSystemRoles.size() > rolesWithoutSystemRoles.size());
+                assertTrue(rolesIncludingSystemRoles.size() == rolesWithoutSystemRoles.size() + FilePlanRoleService.SYSTEM_ROLES.size());
 
                 return null;
             }

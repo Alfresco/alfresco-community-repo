@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -37,9 +36,9 @@ import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamic
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -403,19 +402,6 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * Helper method for retrieving the system roles
-     *
-     *  @return Returns the system roles
-     */
-    private List<String> getSystemRoles()
-    {
-        return Arrays.asList(
-            FilePlanRoleService.ROLE_EXTENDED_READERS,
-            FilePlanRoleService.ROLE_EXTENDED_WRITERS
-        );
-    }
-
-    /**
      * Helper method to check whether the current authority is a system role or not
      *
      * @param roleAuthority The role to check
@@ -424,9 +410,8 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     private boolean isSystemRole(String roleAuthority)
     {
         boolean isSystemRole = false;
-        List<String> systemRoles = getSystemRoles();
 
-        for (String systemRole : systemRoles)
+        for (String systemRole : SYSTEM_ROLES)
         {
             if (StringUtils.contains(roleAuthority, systemRole))
             {

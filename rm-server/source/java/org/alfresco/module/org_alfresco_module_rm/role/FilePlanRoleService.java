@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.role;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
@@ -40,6 +42,12 @@ public interface FilePlanRoleService
     public static final String ROLE_EXTENDED_READERS    = "ExtendedReaders";
     public static final String ROLE_EXTENDED_WRITERS    = "ExtendedWriters";
 
+    /** System roles */
+    public static final List<String> SYSTEM_ROLES = Arrays.asList(
+        ROLE_EXTENDED_READERS,
+        ROLE_EXTENDED_WRITERS
+    );
+
     /**
      * Returns the name of the container group for all roles of a specified file
      * plan.
@@ -51,7 +59,7 @@ public interface FilePlanRoleService
 
     /**
      * Get all the available roles for the given records management root node
-     * includes also the system roles
+     * (includes also the system roles)
      *
      * @param filePlan  file plan
      * @return
@@ -59,7 +67,7 @@ public interface FilePlanRoleService
     Set<Role> getRoles(NodeRef filePlan);
 
     /**
-     * Get all the available roles for the given records management root node
+     * Get all the available roles for the given records management root node.
      * System roles can be filtered
      *
      * @param filePlan  file plan
@@ -70,8 +78,8 @@ public interface FilePlanRoleService
 
     /**
      * Gets the roles for a given user
-     * includes also the system roles
-     * 
+     * (includes also the system roles)
+     *
      * @param filePlan  file plan
      * @param user      user
      * @return
@@ -79,7 +87,7 @@ public interface FilePlanRoleService
     Set<Role> getRolesByUser(NodeRef filePlan, String user);
 
     /**
-     * Gets the roles for a given user
+     * Gets the roles for a given user.
      * System roles can be filtered
      *
      * @param filePlan  file plan

@@ -1895,13 +1895,14 @@ public class DiscussionServiceImplTest
            public Void execute() throws Throwable
            {
                // TODO: WARNING: HACK for ALF-19155: MT deleteTenant does not work
-               //       MultiTNodeServiceInterceptor.exists does not work is tenant has been deleted.
-               //       beforeCommit code breaks on NodeService.exists calls
+               //       PersonService prevents 'guest' authorities from being deleted
                {
-                   return null;
+                   BehaviourFilter behaviourFilter = (BehaviourFilter) testContext.getBean("policyBehaviourFilter");
+                   behaviourFilter.disableBehaviour(ContentModel.TYPE_PERSON);
+                   behaviourFilter.disableBehaviour(ContentModel.ASPECT_UNDELETABLE);
                }
-//               TENANT_ADMIN_SERVICE.deleteTenant(TENANT_DOMAIN);
-//               return null;
+               TENANT_ADMIN_SERVICE.deleteTenant(TENANT_DOMAIN);
+               return null;
            }
         });
     }

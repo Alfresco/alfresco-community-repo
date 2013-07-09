@@ -1261,25 +1261,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
      
-    public void resetCache(String tenantDomain)
-    {
-        if (existsTenant(tenantDomain))
-        {
-            if (isEnabledTenant(tenantDomain))
-            {
-                enableTenant(tenantDomain);
-            }
-            else
-            {
-                disableTenant(tenantDomain);
-            }
-        }
-        else
-        {
-            throw new AuthenticationException("No such tenant " + tenantDomain);
-        }
-    }
-    
     protected void initTenant(String tenantDomain, String contentRoot, String dbUrl)
     {
         validateTenantName(tenantDomain);

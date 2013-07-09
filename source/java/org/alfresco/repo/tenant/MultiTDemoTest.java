@@ -43,7 +43,6 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.repo.node.index.FullIndexRecoveryComponent;
-import org.alfresco.repo.node.index.IndexTransactionTracker;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -259,6 +258,7 @@ public class MultiTDemoTest extends TestCase
                             {
                                 BehaviourFilter behaviourFilter = (BehaviourFilter) ctx.getBean("policyBehaviourFilter");
                                 behaviourFilter.disableBehaviour(ContentModel.TYPE_PERSON);
+                                behaviourFilter.disableBehaviour(ContentModel.ASPECT_UNDELETABLE);
                             }
                             tenantAdminService.deleteTenant(tenantDomain);
                             

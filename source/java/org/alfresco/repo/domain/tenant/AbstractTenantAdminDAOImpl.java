@@ -77,6 +77,7 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
         this.tenantEntityCache = new EntityLookupCache<String, TenantEntity, Serializable>(tenantEntityDaoCallback);
     }
     
+    @Override
     public TenantEntity createTenant(TenantEntity entity)
     {
         ParameterCheck.mandatory("entity", entity);
@@ -96,6 +97,7 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
         return entityPair.getSecond();
     }
     
+    @Override
     public TenantEntity getTenant(String tenantDomain)
     {
         return getTenantImpl(tenantDomain);
@@ -116,11 +118,13 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
         return entityPair.getSecond();
     }
     
+    @Override
     public List<TenantEntity> listTenants()
     {
         return getTenantEntities();
     }
     
+    @Override
     public TenantUpdateEntity getTenantForUpdate(String tenantDomain)
     {
         TenantEntity entity = getTenantImpl(tenantDomain);
@@ -140,6 +144,7 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
         return updateEntity;
     }
     
+    @Override
     public void updateTenant(TenantUpdateEntity entity)
     {
         ParameterCheck.mandatory("entity", entity);
@@ -153,6 +158,7 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
         }
     }
     
+    @Override
     public void deleteTenant(String tenantDomain)
     {
         ParameterCheck.mandatoryString("tenantDomain", tenantDomain);
@@ -184,23 +190,27 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
             }
         }
         
+        @Override
         public Serializable getValueKey(TenantEntity value)
         {
             return null;
         }
         
+        @Override
         public Pair<String, TenantEntity> createValue(TenantEntity value)
         {
             TenantEntity entity = createTenantEntity(value);
             return convertEntityToPair(entity);
         }
         
+        @Override
         public Pair<String, TenantEntity> findByKey(String key)
         {
             TenantEntity entity = getTenantEntity(key);
             return convertEntityToPair(entity);
         }
         
+        @Override
         public Pair<String, TenantEntity> findByValue(TenantEntity value)
         {
             if ((value == null) || (value.getTenantDomain() == null))
@@ -210,16 +220,19 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
             return convertEntityToPair(getTenantEntity(value.getTenantDomain()));
         }
         
+        @Override
         public int updateValue(String tenantDomain, TenantEntity value)
         {
             return updateTenantEntity(value);
         }
         
+        @Override
         public int deleteByKey(String tenantDomain)
         {
             return deleteTenantEntity(tenantDomain);
         }
         
+        @Override
         public int deleteByValue(TenantEntity value)
         {
             throw new UnsupportedOperationException("deleteByValue");

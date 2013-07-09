@@ -145,7 +145,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         int tenantCount = 0;
         if (tenantDeployerService.isEnabled())
         {
-        	tenantCount = tenantDeployerService.getAllTenants().size();
+        	tenantCount = tenantDeployerService.getTenants(true).size();
         }
         // Check
         assertEquals(

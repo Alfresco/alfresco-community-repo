@@ -180,6 +180,7 @@ Inbound settings from iBatis
         <!-- Tenants -->
         
         <typeAlias alias="Tenant" type="org.alfresco.repo.domain.tenant.TenantEntity"/>
+        <typeAlias alias="TenantQuery" type="org.alfresco.repo.domain.tenant.TenantQueryEntity"/>
         
     </typeAliases>
     

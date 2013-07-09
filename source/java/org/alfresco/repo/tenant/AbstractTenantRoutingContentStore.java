@@ -113,7 +113,7 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
             if ((currentUser == null) || (tenantService.getBaseNameUser(currentUser).equals(AuthenticationUtil.getSystemUserName())))
             {
                 // return enabled stores across all tenants, if running as system/null user, for example, ContentStoreCleaner scheduled job
-                List<TenantEntity> tenants = tenantAdminDAO.listTenants();
+                List<TenantEntity> tenants = tenantAdminDAO.listTenants(false);
                 for (TenantEntity tenant : tenants)
                 {
                     if (tenant.getEnabled())

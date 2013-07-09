@@ -27,10 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.admin.registry.RegistryKey;
 import org.alfresco.repo.admin.registry.RegistryService;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.ServiceRegistry;
@@ -46,7 +44,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * This component controls the execution of
@@ -118,10 +115,7 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
         this.moduleComponentHelper.setApplyToTenants(applyToTenants);
     }
     
-    
-    /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.resolver = applicationContext;

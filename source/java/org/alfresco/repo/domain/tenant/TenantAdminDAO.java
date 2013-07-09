@@ -42,7 +42,7 @@ public interface TenantAdminDAO
     /**
      * List tenants
      */
-    List<TenantEntity> listTenants();
+    List<TenantEntity> listTenants(boolean enabledOnly);
     
     /**
      * Get tenant for update

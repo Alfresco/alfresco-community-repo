@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.alfresco.repo.domain.tenant.AbstractTenantAdminDAOImpl;
 import org.alfresco.repo.domain.tenant.TenantEntity;
+import org.alfresco.repo.domain.tenant.TenantQueryEntity;
 import org.mybatis.spring.SqlSessionTemplate;
 
 /**
@@ -67,9 +68,11 @@ public class TenantAdminDAOImpl extends AbstractTenantAdminDAOImpl
     
     @SuppressWarnings("unchecked")
     @Override
-    protected List<TenantEntity> getTenantEntities()
+    protected List<TenantEntity> getTenantEntities(Boolean enabled)
     {
-        return (List<TenantEntity>)template.selectList(SELECT_TENANTS);
+        TenantQueryEntity entity = new TenantQueryEntity();
+        entity.setEnabled(enabled);
+        return (List<TenantEntity>)template.selectList(SELECT_TENANTS, entity);
     }
     
     @Override

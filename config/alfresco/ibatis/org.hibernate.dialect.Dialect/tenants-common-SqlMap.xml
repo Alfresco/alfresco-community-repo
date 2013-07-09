@@ -61,16 +61,19 @@
             tenant_domain = #{tenantDomain}
     </select>
     
-    <select id="select_Tenants" resultMap="result_Tenant">
+    <select id="select_Tenants" parameterType="TenantQuery" resultMap="result_Tenant">
         select
-            tenant_domain as tenantDomain,
-            version as version,
-            enabled as enabled,
-            tenant_name as tenantName,
-            content_root as contentRoot,
-            db_url as dbUrl
+            tenant_domain   as tenantDomain,
+            version         as version,
+            enabled         as enabled,
+            tenant_name     as tenantName,
+            content_root    as contentRoot,
+            db_url          as dbUrl
         from
             alf_tenant
+        <where>
+            <if test="enabled != null">enabled = #{enabled}</if>
+        </where>
     </select>
     
     <!-- Optimistic update of the tenant -->

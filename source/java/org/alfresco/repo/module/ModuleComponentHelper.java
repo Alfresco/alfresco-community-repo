@@ -234,7 +234,7 @@ public class ModuleComponentHelper
                     {
                         if (tenantDomainCtx.equals(TenantService.DEFAULT_DOMAIN) && applyToTenants)
                         {
-                            tenantsNonFinal = tenantAdminService.getAllTenants();
+                            tenantsNonFinal = tenantAdminService.getTenants(false);
                             for (Tenant tenant : tenantsNonFinal)
                             {
                                 mapExecutedComponents.put(tenant.getTenantDomain(), new HashSet<ModuleComponent>(10));

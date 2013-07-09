@@ -850,7 +850,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     @Deprecated
     public List<Tenant> getTenants(boolean enabledOnly)
     {
-        List<TenantEntity> tenantEntities = tenantAdminDAO.listTenants();
+        List<TenantEntity> tenantEntities = tenantAdminDAO.listTenants(enabledOnly);
         List<Tenant> tenants = new ArrayList<Tenant>(tenantEntities.size());
         for (TenantEntity tenantEntity : tenantEntities)
         {

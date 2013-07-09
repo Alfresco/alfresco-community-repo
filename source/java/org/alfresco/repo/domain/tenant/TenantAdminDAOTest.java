@@ -119,13 +119,13 @@ public class TenantAdminDAOTest extends TestCase
         return txnHelper.doInTransaction(callback, true);
     }
     
-    private List<TenantEntity> listTenants() throws Exception
+    private List<TenantEntity> listTenants(final boolean enabledOnly) throws Exception
     {
         RetryingTransactionCallback<List<TenantEntity>> callback = new RetryingTransactionCallback<List<TenantEntity>>()
         {
             public List<TenantEntity> execute() throws Throwable
             {
-                return tenantAdminDAO.listTenants();
+                return tenantAdminDAO.listTenants(enabledOnly);
             }
         };
         return txnHelper.doInTransaction(callback, true);
@@ -229,7 +229,8 @@ public class TenantAdminDAOTest extends TestCase
         final String tenantDomainPrefix = getName() + "-" + System.currentTimeMillis();
         final int cnt = 5;
         
-        int beforeCnt = listTenants().size();
+        int beforeCnt = listTenants(false).size();
+        int enabledCnt = listTenants(true).size();
         
         for (int i = 1; i <= cnt; i++)
         {
@@ -240,7 +241,8 @@ public class TenantAdminDAOTest extends TestCase
             tenantEntity = createTenant(tenantDomain, false);
             assertNotNull(tenantEntity);
             
-            assertEquals(i+beforeCnt, listTenants().size());
+            assertEquals(i+beforeCnt, listTenants(false).size());
+            assertEquals("Tenant enabled/disabled count incorrect.", enabledCnt, listTenants(true).size());
             
             tenantEntity = getTenant(tenantDomain);
             assertNotNull(tenantEntity);
@@ -254,7 +256,7 @@ public class TenantAdminDAOTest extends TestCase
             
             deleteTenant(tenantDomain);
             
-            assertEquals(i-1+beforeCnt, listTenants().size());
+            assertEquals(i-1+beforeCnt, listTenants(false).size());
             
             tenantEntity = getTenant(tenantDomain);
             assertNull(tenantEntity);

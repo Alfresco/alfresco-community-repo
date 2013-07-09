@@ -105,11 +105,12 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
     
     private TenantEntity getTenantImpl(String tenantDomain)
     {
+        tenantDomain = tenantDomain.toLowerCase();
         Pair<String, TenantEntity> entityPair = tenantEntityCache.getByKey(tenantDomain);
         if (entityPair == null)
         {
             // try lower-case to make sure
-            entityPair = tenantEntityCache.getByKey(tenantDomain.toLowerCase());
+            entityPair = tenantEntityCache.getByKey(tenantDomain);
             if (entityPair == null)
             {
                 return null;
@@ -119,9 +120,16 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
     }
     
     @Override
-    public List<TenantEntity> listTenants()
+    public List<TenantEntity> listTenants(boolean enabledOnly)
     {
-        return getTenantEntities();
+        if (enabledOnly)
+        {
+            return getTenantEntities(Boolean.TRUE);
+        }
+        else
+        {
+            return getTenantEntities(null);
+        }
     }
     
     @Override
@@ -241,7 +249,10 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
     
     protected abstract TenantEntity createTenantEntity(TenantEntity tenantEntity);
     protected abstract TenantEntity getTenantEntity(String tenantDomain);
-    protected abstract List<TenantEntity> getTenantEntities();
+    /**
+     * @param enabled       Enabled or disabled tenants or <tt>null</tt> for no filter
+     */
+    protected abstract List<TenantEntity> getTenantEntities(Boolean enabled);
     protected abstract int updateTenantEntity(TenantEntity tenantEntity);
     protected abstract int deleteTenantEntity(String tenantDomain);
 }

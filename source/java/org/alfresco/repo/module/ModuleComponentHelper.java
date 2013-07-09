@@ -135,7 +135,7 @@ public class ModuleComponentHelper
     
     public void setApplyToTenants(boolean applyToTenants)
     {
-        this.applyToTenants = applyToTenants;
+        throw new UnsupportedOperationException("Applying modules to individual tenants is unsupported. See ALF-19207: MT module startup does not work");
     }
     
     /**

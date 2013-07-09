@@ -70,7 +70,7 @@ import org.json.JSONObject;
 
 /**
  * RM Caveat Config component impl
- * 
+ *
  * @author janv
  */
 public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnContentUpdatePolicy,
@@ -79,7 +79,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                                            RMCaveatConfigComponent
 {
     private static Log logger = LogFactory.getLog(RMCaveatConfigComponentImpl.class);
-    
+
     private PolicyComponent policyComponent;
     private ContentService contentService;
     private DictionaryService dictionaryService;
@@ -87,90 +87,90 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
     private AuthorityService authorityService;
     private PersonService personService;
     private NodeService nodeService;
-    
+
     // Default
     private StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-    
+
     private List<String> caveatAspectURINames = new ArrayList<String>(0);
     private List<QName> caveatAspectQNames = new ArrayList<QName>(0);
-    
+
     private List<String> caveatModelURINames = new ArrayList<String>(0);
     private List<QName> caveatModelQNames = new ArrayList<QName>(0);
-    
+
     private static final String CAVEAT_CONFIG_NAME = "caveatConfig.json";
-    
+
     private static final QName DATATYPE_TEXT = DataTypeDefinition.TEXT;
-    
+
     /**
      * Lock objects
      */
     private ReadWriteLock lock = new ReentrantReadWriteLock();
     private Lock readLock = lock.readLock();
     private Lock writeLock = lock.writeLock();
-    
+
     /*
      * Caveat Config (Shared) config
      * first string is property name
      * second string is authority name (user or group full name)
-     * third string is list of values of property 
-     */    
+     * third string is list of values of property
+     */
     private SimpleCache<String, Map<String, List<String>>> caveatConfig;
-    
+
     public void setCaveatConfig(SimpleCache<String, Map<String, List<String>>> caveatConfig)
     {
         this.caveatConfig = caveatConfig;
     }
-    
+
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-    
+
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     public void setStoreRef(String storeRef)
     {
         this.storeRef = new StoreRef(storeRef);
     }
-    
+
     public void setCaveatAspects(List<String> caveatAspectNames)
     {
         this.caveatAspectURINames = caveatAspectNames;
     }
-    
+
     public void setCaveatModels(List<String> caveatModelNames)
     {
         this.caveatModelURINames = caveatModelNames;
     }
-    
+
     /**
      * Initialise behaviours and caveat config cache
      */
@@ -181,26 +181,26 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                 ContentServicePolicies.OnContentUpdatePolicy.QNAME,
                 RecordsManagementModel.TYPE_CAVEAT_CONFIG,
                 new JavaBehaviour(this, "onContentUpdate"));
-        
+
         // Register interest in the beforeDeleteNode policy
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                 RecordsManagementModel.TYPE_CAVEAT_CONFIG,
                 new JavaBehaviour(this, "beforeDeleteNode"));
-        
+
         // Register interest in the onCreateNode policy
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
                 RecordsManagementModel.TYPE_CAVEAT_CONFIG,
                 new JavaBehaviour(this, "onCreateNode"));
-        
+
         if (caveatAspectURINames.size() > 0)
         {
             for (String caveatAspectURIName : caveatAspectURINames)
             {
                 caveatAspectQNames.add(QName.createQName(caveatAspectURIName));
             }
-            
+
             if (logger.isInfoEnabled())
             {
                 logger.info("Caveat aspects configured "+caveatAspectQNames);
@@ -210,14 +210,14 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         {
             logger.warn("No caveat aspects configured - caveats will not be applied");
         }
-        
+
         if (caveatModelURINames.size() > 0)
         {
             for (String caveatModelURIName : caveatModelURINames)
             {
                 caveatModelQNames.add(QName.createQName(caveatModelURIName));
             }
-            
+
             if (logger.isInfoEnabled())
             {
                 logger.info("Caveat models configured "+caveatModelQNames);
@@ -227,44 +227,44 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         {
             logger.info("No caveat models configured - all models will be checked");
         }
-        
+
         NodeRef caveatConfigNodeRef = getCaveatConfigNode();
         if (caveatConfigNodeRef != null)
         {
             validateAndReset(caveatConfigNodeRef);
         }
     }
-    
+
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
         if (logger.isInfoEnabled())
         {
             logger.info("onContentUpdate: "+nodeRef+", "+newContent);
         }
-        
+
         validateAndReset(nodeRef);
     }
-    
+
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         if (logger.isInfoEnabled())
         {
             logger.info("beforeDeleteNode: "+nodeRef);
         }
-        
+
         validateAndReset(nodeRef);
     }
-    
+
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         if (logger.isInfoEnabled())
         {
             logger.info("onCreateNode: "+childAssocRef);
         }
-        
+
         validateAndReset(childAssocRef.getChildRef());
     }
-    
+
     /**
      * Validate the caveat config and optionally update the cache.
      *
@@ -279,7 +279,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         {
             // TODO - check who can change caveat config !
             // TODO - locking (or checkout/checkin)
-            
+
             String caveatConfigData = cr.getContentString();
             if (caveatConfigData != null)
             {
@@ -288,18 +288,18 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                 {
                     throw new AlfrescoRuntimeException("Cannot create more than one caveat config (existing="+existing+", new="+nodeRef+")");
                 }
-                
+
                 try
                 {
                     if (logger.isTraceEnabled())
                     {
                         logger.trace(caveatConfigData);
                     }
-                    
+
                     Set<QName> models = new HashSet<QName>(1);
                     Set<QName> props = new HashSet<QName>(10);
                     Set<String> expectedPrefixes = new HashSet<String>(10);
-                    
+
                     if (caveatModelQNames.size() > 0)
                     {
                         models.addAll(caveatModelQNames);
@@ -308,18 +308,18 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                     {
                         models.addAll(dictionaryService.getAllModels());
                     }
-                    
+
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("validateAndReset: models to check "+models);
                     }
-                    
+
                     for (QName model : models)
                     {
                         props.addAll(dictionaryService.getProperties(model, DATATYPE_TEXT));
                         expectedPrefixes.addAll(namespaceService.getPrefixes(model.getNamespaceURI()));
                     }
-                    
+
                     if (props.size() == 0)
                     {
                         logger.warn("validateAndReset: no caveat properties found");
@@ -331,15 +331,15 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                             logger.trace("validateAndReset: properties to check "+props);
                         }
                     }
-                    
+
                     Map<String, Object> caveatConfigMap = JSONtoFmModel.convertJSONObjectToMap(caveatConfigData);
-                    
+
                     for (Map.Entry<String, Object> conEntry : caveatConfigMap.entrySet())
                     {
                         String conStr = conEntry.getKey();
-                        
+
                         QName conQName = QName.resolveToQName(namespaceService, conStr);
-                        
+
                         // check prefix
                         String conPrefix = QName.splitPrefixedQName(conStr)[0];
                         boolean prefixFound = false;
@@ -350,17 +350,17 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                                 prefixFound = true;
                             }
                         }
-                        
+
                         if (! prefixFound)
                         {
                             throw new AlfrescoRuntimeException("Unexpected prefix: "+ conPrefix + " (" + conStr +") expected one of "+expectedPrefixes+")");
                         }
-                        
+
                         Map<String, List<String>> caveatMap = (Map<String, List<String>>)conEntry.getValue();
-                        
+
                         List<String> allowedValues = null;
                         boolean found = false;
-                        
+
                         for (QName propertyName : props)
                         {
                             PropertyDefinition propDef = dictionaryService.getProperty(propertyName);
@@ -381,31 +381,31 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                                                 return ((RMListOfValuesConstraint)con).getAllowedValues();
                                             }
                                         }, AuthenticationUtil.getSystemUserName());
-                                        
+
                                         found = true;
                                         break;
                                     }
                                 }
                             }
                         }
-                        
+
                         if (! found)
                         {
                             //throw new AlfrescoRuntimeException("Constraint does not exist (or is not used): "+conStr);
                         }
-                        
+
                         if (allowedValues != null)
                         {
                             if (logger.isInfoEnabled())
                             {
                                 logger.info("Processing constraint: "+conQName);
                             }
-                            
+
                             for (Map.Entry<String, List<String>> caveatEntry : caveatMap.entrySet())
                             {
                                 String authorityName = caveatEntry.getKey();
                                 List<String> caveatList = caveatEntry.getValue();
-                                
+
                                 // validate authority (user or group) - note: groups are configured with fullname (ie. GROUP_xxx)
                                 if ((! authorityService.authorityExists(authorityName) && ! personService.personExists(authorityName)))
                                 {
@@ -413,7 +413,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                                     String msg = "User/group does not exist: "+authorityName+" (constraint="+conStr+")";
                                     logger.warn(msg);
                                 }
-                                
+
                                 // validate caveat list
                                 for (String value : caveatList)
                                 {
@@ -427,19 +427,19 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                             }
                         }
                     }
-                    
+
                     try
                     {
                         writeLock.lock();
                         // we can't just clear the cache, as all puts to the cache afterwards in this transaction will be ignored
                         // first delete all keys that are now not in the config
                         caveatConfig.getKeys().retainAll(caveatConfigMap.keySet());
-                        
+
                         for (Map.Entry<String, Object> conEntry : caveatConfigMap.entrySet())
                         {
                             String conStr = conEntry.getKey();
                             Map<String, List<String>> caveatMap = (Map<String, List<String>>)conEntry.getValue();
-                            
+
                             Map<String, List<String>> cacheValue = caveatConfig.get(conStr);
                             if (cacheValue == null || !cacheValue.equals(caveatMap))
                             {
@@ -460,53 +460,53 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             }
         }
     }
-    
+
     private NodeRef getCaveatConfigNode()
     {
         NodeRef rootNode = nodeService.getRootNode(storeRef);
         return nodeService.getChildByName(rootNode, RecordsManagementModel.ASSOC_CAVEAT_CONFIG, CAVEAT_CONFIG_NAME);
     }
-    
-    
+
+
     public NodeRef updateOrCreateCaveatConfig(InputStream is)
     {
         NodeRef caveatConfig = getOrCreateCaveatConfig();
-        
+
         // Update the content
         ContentWriter writer = this.contentService.getWriter(caveatConfig, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
         writer.putContent(is);
-        
+
         return caveatConfig;
     }
-    
+
     public NodeRef updateOrCreateCaveatConfig(File jsonFile)
     {
         NodeRef caveatConfig = getOrCreateCaveatConfig();
-        
+
         // Update the content
         ContentWriter writer = this.contentService.getWriter(caveatConfig, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
         writer.putContent(jsonFile);
-        
+
         return caveatConfig;
     }
-    
+
     public NodeRef updateOrCreateCaveatConfig(String jsonString)
     {
         NodeRef caveatConfig = getOrCreateCaveatConfig();
-        
+
         // Update the content
         ContentWriter writer = this.contentService.getWriter(caveatConfig, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
         writer.putContent(jsonString);
-        
+
         return caveatConfig;
     }
-    
+
     private NodeRef getOrCreateCaveatConfig()
     {
         NodeRef caveatConfig = getCaveatConfigNode();
@@ -514,19 +514,19 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         {
             NodeRef rootNode = nodeService.getRootNode(storeRef);
             nodeService.addAspect(rootNode, VersionModel.ASPECT_VERSION_STORE_ROOT, null);
-            
+
             // Create caveat config
             caveatConfig = nodeService.createNode(rootNode,
                                                   RecordsManagementModel.ASSOC_CAVEAT_CONFIG,
                                                   QName.createQName(RecordsManagementModel.RM_URI, CAVEAT_CONFIG_NAME),
                                                   RecordsManagementModel.TYPE_CAVEAT_CONFIG).getChildRef();
-            
+
             nodeService.setProperty(caveatConfig, ContentModel.PROP_NAME, CAVEAT_CONFIG_NAME);
         }
-        
+
         return caveatConfig;
     }
-    
+
     // Get list of all caveat qualified names
     public Collection<String> getRMConstraintNames()
     {
@@ -542,30 +542,30 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         }
         return Collections.unmodifiableCollection(rmConstraintNames);
     }
-    
+
     // Get allowed values for given caveat (for current user)
     public List<String> getRMAllowedValues(String constraintName)
     {
         List<String> allowedValues = new ArrayList<String>(0);
-        
+
         String userName = AuthenticationUtil.getRunAsUser();
         if (userName != null)
         {
             if (! (AuthenticationUtil.isMtEnabled() && AuthenticationUtil.isRunAsUserTheSystemUser()))
             {
-                // note: userName and userGroupNames must not be null              
+                // note: userName and userGroupNames must not be null
                 Set<String> userGroupFullNames = authorityService.getAuthoritiesForUser(userName);
                 allowedValues = getRMAllowedValues(userName, userGroupFullNames, constraintName);
             }
         }
-        
+
         return allowedValues;
     }
-    
+
     private List<String> getRMAllowedValues(String userName, Set<String> userGroupFullNames, String constraintName)
     {
         Set<String>allowedValues = new HashSet<String>();
-        
+
         // note: userName and userGroupNames must not be null
         Map<String, List<String>> caveatConstraintDef = null;
         try
@@ -577,7 +577,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         {
             readLock.unlock();
         }
-        
+
         if (caveatConstraintDef != null)
         {
             List<String> direct = caveatConstraintDef.get(userName);
@@ -585,7 +585,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             {
                 allowedValues.addAll(direct);
             }
-            
+
             for (String group :  userGroupFullNames)
             {
                 List<String> values = caveatConstraintDef.get(group);
@@ -595,15 +595,15 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                 }
             }
         }
-        
+
         List<String>ret = new ArrayList<String>();
         ret.addAll(allowedValues);
         return Collections.unmodifiableList(ret);
     }
-    
+
     /**
      * Check whether access to 'record component' node is vetoed for current user due to caveat(s)
-     * 
+     *
      * @param nodeRef
      * @return false, if caveat(s) veto access otherwise return true
      */
@@ -614,7 +614,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         {
             return true;
         }
-        
+
         boolean found = false;
         for (QName caveatAspectQName : caveatAspectQNames)
         {
@@ -624,7 +624,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                 break;
             }
         }
-        
+
         if (! found)
         {
             // no caveat aspect
@@ -642,7 +642,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                 {
                     QName propName = entry.getKey();
                     PropertyDefinition propDef = dictionaryService.getProperty(propName);
-                    
+
                     if ((propDef != null) && (propDef.getDataType().getName().equals(DATATYPE_TEXT)))
                     {
                         List<ConstraintDefinition> conDefs = propDef.getConstraints();
@@ -654,7 +654,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                                 RMListOfValuesConstraint rmCon = ((RMListOfValuesConstraint)con);
                                 String conName = rmCon.getShortName();
                                 MatchLogic matchLogic = rmCon.getMatchLogicEnum();
-                                Map<String, List<String>> caveatConstraintDef = caveatConfig.get(conName);                                                
+                                Map<String, List<String>> caveatConstraintDef = caveatConfig.get(conName);
                                 if (caveatConstraintDef == null)
                                 {
                                     continue;
@@ -663,7 +663,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                                 {
                                     Set<String> userGroupNames = authorityService.getAuthoritiesForUser(userName);
                                     List<String> allowedValues = getRMAllowedValues(userName, userGroupNames, conName);
-                                    
+
                                     List<String> propValues = null;
                                     Object val = entry.getValue();
                                     if (val instanceof String)
@@ -675,7 +675,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                                     {
                                         propValues = (List<String>)val;
                                     }
-                                    
+
                                     if (propValues != null && !isAllowed(propValues, allowedValues, matchLogic))
                                     {
                                         if (logger.isDebugEnabled())
@@ -690,11 +690,11 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                     }
                 }
             }
-            
+
             return true;
         }
     }
-    
+
     private boolean isAllowed(List<String> propValues, List<String> userGroupValues, MatchLogic matchLogic)
     {
         if (matchLogic.equals(MatchLogic.AND))
@@ -708,11 +708,11 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                     {
                         logger.trace("Not allowed: "+propValues+", "+userGroupValues+", "+matchLogic);
                     }
-                    
+
                     return false;
                 }
             }
-            
+
             return true;
         }
         else if (matchLogic.equals(MatchLogic.OR))
@@ -725,22 +725,22 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                     return true;
                 }
             }
-            
+
             if (logger.isTraceEnabled())
             {
                 logger.trace("Not allowed: "+propValues+", "+userGroupValues+", "+matchLogic);
             }
-            
+
             return false;
         }
-        
+
         logger.error("Unexpected match logic type: "+matchLogic);
         return false;
     }
-    
+
     /**
      * Add a single value to an authority in a list.   The existing values of the list remain.
-     * 
+     *
      * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param value
@@ -757,7 +757,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             {
                 throw new AlfrescoRuntimeException("unable to add to list, list not defined:"+ listName);
             }
-            
+
             try
             {
                 readLock.unlock();
@@ -782,7 +782,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             finally
             {
                 readLock.lock();
-                writeLock.unlock();        
+                writeLock.unlock();
             }
 
         }
@@ -791,7 +791,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             readLock.unlock();
         }
     }
-    
+
     /**
      * Get the member details of the specified list
      * @param listName
@@ -818,18 +818,18 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             return Collections.unmodifiableMap(listDetails);
         }
     }
-    
+
     public List<QName> getRMCaveatModels()
     {
         return caveatModelQNames;
     }
-    
+
     /**
-     * Replace the values for an authority in a list.   
+     * Replace the values for an authority in a list.
      * The existing values are removed.
-     * 
+     *
      * If the authority does not already exist in the list, it will be added
-     * 
+     *
      * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param values
@@ -841,7 +841,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         {
             writeLock.lock();
             members = caveatConfig.get(listName);
-            if(members == null) 
+            if(members == null)
             {
                 // Create the new list, with the authority name
                 Map<String, List<String>> constraint =  new HashMap<String, List<String>>(0);
@@ -852,43 +852,43 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             {
                 members.put(authorityName, new ArrayList<String>(values));
             }
-      
+
             caveatConfig.put(listName, members);
-            updateOrCreateCaveatConfig(convertToJSONString(caveatConfig)); 
+            updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
         }
         finally
         {
             writeLock.unlock();
         }
     }
-    
+
     /**
      * Replace the authorities for a value in a list
-     * 
+     *
      * @param listName
      * @param valueName
      * @param authorities
      */
     public void updateRMConstraintListValue(String listName, String valueName, List<String>authorities)
     {
-        
-        Map<String, List<String>> members = null;
+
+        Map<String, List<String>> members = caveatConfig.get(listName);
         try
         {
             writeLock.lock();
-        
+
             if(members == null)
             {
                 // Members List does not exist
                 Map<String, List<String>> emptyConstraint =  new HashMap<String, List<String>>(0);
                 caveatConfig.put(listName, emptyConstraint);
                 members = emptyConstraint;
-                
+
             }
             // authorities contains authority, values[]
             // pivot contains value, members[]
             Map<String, List<String>> pivot = PivotUtil.getPivot(members);
-            
+
             // remove all authorities which have this value
             List<String> existingAuthorities = pivot.get(valueName);
             if(existingAuthorities != null)
@@ -911,21 +911,21 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                 vals.add(valueName);
             }
             caveatConfig.put(listName, members);
-            updateOrCreateCaveatConfig(convertToJSONString(caveatConfig)); 
+            updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
         }
         finally
         {
             writeLock.unlock();
         }
     }
-    
+
     public void removeRMConstraintListValue(String listName, String valueName)
     {
         Map<String, List<String>> members = null;
         try
         {
             readLock.lock();
-        
+
             members = caveatConfig.get(listName);
             if(members == null)
             {
@@ -948,7 +948,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                         // authorities contains authority, values[]
                         // pivot contains value, members[]
                         Map<String, List<String>> pivot = PivotUtil.getPivot(members);
-                        
+
                         // remove all authorities which have this value
                         List<String> existingAuthorities = pivot.get(valueName);
                         if(existingAuthorities != null)
@@ -961,7 +961,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                             caveatConfig.put(listName, members);
                         }
                     }
-                    
+
                     updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
                 }
                 finally
@@ -977,10 +977,10 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             readLock.unlock();
         }
     }
-    
+
     /**
      * Remove an authority from a list
-     * 
+     *
      * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param values
@@ -996,7 +996,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             {
                 members.remove(listName);
             }
-            
+
             caveatConfig.put(listName, members);
             updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
 
@@ -1006,7 +1006,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             writeLock.unlock();
         }
 }
-    
+
     /**
      * @param config the configuration to convert
      * @return a String containing the JSON representation of the configuration.
@@ -1014,22 +1014,22 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
     private String convertToJSONString(SimpleCache<String, Map<String, List<String>>> config)
     {
         JSONObject obj = new JSONObject();
-        
-        try 
+
+        try
         {
             Collection<String> listNames = config.getKeys();
             for(String listName : listNames)
             {
                 Map<String, List<String>> members = config.get(listName);
-                
+
                 Set<String> authorityNames = members.keySet();
                 JSONObject listMembers = new JSONObject();
-                
+
                 for(String authorityName : authorityNames)
                 {
                     listMembers.put(authorityName, members.get(authorityName));
                 }
-                   
+
                 obj.put(listName, listMembers);
             }
         }
@@ -1039,7 +1039,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         }
         return obj.toString();
     }
-    
+
     /**
      * Get an RMConstraintInfo
      * @param listQName
@@ -1054,7 +1054,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             if (con instanceof RMListOfValuesConstraint)
             {
                 final RMListOfValuesConstraint def = (RMListOfValuesConstraint)con;
-                
+
                 RMConstraintInfo info = new RMConstraintInfo();
                 info.setName(listQName.toPrefixString());
                 info.setTitle(con.getTitle());
@@ -1065,7 +1065,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                         return def.getAllowedValues();
                     }
                 }, AuthenticationUtil.getSystemUserName());
-                
+
                 info.setAllowedValues(allowedValues.toArray(new String[allowedValues.size()]));
                 info.setCaseSensitive(def.isCaseSensitive());
                 return info;
@@ -1076,7 +1076,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
 
     /**
      * Get RM Constraint detail.
-     * 
+     *
      * @return the constraintInfo or null
      */
     public RMConstraintInfo getRMConstraint(String listName)
@@ -1084,33 +1084,33 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         QName listQName = QName.createQName(listName, namespaceService);
         return getRMConstraint(listQName);
     }
-    
+
     public void deleteRMConstraint(String listName)
     {
         try
         {
-            writeLock.lock();        
+            writeLock.lock();
             caveatConfig.remove(listName);
             updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
         }
         finally
         {
-            writeLock.unlock();            
+            writeLock.unlock();
         }
     }
-    
+
     public void addRMConstraint(String listName)
     {
         try
         {
-            writeLock.lock(); 
+            writeLock.lock();
             Map<String, List<String>> emptyConstraint =  new HashMap<String, List<String>>(0);
             caveatConfig.put(listName, emptyConstraint);
             updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
         }
         finally
         {
-            writeLock.unlock();            
+            writeLock.unlock();
         }
     }
 }

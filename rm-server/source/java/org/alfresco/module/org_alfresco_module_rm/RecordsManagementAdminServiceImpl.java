@@ -120,7 +120,8 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     
     /** Constants */
     public static final String RMC_CUSTOM_ASSOCS = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customAssocs";    
-    private static final String CUSTOM_CONSTRAINT_TYPE = org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.class.getName();    
+    private static final String CUSTOM_CONSTRAINT_TYPE = org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.class.getName();
+    private static final String CAPATIBILITY_CUSTOM_CONTRAINT_TYPE = org.alfresco.module.org_alfresco_module_dod5015.caveat.RMListOfValuesConstraint.class.getName();
     private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "records_management_custom_model");    
     private static final String PARAM_ALLOWED_VALUES = "allowedValues";
     private static final String PARAM_CASE_SENSITIVE = "caseSensitive";
@@ -1367,7 +1368,9 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         }
         
         String type = customConstraint.getType();
-        if ((type == null) || (! type.equals(CUSTOM_CONSTRAINT_TYPE)))
+        if (type == null || 
+            (type.equals(CUSTOM_CONSTRAINT_TYPE) == false &&
+             type.equals(CAPATIBILITY_CUSTOM_CONTRAINT_TYPE) == false))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNEXPECTED_TYPE_CONSTRAINT, type, constraintNameAsPrefixString, CUSTOM_CONSTRAINT_TYPE));
         }

@@ -243,6 +243,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     private static final String WARN_MSG = "system.mt.warn.upgrade_mt_admin_context";
     
+    @Override
     public void afterPropertiesSet() throws Exception
     {
         // for upgrade/backwards compatibility with 3.0.x (mt-admin-context.xml)
@@ -264,11 +265,13 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         PropertyCheck.mandatory(this, "moduleService", moduleService);
     }
     
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.ctx = applicationContext;
     }
 
+    @Override
     public void startTenants()
     {
         AuthenticationUtil.setMtEnabled(true);
@@ -361,6 +364,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
     
+    @Override
     public void stopTenants()
     {
         tenantDeployers.clear();
@@ -368,25 +372,19 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         AuthenticationUtil.setMtEnabled(false);
     }
 
-    /**
-     * @see TenantAdminService.createTenant()
-     */
+    @Override
     public void createTenant(final String tenantDomain, final char[] tenantAdminRawPassword)
     {  
         createTenant(tenantDomain, tenantAdminRawPassword, null);
     }
     
-    /**
-     * @see TenantAdminService.createTenant()
-     */
+    @Override
     public void createTenant(final String tenantDomain, final char[] tenantAdminRawPassword, String contentRoot)
     {
         createTenant(tenantDomain, tenantAdminRawPassword, contentRoot, null);
     }
     
-    /**
-     * @see TenantAdminService.createTenant()
-     */
+    @Override
     public void createTenant(final String tenantDomainIn, final char[] tenantAdminRawPassword, String contentRootPath, final String dbUrl)
     {
         ParameterCheck.mandatory("tenantAdminRawPassword", tenantAdminRawPassword);
@@ -520,6 +518,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     /**
      * Export tenant - equivalent to the tenant admin running a 'complete repo' export from the Web Client Admin
      */
+    @Override
     public void exportTenant(String tenantDomainIn, final File directoryDestination)
     {
         final String tenantDomain = getTenantDomain(tenantDomainIn);
@@ -542,6 +541,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     /**
      * Create tenant by restoring from a complete repository export. This is equivalent to a bootstrap import using restore-context.xml.
      */
+    @Override
     public void importTenant(final String tenantDomainIn, final File directorySource, String contentRoot)
     {
         final String tenantDomain = getTenantDomain(tenantDomainIn);
@@ -602,6 +602,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
     
+    @Override
     public boolean existsTenant(String tenantDomain)
     {
         // Check that all the passed values are not null
@@ -626,6 +627,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
     
+    @Override
     public void enableTenant(String tenantDomain)
     { 
         tenantDomain = getTenantDomain(tenantDomain);
@@ -647,7 +649,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         notifyAfterEnableTenant(tenantDomain);
     }
     
-    protected void notifyAfterEnableTenant(String tenantDomain)
+    private void notifyAfterEnableTenant(String tenantDomain)
     {
         // Check that all the passed values are not null
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
@@ -671,6 +673,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
     
+    @Override
     public void disableTenant(String tenantDomain)
     { 
         tenantDomain = getTenantDomain(tenantDomain);
@@ -693,7 +696,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         tenantAdminDAO.updateTenant(tenantUpdateEntity);
     }
     
-    protected void notifyBeforeDisableTenant(String tenantDomain)
+    private void notifyBeforeDisableTenant(String tenantDomain)
     {
         tenantDomain = getTenantDomain(tenantDomain);
         
@@ -716,6 +719,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
     
+    @Override
     public boolean isEnabledTenant(String tenantDomain)
     {       
         // Check that all the passed values are not null
@@ -732,20 +736,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         return false;
     }
     
-    protected String getRootContentStoreDir(String tenantDomain)
-    {
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("tenantDomain", tenantDomain);
-        
-        Tenant tenant = getTenantAttributes(tenantDomain);
-        if (tenant != null)
-        {
-            return tenant.getRootContentStoreDir();
-        }
-        
-        return null;
-    }
-    
+    @Override
     public Tenant getTenant(String tenantDomain)
     {
         tenantDomain = getTenantDomain(tenantDomain);
@@ -757,9 +748,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         return getTenantAttributes(tenantDomain);
     }
     
-    /**
-     * @see TenantAdminService.deleteTenant()
-     */
+    @Override
     public void deleteTenant(String tenantDomain)
     {
         tenantDomain = getTenantDomain(tenantDomain);
@@ -850,10 +839,16 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
     
-    /**
-     * @see TenantAdminService.getAllTenants()
-     */
+    @Override
+    @Deprecated
     public List<Tenant> getAllTenants()
+    {
+        return getTenants(false);
+    }
+    
+    @Override
+    @Deprecated
+    public List<Tenant> getTenants(boolean enabledOnly)
     {
         List<TenantEntity> tenantEntities = tenantAdminDAO.listTenants();
         List<Tenant> tenants = new ArrayList<Tenant>(tenantEntities.size());
@@ -880,7 +875,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
     }
     
-    protected void bootstrapSystemTenantStore(ImporterBootstrap systemImporterBootstrap, String tenantDomain)
+    private void bootstrapSystemTenantStore(ImporterBootstrap systemImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific System Store
         StoreRef bootstrapStoreRef = systemImporterBootstrap.getStoreRef();
@@ -919,7 +914,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, null);
     }
     
-    protected void bootstrapUserTenantStore(ImporterBootstrap userImporterBootstrap, String tenantDomain, char[] tenantAdminRawPassword)
+    private void bootstrapUserTenantStore(ImporterBootstrap userImporterBootstrap, String tenantDomain, char[] tenantAdminRawPassword)
     {
         // Bootstrap Tenant-Specific User Store
         StoreRef bootstrapStoreRef = userImporterBootstrap.getStoreRef();
@@ -960,7 +955,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
     }
     
-    protected void bootstrapVersionTenantStore(ImporterBootstrap versionImporterBootstrap, String tenantDomain)
+    private void bootstrapVersionTenantStore(ImporterBootstrap versionImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific Version Store
         StoreRef bootstrapStoreRef = versionImporterBootstrap.getStoreRef();
@@ -991,7 +986,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
     }
     
-    protected void bootstrapSpacesArchiveTenantStore(ImporterBootstrap spacesArchiveImporterBootstrap, String tenantDomain)
+    private void bootstrapSpacesArchiveTenantStore(ImporterBootstrap spacesArchiveImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific Spaces Archive Store
         StoreRef bootstrapStoreRef = spacesArchiveImporterBootstrap.getStoreRef();
@@ -1046,7 +1041,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
     }
     
-    protected void bootstrapSpacesTenantStore(ImporterBootstrap spacesImporterBootstrap, String tenantDomain)
+    private void bootstrapSpacesTenantStore(ImporterBootstrap spacesImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific Spaces Store
         StoreRef bootstrapStoreRef = spacesImporterBootstrap.getStoreRef();
@@ -1072,6 +1067,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
    
+    @Override
     public void deployTenants(final TenantDeployer deployer, Log logger)
     {
         if (deployer == null)
@@ -1139,6 +1135,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
     
+    @Override
     public void undeployTenants(final TenantDeployer deployer, Log logger)
     {
         if (deployer == null)
@@ -1210,12 +1207,13 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
     
+    @Override
     public void register(TenantDeployer deployer)
     {
         register(deployer, -1);
     }
     
-    protected void register(TenantDeployer deployer, int position)
+    private void register(TenantDeployer deployer, int position)
     {
         if (deployer == null)
         {
@@ -1235,6 +1233,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
     
+    @Override
     public void unregister(TenantDeployer deployer)
     {
         if (deployer == null)
@@ -1248,6 +1247,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
     
+    @Override
     public void register(WorkflowDeployer workflowDeployer)
     {
         if (workflowDeployer == null)
@@ -1261,7 +1261,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
      
-    protected void initTenant(String tenantDomain, String contentRoot, String dbUrl)
+    private void initTenant(String tenantDomain, String contentRoot, String dbUrl)
     {
         validateTenantName(tenantDomain);
         
@@ -1298,7 +1298,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         tenantAdminDAO.createTenant(tenantEntity);
     }
     
-    protected void validateTenantName(String tenantDomain)
+    private void validateTenantName(String tenantDomain)
     {
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
         
@@ -1334,41 +1334,40 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     // tenant deployer/user services delegated to tenant service
     
+    @Override
     public boolean isEnabled()
     {
         return tenantService.isEnabled();
     }
     
+    @Override
     public String getCurrentUserDomain()
     {
         return tenantService.getCurrentUserDomain();
     }
 
+    @Override
     public String getUserDomain(String username)
     {
         return tenantService.getUserDomain(username);
     }
     
+    @Override
     public String getBaseNameUser(String username)
     {
         return tenantService.getBaseNameUser(username);
     }
     
+    @Override
     public String getDomainUser(String baseUsername, String tenantDomain)
     {
         tenantDomain = getTenantDomain(tenantDomain);
         return tenantService.getDomainUser(baseUsername, tenantDomain);
     }
     
-    public String getDomain(String name)
-    {
-        name = getTenantDomain(name);
-        return tenantService.getDomain(name);
-    }
-    
     // local helpers
     
-    public String getBaseAdminUser()
+    private String getBaseAdminUser()
     {
         // default for backwards compatibility only - eg. upgrade of existing MT instance (mt-admin-context.xml.sample)
         if (baseAdminUsername != null)
@@ -1378,7 +1377,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         return getBaseNameUser(AuthenticationUtil.getAdminUserName());
     }
     
-    protected String getSystemUser(String tenantDomain)
+    private String getSystemUser(String tenantDomain)
     {
         return tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
     }
@@ -1394,7 +1393,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         return authenticationContext.getGuestUserName(tenantDomain);
     }
     
-    protected String getTenantDomain(String tenantDomain)
+    private String getTenantDomain(String tenantDomain)
     {
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
         return tenantDomain.toLowerCase(I18NUtil.getLocale());

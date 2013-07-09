@@ -31,51 +31,33 @@ public interface TenantAdminDAO
 {
     /**
      * Create tenant - note: tenant domain must be unique
-     * 
-     * @param tenantEntity
-     * @return
      */
     TenantEntity createTenant(TenantEntity tenantEntity);
     
     /**
      * Get tenant
-     * 
-     * @param tenantEntity
-     * @return
      */
     TenantEntity getTenant(String tenantDomain);
     
     /**
      * List tenants
-     * 
-     * TODO add filter(s)
-     * 
-     * @param tenantEntity
-     * @return
      */
     List<TenantEntity> listTenants();
     
     /**
      * Get tenant for update
-     * 
-     * @param tenantEntity
-     * @return
      */
     TenantUpdateEntity getTenantForUpdate(String tenantDomain);
     
     /**
      * Update tenant
-     * 
+     * <p/>
      * Note: tenant domain cannot be changed
-     * 
-     * @param tenantUpdateEntity
      */
     void updateTenant(TenantUpdateEntity tenantUpdateEntity);
     
     /**
      * Delete tenant
-     * 
-     * @param tenantEntity
      */
     void deleteTenant(String tenantDomain);
 }

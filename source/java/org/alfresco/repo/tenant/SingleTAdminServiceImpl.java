@@ -34,6 +34,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * NO-OP
      */
+    @Override
     public void startTenants()
     {
     }
@@ -41,6 +42,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * NO-OP
      */
+    @Override
     public void stopTenants()
     {
     }
@@ -48,6 +50,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @return          Returns <tt>false</tt> always
      */
+    @Override
     public boolean isEnabled()
     {
         return false;
@@ -56,13 +59,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * NO-OP
      */
-    public void initialiseTenants()
-    {
-    }
-
-    /**
-     * NO-OP
-     */
+    @Override
     public void deployTenants(final TenantDeployer deployer, Log logger)
     {
     }
@@ -70,6 +67,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * NO-OP
      */
+    @Override
     public void undeployTenants(final TenantDeployer deployer, Log logger)
     {
     }
@@ -77,6 +75,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * NO-OP
      */
+    @Override
     public void register(TenantDeployer tenantDeployer)
     {
     }
@@ -84,6 +83,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * NO-OP
      */
+    @Override
     public void unregister(TenantDeployer tenantDeployer)
     {
     }
@@ -91,21 +91,35 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * NO-OP
      */
+    @Override
     public void register(WorkflowDeployer workflowDeployer)
     {
     }
 
     /**
-     * @return          Returns an empty list always
+     * NO-OP
      */
+    @Override
+    @Deprecated
     public List<Tenant> getAllTenants()
+    {
+        return getTenants(false);
+    }
+
+    /**
+     * NO-OP
+     */
+    @Override
+    @Deprecated
+    public List<Tenant> getTenants(boolean enabledOnly)
     {
         return Collections.emptyList();
     }
-    
+
     /**
      * @return          Returns {@link TenantService#DEFAULT_DOMAIN} always
      */
+    @Override
     public String getCurrentUserDomain()
     {
         return TenantService.DEFAULT_DOMAIN;
@@ -114,6 +128,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @return          Returns {@link TenantService#DEFAULT_DOMAIN} always
      */
+    @Override
     public String getUserDomain(String username)
     {
         return TenantService.DEFAULT_DOMAIN;
@@ -122,6 +137,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @return          Returns the given <tt>username</tt> always
      */
+    @Override
     public String getBaseNameUser(String username)
     {
         return username;
@@ -130,27 +146,25 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @return          Returns the given <tt>baseUserName</tt> always
      */
+    @Override
     public String getDomainUser(String baseUsername, String tenantDomain)
     {
         return baseUsername;
     }
     
     /**
-     * @return          Returns {@link TenantService#DEFAULT_DOMAIN} always
-     */
-    public String getDomain(String name)
-    {
-        return TenantService.DEFAULT_DOMAIN;
-    }
-
-    /**
      * @throws UnsupportedOperationException        always
      */
+    @Override
     public void createTenant(String tenantDomain, char[] adminRawPassword, String contentRoot)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");
     }
     
+    /**
+     * @throws UnsupportedOperationException        always
+     */
+    @Override
     public void createTenant(String tenantDomain, char[] adminRawPassword, String contentRoot, String dbUrl)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");
@@ -159,6 +173,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @throws UnsupportedOperationException        always
      */
+    @Override
     public void createTenant(String tenantDomain, char[] adminRawPassword)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");
@@ -167,6 +182,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @throws UnsupportedOperationException        always
      */
+    @Override
     public void deleteTenant(String tenantDomain)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");
@@ -175,6 +191,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @throws UnsupportedOperationException        always
      */
+    @Override
     public void disableTenant(String tenantDomain)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");
@@ -183,6 +200,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @throws UnsupportedOperationException        always
      */
+    @Override
     public void enableTenant(String tenantDomain)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");
@@ -191,6 +209,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @throws UnsupportedOperationException        always
      */
+    @Override
     public boolean existsTenant(String tenantDomain)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");
@@ -199,6 +218,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @throws UnsupportedOperationException        always
      */
+    @Override
     public void exportTenant(String tenantDomain, File directoryDestination)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");
@@ -207,6 +227,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @throws UnsupportedOperationException        always
      */
+    @Override
     public Tenant getTenant(String tenantDomain)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");
@@ -215,6 +236,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @throws UnsupportedOperationException        always
      */
+    @Override
     public void importTenant(String tenantDomain, File directorySource, String rootContentStoreDir)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");
@@ -223,6 +245,7 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @throws UnsupportedOperationException        always
      */
+    @Override
     public boolean isEnabledTenant(String tenantDomain)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");

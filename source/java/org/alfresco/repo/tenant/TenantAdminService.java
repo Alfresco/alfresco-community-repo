@@ -50,7 +50,25 @@ public interface TenantAdminService extends TenantUserService
     
     public void unregister(TenantDeployer tenantDeployer);
     
+    /**
+     * @return          a list of <b>all</b> tenants regardless of state
+     * 
+     * @deprecated      Deprecated in <b>4.2</b>.  This method does not scale.
+     */
+    @Deprecated
     public List<Tenant> getAllTenants();
+    
+    /**
+     * Retrieve all tenants
+     * 
+     * @param enabledOnly   <tt>true</tt> to retrieve only active tenants
+     * @return              tenants, either active or all
+     *
+     * @since               4.2
+     * @deprecated          method does not scale.
+     */
+    @Deprecated
+    public List<Tenant> getTenants(boolean enabledOnly);
     
     /*
      * Workflow Deployer methods

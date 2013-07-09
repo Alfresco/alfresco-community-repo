@@ -657,10 +657,10 @@ public class MultiTServiceImpl implements TenantService
     public String getCurrentUserDomain()
     {
         String tenantDomain = TenantUtil.getCurrentDomain();
-        if (! tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
-        {
-            checkTenantEnabled(tenantDomain);
-        }
+//        if (! tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+//        {
+//            checkTenantEnabled(tenantDomain);
+//        }
         return tenantDomain;
     }
     

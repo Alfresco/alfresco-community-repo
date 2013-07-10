@@ -63,6 +63,10 @@ public class VitalRecordDefinitionImpl implements VitalRecordDefinition, Records
     /* package */ static VitalRecordDefinition create(NodeService nodeService, NodeRef nodeRef)
     {
         Boolean enabled = (Boolean)nodeService.getProperty(nodeRef, PROP_VITAL_RECORD_INDICATOR);
+        if (enabled == null)
+        {
+            enabled = Boolean.FALSE;
+        }
         Period reviewPeriod = (Period)nodeService.getProperty(nodeRef, PROP_REVIEW_PERIOD);
         return new VitalRecordDefinitionImpl(enabled, reviewPeriod);
     }

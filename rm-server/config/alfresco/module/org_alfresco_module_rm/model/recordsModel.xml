@@ -684,7 +684,6 @@
             <property name="rma:reviewPeriod">
                <title>Review Period</title>
                <type>d:period</type>
-               <mandatory>true</mandatory>
                <default>none|0</default>
             </property>
             <property name="rma:vitalRecordIndicator">

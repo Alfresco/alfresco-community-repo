@@ -95,7 +95,7 @@ public class SavedSearchDetails extends ReportDetails
 	private String siteId;
 		
 	/** Indicates whether the saved search is public or not */
-	private boolean isPublic;
+	private boolean isPublic = true;
 	
 	/** Indicates whether the saved search is a report */
 	private boolean isReport = false;
@@ -103,8 +103,10 @@ public class SavedSearchDetails extends ReportDetails
     /** Namespace service */
     NamespaceService namespaceService;
     
+    /** Records management search service */
     RecordsManagementSearchServiceImpl searchService;
     
+    /** Saves search details compatibility */
     private SavedSearchDetailsCompatibility compatibility;
     
 	/**
@@ -178,7 +180,7 @@ public class SavedSearchDetails extends ReportDetails
             }
     	    
     	    // Determine whether the saved query is public or not
-    	    boolean isPublic = false;
+    	    boolean isPublic = true;
     	    if (search.has(PUBLIC) == true)
     	    {
     	        isPublic = search.getBoolean(PUBLIC);

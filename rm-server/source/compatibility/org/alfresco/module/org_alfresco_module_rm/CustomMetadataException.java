@@ -18,15 +18,15 @@
  */
 package org.alfresco.module.org_alfresco_module_rm;
 
-import org.springframework.extensions.surf.util.I18NUtil;
-
-public class NotCustomisableMetadataException extends CustomMetadataException
+/**
+ * @deprecated as of 2.1 see {@link org.alfresco.module.org_alfresco_module_rm.admin.CustomMetadataException}
+ */
+public abstract class CustomMetadataException extends Exception
 {
-    private static final long serialVersionUID = -6194867814140009959L;
-    public static final String MSG_NOT_CUSTOMISABLE = "rm.admin.not-customisable";
+    private static final long serialVersionUID = -6676112294794381360L;
     
-    public NotCustomisableMetadataException(String aspectName)
+    public CustomMetadataException(String msg)
     {
-        super(I18NUtil.getMessage(MSG_NOT_CUSTOMISABLE, aspectName));
+        super(msg);
     }
 }

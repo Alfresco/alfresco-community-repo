@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm;
+package org.alfresco.module.org_alfresco_module_rm.admin;
 
 import java.util.List;
 import java.util.Map;
@@ -37,6 +37,8 @@ import org.alfresco.service.namespace.QName;
  * for the creation and maintenance of RM-related custom properties and custom associations.
  * 
  * @author Neil McErlean, janv
+ * @since 2.1
+ * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService
  */
 public interface RecordsManagementAdminService
 {

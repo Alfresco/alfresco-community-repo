@@ -89,21 +89,33 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         return (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");        
     }
     
+    /**
+     * @return	permission service
+     */
     protected PermissionService getPermissionService()
     {
         return (PermissionService)applicationContext.getBean("permissionService"); 
     }
     
+    /**
+     * @return	node DAO
+     */
     protected NodeDAO getNodeDAO()
     {
         return (NodeDAO)applicationContext.getBean("nodeDAO"); 
     }
     
+    /**
+     * @return	internal node service
+     */
     protected NodeService getInternalNodeService()
     {
         return (NodeService)applicationContext.getBean("nodeService"); 
     }
     
+    /**
+     * @return	site service
+     */
     protected SiteService getSiteService()
     {
         return (SiteService)applicationContext.getBean("SiteService"); 

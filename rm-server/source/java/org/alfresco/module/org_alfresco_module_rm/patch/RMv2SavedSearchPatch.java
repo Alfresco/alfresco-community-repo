@@ -25,6 +25,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
 import org.alfresco.repo.module.AbstractModuleComponent;
+import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
@@ -47,12 +48,23 @@ public class RMv2SavedSearchPatch extends AbstractModuleComponent
     /** Records management search service */
     private RecordsManagementSearchService recordsManagementSearchService;
     
+    /** Site service */
+    private SiteService siteService;
+    
     /**
      * @param recordsManagementSearchService    records management search service
      */
     public void setRecordsManagementSearchService(RecordsManagementSearchService recordsManagementSearchService)
     {
         this.recordsManagementSearchService = recordsManagementSearchService;
+    }
+    
+    /**
+     * @param siteService   site service
+     */
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
     }
     
     /**
@@ -66,30 +78,32 @@ public class RMv2SavedSearchPatch extends AbstractModuleComponent
             logger.debug("RM Module RMv2SavedSearchPatch ...");
         }
         
-        // get the saved searches
-        List<SavedSearchDetails> savedSearches = recordsManagementSearchService.getSavedSearches(RM_SITE_ID);
-        
-        if (logger.isDebugEnabled() == true)
+        if (siteService.getSite(RM_SITE_ID) != null)
         {
-            logger.debug("   ... updating " + savedSearches.size() + " saved searches");
-        }
-        
-        for (SavedSearchDetails savedSearchDetails : savedSearches)
-        {
-            // re-save each search so that the query is regenerated correctly
-            recordsManagementSearchService.deleteSavedSearch(RM_SITE_ID, savedSearchDetails.getName());
-            recordsManagementSearchService.saveSearch(RM_SITE_ID, 
-                                                      savedSearchDetails.getName(), 
-                                                      savedSearchDetails.getDescription(), 
-                                                      savedSearchDetails.getSearch(), 
-                                                      savedSearchDetails.getSearchParameters(), 
-                                                      savedSearchDetails.isPublic());            
+            // get the saved searches
+            List<SavedSearchDetails> savedSearches = recordsManagementSearchService.getSavedSearches(RM_SITE_ID);
+            
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("   ... updating " + savedSearches.size() + " saved searches");
+            }
+            
+            for (SavedSearchDetails savedSearchDetails : savedSearches)
+            {
+                // re-save each search so that the query is regenerated correctly
+                recordsManagementSearchService.deleteSavedSearch(RM_SITE_ID, savedSearchDetails.getName());
+                recordsManagementSearchService.saveSearch(RM_SITE_ID, 
+                                                          savedSearchDetails.getName(), 
+                                                          savedSearchDetails.getDescription(), 
+                                                          savedSearchDetails.getSearch(), 
+                                                          savedSearchDetails.getSearchParameters(), 
+                                                          savedSearchDetails.isPublic());            
+            }
         }
         
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("   ... complete");
-        }
-        
+        }        
     }
 }

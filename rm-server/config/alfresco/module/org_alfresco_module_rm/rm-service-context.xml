@@ -849,7 +849,7 @@
 
     <!-- Records Management Admin Service -->
 
-    <bean id="recordsManagementAdminService" class="org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminServiceImpl" init-method="init">
+    <bean id="recordsManagementAdminService" class="org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl" init-method="init">
         <property name="dictionaryService" ref="DictionaryService"/>
         <property name="namespaceService" ref="NamespaceService"/>
         <property name="nodeService" ref="NodeService"/>
@@ -868,7 +868,7 @@
 
     <bean id="RecordsManagementAdminService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
-            <value>org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService</value>
+            <value>org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService</value>
         </property>
         <property name="target">
             <ref bean="recordsManagementAdminService"/>
@@ -907,38 +907,38 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.initialiseCustomModel=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomisable=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.isCustomisable=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.makeCustomisable=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.unmakeCustomisable=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.existsCustomProperty=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomPropertyDefinitions=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.addCustomPropertyDefinition=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.updateCustomPropertyDefinitionName=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.setCustomPropertyDefinitionLabel=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.setCustomPropertyDefinitionConstraint=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.removeCustomPropertyDefinitionConstraints=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.removeCustomPropertyDefinition=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.addCustomAssocDefinition=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.addCustomChildAssocDefinition=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.updateCustomAssocDefinition=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.updateCustomChildAssocDefinition=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomReferenceDefinitions=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomReferencesFrom=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomReferencesTo=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomChildReferences=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomParentReferences=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.addCustomReference=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.removeCustomReference=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomConstraintDefinitions=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.addCustomConstraintDefinition=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.removeCustomConstraintDefinition=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.changeCustomConstraintValues=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getQNameForClientId=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.splitSourceTargetId=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCompoundIdFor=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.*=RM_DENY
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.initialiseCustomModel=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCustomisable=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.isCustomisable=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.makeCustomisable=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.unmakeCustomisable=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.existsCustomProperty=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCustomPropertyDefinitions=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.addCustomPropertyDefinition=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.updateCustomPropertyDefinitionName=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.setCustomPropertyDefinitionLabel=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.setCustomPropertyDefinitionConstraint=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.removeCustomPropertyDefinitionConstraints=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.removeCustomPropertyDefinition=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.addCustomAssocDefinition=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.addCustomChildAssocDefinition=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.updateCustomAssocDefinition=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.updateCustomChildAssocDefinition=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCustomReferenceDefinitions=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCustomReferencesFrom=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCustomReferencesTo=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCustomChildReferences=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCustomParentReferences=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.addCustomReference=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.removeCustomReference=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCustomConstraintDefinitions=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.addCustomConstraintDefinition=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.removeCustomConstraintDefinition=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.changeCustomConstraintValues=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getQNameForClientId=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.splitSourceTargetId=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCompoundIdFor=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.*=RM_DENY
                 ]]>
             </value>
         </property>
@@ -1319,18 +1319,7 @@
  	 	
  	 <!-- The cross-transaction shared cache for in-memory CaveatConfig -->
  	 	
- 	 <bean name="caveatConfigSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-        <property name="cache">
-            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
-                <property name="cacheManager">
-                    <ref bean="internalEHCacheManager" />
-                </property>
-                <property name="cacheName">
-                    <value>org.alfresco.cache.caveatConfigCache</value>
-                </property>
-            </bean>
-        </property>
-    </bean>
+ 	 <bean name="caveatConfigSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache"/>
 
     <!-- The transactional cache for in-memory CaveatConfig -->
 

@@ -1298,7 +1298,12 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         tenantAdminDAO.createTenant(tenantEntity);
     }
     
-    private void validateTenantName(String tenantDomain)
+    /**
+     * @see #MAX_LEN
+     * @see #REGEX_CONTAINS_ALPHA
+     * @see #REGEX_VALID_DNS_LABEL
+     */
+    protected void validateTenantName(String tenantDomain)
     {
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
         
@@ -1393,7 +1398,10 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         return authenticationContext.getGuestUserName(tenantDomain);
     }
     
-    private String getTenantDomain(String tenantDomain)
+    /**
+     * Do a null check and convert tenant domain to lowercase
+     */
+    protected String getTenantDomain(String tenantDomain)
     {
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
         return tenantDomain.toLowerCase(I18NUtil.getLocale());

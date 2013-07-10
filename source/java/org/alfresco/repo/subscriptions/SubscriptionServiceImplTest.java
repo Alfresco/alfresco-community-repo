@@ -41,6 +41,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
 
@@ -48,9 +49,9 @@ public class SubscriptionServiceImplTest extends TestCase
 {
     public static final String[] CONTEXTS = new String[] { "classpath:alfresco/application-context.xml", "classpath:test/alfresco/test-subscriptions-context.xml" };
 
-    public static final String USER_BOB = "bob";
-    public static final String USER_TOM = "tom";
-    public static final String USER_LISA = "lisa";
+    public static final String USER_BOB = "bob" + GUID.generate();
+    public static final String USER_TOM = "tom" + GUID.generate();
+    public static final String USER_LISA = "lisa" + GUID.generate();
 
     public static final String FOLLOWED_NODE_NAME = "Followed.txt";
 

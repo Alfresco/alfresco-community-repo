@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.subscriptions.SubscriptionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.quartz.Scheduler;
 import org.springframework.context.ApplicationContext;
@@ -182,8 +183,8 @@ public class SubscriptionServiceActivitiesTest extends TestCase
     
     public void testFollowingActivity() throws Exception
     {
-        final String userId1 = "bob";
-        final String userId2 = "tom";
+        final String userId1 = "bob" + GUID.generate();
+        final String userId2 = "tom" + GUID.generate();
         
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {

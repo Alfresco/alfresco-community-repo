@@ -64,6 +64,19 @@
        <property name="nodeService" ref="NodeService"/>
        <property name="recordsManagementService" ref="RecordsManagementService" />
        <property name="behaviourFilter" ref="policyBehaviourFilter"/>
+       <property name="permissionService" ref="PermissionService"/>
+       <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+   </bean>
+   
+   <bean id="org_alfresco_module_rm_RMv2SavedSearchPatch" 
+         parent="module.baseComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2SavedSearchPatch">
+       <property name="moduleId" value="org_alfresco_module_rm"/>
+       <property name="name" value="org_alfresco_module_rm_RMv2SavedSearchPatch"/>
+       <property name="description" value="Patches the existing saved seaches."/>
+       <property name="sinceVersion" value="2.0"/>
+       <property name="appliesFromVersion" value="2.0"/>
+       <property name="recordsManagementSearchService" ref="RecordsManagementSearchService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21InPlacePatch"

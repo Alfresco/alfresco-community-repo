@@ -1308,7 +1308,42 @@
 
         <property name="caveatAspects" ref="caveatAspects"/>
         <property name="caveatModels" ref="caveatModels"/>
+        
+        <property name="caveatConfig" ref="caveatConfigCache"/>
 
+    </bean>
+
+     <!-- ===================================== -->
+ 	 <!-- Record Management Caveat Config Cache -->
+ 	 <!-- ===================================== -->
+ 	 	
+ 	 <!-- The cross-transaction shared cache for in-memory CaveatConfig -->
+ 	 	
+ 	 <bean name="caveatConfigSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+        <property name="cache">
+            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+                <property name="cacheManager">
+                    <ref bean="internalEHCacheManager" />
+                </property>
+                <property name="cacheName">
+                    <value>org.alfresco.cache.caveatConfigCache</value>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <!-- The transactional cache for in-memory CaveatConfig -->
+
+    <bean name="caveatConfigCache" class="org.alfresco.repo.cache.TransactionalCache">
+        <property name="sharedCache">
+            <ref bean="caveatConfigSharedCache" />
+        </property>
+        <property name="name">
+            <value>org.alfresco.caveatConfigTransactionalCache</value>
+        </property>
+        <property name="maxCacheSize" value="500" />
+        <property name="mutable" value="true" />
+        <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
     </bean>
 
     <bean id="caveatAspects" class="java.util.ArrayList" >

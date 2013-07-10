@@ -78,7 +78,15 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
     private void propagateChangeToChildrenOf(NodeRef actionedUponNodeRef)
     {
         Map<QName, Serializable> parentProps = nodeService.getProperties(actionedUponNodeRef);
-        boolean parentVri = (Boolean) parentProps.get(PROP_VITAL_RECORD_INDICATOR);
+        
+        // parent vital record indicator, default to null if not set
+        boolean parentVri = false;
+        Boolean parentVriValue = (Boolean) parentProps.get(PROP_VITAL_RECORD_INDICATOR);
+        if (parentVriValue != null)
+        {
+            parentVri = parentVriValue.booleanValue();
+        }
+        
         Period parentReviewPeriod = (Period) parentProps.get(PROP_REVIEW_PERIOD);
 
         List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(actionedUponNodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);

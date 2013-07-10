@@ -113,10 +113,19 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
         for (FieldDefinition fieldDef : fieldDefs)
         {
             String prefixName = fieldDef.getName();                       
-            if (prefixName.equals("rma:identifier"))
+            if (prefixName.equals("rma:identifier") == true)
             {
                 String defaultId = identifierService.generateIdentifier(typeName, null);                
                 fieldDef.setDefaultValue(defaultId);
+            }
+            // NOTE: we set these defaults in the form for backwards compatibility reasons (RM-753)
+            else if (prefixName.equals("rma:vitalRecordIndicator") == true)
+            {
+                fieldDef.setDefaultValue(Boolean.FALSE.toString());
+            }
+            else if (prefixName.equals("rma:reviewPeriod") == true)
+            {
+                fieldDef.setDefaultValue("none|0");
             }
         }
     }

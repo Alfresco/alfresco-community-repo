@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm;
+package org.alfresco.module.org_alfresco_module_rm.admin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPoliciesUtil;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeCreateReference;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRemoveReference;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference;

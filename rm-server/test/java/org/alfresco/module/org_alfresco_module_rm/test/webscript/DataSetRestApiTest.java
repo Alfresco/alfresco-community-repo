@@ -3,23 +3,21 @@ package org.alfresco.module.org_alfresco_module_rm.test.webscript;
 import java.io.IOException;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
-import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 public class DataSetRestApiTest extends BaseRMWebScriptTestCase
 {
     /** URL for the REST APIs */
     private static final String GET_DATASETS_URL = "/api/rma/datasets?site=%s";
-    private static final String POST_DATASET_URL = "/api/rma/datasets/%s?site=%s";
+    //private static final String POST_DATASET_URL = "/api/rma/datasets/%s?site=%s";
 
     /** Constant for the content type */
-    private static final String APPLICATION_JSON = "application/json";
+    //private static final String APPLICATION_JSON = "application/json";
 
     /**
      * Test the REST API to retrieve details of available RM data sets

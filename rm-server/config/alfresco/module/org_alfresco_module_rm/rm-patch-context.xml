@@ -77,6 +77,7 @@
        <property name="sinceVersion" value="2.0"/>
        <property name="appliesFromVersion" value="2.0"/>
        <property name="recordsManagementSearchService" ref="RecordsManagementSearchService" />
+       <property name="siteService" ref="SiteService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21InPlacePatch"

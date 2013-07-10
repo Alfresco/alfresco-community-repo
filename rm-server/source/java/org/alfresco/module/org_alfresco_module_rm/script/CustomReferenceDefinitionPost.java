@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.extensions.webscripts.Cache;

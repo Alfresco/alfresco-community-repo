@@ -26,7 +26,7 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;

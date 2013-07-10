@@ -25,7 +25,7 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceType;

@@ -18,7 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bootstrap;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService;
 import org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService;

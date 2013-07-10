@@ -29,7 +29,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -42,12 +42,12 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * This webscript applies necessary changes to the RM custom model in the repository. These changes
@@ -95,7 +95,7 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
         
         if (customAssocsAspect == null)
         {
-            final String msg = "Unknown aspect: "+RecordsManagementAdminServiceImpl.RMC_CUSTOM_ASSOCS;
+            final String msg = "Unknown aspect: " + RecordsManagementAdminServiceImpl.RMC_CUSTOM_ASSOCS;
             if (logger.isErrorEnabled())
             {
                 logger.error(msg);

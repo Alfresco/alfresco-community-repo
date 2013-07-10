@@ -25,9 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.CustomMetadataException;
-import org.alfresco.module.org_alfresco_module_rm.PropertyAlreadyExistsMetadataException;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
+import org.alfresco.module.org_alfresco_module_rm.admin.CustomMetadataException;
+import org.alfresco.module.org_alfresco_module_rm.admin.PropertyAlreadyExistsMetadataException;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONException;
@@ -190,8 +190,9 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
         return result;
     }
 
-    @SuppressWarnings("rawtypes")
-    protected Map<String, Serializable> getParamsFromUrlAndJson(WebScriptRequest req, JSONObject json)
+    
+    @SuppressWarnings("unchecked")
+	protected Map<String, Serializable> getParamsFromUrlAndJson(WebScriptRequest req, JSONObject json)
             throws JSONException
     {
         Map<String, Serializable> params;

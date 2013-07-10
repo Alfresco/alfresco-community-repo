@@ -20,14 +20,16 @@ package org.alfresco.module.org_alfresco_module_rm;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 
-public class PropertyAlreadyExistsMetadataException extends CustomMetadataException
+/**
+ * @deprecated as of 2.1 see {@link org.alfresco.module.org_alfresco_module_rm.admin.NotCustomisableMetadataException}
+ */
+public class NotCustomisableMetadataException extends CustomMetadataException
 {
     private static final long serialVersionUID = -6194867814140009959L;
-
-    public static final String MSG_PROPERTY_ALREADY_EXISTS = "rm.admin.property-already-exists";
+    public static final String MSG_NOT_CUSTOMISABLE = "rm.admin.not-customisable";
     
-    public PropertyAlreadyExistsMetadataException(String propIdAsString)
+    public NotCustomisableMetadataException(String aspectName)
     {
-        super(I18NUtil.getMessage(MSG_PROPERTY_ALREADY_EXISTS, propIdAsString));
+        super(I18NUtil.getMessage(MSG_NOT_CUSTOMISABLE, aspectName));
     }
 }

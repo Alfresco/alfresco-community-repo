@@ -110,9 +110,12 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
         this.moduleComponentHelper.setTenantAdminService(tenantAdminService);
     }
     
+    /**
+     * @throws UnsupportedOperationException This feature was never active and cannot be used (ALF-19207)
+     */
     public void setApplyToTenants(boolean applyToTenants)
     {
-        this.moduleComponentHelper.setApplyToTenants(applyToTenants);
+        throw new UnsupportedOperationException("Applying modules to individual tenants is unsupported. See ALF-19207: MT module startup does not work");
     }
     
     @Override

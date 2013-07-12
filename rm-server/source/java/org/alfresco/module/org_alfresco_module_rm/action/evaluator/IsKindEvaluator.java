@@ -20,9 +20,8 @@ package org.alfresco.module.org_alfresco_module_rm.action.evaluator;
 
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionConditionEvaluatorAbstractBase;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -50,23 +49,13 @@ public class IsKindEvaluator extends RecordsManagementActionConditionEvaluatorAb
     public static final String NAME = "isKind";
     public static final String PARAM_KIND = "kind";
 
-    private RecordsManagementService rmService;
-
-    /**
-     * @param rmService
-     */
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
-    }
-
     @Override
     protected boolean evaluateImpl(ActionCondition actionCondition, NodeRef actionedUponNodeRef)
     {
         boolean result = false;
         String kind = ((QName) actionCondition.getParameterValue(PARAM_KIND)).getLocalName();
 
-        FilePlanComponentKind filePlanComponentKind = rmService.getFilePlanComponentKind(actionedUponNodeRef);
+        FilePlanComponentKind filePlanComponentKind = filePlanService.getFilePlanComponentKind(actionedUponNodeRef);
 
         if (filePlanComponentKind.toString().equals(kind))
         {

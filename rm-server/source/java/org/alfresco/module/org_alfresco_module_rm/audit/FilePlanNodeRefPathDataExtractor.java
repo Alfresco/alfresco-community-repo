@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -35,12 +36,12 @@ import org.alfresco.service.cmr.repository.NodeService;
  * @see RecordsManagementService#getNodeRefPath(NodeRef)
  * 
  * @author Derek Hulley
- * @since 3.2
+ * @since 1.0
  */
 public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtractor
 {
     private NodeService nodeService;
-    private RecordsManagementService rmService;
+    private FilePlanService filePlanService;
 
     /**
      * Used to check that the node in the context is a fileplan component
@@ -50,13 +51,10 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
         this.nodeService = nodeService;
     }
 
-    /**
-     * Used to find the RM root
-     */
-    public void setRmService(RecordsManagementService rmService)
+    public void setFilePlanService(FilePlanService filePlanService) 
     {
-        this.rmService = rmService;
-    }
+		this.filePlanService = filePlanService;
+	}
 
     /**
      * @return              Returns <tt>true</tt> if the data is a NodeRef and it represents
@@ -76,7 +74,7 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
         NodeRef nodeRef = (NodeRef) value;
         
         // Get path from the RM root
-        List<NodeRef> nodeRefPath = rmService.getNodeRefPath(nodeRef);
+        List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
         
         // Done
         return (Serializable) nodeRefPath;

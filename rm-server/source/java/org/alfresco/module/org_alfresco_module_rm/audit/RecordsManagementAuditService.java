@@ -68,40 +68,83 @@ public interface RecordsManagementAuditService
     public static final String RM_AUDIT_DATA_LOGIN_ERROR = "/RM/login/error/value";
     
     /**
-     * Starts RM auditing.
+     * @deprecated as of 2.1, see {@link #start(NodeRef)}
      */
+    @Deprecated
     void start();
     
     /**
-     * Stops RM auditing.
+     * Start RM auditing.
+     * 
+     * @param filePlan	file plan
      */
+    void startAuditLog(NodeRef filePlan);
+    
+    /**
+     * @deprecated as of 2.1, see {@link #stop(NodeRef)}
+     */
+    @Deprecated
     void stop();
     
     /**
-     * Clears the RM audit trail.
+     * Stop RM auditing.
+     * 
+     * @param filePlan	file plan
+     */    
+    void stopAuditLog(NodeRef filePlan);
+    
+    /**
+     * @deprecated as of 2.1, see {@link #clear(NodeRef)}
      */
+    @Deprecated
     void clear();
+    
+    /**
+     * Clears the RM audit.
+     * 
+     * @param filePlan	file plan
+     */
+    void clearAuditLog(NodeRef filePlan);
+    
+    /**
+     * @deprecated as of 2.1, see {@link #isEnabled(NodeRef)}
+     */
+    @Deprecated
+    boolean isEnabled();
     
     /**
      * Determines whether the RM audit log is currently enabled.
      * 
+     * @param  filePlan	file plan
      * @return true if RM auditing is active false otherwise
      */
-    boolean isEnabled();
+    boolean isAuditLogEnabled(NodeRef filePlan);
+    
+    /**
+     * @deprecated as of 2.1, see {@link #getDateLastStarted(NodeRef)}
+     */
+    @Deprecated
+    Date getDateLastStarted();
     
     /**
      * Returns the date the RM audit was last started.
      * 
-     * @return Date the audit was last started
+     * @param  filePlan		file plan 
+     * @return Date 		the audit was last started
      */
-    Date getDateLastStarted();
+    Date getDateAuditLogLastStarted(NodeRef filePlan);
+    
+    /**
+     * @deprecated as of 2.1, see {@link #getDateLastStopped(NodeRef)}
+     */
+    Date getDateLastStopped();
     
     /**
      * Returns the date the RM audit was last stopped.
      * 
      * @return Date the audit was last stopped
      */
-    Date getDateLastStopped();
+    Date getDateAuditLogLastStopped(NodeRef filePlan);
     
     /**
      * An explicit call that RM actions can make to have the events logged.
@@ -157,8 +200,7 @@ public interface RecordsManagementAuditService
      * @param format        The format the report should be produced in
      * @return              NodeRef of the undeclared record filed
      */
-    NodeRef fileAuditTrailAsRecord(RecordsManagementAuditQueryParameters params, 
-                NodeRef destination, ReportFormat format);
+    NodeRef fileAuditTrailAsRecord(RecordsManagementAuditQueryParameters params, NodeRef destination, ReportFormat format);
     
     /**
      * Retrieves a list of audit events.

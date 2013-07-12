@@ -12,6 +12,7 @@
         <property name="nodeService" ref="NodeService" />
         <property name="freezeService" ref="FreezeService" />
         <property name="recordService" ref="recordService" />
+        <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
     <bean id="capabilityCondition.frozen"

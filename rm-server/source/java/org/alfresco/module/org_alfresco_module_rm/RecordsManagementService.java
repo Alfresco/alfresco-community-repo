@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -41,66 +42,42 @@ public interface RecordsManagementService
     /********** RM Component methods **********/
     
     /**
-     * Indicates whether the given node is a file plan component or not.
-     * 
-     * @param  nodeRef   node reference
-     * @return boolean   true if a file plan component, false otherwise
+     * @deprecated as of 2.1, see {@link FilePlanService#isFilePlan(NodeRef)}
      */
+    @Deprecated
     boolean isFilePlanComponent(NodeRef nodeRef);
     
     /**
-     * Returns the 'kind' of file plan component the node reference is.
-     * <p>
-     * Returns null if the given node reference is not a
-     * file plan component.
-     *
-     * @param nodeRef   node reference
-     * @return FilePlanComponentKind    the kind of file plan component the
-     *                                  node is
-     *
      * @since 2.0
+     * @deprecated as of 2.1, see {@link FilePlanService#getFilePlanComponentKind(NodeRef)}
      */
+    @Deprecated
     FilePlanComponentKind getFilePlanComponentKind(NodeRef nodeRef);
     
     /**
-     * Returns the file plan component 'kind' that relates to the passed 
-     * content type.
-     * <p>
-     * Returns null if the type does not relate to a file plan component.
-     * 
-     * @param type  qualified name of content type 
-     * @return FilePlanComponentKind    the kind relating to the passed type
-     * 
      * @since 2.0
+     * @deprecated as of 2.1, see {@link FilePlanService#getFilePlanComponentKindFromType(QName)}
      */
+    @Deprecated
     FilePlanComponentKind getFilePlanComponentKindFromType(QName type);
     
     /**
-     * Indicates whether the given node is a records management container or not.
-     * 
-     * @param nodeRef   node reference
-     * @return boolean  true if node is a record container, false otherwise.
+     * @deprecated as of 2.1, see {@link FilePlanService#isFilePlanContainer(NodeRef)}
      */
+    @Deprecated
     boolean isRecordsManagementContainer(NodeRef nodeRef);
     
     /**
-     * Indicates whether the given node is file plan node or not.
-     * 
-     * @param nodeRef   node reference
-     * @return boolean  true if node is a file plan node
-     * 
      * @deprecated as of 2.1, see {@link FilePlanService#isFilePlan(NodeRef)}
      */
     @Deprecated
     boolean isFilePlan(NodeRef nodeRef);
     
     /**
-     * Indicates whether the given node is a record category or not.
-     * 
-     * @param nodeRef   node reference
-     * @return boolean  true if records category, false otherwise
+     * @deprecated as of 2.1, see {@link FilePlanService#isRecordCategory(NodeRef)}
      */
-    boolean isRecordCategory(NodeRef nodeRef);
+    @Deprecated
+    boolean isRecordCategory(NodeRef nodeRef); 
     
     /**
      * Indicates whether the given node is a record folder or not.
@@ -108,7 +85,7 @@ public interface RecordsManagementService
      * @param nodeRef   node reference
      * @return boolean  true if record folder, false otherwise
      */
-    boolean isRecordFolder(NodeRef nodeRef);
+    boolean isRecordFolder(NodeRef nodeRef);	// record folder service
     
     /**
      * Indicates whether the given node is a transfer (container) or not.
@@ -118,7 +95,7 @@ public interface RecordsManagementService
      * 
      * @since 2.0
      */
-    boolean isTransfer(NodeRef nodeRef);
+    boolean isTransfer(NodeRef nodeRef);	// transfer service
     
     /**
      * Indicates whether the given node (record or record folder) is a metadata stub or not.
@@ -128,7 +105,7 @@ public interface RecordsManagementService
      * 
      * @since 2.0
      */
-    boolean isMetadataStub(NodeRef nodeRef);
+    boolean isMetadataStub(NodeRef nodeRef);  // record service
     
     /**
      * Indicates whether the item is cutoff or not.
@@ -138,24 +115,15 @@ public interface RecordsManagementService
      * 
      * @since 2.0
      */
-    boolean isCutoff(NodeRef nodeRef);
+    boolean isCutoff(NodeRef nodeRef);		// disposition service ??
     
     /**
-     * Gets the <b>NodeRef</b> sequence from the {@link #getFilePlan(NodeRef) root}
-     * down to the fileplan component given.  The array will start with the <b>NodeRef</b> of the root
-     * and end with the name of the fileplan component node given.
-     * 
-     * @param nodeRef           a fileplan component
-     * @return                  Returns a <b>NodeRef</b> path starting with the name of the
-     *                          records management root
+     * @deprecated as of 2.1, see {@link FilePlanService#getNodeRefPath(NodeRef)}
      */
+    @Deprecated
     List<NodeRef> getNodeRefPath(NodeRef nodeRef);
     
     /**
-     * Gets the file plan the node is in.
-     * 
-     * @return  {@link NodeRef} file node reference, null if none
-     * 
      * @deprecated As of 2.1, see {@link FilePlanService#getFilePlan(NodeRef)}
      */
     @Deprecated
@@ -164,168 +132,98 @@ public interface RecordsManagementService
     /********** File Plan Methods **********/
     
     /**
-     * Gets all the file plan nodes.
-     * Searches the SpacesStore by default. 
-     * 
-     * @return  List<NodeRef>    list of file plan nodes
      * @deprecated As of 2.1, see {@link FilePlanService#getFilePlans()}
      */
     @Deprecated
     List<NodeRef> getFilePlans();
     
     /**
-     * Creates a file plan as a child of the given parent node, with the name
-     * provided.
-     * 
-     * @param   parent  parent node reference
-     * @param   name    name of the root
-     * @param   type    type of root created (must be sub-type of rm:filePlan)
-     * @return  NodeRef node reference to the newly create RM root
+     * @deprecated as of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, QName)}
      */
+    @Deprecated
     NodeRef createFilePlan(NodeRef parent, String name, QName type);
     
     /**
-     * @see #createFilePlan(NodeRef, String, QName)
-     * 
-     * @param parent
-     * @param name
-     * @param type
-     * @param properties
-     * @return
+     * @deprecated as of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, QName, Map)}
      */
+    @Deprecated
     NodeRef createFilePlan(NodeRef parent, String name, QName type, Map<QName, Serializable> properties);
     
     /**
-     * Creates a file plan with the default type.
-     * 
-     * @see RecordsManagementService#createFilePlan(NodeRef, String, QName)
+     * @deprecated as of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String)}
      */
+    @Deprecated
     NodeRef createFilePlan(NodeRef parent, String name);
     
     /**
-     * 
-     * @param parent
-     * @param name
-     * @param properties
-     * @return
+     * @deprecated as of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, Map)}
      */
+    @Deprecated
     NodeRef createFilePlan(NodeRef parent, String name, Map<QName, Serializable> properties);
     
-    // TODO void deleteRecordsManagementRoot(NodeRef root);
     
     /********** Record Category Methods **********/
     
-    // TODO NodeRef getRecordCategoryByPath(String path);
-    
-    // TODO NodeRef getRecordCategoryById(String id);
-    
-    // TODO NodeRef getRecordCategoryByName(NodeRef parent, String id); ??
-    
     /**
-     * Get all the items contained within a container.  This will include record folders and other record categories.
-     * 
-     * @param recordCategory record category node reference
-     * @param deep if true then return all children including sub-categories and their children in turn, if false then just
-     *             return the immediate children
-     * @return {@link List}<{@link NodeRef>} list of contained node references
+     * @deprecated as of 2.1, see {@link FilePlanService#getAllContained(NodeRef, boolean)}
      */
+    @Deprecated
     List<NodeRef> getAllContained(NodeRef recordCategory, boolean deep);
     
     /**
-     * Only return the immediate children.
-     * 
-     * @see RecordsManagementService#getAllContained(NodeRef, boolean)
-     * 
-     * @param recordCategory record category node reference
-     * @return {@link List}<{@link NodeRef>} list of contained node references
+     * @deprecated as of 2.1, see {@link FilePlanService#getAllContained(NodeRef)}
      */
+    @Deprecated
     List<NodeRef> getAllContained(NodeRef recordCategory);    
     
     /**
-     * Get all the record categories within a record category.
-     * 
-     * @param recordCategory record category node reference
-     * @param deep if true then return all children including sub-categories and their children in turn, if false then just
-     *             return the immediate children
-     * @return {@link List}<{@link NodeRef>} list of container node references
+     * @deprecated as of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef, boolean)}
      */
+    @Deprecated
     List<NodeRef> getContainedRecordCategories(NodeRef recordCategory, boolean deep);
     
     /**
-     * Only return immediate children.
-     * 
-     * @see RecordsManagementService#getContainedRecordCategories(NodeRef, boolean)
-     * 
-     * @param recordCategory container node reference
-     * @return {@link List}<{@link NodeRef>} list of container node references
+     * @deprecated as of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef)}
      */
+    @Deprecated
     List<NodeRef> getContainedRecordCategories(NodeRef recordCategory);
     
     /**
-     * Get all the record folders contained within a container
-     * 
-     * @param container container node reference
-     * @param deep if true then return all children including sub-containers and their children in turn, if false then just
-     *             return the immediate children
-     * @return {@link List}<{@link NodeRef>} list of record folder node references
+     * @deprecated as of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef, boolean)}
      */
+    @Deprecated
     List<NodeRef> getContainedRecordFolders(NodeRef container, boolean deep);
     
     /**
-     * Only return immediate children.
-     * 
-     * @see RecordsManagementService#getContainedRecordFolders(NodeRef, boolean)
-     * 
-     * @param container container node reference
-     * @return {@link List}<{@link NodeRef>} list of record folder node references
+     * @deprecated as of 2.1, see {@link FilePlanService#getContainedRecordFolders(NodeRef)}
      */
+    @Deprecated
     List<NodeRef> getContainedRecordFolders(NodeRef container);
     
-    // TODO List<NodeRef> getParentRecordCategories(NodeRef container); // also applicable to record folders 
-    
     /**
-     * Create a record category.
-     * 
-     * @param  parent    parent node reference, must be a record category or file plan.
-     * @param  name      name of the new record category
-     * @param  type      type of container to create, must be a sub-type of rm:recordCategory
-     * @return NodeRef   node reference of the created record category
+     * @deprecated as of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String, QName)}
      */
+    @Deprecated
     NodeRef createRecordCategory(NodeRef parent, String name, QName type);
     
     /**
-     * 
-     * @param parent
-     * @param name
-     * @param type
-     * @param properties
-     * @return
+     * @deprecated as of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String, QName, Map)}
      */
+    @Deprecated
     NodeRef createRecordCategory(NodeRef parent, String name, QName type, Map<QName, Serializable> properties);
     
     /**
-     * Creates a record category of type rma:recordCategory
-     * 
-     * @see RecordsManagementService#createRecordCategory(NodeRef, String, QName)
-     * 
-     * @param  parent    parent node reference, must be a record category or file plan.
-     * @param  name      name of the record category
-     * @return NodeRef   node reference of the created record category
+     * @deprecated as of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String)}
      */
+    @Deprecated
     NodeRef createRecordCategory(NodeRef parent, String name);
     
     /**
-     * 
-     * @param parent
-     * @param name
-     * @param properties
-     * @return
+     * @deprecated as of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String, Map)}
      */
+    @Deprecated
     NodeRef createRecordCategory(NodeRef parent, String name, Map<QName, Serializable> properties);
     
-    // TODO void deleteRecordCategory(NodeRef container);
-    
-    // TODO move, copy, link ??
     
     /********** Record Folder methods **********/    
     
@@ -421,75 +319,40 @@ public interface RecordsManagementService
     
     /********** Deprecated **********/
 
-    /**
-     * Get a list of all the record meta-data aspects
-     *
-     * @return {@link Set}<{@link QName}>      list of record meta-data aspects
-     * 
+    /** 
      * @deprecated As of 2.1, replaced by {@link RecordService#getRecordMetaDataAspects()}
      */
     @Deprecated
     Set<QName> getRecordMetaDataAspects();
 
     /**
-     * Indicates whether the record is declared
-     *
-     * @param nodeRef   node reference (record)
-     * @return boolean  true if record is declared, false otherwise
-     * 
      * @deprecated As of 2.1, replaced by {@link RecordService#isDeclared(NodeRef)}
      */
     @Deprecated
     boolean isRecordDeclared(NodeRef nodeRef);
     
     /**
-     * Indicates whether the given node is a hold (container) or not.
-     * 
-     * @param nodeRef   node reference
-     * @return boolean  true if hold, false otherwise
-     * 
      * @since 2.0
-     * 
      * @deprecated As of 2.1, replaced by {@link FreezeService#isHold(NodeRef)}
      */
     @Deprecated
     boolean isHold(NodeRef nodeRef);
     
     /**
-     * Indicates whether the item is frozen or not.
-     * 
-     * @param   nodeRef     node reference
-     * @return  boolean     true if record is frozen, false otherwise
-     * 
      * @since 2.0
-     *
      * @deprecated As of 2.1, replaced by {@link FreezeService#isFrozen(NodeRef)}
      */
     @Deprecated 
     boolean isFrozen(NodeRef nodeRef);
     
     /**
-     * Indicates whether the item has frozen children or not.
-     * 
-     * NOTE: this only checks the immediate children and does not check the frozen
-     *       state of the node being passed
-     * 
-     * @param nodeRef   node reference 
-     * @return boolean  true if record folder has frozen children, false otherwise
-     * 
      * @since 2.0
-     * 
      * @deprecated As of 2.1, replaced by {@link FreezeService#hasFrozenChildren(NodeRef)}
      */
     @Deprecated
     boolean hasFrozenChildren(NodeRef nodeRef);
     
     /**
-     * Indicates whether the given node is a record or not.
-     * 
-     * @param nodeRef   node reference
-     * @return boolean  true if record, false otherwise
-     * 
      * @deprecated As of 2.1, replaced by {@link RecordService#isRecord(NodeRef)}
      */
     @Deprecated

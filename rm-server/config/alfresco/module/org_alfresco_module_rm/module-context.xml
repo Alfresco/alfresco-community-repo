@@ -55,13 +55,13 @@
    <bean id="org_alfresco_module_rm_namePathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.FilePlanNamePathDataExtractor">
       <property name="registry" ref="auditModel.extractorRegistry" />
       <property name="nodeService" ref="nodeService" />
-      <property name="rmService" ref="recordsManagementService" />
+      <property name="filePlanService" ref="filePlanService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_nodeRefPathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.FilePlanNodeRefPathDataExtractor">
       <property name="registry" ref="auditModel.extractorRegistry" />
       <property name="nodeService" ref="nodeService" />
-      <property name="rmService" ref="recordsManagementService" />
+      <property name="filePlanService" ref="filePlanService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_identifierExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.FilePlanIdentifierDataExtractor">
@@ -208,6 +208,7 @@
       <property name="filterRegistry" ref="nodeFilterRegistry" />
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="dispositionService" ref="dispositionService"/>
+      <property name="filePlanService" ref="FilePlanService" />
    </bean>
 
    <bean id="rmTypeFormFilter"

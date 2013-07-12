@@ -30,6 +30,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface ExtendedSecurityService
 {
+	/**
+	 * 
+	 * @param nodeRef
+	 * @return
+	 */
     boolean hasExtendedSecurity(NodeRef nodeRef);
     
     /**

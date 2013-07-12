@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -41,7 +42,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
 {
     private NodeService nodeService;
-    private RecordsManagementService rmService;
+    private FilePlanService filePlanService;
 
     /**
      * Used to check that the node in the context is a fileplan component
@@ -52,12 +53,12 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
     }
 
     /**
-     * Used to find the RM root
+     * @param filePlanService	file plan service
      */
-    public void setRmService(RecordsManagementService rmService)
+    public void setFilePlanService(FilePlanService filePlanService) 
     {
-        this.rmService = rmService;
-    }
+		this.filePlanService = filePlanService;
+	}
 
     /**
      * @return              Returns <tt>true</tt> if the data is a NodeRef and it represents
@@ -72,12 +73,15 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
         return nodeService.hasAspect((NodeRef)data, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
     }
 
+    /**
+     * @see org.alfresco.repo.audit.extractor.DataExtractor#extractData(java.io.Serializable)
+     */
     public Serializable extractData(Serializable value) throws Throwable
     {
         NodeRef nodeRef = (NodeRef) value;
         
         // Get path from the RM root
-        List<NodeRef> nodeRefPath = rmService.getNodeRefPath(nodeRef);
+        List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
         
         StringBuilder sb = new StringBuilder(128);
         for (NodeRef pathNodeRef : nodeRefPath)

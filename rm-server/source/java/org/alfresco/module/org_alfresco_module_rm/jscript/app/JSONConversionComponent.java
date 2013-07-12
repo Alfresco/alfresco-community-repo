@@ -21,10 +21,10 @@ package org.alfresco.module.org_alfresco_module_rm.jscript.app;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -125,7 +125,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                 RMPermissionModel.VIEW_RECORDS)) == true)
         {
             // Indicate whether the node is a RM object or not
-            boolean isFilePlanComponent = recordsManagementService.isFilePlanComponent(nodeInfo.getNodeRef());
+            boolean isFilePlanComponent = filePlanService.isFilePlanComponent(nodeInfo.getNodeRef());
             rootJSONObject.put("isRmNode", isFilePlanComponent);
 
             if (isFilePlanComponent == true)
@@ -150,7 +150,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
         rmNodeValues.put("uiType", getUIType(nodeRef));
 
         // Get the 'kind' of the file plan component
-        FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(nodeRef);
+        FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
         rmNodeValues.put("kind", kind.toString());
 
         // File plan node reference
@@ -221,7 +221,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     {
         String result = "unknown";
 
-        FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(nodeRef);
+        FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
         if (kind != null)
         {
             switch (kind)

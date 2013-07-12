@@ -139,9 +139,9 @@ public class DataSetServiceImplTest extends BaseRMTestCase
             // TestRecordCategory1
             NodeRef recCat1 = nodeService.getChildByName(filePlan, ContentModel.ASSOC_CONTAINS, "TestRecordCategory1");
             assertNotNull(recCat1);
-            List<NodeRef> recCat1ImmediateChildren = rmService.getAllContained(recCat1);
+            List<NodeRef> recCat1ImmediateChildren = filePlanService.getAllContained(recCat1);
             assertTrue(recCat1ImmediateChildren.size() == 3);
-            List<NodeRef> recCat1AllChildren = rmService.getAllContained(recCat1, true);
+            List<NodeRef> recCat1AllChildren = filePlanService.getAllContained(recCat1, true);
             assertTrue(recCat1AllChildren.size() == 6);
             DispositionSchedule recCat1DispositionSchedule = dispositionService.getDispositionSchedule(recCat1);
             assertNull(recCat1DispositionSchedule);
@@ -149,9 +149,9 @@ public class DataSetServiceImplTest extends BaseRMTestCase
             // TestRecordCategory2
             NodeRef recCat2 = nodeService.getChildByName(filePlan, ContentModel.ASSOC_CONTAINS, "TestRecordCategory2");
             assertNotNull(recCat2);
-            List<NodeRef> recCat2ImmediateChildren = rmService.getAllContained(recCat2);
+            List<NodeRef> recCat2ImmediateChildren = filePlanService.getAllContained(recCat2);
             assertTrue(recCat2ImmediateChildren.size() == 2);
-            List<NodeRef> recCat2AllChildren = rmService.getAllContained(recCat2, true);
+            List<NodeRef> recCat2AllChildren = filePlanService.getAllContained(recCat2, true);
             assertTrue(recCat2AllChildren.size() == 4);
             DispositionSchedule recCat2DispositionSchedule = dispositionService.getDispositionSchedule(recCat2);
             assertNull(recCat2DispositionSchedule);
@@ -159,9 +159,9 @@ public class DataSetServiceImplTest extends BaseRMTestCase
             // TestRecordCategory1: Test the "second level" categories and record folders
             NodeRef recCat11 = nodeService.getChildByName(recCat1, ContentModel.ASSOC_CONTAINS, "TestRecordCategory11");
             assertNotNull(recCat11);
-            List<NodeRef> recCat11ImmediateChilderen = rmService.getAllContained(recCat11);
+            List<NodeRef> recCat11ImmediateChilderen = filePlanService.getAllContained(recCat11);
             assertTrue(recCat11ImmediateChilderen.size() == 2);
-            List<NodeRef> recCat11Childeren = rmService.getAllContained(recCat11, true);
+            List<NodeRef> recCat11Childeren = filePlanService.getAllContained(recCat11, true);
             assertTrue(recCat11Childeren.size() == 2);
             assertNotNull(nodeService.getChildByName(recCat11, ContentModel.ASSOC_CONTAINS, "TestRecordFolder1"));
             assertNotNull(nodeService.getChildByName(recCat11, ContentModel.ASSOC_CONTAINS, "TestRecordFolder2"));
@@ -172,9 +172,9 @@ public class DataSetServiceImplTest extends BaseRMTestCase
 
             NodeRef recCat12 = nodeService.getChildByName(recCat1, ContentModel.ASSOC_CONTAINS, "TestRecordCategory12");
             assertNotNull(recCat12);
-            List<NodeRef> recCat12ImmediateChildren = rmService.getAllContained(recCat12);
+            List<NodeRef> recCat12ImmediateChildren = filePlanService.getAllContained(recCat12);
             assertTrue(recCat12ImmediateChildren.size() == 1);
-            List<NodeRef> recCat12Children = rmService.getAllContained(recCat12, true);
+            List<NodeRef> recCat12Children = filePlanService.getAllContained(recCat12, true);
             assertTrue(recCat12Children.size() == 1);
             assertNotNull(nodeService.getChildByName(recCat12, ContentModel.ASSOC_CONTAINS, "TestRecordFolder3"));
             DispositionSchedule recCat12DispositionSchedule = dispositionService.getDispositionSchedule(recCat12);
@@ -187,7 +187,7 @@ public class DataSetServiceImplTest extends BaseRMTestCase
 
             NodeRef recCat13 = nodeService.getChildByName(recCat1, ContentModel.ASSOC_CONTAINS, "TestRecordCategory13");
             assertNotNull(recCat13);
-            List<NodeRef> recCat13ImmediateChildren = rmService.getAllContained(recCat13);
+            List<NodeRef> recCat13ImmediateChildren = filePlanService.getAllContained(recCat13);
             assertTrue(recCat13ImmediateChildren.size() == 0);
             DispositionSchedule recCat13DispositionSchedule = dispositionService.getDispositionSchedule(recCat13);
             assertNotNull(recCat13DispositionSchedule);
@@ -195,16 +195,16 @@ public class DataSetServiceImplTest extends BaseRMTestCase
             // TestRecordCategory2: Test the "second level" categories and record folders
             NodeRef recCat21 = nodeService.getChildByName(recCat2, ContentModel.ASSOC_CONTAINS, "TestRecordCategory21");
             assertNotNull(recCat21);
-            List<NodeRef> recCat21ImmediateChildren = rmService.getAllContained(recCat21);
+            List<NodeRef> recCat21ImmediateChildren = filePlanService.getAllContained(recCat21);
             assertTrue(recCat21ImmediateChildren.size() == 0);
             DispositionSchedule recCat21DispositionSchedule = dispositionService.getDispositionSchedule(recCat21);
             assertNotNull(recCat21DispositionSchedule);
 
             NodeRef recCat22 = nodeService.getChildByName(recCat2, ContentModel.ASSOC_CONTAINS, "TestRecordCategory22");
             assertNotNull(recCat22);
-            List<NodeRef> recCat22ImmediateChildren = rmService.getAllContained(recCat22);
+            List<NodeRef> recCat22ImmediateChildren = filePlanService.getAllContained(recCat22);
             assertTrue(recCat22ImmediateChildren.size() == 2);
-            List<NodeRef> recCat22Children = rmService.getAllContained(recCat22, true);
+            List<NodeRef> recCat22Children = filePlanService.getAllContained(recCat22, true);
             assertTrue(recCat22Children.size() == 2);
             assertNotNull(nodeService.getChildByName(recCat22, ContentModel.ASSOC_CONTAINS, "TestRecordFolder4"));
             assertNotNull(nodeService.getChildByName(recCat22, ContentModel.ASSOC_CONTAINS, "TestRecordFolder5"));

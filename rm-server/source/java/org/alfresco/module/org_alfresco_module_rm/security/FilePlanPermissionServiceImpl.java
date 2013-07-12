@@ -393,7 +393,7 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
                 {
                    setPermissionDown(nodeRef, authority, permission);
                 }
-                else if (recordsManagementService.isRecordsManagementContainer(nodeRef) == true || 
+                else if (filePlanService.isFilePlanContainer(nodeRef) == true || 
                          recordsManagementService.isRecordFolder(nodeRef) == true ||
                          recordService.isRecord(nodeRef) == true)
                 {
@@ -440,14 +440,14 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
     private void setPermissionDown(NodeRef nodeRef, String authority, String permission)
     {
         setPermissionImpl(nodeRef, authority, permission);
-        if (recordsManagementService.isRecordsManagementContainer(nodeRef) == true ||
+        if (filePlanService.isFilePlanContainer(nodeRef) == true ||
             recordsManagementService.isRecordFolder(nodeRef) == true)
         {
             List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)
             {
                 NodeRef child = assoc.getChildRef();
-                if (recordsManagementService.isRecordsManagementContainer(child) == true ||
+                if (filePlanService.isFilePlanContainer(child) == true ||
                     recordsManagementService.isRecordFolder(child) == true ||
                     recordService.isRecord(child) == true)
                 {
@@ -487,14 +487,14 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
                 // Delete permission on this node
                 permissionService.deletePermission(nodeRef, authority, permission);
 
-                if (recordsManagementService.isRecordsManagementContainer(nodeRef) == true ||
+                if (filePlanService.isFilePlanContainer(nodeRef) == true ||
                     recordsManagementService.isRecordFolder(nodeRef) == true)
                 {
                     List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                     for (ChildAssociationRef assoc : assocs)
                     {
                         NodeRef child = assoc.getChildRef();
-                        if (recordsManagementService.isRecordsManagementContainer(child) == true ||
+                        if (filePlanService.isFilePlanContainer(child) == true ||
                             recordsManagementService.isRecordFolder(child) == true ||
                             recordService.isRecord(child) == true)
                         {

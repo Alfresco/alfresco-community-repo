@@ -45,11 +45,11 @@ public class ChangeOrDeleteReferencesCapability extends DeclarativeCapability
      */
     public int evaluate(NodeRef source, NodeRef target)
     {
-        if (rmService.isFilePlanComponent(source))
+        if (filePlanService.isFilePlanComponent(source))
         {
             if (target != null)
             {
-                if (rmService.isFilePlanComponent(target) == true)
+                if (filePlanService.isFilePlanComponent(target) == true)
                 {
                     if (checkConditions(source) == true && checkConditions(target) == true)
                     {                        

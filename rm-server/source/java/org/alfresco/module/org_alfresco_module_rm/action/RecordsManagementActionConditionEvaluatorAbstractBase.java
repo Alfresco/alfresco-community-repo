@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.action;
 
 import java.util.List;
 
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -40,7 +41,10 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
                                                                                        BeanNameAware
 {
     /** records management action service */
-    private RecordsManagementActionService recordsManagementActionService;
+    protected RecordsManagementActionService recordsManagementActionService;
+    
+    /** File Plan Service */
+    protected FilePlanService filePlanService;
     
     /** bean name */
     private String name;
@@ -57,6 +61,14 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     {
         this.recordsManagementActionService = recordsManagementActionService;
     }
+    
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
 
     /**
      * @param retryingTransactionHelper

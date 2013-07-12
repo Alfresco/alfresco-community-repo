@@ -23,10 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -71,6 +72,9 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     
     /** Capabilities */
     protected List<String> capabilities;
+    
+    /** File plan service */
+    protected FilePlanService filePlanService;
     
     /**
      * @param jsonConversionComponent   json conversion component
@@ -127,6 +131,14 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     {
        this.freezeService = freezeService;
     }
+    
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
     
     /**
      * @param name
@@ -219,7 +231,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
      */
     private boolean checkKinds(NodeRef nodeRef)
     {
-        FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(nodeRef);
+        FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
         return kinds.contains(kind);
     }
     

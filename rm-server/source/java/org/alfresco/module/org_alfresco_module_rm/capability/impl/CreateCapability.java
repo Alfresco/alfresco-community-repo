@@ -72,7 +72,7 @@ public class CreateCapability extends DeclarativeCapability
                 return AccessDecisionVoter.ACCESS_DENIED;
             }
         }
-        if (rmService.isFilePlanComponent(destination))
+        if (filePlanService.isFilePlanComponent(destination))
         {
             if ((assocType == null) || assocType.equals(ContentModel.ASSOC_CONTAINS) == false)
             {

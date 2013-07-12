@@ -21,6 +21,7 @@
       <property name="namespaceService" ref="NamespaceService"/>
       <property name="capabilityService" ref="CapabilityService"/>
       <property name="freezeService" ref="FreezeService"/>
+      <property name="filePlanService" ref="FilePlanService" />
    </bean>
 
    <bean id="jsonConversionComponent.baseIndicator"

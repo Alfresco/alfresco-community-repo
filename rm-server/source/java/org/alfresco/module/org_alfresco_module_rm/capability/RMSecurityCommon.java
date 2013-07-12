@@ -18,10 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
-import java.util.List;
-
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -143,7 +142,7 @@ public class RMSecurityCommon
     {
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
         
-        if (rmService.isFilePlanComponent(nodeRef) == true)
+        if (filePlanService.isFilePlanComponent(nodeRef) == true)
         {
             result = checkRmRead(nodeRef);
         }
@@ -230,18 +229,16 @@ public class RMSecurityCommon
         NodeRef testNodeRef = null;
         if (position < 0)
         {
-            // Test against the fileplan root node
-            List<NodeRef> rmRoots = rmService.getFilePlans();
-            if (rmRoots.size() != 0)
+        	testNodeRef = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);        	
+        	if (testNodeRef == null)
+        	{
+        		throw new AlfrescoRuntimeException("Unable to find default file plan node.");
+        	}
+        	
+            if (logger.isDebugEnabled())
             {
-                // TODO for now we can take the first one as we only support a single rm site
-                testNodeRef = rmRoots.get(0);
-                
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("\tPermission test against the rm root node " + nodeService.getPath(testNodeRef));
-                }
-            }
+            	logger.debug("\tPermission test against the file plan node " + nodeService.getPath(testNodeRef));
+            }            
         }
         else if (StoreRef.class.isAssignableFrom(params[position]))
         {

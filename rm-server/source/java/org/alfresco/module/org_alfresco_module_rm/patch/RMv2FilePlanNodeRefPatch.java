@@ -21,13 +21,13 @@ package org.alfresco.module.org_alfresco_module_rm.patch;
 import java.io.Serializable;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.security.Role;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -55,22 +55,17 @@ public class RMv2FilePlanNodeRefPatch extends AbstractModuleComponent
     private static Log logger = LogFactory.getLog(RMv2FilePlanNodeRefPatch.class);  
     
     private NodeService nodeService;
-    private RecordsManagementService recordsManagementService;
     private BehaviourFilter behaviourFilter;
     private PatchDAO patchDAO;
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
     private PermissionService permissionService;
-    private RecordsManagementSecurityService recordsManagementSecurityService;
+    private FilePlanService filePlanService;
+    private FilePlanRoleService filePlanRoleService;
     
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
-    }
-    
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
     }
     
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
@@ -94,20 +89,28 @@ public class RMv2FilePlanNodeRefPatch extends AbstractModuleComponent
     }
     
     /**
-     * @param recordsManagementSecurityService  records management security service
-     */
-    public void setRecordsManagementSecurityService(RecordsManagementSecurityService recordsManagementSecurityService)
-    {
-        this.recordsManagementSecurityService = recordsManagementSecurityService;
-    }
-    
-    /**
      * @param permissionService permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
+    
+    /**
+     * @param filePlanRoleService	file plan role service
+     */
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService) 
+    {
+		this.filePlanRoleService = filePlanRoleService;
+	}
+    
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
     
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
@@ -138,7 +141,7 @@ public class RMv2FilePlanNodeRefPatch extends AbstractModuleComponent
                     Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(filePlanComponent);
                     NodeRef filePlanComponentNodeRef = recordPair.getSecond();
                     
-                    NodeRef filePlan =  recordsManagementService.getFilePlan(filePlanComponentNodeRef);
+                    NodeRef filePlan = filePlanService.getFilePlan(filePlanComponentNodeRef);
                     
                     // set the file plan node reference
                     if (nodeService.getProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF) == null)
@@ -147,13 +150,13 @@ public class RMv2FilePlanNodeRefPatch extends AbstractModuleComponent
                     }                    
                     
                     // only set the rmadmin permissions on record categories, record folders and records
-                    FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(filePlanComponentNodeRef);
+                    FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(filePlanComponentNodeRef);
                     if (FilePlanComponentKind.RECORD_CATEGORY.equals(kind) == true ||
                         FilePlanComponentKind.RECORD_FOLDER.equals(kind) == true ||
                         FilePlanComponentKind.RECORD.equals(kind) == true )
                     {
                         // ensure the that the records management role has read and file on the node
-                        Role adminRole = recordsManagementSecurityService.getRole(filePlan, "Administrator");
+                        Role adminRole = filePlanRoleService.getRole(filePlan, "Administrator");
                         if (adminRole != null)
                         {
                             permissionService.setPermission(filePlanComponentNodeRef, adminRole.getRoleGroupName(), RMPermissionModel.FILING, true);

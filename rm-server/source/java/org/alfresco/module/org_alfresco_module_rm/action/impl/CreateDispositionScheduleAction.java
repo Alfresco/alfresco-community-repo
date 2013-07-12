@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
@@ -35,6 +36,17 @@ public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBas
     /** Logger */
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(CreateDispositionScheduleAction.class);
+ 
+    /** file plan service */
+    private FilePlanService filePlanService;
+    
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
     
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
@@ -42,7 +54,7 @@ public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBas
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (recordsManagementService.isRecordCategory(actionedUponNodeRef) == true)
+        if (filePlanService.isRecordCategory(actionedUponNodeRef) == true)
         {
             // Create the disposition schedule
             dispositionService.createDispositionSchedule(actionedUponNodeRef, null);

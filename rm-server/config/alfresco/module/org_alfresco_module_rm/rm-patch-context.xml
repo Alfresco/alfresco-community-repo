@@ -62,10 +62,10 @@
        <property name="nodeDAO" ref="nodeDAO" />
        <property name="qnameDAO" ref="qnameDAO"/>
        <property name="nodeService" ref="NodeService"/>
-       <property name="recordsManagementService" ref="RecordsManagementService" />
        <property name="behaviourFilter" ref="policyBehaviourFilter"/>
        <property name="permissionService" ref="PermissionService"/>
-       <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+       <property name="filePlanService" ref="FilePlanService" />
+       <property name="filePlanRoleService" ref="filePlanRoleService" />
    </bean>
    
    <bean id="org_alfresco_module_rm_RMv2SavedSearchPatch" 

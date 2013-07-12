@@ -23,14 +23,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -107,6 +108,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected RecordsManagementAuditService auditService;
     protected CapabilityService capabilityService;
     protected VitalRecordService vitalRecordService;
+    protected FilePlanService filePlanService;
 
     /** test data */
     protected StoreRef storeRef;
@@ -178,6 +180,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         auditService = (RecordsManagementAuditService)applicationContext.getBean("RecordsManagementAuditService");
         capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
         vitalRecordService = (VitalRecordService)applicationContext.getBean("VitalRecordService");
+        filePlanService = (FilePlanService)applicationContext.getBean("FilePlanService");
     }
 
     /**
@@ -276,10 +279,10 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         filePlan = siteService.getContainer(SITE_ID, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
         assertNotNull("Site document library container was not created successfully.", filePlan);
 
-        recordSeries = rmService.createRecordCategory(filePlan, "recordSeries");
+        recordSeries = filePlanService.createRecordCategory(filePlan, "recordSeries");
         assertNotNull("Could not create record category with no disposition schedule", recordSeries);
 
-        recordCategory = rmService.createRecordCategory(recordSeries, "rmContainer");
+        recordCategory = filePlanService.createRecordCategory(recordSeries, "rmContainer");
         assertNotNull("Could not create record category", recordCategory);
 
         // Make vital record

@@ -38,7 +38,7 @@ public class IsRecordCategoryCondition extends AbstractCapabilityCondition
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        return rmService.isRecordCategory(nodeRef);
+        return filePlanService.isRecordCategory(nodeRef);
     }
 
 }

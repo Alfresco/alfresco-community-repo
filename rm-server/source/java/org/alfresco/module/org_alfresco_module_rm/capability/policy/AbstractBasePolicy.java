@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.module.org_alfresco_module_rm.capability.RMEntryVoter;
+import org.alfresco.module.org_alfresco_module_rm.capability.PolicyRegister;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMSecurityCommon;
 import org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -46,8 +46,8 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     /** Capability service */
     protected CapabilityService capabilityService;
     
-    /** RM entry */
-    protected RMEntryVoter rmEntryVoter;
+    /** Policy register */
+    protected PolicyRegister policyRegister;
     
     /** Policy name */
     protected String name;
@@ -78,19 +78,19 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     }
     
     /**
-     * @param rmEntryVoter  rm entry voter
+     * @param policyRegister	policy register
      */
-    public void setRmEntryVoter(RMEntryVoter rmEntryVoter)
+    public void setPolicyRegister(PolicyRegister policyRegister) 
     {
-        this.rmEntryVoter = rmEntryVoter;
-    }
+		this.policyRegister = policyRegister;
+	}
     
     /**
      * Init method
      */
     public void init()
     {
-        rmEntryVoter.registerPolicy(this);
+    	policyRegister.registerPolicy(this);
     }
     
     /**

@@ -5,7 +5,7 @@
 
 	<bean id="basePolicy" abstract="true" parent="RMSecurityCommon" init-method="init">
 		<property name="capabilityService" ref="capabilityService" />
-		<property name="rmEntryVoter" ref="rmEntryVoter" />		
+		<property name="policyRegister" ref="rmEntryVoter" />		
 	</bean>	
 		
 	<bean id="readPolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.ReadPolicy">

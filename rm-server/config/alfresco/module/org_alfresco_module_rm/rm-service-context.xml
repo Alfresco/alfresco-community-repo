@@ -41,6 +41,7 @@
     <bean id="org_alfresco_module_rm_dispositionSelectionStrategy"
           class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSelectionStrategy" >
         <property name="dispositionService" ref="dispositionService"/>
+        <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
     </bean>
 
     <!-- Records Management Service -->
@@ -126,6 +127,7 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
         <property name="policyComponent" ref="policyComponent"/>
+        <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
     <bean id="VitalRecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -181,6 +183,7 @@
         <property name="dictionaryService" ref="DictionaryService"/>
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="policyComponent" ref="policyComponent" />
+        <property name="filePlanService" ref="FilePlanService" />
         <property name="dispositionSelectionStrategy">
            <ref local="org_alfresco_module_rm_dispositionSelectionStrategy" />
         </property>
@@ -467,6 +470,9 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.isFilePlanComponent=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getFilePlanComponentKind=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getFilePlanComponentKindFromType=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.isFilePlan=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getFilePlans=RM_ALLOW,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getFilePlan=RM_ALLOW,AFTER_RM.FilterNode
@@ -474,6 +480,14 @@
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.existsUnfiledContainer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getUnfiledContainer=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createUnfiledContainer=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createFilePlan=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getNodeRefPath=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.isFilePlanContainer=RM_ALLOW                
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.isRecordCategory=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getAllContained=RM.Read.0,AFTER_RM.FilterNode
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getContainedRecordCategories=RM.Read.0,AFTER_RM.FilterNode
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getContainedRecordFolders=RM.Read.0,AFTER_RM.FilterNode
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createRecordCategory=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.*=RM_DENY
                 ]]>
             </value>
@@ -626,7 +640,6 @@
         <property name="policyComponent" ref="policyComponent"/>
         <property name="recordService" ref="recordService"/>
         <property name="nodeService" ref="nodeService"/>
-        <property name="recordsManagementService" ref="recordsManagementService"/>
         <property name="filePlanService" ref="filePlanService" />
         <property name="filePlanRoleService" ref="filePlanRoleService" />
     </bean>
@@ -1025,6 +1038,7 @@
         <property name="contentService" ref="ContentService" />
         <property name="recordsManagementService" ref="RecordsManagementService" />
         <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
+        <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
     <bean id="RecordsManagementAuditService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1067,15 +1081,21 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.clear=RM_CAP.-1.rma:filePlanComponent.DeleteAudit
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.clear=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.clearAuditLog=RM_CAP.0.rma:filePlanComponent.DeleteAudit
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditTrail=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditTrailFile=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getDateLastStarted=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getDateAuditLogLastStarted=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getDateLastStopped=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getDateAuditLogLastStopped=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.isEnabled=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.start=RM_CAP.-1.rma:filePlanComponent.EnableDisableAuditByTypes
-                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.stop=RM_CAP.-1.rma:filePlanComponent.EnableDisableAuditByTypes
-                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.fileAuditTrailAsRecord=RM_CAP.-1.rma:filePlanComponent.DeclareAuditAsRecord
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.isAuditLogEnabled=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.start=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.startAuditLog=RM_CAP.0.rma:filePlanComponent.EnableDisableAuditByTypes
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.stop=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.stopAuditLog=RM_CAP.0.rma:filePlanComponent.EnableDisableAuditByTypes
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.fileAuditTrailAsRecord=RM_CAP.1.rma:filePlanComponent.DeclareAuditAsRecord
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditEvents=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.*=RM_DENY
                 ]]>

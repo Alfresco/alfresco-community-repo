@@ -120,7 +120,7 @@
    <!-- Action Service -->
    <bean id="actionService" class="org.alfresco.repo.action.ExtendedActionServiceImpl" init-method="init">
    
-   		<property name="recordsManagementService" ref="RecordsManagementService" />
+   		<property name="filePlanService" ref="FilePlanService" />
    
         <property name="policyComponent">
             <ref bean="policyComponent" />
@@ -197,7 +197,7 @@
     
     	<!--  Since RM 2.1 -->
     	<property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
-    	<property name="recordsManagementService" ref="RecordsManagementService" />
+    	<property name="filePlanService" ref="FilePlanService" />
     	<property name="runAsRmAdmin">
     		<value>${rm.rule.runasrmadmin}</value>
     	</property>    

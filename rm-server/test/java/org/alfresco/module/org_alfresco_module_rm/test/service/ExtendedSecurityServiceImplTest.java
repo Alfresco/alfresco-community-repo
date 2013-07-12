@@ -65,7 +65,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
         record = utils.createRecord(rmFolder, "record.txt");
         recordToo = utils.createRecord(rmFolder, "recordToo.txt");    
         
-        moveRecordCategory = rmService.createRecordCategory(filePlan, "moveRecordCategory");
+        moveRecordCategory = filePlanService.createRecordCategory(filePlan, "moveRecordCategory");
         moveRecordFolder = rmService.createRecordFolder(moveRecordCategory, "moveRecordFolder");
     }
     

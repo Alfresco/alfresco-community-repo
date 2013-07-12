@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionDefinition;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
@@ -40,25 +40,32 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class ExtendedActionServiceImpl extends ActionServiceImpl implements ApplicationContextAware
 {
-    /** Records management service */
-    private RecordsManagementService recordsManagementService;
+    /** File plan service */
+    private FilePlanService filePlanService;
     
+    /** Application context */
     private ApplicationContext extendedApplicationContext;
 
+    /**
+     * @see org.alfresco.repo.action.ActionServiceImpl#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
     public void setApplicationContext(ApplicationContext applicationContext)
     {
         super.setApplicationContext(applicationContext);
         extendedApplicationContext = applicationContext;
     }
-
-    /**
-     * @param recordsManagementService  records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
-    }
     
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
+    
+    /**
+     * @see org.alfresco.repo.action.ActionServiceImpl#getActionConditionDefinition(java.lang.String)
+     */
     public ActionConditionDefinition getActionConditionDefinition(String name)
     {
         // get direct access to action condition definition (i.e. ignoring public flag of executer)
@@ -91,7 +98,7 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
         else
         {
             // get the file component kind of the node reference
-            FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(nodeRef);
+            FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
             result = new ArrayList<ActionDefinition>(actionDefinitions.size());
             
             // check each action definition

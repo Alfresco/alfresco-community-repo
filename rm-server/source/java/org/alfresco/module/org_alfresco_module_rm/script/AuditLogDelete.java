@@ -39,7 +39,7 @@ public class AuditLogDelete extends BaseAuditAdminWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        this.rmAuditService.clear();
+        this.rmAuditService.clearAuditLog(getDefaultFilePlan());
             
         // create model object with the audit status model
         Map<String, Object> model = new HashMap<String, Object>(1);

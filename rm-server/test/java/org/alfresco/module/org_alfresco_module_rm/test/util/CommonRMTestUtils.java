@@ -147,7 +147,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
                                                         ContentModel.ASSOC_CONTAINS, 
                                                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
                                                         ContentModel.TYPE_CONTENT,
-                                                        properties).getChildRef();
+                                                        properties).getChildRef();       
         
         // Set the content
         ContentWriter writer = contentService.getWriter(recordOne, ContentModel.PROP_CONTENT, true);

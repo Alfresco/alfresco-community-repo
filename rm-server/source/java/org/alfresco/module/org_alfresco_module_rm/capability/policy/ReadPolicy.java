@@ -22,6 +22,10 @@ import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.aopalliance.intercept.MethodInvocation;
 
+/**
+ * @author Roy Wethearll
+ * @since 2.1
+ */
 public class ReadPolicy extends AbstractBasePolicy
 {
 

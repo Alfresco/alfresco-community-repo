@@ -196,7 +196,7 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
             @Override
             public NodeRef run()
             {               
-                return rmService.createRecordCategory(mhContainer35, GUID.generate());
+                return filePlanService.createRecordCategory(mhContainer35, GUID.generate());
             }
             
             @Override

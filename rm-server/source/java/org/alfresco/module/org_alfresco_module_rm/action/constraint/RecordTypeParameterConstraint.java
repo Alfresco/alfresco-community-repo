@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.action.constraint.BaseParameterConstraint;
+import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
@@ -68,7 +69,7 @@ public class RecordTypeParameterConstraint extends BaseParameterConstraint
             AspectDefinition aspectDefinition = dictionaryService.getAspect(recordType);
             if (aspectDefinition != null)
             {
-                result.put(aspectDefinition.getName().getLocalName(), aspectDefinition.getTitle());
+                result.put(aspectDefinition.getName().getLocalName(), aspectDefinition.getTitle(new StaticMessageLookup()));
             }
         }        
         return result;

@@ -18,8 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition;
 
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.AbstractCapabilityCondition;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -35,7 +35,7 @@ public class IsTransferAccessionCapabilityCondition extends AbstractCapabilityCo
     {
         boolean result = false;
         
-        FilePlanComponentKind kind = rmService.getFilePlanComponentKind(nodeRef);
+        FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
         if (FilePlanComponentKind.TRANSFER.equals(kind) == true)
         {
             Boolean value = (Boolean)nodeService.getProperty(nodeRef, PROP_TRANSFER_ACCESSION_INDICATOR);

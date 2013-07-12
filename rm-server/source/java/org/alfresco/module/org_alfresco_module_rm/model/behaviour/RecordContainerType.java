@@ -21,7 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -56,9 +55,6 @@ public class RecordContainerType implements RecordsManagementModel,
     /** Identity service */
     private IdentifierService recordsManagementIdentifierService;
     
-    /** File plan authentication service */
-    private FilePlanAuthenticationService filePlanAuthenticationService;
-    
     /**
      * Set the policy component
      * @param policyComponent   policy component
@@ -86,14 +82,6 @@ public class RecordContainerType implements RecordsManagementModel,
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
-    }
-    
-    /**
-     * @param filePlanAuthenticationService file plan authentication service
-     */
-    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
-    {
-        this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
     
     /**

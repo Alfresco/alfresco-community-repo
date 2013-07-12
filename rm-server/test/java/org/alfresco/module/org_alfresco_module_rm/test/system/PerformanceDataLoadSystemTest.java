@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.test.system;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.transaction.UserTransaction;
@@ -28,10 +27,10 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -54,12 +53,12 @@ public class PerformanceDataLoadSystemTest extends TestCase implements RecordsMa
 {
     private ApplicationContext appContext;
     private AuthenticationComponent authenticationComponent;
-    private RecordsManagementService rmService;
     private DispositionService dispositionService;
     private TransactionService transactionService;
     private NodeService nodeService;
     private ContentService contentService;
     private IdentifierService identifierService;
+    private FilePlanService filePlanService;
     
     UserTransaction userTransaction;
     
@@ -75,10 +74,10 @@ public class PerformanceDataLoadSystemTest extends TestCase implements RecordsMa
         authenticationComponent = (AuthenticationComponent)appContext.getBean("authenticationComponent");
         transactionService = (TransactionService)appContext.getBean("transactionService");
         nodeService = (NodeService)appContext.getBean("nodeService");
-        rmService = (RecordsManagementService)appContext.getBean("recordsManagementService");
         contentService = (ContentService)appContext.getBean("contentService");
         identifierService = (IdentifierService)appContext.getBean("identifierService");
         dispositionService = (DispositionService)appContext.getBean("dispositionService");
+        filePlanService = (FilePlanService)appContext.getBean("filePlanService");
     
         // Set authentication       
         authenticationComponent.setCurrentUser("admin");    
@@ -96,13 +95,11 @@ public class PerformanceDataLoadSystemTest extends TestCase implements RecordsMa
     
     public void testLoadTestData() throws Exception
     {
-        // Get the file plan node
-        List<NodeRef> roots = rmService.getFilePlans();
-        if (roots.size() != 1)
+        NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+        if (filePlan == null)
         {
-            fail("There is more than one root to load the test data into.");
+        	fail("The default RM site is not present.");
         }
-        NodeRef filePlan = roots.get(0);
         
         for (int i = 0; i < SERIES_COUNT; i++)
         {

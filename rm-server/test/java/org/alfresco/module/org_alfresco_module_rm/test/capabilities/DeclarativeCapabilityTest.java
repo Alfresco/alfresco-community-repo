@@ -26,12 +26,12 @@ import java.util.Set;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.CompositeCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -88,7 +88,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
 
         // MoveTo artifacts
         moveToFolder = rmService.createRecordFolder(rmContainer, "moveToFolder");
-        moveToCategory = rmService.createRecordCategory(rmContainer, "moveToCategory");
+        moveToCategory = filePlanService.createRecordCategory(rmContainer, "moveToCategory");
     }
 
     @Override
@@ -187,7 +187,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 else
                 {
                     // Do the kind check here ...
-                    FilePlanComponentKind actualKind = rmService.getFilePlanComponentKind(filePlanComponent);
+                    FilePlanComponentKind actualKind = filePlanService.getFilePlanComponentKind(filePlanComponent);
                     List<String> kinds = capability.getKinds();
 
                     if (kinds == null ||

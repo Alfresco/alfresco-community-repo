@@ -24,7 +24,7 @@
    </bean>   
 
    <bean id="rm-ac-disposition-action-relative-positions" class="org.alfresco.repo.action.constraint.EnumParameterConstraint" parent="action-constraint">
-      <property name="enumClassName" value="org.alfresco.module.org_alfresco_module_rm.DispositionActionRelativePositions" />
+      <property name="enumClassName" value="org.alfresco.module.org_alfresco_module_rm.action.evaluator.DispositionActionRelativePositions" />
    </bean>   
 
    <bean id="rm-ac-disposition-actions" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.DispositionActionParameterConstraint" parent="action-constraint">
@@ -69,7 +69,7 @@
          class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.IsKindEvaluator">
       <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
-      <property name="recordsManagementService" ref="RecordsManagementService" />
+      <property name="filePlanService" ref="FilePlanService" />
    </bean>
 
    <bean id="hasDispositionAction" 
@@ -580,6 +580,7 @@
    <bean id="broadcastVitalRecordDefinition"
          class="org.alfresco.module.org_alfresco_module_rm.vital.BroadcastVitalRecordDefinitionAction"
          parent="rmAction">
+      <property name="filePlanService" ref="FilePlanService"/>
       <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
    </bean>
 
@@ -787,7 +788,9 @@
 
    <bean id="createDispositionSchedule"
          class="org.alfresco.module.org_alfresco_module_rm.action.impl.CreateDispositionScheduleAction"
-         parent="rmAction" />
+         parent="rmAction">
+      <property name="filePlanService" ref="FilePlanService"/>
+   </bean>
 
    <!-- Reject record -->
 

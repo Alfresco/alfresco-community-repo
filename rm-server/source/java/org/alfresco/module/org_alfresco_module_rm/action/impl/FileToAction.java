@@ -167,7 +167,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
                 }
                 
                 // ensure we are trying to create a record folder in a record category
-                if (recordsManagementService.isRecordCategory(parent) == false)
+                if (filePlanService.isRecordCategory(parent) == false)
                 {
                     throw new AlfrescoRuntimeException("Unable to create nre record folder, beacuse the parent is not a record category.");
                 }

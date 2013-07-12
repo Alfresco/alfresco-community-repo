@@ -18,10 +18,15 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.fileplan;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
 
 import com.hazelcast.impl.Node;
 
@@ -33,8 +38,41 @@ import com.hazelcast.impl.Node;
  */
 public interface FilePlanService
 {
-    /** Default RM site id.  Can be used with {@link FilePlanService#getFilePlanBySiteId(String)} to get the file plan node. */
+    /** 
+     * Default RM site id.  
+     * Can be used with {@link FilePlanService#getFilePlanBySiteId(String)} to get the file plan node. 
+     * */
     public static final String DEFAULT_RM_SITE_ID = "rm";
+    
+    /**
+     * Indicates whether the given node is a file plan component or not.
+     * 
+     * @param  nodeRef   node reference
+     * @return boolean   true if a file plan component, false otherwise
+     */
+    boolean isFilePlanComponent(NodeRef nodeRef);
+    
+    /**
+     * Returns the 'kind' of file plan component the node reference is.
+     * <p>
+     * Returns null if the given node reference is not a
+     * file plan component.
+     *
+     * @param nodeRef   node reference
+     * @return FilePlanComponentKind    the kind of file plan component the node is
+     */
+    FilePlanComponentKind getFilePlanComponentKind(NodeRef nodeRef);
+    
+    /**
+     * Returns the file plan component 'kind' that relates to the passed 
+     * content type.
+     * <p>
+     * Returns null if the type does not relate to a file plan component.
+     * 
+     * @param type  qualified name of content type 
+     * @return FilePlanComponentKind    the kind relating to the passed type
+     */
+    FilePlanComponentKind getFilePlanComponentKindFromType(QName type);
     
     /**
      * Indicates whether the given node is file plan node or not.
@@ -100,5 +138,182 @@ public interface FilePlanService
      * @return {@link Node} unfiled container
      */
     NodeRef createUnfiledContainer(NodeRef filePlan);
+    
+    /**
+     * Creates a file plan as a child of the given parent node, with the name
+     * provided.
+     * 
+     * @param   parent  parent node reference
+     * @param   name    file plan name 
+     * @param   type    type, must be rma:filePlan or sub-type of
+     * @return  NodeRef file plan node reference
+     */
+    NodeRef createFilePlan(NodeRef parent, String name, QName type);
+    
+    /**
+     * Specifies the properties to be set on the created file plan.
+     * 
+     * @see #createFilePlan(NodeRef, String, QName)
+     * 
+     * @param  parent		parent node reference
+     * @param  name			file plan name 
+     * @param  type			type, must be rma:filePlan or sub-type of
+     * @param  properties	file plan properties
+     * @return NodeRef		file plan node reference
+     */
+    NodeRef createFilePlan(NodeRef parent, String name, QName type, Map<QName, Serializable> properties);
+    
+    /**
+     * Creates a file plan with the default type.
+     * 
+     * @see #createFilePlan(NodeRef, String, QName)
+     * 
+     * @param  parent	parent node reference
+     * @param  name		file plan name
+     * @return NodeRef	file plan node reference
+     */
+    NodeRef createFilePlan(NodeRef parent, String name);
+    
+    /**
+     * Creates a file plan with the default type, specifying properties.
+     * 
+     * @see #createFilePlan(NodeRef, String, QName)
+     * 
+     * @param  parent		parent node reference
+     * @param  name			file plan name
+     * @param  properties	file plan properties
+     * @return NodeRef		file plan node reference
+     */
+    NodeRef createFilePlan(NodeRef parent, String name, Map<QName, Serializable> properties);
+    
+    // TODO deleteFilePlan
+    
+    /**
+     * Gets the <b>NodeRef</b> sequence from the {@link #getFilePlan(NodeRef) root}
+     * down to the fileplan component given.  The array will start with the <b>NodeRef</b> of the root
+     * and end with the name of the fileplan component node given.
+     * 
+     * @param nodeRef           a fileplan component
+     * @return                  Returns a <b>NodeRef</b> path starting with the file plan
+     */
+    List<NodeRef> getNodeRefPath(NodeRef nodeRef);
+    
+    /**
+     * Indicates whether the given node is a file plan container or not.
+     * <p>
+     * This includes file plan and record category nodes.
+     * 
+     * @param nodeRef   node reference
+     * @return boolean  true if node is a file plan container, false otherwise.
+     */
+    boolean isFilePlanContainer(NodeRef nodeRef);
+    
+    /**
+     * Indicates whether the given node is a record category or not.
+     * 
+     * @param nodeRef   node reference
+     * @return boolean  true if records category, false otherwise
+     */
+    boolean isRecordCategory(NodeRef nodeRef);
+    
+    /**
+     * Get all the items contained within a container.  This will include record folders and other record categories.
+     * 
+     * @param recordCategory record category node reference
+     * @param deep if true then return all children including sub-categories and their children in turn, if false then just
+     *             return the immediate children
+     * @return {@link List}<{@link NodeRef>} list of contained node references
+     */
+    List<NodeRef> getAllContained(NodeRef recordCategory, boolean deep);
+    
+    /**
+     * Only return the immediate children.
+     * 
+     * @see RecordsManagementService#getAllContained(NodeRef, boolean)
+     * 
+     * @param recordCategory record category node reference
+     * @return {@link List}<{@link NodeRef>} list of contained node references
+     */
+    List<NodeRef> getAllContained(NodeRef recordCategory);    
+    
+    /**
+     * Get all the record categories within a record category.
+     * 
+     * @param recordCategory record category node reference
+     * @param deep if true then return all children including sub-categories and their children in turn, if false then just
+     *             return the immediate children
+     * @return {@link List}<{@link NodeRef>} list of container node references
+     */
+    List<NodeRef> getContainedRecordCategories(NodeRef recordCategory, boolean deep);
+    
+    /**
+     * Only return immediate children.
+     * 
+     * @see RecordsManagementService#getContainedRecordCategories(NodeRef, boolean)
+     * 
+     * @param recordCategory container node reference
+     * @return {@link List}<{@link NodeRef>} list of container node references
+     */
+    List<NodeRef> getContainedRecordCategories(NodeRef recordCategory);
+    
+    /**
+     * Get all the record folders contained within a container
+     * 
+     * @param container container node reference
+     * @param deep if true then return all children including sub-containers and their children in turn, if false then just
+     *             return the immediate children
+     * @return {@link List}<{@link NodeRef>} list of record folder node references
+     */
+    List<NodeRef> getContainedRecordFolders(NodeRef container, boolean deep);
+    
+    /**
+     * Only return immediate children.
+     * 
+     * @see RecordsManagementService#getContainedRecordFolders(NodeRef, boolean)
+     * 
+     * @param container container node reference
+     * @return {@link List}<{@link NodeRef>} list of record folder node references
+     */
+    List<NodeRef> getContainedRecordFolders(NodeRef container);
+    
+    /**
+     * Create a record category.
+     * 
+     * @param  parent    parent node reference, must be a record category or file plan.
+     * @param  name      name of the new record category
+     * @param  type      type of container to create, must be a sub-type of rm:recordCategory
+     * @return NodeRef   node reference of the created record category
+     */
+    NodeRef createRecordCategory(NodeRef parent, String name, QName type);
+    
+    /**
+     * 
+     * @param parent
+     * @param name
+     * @param type
+     * @param properties
+     * @return
+     */
+    NodeRef createRecordCategory(NodeRef parent, String name, QName type, Map<QName, Serializable> properties);
+    
+    /**
+     * Creates a record category of type rma:recordCategory
+     * 
+     * @see RecordsManagementService#createRecordCategory(NodeRef, String, QName)
+     * 
+     * @param  parent    parent node reference, must be a record category or file plan.
+     * @param  name      name of the record category
+     * @return NodeRef   node reference of the created record category
+     */
+    NodeRef createRecordCategory(NodeRef parent, String name);
+    
+    /**
+     * 
+     * @param parent
+     * @param name
+     * @param properties
+     * @return
+     */
+    NodeRef createRecordCategory(NodeRef parent, String name, Map<QName, Serializable> properties);
 
 }

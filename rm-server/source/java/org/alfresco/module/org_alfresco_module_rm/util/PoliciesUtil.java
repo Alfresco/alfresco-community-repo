@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm;
+package org.alfresco.module.org_alfresco_module_rm.util;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,9 +29,11 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * Utility class with policy helper methods.
+ * 
  * @author Roy Wetherall
  */
-public class RecordsManagementPoliciesUtil
+public class PoliciesUtil
 {
     /**
      * Get all aspect and node type qualified names
@@ -67,5 +69,4 @@ public class RecordsManagementPoliciesUtil
             }
         }, AuthenticationUtil.getAdminUserName());   
     }
-
 }

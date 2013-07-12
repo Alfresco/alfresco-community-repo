@@ -19,16 +19,22 @@
 package org.alfresco.module.org_alfresco_module_rm.fileplan;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
@@ -38,15 +44,19 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * File plan service implementation.
@@ -59,6 +69,16 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                                             RecordsManagementModel,
                                             ApplicationContextAware
 {
+	/** I18N */
+    private final static String MSG_DUP_ROOT = "rm.service.dup-root";
+    private final static String MSG_ROOT_TYPE = "rm.service.root-type";
+    private final static String MSG_PATH_NODE = "rm.service.path-node";
+    private final static String MSG_INVALID_RM_NODE = "rm.service.invalid-rm-node";
+    private final static String MSG_NO_ROOT = "rm.service.no-root";
+    private final static String MSG_CONTAINER_PARENT_TYPE= "rm.service.container-parent-type";
+    private final static String MSG_CONTAINER_TYPE = "rm.service.container-type";
+    private final static String MSG_CONTAINER_EXPECTED = "rm.service.container-expected";
+	
     /** Unfiled record container name */
     private static final String NAME_UNFILED_CONTAINER = "Unfiled Records";
     private static final QName QNAME_UNFILED_CONTAINER = QName.createQName(RM_URI, NAME_UNFILED_CONTAINER);
@@ -119,6 +139,145 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     protected SiteService getSiteService()
     {
         return (SiteService)applicationContext.getBean("SiteService"); 
+    }
+    
+    /**
+     * @return	record service
+     */
+    protected RecordService getRecordService()
+    {
+    	return (RecordService)applicationContext.getBean("RecordService");
+    }
+    
+    /**
+     * @return	record folder service
+     */
+    protected RecordFolderService getRecordFolderService()
+    {
+    	return (RecordFolderService)applicationContext.getBean("RecordFolderService");
+    }
+    
+    /**
+     * @return	freeze service
+     */
+    protected FreezeService getFreezeService()
+    {
+    	return (FreezeService)applicationContext.getBean("FreezeService");
+    }
+    
+    /**
+     * @return	records management service
+     */
+    protected RecordsManagementService getRecordsManagementService()
+    {
+    	return (RecordsManagementService)applicationContext.getBean("RecordsManagementService");
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlanComponent(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public boolean isFilePlanComponent(NodeRef nodeRef)
+    {
+        boolean result = false;
+        if (nodeService.exists(nodeRef) == true &&
+            nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
+        {
+            result = true;
+        }
+        return result;
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlanComponentKind(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public FilePlanComponentKind getFilePlanComponentKind(NodeRef nodeRef)
+    {
+        FilePlanComponentKind result = null;
+        
+        if (isFilePlanComponent(nodeRef) == true)
+        {
+            result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
+            
+            if (isFilePlan(nodeRef) == true)
+            {
+                result = FilePlanComponentKind.FILE_PLAN;
+            }
+            else if (isRecordCategory(nodeRef) == true)
+            {
+                result = FilePlanComponentKind.RECORD_CATEGORY;
+            }
+            else if (getRecordsManagementService().isRecordFolder(nodeRef) == true)
+            {
+                result = FilePlanComponentKind.RECORD_FOLDER;
+            }
+            else if (getRecordService().isRecord(nodeRef) == true)
+            {
+                result = FilePlanComponentKind.RECORD;
+            }
+            else if (getFreezeService().isHold(nodeRef) == true)
+            {
+                result = FilePlanComponentKind.HOLD;
+            }
+            else if (getRecordsManagementService().isTransfer(nodeRef) == true)
+            {
+                result = FilePlanComponentKind.TRANSFER;
+            }
+            else if (instanceOf(nodeRef, TYPE_DISPOSITION_SCHEDULE) == true || instanceOf(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION) == true)
+            {
+                result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
+            }
+            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER) == true)
+            {
+                result = FilePlanComponentKind.UNFILED_RECORD_CONTAINER;
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getFilePlanComponentKindFromType(org.alfresco.service.namespace.QName)
+     */
+    @Override
+    public FilePlanComponentKind getFilePlanComponentKindFromType(QName type)
+    {
+        FilePlanComponentKind result = null;
+        
+        if (ASPECT_FILE_PLAN_COMPONENT.equals(type) == true)
+        {
+            result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
+        }
+        else if (dictionaryService.isSubClass(type, ASPECT_RECORD) == true)
+        {
+            result = FilePlanComponentKind.RECORD;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_FILE_PLAN) == true)
+        {
+            result = FilePlanComponentKind.FILE_PLAN;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_RECORD_CATEGORY) == true)
+        {
+            result = FilePlanComponentKind.RECORD_CATEGORY;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER) == true)
+        {
+            result = FilePlanComponentKind.RECORD_FOLDER;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_HOLD) == true)
+        {
+            result = FilePlanComponentKind.HOLD;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_TRANSFER) == true)
+        {
+            result = FilePlanComponentKind.TRANSFER;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_DISPOSITION_SCHEDULE) == true || 
+                 dictionaryService.isSubClass(type, TYPE_DISPOSITION_ACTION_DEFINITION) == true)
+        {
+            result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
+        }
+        
+        return result;
     }
     
     /**
@@ -294,5 +453,297 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         return container;
     }
     
-
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#createFilePlan(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map)
+     */
+    public NodeRef createFilePlan(NodeRef parent, String name, QName type, Map<QName, Serializable> properties)
+    {
+        ParameterCheck.mandatory("parent", parent);
+        ParameterCheck.mandatory("name", name);
+        ParameterCheck.mandatory("type", type);
+        
+        // Check the parent is not already an RM component node
+        // ie: you can't create a rm root in an existing rm hierarchy
+        if (isFilePlanComponent(parent) == true)
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_DUP_ROOT));
+        }
+                
+        // Check that the passed type is a sub-type of rma:filePlan
+        if (TYPE_FILE_PLAN.equals(type) == false &&
+            dictionaryService.isSubClass(type, TYPE_FILE_PLAN) == false)
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ROOT_TYPE, type.toString()));
+        }
+        
+        // Build map of properties
+        Map<QName, Serializable> rmRootProps = new HashMap<QName, Serializable>(1);
+        if (properties != null && properties.size() != 0)
+        {
+            rmRootProps.putAll(properties);
+        }
+        rmRootProps.put(ContentModel.PROP_NAME, name);
+        
+        // Create the root
+        ChildAssociationRef assocRef = nodeService.createNode(
+                parent,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                type,
+                rmRootProps);
+        
+        // TODO do we need to create role and security groups or is this done automatically?
+        
+        return assocRef.getChildRef();
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#createFilePlan(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map)
+     */
+    public NodeRef createFilePlan(NodeRef parent, String name, Map<QName, Serializable> properties)
+    {
+        return createFilePlan(parent, name, TYPE_FILE_PLAN, properties);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#createFilePlan(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    public NodeRef createFilePlan(NodeRef parent, String name)
+    {
+        return createFilePlan(parent, name, TYPE_FILE_PLAN, null);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#createFilePlan(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName)
+     */
+    @Override
+    public NodeRef createFilePlan(NodeRef parent, String name, QName type)
+    {
+        return createFilePlan(parent, name, type, null);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getNodeRefPath(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public List<NodeRef> getNodeRefPath(NodeRef nodeRef)
+    {
+        LinkedList<NodeRef> nodeRefPath = new LinkedList<NodeRef>();
+        try
+        {
+            getNodeRefPathRecursive(nodeRef, nodeRefPath);
+        }
+        catch (Throwable e)
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PATH_NODE, nodeRef), e);
+        }
+        return nodeRefPath;
+    }
+    
+    /**
+     * Helper method to build a <b>NodeRef</b> path from the node to the RM root
+     */
+    private void getNodeRefPathRecursive(NodeRef nodeRef, LinkedList<NodeRef> nodeRefPath)
+    {
+        if (isFilePlanComponent(nodeRef) == false)
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_INVALID_RM_NODE, ASPECT_FILE_PLAN_COMPONENT.toString()));
+        }
+        // Prepend it to the path
+        nodeRefPath.addFirst(nodeRef);
+        // Are we at the root
+        if (isFilePlan(nodeRef) == true)
+        {
+            // We're done
+        }
+        else
+        {
+            ChildAssociationRef assocRef = nodeService.getPrimaryParent(nodeRef);
+            if (assocRef == null)
+            {
+                // We hit the top of the store
+                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NO_ROOT));
+            }
+            // Recurse
+            nodeRef = assocRef.getParentRef();
+            getNodeRefPathRecursive(nodeRef, nodeRefPath);
+        }
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlanContainer(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public boolean isFilePlanContainer(NodeRef nodeRef)
+    {
+        return instanceOf(nodeRef, TYPE_RECORDS_MANAGEMENT_CONTAINER);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isRecordCategory(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public boolean isRecordCategory(NodeRef nodeRef)
+    {
+        return instanceOf(nodeRef, TYPE_RECORD_CATEGORY);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#createRecordCategory(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map)
+     */
+    public NodeRef createRecordCategory(NodeRef parent, String name, QName type, Map<QName, Serializable> properties)
+    {
+        ParameterCheck.mandatory("parent", parent);
+        ParameterCheck.mandatory("name", name);
+        ParameterCheck.mandatory("type", type);
+        
+        // Check that the parent is a container
+        QName parentType = nodeService.getType(parent);
+        if (TYPE_RECORDS_MANAGEMENT_CONTAINER.equals(parentType) == false &&
+            dictionaryService.isSubClass(parentType, TYPE_RECORDS_MANAGEMENT_CONTAINER) == false)
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CONTAINER_PARENT_TYPE, parentType.toString()));
+        }
+        
+        // Check that the the provided type is a sub-type of rm:recordCategory
+        if (TYPE_RECORD_CATEGORY.equals(type) == false &&
+            dictionaryService.isSubClass(type, TYPE_RECORD_CATEGORY) == false)
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CONTAINER_TYPE, type.toString()));
+        }
+        
+        // Set the properties for the record category
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+        if (properties != null && properties.size() != 0)
+        {
+            props.putAll(properties);
+        }
+        props.put(ContentModel.PROP_NAME, name);
+        
+        return nodeService.createNode(
+                parent,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                type,
+                props).getChildRef();
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#createRecordCategory(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    public NodeRef createRecordCategory(NodeRef parent, String name)
+    {
+        return createRecordCategory(parent, name, TYPE_RECORD_CATEGORY);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#createRecordCategory(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map)
+     */
+    public NodeRef createRecordCategory(NodeRef parent, String name, Map<QName, Serializable> properties)
+    {
+        return createRecordCategory(parent, name, TYPE_RECORD_CATEGORY, properties);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#createRecordCategory(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName)
+     */
+    public NodeRef createRecordCategory(NodeRef parent, String name, QName type)
+    {
+        return createRecordCategory(parent, name, type, null);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getAllContained(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public List<NodeRef> getAllContained(NodeRef container)
+    {
+        return getAllContained(container, false);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getAllContained(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    public List<NodeRef> getAllContained(NodeRef container, boolean deep)
+    {
+        return getContained(container, null, deep);
+    }
+    
+    /**
+     * Get contained nodes of a particular type.  If null return all.
+     * 
+     * @param container container node reference
+     * @param typeFilter type filter, null if none
+     * @return {@link List}<{@link NodeRef> list of contained node references
+     */
+    private List<NodeRef> getContained(NodeRef container, QName typeFilter, boolean deep)
+    {   
+        // Parameter check
+        ParameterCheck.mandatory("container", container);
+        
+        // Check we have a container in our hands
+        if (isRecordCategory(container) == false)
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CONTAINER_EXPECTED));
+        }
+        
+        List<NodeRef> result = new ArrayList<NodeRef>(1);
+        List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(container, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+        for (ChildAssociationRef assoc : assocs)
+        {
+            NodeRef child = assoc.getChildRef();
+            QName childType = nodeService.getType(child);
+            if (typeFilter == null ||
+                typeFilter.equals(childType) == true ||
+                dictionaryService.isSubClass(childType, typeFilter) == true)
+            {
+                result.add(child);
+            }
+            
+            // Inspect the containers and add children if deep
+            if (deep == true &&
+                (TYPE_RECORD_CATEGORY.equals(childType) == true ||
+                 dictionaryService.isSubClass(childType, TYPE_RECORD_CATEGORY) == true))
+            {
+                result.addAll(getContained(child, typeFilter, deep));
+            }
+        }
+            
+        return result;
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getContainedRecordCategories(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public List<NodeRef> getContainedRecordCategories(NodeRef container)
+    {
+        return getContainedRecordCategories(container, false);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getContainedRecordCategories(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    public List<NodeRef> getContainedRecordCategories(NodeRef container, boolean deep)
+    {
+        return getContained(container, TYPE_RECORD_CATEGORY, deep);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getContainedRecordFolders(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public List<NodeRef> getContainedRecordFolders(NodeRef container)
+    {
+        return getContainedRecordFolders(container, false);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getContainedRecordFolders(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    public List<NodeRef> getContainedRecordFolders(NodeRef container, boolean deep)
+    {
+        return getContained(container, TYPE_RECORD_FOLDER, deep);
+    }
 }

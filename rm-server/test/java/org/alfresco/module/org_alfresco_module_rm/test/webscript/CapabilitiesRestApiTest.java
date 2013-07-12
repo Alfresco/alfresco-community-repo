@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.test.webscript;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.json.JSONArray;
@@ -37,7 +38,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 public class CapabilitiesRestApiTest extends BaseRMWebScriptTestCase
 {
     /** URLs for the REST API */
-    private static final String GET_CAPABILITIES_URL = "/api/capabilities?";
+    private static final String GET_CAPABILITIES_URL = "/api/node/{0}/{1}/{2}/capabilities?";
 
     /**
      * Tests the REST API to get the list of capabilities
@@ -47,14 +48,21 @@ public class CapabilitiesRestApiTest extends BaseRMWebScriptTestCase
      */
     public void testGetCapabilitiesAction() throws IOException, JSONException
     {
+    	String baseURL = MessageFormat.format(GET_CAPABILITIES_URL, 
+    								   	      filePlan.getStoreRef().getProtocol(), 
+    								   	      filePlan.getStoreRef().getIdentifier(),
+    								   	      filePlan.getId());
+    	
         // Format url and send request
-        String getUrl = String.format(GET_CAPABILITIES_URL + "includeAll=%s", true);
+        String getUrl = String.format(baseURL + "includeAll=%s", true);
         Response getResponse = sendRequest(new GetRequest(getUrl), Status.STATUS_OK);
 
         // Check the content from the response
         String getContentAsString = getResponse.getContentAsString();
         assertNotNull(getContentAsString);
 
+        System.out.println(getContentAsString);
+        
         // Convert the response to json and check the data
         JSONObject getContentAsJson = new JSONObject(getContentAsString);
         JSONObject getData = getContentAsJson.getJSONObject("data");
@@ -65,7 +73,7 @@ public class CapabilitiesRestApiTest extends BaseRMWebScriptTestCase
         assertNotNull(getDataSets);
 
         // Format url and send another request with different parameter
-        getUrl = String.format(GET_CAPABILITIES_URL + "grouped=%s", true);
+        getUrl = String.format(baseURL + "grouped=%s", true);
         getResponse = sendRequest(new GetRequest(getUrl), Status.STATUS_OK);
 
         // Check the content from the response
@@ -73,7 +81,7 @@ public class CapabilitiesRestApiTest extends BaseRMWebScriptTestCase
         assertNotNull(getContentAsString);
 
         // If both parameters are specified the result should be the same with only specifying the "grouped" parameter
-        getUrl = String.format(GET_CAPABILITIES_URL + "includeAll=%s&amp;grouped=%s", true, true);
+        getUrl = String.format(baseURL + "includeAll=%s&amp;grouped=%s", true, true);
         getResponse = sendRequest(new GetRequest(getUrl), Status.STATUS_OK);
         getContentAsString.equalsIgnoreCase(getResponse.getContentAsString());
 

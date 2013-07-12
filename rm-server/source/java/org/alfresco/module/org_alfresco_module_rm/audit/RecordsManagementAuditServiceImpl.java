@@ -36,6 +36,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.model.AuditApplication;
@@ -88,11 +89,11 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @since 3.2
  */
 public class RecordsManagementAuditServiceImpl
-        extends AbstractLifecycleBean
-        implements RecordsManagementAuditService,
-                   NodeServicePolicies.OnCreateNodePolicy,
-                   NodeServicePolicies.BeforeDeleteNodePolicy,
-                   NodeServicePolicies.OnUpdatePropertiesPolicy
+        	 extends AbstractLifecycleBean
+             implements RecordsManagementAuditService,
+                        NodeServicePolicies.OnCreateNodePolicy,
+                        NodeServicePolicies.BeforeDeleteNodePolicy,
+                        NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     /** I18N */
     private static final String MSG_UPDATED_METADATA = "rm.audit.updated-metadata";
@@ -149,15 +150,12 @@ public class RecordsManagementAuditServiceImpl
     private AuditService auditService;
     private RecordsManagementService rmService;
     private RecordsManagementActionService rmActionService;
+    private FilePlanService filePlanService;
 
     private boolean shutdown = false;
 
     private RMAuditTxnListener txnListener;
     private Map<String, AuditEvent> auditEvents;
-
-    public RecordsManagementAuditServiceImpl()
-    {
-    }
 
     /**
      * Set the component used to bind to behaviour callbacks
@@ -230,6 +228,14 @@ public class RecordsManagementAuditServiceImpl
     {
         this.rmActionService = rmActionService;
     }
+    
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
 
     /**
      * Checks that all necessary properties have been set.
@@ -245,6 +251,7 @@ public class RecordsManagementAuditServiceImpl
         PropertyCheck.mandatory(this, "rmService", rmService);
         PropertyCheck.mandatory(this, "rmActionService", rmActionService);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory(this, "filePlanService", filePlanService);
 
         // setup the audit events map
         initAuditEvents();
@@ -357,12 +364,44 @@ public class RecordsManagementAuditServiceImpl
     {
         shutdown = true;
     }
+    
+    /*** TODO remove this when we support multiple file plans ****/
+    
+    private NodeRef defaultFilePlan;
+    
+    private NodeRef getDefaultFilePlan()
+    {
+    	if (defaultFilePlan == null)
+    	{
+    		defaultFilePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+    		if (defaultFilePlan == null)
+    		{
+    			throw new AlfrescoRuntimeException("Default file plan could not be found.");
+    		}
+    	}
+    	return defaultFilePlan;
+    }
+    
+    /*** TODO end ***/
 
     /**
      * {@inheritDoc}
      */
-    public boolean isEnabled()
+    @Override
+    @Deprecated
+    public boolean isEnabled() 
     {
+    	return isAuditLogEnabled(getDefaultFilePlan());
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isAuditLogEnabled(NodeRef filePlan)
+    {
+    	ParameterCheck.mandatory("filePlan", filePlan);    	
+    	// TODO use file plan to scope audit log   	
+    	
         return auditService.isAuditEnabled(
                 RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME,
                 RecordsManagementAuditService.RM_AUDIT_PATH_ROOT);
@@ -371,32 +410,71 @@ public class RecordsManagementAuditServiceImpl
     /**
      * {@inheritDoc}
      */
+    @Deprecated
     public void start()
     {
+    	startAuditLog(getDefaultFilePlan());
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void startAuditLog(NodeRef filePlan)
+    {
+    	ParameterCheck.mandatory("filePlan", filePlan);    	
+    	// TODO use file plan to scope audit log 
+    	
         auditService.enableAudit(
                 RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME,
                 RecordsManagementAuditService.RM_AUDIT_PATH_ROOT);
+        
         if (logger.isInfoEnabled())
+        {
             logger.info("Started Records Management auditing");
+        }
     }
 
     /**
      * {@inheritDoc}
      */
+    @Deprecated
     public void stop()
     {
+    	stopAuditLog(getDefaultFilePlan());
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void stopAuditLog(NodeRef filePlan)
+    {
+    	ParameterCheck.mandatory("filePlan", filePlan);    	
+    	// TODO use file plan to scope audit log 
+    	
         auditService.disableAudit(
                 RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME,
                 RecordsManagementAuditService.RM_AUDIT_PATH_ROOT);
         if (logger.isInfoEnabled())
             logger.info("Stopped Records Management auditing");
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
+    public void clear()
+    {
+    	clearAuditLog(getDefaultFilePlan());
+    }
 
     /**
      * {@inheritDoc}
      */
-    public void clear()
+    public void clearAuditLog(NodeRef filePlan)
     {
+    	ParameterCheck.mandatory("filePlan", filePlan);    	
+    	// TODO use file plan to scope audit log
+    	
         auditService.clearAudit(RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME, null, null);
         if (logger.isInfoEnabled())
             logger.debug("Records Management audit log has been cleared");
@@ -405,17 +483,41 @@ public class RecordsManagementAuditServiceImpl
     /**
      * {@inheritDoc}
      */
+    @Deprecated
     public Date getDateLastStarted()
     {
+    	return getDateAuditLogLastStarted(getDefaultFilePlan());
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public Date getDateAuditLogLastStarted(NodeRef filePlan)
+    {
+    	ParameterCheck.mandatory("filePlan", filePlan);    	
+    	// TODO use file plan to scope audit log
+    	
         // TODO: return proper date, for now it's today's date
         return new Date();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
+    public Date getDateLastStopped()
+    {
+        return getDateAuditLogLastStopped(getDefaultFilePlan());
     }
 
     /**
      * {@inheritDoc}
      */
-    public Date getDateLastStopped()
+    public Date getDateAuditLogLastStopped(NodeRef filePlan)
     {
+    	ParameterCheck.mandatory("filePlan", filePlan);    	
+    	// TODO use file plan to scope audit log
+    	
         // TODO: return proper date, for now it's today's date
         return new Date();
     }
@@ -431,10 +533,6 @@ public class RecordsManagementAuditServiceImpl
         private String eventName;
         private Map<QName, Serializable> nodePropertiesBefore;
         private Map<QName, Serializable> nodePropertiesAfter;
-
-        private RMAuditNode()
-        {
-        }
 
         public String getEventName()
         {

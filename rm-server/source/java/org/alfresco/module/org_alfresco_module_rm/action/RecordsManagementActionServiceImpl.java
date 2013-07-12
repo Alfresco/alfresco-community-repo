@@ -29,7 +29,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRMActionExecution;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRMActionExecution;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPoliciesUtil;
+import org.alfresco.module.org_alfresco_module_rm.util.PoliciesUtil;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -134,7 +134,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     protected void invokeBeforeRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters)
     {
         // get qnames to invoke against
-        Set<QName> qnames = RecordsManagementPoliciesUtil.getTypeAndAspectQNames(nodeService, nodeRef);
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(nodeService, nodeRef);
         // execute policy for node type and aspects
         BeforeRMActionExecution policy = beforeRMActionExecutionDelegate.get(qnames);
         policy.beforeRMActionExecution(nodeRef, name, parameters);
@@ -150,7 +150,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     protected void invokeOnRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters)
     {
         // get qnames to invoke against
-        Set<QName> qnames = RecordsManagementPoliciesUtil.getTypeAndAspectQNames(nodeService, nodeRef);
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(nodeService, nodeRef);
         // execute policy for node type and aspects
         OnRMActionExecution policy = onRMActionExecutionDelegate.get(qnames);
         policy.onRMActionExecution(nodeRef, name, parameters);

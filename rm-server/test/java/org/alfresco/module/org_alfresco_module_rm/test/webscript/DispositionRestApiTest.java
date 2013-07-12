@@ -127,7 +127,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         
         // create a new recordCategory node in the recordSeries and then get
         // the disposition schedule
-        NodeRef newRecordCategory = rmService.createRecordCategory(recordSeries, GUID.generate());
+        NodeRef newRecordCategory = filePlanService.createRecordCategory(recordSeries, GUID.generate());
         dispositionService.createDispositionSchedule(newRecordCategory, null);
         
         categoryNodeUrl = newRecordCategory.toString().replace("://", "/");
@@ -154,7 +154,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
     {
         // create a new recordCategory node in the recordSeries and then get
         // the disposition schedule
-        NodeRef newRecordCategory = rmService.createRecordCategory(recordSeries, GUID.generate());
+        NodeRef newRecordCategory = filePlanService.createRecordCategory(recordSeries, GUID.generate());
         dispositionService.createDispositionSchedule(newRecordCategory, null);
         
         String categoryNodeUrl = newRecordCategory.toString().replace("://", "/");
@@ -232,7 +232,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
     
     public void testPutDispositionAction() throws Exception
     {
-        NodeRef newRecordCategory = rmService.createRecordCategory(recordSeries, GUID.generate());
+        NodeRef newRecordCategory = filePlanService.createRecordCategory(recordSeries, GUID.generate());
         dispositionService.createDispositionSchedule(newRecordCategory, null);
         
         // create an action definition to then update
@@ -301,7 +301,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
     
     public void testDeleteDispositionAction() throws Exception
     {
-        NodeRef newRecordCategory = rmService.createRecordCategory(recordSeries, GUID.generate());
+        NodeRef newRecordCategory = filePlanService.createRecordCategory(recordSeries, GUID.generate());
         dispositionService.createDispositionSchedule(newRecordCategory, null);
         
         // create an action definition to then delete

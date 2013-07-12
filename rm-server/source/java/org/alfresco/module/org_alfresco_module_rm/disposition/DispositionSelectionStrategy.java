@@ -25,7 +25,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
@@ -47,6 +47,9 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
     /** Disposition service */
     private DispositionService dispositionService;
     
+    /** File plan authentication service */
+    private FilePlanAuthenticationService filePlanAuthenticationService;
+    
     /**
      * Set the disposition service
      * 
@@ -56,6 +59,14 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
     {
         this.dispositionService = dispositionService;
     }
+    
+    /**
+     * @param filePlanAuthenticationService	file plan authentication service
+     */
+    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService) 
+    {
+		this.filePlanAuthenticationService = filePlanAuthenticationService;
+	}
     
     /**
      * Select the disposition schedule to use given there is more than one
@@ -79,12 +90,22 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
             // period than a time-based one - as we cannot know when an event will occur
             // TODO Automatic events?
             
-            SortedSet<NodeRef> sortedFolders = new TreeSet<NodeRef>(new DispositionableNodeRefComparator());
-            for (NodeRef f : recordFolders)
-            {
-                sortedFolders.add(f);
-            }
-            DispositionSchedule dispSchedule = dispositionService.getDispositionSchedule(sortedFolders.first());
+        	NodeRef recordFolder = null;
+        	if (recordFolders.size() == 1)
+        	{
+        		recordFolder = recordFolders.get(0);
+        	}
+        	else
+        	{        	
+	            SortedSet<NodeRef> sortedFolders = new TreeSet<NodeRef>(new DispositionableNodeRefComparator());
+	            for (NodeRef f : recordFolders)
+	            {
+	                sortedFolders.add(f);
+	            }
+	            recordFolder = sortedFolders.first();
+        	}
+        	
+            DispositionSchedule dispSchedule = dispositionService.getDispositionSchedule(recordFolder);
             
             if (logger.isDebugEnabled())
             {
@@ -112,14 +133,14 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
         public int compare(final NodeRef f1, final NodeRef f2)
         {
             // Run as admin user
-            return AuthenticationUtil.runAs(new RunAsWork<Integer>()
+            return filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Integer>()
             {
                 public Integer doWork() throws Exception
                 {
                     return new Integer(compareImpl(f1, f2));
                 }
                 
-            }, AuthenticationUtil.getAdminUserName()).intValue();           
+            }).intValue();           
         }
         
         private int compareImpl(NodeRef f1, NodeRef f2)

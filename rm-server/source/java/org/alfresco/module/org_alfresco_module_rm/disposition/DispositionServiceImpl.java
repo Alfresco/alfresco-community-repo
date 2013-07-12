@@ -32,6 +32,7 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegist
 import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -84,6 +85,9 @@ public class DispositionServiceImpl implements
     
     /** Disposition selection strategy */
     private DispositionSelectionStrategy dispositionSelectionStrategy;
+    
+    /** File plan service */
+    private FilePlanService filePlanService;
     
     /** Application context */
     private ApplicationContext applicationContext;
@@ -144,6 +148,14 @@ public class DispositionServiceImpl implements
     {
         this.policyComponent = policyComponent;
     }
+    
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
     
     /**
      * Get the records management service 
@@ -296,7 +308,7 @@ public class DispositionServiceImpl implements
         if (result == null)
         {
             NodeRef parent = this.nodeService.getPrimaryParent(nodeRef).getParentRef();
-            if (parent != null && getRmService().isRecordCategory(parent) == true)
+            if (parent != null && filePlanService.isRecordCategory(parent) == true)
             {
                 result = getDispositionScheduleImpl(parent);
             }
@@ -339,7 +351,7 @@ public class DispositionServiceImpl implements
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
         // Make sure we are dealing with an RM node
-        if (getRmService().isFilePlanComponent(nodeRef) == false)
+        if (filePlanService.isFilePlanComponent(nodeRef) == false)
         {
             throw new AlfrescoRuntimeException("Can not find the associated disposition schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
         }
@@ -434,7 +446,7 @@ public class DispositionServiceImpl implements
      */
     private List<NodeRef> getDisposableItemsImpl(boolean isRecordLevelDisposition, NodeRef rmContainer)
     {
-        List<NodeRef> items = getRmService().getAllContained(rmContainer);
+        List<NodeRef> items = filePlanService.getAllContained(rmContainer);
         List<NodeRef> result = new ArrayList<NodeRef>(items.size());
         for (NodeRef item : items)
         {
@@ -449,7 +461,7 @@ public class DispositionServiceImpl implements
                     result.add(item);
                 }
             }
-            else if (getRmService().isRecordCategory(item) == true)
+            else if (filePlanService.isRecordCategory(item) == true)
             {
                 if (getAssociatedDispositionScheduleImpl(item) == null)
                 {

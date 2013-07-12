@@ -90,7 +90,8 @@ public class RequestInfoNotifier implements TaskListener
      * @param recordName The name of the record
      * @return Returns the email subject
      */
-    private String getEmailSubject(String recordName)
+    @SuppressWarnings("unused")
+	private String getEmailSubject(String recordName)
     {
         StringBuilder sb = new StringBuilder();
         sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.subject"));
@@ -106,7 +107,8 @@ public class RequestInfoNotifier implements TaskListener
      * @param recordName The name of the record
      * @return Returns the email body
      */
-    private String getEmailBody(String recordName)
+    @SuppressWarnings("unused")
+	private String getEmailBody(String recordName)
     {
         StringBuilder sb = new StringBuilder();
         sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.body1"));

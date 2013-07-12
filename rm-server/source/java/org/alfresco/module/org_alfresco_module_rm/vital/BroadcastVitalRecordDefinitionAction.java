@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -45,7 +46,14 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstractBase
 {
-    private FilePlanAuthenticationService filePlanAuthenticationService;
+	protected FilePlanService filePlanService;
+	
+    protected FilePlanAuthenticationService filePlanAuthenticationService;
+    
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
     
     public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
     {
@@ -94,7 +102,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
         {
             NodeRef nextChild = nextAssoc.getChildRef();
 
-            if (recordsManagementService.isFilePlanComponent(nextChild) == true)
+            if (filePlanService.isFilePlanComponent(nextChild) == true)
             {
                 // If the child is a record, then the VitalRecord aspect needs to be applied or updated
                 if (recordService.isRecord(nextChild))

@@ -20,7 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.action;
 
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.service.cmr.action.ActionDefinition;
 
 /**

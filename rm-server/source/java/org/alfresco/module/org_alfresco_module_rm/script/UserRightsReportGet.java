@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -52,6 +52,7 @@ public class UserRightsReportGet extends DeclarativeWebScript
     protected NodeService nodeService;
     protected RecordsManagementService rmService;
     protected FilePlanRoleService filePlanRoleService;
+    protected FilePlanService filePlanService;
     
     /**
      * Sets the AuthorityService instance
@@ -99,19 +100,26 @@ public class UserRightsReportGet extends DeclarativeWebScript
         this.filePlanRoleService = filePlanRoleService;
     }
     
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
+    
     /*
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        // get the RM root nodes in the system
-        List<NodeRef> rmRoots = this.rmService.getFilePlans();
+        NodeRef filePlanNode = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
         
-        if (rmRoots == null || rmRoots.size() == 0)
+        if (filePlanNode == null)
         {
             status.setCode(HttpServletResponse.SC_BAD_REQUEST, 
-                        "There are no Records Management root nodes in the system");
+                        "The default RM site could not be found.");
             return null;
         }
         
@@ -120,11 +128,8 @@ public class UserRightsReportGet extends DeclarativeWebScript
         Map<String, RoleModel> rolesMap = new HashMap<String, RoleModel>(8);
         Map<String, GroupModel> groupsMap = new HashMap<String, GroupModel>(8);
         
-        // TODO: deal with presence of more than one root, for now we know it's only 1
-        NodeRef rmRootNode = rmRoots.get(0);
-        
         // iterate over all the roles for the file plan and construct models
-        Set<Role> roles = this.filePlanRoleService.getRoles(rmRootNode);
+        Set<Role> roles = filePlanRoleService.getRoles(filePlanNode);
         for (Role role : roles)
         {
             // get or create the RoleModel object for current role
@@ -138,7 +143,7 @@ public class UserRightsReportGet extends DeclarativeWebScript
             
             // get the users for the current RM role
             String group = role.getRoleGroupName();
-            Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, group, true);
+            Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, group, true);
             roleModel.setUsers(users);
             
             // setup a user model object for each user
@@ -158,7 +163,7 @@ public class UserRightsReportGet extends DeclarativeWebScript
             }
             
             // get the groups for the cuurent RM role
-            Set<String> groups = this.authorityService.getContainedAuthorities(AuthorityType.GROUP, group, false);
+            Set<String> groups = authorityService.getContainedAuthorities(AuthorityType.GROUP, group, false);
             roleModel.setGroups(groups);
             
             // setup a user model object for each user in each group
@@ -168,7 +173,7 @@ public class UserRightsReportGet extends DeclarativeWebScript
                 if (groupModel == null)
                 {
                     groupModel = new GroupModel(groupName, 
-                                this.authorityService.getAuthorityDisplayName(groupName));
+                                authorityService.getAuthorityDisplayName(groupName));
                     groupsMap.put(groupName, groupModel);
                 }
                 

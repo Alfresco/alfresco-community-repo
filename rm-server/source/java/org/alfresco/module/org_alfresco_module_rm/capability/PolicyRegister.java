@@ -16,25 +16,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition;
+package org.alfresco.module.org_alfresco_module_rm.capability;
 
-import org.alfresco.module.org_alfresco_module_rm.capability.declarative.AbstractCapabilityCondition;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.module.org_alfresco_module_rm.capability.policy.Policy;
 
 /**
  * @author Roy Wetherall
  */
-public class DeclaredCapabilityCondition extends AbstractCapabilityCondition
+public interface PolicyRegister 
 {
-    @Override
-    public boolean evaluate(NodeRef nodeRef)
-    {
-        boolean result = false;
-        if (FilePlanComponentKind.RECORD.equals(filePlanService.getFilePlanComponentKind(nodeRef)) == true)
-        {
-            result = recordService.isDeclared(nodeRef);
-        }
-        return result;
-    }
+	void registerPolicy(Policy policy);
 }

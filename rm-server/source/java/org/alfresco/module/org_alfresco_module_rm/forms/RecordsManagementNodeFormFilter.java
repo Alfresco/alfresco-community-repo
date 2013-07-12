@@ -24,12 +24,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ImapModel;
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.compatibility.CompatibilityModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionScheduleImpl;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.forms.Field;
@@ -71,6 +72,9 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
 
     /** Disposition service */
     protected DispositionService dispositionService;
+    
+    /** File Plan Service */
+    protected FilePlanService filePlanService;
 
     /**
      * Sets the data dictionary service
@@ -91,6 +95,14 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     {
         this.dispositionService = dispositionService;
     }
+    
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
 
     /**
      * @see org.alfresco.repo.forms.processor.Filter#afterGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form, java.util.Map)
@@ -103,12 +115,12 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             Form form,
             Map<String, Object> context)
     {
-        if (rmService.isFilePlanComponent(nodeRef) == true)
+        if (filePlanService.isFilePlanComponent(nodeRef) == true)
         {
             // add all the custom properties
             addCustomPropertyFieldsToGroup(form, nodeRef);
 
-            FilePlanComponentKind kind = rmService.getFilePlanComponentKind(nodeRef);
+            FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
             if (FilePlanComponentKind.RECORD.equals(kind) == true)
             {
                 // add all the record meta-data aspect properties

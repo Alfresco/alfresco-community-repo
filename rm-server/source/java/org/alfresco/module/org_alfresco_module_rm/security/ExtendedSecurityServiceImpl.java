@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.RenditionModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -62,9 +61,6 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /** Policy component */
     private PolicyComponent policyComponent;
     
-    /** Records management service */
-    private RecordsManagementService recordsManagementService;
-    
     /** Record service */
     private RecordService recordService;
     
@@ -88,14 +84,6 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
-    }
-    
-    /**
-     * @param recordsManagementService  records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
     }
     
     /**
@@ -244,7 +232,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             // apply the extended readers up the file plan primary hierarchy
             NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
             if (parent != null &&
-                recordsManagementService.isFilePlanComponent(parent) == true)
+                filePlanService.isFilePlanComponent(parent) == true)
             {
                 addExtendedSecurityImpl(parent, readers, null, applyToParents);
                 addExtendedSecurityImpl(parent, writers, null, applyToParents);
@@ -407,7 +395,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 // apply the extended readers up the file plan primary hierarchy
                 NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
                 if (parent != null &&
-                    recordsManagementService.isFilePlanComponent(parent) == true)
+                    filePlanService.isFilePlanComponent(parent) == true)
                 {
                     removeExtendedSecurity(parent, readers, null, applyToParents);
                     removeExtendedSecurity(parent, writers, null, applyToParents);

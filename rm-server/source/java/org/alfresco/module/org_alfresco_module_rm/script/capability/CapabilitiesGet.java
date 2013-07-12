@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,10 +25,10 @@ import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Group;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -39,22 +39,33 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+/**
+ * Capabilities GET web service implementation.
+ */
 public class CapabilitiesGet extends DeclarativeWebScript
 {
-    private RecordsManagementService recordsManagementService;
-
+	/** File plan service */
+    private FilePlanService filePlanService;
+    
+    /** Capability service */
     private CapabilityService capabilityService;
 
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
-    }
-
+    /**
+     * @param capabilityService	capability service
+     */
     public void setCapabilityService(CapabilityService capabilityService)
     {
         this.capabilityService = capabilityService;
     }
 
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
+    
     /**
      * @see org.alfresco.repo.web.scripts.content.StreamContent#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
@@ -75,16 +86,11 @@ public class CapabilitiesGet extends DeclarativeWebScript
         {
             // we are talking about the file plan node
             // TODO we are making the assumption there is only one file plan here!
-            List<NodeRef> filePlans = recordsManagementService.getFilePlans();
-            if (filePlans.isEmpty() == true)
+            nodeRef = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+            if (nodeRef == null)
             {
-                throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "No file plan node has been found.");
+                throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The default file plan node could not be found.");
             }
-            else if (filePlans.size() != 1)
-            {
-                throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "More than one file plan has been found.");
-            }
-            nodeRef = filePlans.get(0);
         }
 
         boolean grouped = false;

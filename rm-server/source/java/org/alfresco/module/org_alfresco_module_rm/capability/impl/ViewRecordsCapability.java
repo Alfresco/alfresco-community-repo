@@ -32,7 +32,7 @@ public final class ViewRecordsCapability extends DeclarativeCapability
     {
         if (nodeRef != null)
         {
-            if (rmService.isFilePlanComponent(nodeRef) == true)
+            if (filePlanService.isFilePlanComponent(nodeRef) == true)
             {
                 return checkRmRead(nodeRef);
             }

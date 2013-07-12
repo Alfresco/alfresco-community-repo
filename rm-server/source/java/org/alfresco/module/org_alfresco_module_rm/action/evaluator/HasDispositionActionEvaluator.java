@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.action.evaluator;
 
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.DispositionActionRelativePositions;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionConditionEvaluatorAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
@@ -128,5 +127,4 @@ public class HasDispositionActionEvaluator extends RecordsManagementActionCondit
                 "rm-ac-disposition-actions"));
 
     }
-
 }

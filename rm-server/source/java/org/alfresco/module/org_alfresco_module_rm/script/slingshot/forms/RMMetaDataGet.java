@@ -27,8 +27,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -56,22 +56,14 @@ public class RMMetaDataGet extends DeclarativeWebScript
     /** QName pattern */
     private static final Pattern qnamePattern = Pattern.compile(".+:[^=,]+");
     
-    /** Records management service */
-    private RecordsManagementService rmService;
-    
     /** Namespace service */
     private NamespaceService namespaceService;
     
     /** Node service */
     private NodeService nodeService;
     
-    /**
-     * @param rmService records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
-    }
+    /** File Plan Service */
+    private FilePlanService filePlanService;
     
     /**
      * @param namespaceService  namespace service
@@ -80,6 +72,14 @@ public class RMMetaDataGet extends DeclarativeWebScript
     {
         this.namespaceService = namespaceService;
     }
+    
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
     
     /**
      * @param nodeService   node service
@@ -112,7 +112,7 @@ public class RMMetaDataGet extends DeclarativeWebScript
             	if (m.matches() == true)
             	{
 	                QName qname = QName.createQName(type, namespaceService);
-	                FilePlanComponentKind kind = rmService.getFilePlanComponentKindFromType(qname);
+	                FilePlanComponentKind kind = filePlanService.getFilePlanComponentKindFromType(qname);
 	                if (kind != null)
 	                {
 	                    result = kind.toString();
@@ -130,7 +130,7 @@ public class RMMetaDataGet extends DeclarativeWebScript
                 {
                     NodeRef nodeRefObj = new NodeRef(nodeRef);
                     
-                    FilePlanComponentKind kind = rmService.getFilePlanComponentKind(nodeRefObj);
+                    FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRefObj);
                     if (kind != null)
                     {
                         result = kind.toString();

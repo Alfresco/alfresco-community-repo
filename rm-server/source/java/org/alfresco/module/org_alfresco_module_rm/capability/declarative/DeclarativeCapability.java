@@ -26,9 +26,9 @@ import java.util.Map;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.apache.commons.logging.Log;
@@ -255,7 +255,7 @@ public class DeclarativeCapability extends AbstractCapability
     {
         boolean result = false;
         
-        FilePlanComponentKind actualKind = rmService.getFilePlanComponentKind(nodeRef);
+        FilePlanComponentKind actualKind = filePlanService.getFilePlanComponentKind(nodeRef);
         
         if (actualKind != null)        
         {
@@ -292,7 +292,7 @@ public class DeclarativeCapability extends AbstractCapability
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
         
         // Check we are dealing with a file plan component
-        if (rmService.isFilePlanComponent(nodeRef) == true)
+        if (filePlanService.isFilePlanComponent(nodeRef) == true)
         {
             // Check the kind of the object, the permissions and the conditions
             if (checkKinds(nodeRef) == true && checkPermissions(nodeRef) == true && checkConditions(nodeRef) == true)

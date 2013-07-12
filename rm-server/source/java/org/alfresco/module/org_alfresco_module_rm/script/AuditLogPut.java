@@ -61,11 +61,11 @@ public class AuditLogPut extends BaseAuditAdminWebScript
             boolean enabled = json.getBoolean(PARAM_ENABLED);
             if (enabled)
             {
-                this.rmAuditService.start();
+                this.rmAuditService.startAuditLog(getDefaultFilePlan());
             }
             else
             {
-                this.rmAuditService.stop();
+                this.rmAuditService.stopAuditLog(getDefaultFilePlan());
             }
             
             // create model object with the audit status model

@@ -67,16 +67,25 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     {
         super.setUp();
         
-        // test start time recorded
-        testStartTime = new Date();
-        
-        // Stop and clear the log
-        auditService.stop();
-        auditService.clear();
-        auditService.start();
-
-        // check that audit service is started
-        assertTrue(auditService.isEnabled());
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+		        // test start time recorded
+		        testStartTime = new Date();
+		        
+		        // Stop and clear the log
+		        auditService.stopAuditLog(filePlan);
+		        auditService.clearAuditLog(filePlan);
+		        auditService.startAuditLog(filePlan);
+		
+		        // check that audit service is started
+		        assertTrue(auditService.isAuditLogEnabled(filePlan));
+		        
+		        return null;
+            }
+        });
     }
     
     /**
@@ -100,7 +109,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         super.tearDown();
         
         // ensure the audit is restarted
-        auditService.start();       
+        auditService.startAuditLog(filePlan);       
     }
     
     /**
@@ -274,7 +283,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     public void testAdminMethods() throws InterruptedException
     {
         // Stop the audit
-        auditService.stop();
+        auditService.stopAuditLog(filePlan);
         
         Thread.sleep(5000);
         
@@ -294,7 +303,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
                 result1.size(), result2.size());
         
         // repeat with a start
-        auditService.start();
+        auditService.startAuditLog(filePlan);
         updateTitle(filePlan, rmAdminName);
         
         Thread.sleep(5000);
@@ -308,8 +317,8 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         Thread.sleep(5000);
 
         // Stop and delete all entries
-        auditService.stop();
-        auditService.clear();
+        auditService.stopAuditLog(filePlan);
+        auditService.clearAuditLog(filePlan);
 
         // There should be no entries
         List<RecordsManagementAuditEntry> result4 = getAuditTrail(rmAdminName);
@@ -327,9 +336,9 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     
     public void xtestAuditAuthentication()
     {
-        auditService.stop();
-        auditService.clear();
-        auditService.start();
+        auditService.stopAuditLog(filePlan);
+        auditService.clearAuditLog(filePlan);
+        auditService.startAuditLog(filePlan);
 
         //MutableAuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
         //PersonService personService = serviceRegistry.getPersonService();
@@ -359,7 +368,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         {
             AuthenticationUtil.popAuthentication();
         }
-        auditService.stop();
+        auditService.stopAuditLog(filePlan);
         List<RecordsManagementAuditEntry> result1 = getAuditTrail(rmAdminName);
         // Check that the username is reflected correctly in the results
         assertFalse("No audit results were generated for the failed login.", result1.isEmpty());
@@ -392,8 +401,8 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         personProperties.put(ContentModel.PROP_LASTNAME, "Dickons");
         personService.createPerson(personProperties);
         
-        auditService.clear();
-        auditService.start();
+        auditService.clearAuditLog(filePlan);
+        auditService.startAuditLog(filePlan);
         try
         {
             AuthenticationUtil.pushAuthentication();
@@ -403,7 +412,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         {
             AuthenticationUtil.popAuthentication();
         }
-        auditService.stop();
+        auditService.stopAuditLog(filePlan);
         List<RecordsManagementAuditEntry> result2 = getAuditTrail(rmAdminName);
         found = false;
         for (RecordsManagementAuditEntry entry : result2)

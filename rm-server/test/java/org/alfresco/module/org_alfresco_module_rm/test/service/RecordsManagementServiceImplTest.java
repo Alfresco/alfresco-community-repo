@@ -20,8 +20,8 @@ package org.alfresco.module.org_alfresco_module_rm.test.service;
 
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -40,6 +40,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
     /**
      * @see RecordsManagementService#isFilePlanComponent(org.alfresco.service.cmr.repository.NodeRef)
      */
+	@SuppressWarnings("deprecation")
     public void testIsFilePlanComponent() throws Exception
     {
         doTestInTransaction(new Test<NodeRef>()
@@ -59,6 +60,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
     /**
      * @see RecordsManagementService#getFilePlanComponentKind(NodeRef)
      */
+    @SuppressWarnings("deprecation")
     public void testGetFilePlanComponentKind() throws Exception
     {
         doTestInTransaction(new Test<NodeRef>()
@@ -105,6 +107,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
     /**
      * @see RecordsManagementService#isRecordCategory(NodeRef)
      */
+    @SuppressWarnings("deprecation")
     public void testIsRecordCategory() throws Exception
     {
         doTestInTransaction(new Test<NodeRef>()
@@ -139,14 +142,6 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
             }
         });
     }
-    
-    // TODO void testIsRecord()
-    
-    // TODO void testIsHold()
-    
-    // TODO void testIsTransfer()
-    
-    // TODO void testGetNodeRefPath()
     
     /**
      * @see RecordsManagementService#getRecordsManagementRoot()
@@ -195,6 +190,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
      * @see RecordsManagementService#createFilePlan(org.alfresco.service.cmr.repository.NodeRef, String)
      * @see RecordsManagementService#createFilePlan(org.alfresco.service.cmr.repository.NodeRef, String, org.alfresco.service.namespace.QName)
      */
+    @SuppressWarnings("deprecation")
     public void testCreateFilePlan() throws Exception
     {
         // Create default type of root
@@ -260,6 +256,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
      * @see RecordsManagementService#createRecordCategory(NodeRef, String)
      * @see RecordsManagementService#createRecordCategory(NodeRef, String, org.alfresco.service.namespace.QName)
      */
+    @SuppressWarnings("deprecation")
     public void testCreateRecordCategory() throws Exception
     {
         // Create container (in root)
@@ -342,6 +339,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
      * @see RecordsManagementService#getAllContained(NodeRef)
      * @see RecordsManagementService#getAllContained(NodeRef, boolean)
      */
+    @SuppressWarnings("deprecation")
     public void testGetAllContained() throws Exception
     {
         // Get all contained test
@@ -404,6 +402,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
      * @see RecordsManagementService#getContainedRecordCategories(NodeRef)
      * @see RecordsManagementService#getContainedRecordCategories(NodeRef, boolean)
      */
+    @SuppressWarnings("deprecation")
     public void testGetContainedRecordCategories() throws Exception
     {
         // Test getting all contained containers
@@ -461,6 +460,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
      * @see RecordsManagementService#getContainedRecordFolders(NodeRef)
      * @see RecordsManagementService#getContainedRecordFolders(NodeRef, boolean)
      */
+    @SuppressWarnings("deprecation")
     public void testGetContainedRecordFolders() throws Exception
     {
         // Test getting all contained record folders
@@ -575,6 +575,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
     /**
      * Test to create a simple multi-hierarchy record taxonomy  
      */
+    @SuppressWarnings("deprecation")
     public void testCreateSimpleHierarchy()
     {
         doTestInTransaction(new Test<Void>()

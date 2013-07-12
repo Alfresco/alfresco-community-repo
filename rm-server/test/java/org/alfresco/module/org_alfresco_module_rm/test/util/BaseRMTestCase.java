@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
@@ -293,7 +293,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         // Get the application context
         applicationContext = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
         utils = new CommonRMTestUtils(applicationContext);
-
+	
         // Initialise the service beans
         initServices();
 
@@ -484,6 +484,9 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
               ContentModel.TYPE_FOLDER,
               containerProps).getChildRef();
         assertNotNull("Could not create base folder", folder);
+        
+        permissionService.setPermission(folder, "rmadmin", PermissionService.WRITE, true);
+        permissionService.setPermission(folder, "rmadmin", PermissionService.ADD_CHILDREN, true);
 
         siteInfo = siteService.createSite(
                         "rm-site-dashboard",
@@ -497,7 +500,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         assertNotNull("Site document library container was not created successfully.", filePlan);
 
         // Create RM container
-        rmContainer = rmService.createRecordCategory(filePlan, "rmContainer");
+        rmContainer = filePlanService.createRecordCategory(filePlan, "rmContainer");
         assertNotNull("Could not create rm container", rmContainer);
 
         // Create disposition schedule
@@ -633,27 +636,27 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected void setupMultiHierarchyTestDataImpl()
     {
         // Create root mh container
-        mhContainer = rmService.createRecordCategory(filePlan, "mhContainer");
+        mhContainer = filePlanService.createRecordCategory(filePlan, "mhContainer");
 
         // Level 1
-        mhContainer11 = rmService.createRecordCategory(mhContainer, "mhContainer11");
+        mhContainer11 = filePlanService.createRecordCategory(mhContainer, "mhContainer11");
         mhDispositionSchedule11 = utils.createBasicDispositionSchedule(mhContainer11, "ds11", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
-        mhContainer12 = rmService.createRecordCategory(mhContainer, "mhContainer12");
+        mhContainer12 = filePlanService.createRecordCategory(mhContainer, "mhContainer12");
         mhDispositionSchedule12 = utils.createBasicDispositionSchedule(mhContainer12, "ds12", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
 
         // Level 2
-        mhContainer21 = rmService.createRecordCategory(mhContainer11, "mhContainer21");
-        mhContainer22 = rmService.createRecordCategory(mhContainer12, "mhContainer22");
-        mhContainer23 = rmService.createRecordCategory(mhContainer12, "mhContainer23");
+        mhContainer21 = filePlanService.createRecordCategory(mhContainer11, "mhContainer21");
+        mhContainer22 = filePlanService.createRecordCategory(mhContainer12, "mhContainer22");
+        mhContainer23 = filePlanService.createRecordCategory(mhContainer12, "mhContainer23");
         mhDispositionSchedule23 = utils.createBasicDispositionSchedule(mhContainer23, "ds23", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
 
         // Level 3
-        mhContainer31 = rmService.createRecordCategory(mhContainer21, "mhContainer31");
-        mhContainer32 = rmService.createRecordCategory(mhContainer22, "mhContainer32");
-        mhContainer33 = rmService.createRecordCategory(mhContainer22, "mhContainer33");
+        mhContainer31 = filePlanService.createRecordCategory(mhContainer21, "mhContainer31");
+        mhContainer32 = filePlanService.createRecordCategory(mhContainer22, "mhContainer32");
+        mhContainer33 = filePlanService.createRecordCategory(mhContainer22, "mhContainer33");
         mhDispositionSchedule33 = utils.createBasicDispositionSchedule(mhContainer33, "ds33", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, true, true);
-        mhContainer34 = rmService.createRecordCategory(mhContainer23, "mhContainer34");
-        mhContainer35 = rmService.createRecordCategory(mhContainer23, "mhContainer35");
+        mhContainer34 = filePlanService.createRecordCategory(mhContainer23, "mhContainer34");
+        mhContainer35 = filePlanService.createRecordCategory(mhContainer23, "mhContainer35");
         mhDispositionSchedule35 = utils.createBasicDispositionSchedule(mhContainer35, "ds35", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, true, true);
 
         // Record folders

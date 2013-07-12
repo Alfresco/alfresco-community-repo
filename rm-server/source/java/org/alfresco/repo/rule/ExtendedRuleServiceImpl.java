@@ -20,7 +20,7 @@ package org.alfresco.repo.rule;
 
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -39,12 +39,12 @@ import org.alfresco.service.namespace.QName;
 public class ExtendedRuleServiceImpl extends RuleServiceImpl
 {
     private boolean runAsRmAdmin = true;
+    
+    private FilePlanService filePlanService;
 
     private FilePlanAuthenticationService filePlanAuthenticationService;
 
     protected NodeService nodeService;
-
-    private RecordsManagementService recordsManagementService;
 
     public void setRunAsRmAdmin(boolean runAsRmAdmin)
     {
@@ -56,20 +56,20 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
         this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
 
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
-    }
-
     public void setNodeService2(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
+    
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
 
     @Override
     public void saveRule(final NodeRef nodeRef, final Rule rule)
     {
-        if (recordsManagementService.isFilePlanComponent(nodeRef) == true && runAsRmAdmin == true)
+        if (filePlanService.isFilePlanComponent(nodeRef) == true && runAsRmAdmin == true)
         {
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
@@ -91,7 +91,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     @Override
     public void removeRule(final NodeRef nodeRef, final Rule rule)
     {
-        if (recordsManagementService.isFilePlanComponent(nodeRef) == true && runAsRmAdmin == true)
+        if (filePlanService.isFilePlanComponent(nodeRef) == true && runAsRmAdmin == true)
         {
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
@@ -116,7 +116,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
         QName typeQName = nodeService.getType(nodeRef);
 
         // The dispositionSchedule node will not be executed by rules
-        if (recordsManagementService.isFilePlanComponent(nodeRef) == true
+        if (filePlanService.isFilePlanComponent(nodeRef) == true
                 && typeQName.equals(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE) == false
                 && isFilePlanComponentRule(rule) == true && runAsRmAdmin == true)
         {
@@ -141,6 +141,6 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     private boolean isFilePlanComponentRule(Rule rule)
     {
         NodeRef nodeRef = getOwningNodeRef(rule);
-        return recordsManagementService.isFilePlanComponent(nodeRef);
+        return filePlanService.isFilePlanComponent(nodeRef);
     }
 }

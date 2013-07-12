@@ -191,6 +191,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogPut"
       parent="webscript">
       <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+      <property name="filePlanService" ref="FilePlanService"/>
    </bean>
 
    <!-- REST impl for DELETE Audit Log (clears audit log) -->
@@ -198,6 +199,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogDelete"
       parent="webscript">
       <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+      <property name="filePlanService" ref="FilePlanService"/>
    </bean>
 
    <!-- REST impl for POST export -->
@@ -306,7 +308,7 @@
    <bean id="webscript.org.alfresco.rma.capability.capabilities.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.capability.CapabilitiesGet"
       parent="webscript">
-      <property name="recordsManagementService" ref="RecordsManagementService" />
+      <property name="filePlanService" ref="FilePlanService" />
       <property name="capabilityService" ref="CapabilityService" />
    </bean>
 
@@ -385,6 +387,7 @@
       <property name="nodeService" ref="NodeService" />
       <property name="recordsManagementService" ref="RecordsManagementService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />
+      <property name="filePlanService" ref="FilePlanService" />
    </bean>
 
    <!-- REST impl for GET Bootstrap Test Data -->
@@ -474,7 +477,7 @@
    <bean id="webscript.org.alfresco.slingshot.forms.metadata.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.forms.RMMetaDataGet"
       parent="webscript">
-      <property name="recordsManagementService" ref="RecordsManagementService" />
+      <property name="filePlanService" ref="FilePlanService" />
       <property name="namespaceService" ref="namespaceService" />
       <property name="nodeService" ref="NodeService" />
    </bean>

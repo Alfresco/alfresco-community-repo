@@ -55,10 +55,10 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertTrue(recordService.isRecord(recordTwo));
             assertTrue(recordService.isRecord(recordThree));
             assertTrue(recordService.isRecord(recordFour));
-            assertTrue(rmService.isFilePlanComponent(recordOne));
-            assertTrue(rmService.isFilePlanComponent(recordTwo));
-            assertTrue(rmService.isFilePlanComponent(recordThree));
-            assertTrue(rmService.isFilePlanComponent(recordFour));
+            assertTrue(filePlanService.isFilePlanComponent(recordOne));
+            assertTrue(filePlanService.isFilePlanComponent(recordTwo));
+            assertTrue(filePlanService.isFilePlanComponent(recordThree));
+            assertTrue(filePlanService.isFilePlanComponent(recordFour));
 
             // Freeze a record
             freezeService.freeze("FreezeReason", recordOne);

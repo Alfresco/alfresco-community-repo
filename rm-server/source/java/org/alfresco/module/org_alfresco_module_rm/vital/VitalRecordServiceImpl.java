@@ -24,9 +24,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -59,6 +60,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     private RecordsManagementService rmService;
     private RecordsManagementActionService rmActionService;
     private FilePlanAuthenticationService filePlanAuthenticationService;
+    private FilePlanService filePlanService;
     
     /** Behaviours */
     private JavaBehaviour onUpdateProperties;
@@ -100,6 +102,14 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     {
         this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
+    
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
     
     /**
      * Init method.
@@ -164,7 +174,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                       @Override
                       public Void doWork() throws Exception
                       {
-                          if (rmService.isRecordCategory(nodeRef) == true ||
+                          if (filePlanService.isRecordCategory(nodeRef) == true ||
                               rmService.isRecordFolder(nodeRef) == true)
                           {
                               inheritVitalRecordDefinition(nodeRef);
@@ -200,10 +210,10 @@ public class VitalRecordServiceImpl implements VitalRecordService,
             
             // is the parent a record category
             if (parentRef != null && 
-                FilePlanComponentKind.RECORD_CATEGORY.equals(rmService.getFilePlanComponentKind(parentRef)) == true)
+                FilePlanComponentKind.RECORD_CATEGORY.equals(filePlanService.getFilePlanComponentKind(parentRef)) == true)
             {
                 // is the child a record category or folder
-                FilePlanComponentKind kind = rmService.getFilePlanComponentKind(nodeRef);
+                FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
                 if (kind.equals(FilePlanComponentKind.RECORD_CATEGORY) == true ||
                     kind.equals(FilePlanComponentKind.RECORD_FOLDER) == true)
                 {
@@ -259,7 +269,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     {
         VitalRecordDefinition result = null;
         
-        FilePlanComponentKind kind = rmService.getFilePlanComponentKind(nodeRef);
+        FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
         if (FilePlanComponentKind.RECORD.equals(kind) == true)
         {
             result = resolveVitalRecordDefinition(nodeRef);

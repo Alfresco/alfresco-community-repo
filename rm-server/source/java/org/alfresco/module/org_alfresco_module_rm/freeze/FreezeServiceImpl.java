@@ -160,8 +160,8 @@ public class FreezeServiceImpl implements FreezeService,
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.exists(nodeRef) == true
-                        && recordsManagementService.isFilePlanComponent(nodeRef) == true)
+                if (nodeService.exists(nodeRef) == true &&
+                    filePlanService.isFilePlanComponent(nodeRef) == true)
                 {
                     if (isFrozen(nodeRef) == true)
                     {

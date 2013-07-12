@@ -33,7 +33,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPoliciesUtil;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeCreateReference;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRemoveReference;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference;
@@ -43,6 +42,7 @@ import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstrain
 import org.alfresco.module.org_alfresco_module_rm.compatibility.CompatibilityModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.util.PoliciesUtil;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
@@ -225,7 +225,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     protected void invokeBeforeCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // get qnames to invoke against
-        Set<QName> qnames = RecordsManagementPoliciesUtil.getTypeAndAspectQNames(nodeService, fromNodeRef);
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(nodeService, fromNodeRef);
         // execute policy for node type and aspects
         BeforeCreateReference policy = beforeCreateReferenceDelegate.get(qnames);
         policy.beforeCreateReference(fromNodeRef, toNodeRef, reference);
@@ -234,7 +234,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     protected void invokeOnCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // get qnames to invoke against
-        Set<QName> qnames = RecordsManagementPoliciesUtil.getTypeAndAspectQNames(nodeService, fromNodeRef);
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(nodeService, fromNodeRef);
         // execute policy for node type and aspects
         OnCreateReference policy = onCreateReferenceDelegate.get(qnames);
         policy.onCreateReference(fromNodeRef, toNodeRef, reference);
@@ -243,7 +243,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     protected void invokeBeforeRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // get qnames to invoke against
-        Set<QName> qnames = RecordsManagementPoliciesUtil.getTypeAndAspectQNames(nodeService, fromNodeRef);
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(nodeService, fromNodeRef);
         // execute policy for node type and aspects
         BeforeRemoveReference policy = beforeRemoveReferenceDelegate.get(qnames);
         policy.beforeRemoveReference(fromNodeRef, toNodeRef, reference);
@@ -258,7 +258,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     protected void invokeOnRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // get qnames to invoke against
-        Set<QName> qnames = RecordsManagementPoliciesUtil.getTypeAndAspectQNames(nodeService, fromNodeRef);
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(nodeService, fromNodeRef);
         // execute policy for node type and aspects
         OnRemoveReference policy = onRemoveReferenceDelegate.get(qnames);
         policy.onRemoveReference(fromNodeRef, toNodeRef, reference);

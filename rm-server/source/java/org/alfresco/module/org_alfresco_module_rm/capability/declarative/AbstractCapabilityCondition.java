@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -44,6 +45,7 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     protected PermissionService permissionService;
     protected NodeService nodeService;
     protected FreezeService freezeService;
+    protected FilePlanService filePlanService;
     
     /**
      * @param rmService records management service
@@ -84,6 +86,14 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     {
        this.freezeService = freezeService;
     }
+    
+    /**
+     * @param filePlanService	file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService) 
+    {
+		this.filePlanService = filePlanService;
+	}
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#getName()

@@ -308,7 +308,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             public Void run()
             {
             	// Add a new disposition schedule
-            	NodeRef container = rmService.createRecordCategory(rmContainer, "hasDisposableTest");
+            	NodeRef container = filePlanService.createRecordCategory(rmContainer, "hasDisposableTest");
             	DispositionSchedule ds = utils.createBasicDispositionSchedule(container);
             	
                 assertTrue(dispositionService.hasDisposableItems(dispositionSchedule));
@@ -410,7 +410,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             public NodeRef run()
             {
             	// Create a new container
-            	NodeRef container = rmService.createRecordCategory(filePlan, "testCreateDispositionSchedule");
+            	NodeRef container = filePlanService.createRecordCategory(filePlan, "testCreateDispositionSchedule");
             	
             	// Create a new disposition schedule
             	utils.createBasicDispositionSchedule(container, "testCreateDispositionSchedule", "testCreateDispositionSchedule", false, true);
@@ -456,8 +456,8 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             public Void run()
             {
             	// Create a new structure container
-            	NodeRef testA = rmService.createRecordCategory(mhContainer, "testA");
-            	NodeRef testB = rmService.createRecordCategory(testA, "testB");
+            	NodeRef testA = filePlanService.createRecordCategory(mhContainer, "testA");
+            	NodeRef testB = filePlanService.createRecordCategory(testA, "testB");
             	
             	// Create new disposition schedules
             	utils.createBasicDispositionSchedule(testA, "testA", "testA", false, true);
@@ -839,7 +839,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             @Override
             public Void run() throws Exception
             {
-                testRM263RecordCategory = rmService.createRecordCategory(rmContainer, "rm263");
+                testRM263RecordCategory = filePlanService.createRecordCategory(rmContainer, "rm263");
                 testRM263DispositionSchedule = utils.createBasicDispositionSchedule(
                         testRM263RecordCategory, 
                         "test", 
@@ -914,7 +914,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             @Override
             public Void run() throws Exception
             {
-                testRM386RecordCategory = rmService.createRecordCategory(rmContainer, "RM386");
+                testRM386RecordCategory = filePlanService.createRecordCategory(rmContainer, "RM386");
                 testRM386DispositionSchedule = utils.createBasicDispositionSchedule(
                         testRM386RecordCategory, 
                         "disposition instructions", 

@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
-import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -44,7 +43,7 @@ import org.springframework.beans.factory.BeanNameAware;
 /**
  * @author Roy Wetherall
  */
-public class NotificationTemplatePatch extends AbstractModuleComponent
+public class NotificationTemplatePatch extends ModulePatchComponent
                                        implements BeanNameAware
 {
     /** Last patch update property */
@@ -127,7 +126,7 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executeInternal() throws Throwable
+    protected void executePatch() throws Throwable
     {
         if (logger.isDebugEnabled() == true)
         {

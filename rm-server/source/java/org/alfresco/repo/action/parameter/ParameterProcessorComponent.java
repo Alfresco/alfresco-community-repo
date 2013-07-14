@@ -32,18 +32,21 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * 
+ * Parameter processor component
  * 
  * @author Roy Wetherall
  * @since 2.1
  */
 public class ParameterProcessorComponent
 {
+    /** regex used to parse parameters */
     private static final String REG_EX = "\\$\\{([^\\$\\{]+)\\}";
     
+    /** registry of parameter processors */
     private Map<String, ParameterProcessor> processors = new HashMap<String, ParameterProcessor>(5);
     
     /**
+     * Register parameter processor
      * 
      * @param processor
      */
@@ -70,41 +73,59 @@ public class ParameterProcessorComponent
             {
                 if (DataTypeDefinition.TEXT.equals(def.getType()) == true)
                 {
+                    // get the parameter value
                     String parameterValue = (String)entry.getValue();
                     
-                    // match the substitution pattern
-                    Pattern patt = Pattern.compile(REG_EX);
-                    Matcher m = patt.matcher(parameterValue);
-                    StringBuffer sb = new StringBuffer(parameterValue.length());
-                    
-                    while (m.find()) 
-                    {
-                      String text = m.group(1);              
-                      
-                      // lookup parameter processor to use
-                      ParameterProcessor processor = lookupProcessor(text);
-                      if (processor == null)
-                      {
-                          throw new AlfrescoRuntimeException("A parameter processor has not been found for the substitution string " + text);
-                      }
-                      else
-                      {                  
-                          // process each substitution value
-                          text = processor.process(text, actionedUponNodeRef);
-                      }
-                      
-                      // append new value
-                      m.appendReplacement(sb, Matcher.quoteReplacement(text));
-                    }            
-                    m.appendTail(sb);              
-                    
                     // set the updated parameter value
-                    ruleItem.setParameterValue(parameterName, sb.toString());
+                    ruleItem.setParameterValue(parameterName, process(parameterValue, actionedUponNodeRef));
                 }
             }            
         }        
     }
     
+    /**
+     * Process the value for substitution within the context of the provided node.
+     * 
+     * @param value     value
+     * @param nodeRef   node reference
+     * @return String   resulting value
+     */
+    public String process(String value, NodeRef nodeRef)
+    {
+        // match the substitution pattern
+        Pattern patt = Pattern.compile(REG_EX);
+        Matcher m = patt.matcher(value);
+        StringBuffer sb = new StringBuffer(value.length());
+        
+        while (m.find()) 
+        {
+          String text = m.group(1);              
+          
+          // lookup parameter processor to use
+          ParameterProcessor processor = lookupProcessor(text);
+          if (processor == null)
+          {
+              throw new AlfrescoRuntimeException("A parameter processor has not been found for the substitution string " + text);
+          }
+          else
+          {                  
+              // process each substitution value
+              text = processor.process(text, nodeRef);
+          }
+          
+          // append new value
+          m.appendReplacement(sb, Matcher.quoteReplacement(text));
+        }            
+        m.appendTail(sb);                      
+        return sb.toString();
+    }
+    
+    /**
+     * Look up parameter processor
+     * 
+     * @param value
+     * @return
+     */
     private ParameterProcessor lookupProcessor(String value)
     {
         ParameterProcessor result = null;

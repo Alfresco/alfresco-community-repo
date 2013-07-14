@@ -31,7 +31,6 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
-import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,7 +42,7 @@ import org.springframework.beans.factory.BeanNameAware;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RMv21InPlacePatch extends AbstractModuleComponent 
+public class RMv21InPlacePatch extends ModulePatchComponent 
                                implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     /** Extended reader and writer role details */
@@ -112,7 +111,7 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executeInternal() throws Throwable
+    protected void executePatch() throws Throwable
     {
         if (logger.isDebugEnabled() == true)
         {

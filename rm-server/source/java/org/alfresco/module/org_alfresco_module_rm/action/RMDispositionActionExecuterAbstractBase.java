@@ -46,10 +46,6 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     private static final String MSG_NEXT_DISP_NOT_SET = "rm.action.next-disp-not-set";
     private static final String MSG_NOT_NEXT_DISP = "rm.action.not-next-disp";
     private static final String MSG_NOT_RECORD_FOLDER = "rm.action.not-record-folder";
-    
-    /** Indicates whether the eligibility of the record should be checked or not */
-    // TODO add the capability to override this value using a property on the action
-    protected boolean checkEligibility = true;
 
     /**
      * All children of this implementation are disposition actions.
@@ -71,6 +67,28 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     {
         return true;
     }
+    
+    /**
+     * Indicates whether we should validate the next disposition action is the action we are
+     * trying to execute.
+     * 
+     * @return
+     */
+    protected boolean checkNextDispositionAction(NodeRef actionedUponNodeRef)
+    {
+        return true;
+    }
+    
+    /**
+     * Indicated whether we should validate the disposition action is eligible or not.
+     * 
+     * @param actionedUponNodeRef
+     * @return
+     */
+    protected boolean checkEligibility(NodeRef actionedUponNodeRef)
+    {
+        return true;
+    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
@@ -87,7 +105,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
         DispositionSchedule di = checkDispositionActionExecutionValidity(actionedUponNodeRef, nextDispositionActionNodeRef, true);
 
         // Check the eligibility of the action
-        if (checkEligibility == false || 
+        if (checkEligibility(actionedUponNodeRef) == false || 
             dispositionService.isNextDispositionActionEligible(actionedUponNodeRef) == true)
         {
             if (di.isRecordLevelDisposition() == true)
@@ -187,7 +205,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
      * @param recordFolder
      */
     protected abstract void executeRecordFolderLevelDisposition(Action action, NodeRef recordFolder);
-
+    
     /**
      * @param nodeRef
      * @return
@@ -221,30 +239,32 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
             }
         }
 
-        // Check this the next disposition action
-        
-        NodeRef nextDispositionAction = nextDispositionActionNodeRef;
-        if (nextDispositionAction == null)
+        if (checkNextDispositionAction(nodeRef) == true)
         {
-            if (throwError)
+            // Check this the next disposition action        
+            NodeRef nextDispositionAction = nextDispositionActionNodeRef;
+            if (nextDispositionAction == null)
             {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NEXT_DISP_NOT_SET, getName(), nodeRef.toString()));
+                if (throwError)
+                {
+                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NEXT_DISP_NOT_SET, getName(), nodeRef.toString()));
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            String actionName = (String) this.nodeService.getProperty(nextDispositionAction, PROP_DISPOSITION_ACTION);
+            if (actionName == null || actionName.equals(getName()) == false)
             {
-                return null;
-            }
-        }
-        String actionName = (String) this.nodeService.getProperty(nextDispositionAction, PROP_DISPOSITION_ACTION);
-        if (actionName == null || actionName.equals(getName()) == false)
-        {
-            if (throwError)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_NEXT_DISP, getName(), nodeRef.toString()));
-            }
-            else
-            {
-                return null;
+                if (throwError)
+                {
+                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_NEXT_DISP, getName(), nodeRef.toString()));
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 

@@ -25,7 +25,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -39,7 +38,7 @@ import org.springframework.beans.factory.BeanNameAware;
  * 
  * @author Roy Wetherall
  */
-public class RMv2ModelPatch extends AbstractModuleComponent 
+public class RMv2ModelPatch extends ModulePatchComponent 
                             implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     /** Logger */
@@ -76,7 +75,7 @@ public class RMv2ModelPatch extends AbstractModuleComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executeInternal() throws Throwable
+    protected void executePatch() throws Throwable
     {
         if (logger.isDebugEnabled() == true)
         {

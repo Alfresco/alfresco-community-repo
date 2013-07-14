@@ -48,11 +48,18 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
     @Override
     protected void executeInternal() throws Throwable
     {
-        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID); 
-        if (nodeService.exists(nodeRef) == false)
+        try
         {
-            super.executeInternal();
+            NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID); 
+            if (nodeService.exists(nodeRef) == false)
+            {
+                super.executeInternal();
+            }
         }
-    }
-    
+        catch (Throwable exception)
+        {
+            exception.printStackTrace();
+            throw exception;
+        }
+    }    
 }

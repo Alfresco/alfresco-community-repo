@@ -59,7 +59,10 @@ import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -173,6 +176,9 @@ public class RecordServiceImpl implements RecordService,
     
     /** Rule service */
     private RuleService ruleService;
+    
+    /** File folder service */
+    private FileFolderService fileFolderService;
 
     /** List of available record meta-data aspects */
     private Set<QName> recordMetaDataAspects;    
@@ -295,6 +301,14 @@ public class RecordServiceImpl implements RecordService,
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
+    }
+    
+    /**
+     * @param fileFolderService file folder service
+     */
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
     }
 
     /**
@@ -541,6 +555,53 @@ public class RecordServiceImpl implements RecordService,
             });
         }
     }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map, org.alfresco.service.cmr.repository.ContentReader)
+     */
+    @Override
+    public NodeRef createRecord(NodeRef filePlan, String name, QName type, Map<QName, Serializable> properties, ContentReader reader)
+    {
+        ParameterCheck.mandatory("filePlan", filePlan);
+        ParameterCheck.mandatory("name", name);
+        
+        // if none set the default record type is cm:content
+        if (type == null)
+        {
+            type = ContentModel.TYPE_CONTENT;
+        }
+        // TODO ensure that the type is a sub-type of cm:content
+        
+        // get the unfiled record container for the file plan
+        NodeRef unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
+        if (unfiledContainer == null)
+        {
+            throw new AlfrescoRuntimeException("Unable to create record, because unfiled container could not be found.");
+        }
+        
+        // create the new record
+        NodeRef record = fileFolderService.create(unfiledContainer, name, type).getNodeRef();
+        
+        // set the properties
+        if (properties != null)
+        {
+            nodeService.addProperties(record, properties);
+        }
+        
+        // set the content
+        if (reader != null)
+        {
+            ContentWriter writer = fileFolderService.getWriter(record);
+            writer.setEncoding(reader.getEncoding());
+            writer.setMimetype(reader.getMimetype());
+            writer.putContent(reader);
+        }
+        
+        // make record
+        makeRecord(record);
+        
+        return record;
+    }
 
     /**
      * Creates a record from the given document
@@ -604,7 +665,7 @@ public class RecordServiceImpl implements RecordService,
             // check whether this item is already an item or not
             if (isRecord(record) == false)
             {
-                // make the item a recor
+                // make the item a record
                 makeRecord(record);
             }
 

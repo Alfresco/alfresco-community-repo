@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+	<!--  Report Content Model -->
+	
+	<bean id="org_alfresco_module_rm_report_dictionaryBootstrap" parent="dictionaryModelBootstrap">
+      <property name="models">
+         <list>
+            <value>alfresco/module/org_alfresco_module_rm/model/reportModel.xml</value>
+         </list>
+      </property>
+      <property name="labels">
+         <list>
+            <value>alfresco/module/org_alfresco_module_rm/messages/report-model</value>
+         </list>
+      </property>
+   </bean>
+
+	<!--  Report Service -->
+
+	<bean id="reportService" parent="baseService" class="org.alfresco.module.org_alfresco_module_rm.report.ReportServiceImpl">
+		<property name="fileFolderService" ref="FileFolderService" />
+		<property name="filePlanService" ref="FilePlanService" />
+		<property name="contentService" ref="ContentService" />
+		<property name="recordService" ref="RecordService" />
+	</bean>
+	
+	<bean id="ReportService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces" value="org.alfresco.module.org_alfresco_module_rm.report.ReportService" />
+        <property name="target" ref="reportService"/>
+        <property name="interceptorNames">
+            <list>
+                <idref local="ReportService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="ReportService_security"/>
+            </list>
+        </property>
+    </bean>
+	
+	<bean id="ReportService_transaction" parent="baseTransaction"/>
+	
+	<bean id="ReportService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.report.ReportService.getReportTypes=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.report.ReportService.registerReportGenerator=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.report.ReportService.generateReport=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.report.ReportService.fileReport=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.report.ReportService.*=RM_DENY
+                ]]>
+            </value>
+        </property>
+    </bean>
+    
+    <!--  Report Generators -->
+    
+    <bean id="baseReportGenerator" abstract="true" init-method="init">
+    	<property name="reportService" ref="reportService" />
+    	<property name="namespaceService" ref="namespaceService"/>
+    </bean>
+    
+    <bean id="declarativeReportGenerator" abstract="true" parent="baseReportGenerator" class="org.alfresco.module.org_alfresco_module_rm.report.generator.DeclarativeReportGenerator">
+    	<property name="contentService" ref="ContentService"/>
+    	<property name="mimetypeService" ref="MimetypeService"/>
+    	<property name="fileFolderService" ref="FileFolderService"/>
+    	<property name="templateService" ref="TemplateService"/>
+    </bean>
+    
+    <bean id="destructionReportGenerator" parent="declarativeReportGenerator" >
+    	<property name="reportTypeName" value="rmr:destructionReport" />
+    </bean>
+    
+    <!--  Report Actions -->
+
+   <bean id="fileDestructionReport_proxy" parent="rmProxyAction" >
+      <property name="target">
+         <ref bean="fileDestructionReport"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="fileDestructionReport_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="fileDestructionReport_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.FileDestructionReport
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
+   </bean>
+
+   <bean id="fileDestructionReport" 
+         class="org.alfresco.module.org_alfresco_module_rm.report.action.FileDestructionReport" 
+         parent="rmAction">
+      <property name="reportService" ref="ReportService" />
+      <property name="filePlanService" ref="FilePlanService" />
+   </bean>
+    
+</beans>    

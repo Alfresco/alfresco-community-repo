@@ -113,6 +113,9 @@
 
    <!--  Import workflows -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-workflow-context.xml"/>
+   
+   <!--  Import record service -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-report-context.xml"/>
 
    <!-- RM Script API -->
 

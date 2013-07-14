@@ -26,7 +26,6 @@ import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionSer
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -42,7 +41,7 @@ import org.springframework.beans.factory.BeanNameAware;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RMv21RecordInheritancePatch extends AbstractModuleComponent 
+public class RMv21RecordInheritancePatch extends ModulePatchComponent 
                                          implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     
@@ -108,7 +107,7 @@ public class RMv21RecordInheritancePatch extends AbstractModuleComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executeInternal() throws Throwable
+    protected void executePatch() throws Throwable
     {
         if (logger.isDebugEnabled() == true)
         {

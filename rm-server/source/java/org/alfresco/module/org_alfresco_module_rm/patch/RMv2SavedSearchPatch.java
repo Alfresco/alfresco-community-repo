@@ -24,7 +24,6 @@ import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
-import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,7 +35,7 @@ import org.springframework.beans.factory.BeanNameAware;
  * 
  * @author Roy Wetherall
  */
-public class RMv2SavedSearchPatch extends AbstractModuleComponent 
+public class RMv2SavedSearchPatch extends ModulePatchComponent 
                                   implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     /** Logger */
@@ -71,7 +70,7 @@ public class RMv2SavedSearchPatch extends AbstractModuleComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executeInternal() throws Throwable
+    protected void executePatch() throws Throwable
     {
         if (logger.isDebugEnabled() == true)
         {

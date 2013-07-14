@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
-import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -42,7 +41,7 @@ import org.springframework.beans.factory.BeanNameAware;
  * @author Tuna Aksoy
  * @since v2.1
  */
-public class NotificationTemplatePatch_v21 extends AbstractModuleComponent
+public class NotificationTemplatePatch_v21 extends ModulePatchComponent
                                            implements BeanNameAware
 {
     /** Email template path */
@@ -85,7 +84,7 @@ public class NotificationTemplatePatch_v21 extends AbstractModuleComponent
     }
 
     @Override
-    protected void executeInternal() throws Throwable
+    protected void executePatch() throws Throwable
     {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
         if (nodeService.exists(nodeRef) == false)

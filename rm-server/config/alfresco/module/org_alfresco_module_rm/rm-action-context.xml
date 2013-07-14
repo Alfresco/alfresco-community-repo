@@ -244,7 +244,7 @@
    <bean id="destroy_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.DestroyRecordsScheduledForDestruction
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.Destroy
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
             org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
          </value>
@@ -253,9 +253,8 @@
 
    <bean id="destroy" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction" parent="rmAction"
          depends-on="rmDestroyRecordsScheduledForDestructionCapability">
-      <property name="policyComponent">
-         <ref bean="policyComponent"/>
-      </property>
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="capabilityService" ref="CapabilityService" />
       <property name="eagerContentStoreCleaner" ref="eagerContentStoreCleaner"/>
       <property name="ghostingEnabled">
          <value>${rm.ghosting.enabled}</value>

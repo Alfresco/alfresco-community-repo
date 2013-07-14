@@ -226,6 +226,12 @@ public class DeclarativeCapability extends AbstractCapability
                 if (expected != actual)
                 {
                     result = false;
+                    
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Condition " + condition.getName() + " failed for capability " + getName() + " on nodeRef " + nodeRef.toString());
+                    }
+                    
                     break;
                 }
             }

@@ -232,5 +232,23 @@
          </map>
       </property>
    </bean>
+   
+   <bean id="rmDestroyCapability"
+      parent="compositeCapability">
+      <property name="name" value="Destroy"/>
+      <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD_FOLDER</value>
+            <value>RECORD</value>
+         </list>
+      </property>
+      <property name="capabilities">
+         <list>
+            <ref bean="rmDestroyRecordsScheduledForDestructionCapability"/>
+            <ref bean="rmDestroyRecordsCapability"/>
+         </list>
+      </property>
+   </bean>
 
 </beans>

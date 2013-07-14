@@ -411,7 +411,19 @@
             <value>RECORD</value>
          </set>
       </property>
-      <property name="capability" value ="DestroyRecordsScheduledForDestruction"/>
+      <property name="capability" value ="Destroy"/>
+   </bean>
+   
+   <bean id="jsonConversionComponent.fileDestructionReportAction"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="fileDestructionReport"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD_FOLDER</value>
+            <value>RECORD</value>
+         </set>
+      </property>
+      <property name="capability" value ="FileDestructionReport"/>
    </bean>
 
    <bean id="jsonConversionComponent.transferAction"

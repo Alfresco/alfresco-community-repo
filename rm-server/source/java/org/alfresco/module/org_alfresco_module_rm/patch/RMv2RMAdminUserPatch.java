@@ -28,7 +28,6 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl;
-import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -42,7 +41,7 @@ import org.springframework.beans.factory.BeanNameAware;
  * 
  * @author Roy Wetherall
  */
-public class RMv2RMAdminUserPatch extends AbstractModuleComponent implements BeanNameAware
+public class RMv2RMAdminUserPatch extends ModulePatchComponent implements BeanNameAware
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RMv2RMAdminUserPatch.class);
@@ -117,7 +116,7 @@ public class RMv2RMAdminUserPatch extends AbstractModuleComponent implements Bea
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executeInternal() throws Throwable
+    protected void executePatch() throws Throwable
     {
         if (logger.isDebugEnabled() == true)
         {

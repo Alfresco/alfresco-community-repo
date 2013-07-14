@@ -1127,6 +1127,7 @@
         <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
         <property name="capabilityService" ref="CapabilityService" />
         <property name="ruleService" ref="RuleService" />
+        <property name="fileFolderService" ref="FileFolderService" />
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -84,6 +84,17 @@
     	<property name="dispositionService" ref="DispositionService"/>
     	<property name="dispositionAction"  value="destroy"/>
     </bean>
+    
+    <bean id="capabilityCondition.destroyIsScheduledOrComplete"
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.AtLeastOneCondition">
+    	<property name="conditions">
+    		<list>
+    			<ref bean="capabilityCondition.destroyed" />
+    			<ref bean="capabilityCondition.destroyIsScheduled" />
+    		</list>
+    	</property>
+    </bean>
 
     <bean id="capabilityCondition.hasEvents"
           parent="capabilityCondition.base"

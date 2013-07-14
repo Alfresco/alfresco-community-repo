@@ -128,7 +128,8 @@
           "AccessAudit",
           "ExportAudit",
           "CreateModifyDestroyReferenceTypes",
-          "RequestRecordInformation"
+          "RequestRecordInformation",
+          "FileDestructionReport"
       ]
    },
    {
@@ -191,7 +192,8 @@
           "CreateModifyDestroyReferenceTypes",
           "ManageAccessControls",
           "ManageRules",
-          "RequestRecordInformation"
+          "RequestRecordInformation",
+          "FileDestructionReport"
       ]
    }
 ]

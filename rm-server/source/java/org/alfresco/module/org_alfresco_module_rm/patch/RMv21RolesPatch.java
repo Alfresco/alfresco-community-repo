@@ -25,10 +25,11 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
-import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -37,8 +38,11 @@ import org.springframework.beans.factory.BeanNameAware;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RMv21RolesPatch extends AbstractModuleComponent implements BeanNameAware
+public class RMv21RolesPatch extends ModulePatchComponent implements BeanNameAware
 {
+    /** logger */
+    private static Log logger = LogFactory.getLog(RMv21RolesPatch.class); 
+    
     private FilePlanService filePlanService;
     private FilePlanRoleService filePlanRoleService;
     private AuthorityService authorityService;
@@ -59,24 +63,48 @@ public class RMv21RolesPatch extends AbstractModuleComponent implements BeanName
     }
 
     @Override
-    protected void executeInternal() throws Throwable
+    protected void executePatch() throws Throwable
     {
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("RM module: RMv21RolesPatch executing ...");
+        }
+        
         Set<NodeRef> filePlans = filePlanService.getFilePlans();
+        
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug(" ... updating " + filePlans.size() + " file plans");
+        }
+        
         for (NodeRef filePlan : filePlans)
         {
             boolean parentAddedToZone = false;
             Set<Role> roles = filePlanRoleService.getRoles(filePlan);
             for (Role role : roles)
             {
-                String roleGroupName = role.getRoleGroupName();
-                addAuthorityToZone(roleGroupName);
-                if (parentAddedToZone == false)
+                String roleGroupName = role.getRoleGroupName();                
+                if (authorityService.getAuthorityZones(roleGroupName).contains(RMAuthority.ZONE_APP_RM) == false)
                 {
-                    String allRolesGroupName = filePlanRoleService.getAllRolesContainerGroup(filePlan);
-                    addAuthorityToZone(allRolesGroupName);
-                    parentAddedToZone = true;
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug(" ... updating " + roleGroupName + " in file plan " + filePlan.toString());
+                    }
+                    
+                    addAuthorityToZone(roleGroupName);
+                    if (parentAddedToZone == false)
+                    {
+                        String allRolesGroupName = filePlanRoleService.getAllRolesContainerGroup(filePlan);
+                        addAuthorityToZone(allRolesGroupName);
+                        parentAddedToZone = true;
+                    }
                 }
             }
+        }
+        
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug(" ... complete");
         }
     }
 

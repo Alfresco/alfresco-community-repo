@@ -31,7 +31,6 @@ import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -48,7 +47,7 @@ import org.springframework.beans.factory.BeanNameAware;
  * 
  * @author Roy Wetherall
  */
-public class RMv2FilePlanNodeRefPatch extends AbstractModuleComponent 
+public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent 
                                       implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     /** Logger */
@@ -116,7 +115,7 @@ public class RMv2FilePlanNodeRefPatch extends AbstractModuleComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executeInternal() throws Throwable
+    protected void executePatch() throws Throwable
     {
         if (logger.isDebugEnabled() == true)
         {

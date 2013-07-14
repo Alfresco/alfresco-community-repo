@@ -1,0 +1,82 @@
+/*
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.alfresco.module.org_alfresco_module_rm.report.generator;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.module.org_alfresco_module_rm.report.Report;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
+/**
+ * Report implementation.
+ * 
+ * @author Roy Wetherall
+ * @since 2.1
+ */
+/*package*/ class ReportInfo implements Report
+{
+    /** report type */
+    private QName reportType;
+    
+    private String reportName;
+    
+    private Map<QName, Serializable> reportProperties = new HashMap<QName, Serializable>(21);
+    
+    /** content reader */
+    private ContentReader reportContent;
+    
+    public ReportInfo(QName reportType, String reportName, Map<QName, Serializable> reportProperties, ContentReader reportContent)
+    {
+        ParameterCheck.mandatory("reportType", reportType);
+        ParameterCheck.mandatory("reportName", reportName);
+        ParameterCheck.mandatory("reportContent", reportContent);
+        
+        this.reportType = reportType;
+        this.reportName = reportName;
+        this.reportProperties = reportProperties;
+        this.reportContent = reportContent;
+    }
+
+    public QName getReportType()
+    {
+        return reportType;
+    }
+    
+    @Override
+    public String getReportName()
+    {
+        return reportName;
+    }
+    
+    public Map<QName, Serializable> getReportProperties()
+    {
+        return reportProperties;
+    }
+    
+    @Override
+    public ContentReader getReportContent()
+    {
+        return reportContent;
+    }
+   
+}

@@ -27,6 +27,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -36,6 +37,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -49,6 +51,9 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
                            implements ContentServicePolicies.OnContentUpdatePolicy, 
                                       InitializingBean
 {
+    /** Action name */
+    public static final String NAME = "destroy";
+    
     /** I18N */
     private static final String MSG_GHOSTED_PROP_UPDATE = "rm.action.ghosted-prop-update";
    
@@ -57,6 +62,9 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     
     /** Eager content store cleaner */
     private EagerContentStoreCleaner eagerContentStoreCleaner;
+ 
+    /** Capability service */
+    private CapabilityService capabilityService;
     
     /** Indicates if ghosting is enabled or not */
     private boolean ghostingEnabled = true;
@@ -78,11 +86,52 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     }
 
     /**
+     * @param capabilityService capability service
+     */
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
+    }
+    
+    /**
      * @param ghostingEnabled   true if ghosting is enabled, false otherwise
      */
     public void setGhostingEnabled(boolean ghostingEnabled)
     {
         this.ghostingEnabled = ghostingEnabled;
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#checkNextDispositionAction()
+     */
+    @Override
+    protected boolean checkNextDispositionAction(NodeRef actionedUponNodeRef)
+    {
+        return checkForDestroyRecordsCapability(actionedUponNodeRef);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#checkEligibility(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    protected boolean checkEligibility(NodeRef actionedUponNodeRef)
+    {
+        return checkForDestroyRecordsCapability(actionedUponNodeRef);
+    }
+    
+    /**
+     * 
+     * @param actionedUponNodeRef
+     * @return
+     */
+    private boolean checkForDestroyRecordsCapability(NodeRef actionedUponNodeRef)
+    {
+        boolean result = true;
+        if (AccessStatus.ALLOWED.equals(capabilityService.getCapability("DestroyRecords").hasPermission(actionedUponNodeRef)) == true)
+        {
+            result = false;
+        }
+        return result; 
     }
 
     /**

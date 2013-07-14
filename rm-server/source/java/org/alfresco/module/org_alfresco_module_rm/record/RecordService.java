@@ -19,8 +19,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.record;
 
+import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -73,6 +76,16 @@ public interface RecordService
     * @see #createRecord(NodeRef, NodeRef, boolean)
     */
    void createRecord(NodeRef filePlan, NodeRef nodeRef);
+   
+   /**
+    * Creates a new document as a unfiled record.
+    * 
+    * @param filePlan
+    * @param name
+    * @param type
+    * @param properties
+    */
+   NodeRef createRecord(NodeRef filePlan, String name, QName type, Map<QName, Serializable> properties, ContentReader reader);
 
    /**
     * Indicates whether the record is filed or not

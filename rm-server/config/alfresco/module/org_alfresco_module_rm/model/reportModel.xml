@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Definition of Records Management Report Model -->
+
+<!-- Note: the rma: namespace is defined further on in the document -->
+<model name="rmr:recordsmanagementreport" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <!-- Meta-data about the model -->
+    <description>Records Management Report Model</description>
+    <author>Roy Wetherall</author>
+    <version>1.0</version>
+
+    <!-- Imports are required to allow references to definitions in other models -->
+    <imports>
+       <!-- Import Alfresco Dictionary Definitions -->
+       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+       <!-- Import Alfresco Content Domain Model Definitions -->
+       <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+       <!-- Import Alfresco Content Domain Model Definitions -->
+       <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+       <!--  Import Alfresco Site Model Definitions -->
+       <import uri="http://www.alfresco.org/model/site/1.0" prefix="st"/>
+       <!--  Import Alfresco RM Model Definitions -->
+       <import uri="http://www.alfresco.org/model/recordsmanagement/1.0" prefix="rma"/>
+    </imports>
+
+    <!-- Report Namespace -->
+    <namespaces>
+       <namespace uri="http://www.alfresco.org/model/recordsmanagementreport/1.0" prefix="rmr"/>
+    </namespaces>
+
+	<types>
+	
+		<type name="rmr:report">
+        	<title>Report</title>
+         	<parent>cm:content</parent>         	
+      	</type>       
+
+		<type name="rmr:destructionReport">
+        	<title>Report</title>
+         	<parent>rmr:report</parent>         	
+      	</type>
+      	
+   	</types>
+
+</model>

@@ -283,6 +283,7 @@
    </bean>
    
    <!--  Request record information capability -->
+   <!--  @since 2.1 -->
    <bean id="rmRequestRecordInformationCapability" 
          parent="declarativeCapability">
       <property name="name" value="RequestRecordInformation"/>		        
@@ -298,5 +299,27 @@
       <property name="group"><ref bean="recordsGroup"/></property>      <!--  Part of the records group of capabilities -->
       <property name="index" value="100" />
    </bean>
+   
+   <!--  file destruction report capability -->
+   <bean id="rmFileDestructionReportCapability"
+         parent="declarativeCapability">
+      <property name="name" value="FileDestructionReport" />
+      <property name="permission" value="FileDestructionReport" />     <!--  Associated permission -->
+      <property name="kinds">
+         <list>
+            <value>RECORD</value>									   <!--  Only applies to records and record folders -->
+            <value>RECORD_FOLDER</value>
+         </list>
+      </property> 
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>		<!--  Must have read and file permissions -->
+            <entry key="capabilityCondition.frozen" value="false"/>     <!--  Not for frozen records -->
+            <entry key="capabilityCondition.destroyIsScheduledOrComplete" value="true"/>  <!--  Only for records scheduled for destruction or destroyed -->
+         </map>
+      </property>      
+      <property name="group"><ref bean="recordsGroup"/></property>      <!--  Part of the records group of capabilities -->
+      <property name="index" value="110" />
+   </bean>  
 
 </beans>

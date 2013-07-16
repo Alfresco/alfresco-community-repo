@@ -121,6 +121,28 @@
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
       <property name="index" value="60" />
    </bean>
+   
+   <!--  file destruction report capability -->
+   <bean id="rmFileDestructionReportCapability"
+         parent="declarativeCapability">
+      <property name="name" value="FileDestructionReport" />
+      <property name="permission" value="FileDestructionReport" />     <!--  Associated permission -->
+      <property name="kinds">
+         <list>
+            <value>RECORD</value>									   <!--  Only applies to records and record folders -->
+            <value>RECORD_FOLDER</value>
+         </list>
+      </property> 
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>		<!--  Must have read and file permissions -->
+            <entry key="capabilityCondition.frozen" value="false"/>     <!--  Not for frozen records -->
+            <entry key="capabilityCondition.destroyed" value="true"/>   <!--  Only for destroyed things -->
+         </map>
+      </property>      
+      <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>      <!--  Part of the disposition group of capabilities -->
+      <property name="index" value="110" />
+   </bean> 
 
    <!--  Non-assignable Capabilities -->
 

@@ -3,9 +3,9 @@
 
 <beans>
 
-	<!--  Report Content Model -->
+	 <!--  Report Content Model -->
 	
-	<bean id="org_alfresco_module_rm_report_dictionaryBootstrap" parent="dictionaryModelBootstrap">
+	 <bean id="org_alfresco_module_rm_report_dictionaryBootstrap" parent="dictionaryModelBootstrap">
       <property name="models">
          <list>
             <value>alfresco/module/org_alfresco_module_rm/model/reportModel.xml</value>
@@ -16,6 +16,16 @@
             <value>alfresco/module/org_alfresco_module_rm/messages/report-model</value>
          </list>
       </property>
+    </bean>
+   
+    <!--  Report Service Message Bundle -->
+
+   	<bean id="org_alfresco_module_rm_report_resourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+      	<property name="resourceBundles">
+       		<list>
+            	<value>alfresco.module.org_alfresco_module_rm.messages.report-service</value>            
+         	</list>
+      	</property>
    </bean>
 
 	<!--  Report Service -->
@@ -67,10 +77,14 @@
     	<property name="mimetypeService" ref="MimetypeService"/>
     	<property name="fileFolderService" ref="FileFolderService"/>
     	<property name="templateService" ref="TemplateService"/>
+    	<property name="nodeService" ref="NodeService" />
+    	<property name="parameterProcessorComponent" ref="parameterProcessorComponent"/>
+    	<property name="repository" ref="repositoryHelper" />
+    	<property name="sysAdminParams" ref="sysAdminParams" />
     </bean>
     
-    <bean id="destructionReportGenerator" parent="declarativeReportGenerator" >
-    	<property name="reportTypeName" value="rmr:destructionReport" />
+    <bean id="destructionReportGenerator" parent="declarativeReportGenerator">
+    	<property name="reportTypeName" value="rmr:destructionReport" />    	     
     </bean>
     
     <!--  Report Actions -->
@@ -97,10 +111,11 @@
    </bean>
 
    <bean id="fileDestructionReport" 
-         class="org.alfresco.module.org_alfresco_module_rm.report.action.FileDestructionReport" 
+         class="org.alfresco.module.org_alfresco_module_rm.report.action.FileReportAction" 
          parent="rmAction">
       <property name="reportService" ref="ReportService" />
       <property name="filePlanService" ref="FilePlanService" />
+      <property name="reportType" value="rmr:destructionReport" />
    </bean>
     
 </beans>    

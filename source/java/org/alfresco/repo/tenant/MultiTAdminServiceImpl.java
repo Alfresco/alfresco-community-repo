@@ -317,11 +317,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                     // notify tenant deployers registered so far ...
                     notifyAfterEnableTenant(tenantDomain);
                     enabledCount++;
-                    
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Tenant enabled: " + tenantDomain);
-                    }
                 }
                 else
                 {
@@ -649,7 +644,10 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         notifyAfterEnableTenant(tenantDomain);
     }
     
-    private void notifyAfterEnableTenant(String tenantDomain)
+    /**
+     * Call all {@link TenantDeployer#onEnableTenant() TenantDeployers} as the system tenant.
+     */
+    protected void notifyAfterEnableTenant(String tenantDomain)
     {
         // Check that all the passed values are not null
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
@@ -667,9 +665,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             }
         }, tenantDomain);
         
-        if (logger.isInfoEnabled())
+        if (logger.isDebugEnabled())
         {
-            logger.info("Tenant enabled: " + tenantDomain);
+            logger.debug("Tenant enabled: " + tenantDomain);
         }
     }
     

@@ -116,12 +116,7 @@ public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
      */
     @Override
     protected void executePatch() throws Throwable
-    {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("RM Module RMv2FilePlanNodeRef Patch ...");
-        }
-        
+    {        
         Pair<Long, QName> aspectPair = qnameDAO.getQName(ASPECT_FILE_PLAN_COMPONENT);
         if (aspectPair != null)
         {
@@ -179,12 +174,6 @@ public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
             {
                 behaviourFilter.enableBehaviour();
             }
-        }
-        
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("   ... complete RM Module RMv2FilePlanNodeRef Patch");
-        }
-        
+        }        
     }   
 }

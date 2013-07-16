@@ -32,6 +32,7 @@ import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamic
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
@@ -75,6 +76,9 @@ public class RMv21InPlacePatch extends ModulePatchComponent
     /** capability service */
     private CapabilityService capabilityService;
     
+    /** rule service */
+    private RuleService ruleService;
+    
     /**
      * @param filePlanRoleService   file plan role service
      */
@@ -108,16 +112,19 @@ public class RMv21InPlacePatch extends ModulePatchComponent
     }
     
     /**
+     * @param ruleService   rule service
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
+    
+    /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
     protected void executePatch() throws Throwable
-    {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("RM module: RMv21InPlacePatch executing ...");
-        }
-        
+    {      
         Set<NodeRef> filePlans = filePlanService.getFilePlans();
         
         if (logger.isDebugEnabled() == true)
@@ -132,24 +139,27 @@ public class RMv21InPlacePatch extends ModulePatchComponent
                 if (logger.isDebugEnabled() == true)
                 {
                     logger.debug("  ... updating file plan " + filePlan.toString());
+                }        
+                
+                ruleService.disableRules();
+                try
+                {
+                    // set permissions
+                    filePlanPermissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS);
+                    filePlanPermissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING);
+                                
+                    // create unfiled container
+                    filePlanService.createUnfiledContainer(filePlan);            
+                    
+                    // add the inplace roles
+                    filePlanRoleService.createRole(filePlan, ROLE_READERS, ROLE_READERS_LABEL, getCapabilities(ROLE_READERS_CAPABILITIES));
+                    filePlanRoleService.createRole(filePlan, ROLE_WRITERS, ROLE_WRITERS_LABEL, getCapabilities(ROLE_WRITERS_CAPABILITIES));
                 }
-                
-                // set permissions
-                filePlanPermissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS);
-                filePlanPermissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING);
-                            
-                // create unfiled container
-                filePlanService.createUnfiledContainer(filePlan);            
-                
-                // add the inplace roles
-                filePlanRoleService.createRole(filePlan, ROLE_READERS, ROLE_READERS_LABEL, getCapabilities(ROLE_READERS_CAPABILITIES));
-                filePlanRoleService.createRole(filePlan, ROLE_WRITERS, ROLE_WRITERS_LABEL, getCapabilities(ROLE_WRITERS_CAPABILITIES));
+                finally
+                {
+                    ruleService.enableRules();
+                }
             }
-        }
-        
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug(" ... complete");
         }
     }   
     

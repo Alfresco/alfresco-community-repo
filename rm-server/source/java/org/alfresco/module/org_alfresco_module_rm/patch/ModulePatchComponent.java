@@ -19,6 +19,8 @@
 package org.alfresco.module.org_alfresco_module_rm.patch;
 
 import org.alfresco.repo.module.AbstractModuleComponent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -29,11 +31,19 @@ import org.alfresco.repo.module.AbstractModuleComponent;
  */
 public abstract class ModulePatchComponent extends AbstractModuleComponent
 {
+    /** logger */
+    private static Log logger = LogFactory.getLog(ModulePatchComponent.class);
+    
     @Override
     protected void executeInternal() throws Throwable
     {
         try
         {
+            if (logger.isInfoEnabled() == true)
+            {
+                logger.info("Module patch component '" + getName() + "' is executing ...");
+            }
+            
             executePatch();
         }
         catch (Throwable exception)

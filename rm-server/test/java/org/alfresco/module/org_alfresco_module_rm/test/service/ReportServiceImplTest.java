@@ -25,7 +25,6 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.report.Report;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
-import org.alfresco.module.org_alfresco_module_rm.report.action.FileDestructionReport;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -86,6 +85,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
             {
                 Report report = reportService.generateReport(TYPE_DESTRUCTION_REPORT, rmFolder);
                 
+                System.out.println(report.getReportName());
                 System.out.println(report.getReportContent().getContentString());
                 
                 return null;
@@ -121,7 +121,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
             public Void run() throws Exception
             {
                 recordsManagementActionService.executeRecordsManagementAction(rmFolder, DestroyAction.NAME);                
-                recordsManagementActionService.executeRecordsManagementAction(rmFolder, FileDestructionReport.NAME);                
+                recordsManagementActionService.executeRecordsManagementAction(rmFolder, "fileDestructionReport");                
                 return null;
             }                        
         });         

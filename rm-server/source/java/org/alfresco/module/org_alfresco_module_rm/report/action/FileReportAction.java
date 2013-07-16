@@ -26,24 +26,26 @@ import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 
 /**
- * File Destruction Report
+ * File Report Action
  * 
  * @author Roy Wetherall
  * @since 2.1
  */
-public class FileDestructionReport extends RMActionExecuterAbstractBase
-                                   implements ReportModel
+public class FileReportAction extends RMActionExecuterAbstractBase
+                              implements ReportModel
 {
-    /** Action name */
-    public static final String NAME = "fileDestructionReport";
-    
     /** report service */
     protected ReportService reportService;
     
     /** file plan service */
     protected FilePlanService filePlanService;
+    
+    /** report type string value */
+    private String reportType;
     
     /**
      * @param reportService report service
@@ -59,6 +61,23 @@ public class FileDestructionReport extends RMActionExecuterAbstractBase
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
+    }
+    
+    /**
+     * @param reportType    report type string value
+     */
+    public void setReportType(String reportType)
+    {
+        this.reportType = reportType;
+    }
+    
+    /**
+     * @return  QName   report type
+     */
+    protected QName getReportType()
+    {
+        ParameterCheck.mandatory("this.reportType", reportType);        
+        return QName.createQName(reportType, namespaceService);
     }
     
     /**
@@ -78,7 +97,7 @@ public class FileDestructionReport extends RMActionExecuterAbstractBase
             throw new AlfrescoRuntimeException("Unable to file destruction report, because file plan could not be resolved.");
         }
         
-        Report report = reportService.generateReport(TYPE_DESTRUCTION_REPORT, actionedUponNodeRef);
+        Report report = reportService.generateReport(getReportType(), actionedUponNodeRef);
         reportService.fileReport(filePlan, report);
         
     }    

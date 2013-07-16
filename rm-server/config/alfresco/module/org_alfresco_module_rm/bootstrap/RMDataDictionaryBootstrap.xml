@@ -201,8 +201,6 @@
 			                	<view:aspects>
 			                    	<cm:titled></cm:titled>
 			                        <cm:author></cm:author>
-			                        <app:inlineeditable></app:inlineeditable>
-			                        <cm:versionable></cm:versionable>
 			                 	</view:aspects>
 			                    <view:properties>
 			                    	<sys:store-protocol>workspace</sys:store-protocol>

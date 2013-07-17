@@ -28,6 +28,7 @@ import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
 import org.alfresco.repo.exporter.ACPExportPackageHandler;
+import org.alfresco.repo.web.scripts.content.ContentStreamer;
 import org.alfresco.repo.web.scripts.content.StreamACP;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
@@ -46,7 +47,7 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 /**
  * Creates an RM specific ACP file of nodes to export then streams it back
  * to the client.
- * 
+ *
  * @author Gavin Cornwell
  */
 public class ExportPost extends StreamACP
@@ -55,7 +56,18 @@ public class ExportPost extends StreamACP
     private static Log logger = LogFactory.getLog(ExportPost.class);
 
     protected static final String PARAM_TRANSFER_FORMAT = "transferFormat";
-            
+
+    /** Content Streamer */
+    private ContentStreamer contentStreamer;
+
+    /**
+     * @param contentStreamer
+     */
+    public void setContentStreamer(ContentStreamer contentStreamer)
+    {
+        this.contentStreamer = contentStreamer;
+    }
+
     /**
      * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
@@ -73,7 +85,7 @@ public class ExportPost extends StreamACP
             {
                 // get nodeRefs parameter from form
                 nodeRefs = getNodeRefs(req.getParameter(PARAM_NODE_REFS));
-                
+
                 // look for the transfer format
                 String transferFormatParam = req.getParameter(PARAM_TRANSFER_FORMAT);
                 if (transferFormatParam != null && transferFormatParam.length() > 0)
@@ -86,39 +98,39 @@ public class ExportPost extends StreamACP
                 // presume the request is a JSON request so get nodeRefs from JSON body
                 JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
                 nodeRefs = getNodeRefs(json);
-                
+
                 if (json.has(PARAM_TRANSFER_FORMAT))
                 {
                     transferFormat = json.getBoolean(PARAM_TRANSFER_FORMAT);
                 }
             }
-            
+
             // setup the ACP parameters
             ExporterCrawlerParameters params = new ExporterCrawlerParameters();
             params.setCrawlSelf(true);
             params.setCrawlChildNodes(true);
             params.setExportFrom(new Location(nodeRefs));
-            
+
             // if transfer format has been requested we need to exclude certain aspects
             if (transferFormat)
             {
                 // restrict specific aspects from being returned
-                QName[] excludedAspects = new QName[] { 
+                QName[] excludedAspects = new QName[] {
                             RenditionModel.ASPECT_RENDITIONED,
                             ContentModel.ASPECT_THUMBNAILED,
                             RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE,
                             RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH};
                 params.setExcludeAspects(excludedAspects);
             }
-            
+
             // create an ACP of the nodes
-            tempACPFile = createACP(params, 
-                        transferFormat ? ZIP_EXTENSION : ACPExportPackageHandler.ACP_EXTENSION, 
+            tempACPFile = createACP(params,
+                        transferFormat ? ZIP_EXTENSION : ACPExportPackageHandler.ACP_EXTENSION,
                         transferFormat);
-                
+
             // stream the ACP back to the client as an attachment (forcing save as)
-            streamContent(req, res, tempACPFile, true, tempACPFile.getName());
-        } 
+            contentStreamer.streamContent(req, res, tempACPFile, null, true, tempACPFile.getName(), null);
+        }
         catch (IOException ioe)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
@@ -147,7 +159,7 @@ public class ExportPost extends StreamACP
            {
                if (logger.isDebugEnabled())
                    logger.debug("Deleting temporary archive: " + tempACPFile.getAbsolutePath());
-               
+
                tempACPFile.delete();
            }
         }

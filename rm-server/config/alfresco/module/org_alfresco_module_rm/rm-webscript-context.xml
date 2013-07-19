@@ -180,7 +180,6 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogPost"
       parent="webscript">
       <property name="nodeService" ref="nodeService" />
-      <property name="contentService" ref="ContentService" />
       <property name="permissionService" ref="PermissionService" />
       <property name="mimetypeService" ref="mimetypeService" />
       <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
@@ -207,10 +206,10 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.ExportPost"
       parent="webscript">
       <property name="nodeService" ref="nodeService" />
-      <property name="contentService" ref="ContentService" />
       <property name="permissionService" ref="PermissionService" />
       <property name="mimetypeService" ref="mimetypeService" />
       <property name="exporterService" ref="ExporterService" />
+      <property name="contentStreamer" ref="webscript.content.streamer" />
    </bean>
 
    <!-- REST impl for POST import -->
@@ -228,7 +227,6 @@
    <!-- Base bean for transfer web scripts -->
    <bean id="rmBaseTransferWebscript" parent="webscript" abstract="true">
       <property name="nodeService" ref="nodeService" />
-      <property name="contentService" ref="ContentService" />
       <property name="permissionService" ref="PermissionService" />
       <property name="mimetypeService" ref="mimetypeService" />
       <property name="exporterService" ref="ExporterService" />
@@ -238,6 +236,7 @@
    <bean id="webscript.org.alfresco.rma.transfer.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.TransferGet"
       parent="rmBaseTransferWebscript">
+      <property name="contentStreamer" ref="webscript.content.streamer" />
    </bean>
 
    <!-- REST impl for GET transfer report -->
@@ -247,6 +246,7 @@
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="recordsManagementService" ref="RecordsManagementService" />
       <property name="dispositionService" ref="DispositionService" />
+      <property name="contentStreamer" ref="webscript.content.streamer" />
    </bean>
 
    <!-- REST impl for POST transfer report -->
@@ -257,6 +257,7 @@
       <property name="recordsManagementService" ref="RecordsManagementService" />
       <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
       <property name="dispositionService" ref="DispositionService" />
+      <property name="contentService" ref="ContentService"/>
    </bean>
 
    <!-- RM Role API-->
@@ -516,7 +517,7 @@
     <bean id="webscript.org.alfresco.repository.rule.rm-actionconditiondefinitions.get"
           class="org.alfresco.repo.web.scripts.rule.RmActionConditionDefinitionsGet"
  	   	  parent="webscript">
- 	   <property name="actionService" ref="ActionService"/>	  
+ 	   <property name="actionService" ref="ActionService"/>
  	   <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
  	</bean>
 
@@ -525,10 +526,10 @@
     <!-- REST impl for GET Audit Log -->
     <bean id="webscript.org.alfresco.rma.rmauditlog.get" class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogGet" parent="webscript">
         <property name="nodeService" ref="nodeService"/>
-        <property name="contentService" ref="ContentService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="mimetypeService" ref="mimetypeService"/>
         <property name="recordsManagementAuditService" ref="RecordsManagementAuditService"/>
+        <property name="contentStreamer" ref="webscript.content.streamer" />
     </bean>
 
    <!-- REST impl for GET Class Definitions for RM/DM -->
@@ -561,6 +562,6 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />
       <property name="authorityService" ref="AuthorityService" />
-   </bean> 
+   </bean>
 
 </beans>

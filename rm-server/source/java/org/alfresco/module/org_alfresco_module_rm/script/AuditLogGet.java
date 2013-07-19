@@ -23,35 +23,47 @@ import java.io.IOException;
 
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.alfresco.repo.web.scripts.content.ContentStreamer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  * Implementation for Java backed webscript to return audit
  * log of RM events, optionally scoped to an RM node.
- * 
+ *
  * @author Gavin Cornwell
  */
 public class AuditLogGet extends BaseAuditRetrievalWebScript
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(AuditLogGet.class);
-    
+
     protected final static String PARAM_EXPORT = "export";
+
+    /** Content Streamer */
+    protected ContentStreamer contentStreamer;
+
+    /**
+     * @param contentStreamer
+     */
+    public void setContentStreamer(ContentStreamer contentStreamer)
+    {
+        this.contentStreamer = contentStreamer;
+    }
 
     @Override
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
         File auditTrail = null;
-        
+
         try
         {
             // parse the parameters and get a file containing the audit trail
             auditTrail = this.rmAuditService.getAuditTrailFile(parseQueryParameters(req), parseReportFormat(req));
-            
+
             if (logger.isDebugEnabled())
                 logger.debug("Streaming audit trail from file: " + auditTrail.getAbsolutePath());
-            
+
             boolean attach = false;
             String attachFileName = null;
             String export = req.getParameter(PARAM_EXPORT);
@@ -59,13 +71,13 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
             {
                 attach = true;
                 attachFileName = auditTrail.getName();
-                
+
                 if (logger.isDebugEnabled())
                     logger.debug("Exporting audit trail using file name: " + attachFileName);
             }
-            
+
             // stream the file back to the client
-            streamContent(req, res, auditTrail, attach, attachFileName);
+            contentStreamer.streamContent(req, res, auditTrail, null, attach, attachFileName, null);
         }
         finally
         {

@@ -39,6 +39,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -78,6 +79,7 @@ public class TransferReportPost extends BaseTransferWebScript
     protected RecordsManagementActionService rmActionService;
     protected RecordsManagementService rmService;
     protected DispositionService dispositionService;
+    protected ContentService contentService;
 
     /**
      * Sets the DictionaryService instance
@@ -117,6 +119,16 @@ public class TransferReportPost extends BaseTransferWebScript
     public void setRecordsManagementActionService(RecordsManagementActionService rmActionService)
     {
         this.rmActionService = rmActionService;
+    }
+
+    /**
+     * Sets the ContentSerivce instance
+     *
+     * @param contentService ContentService instance
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
 
     @Override
@@ -436,10 +448,10 @@ public class TransferReportPost extends BaseTransferWebScript
                     ContentModel.TYPE_CONTENT, properties).getChildRef();
 
         // Set the content
-        ContentWriter writer = this.contentService.getWriter(record, ContentModel.PROP_CONTENT, true);
+        ContentWriter writer = contentService.getWriter(record, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_HTML);
         writer.setEncoding("UTF-8");
-        writer.putContent(report); 
+        writer.putContent(report);
 
         return record;
     }

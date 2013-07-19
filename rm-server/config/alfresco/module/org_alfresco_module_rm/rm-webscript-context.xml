@@ -173,6 +173,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogStatusGet"
       parent="webscript">
       <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+      <property name="filePlanService" ref="FilePlanService"/>
    </bean>
 
    <!-- REST impl for POST Audit Log -->

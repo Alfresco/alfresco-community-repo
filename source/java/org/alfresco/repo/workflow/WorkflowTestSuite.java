@@ -60,6 +60,7 @@ public class WorkflowTestSuite extends TestSuite
         // Add the Activiti tests to be run
         suite.addTestSuite( ActivitiWorkflowServiceIntegrationTest.class );
         suite.addTestSuite( ActivitiSpringTransactionTest.class );
+        suite.addTestSuite( ActivitiTimerExecutionTest.class );
 
         // This test will force the application context properly, which avoids
         // periodic wierd build failures

@@ -25,6 +25,7 @@ import junit.framework.TestSuite;
 import org.alfresco.repo.workflow.activiti.ActivitiMultitenantWorkflowTest;
 import org.alfresco.repo.workflow.activiti.ActivitiSpringTransactionTest;
 import org.alfresco.repo.workflow.activiti.ActivitiWorkflowServiceIntegrationTest;
+import org.alfresco.repo.workflow.activiti.ActivitiTimerExecutionTest;
 import org.alfresco.repo.workflow.jbpm.AlfrescoJavaScriptIntegrationTest;
 import org.alfresco.repo.workflow.jbpm.JBPMEngineTest;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringTest;

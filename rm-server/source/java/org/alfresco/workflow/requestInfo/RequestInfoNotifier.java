@@ -34,6 +34,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class RequestInfoNotifier implements TaskListener
 {
+    private static final long serialVersionUID = -7169400062409052556L;
+
     /**
      * @see org.activiti.engine.delegate.TaskListener#notify(org.activiti.engine.delegate.DelegateTask)
      */

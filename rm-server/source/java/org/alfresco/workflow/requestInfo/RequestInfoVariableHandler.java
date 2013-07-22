@@ -33,6 +33,8 @@ import org.alfresco.util.ParameterCheck;
  */
 public class RequestInfoVariableHandler implements TaskListener
 {
+    private static final long serialVersionUID = -1759557028641631768L;
+
     /**
      * @see org.activiti.engine.delegate.TaskListener#notify(org.activiti.engine.delegate.DelegateTask)
      */

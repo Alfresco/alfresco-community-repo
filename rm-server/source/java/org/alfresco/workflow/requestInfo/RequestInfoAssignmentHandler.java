@@ -42,6 +42,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class RequestInfoAssignmentHandler implements TaskListener
 {
+    private static final long serialVersionUID = -3179929030094957978L;
+
     /**
      * @see org.activiti.engine.delegate.TaskListener#notify(org.activiti.engine.delegate.DelegateTask)
      */

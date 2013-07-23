@@ -482,7 +482,7 @@
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createUnfiledContainer=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createFilePlan=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getNodeRefPath=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.isFilePlanContainer=RM_ALLOW                
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.isFilePlanContainer=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.isRecordCategory=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getAllContained=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getContainedRecordCategories=RM.Read.0,AFTER_RM.FilterNode
@@ -1329,7 +1329,7 @@
 
         <property name="caveatAspects" ref="caveatAspects"/>
         <property name="caveatModels" ref="caveatModels"/>
-        
+
         <property name="caveatConfig" ref="caveatConfigCache"/>
 
     </bean>
@@ -1337,9 +1337,9 @@
      <!-- ===================================== -->
  	 <!-- Record Management Caveat Config Cache -->
  	 <!-- ===================================== -->
- 	 	
+
  	 <!-- The cross-transaction shared cache for in-memory CaveatConfig -->
- 	 	
+
  	 <bean name="caveatConfigSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache"/>
 
     <!-- The transactional cache for in-memory CaveatConfig -->
@@ -1564,21 +1564,12 @@
         <property name="policyComponent">
             <ref bean="policyComponent"/>
         </property>
-        <property name="cannedQueryRegistry">
-            <ref bean="cannedQueryRegistry" />
-        </property>
-        <property name="aclDAO">
-            <ref bean="aclDAO" />
-        </property>
-        <property name="authorityBridgeDAO">
-            <ref bean="authorityBridgeDAO" />
-        </property>
-        <property name="authorityBridgeTableCache">
-            <ref bean="authorityBridgeTableCache" />
-        </property>
-        <property name="useBridgeTable">
-            <value>${authority.useBridgeTable}</value>
-        </property>
+        <property name="cannedQueryRegistry" ref="cannedQueryRegistry" />
+        <property name="cannedQueryDAO" ref="cannedQueryDAO" />
+        <property name="aclDAO" ref="aclDAO" />
+        <property name="authorityBridgeDAO" ref="authorityBridgeDAO" />
+        <property name="authorityBridgeTableCache" ref="authorityBridgeTableCache" />
+        <property name="useBridgeTable" value="${authority.useBridgeTable}" />
     </bean>
 
 </beans>

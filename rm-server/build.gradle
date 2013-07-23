@@ -7,6 +7,8 @@ dependencies {
 	compile 'javax.servlet:servlet-api:2.5'
 
 	testCompile 'org.springframework:spring-test:2.5'
+	testCompile 'org.alfresco:alfresco-repository:4.2.0-QA-SNAPSHOT-tests'
+	testCompile 'org.alfresco:alfresco-remote-api:4.2.0-QA-SNAPSHOT-tests'
 
 	testRuntime files(explodedConfigDir)
 	testRuntime files(configDir)

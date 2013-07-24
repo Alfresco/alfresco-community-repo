@@ -3213,26 +3213,13 @@
         <property name="hiddenAspect" ref="hiddenAspect" />
     </bean>    
     
-    <bean id="patch.redeployParallelActivitiWorkflows" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+    <!-- noop: executed in patch.redeployParallelActivitiWorkflows-after-5-11-upgrade, after database has been upgraded -->
+    <bean id="patch.redeployParallelActivitiWorkflows" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
         <property name="id"><value>patch.redeployParallelActivitiWorkflows</value></property>
         <property name="description"><value>patch.redeployParallelActivitiWorkflows.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>6009</value></property>
         <property name="targetSchema"><value>6010</value></property>
-        <property name="workflowDefinitions">
-            <list>
-               <props>
-                    <prop key="engineId">activiti</prop>
-                    <prop key="location">alfresco/workflow/parallel-review.bpmn20.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-               </props>
-               <props>
-                    <prop key="engineId">activiti</prop>
-                    <prop key="location">alfresco/workflow/parallel-review-group.bpmn20.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-               </props>
-            </list>
-        </property>
     </bean>
 
     <bean id="patch.db-V3.4-remove-redundant-jbpm-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
@@ -3449,6 +3436,28 @@
         <property name="targetSchema"><value>6023</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/activiti-upgrade-5-11.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.redeployParallelActivitiWorkflows-after-5-11-upgrade" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+        <property name="id"><value>patch.redeployParallelActivitiWorkflows-after-5-11-upgrade</value></property>
+        <property name="description"><value>patch.redeployParallelActivitiWorkflows.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6023</value></property>
+        <property name="targetSchema"><value>6024</value></property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/parallel-review.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+               <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/parallel-review-group.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
         </property>
     </bean>
     

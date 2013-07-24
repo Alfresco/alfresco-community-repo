@@ -617,21 +617,21 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * Check whether Activiti tables already created in db.
      * 
-     * @param cfg           The Hibernate config
      * @param connection    a valid database connection
      * @return <code>true</code> if Activiti tables already created in schema, otherwise <code>false</code>
      */
-    private boolean checkActivitiTablesExists(Configuration cfg, Connection connection)
+    private boolean checkActivitiTablesExist(Connection connection)
     {
         Statement stmt = null;
         try
         {
             stmt = connection.createStatement();
-            stmt.executeQuery("select count(id_) from ACT_RU_TASK");
+            stmt.executeQuery("select min(id_) from ACT_RU_TASK");
             return true;
         }
         catch (SQLException e)
         {
+            logger.debug("Did not find ACT_RU_TASK table.");
             return false;
         }
         finally
@@ -829,7 +829,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         String dialectStr = dialect.getClass().getSimpleName();
 
         // Initialise Activiti DB, using an unclosable connection
-        if(!checkActivitiTablesExists(cfg, connection))
+        if(!checkActivitiTablesExist(connection))
         {
         	// Activiti DB updates are performed as patches in alfresco, only give
         	// control to activiti when creating new one.

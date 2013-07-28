@@ -1524,6 +1524,7 @@
         <property name="path" value="alfresco/module/org_alfresco_module_rm/dod5015/DODExampleFilePlan.xml" />
     </bean>
 
+    <!--
     <bean id="authorityDAO" class="org.alfresco.repo.security.authority.RMAuthorityDAOImpl" init-method="init">
         <property name="storeUrl">
             <value>${spaces.store}</value>
@@ -1571,5 +1572,6 @@
         <property name="authorityBridgeTableCache" ref="authorityBridgeTableCache" />
         <property name="useBridgeTable" value="${authority.useBridgeTable}" />
     </bean>
+    -->
 
 </beans>

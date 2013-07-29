@@ -54,6 +54,14 @@
         <property name="tenantAdminService" ref="TenantAdminService" />
     </bean>
     
+     <!-- base patch definition -->
+    <bean id="baseWorkflowPatch" abstract="true" parent="basePatch" depends-on="patchComponent" init-method="init">
+        <property name="tenantAdminService" ref="TenantAdminService" />
+        <property name="applyToTenants">
+            <value>${system.workflow.deployWorkflowsInTenant}</value>
+        </property>
+    </bean>
+    
     <!-- Example patches -->
     <bean id="patch.sample.01" class="org.alfresco.repo.admin.patch.SamplePatch" parent="basePatch" >
         <property name="id"><value>Sample01</value></property>
@@ -1112,7 +1120,7 @@
         </property>
     </bean>
 
-   <bean id="patch.redeploySubmitProcess4" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+   <bean id="patch.redeploySubmitProcess4" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
         <property name="id"><value>patch.redeploySubmitProcess4</value></property>
         <property name="description"><value>patch.redeploySubmitProcess.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1136,7 +1144,7 @@
         </property>
     </bean>
     
-    <bean id="patch.redeploySubmitProcess5" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+    <bean id="patch.redeploySubmitProcess5" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
         <property name="id"><value>patch.redeploySubmitProcess5</value></property>
         <property name="description"><value>patch.redeploySubmitProcess.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1159,7 +1167,7 @@
         </property>
     </bean>
 
-    <bean id="patch.deploySubmitDirectProcess" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+    <bean id="patch.deploySubmitDirectProcess" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
         <property name="id"><value>patch.deploySubmitDirectProcess</value></property>
         <property name="description"><value>patch.deploySubmitDirectProcess.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1286,7 +1294,7 @@
     </bean>
     
     <!--  Redeploy both direct and indirect submit processes for addition submit failure handling -->
-    <bean id="patch.redeploySubmitProcess6" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+    <bean id="patch.redeploySubmitProcess6" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
         <property name="id"><value>patch.redeploySubmitProcess6</value></property>
         <property name="description"><value>patch.redeploySubmitProcess.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1313,7 +1321,7 @@
         </property>
     </bean>
 
-    <bean id="patch.redeploySubmitProcess7" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+    <bean id="patch.redeploySubmitProcess7" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
         <property name="id"><value>patch.redeploySubmitProcess7</value></property>
         <property name="description"><value>patch.redeploySubmitProcess.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1437,7 +1445,7 @@
         </property>
     </bean>
 
-    <bean id="patch.redeployInvitationProcess" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+    <bean id="patch.redeployInvitationProcess" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
         <property name="id"><value>patch.redeployInvitationProcess</value></property>
         <property name="description"><value>patch.redeployInvitationProcess.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1674,7 +1682,7 @@
         <property name="batchQuerySize" value="2000"/>
     </bean>
     
-    <bean id="patch.redeployNominatedInvitationProcessWithPropsForShare" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+    <bean id="patch.redeployNominatedInvitationProcessWithPropsForShare" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
         <property name="id"><value>patch.redeployNominatedInvitationProcessWithPropsForShare</value></property>
         <property name="description"><value>patch.redeployNominatedInvitationProcessWithPropsForShare.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1696,7 +1704,7 @@
         </property>
     </bean>
     
-    <bean id="patch.redeployJbpmAdhocWorkflow" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+    <bean id="patch.redeployJbpmAdhocWorkflow" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
         <property name="id"><value>patch.redeployJbpmAdhocWorkflow</value></property>
         <property name="description"><value>patch.redeployJbpmAdhocWorkflow.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -3439,7 +3447,7 @@
         </property>
     </bean>
     
-    <bean id="patch.redeployParallelActivitiWorkflows-after-5-11-upgrade" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+    <bean id="patch.redeployParallelActivitiWorkflows-after-5-11-upgrade" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
         <property name="id"><value>patch.redeployParallelActivitiWorkflows-after-5-11-upgrade</value></property>
         <property name="description"><value>patch.redeployParallelActivitiWorkflows.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>

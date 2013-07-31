@@ -69,33 +69,19 @@
                </view:properties>
             </cm:dictionaryModel>
 
-            <cm:folder view:childName="cm:records_management_scripts">
+            <cm:folder view:childName="cm:records_management_behavior_scripts">
                <view:properties>
                   <sys:store-protocol>workspace</sys:store-protocol>
                   <sys:store-identifier>SpacesStore</sys:store-identifier>
-                  <sys:node-uuid>rm_scripts</sys:node-uuid>
-                  <cm:name>Records Management Scripts</cm:name>
-                  <cm:title>Records Management Scripts</cm:title>
+                  <sys:node-uuid>rm_behavior_scripts</sys:node-uuid>
+                  <cm:name>Records Management Behavior Scripts</cm:name>
+                  <cm:title>Records Management Behavior Scripts</cm:title>
                   <cm:description>Scripts intended for execution in response to RM events.</cm:description>
                </view:properties>
                <view:associations>
                    <cm:contains>
                       <!-- TODO Will likely remove this script. Here for test purposes.
                                   Or perhaps replace it with a product-ready script -->
-                      <cm:content view:childName="cm:rma_isClosed.js">
-                         <view:aspects>
-                            <cm:titled></cm:titled>
-                         </view:aspects>
-                         <view:properties>
-                            <sys:store-protocol>workspace</sys:store-protocol>
-                            <sys:store-identifier>SpacesStore</sys:store-identifier>
-                            <cm:description>Records management sample script.</cm:description>
-                            <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/content/rma_isClosed.js|mimetype=text/javascript|encoding=UTF-8</cm:content>
-                            <cm:title>rma_isClosed.js</cm:title>
-                            <cm:name>rma_isClosed.js</cm:name>
-                         </view:properties>
-                      </cm:content>
-
                       <cm:content view:childName="cm:onCreate_supersedes.js">
                          <view:aspects>
                             <cm:titled></cm:titled>
@@ -111,6 +97,17 @@
                       </cm:content>
                    </cm:contains>
                </view:associations>
+            </cm:folder>
+
+            <cm:folder view:childName="cm:records_management_scripts">
+               <view:properties>
+                  <sys:store-protocol>workspace</sys:store-protocol>
+                  <sys:store-identifier>SpacesStore</sys:store-identifier>
+                  <sys:node-uuid>rm_scripts</sys:node-uuid>
+                  <cm:name>Records Management Scripts</cm:name>
+                  <cm:title>Records Management Scripts</cm:title>
+                  <cm:description>Scripts specific to RM that can also be executed by RM rules.</cm:description>
+               </view:properties>
             </cm:folder>
 
             <cm:folder view:childName="cm:records_management_email_templates">

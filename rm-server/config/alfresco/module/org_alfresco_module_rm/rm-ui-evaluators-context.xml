@@ -413,7 +413,7 @@
       </property>
       <property name="capability" value ="Destroy"/>
    </bean>
-   
+
    <bean id="jsonConversionComponent.fileDestructionReportAction"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="fileDestructionReport"/>
@@ -745,6 +745,18 @@
          </set>
       </property>
       <property name="capability" value="RequestRecordInformation"/>
+   </bean>
+
+   <bean id="jsonConversionComponent.dispositionSchedule"
+         parent="jsonConversionComponent.baseIndicator"
+         class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.HasAspectEvaluator">
+      <property name="name" value="dispositionSchedule"/>
+      <property name="aspect" value="rma:scheduled"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD_CATEGORY</value>
+         </set>
+      </property>
    </bean>
 
 </beans>

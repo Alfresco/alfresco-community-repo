@@ -35,9 +35,9 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomM
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -85,7 +85,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     private PolicyComponent policyComponent;
 
     /** Well-known location of the scripts folder. */
-    private NodeRef scriptsFolderNodeRef = new NodeRef("workspace", "SpacesStore", "rm_scripts");
+    private NodeRef scriptsFolderNodeRef = new NodeRef("workspace", "SpacesStore", "rm_behavior_scripts");
     
     /** Java behaviour */
     private JavaBehaviour onChangeToDispositionActionDefinition;

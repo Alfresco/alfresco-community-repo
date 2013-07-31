@@ -164,4 +164,17 @@
 	   <property name="nodeService" ref="NodeService" />
    </bean>
 
+   <bean id="org_alfresco_module_rm_RMv21BehaviorScriptsPatch"
+         parent="module.baseComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21BehaviorScriptsPatch">
+       <property name="moduleId" value="org_alfresco_module_rm"/>
+       <property name="name" value="org_alfresco_module_rm_RMv21BehaviorScriptsPatch"/>
+       <property name="description" value="Move existing behavior scripts to their dedicated behavior folder, freeing existing scripts folder up for non-behavior RM scripts."/>
+       <property name="sinceVersion" value="2.1"/>
+       <property name="appliesFromVersion" value="2.1"/>
+       <property name="fileFolderService" ref="FileFolderService"/>
+       <property name="nodeService" ref="NodeService"/>
+       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />        
+   </bean>
+   
 </beans>

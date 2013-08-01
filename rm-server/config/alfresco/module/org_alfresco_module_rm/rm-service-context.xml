@@ -1188,6 +1188,8 @@
     <bean id="filePlanAuthenticationService"
           class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl">
      	<property name="rmAdminUserName" value="${bootstrap.rmadmin.name}" />
+     	<property name="rmAdminFirstName" value="${bootstrap.rmadmin.firstName}" />
+     	<property name="rmAdminLastName" value="${bootstrap.rmadmin.lastName}" />
     </bean>
 
     <bean id="FilePlanAuthenticationService" class="org.springframework.aop.framework.ProxyFactoryBean">

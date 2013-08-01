@@ -124,6 +124,9 @@ public class RMv2RMAdminUserPatch extends ModulePatchComponent implements BeanNa
         }                
         
         String user = filePlanAuthenticationService.getRmAdminUserName();
+        String firstName = filePlanAuthenticationService.getRmAdminFirstName();
+        String lastName = filePlanAuthenticationService.getRmAdminLastName();
+
         if (authenticationService.authenticationExists(user) == false)
         {
             if (logger.isDebugEnabled() == true)
@@ -134,6 +137,8 @@ public class RMv2RMAdminUserPatch extends ModulePatchComponent implements BeanNa
             authenticationService.createAuthentication(user, password.toCharArray());
             Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
             properties.put(ContentModel.PROP_USERNAME, user);
+            properties.put(ContentModel.PROP_FIRSTNAME, firstName);
+            properties.put(ContentModel.PROP_LASTNAME, lastName);
             personService.createPerson(properties);
             
             if (logger.isDebugEnabled() == true)
@@ -152,6 +157,5 @@ public class RMv2RMAdminUserPatch extends ModulePatchComponent implements BeanNa
                 logger.debug("   ... RMv2RMAdminUserPatch complete");
             }
         }
-
     }
 }

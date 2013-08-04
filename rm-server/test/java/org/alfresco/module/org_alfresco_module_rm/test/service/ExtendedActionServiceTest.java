@@ -155,15 +155,27 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
             {
                 Action action = dmActionService.createAction(TestActionPropertySubs.NAME);
 
-                action.setParameterValue("longMonth", "${date.month.long}");
-                action.setParameterValue("shortMonth", "${date.month}");
-                action.setParameterValue("year", "${date.year.long}");
+                action.setParameterValue("dayShort", "${date.day.short}");
+                action.setParameterValue("dayShort2", "${date.day}");
+                action.setParameterValue("dayLong", "${date.day.long}");
+                action.setParameterValue("dayNumber", "${date.day.number}");
+                action.setParameterValue("dayYear", "${date.day.year}");
+
+                action.setParameterValue("monthShort", "${date.month.short}");
+                action.setParameterValue("monthShort2", "${date.month}");
+                action.setParameterValue("monthLong", "${date.month.long}");
+                action.setParameterValue("monthNumber", "${date.month.number}");
+
+                action.setParameterValue("yearShort", "${date.year.short}");
+                action.setParameterValue("yearShort2", "${date.year}");
+                action.setParameterValue("yearLong", "${date.year.long}");
+                action.setParameterValue("yearWeek", "${date.year.week}");
 
                 action.setParameterValue("name", "${node.cm:name}");
 
                 action.setParameterValue("company", "${message.test.company}");
 
-                action.setParameterValue("combo", "${date.year}/${date.month.short}/${node.cm:name}-${message.test.company}.txt");
+                action.setParameterValue("combo", "${date.year.long}/${date.month.short}/${node.cm:name}-${message.test.company}.txt");
 
                 dmActionService.executeAction(action, rmFolder);
 

@@ -18,9 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -35,37 +35,63 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class TestActionPropertySubs extends RMActionExecuterAbstractBase
 {
     public static final String NAME = "testActionPropertySubs";
-        
+
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        paramList.add(new ParameterDefinitionImpl("shortMonth", DataTypeDefinition.TEXT, false, ""));
-        paramList.add(new ParameterDefinitionImpl("longMonth", DataTypeDefinition.TEXT, false, ""));
-        paramList.add(new ParameterDefinitionImpl("year", DataTypeDefinition.TEXT, false, ""));
-        paramList.add(new ParameterDefinitionImpl("name", DataTypeDefinition.TEXT, false, ""));   
-        paramList.add(new ParameterDefinitionImpl("company", DataTypeDefinition.TEXT, false, ""));   
+        paramList.add(new ParameterDefinitionImpl("dayShort", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("dayShort2", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("dayLong", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("dayNumber", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("dayYear", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("monthShort", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("monthShort2", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("monthLong", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("monthNumber", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("yearShort", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("yearShort2", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("yearLong", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("yearWeek", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("name", DataTypeDefinition.TEXT, false, ""));
+        paramList.add(new ParameterDefinitionImpl("company", DataTypeDefinition.TEXT, false, ""));
         paramList.add(new ParameterDefinitionImpl("combo", DataTypeDefinition.TEXT, false, ""));
     }
-    
+
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        Calendar myToday = Calendar.getInstance();
-        
-        String shortMonth = myToday.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault());
-        String longMonth = myToday.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault());
-        String year = Integer.toString(myToday.get(Calendar.YEAR));
-        String name = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
+        Date date = new Date();
+        String dayShort = new SimpleDateFormat("EE").format(date);
+        String dayLong = new SimpleDateFormat("EEEE").format(date);
+        String dayNumber = new SimpleDateFormat("u").format(date);
+        String dayYear = new SimpleDateFormat("D").format(date);
+        String monthShort = new SimpleDateFormat("MMM").format(date);
+        String monthLong = new SimpleDateFormat("MMMM").format(date);
+        String monthNumber = new SimpleDateFormat("MM").format(date);
+        String yearShort = new SimpleDateFormat("yy").format(date);
+        String yearLong = new SimpleDateFormat("yyyy").format(date);
+        String yearWeek = new SimpleDateFormat("w").format(date);
+        String name = (String) nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
         String company = I18NUtil.getMessage("test.company");
-        
-        assertEquals(shortMonth, (String)action.getParameterValue("shortMonth"));
-        assertEquals(longMonth, (String)action.getParameterValue("longMonth"));
-        assertEquals(year, (String)action.getParameterValue("year"));
+
+        assertEquals(dayShort, (String) action.getParameterValue("dayShort"));
+        assertEquals(dayShort, (String) action.getParameterValue("dayShort2"));
+        assertEquals(dayLong, (String) action.getParameterValue("dayLong"));
+        assertEquals(dayNumber, (String) action.getParameterValue("dayNumber"));
+        assertEquals(dayYear, (String) action.getParameterValue("dayYear"));
+        assertEquals(monthShort, (String) action.getParameterValue("monthShort"));
+        assertEquals(monthShort, (String) action.getParameterValue("monthShort2"));
+        assertEquals(monthLong, (String) action.getParameterValue("monthLong"));
+        assertEquals(monthNumber, (String) action.getParameterValue("monthNumber"));
+        assertEquals(yearShort, (String) action.getParameterValue("yearShort"));
+        assertEquals(yearShort, (String) action.getParameterValue("yearShort2"));
+        assertEquals(yearLong, (String) action.getParameterValue("yearLong"));
+        assertEquals(yearWeek, (String) action.getParameterValue("yearWeek"));
         assertEquals(name, (String)action.getParameterValue("name"));
         assertEquals(company, (String)action.getParameterValue("company"));
-        assertEquals(year + "/" + shortMonth + "/" + name + "-" + company +".txt", (String)action.getParameterValue("combo"));
-    }   
-    
+        assertEquals(yearLong + "/" + monthShort + "/" + name + "-" + company +".txt", (String) action.getParameterValue("combo"));
+    }
+
     private void assertEquals(String expected, String actual)
     {
         if (expected.equals(actual) == false)

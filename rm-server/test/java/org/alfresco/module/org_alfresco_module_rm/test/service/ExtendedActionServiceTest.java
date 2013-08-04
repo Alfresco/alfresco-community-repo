@@ -38,7 +38,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
     /** Services */
     protected ActionService dmActionService;
     protected PermissionService dmPermissionService;
-    
+
     /** Action names */
     public static final String TEST_ACTION = "testAction";
     public static final String TEST_ACTION_2 = "testAction2";
@@ -46,7 +46,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
     public static final String RECORD_ONLY_ACTION = "recordOnlyAction";
     public static final String RECORD_AND_FOLDER_ONLY_ACTION = "recordandFolderOnlyAction";
     public static final String DELEGATE_ACTION = "rmDelegateAction";
-    
+
 
     @Override
     protected void initServices()
@@ -66,7 +66,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
     {
         return true;
     }
-    
+
     @Override
     protected boolean isRecordTest()
     {
@@ -74,7 +74,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
     }
 
     // NOTE:  temporarily disabled test ... now that RM actions are no longer registered with the action service, aplicability
-    //        may no longer be relevant ... possibly something to back out??    
+    //        may no longer be relevant ... possibly something to back out??
     public void xtestAvailableActions()
     {
         doTestInTransaction(new Test<Void>()
@@ -89,7 +89,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
                 assertTrue(containsAction(result, RECORD_ONLY_ACTION));
                 assertTrue(containsAction(result, RECORD_AND_FOLDER_ONLY_ACTION));
                 assertTrue(containsAction(result, DELEGATE_ACTION));
-                
+
                 result = dmActionService.getActionDefinitions(rmFolder);
                 assertNotNull(result);
                 assertFalse(containsAction(result, TEST_ACTION));
@@ -98,7 +98,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
                 assertFalse(containsAction(result, RECORD_ONLY_ACTION));
                 assertTrue(containsAction(result, RECORD_AND_FOLDER_ONLY_ACTION));
                 assertFalse(containsAction(result, DELEGATE_ACTION));
-                
+
                 result = dmActionService.getActionDefinitions(rmContainer);
                 assertNotNull(result);
                 assertFalse(containsAction(result, TEST_ACTION));
@@ -107,7 +107,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
                 assertFalse(containsAction(result, RECORD_ONLY_ACTION));
                 assertFalse(containsAction(result, RECORD_AND_FOLDER_ONLY_ACTION));
                 assertFalse(containsAction(result, DELEGATE_ACTION));
-                
+
                 result = dmActionService.getActionDefinitions(dmDocument);
                 assertNotNull(result);
                 assertFalse(containsAction(result, TEST_ACTION));
@@ -116,7 +116,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
                 assertFalse(containsAction(result, RECORD_ONLY_ACTION));
                 assertFalse(containsAction(result, RECORD_AND_FOLDER_ONLY_ACTION));
                 assertFalse(containsAction(result, DELEGATE_ACTION));
-                
+
                 result = dmActionService.getActionDefinitions(dmFolder);
                 assertNotNull(result);
                 assertFalse(containsAction(result, TEST_ACTION));
@@ -125,16 +125,16 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
                 assertFalse(containsAction(result, RECORD_ONLY_ACTION));
                 assertFalse(containsAction(result, RECORD_AND_FOLDER_ONLY_ACTION));
                 assertFalse(containsAction(result, DELEGATE_ACTION));
-                
+
                 return null;
             }
         });
     }
-    
+
     private boolean containsAction(List<ActionDefinition> list, String actionName)
     {
         boolean result = false;
-        
+
         for (ActionDefinition actionDefinition : list)
         {
             if (actionDefinition.getName().equals(actionName) == true)
@@ -143,10 +143,10 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
                 break;
             }
         }
-        
+
         return result;
     }
-    
+
     public void testActionPropertySubstitution() throws Exception
     {
         doTestInTransaction(new Test<Void>()
@@ -154,19 +154,19 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
             public Void run()
             {
                 Action action = dmActionService.createAction(TestActionPropertySubs.NAME);
-                
+
                 action.setParameterValue("longMonth", "${date.month.long}");
                 action.setParameterValue("shortMonth", "${date.month}");
-                action.setParameterValue("year", "${date.year}");
-                
+                action.setParameterValue("year", "${date.year.long}");
+
                 action.setParameterValue("name", "${node.cm:name}");
-                
+
                 action.setParameterValue("company", "${message.test.company}");
-                
+
                 action.setParameterValue("combo", "${date.year}/${date.month.short}/${node.cm:name}-${message.test.company}.txt");
-                
+
                 dmActionService.executeAction(action, rmFolder);
-                
+
                 return null;
             }
         });

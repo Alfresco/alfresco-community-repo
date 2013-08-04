@@ -18,25 +18,28 @@
  */
 package org.alfresco.repo.action.parameter;
 
-import java.util.Calendar;
-import java.util.Locale;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Date parameter processor.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
 public class DateParameterProcessor extends ParameterProcessor
 {
+    private static final String DAY = "day";
+    private static final String WEEK = "week";
     private static final String MONTH = "month";
     private static final String YEAR = "year";
     private static final String SHORT = "short";
     private static final String LONG = "long";
-    
+    private static final String NUMBER = "number";
+
     /**
      * @see org.alfresco.repo.action.parameter.ParameterProcessor#process(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -45,69 +48,128 @@ public class DateParameterProcessor extends ParameterProcessor
     {
         // the default position is to return the value un-changed
         String result = value;
-        
+
         // strip the processor name from the value
-        value = stripName(value);             
+        value = stripName(value);
+
         if (value.isEmpty() == false)
         {
-            String[] values = value.split("\\.", 2);            
-            Calendar calendar = Calendar.getInstance();      
-            int field = getField(values);
-            if (Calendar.YEAR == field)
+            String[] values = value.split("\\.", 2);
+            String field = values[0].trim();
+
+            if (DAY.equalsIgnoreCase(field))
             {
-                result = Integer.toString(calendar.get(field));
+                result = handleDay(values);
+            }
+            else if (MONTH.equalsIgnoreCase(field))
+            {
+                result = handleMonth(values);
+            }
+            else if (YEAR.equalsIgnoreCase(field))
+            {
+                result = handleYear(values);
             }
             else
             {
-                result = calendar.getDisplayName(field, getStyle(values), Locale.getDefault());
+                throw new AlfrescoRuntimeException("Cannot process the field '" + field + "'.");
             }
         }
-        
+
         return result;
     }
-    
-    private int getField(String[] values)
+
+    private String handleDay(String[] values)
     {
-        int result = 0;
-        String field = values[0];
-        
-        if (MONTH.equals(field) == true)
+        String style = getStyle(values);
+        String pattern;
+
+        if (SHORT.equalsIgnoreCase(style))
         {
-            result = Calendar.MONTH;
+            pattern = "EE";
         }
-        else if (YEAR.equals(field) == true)
+        else if (LONG.equalsIgnoreCase(style))
         {
-            result = Calendar.YEAR;
+            pattern = "EEEE";
+        }
+        else if (NUMBER.equalsIgnoreCase(style))
+        {
+            pattern = "u";
+        }
+        else if (YEAR.equalsIgnoreCase(style))
+        {
+            pattern = "D";
         }
         else
         {
-            throw new AlfrescoRuntimeException("Date component " + field + " is not supported by parameter substitution.");
+            throw new AlfrescoRuntimeException("The pattern 'date.day." + style + "' is not supported!");
         }
-        
-        return result;
+
+        return new SimpleDateFormat(pattern).format(new Date());
     }
-    
-    private int getStyle(String[] values)
+
+    private String handleMonth(String[] values)
     {
-        int result = Calendar.SHORT;
-        
-        if (values.length == 2)
+        String style = getStyle(values);
+        String pattern;
+
+        if (SHORT.equalsIgnoreCase(style))
         {
-            String style = values[1];
-            if (LONG.equals(style) == true)
-            {
-                result = Calendar.LONG;
-            }
-            else if (SHORT.equals(style) == true)
-            {
-                result = Calendar.SHORT;
-            }
-            else
-            {
-                throw new AlfrescoRuntimeException("Style component " + style + " is not supported by parameter substitution.");
-            }
+            pattern = "MMM";
         }
-        
-        return result;
+        else if (LONG.equalsIgnoreCase(style))
+        {
+            pattern = "MMMM";
+        }
+        else if (NUMBER.equalsIgnoreCase(style))
+        {
+            pattern = "MM";
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("The pattern 'date.month." + style + "' is not supported!");
+        }
+
+        return new SimpleDateFormat(pattern).format(new Date());
+    }
+
+    private String handleYear(String[] values)
+    {
+        String style = getStyle(values);
+        String pattern;
+
+        if (SHORT.equalsIgnoreCase(style))
+        {
+            pattern = "yy";
+        }
+        else if (LONG.equalsIgnoreCase(style))
+        {
+            pattern = "yyyy";
+        }
+        else if (WEEK.equalsIgnoreCase(style))
+        {
+            pattern = "w";
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("The pattern 'date.year." + style + "' is not supported!");
+        }
+
+        return new SimpleDateFormat(pattern).format(new Date());
+    }
+
+    private String getStyle(String[] values)
+    {
+        String style;
+
+        if (values.length == 1)
+        {
+            style = SHORT;
+        }
+        else
+        {
+            style = values[1].trim();
+        }
+
+        return style;
     }
 }

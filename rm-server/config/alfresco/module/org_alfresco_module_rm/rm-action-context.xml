@@ -874,6 +874,7 @@
        <property name="sysAdminParams">
            <ref bean="sysAdminParams" />
        </property>
+       <property name="publicAction" value="false"/>
    </bean>
        
 </beans>

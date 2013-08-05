@@ -384,11 +384,9 @@
       <property name="maxItems" value="${cache.compiledModelsSharedCache.maxItems}"/>
    </bean>
 
-   <!-- The cross-transaction shared cache for Dictionary Namespaces -->
+   <!-- The cross-transaction shared cache for Dictionary Namespaces [MUST BE UNLIMITED IN SIZE]-->
  
-   <bean name="prefixesCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
-      <property name="maxItems" value="${cache.prefixesSharedCache.maxItems}"/>
-   </bean>
+   <bean name="prefixesCache" class="org.alfresco.repo.cache.MemoryCache" />
    
    <!-- ===================================== -->
    <!-- Web Scripts Caches                    -->

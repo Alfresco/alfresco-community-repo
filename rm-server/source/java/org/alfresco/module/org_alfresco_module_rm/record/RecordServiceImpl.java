@@ -60,6 +60,7 @@ import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -539,15 +540,24 @@ public class RecordServiceImpl implements RecordService,
 
                     if (isLinked == true)
                     {
-                        // maintain the original primary location
-                        nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
-
-                        // set the extended security
-                        Set<String> combinedWriters = new HashSet<String>(writers);
-                        combinedWriters.add(owner);
-                        combinedWriters.add(AuthenticationUtil.getFullyAuthenticatedUser());
-                        
-                        extendedSecurityService.addExtendedSecurity(nodeRef, readers, combinedWriters);
+                        // turn off rules
+                        ruleService.disableRules();
+                        try
+                        {
+                            // maintain the original primary location
+                            nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
+    
+                            // set the extended security
+                            Set<String> combinedWriters = new HashSet<String>(writers);
+                            combinedWriters.add(owner);
+                            combinedWriters.add(AuthenticationUtil.getFullyAuthenticatedUser());
+                            
+                            extendedSecurityService.addExtendedSecurity(nodeRef, readers, combinedWriters);
+                        }
+                        finally
+                        {
+                            ruleService.enableRules();
+                        }
                     }
 
                     return null;
@@ -610,11 +620,43 @@ public class RecordServiceImpl implements RecordService,
      */
     private void makeRecord(NodeRef document)
     {
-        nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, null);
-
-        String recordId = identifierService.generateIdentifier(ASPECT_RECORD, nodeService.getPrimaryParent(document)
-                .getParentRef());
-        nodeService.setProperty(document, PROP_IDENTIFIER, recordId);
+        try
+        {
+            // get the record id
+            String recordId = identifierService.generateIdentifier(ASPECT_RECORD, 
+                                                                   nodeService.getPrimaryParent(document).getParentRef());
+            
+            // get the record name
+            String name = (String)nodeService.getProperty(document, ContentModel.PROP_NAME);
+                        
+            // rename the record
+            int dotIndex = name.lastIndexOf(".");
+            String prefix = name;
+            String postfix = "";
+            if (dotIndex != -1)
+            {
+                prefix = name.substring(0, dotIndex);
+                postfix = name.substring(dotIndex);
+            }            
+            String recordName = prefix + " (" + recordId + ")" + postfix;
+            fileFolderService.rename(document, recordName);
+            
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Rename " + name + " to " + recordName);
+            }
+            
+            // add the record aspect
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
+            props.put(PROP_IDENTIFIER, recordId);
+            props.put(PROP_ORIGIONAL_NAME, name);
+            nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, props);     
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new AlfrescoRuntimeException("Unable to make record, because rename failed.", e);
+        }
+        
     }
 
     /**
@@ -749,14 +791,14 @@ public class RecordServiceImpl implements RecordService,
                 ruleService.disableRules();
                 try
                 {                
-                    // take note of the record id
-                    String recordId = (String)nodeService.getProperty(nodeRef, PROP_IDENTIFIER);
-                    
-                    // take node of the original document owner
-                    String documentOwner = (String) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_USER_ID);
+                    // get record property values
+                    Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+                    String recordId = (String)properties.get(PROP_IDENTIFIER);                    
+                    String documentOwner = (String)properties.get(PROP_RECORD_ORIGINATING_USER_ID);
+                    String origionalName = (String)properties.get(PROP_ORIGIONAL_NAME);
+                    NodeRef originatingLocation = (NodeRef)properties.get(PROP_RECORD_ORIGINATING_LOCATION);
                     
                     // first remove the secondary link association
-                    NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
                     List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
                     for (ChildAssociationRef childAssociationRef : parentAssocs)
                     {
@@ -784,6 +826,18 @@ public class RecordServiceImpl implements RecordService,
                     // move the record into the collaboration site
                     nodeService.moveNode(nodeRef, originatingLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
                    
+                    // rename to the origional name
+                    if (origionalName != null)
+                    {
+                        fileFolderService.rename(nodeRef, origionalName);
+                        
+                        if (logger.isDebugEnabled() == true)
+                        {
+                            String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                            logger.debug("Rename " + name + " to " + origionalName);
+                        }
+                    }
+                    
                     // save the information about the rejection details
                     Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
                     aspectProperties.put(PROP_RECORD_REJECTION_USER_ID, userId);

@@ -93,6 +93,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     // Record aspect
     public static final QName ASPECT_RECORD = QName.createQName(RM_URI, "record");
     public static final QName PROP_DATE_FILED = QName.createQName(RM_URI, "dateFiled");
+    public static final QName PROP_ORIGIONAL_NAME = QName.createQName(RM_URI, "origionalName");
     public static final QName PROP_ORIGINATOR = QName.createQName(RM_URI, "originator");
     public static final QName PROP_ORIGINATING_ORGANIZATION = QName.createQName(RM_URI, "originatingOrganization");
     public static final QName PROP_PUBLICATION_DATE = QName.createQName(RM_URI, "publicationDate");

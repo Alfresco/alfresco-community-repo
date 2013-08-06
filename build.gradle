@@ -21,15 +21,21 @@ task deleteDist(type: Delete) {
     ant.delete(includeEmptyDirs: 'true', dir: 'dist')
 }
 
+/** Global Values **/
+
+distDir = 'dist'
+packageBaseName = "${groupid}-${packageName}-${version}-${build}"
+packageZipFile = "${packageBaseName}.zip"
+
+/** Package Build Tasks */
+
 task packageBuild (dependsOn: [':rm-server:amp', ':rm-share:amp']) << {
 	
-	distDir = file('dist')
-	if (distDir.exists() == false) {
-		distDir.mkdirs();
+	distDirFile = file('dist')
+	if (distDirFile.exists() == false) {
+		distDirFile.mkdirs();
 	}
 	
-	packageBaseName = "${groupid}-${packageName}-${version}-${build}"
-	packageZipFile = "${packageBaseName}.zip"
 	alfrescoAmp = "${project(':rm-server').name}/${project(':rm-server').buildDistDir}/${project(':rm-server').ampFile}"
 	shareAmp = "${project(':rm-share').name}/${project(':rm-share').buildDistDir}/${project(':rm-share').ampFile}"
 	
@@ -37,6 +43,41 @@ task packageBuild (dependsOn: [':rm-server:amp', ':rm-share:amp']) << {
 		
 		ant.zipfileset(file: "${alfrescoAmp}")
 		ant.zipfileset(file: "${shareAmp}")		
+	}
+}
+
+/** I18N Tasks */
+
+task localisationPackage (dependsOn: [':rm-server:assembleLocalisationPackage', ':rm-share:assembleLocalisationPackage']) << {
+
+	distDirFile = file('dist')
+	if (distDirFile.exists() == false) {
+		distDirFile.mkdirs();
+	}	
+	
+	def svnVersion
+	new ByteArrayOutputStream().withStream { os ->
+		
+		def result = exec {
+			executable = 'svn'
+			args = ['info']
+			standardOutput = os
+		}
+		
+		def outputAsString = os.toString()
+		def matchLastChangedRev = outputAsString =~ /Last Changed Rev: (\d+)/
+		svnVersion = matchLastChangedRev[0][1]
+	}
+		
+	localisationPackageZipFile = "messages-${groupid}-${packageName}-${version}-r${svnVersion}.zip"
+	
+	alfrescoLocalisationPackage = "${project(':rm-server').name}/${project(':rm-server').i18nDir}"
+	shareLocalisationPackage = "${project(':rm-share').name}/${project(':rm-share').i18nDir}"
+
+	ant.zip(destfile: "${distDir}/${localisationPackageZipFile}", update: 'true') {	
+		
+		ant.zipfileset(dir: "${alfrescoLocalisationPackage}")
+		ant.zipfileset(dir: "${shareLocalisationPackage}")
 	}
 }
 
@@ -57,6 +98,7 @@ subprojects {
 	sourceJavaDir = 'source/java'
 	sourceWebDir = 'source/web'
 	assembleDir = 'build/assemble'
+	i18nDir = 'build/i18n'
 	testJavaDir = 'test/java'
 	testResourceDir = 'test/resources'
 	configDir = 'config'
@@ -213,6 +255,27 @@ subprojects {
 		ant.delete(includeEmptyDirs: 'true', dir: explodedDepsDir)
 	}	
 	
+	/** --- I18N tasks */
+		
+	task assembleLocalisationPackage << {
+	
+		delete i18nDir
+	
+		copy {
+			from configDir
+			include '**/*.properties'			
+			exclude '**/*_*.properties'
+			exclude '**/rm-method-security.properties'
+			exclude '**/alfresco-global.properties'
+			exclude '**/log4j.properties'
+			exclude '**/module.properties'
+			exclude '**/file-mapping.properties'
+			into "${i18nDir}/${project.name}"	
+            includeEmptyDirs = false 			
+		}
+	
+	}
+	
 	/** --- AMP tasks --- */
 	
 	task copyWar(type: Copy) {
@@ -270,13 +333,6 @@ subprojects {
 		ant.zip(destfile: "${buildDistDir}/${ampFile}", update: 'true') {
 			ant.zipfileset(dir: assembleDir)
 		}	
-	}
-	
-	task localisationPackage (type: Copy) << {
-	
-		from configDir
-		include "**/*.properties"
-		into "${assembleDir}/i18n"				
 	}
 	
 	task deployExploded(dependsOn: 'jar') << {

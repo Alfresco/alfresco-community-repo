@@ -32,8 +32,11 @@ import org.apache.commons.logging.LogFactory;
 public abstract class ModulePatchComponent extends AbstractModuleComponent
 {
     /** logger */
-    private static Log logger = LogFactory.getLog(ModulePatchComponent.class);
+    protected static Log logger = LogFactory.getLog(ModulePatchComponent.class);
     
+    /**
+     * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
+     */
     @Override
     protected void executeInternal() throws Throwable
     {
@@ -54,5 +57,10 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
         }
     }
     
+    /**
+     * Execute patch work.
+     * 
+     * @throws Throwable
+     */
     protected abstract void executePatch() throws Throwable;
 }

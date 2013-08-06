@@ -714,6 +714,12 @@
                <title>Date Filed</title>
                <type>d:date</type>
             </property>
+            
+            <property name="rma:origionalName">
+               <title>Origional Name</title>
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
 
             <property name="rma:publicationDate">
                <title>Publication Date</title>
@@ -1167,7 +1173,7 @@
             <property name="rma:recordOriginatingCreationDate">
                	<type>d:date</type>
       			<protected>true</protected>
-            </property>
+            </property>            
             <property name="rma:recordOriginatingLocation">
                	<type>d:any</type>
       			<protected>true</protected>

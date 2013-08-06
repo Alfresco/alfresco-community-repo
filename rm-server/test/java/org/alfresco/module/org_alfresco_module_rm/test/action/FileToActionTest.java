@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.FileToAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -47,7 +48,7 @@ public class FileToActionTest extends BaseRMTestCase
     private static final String PATH_BAD = "monkey/rmfolder";
     private static final String PATH_CREATE = "rmcontainer/newrmfolder";
 
-    private static final String PATH_SUB1 = "rmcontainer/${node.cm:name}";
+    private static final String PATH_SUB1 = "rmcontainer/${node.cm:title}";
 
     protected ActionService dmActionService;
 
@@ -112,6 +113,8 @@ public class FileToActionTest extends BaseRMTestCase
         {
             public Void run()
             {
+                nodeService.setProperty(dmDocument, ContentModel.PROP_TITLE, "mytestvalue");
+                
                 // create record from document
                 recordService.createRecord(filePlan, dmDocument);
 
@@ -193,7 +196,7 @@ public class FileToActionTest extends BaseRMTestCase
     public void testCreateSub() throws Exception
     {
         initRecord();
-        createRecord(PATH_SUB1, "collabDocument.txt", "rmcontainer/collabDocument.txt");
+        createRecord(PATH_SUB1, "mytestvalue", "rmcontainer/mytestvalue");
     }
 
     private void createRecord(String path, String name)

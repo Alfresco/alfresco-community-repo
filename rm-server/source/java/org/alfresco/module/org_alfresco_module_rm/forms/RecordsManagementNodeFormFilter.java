@@ -41,7 +41,6 @@ import org.alfresco.repo.forms.processor.node.FieldUtils;
 import org.alfresco.repo.forms.processor.node.FormFieldConstants;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -67,24 +66,11 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     protected static final String TRANSIENT_CATEGORY_ID = "rmCategoryIdentifier";
     protected static final String TRANSIENT_DISPOSITION_INSTRUCTIONS = "rmDispositionInstructions";
 
-    /** Dictionary service */
-    protected DictionaryService dictionaryService;
-
     /** Disposition service */
     protected DispositionService dispositionService;
-    
+
     /** File Plan Service */
     protected FilePlanService filePlanService;
-
-    /**
-     * Sets the data dictionary service
-     *
-     * @param dictionaryService The DictionaryService instance
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
 
     /**
      * Sets the disposition service
@@ -95,11 +81,11 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}

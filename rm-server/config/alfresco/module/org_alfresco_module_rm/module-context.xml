@@ -113,7 +113,7 @@
 
    <!--  Import workflows -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-workflow-context.xml"/>
-   
+
    <!--  Import record service -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-report-context.xml"/>
 
@@ -209,7 +209,6 @@
       parent="baseRMFormFilter"
       class="org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementNodeFormFilter">
       <property name="filterRegistry" ref="nodeFilterRegistry" />
-      <property name="dictionaryService" ref="DictionaryService" />
       <property name="dispositionService" ref="dispositionService"/>
       <property name="filePlanService" ref="FilePlanService" />
    </bean>
@@ -242,8 +241,8 @@
 
    <!-- Import the RM webscript's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-webscript-context.xml"/>
-   
+
    <!-- Import of installed demos -->
-   <import resource="classpath*:alfresco/module/org_alfresco_module_rm/demo/*/demo-context.xml"/> 
+   <import resource="classpath*:alfresco/module/org_alfresco_module_rm/demo/*/demo-context.xml"/>
 
 </beans>

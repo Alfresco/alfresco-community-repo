@@ -190,7 +190,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
         return result;
     }
 
-    
+
     @SuppressWarnings("unchecked")
 	protected Map<String, Serializable> getParamsFromUrlAndJson(WebScriptRequest req, JSONObject json)
             throws JSONException
@@ -205,9 +205,9 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
             params.put(PROP_ID, (Serializable)propId);
         }
 
-        for (Iterator iter = json.keys(); iter.hasNext(); )
+        for (Iterator<String> iter = json.keys(); iter.hasNext(); )
         {
-            String nextKeyString = (String)iter.next();
+            String nextKeyString = iter.next();
             String nextValueString = null;
             if (!json.isNull(nextKeyString))
             {

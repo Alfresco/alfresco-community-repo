@@ -59,7 +59,7 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
         {
             Object result = invocation.proceed();
             WorkflowTask wt = (WorkflowTask) result;
-            if (isInitiatorOrAssignee(wt, currentUser))
+            if (isInitiatorOrAssignee(wt, currentUser) || fromSameParallelReviewWorkflow(wt, currentUser))
             {
                 return result;
             }
@@ -86,7 +86,8 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
 
         }
 
-        if (methodName.equals("getAssignedTasks") || methodName.equals("getPooledTasks") || methodName.equals("getTasksForWorkflowPath") || methodName.equals("getStartTasks") || methodName.equals("queryTasks"))
+        // Not including getAssignedTasks and getPooledTasks, as the methods themselves already take into account the authenticated user/group
+        if (methodName.equals("getTasksForWorkflowPath") || methodName.equals("getStartTasks") || methodName.equals("queryTasks"))
         {
             Object result = invocation.proceed();
             List<WorkflowTask> rawList = (List<WorkflowTask>) result;
@@ -94,7 +95,7 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
 
             for (WorkflowTask wt : rawList)
             {
-                if (isInitiatorOrAssignee(wt, currentUser))
+                if (isInitiatorOrAssignee(wt, currentUser) || fromSameParallelReviewWorkflow(wt, currentUser))
                 {
                     resultList.add(wt);
                 }
@@ -145,6 +146,29 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
             }
         }
 
+        return false;
+    }
+
+    private boolean fromSameParallelReviewWorkflow(WorkflowTask wt, String userName)
+    {
+        // check whether this is parallel review workflow, "parallel" will match all jbpm and activity parallel workflows
+        if (wt.getPath().getInstance().getDefinition().getName().toLowerCase().contains("parallel"))
+        {
+            WorkflowTaskQuery tasksQuery = new WorkflowTaskQuery();
+            tasksQuery.setTaskState(null);
+            tasksQuery.setActive(null);
+            tasksQuery.setProcessId(wt.getPath().getInstance().getId());
+            List<WorkflowTask> allWorkflowTasks = workflowService.queryTasks(tasksQuery, true);
+            
+            for (WorkflowTask task : allWorkflowTasks)
+            {
+                if (isInitiatorOrAssignee(task, userName))
+                {
+                    // if at list one match then user has task from the same workflow
+                    return true;
+                }
+            }
+        }
         return false;
     }
 

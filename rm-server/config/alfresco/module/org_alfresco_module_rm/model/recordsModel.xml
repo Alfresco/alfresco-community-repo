@@ -658,7 +658,6 @@
             <property name="rma:identifier">
                <title>Record Component Identifier</title>
                <type>d:text</type>
-               <protected>true</protected>
                <mandatory>true</mandatory>
                <index enabled="true">
 		          <atomic>true</atomic>

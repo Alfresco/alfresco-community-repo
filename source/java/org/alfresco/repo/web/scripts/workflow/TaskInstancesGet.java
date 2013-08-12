@@ -180,7 +180,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             {
         		// Total-count needs to be based on matching tasks only, so we can't just use allTasks.size() for this
             	totalCount++;
-            	if(i >= skipCount && (maxItems < 0 || maxItems > results.size()))
+            	if(totalCount > skipCount && (maxItems < 0 || maxItems > results.size()))
             	{
             		// Only build the actual detail if it's in the range of items we need. This will
             		// drastically improve performance over paging after building the model

@@ -88,6 +88,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
     protected static final String URL_USER_TASKS_PROPERTIES = "api/task-instances?authority={0}&properties={1}";
     protected static final String URL_TASKS_DUE_BEFORE = "api/task-instances?dueBefore={0}";
     protected static final String URL_TASKS_DUE_AFTER = "api/task-instances?dueAfter={0}";
+    protected static final String URL_TASKS_DUE_AFTER_AND_SKIP = "api/task-instances?dueAfter={0}&skipCount={1}";
     protected static final String URL_WORKFLOW_TASKS = "api/workflow-instances/{0}/task-instances";
     protected static final String URL_WORKFLOW_DEFINITIONS = "api/workflow-definitions";
     protected static final String URL_WORKFLOW_DEFINITION = "api/workflow-definitions/{0}";
@@ -270,6 +271,32 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
             }
         }
         assertFalse("Found wf:submitAdhocTask when they were supposed to be excluded", adhocTasksPresent);
+        
+        // CLOUD-1928: Check skip-count works toghether with filter, start another process
+        personManager.setUser(USER1);
+        params.clear();
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
+        dueDateCal.add(Calendar.DAY_OF_YEAR, 2);
+
+        params.put(WorkflowModel.PROP_DUE_DATE, dueDateCal.getTime());
+        params.put(WorkflowModel.PROP_PRIORITY, 1);
+        params.put(WorkflowModel.ASSOC_PACKAGE, workflowService.createPackage(null));
+
+        WorkflowPath adhocPath2 = workflowService.startWorkflow(adhocDef.getId(), params);
+        String workflowId2 = adhocPath2.getInstance().getId();
+        workflows.add(workflowId2);
+
+        WorkflowTask startTask2 = workflowService.getStartTask(workflowId2);
+        workflowService.endTask(startTask2.getId(), null);
+        
+        // Filter based on due-date and skip first result. Should return nothing instead of
+        // the second task, since only one matches and one is skipped
+        
+        // Due after tomorrow, started task shouldn't be in it
+       String url = MessageFormat.format(URL_TASKS_DUE_AFTER_AND_SKIP,  ISO8601DateFormat.format(dueDateCal.getTime()), 1);
+       json = getDataFromRequest(url);
+       JSONArray resultArray = json.getJSONArray("data");
+       assertEquals(0, resultArray.length());
     }
     
     public void testTaskInstancesForWorkflowGet() throws Exception

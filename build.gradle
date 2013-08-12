@@ -251,8 +251,9 @@ subprojects {
 		}		
 	}
 		
-	task cleanDeps << {
+	task cleanDeps(dependsOn: clean) << {
 		ant.delete(includeEmptyDirs: 'true', dir: explodedDepsDir)
+		ant.delete(file: warFile)
 	}	
 	
 	/** --- I18N tasks */

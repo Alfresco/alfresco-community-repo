@@ -26,6 +26,7 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +72,7 @@ import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -228,11 +230,11 @@ public class RecordsManagementAuditServiceImpl
     {
         this.rmActionService = rmActionService;
     }
-    
+
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
@@ -329,9 +331,9 @@ public class RecordsManagementAuditServiceImpl
                     new AuditEvent("unfreeze", MSG_UNFREEZE));
         this.auditEvents.put("reject",
                 new AuditEvent("reject", MSG_REJECT_RECORD));
-        
+
         // Added for DOD compliance
-        this.auditEvents.put("createPerson", 
+        this.auditEvents.put("createPerson",
                     new AuditEvent("createPerson", "User Created"));
     }
 
@@ -352,11 +354,11 @@ public class RecordsManagementAuditServiceImpl
         policyComponent.bindClassBehaviour(
                 BeforeDeleteNodePolicy.QNAME,
                 RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID,
-                new JavaBehaviour(this, "beforeDeleteNode"));   
+                new JavaBehaviour(this, "beforeDeleteNode"));
         policyComponent.bindClassBehaviour(
                 OnCreateNodePolicy.QNAME,
                 ContentModel.TYPE_PERSON,
-                new JavaBehaviour(this, "onCreatePersonNode"));  
+                new JavaBehaviour(this, "onCreatePersonNode"));
     }
 
     @Override
@@ -364,11 +366,11 @@ public class RecordsManagementAuditServiceImpl
     {
         shutdown = true;
     }
-    
+
     /*** TODO remove this when we support multiple file plans ****/
-    
+
     private NodeRef defaultFilePlan;
-    
+
     private NodeRef getDefaultFilePlan()
     {
     	if (defaultFilePlan == null)
@@ -381,7 +383,7 @@ public class RecordsManagementAuditServiceImpl
     	}
     	return defaultFilePlan;
     }
-    
+
     /*** TODO end ***/
 
     /**
@@ -389,19 +391,19 @@ public class RecordsManagementAuditServiceImpl
      */
     @Override
     @Deprecated
-    public boolean isEnabled() 
+    public boolean isEnabled()
     {
     	return isAuditLogEnabled(getDefaultFilePlan());
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public boolean isAuditLogEnabled(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);    	
-    	// TODO use file plan to scope audit log   	
-    	
+    	ParameterCheck.mandatory("filePlan", filePlan);
+    	// TODO use file plan to scope audit log
+
         return auditService.isAuditEnabled(
                 RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME,
                 RecordsManagementAuditService.RM_AUDIT_PATH_ROOT);
@@ -415,19 +417,19 @@ public class RecordsManagementAuditServiceImpl
     {
     	startAuditLog(getDefaultFilePlan());
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public void startAuditLog(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);    	
-    	// TODO use file plan to scope audit log 
-    	
+    	ParameterCheck.mandatory("filePlan", filePlan);
+    	// TODO use file plan to scope audit log
+
         auditService.enableAudit(
                 RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME,
                 RecordsManagementAuditService.RM_AUDIT_PATH_ROOT);
-        
+
         if (logger.isInfoEnabled())
         {
             logger.info("Started Records Management auditing");
@@ -442,22 +444,22 @@ public class RecordsManagementAuditServiceImpl
     {
     	stopAuditLog(getDefaultFilePlan());
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public void stopAuditLog(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);    	
-    	// TODO use file plan to scope audit log 
-    	
+    	ParameterCheck.mandatory("filePlan", filePlan);
+    	// TODO use file plan to scope audit log
+
         auditService.disableAudit(
                 RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME,
                 RecordsManagementAuditService.RM_AUDIT_PATH_ROOT);
         if (logger.isInfoEnabled())
             logger.info("Stopped Records Management auditing");
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -472,9 +474,9 @@ public class RecordsManagementAuditServiceImpl
      */
     public void clearAuditLog(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);    	
+    	ParameterCheck.mandatory("filePlan", filePlan);
     	// TODO use file plan to scope audit log
-    	
+
         auditService.clearAudit(RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME, null, null);
         if (logger.isInfoEnabled())
             logger.debug("Records Management audit log has been cleared");
@@ -488,19 +490,19 @@ public class RecordsManagementAuditServiceImpl
     {
     	return getDateAuditLogLastStarted(getDefaultFilePlan());
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public Date getDateAuditLogLastStarted(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);    	
+    	ParameterCheck.mandatory("filePlan", filePlan);
     	// TODO use file plan to scope audit log
-    	
+
         // TODO: return proper date, for now it's today's date
-        return new Date();
+        return getStartOfDay(new Date());
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -515,11 +517,11 @@ public class RecordsManagementAuditServiceImpl
      */
     public Date getDateAuditLogLastStopped(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);    	
+    	ParameterCheck.mandatory("filePlan", filePlan);
     	// TODO use file plan to scope audit log
-    	
+
         // TODO: return proper date, for now it's today's date
-        return new Date();
+        return getEndOfDay(new Date());
     }
 
     /**
@@ -579,12 +581,12 @@ public class RecordsManagementAuditServiceImpl
     {
         auditRMEvent(childAssocRef.getChildRef(), RM_AUDIT_EVENT_CREATE_RM_OBJECT, null, null);
     }
-    
+
     public void onCreatePersonNode(ChildAssociationRef childAssocRef)
     {
         auditRMEvent(childAssocRef.getChildRef(), "createPerson", null, null);
     }
-    
+
     /**
      * {@inheritDoc}
      * @since 3.2
@@ -618,7 +620,7 @@ public class RecordsManagementAuditServiceImpl
             // be extracted now and the audit entry needs to be created now.
             Map<String, Serializable> auditMap = buildAuditMap(nodeRef, eventName);
             auditMap = auditComponent.recordAuditValues(RecordsManagementAuditService.RM_AUDIT_PATH_ROOT, auditMap);
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug("RM Audit: Audited node deletion: \n" + auditMap);
@@ -656,10 +658,10 @@ public class RecordsManagementAuditServiceImpl
             // That is it.  The values are queued for the end of the transaction.
         }
     }
-    
+
     /**
      * Helper method to build audit map
-     * 
+     *
      * @param nodeRef
      * @param eventName
      * @return
@@ -678,8 +680,8 @@ public class RecordsManagementAuditServiceImpl
                 AuditApplication.buildPath(
                         RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
                         RecordsManagementAuditService.RM_AUDIT_SNIPPET_NODE),
-                        nodeRef);        
-      return auditMap;  
+                        nodeRef);
+      return auditMap;
     }
 
     /**
@@ -743,11 +745,11 @@ public class RecordsManagementAuditServiceImpl
 
                 // Action description
                 String eventName = auditedNode.getEventName();
-                
+
                 Map<String, Serializable> auditMap = buildAuditMap(nodeRef, eventName);
-                
+
                 // TODO do we care if the before and after are null??
-                
+
                 // Property changes
                 Map<QName, Serializable> propertiesBefore = auditedNode.getNodePropertiesBefore();
                 Map<QName, Serializable> propertiesAfter = auditedNode.getNodePropertiesAfter();
@@ -767,7 +769,7 @@ public class RecordsManagementAuditServiceImpl
                                 RecordsManagementAuditService.RM_AUDIT_SNIPPET_CHANGES,
                                 RecordsManagementAuditService.RM_AUDIT_SNIPPET_AFTER),
                         (Serializable) deltaPair.getSecond());
-                
+
                 // Audit it
                 if (logger.isDebugEnabled())
                 {
@@ -905,7 +907,7 @@ public class RecordsManagementAuditServiceImpl
                     return false;
                 }
 
-                
+
                 Date timestamp = new Date(time);
                 String eventName = null;
                 String fullName = null;
@@ -974,15 +976,15 @@ public class RecordsManagementAuditServiceImpl
                     // skip it
                     return true;
                 }
-                
-                
+
+
                 if (params.getProperty() != null &&
                     getChangedProperties(beforeProperties, afterProperties).contains(params.getProperty()) == false)
                 {
                     // skip it
                     return false;
                 }
-                
+
                 // TODO: Refactor this to use the builder pattern
                 RecordsManagementAuditEntry entry = new RecordsManagementAuditEntry(
                         timestamp,
@@ -1018,7 +1020,7 @@ public class RecordsManagementAuditServiceImpl
             private List<QName> getChangedProperties(Map<QName, Serializable> beforeProperties, Map<QName, Serializable> afterProperties)
             {
                 List<QName> changedProperties = new ArrayList<QName>(21);
-                
+
                 if (beforeProperties != null && afterProperties != null)
                 {
                     // add all the properties present before the audited action
@@ -1026,7 +1028,7 @@ public class RecordsManagementAuditServiceImpl
                     {
                         changedProperties.add(valuePropName);
                     }
-                    
+
                     // add all the properties present after the audited action that
                     // have not already been added
                     for (QName valuePropName : afterProperties.keySet())
@@ -1037,10 +1039,10 @@ public class RecordsManagementAuditServiceImpl
                         }
                     }
                 }
-                
+
                 return changedProperties;
             }
-            
+
             private void writeEntryToFile(RecordsManagementAuditEntry entry)
             {
                 if (writer == null)
@@ -1081,8 +1083,8 @@ public class RecordsManagementAuditServiceImpl
         };
 
         String user = params.getUser();
-        Long fromTime = (params.getDateFrom() == null ? null : new Long(params.getDateFrom().getTime()));
-        Long toTime = (params.getDateTo() == null ? null : new Long(params.getDateTo().getTime()));
+        Long fromTime = getFromDateTime(params.getDateFrom());
+        Long toTime = getToDateTime(params.getDateTo());
         NodeRef nodeRef = params.getNodeRef();
         int maxEntries = params.getMaxEntries();
         boolean forward = maxEntries > 0 ? false : true;        // Reverse order if the results are limited
@@ -1111,6 +1113,90 @@ public class RecordsManagementAuditServiceImpl
 
         // finish off the audit trail report
         writeAuditTrailFooter(writer, reportFormat);
+    }
+
+    /**
+     * Calculates the start of the given date.
+     * For example, if you had the date time of 12 Aug 2013 12:10:15.158
+     * the result would be 12 Aug 2013 00:00:00.000.
+     *
+     * @param date The date for which the start should be calculated.
+     * @return Returns the start of the given date.
+     */
+    private Date getStartOfDay(Date date)
+    {
+        return DateUtils.truncate(date == null ? new Date() : date, Calendar.DATE);
+    }
+
+    /**
+     * Gets the start of the from date
+     * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl.getStartOfDay()
+     *
+     * @param date The date for which the start should be retrieved.
+     * @return Returns null if the given date is null, otherwise the start of the given day.
+     */
+    private Date getFromDate(Date date)
+    {
+        return date == null ? null : getStartOfDay(date);
+    }
+
+    /**
+     * Returns the number of milliseconds for the "from date".
+     *
+     * @param date The date for which the number of milliseconds should retrieved.
+     * @return Returns null if the given date is null, otherwise the number of milliseconds for the given date.
+     */
+    private Long getFromDateTime(Date date)
+    {
+        Long fromDateTime = null;
+        Date fromDate = getFromDate(date);
+        if (fromDate != null)
+        {
+            fromDateTime = new Long(fromDate.getTime());
+        }
+        return fromDateTime;
+    }
+
+    /**
+     * Calculates the end of the given date.
+     * For example, if you had the date time of 12 Aug 2013 12:10:15.158
+     * the result would be 12 Aug 2013 23:59:59.999.
+     *
+     * @param date The date for which the end should be calculated.
+     * @return Returns the end of the given date.
+     */
+    private Date getEndOfDay(Date date)
+    {
+        return DateUtils.addMilliseconds(DateUtils.ceiling(date == null ? new Date() : date, Calendar.DATE), -1);
+    }
+
+    /**
+     * Gets the end of the from date
+     * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl.getEndOfDay()
+     *
+     * @param date The date for which the end should be retrieved.
+     * @return Returns null if the given date is null, otherwise the end of the given day.
+     */
+    private Date getToDate(Date date)
+    {
+        return date == null ? null : getEndOfDay(date);
+    }
+
+    /**
+     * Returns the number of milliseconds for the "to date".
+     *
+     * @param date The date for which the number of milliseconds should retrieved.
+     * @return Returns null if the given date is null, otherwise the number of milliseconds for the given date.
+     */
+    private Long getToDateTime(Date date)
+    {
+        Long toDateTime = null;
+        Date toDate = getToDate(date);
+        if (toDate != null)
+        {
+            toDateTime = new Long(toDate.getTime());
+        }
+        return toDateTime;
     }
 
     /**
@@ -1255,9 +1341,9 @@ public class RecordsManagementAuditServiceImpl
             // write header as JSON
             writer.write("{\n\t\"data\":\n\t{");
             writer.write("\n\t\t\"started\": \"");
-            writer.write(ISO8601DateFormat.format(getDateLastStarted()));
+            writer.write(ISO8601DateFormat.format(getStartOfDay(params.getDateFrom())));
             writer.write("\",\n\t\t\"stopped\": \"");
-            writer.write(ISO8601DateFormat.format(getDateLastStopped()));
+            writer.write(ISO8601DateFormat.format(getEndOfDay(params.getDateTo())));
             writer.write("\",\n\t\t\"enabled\": ");
             writer.write(Boolean.toString(isEnabled()));
             writer.write(",\n\t\t\"entries\":[");
@@ -1378,7 +1464,7 @@ public class RecordsManagementAuditServiceImpl
                 json.put("userRole", entry.getUserRole() == null ? "": entry.getUserRole());
                 json.put("fullName", entry.getFullName() == null ? "": entry.getFullName());
                 json.put("nodeRef", entry.getNodeRef() == null ? "": entry.getNodeRef());
-                
+
                 if (entry.getEvent().equals("createPerson") == true && entry.getNodeRef() != null)
                 {
                     NodeRef nodeRef = entry.getNodeRef();
@@ -1389,7 +1475,7 @@ public class RecordsManagementAuditServiceImpl
                 {
                     json.put("nodeName", entry.getNodeName() == null ? "": entry.getNodeName());
                 }
-                
+
                 json.put("nodeType", entry.getNodeType() == null ? "": entry.getNodeType());
                 json.put("event", entry.getEvent() == null ? "": getAuditEventLabel(entry.getEvent()));
                 json.put("identifier", entry.getIdentifier() == null ? "": entry.getIdentifier());

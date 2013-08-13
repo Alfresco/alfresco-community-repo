@@ -30,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -55,11 +56,12 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
 
         String methodName = invocation.getMethod().getName();
 
-        if (methodName.equals("getTaskById") || methodName.equals("getStartTask"))
+        if (methodName.equals("getTaskById"))
         {
             Object result = invocation.proceed();
             WorkflowTask wt = (WorkflowTask) result;
-            if (isInitiatorOrAssignee(wt, currentUser) || fromSameParallelReviewWorkflow(wt, currentUser))
+            if (isInitiatorOrAssignee(wt, currentUser) || fromSameParallelReviewWorkflow(wt, currentUser) || 
+                        isStartTaskOfProcessInvolvedIn(wt, currentUser))
             {
                 return result;
             }
@@ -69,6 +71,23 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
                 throw new AccessDeniedException("Accessing task with id='" + taskId + "' is not allowed for user '" + currentUser + "'");
             }
 
+        }
+        
+        if(methodName.equals("getStartTask"))
+        {
+            Object result = invocation.proceed();
+            WorkflowTask wt = (WorkflowTask) result;
+            
+            if (isInitiatorOrAssignee(wt, currentUser) || isUserPartOfProcess(wt, currentUser))
+            {
+                return result;
+            }
+            else
+            {
+                String taskId = (String) invocation.getArguments()[0];
+                throw new AccessDeniedException("Accessing task with id='" + taskId + "' is not allowed for user '" + currentUser + "'");
+            }
+            
         }
 
         if (methodName.equals("updateTask") || methodName.equals("endTask"))
@@ -95,7 +114,8 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
 
             for (WorkflowTask wt : rawList)
             {
-                if (isInitiatorOrAssignee(wt, currentUser) || fromSameParallelReviewWorkflow(wt, currentUser))
+                if (isInitiatorOrAssignee(wt, currentUser) || fromSameParallelReviewWorkflow(wt, currentUser)
+                            || isStartTaskOfProcessInvolvedIn(wt, currentUser))
                 {
                     resultList.add(wt);
                 }
@@ -149,6 +169,11 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
         return false;
     }
 
+    private boolean isStartTaskOfProcessInvolvedIn(WorkflowTask wt, String userName) 
+    {
+        return wt.getId().contains(ActivitiConstants.START_TASK_PREFIX) && isUserPartOfProcess(wt, userName);
+    }
+    
     private boolean fromSameParallelReviewWorkflow(WorkflowTask wt, String userName)
     {
         // check whether this is parallel review workflow, "parallel" will match all jbpm and activity parallel workflows
@@ -167,6 +192,25 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
                     // if at list one match then user has task from the same workflow
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+    
+    private boolean isUserPartOfProcess(WorkflowTask wt, String userName)
+    {
+        WorkflowTaskQuery tasksQuery = new WorkflowTaskQuery();
+        tasksQuery.setTaskState(null);
+        tasksQuery.setActive(null);
+        tasksQuery.setProcessId(wt.getPath().getInstance().getId());
+        List<WorkflowTask> allWorkflowTasks = workflowService.queryTasks(tasksQuery, true);
+        
+        for (WorkflowTask task : allWorkflowTasks)
+        {
+            if (isInitiatorOrAssignee(task, userName))
+            {
+                // if at list one match then user has task from the same workflow
+                return true;
             }
         }
         return false;

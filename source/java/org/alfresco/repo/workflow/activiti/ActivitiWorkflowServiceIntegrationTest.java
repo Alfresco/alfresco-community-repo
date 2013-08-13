@@ -21,10 +21,12 @@ package org.alfresco.repo.workflow.activiti;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.AbstractWorkflowServiceIntegrationTest;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -145,6 +147,68 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         // The first task is the start-task, the second one is a multi-instance UserTask. This should have the right form-key
         WorkflowTaskDefinition taskDef = taskDefs.get(1);
         assertEquals("wf:activitiReviewTask", taskDef.getId());
+    }
+    
+    public void testAccessStartTaskAsAssigneeFromTaskPartOfProcess()
+    {
+        // Test added to validate fix for CLOUD-1929 - start-task can be accesses by assignee of a task
+        // part of that process
+        WorkflowDefinition definition = deployDefinition(getAdhocDefinitionPath());
+        
+        // Start process as USER1
+        personManager.setUser(USER1);
+        
+        // Create workflow parameters
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        Serializable wfPackage = workflowService.createPackage(null);
+        params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+        NodeRef assignee = personManager.get(USER2);
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, assignee);  // task instance field
+
+        WorkflowPath path = workflowService.startWorkflow(definition.getId(), params);
+        String instanceId = path.getInstance().getId();
+        
+        WorkflowTask startTask = workflowService.getStartTask(instanceId);
+        workflowService.endTask(startTask.getId(), null);
+        
+        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
+        assertEquals(1, tasks.size());
+        
+        
+        // Assign task to user3
+        workflowService.updateTask(tasks.get(0).getId(), Collections.singletonMap(WorkflowModel.ASSOC_ASSIGNEE, 
+                    (Serializable) personManager.get(USER3)), null, null);
+        
+        // Authenticate as user3
+        personManager.setUser(USER3);
+        
+        // When fetchin the start-task, no exception should be thrown
+        startTask = workflowService.getStartTask(instanceId);
+        assertNotNull(startTask);
+        startTask = workflowService.getTaskById(startTask.getId());
+        assertNotNull(startTask);
+        
+        // Accessing by user4 shouldn't be possible
+        personManager.setUser(USER4);
+        try
+        {
+            workflowService.getStartTask(instanceId);
+            fail("AccessDeniedException expected");
+        }
+        catch(AccessDeniedException expected) 
+        {
+            // Expected excaption
+        }
+        
+        try
+        {
+            workflowService.getTaskById(startTask.getId());
+            fail("AccessDeniedException expected");
+        }
+        catch(AccessDeniedException expected) 
+        {
+            // Expected exception
+        }
     }
     
     

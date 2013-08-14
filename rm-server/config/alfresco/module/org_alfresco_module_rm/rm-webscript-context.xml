@@ -184,6 +184,7 @@
       <property name="permissionService" ref="PermissionService" />
       <property name="mimetypeService" ref="mimetypeService" />
       <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+      <property name="namespaceService" ref="namespaceService" />
    </bean>
 
    <!-- REST impl for PUT Audit Log (starting and stopping auditing) -->
@@ -507,20 +508,20 @@
       <property name="customEmailMappingService" ref="CustomEmailMappingService" />
    </bean>
 
- 	<!-- REST impl for GET Action Defitions for RM -->
- 	<bean id="webscript.org.alfresco.repository.rule.rm-actiondefinitions.get"
- 	      class="org.alfresco.repo.web.scripts.rule.RmActionDefinitionsGet"
- 	   	  parent="webscript">
- 	   <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
- 	</bean>
+   <!-- REST impl for GET Action Defitions for RM -->
+   <bean id="webscript.org.alfresco.repository.rule.rm-actiondefinitions.get"
+         class="org.alfresco.repo.web.scripts.rule.RmActionDefinitionsGet"
+           parent="webscript">
+      <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
+   </bean>
 
     <!-- REST impl for GET Action Condition Defitions for RM -->
     <bean id="webscript.org.alfresco.repository.rule.rm-actionconditiondefinitions.get"
           class="org.alfresco.repo.web.scripts.rule.RmActionConditionDefinitionsGet"
- 	   	  parent="webscript">
- 	   <property name="actionService" ref="ActionService"/>
- 	   <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
- 	</bean>
+           parent="webscript">
+      <property name="actionService" ref="ActionService"/>
+      <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
+   </bean>
 
 
 
@@ -531,6 +532,7 @@
         <property name="mimetypeService" ref="mimetypeService"/>
         <property name="recordsManagementAuditService" ref="RecordsManagementAuditService"/>
         <property name="contentStreamer" ref="webscript.content.streamer" />
+        <property name="namespaceService" ref="namespaceService" />
     </bean>
 
    <!-- REST impl for GET Class Definitions for RM/DM -->

@@ -31,6 +31,7 @@ import org.alfresco.repo.web.scripts.content.StreamContent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.InvalidQNameException;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.apache.commons.logging.Log;
@@ -41,14 +42,14 @@ import org.json.JSONTokener;
 
 /**
  * Base class for all audit retrieval webscripts.
- * 
+ *
  * @author Gavin Cornwell
  */
 public class BaseAuditRetrievalWebScript extends StreamContent
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(BaseAuditRetrievalWebScript.class);
-    
+
     protected final static String PARAM_USER = "user";
     protected final static String PARAM_SIZE = "size";
     protected final static String PARAM_EVENT = "event";
@@ -56,23 +57,34 @@ public class BaseAuditRetrievalWebScript extends StreamContent
     protected final static String PARAM_TO = "to";
     protected final static String PARAM_PROPERTY = "property";
     protected final static String DATE_PATTERN = "yyyy-MM-dd";
-    
+
     protected RecordsManagementAuditService rmAuditService;
-    
+    protected NamespaceService namespaceService;
+
     /**
      * Sets the RecordsManagementAuditService instance
-     * 
+     *
      * @param auditService The RecordsManagementAuditService instance
      */
     public void setRecordsManagementAuditService(RecordsManagementAuditService rmAuditService)
     {
         this.rmAuditService = rmAuditService;
     }
-    
+
     /**
-     * Parses the given request and builds an instance of 
+     * Sets the NamespaceService instance
+     *
+     * @param namespaceService The NamespaceService instance
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    /**
+     * Parses the given request and builds an instance of
      * RecordsManagementAuditQueryParameters to retrieve the relevant audit entries
-     * 
+     *
      * @param req The request
      * @return RecordsManagementAuditQueryParameters instance
      */
@@ -80,7 +92,7 @@ public class BaseAuditRetrievalWebScript extends StreamContent
     {
         // create parameters for audit trail retrieval
         RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-        
+
         // the webscripts can have a couple of different forms of url, work out
         // whether a nodeRef has been supplied or whether the whole audit
         // log should be displayed
@@ -92,11 +104,11 @@ public class BaseAuditRetrievalWebScript extends StreamContent
             // there is a store_type so all other params are likely to be present
             String storeId = templateVars.get("store_id");
             String nodeId = templateVars.get("id");
-            
+
             // create the nodeRef
             nodeRef = new NodeRef(new StoreRef(storeType, storeId), nodeId);
         }
-        
+
         // gather all the common filtering parameters, these could be on the
         // query string, in a multipart/form-data request or in a JSON body
         String size = null;
@@ -105,7 +117,7 @@ public class BaseAuditRetrievalWebScript extends StreamContent
         String from = null;
         String to = null;
         String property = null;
-        
+
         if (MimetypeMap.MIMETYPE_JSON.equals(req.getContentType()))
         {
             try
@@ -163,7 +175,7 @@ public class BaseAuditRetrievalWebScript extends StreamContent
         params.setNodeRef(nodeRef);
         params.setUser(user);
         params.setEvent(event);
-        
+
         if (size != null && size.length() > 0)
         {
             try
@@ -176,7 +188,7 @@ public class BaseAuditRetrievalWebScript extends StreamContent
                     logger.warn("Ignoring size parameter as '" + size + "' is not a number!");
             }
         }
-        
+
         if (from != null && from.length() > 0)
         {
             try
@@ -190,7 +202,7 @@ public class BaseAuditRetrievalWebScript extends StreamContent
                     logger.warn("Ignoring from parameter as '" + from + "' does not conform to the date pattern: " + DATE_PATTERN);
             }
         }
-        
+
         if (to != null && to.length() > 0)
         {
             try
@@ -204,12 +216,12 @@ public class BaseAuditRetrievalWebScript extends StreamContent
                     logger.warn("Ignoring to parameter as '" + to + "' does not conform to the date pattern: " + DATE_PATTERN);
             }
         }
-        
+
         if (property != null && property.length() > 0)
         {
             try
             {
-                params.setProperty(QName.createQName(property));
+                params.setProperty(QName.createQName(property, namespaceService));
             }
             catch (InvalidQNameException iqe)
             {
@@ -217,21 +229,21 @@ public class BaseAuditRetrievalWebScript extends StreamContent
                     logger.warn("Ignoring property parameter as '" + property + "' is an invalid QName");
             }
         }
-        
+
         return params;
     }
-    
+
     /**
-     * Parses the given request for the format the audit report 
+     * Parses the given request for the format the audit report
      * should be returned in
-     * 
+     *
      * @param req The request
      * @return The format for the report
      */
     protected ReportFormat parseReportFormat(WebScriptRequest req)
     {
         String format = req.getFormat();
-        
+
         if (format != null)
         {
             if (format.equalsIgnoreCase("json"))
@@ -243,7 +255,7 @@ public class BaseAuditRetrievalWebScript extends StreamContent
                 return ReportFormat.HTML;
             }
         }
-        
+
         return ReportFormat.JSON;
     }
 }

@@ -121,7 +121,7 @@
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
       <property name="index" value="60" />
    </bean>
-   
+
    <!--  file destruction report capability -->
    <bean id="rmFileDestructionReportCapability"
          parent="declarativeCapability">
@@ -132,17 +132,17 @@
             <value>RECORD</value>									   <!--  Only applies to records and record folders -->
             <value>RECORD_FOLDER</value>
          </list>
-      </property> 
+      </property>
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>		<!--  Must have read and file permissions -->
             <entry key="capabilityCondition.frozen" value="false"/>     <!--  Not for frozen records -->
             <entry key="capabilityCondition.destroyed" value="true"/>   <!--  Only for destroyed things -->
          </map>
-      </property>      
+      </property>
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>      <!--  Part of the disposition group of capabilities -->
       <property name="index" value="110" />
-   </bean> 
+   </bean>
 
    <!--  Non-assignable Capabilities -->
 
@@ -226,7 +226,6 @@
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.cutoff" value="false"/>
-            <entry key="capabilityCondition.cutoffIsScheduled" value="true" />
          </map>
       </property>
    </bean>
@@ -250,11 +249,10 @@
          <map>
             <entry key="capabilityCondition.cutoff" value="true"/>
             <entry key="capabilityCondition.isTransferring" value="false" />
-            <entry key="capabilityCondition.lastDispositionActionCutoff" value="true"/>
          </map>
       </property>
    </bean>
-   
+
    <bean id="rmDestroyCapability"
       parent="compositeCapability">
       <property name="name" value="Destroy"/>

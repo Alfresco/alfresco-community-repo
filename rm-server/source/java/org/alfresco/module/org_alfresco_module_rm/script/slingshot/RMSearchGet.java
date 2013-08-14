@@ -162,62 +162,69 @@ public class RMSearchGet extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-       // Get the site id and confirm it is valid
-        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-        String siteId = templateVars.get("site");
-        if (siteId == null || siteId.length() == 0)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Site id not provided.");
-        }
-        if (siteService.getSite(siteId) == null)
-        {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Site not found.");
-        }
-
-        // Get the query parameter
-        String query = req.getParameter(PARAM_QUERY);
-        // TODO check that this is there
-
-        String sortby = req.getParameter(PARAM_SORTBY);
-        // TODO this is optional
-
-        String filters = req.getParameter(PARAM_FILTERS);
-        // TODO this is optional
-
-        // Convert into a rm search parameter object
-        RecordsManagementSearchParameters searchParameters =
-            SavedSearchDetailsCompatibility.createSearchParameters(filters, new String[]{",", "/"}, sortby, namespaceService);
-
-        // Set the max results
-        String maxItems = req.getParameter(PARAM_MAX_ITEMS);
-        if (maxItems != null && maxItems.length() != 0)
-        {
-            searchParameters.setMaxItems(Integer.parseInt(maxItems));
-        }
-
-        // Execute search
-        List<NodeRef> results = recordsManagementSearchService.search(siteId, query, searchParameters);
-
-        // Reset person data cache
-        personDataCache = new HashMap<String, String>(57);
-
-        // Process the result items 
-        List<Item> items = new ArrayList<Item>(results.size());
-        for (NodeRef nodeRef : results)
-        {
-            // FIXME: This is a workaround for DOD Recert
-            // TC 3-3  Create User Groups
-            try
-            {
-                Item item = new Item(nodeRef);
-                items.add(item);
-            }
-            catch(Exception e) {}
-        }
-
-        // Return model
         Map<String, Object> model = new HashMap<String, Object>(1);
-        model.put("items", items);
+        try
+        {
+            // Get the site id and confirm it is valid
+            Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+            String siteId = templateVars.get("site");
+            if (siteId == null || siteId.length() == 0)
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Site id not provided.");
+            }
+            if (siteService.getSite(siteId) == null)
+            {
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Site not found.");
+            }
+
+            // Get the query parameter
+            String query = req.getParameter(PARAM_QUERY);
+            // TODO check that this is there
+
+            String sortby = req.getParameter(PARAM_SORTBY);
+            // TODO this is optional
+
+            String filters = req.getParameter(PARAM_FILTERS);
+            // TODO this is optional
+
+            // Convert into a rm search parameter object
+            RecordsManagementSearchParameters searchParameters =
+                    SavedSearchDetailsCompatibility.createSearchParameters(filters, new String[]{",", "/"}, sortby, namespaceService);
+
+            // Set the max results
+            String maxItems = req.getParameter(PARAM_MAX_ITEMS);
+            if (maxItems != null && maxItems.length() != 0)
+            {
+                searchParameters.setMaxItems(Integer.parseInt(maxItems));
+            }
+
+            // Execute search
+            List<NodeRef> results = recordsManagementSearchService.search(siteId, query, searchParameters);
+
+            // Reset person data cache
+            personDataCache = new HashMap<String, String>(57);
+
+            // Process the result items
+            List<Item> items = new ArrayList<Item>(results.size());
+            for (NodeRef nodeRef : results)
+            {
+                // FIXME: This is a workaround for DOD Recert
+                // TC 3-3  Create User Groups
+                try
+                {
+                    Item item = new Item(nodeRef);
+                    items.add(item);
+                }
+                catch(Exception e) {}
+            }
+
+            // Return model
+            model.put("items", items);
+        }
+        catch (Exception ex)
+        {
+            model.put("errorMessage", ex.toString());
+        }
         return model;
 
     }

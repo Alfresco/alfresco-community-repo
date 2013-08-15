@@ -840,8 +840,7 @@
       <property name="workflowService" ref="WorkflowService"/>
    </bean>
 
-
-    <!-- ExecuteScript action -->
+   <!-- ExecuteScript action -->
 
    <bean id="executeScript_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
       <property name="target">
@@ -875,6 +874,23 @@
            <ref bean="sysAdminParams" />
        </property>
        <property name="publicAction" value="false"/>
+   </bean>
+
+   <!-- Send email action -->
+
+   <bean id="sendEmail_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+      <property name="target">
+         <ref bean="sendEmail"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="allow_security"/>
+         </list>
+      </property>
+   </bean>
+   <bean id="sendEmail" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction">
+      <property name="publicAction" value="true"/>
+      <property name="delegateAction" ref="mail" />
    </bean>
        
 </beans>

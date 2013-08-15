@@ -21,17 +21,17 @@ package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.attributes.AttributeService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -52,6 +52,7 @@ public class RecordComponentIdentifierAspect
     private PolicyComponent policyComponent;
     private NodeService nodeService;
     private AttributeService attributeService;
+    private FilePlanService filePlanService;
 
     /**
      * @param policyComponent the policyComponent to set
@@ -75,6 +76,11 @@ public class RecordComponentIdentifierAspect
     public void setAttributeService(AttributeService attributeService)
     {
         this.attributeService = attributeService;
+    }
+    
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
     }
 
     /**
@@ -137,18 +143,14 @@ public class RecordComponentIdentifierAspect
      */
     private void updateUniqueness(NodeRef nodeRef, String beforeId, String afterId)
     {
+        NodeRef contextNodeRef = filePlanService.getFilePlan(nodeRef);
+        
         if (beforeId == null)
         {
             if (afterId != null)
             {
                 // Just create it
-                ChildAssociationRef childAssoc = nodeService.getPrimaryParent(nodeRef);
-                NodeRef contextNodeRef = childAssoc.getParentRef();
                 attributeService.createAttribute(null, CONTEXT_VALUE, contextNodeRef, afterId);
-            }
-            else
-            {
-                // This happens if the unique property is not present
             }
         }
         else if (afterId == null)
@@ -156,8 +158,6 @@ public class RecordComponentIdentifierAspect
             if (beforeId != null)
             {
                 // The before value was not null, so remove it
-                ChildAssociationRef childAssoc = nodeService.getPrimaryParent(nodeRef);
-                NodeRef contextNodeRef = childAssoc.getParentRef();
                 attributeService.removeAttribute(CONTEXT_VALUE, contextNodeRef, beforeId);
             }
             // Do a blanket removal in case this is a contextual nodes
@@ -166,8 +166,6 @@ public class RecordComponentIdentifierAspect
         else
         {
             // This is a full update
-            ChildAssociationRef childAssoc = nodeService.getPrimaryParent(nodeRef);
-            NodeRef contextNodeRef = childAssoc.getParentRef();
             attributeService.updateOrCreateAttribute(
                     CONTEXT_VALUE, contextNodeRef, beforeId,
                     CONTEXT_VALUE, contextNodeRef, afterId);

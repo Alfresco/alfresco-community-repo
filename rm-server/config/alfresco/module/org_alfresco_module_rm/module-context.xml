@@ -42,6 +42,9 @@
    </bean>
 
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-model-context.xml"/>
+   
+   <!--  Import RM query context -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/query/rm-query-context.xml" />
 
    <!--  Load audit config -->
 

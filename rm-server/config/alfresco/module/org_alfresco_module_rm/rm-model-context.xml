@@ -70,6 +70,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordComponentIdentifierAspect"
       parent="org_alfresco_module_rm_BaseBehaviour">
       <property name="attributeService" ref="attributeService"/>
+      <property name="filePlanService" ref="FilePlanService" />
    </bean>
 
    <!-- Copy policy management for records -->

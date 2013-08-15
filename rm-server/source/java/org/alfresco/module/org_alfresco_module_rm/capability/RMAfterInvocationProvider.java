@@ -88,7 +88,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public boolean supports(Class clazz)
     {
         return (MethodInvocation.class.isAssignableFrom(clazz));
@@ -128,7 +128,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Object decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object returnedObject) throws AccessDeniedException
     {
         if (logger.isDebugEnabled())
@@ -302,7 +302,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     }
 
-    @SuppressWarnings({"unchecked" })
+    @SuppressWarnings({"rawtypes" })
     private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)
     {
         List<ConfigAttributeDefintion> definitions = new ArrayList<ConfigAttributeDefintion>();
@@ -593,7 +593,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         return new QueryEngineResults(answer);
     }
 
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private Collection decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Collection returnedObject) throws AccessDeniedException
     {
         if (returnedObject == null)
@@ -946,7 +946,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         return testNodeRef;
     }
 
-    @SuppressWarnings({"unchecked" })
+    @SuppressWarnings({"unchecked", "rawtypes" })
     private Map decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Map returnedObject) throws AccessDeniedException
     {
         if (returnedObject.containsKey(RecordsManagementModel.PROP_HOLD_REASON))

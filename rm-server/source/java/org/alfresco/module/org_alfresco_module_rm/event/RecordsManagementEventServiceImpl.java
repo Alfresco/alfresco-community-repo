@@ -138,7 +138,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#canCreateEvent(java.lang.String, java.lang.String)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public boolean canCreateEvent(String eventDisplayLabel, String eventName)
     {
         ParameterCheck.mandatoryString("eventDisplayLabel", eventDisplayLabel);
@@ -170,7 +170,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#canEditEvent(java.lang.String, java.lang.String, java.lang.String)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
 	public boolean canEditEvent(String eventDisplayLabel, String eventName, String eventType)
     {
         ParameterCheck.mandatoryString("eventDisplayLabel", eventDisplayLabel);

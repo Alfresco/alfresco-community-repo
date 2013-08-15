@@ -101,7 +101,7 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
      * @param parent
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected QName getType(MethodInvocation invocation, Class[] params, int position, boolean parent)
     {
         if (QName.class.isAssignableFrom(params[position]))
@@ -131,7 +131,7 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
      * @param position
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected QName getQName(MethodInvocation invocation, Class[] params, int position)
     {
         if (QName.class.isAssignableFrom(params[position]))
@@ -152,7 +152,7 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
      * @param position
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Serializable getProperty(MethodInvocation invocation, Class[] params, int position)
     {
         if (invocation.getArguments()[position] == null)
@@ -177,7 +177,7 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
      * @param position
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Map<QName, Serializable> getProperties(MethodInvocation invocation, Class[] params, int position)
     {
         if (invocation.getArguments()[position] == null)

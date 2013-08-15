@@ -41,7 +41,7 @@ public interface Policy
      * @param cad
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
 	int evaluate(
             MethodInvocation invocation, 
             Class[] params, 

@@ -120,7 +120,7 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Map<String, Serializable> getParamsFromUrlAndJson(WebScriptRequest req, JSONObject json)
             throws JSONException
     {

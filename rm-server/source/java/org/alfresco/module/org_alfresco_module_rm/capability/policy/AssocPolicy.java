@@ -25,7 +25,7 @@ import org.aopalliance.intercept.MethodInvocation;
 public class AssocPolicy extends AbstractBasePolicy
 {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
 	public int evaluate( 
             MethodInvocation invocation, 
             Class[] params, 

@@ -29,7 +29,7 @@ import org.aopalliance.intercept.MethodInvocation;
 
 public class UpdatePropertiesPolicy extends AbstractBasePolicy
 {
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
 	public int evaluate( 
             MethodInvocation invocation, 
             Class[] params, 

@@ -33,7 +33,7 @@ public class CapabilityPolicy extends AbstractBasePolicy
      * @see org.alfresco.module.org_alfresco_module_rm.capability.policy.Policy#evaluate(org.aopalliance.intercept.MethodInvocation, java.lang.Class[], org.alfresco.module.org_alfresco_module_rm.capability.policy.ConfigAttributeDefinition)
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
 	public int evaluate(
             MethodInvocation invocation, 
             Class[] params, 

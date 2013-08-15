@@ -144,7 +144,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
      *  
      * @param values a list of allowed values
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void setAllowedValues(List allowedValues)
     {

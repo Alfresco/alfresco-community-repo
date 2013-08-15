@@ -223,7 +223,7 @@ public class RMSecurityCommon
 
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected NodeRef getTestNode(MethodInvocation invocation, Class[] params, int position, boolean parent)
     {
         NodeRef testNodeRef = null;

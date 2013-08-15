@@ -99,7 +99,7 @@ public class CustomReferenceDefinitionPut extends AbstractRmWebScript
     /**
      * Applies custom properties.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Map<String, Object> updateCustomReference(WebScriptRequest req, JSONObject json) throws JSONException
     {
         Map<String, Object> result = new HashMap<String, Object>();

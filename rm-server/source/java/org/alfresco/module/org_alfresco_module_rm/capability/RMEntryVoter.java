@@ -158,7 +158,7 @@ public class RMEntryVoter extends RMSecurityCommon
     /**
      * @see net.sf.acegisecurity.vote.AccessDecisionVoter#supports(java.lang.Class)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public boolean supports(Class clazz)
     {
         return (MethodInvocation.class.isAssignableFrom(clazz));
@@ -167,7 +167,7 @@ public class RMEntryVoter extends RMSecurityCommon
     /**
      * @see net.sf.acegisecurity.vote.AccessDecisionVoter#vote(net.sf.acegisecurity.Authentication, java.lang.Object, net.sf.acegisecurity.ConfigAttributeDefinition)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
 	public int vote(Authentication authentication, Object object, net.sf.acegisecurity.ConfigAttributeDefinition config)
     {
     	MethodInvocation mi = (MethodInvocation)object;
@@ -323,7 +323,7 @@ public class RMEntryVoter extends RMSecurityCommon
      * @param cad
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
 	private int checkCapability(MethodInvocation invocation, Class[] params, ConfigAttributeDefinition cad)
     {
         NodeRef testNodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
@@ -347,7 +347,7 @@ public class RMEntryVoter extends RMSecurityCommon
      * @param cad
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
 	private int checkPolicy(MethodInvocation invocation, Class[] params, ConfigAttributeDefinition cad)
     {
         Policy policy = policies.get(cad.getPolicyName());
@@ -373,7 +373,7 @@ public class RMEntryVoter extends RMSecurityCommon
      * @param config
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
 	private List<ConfigAttributeDefinition> extractSupportedDefinitions(net.sf.acegisecurity.ConfigAttributeDefinition config)
     {
         List<ConfigAttributeDefinition> definitions = new ArrayList<ConfigAttributeDefinition>(2);

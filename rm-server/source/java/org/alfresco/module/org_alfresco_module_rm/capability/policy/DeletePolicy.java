@@ -26,7 +26,7 @@ import org.aopalliance.intercept.MethodInvocation;
 public class DeletePolicy extends AbstractBasePolicy
 {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
 	public int evaluate( 
             MethodInvocation invocation, 
             Class[] params, 

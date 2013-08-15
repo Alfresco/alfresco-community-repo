@@ -277,6 +277,10 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                     result = "transfer-container";
                     break;
                 }
+                default:
+                {
+                    break;
+                }
             }
         }
 

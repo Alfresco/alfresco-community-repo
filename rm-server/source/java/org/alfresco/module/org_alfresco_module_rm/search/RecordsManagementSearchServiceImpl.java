@@ -48,31 +48,31 @@ import org.json.JSONObject;
 
 /**
  * Records management search service implementation
- * 
+ *
  * @author Roy Wetherall
  */
-public class RecordsManagementSearchServiceImpl implements RecordsManagementSearchService 
-{    
+public class RecordsManagementSearchServiceImpl implements RecordsManagementSearchService
+{
     private static final String SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
-    
+
     /** Name of the main site container used to store the saved searches within */
     private static final String SEARCH_CONTAINER = "Saved Searches";
-    
+
     /** File folder service */
     private FileFolderService fileFolderService;
-	
+
     /** Search service */
     private SearchService searchService;
-    
+
 	/** Site service */
 	private SiteService siteService;
-	
+
 	/** Namespace service */
 	private NamespaceService namespaceService;
-	
+
 	/** List of report details */
 	private List<ReportDetails> reports = new ArrayList<ReportDetails>(13);
-	
+
 	/**
 	 * @param fileFolderService    file folder service
 	 */
@@ -80,7 +80,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     {
         this.fileFolderService = fileFolderService;
     }
-	
+
 	/**
 	 * @param searchService    search service
 	 */
@@ -88,7 +88,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     {
         this.searchService = searchService;
     }
-	
+
 	/**
 	 * @param siteService  site service
 	 */
@@ -96,7 +96,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     {
         this.siteService = siteService;
     }
-	
+
 	/**
 	 * @param namespaceService namespace service
 	 */
@@ -104,7 +104,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     {
         this.namespaceService = namespaceService;
     }
-	
+
 	/**
 	 * @param reportsJSON
 	 */
@@ -118,34 +118,34 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     	       for (int i=0; i < jsonArray.length(); i++)
     	       {
     	           JSONObject report = jsonArray.getJSONObject(i);
-    	           
+
     	           // Get the name
     	           if (report.has(SavedSearchDetails.NAME) == false)
     	           {
     	               throw new AlfrescoRuntimeException("Unable to load report details because name has not been specified. \n" + reportsJSON);
     	           }
     	           String name = report.getString(SavedSearchDetails.NAME);
-    	           
+
     	           // Get the query
     	           if (report.has(SavedSearchDetails.SEARCH) == false)
                    {
                        throw new AlfrescoRuntimeException("Unable to load report details because search has not been specified for report " + name + ". \n" + reportsJSON);
                    }
                    String query = report.getString(SavedSearchDetails.SEARCH);
-                   
+
                    // Get the description
                    String description = "";
                    if (report.has(SavedSearchDetails.DESCRIPTION) == true)
                    {
                        description = report.getString(SavedSearchDetails.DESCRIPTION);
                    }
-                   
+
                    RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
                    if (report.has("searchparams") == true)
                    {
                        searchParameters = RecordsManagementSearchParameters.createFromJSON(report.getJSONObject("searchparams"), namespaceService);
-                   }                 
-                   
+                   }
+
                    // Create the report details and add to list
     	           ReportDetails reportDetails = new ReportDetails(name, description, query, searchParameters);
     	           reports.add(reportDetails);
@@ -162,46 +162,46 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
 	 * @see org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService#search(java.lang.String, java.lang.String, org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchParameters)
 	 */
     @Override
-    public List<NodeRef> search(String siteId, String query, RecordsManagementSearchParameters rmSearchParameters) 
-    { 
+    public List<NodeRef> search(String siteId, String query, RecordsManagementSearchParameters rmSearchParameters)
+    {
         // build the full RM query
-        StringBuilder fullQuery = new StringBuilder(1024);        
+        StringBuilder fullQuery = new StringBuilder(1024);
         fullQuery.append("PATH:\"")
                  .append(SITES_SPACE_QNAME_PATH)
                  .append("cm:").append(ISO9075.encode(siteId)).append("/cm:documentLibrary//*\"")
                  .append(" AND (")
                  .append(buildQueryString(query, rmSearchParameters))
                  .append(")");
-        
-        // create the search parameters 
+
+        // create the search parameters
         SearchParameters searchParameters = new SearchParameters();
         searchParameters.setQuery(fullQuery.toString());
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         searchParameters.setMaxItems(rmSearchParameters.getMaxItems());
         searchParameters.setNamespace(RecordsManagementModel.RM_URI);
-        
+
         // set sort
         for(SortItem entry : rmSearchParameters.getSortOrder())
         {
             searchParameters.addSort(entry.property.toPrefixString(namespaceService), entry.assc);
         }
-        
+
         // set templates
         for (Entry<String, String> entry : rmSearchParameters.getTemplates().entrySet())
         {
             searchParameters.addQueryTemplate(entry.getKey(), entry.getValue());
         }
-        
+
         // execute query
         ResultSet resultSet = searchService.query(searchParameters);
-        
+
         // return results
         return resultSet.getNodeRefs();
     }
-    
+
     /**
-     * 
+     *
      * @param queryTerm
      * @param aspects
      * @param types
@@ -209,34 +209,34 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
      */
     /*package*/ String buildQueryString(String queryTerm, RecordsManagementSearchParameters searchParameters)
     {
-       StringBuilder aspectQuery = new StringBuilder();           
+       StringBuilder aspectQuery = new StringBuilder();
        if (searchParameters.isIncludeRecords() == true)
        {
-           appendAspect(aspectQuery, "rma:record");           
+           appendAspect(aspectQuery, "rma:record");
            if (searchParameters.isIncludeUndeclaredRecords() == false)
            {
                appendAspect(aspectQuery, "rma:declaredRecord");
-           }           
+           }
            if (searchParameters.isIncludeVitalRecords() == true)
            {
                appendAspect(aspectQuery, "rma:vitalRecord");
            }
-       }  
-       
+       }
+
        StringBuilder typeQuery = new StringBuilder();
        if (searchParameters.isIncludeRecordFolders() == true)
        {
            appendType(typeQuery, "rma:recordFolder");
-       }      
+       }
        List<QName> includedContainerTypes = searchParameters.getIncludedContainerTypes();
        if (includedContainerTypes != null && includedContainerTypes.size() != 0)
        {
            for (QName includedContainerType : includedContainerTypes)
            {
                appendType(typeQuery, includedContainerType.toPrefixString(namespaceService));
-           }   
+           }
        }
-       
+
        StringBuilder query = new StringBuilder();
        if (queryTerm == null || queryTerm.length() == 0)
        {
@@ -262,27 +262,27 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
            {
                fullQuery.append("(");
            }
-           
+
            if (aspectQuery.length() != 0)
            {
                fullQuery.append("(").append(aspectQuery).append(") ");
            }
-           
+
            if (typeQuery.length() != 0)
            {
                fullQuery.append("(").append(typeQuery).append(")");
            }
-           
+
            if (aspectQuery.length() != 0 && typeQuery.length() != 0)
            {
                fullQuery.append(")");
            }
        }
-              
+
        if (searchParameters.isIncludeFrozen() == true)
        {
            appendAspect(fullQuery, "rma:frozen");
-       }   
+       }
        else
        {
            appendNotAspect(fullQuery, "rma:frozen");
@@ -291,40 +291,38 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
        {
            appendAspect(fullQuery, "rma:cutOff");
        }
-       
+
        if (fullQuery.length() != 0)
        {
            fullQuery.append(" AND ");
        }
-       fullQuery.append("(")
-                .append(query)
-                .append(") AND NOT ASPECT:\"rma:versionedRecord\"");                
-       
+       fullQuery.append(query).append(" AND NOT ASPECT:\"rma:versionedRecord\"");
+
        return fullQuery.toString();
     }
-    
+
     private boolean isComplexQueryTerm(String query)
     {
         return query.matches(".*[\":].*");
     }
-    
+
     /**
-     * 
+     *
      * @param sb
      * @param aspect
      */
     private void appendAspect(StringBuilder sb, String aspect)
     {
-        appendWithJoin(sb, " AND ", "ASPECT:\"", aspect, "\""); 
+        appendWithJoin(sb, " AND ", "ASPECT:\"", aspect, "\"");
     }
-    
+
     private void appendNotAspect(StringBuilder sb, String aspect)
     {
-        appendWithJoin(sb, " AND ", "NOT ASPECT:\"", aspect, "\""); 
+        appendWithJoin(sb, " AND ", "NOT ASPECT:\"", aspect, "\"");
     }
-    
+
     /**
-     * 
+     *
      * @param sb
      * @param type
      */
@@ -332,9 +330,9 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     {
         appendWithJoin(sb, " ", "TYPE:\"", type, "\"");
     }
-    
+
     /**
-     * 
+     *
      * @param sb
      * @param withJoin
      * @param prefix
@@ -349,15 +347,15 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
         }
         sb.append(prefix).append(value).append(postfix);
     }
-   
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService#getSavedSearches(java.lang.String)
      */
     @Override
-    public List<SavedSearchDetails> getSavedSearches(String siteId) 
+    public List<SavedSearchDetails> getSavedSearches(String siteId)
     {
         List<SavedSearchDetails> result = new ArrayList<SavedSearchDetails>(17);
-        
+
         NodeRef container = siteService.getContainer(siteId, SEARCH_CONTAINER);
         if (container != null)
         {
@@ -367,7 +365,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
             {
                 addSearchDetailsToList(result, search.getNodeRef());
             }
-             
+
             // add the details of any "private" searches for the current user
             String userName = AuthenticationUtil.getFullyAuthenticatedUser();
             NodeRef userContainer = fileFolderService.searchSimple(container, userName);
@@ -380,10 +378,10 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
                 }
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * Add the search details to the list.
      * @param searches      list of search details
@@ -396,65 +394,65 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
         SavedSearchDetails savedSearchDetails = SavedSearchDetails.createFromJSON(jsonString, namespaceService, this);
         searches.add(savedSearchDetails);
     }
-        
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService#getSavedSearch(java.lang.String, java.lang.String)
      */
     @Override
-    public SavedSearchDetails getSavedSearch(String siteId, String name) 
+    public SavedSearchDetails getSavedSearch(String siteId, String name)
     {
         // check for mandatory parameters
         ParameterCheck.mandatory("siteId", siteId);
         ParameterCheck.mandatory("name", name);
-        
+
         SavedSearchDetails result = null;
-        
+
         // get the saved search node
         NodeRef searchNode = getSearchNodeRef(siteId, name);
-        
+
         if (searchNode != null)
-        {        
+        {
             // get the json content
             ContentReader reader = fileFolderService.getReader(searchNode);
             String jsonString = reader.getContentString();
-    
+
             // create the saved search details
             result = SavedSearchDetails.createFromJSON(jsonString, namespaceService, this);
         }
-        
+
         return result;
     }
-   
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService#saveSearch(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
      */
 	@Override
-	public SavedSearchDetails saveSearch(String siteId, String name, String description, String query, RecordsManagementSearchParameters searchParameters, boolean isPublic) 
-	{ 
+	public SavedSearchDetails saveSearch(String siteId, String name, String description, String query, RecordsManagementSearchParameters searchParameters, boolean isPublic)
+	{
 	    // Check for mandatory parameters
 	    ParameterCheck.mandatory("siteId", siteId);
 	    ParameterCheck.mandatory("name", name);
 	    ParameterCheck.mandatory("query", query);
 	    ParameterCheck.mandatory("searchParameters", searchParameters);
-	    
+
         // Create saved search details
         SavedSearchDetails savedSearchDetails = new SavedSearchDetails(siteId, name, description, query, searchParameters, isPublic, false, namespaceService, this);
-	    
+
         // Save search details
         return saveSearch(savedSearchDetails);
 	}
-	
+
 	/**
 	 * @see org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService#saveSearch(org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails)
 	 */
 	@Override
-	public SavedSearchDetails saveSearch(final SavedSearchDetails savedSearchDetails) 
+	public SavedSearchDetails saveSearch(final SavedSearchDetails savedSearchDetails)
     {
 	    // Check for mandatory parameters
 	    ParameterCheck.mandatory("savedSearchDetails", savedSearchDetails);
-	    
+
 	    // Get the root saved search container
-	    final String siteId = savedSearchDetails.getSiteId();        
+	    final String siteId = savedSearchDetails.getSiteId();
 	    NodeRef container = siteService.getContainer(siteId, SEARCH_CONTAINER);
         if (container == null)
         {
@@ -465,9 +463,9 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
                 {
                     return siteService.createContainer(siteId, SEARCH_CONTAINER, null, null);
                 }
-            }, AuthenticationUtil.getSystemUserName());            
+            }, AuthenticationUtil.getSystemUserName());
         }
-        
+
         // Get the private container for the current user
         if (savedSearchDetails.isPublic() == false)
         {
@@ -487,7 +485,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
             }
             container = userContainer;
         }
-        
+
         // Get the saved search node
         NodeRef searchNode = fileFolderService.searchSimple(container, savedSearchDetails.getName());
         if (searchNode == null)
@@ -502,7 +500,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
                 }
             }, AuthenticationUtil.getSystemUserName());
         }
-        
+
         // Write the JSON content to search node
         final NodeRef writableSearchNode = searchNode;
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -514,11 +512,11 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
                 writer.setEncoding("UTF-8");
                 writer.setMimetype(MimetypeMap.MIMETYPE_JSON);
                 writer.putContent(savedSearchDetails.toJSONString());
-                
+
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-        
+
         return savedSearchDetails;
     }
 
@@ -531,15 +529,15 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
 	    // Check parameters
 	    ParameterCheck.mandatory("siteId", siteId);
 	    ParameterCheck.mandatory("name", name);
-	    
+
 	    // Get the search node for the saved query
         NodeRef searchNode = getSearchNodeRef(siteId, name);
         if (searchNode != null && fileFolderService.exists(searchNode) == true)
         {
             fileFolderService.delete(searchNode);
-        } 
+        }
 	}
-	
+
 	/**
 	 * @see org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService#deleteSavedSearch(org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails)
 	 */
@@ -548,28 +546,28 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     {
         // Check parameters
         ParameterCheck.mandatory("savedSearchDetails", savedSearchDetails);
-        
+
         // Delete the saved search
         deleteSavedSearch(savedSearchDetails.getSiteId(), savedSearchDetails.getName());
     }
-    
+
     /**
      * Get the saved search node reference.
      * @param siteId    site id
-     * @param name      search name 
+     * @param name      search name
      * @return {@link NodeRef}  search node reference
      */
     private NodeRef getSearchNodeRef(String siteId, String name)
     {
         NodeRef searchNode = null;
-        
-        // Get the root saved search container       
+
+        // Get the root saved search container
         NodeRef container = siteService.getContainer(siteId, SEARCH_CONTAINER);
         if (container != null)
-        {         
+        {
             // try and find the search node
             searchNode = fileFolderService.searchSimple(container, name);
-            
+
             // can't find it so check the users container
             if (searchNode == null)
             {
@@ -581,10 +579,10 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
                 }
             }
         }
-        
-        return searchNode;  
+
+        return searchNode;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService#addReports(java.lang.String)
      */
@@ -595,16 +593,16 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
         {
             // Create saved search details
             SavedSearchDetails savedSearchDetails = new SavedSearchDetails(
-                                                            siteId, 
-                                                            report.getName(), 
-                                                            report.getDescription(), 
-                                                            report.getSearch(), 
+                                                            siteId,
+                                                            report.getName(),
+                                                            report.getDescription(),
+                                                            report.getSearch(),
                                                             report.getSearchParameters(),
-                                                            true, 
+                                                            true,
                                                             true,
                                                             namespaceService,
                                                             this);
-            
+
             // Save search details
             saveSearch(savedSearchDetails);
         }

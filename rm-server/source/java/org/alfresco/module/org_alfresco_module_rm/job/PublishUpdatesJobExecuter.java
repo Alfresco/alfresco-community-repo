@@ -97,37 +97,40 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                 // Deal with each updated disposition action in turn
                 for (NodeRef nodeRef : nodeRefs)
                 {
-                    // Mark the update node as publishing in progress
-                    markPublishInProgress(nodeRef);                        
-                    try
+                    if (nodeService.exists(nodeRef) == true)
                     {
-                        Date start = new Date();
-                        if (logger.isDebugEnabled() == true)
+                        // Mark the update node as publishing in progress
+                        markPublishInProgress(nodeRef);                        
+                        try
                         {
-                            logger.debug("Starting publish of updates ...");
-                            logger.debug("   - for " + nodeRef.toString());
-                            logger.debug("   - at " + start.toString());
-                        }
-                        
-                        // Publish updates
-                        publishUpdates(nodeRef);
-                        
-                        
-                        if (logger.isDebugEnabled() == true)
+                            Date start = new Date();
+                            if (logger.isDebugEnabled() == true)
+                            {
+                                logger.debug("Starting publish of updates ...");
+                                logger.debug("   - for " + nodeRef.toString());
+                                logger.debug("   - at " + start.toString());
+                            }
+                            
+                            // Publish updates
+                            publishUpdates(nodeRef);
+                            
+                            
+                            if (logger.isDebugEnabled() == true)
+                            {
+                                Date end = new Date();
+                                long duration = end.getTime() - start.getTime();
+                                logger.debug("Completed publish of updates ...");
+                                logger.debug("   - for " + nodeRef.toString());
+                                logger.debug("   - at " + end.toString());
+                                logger.debug("   - duration " + Long.toString(duration));
+                            }
+                        }                   
+                        finally
                         {
-                            Date end = new Date();
-                            long duration = end.getTime() - start.getTime();
-                            logger.debug("Completed publish of updates ...");
-                            logger.debug("   - for " + nodeRef.toString());
-                            logger.debug("   - at " + end.toString());
-                            logger.debug("   - duration " + Long.toString(duration));
+                            // Ensure the update node has either completed the publish or is marked as no longer in progress
+                            unmarkPublishInProgress(nodeRef);
                         }
                     }
-                    finally
-                    {
-                        // Ensure the update node has either completed the publish or is marked as no longer in progress
-                        unmarkPublishInProgress(nodeRef);
-                    }                    
                 }
                 return null;
             };
@@ -209,8 +212,11 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     behaviourFilter.disableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
                     try
                     {
-                        // Mark the node as publish in progress
-                        nodeService.setProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS, true);
+                        if (nodeService.exists(nodeRef) == true)
+                        {
+                            // Mark the node as publish in progress
+                            nodeService.setProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS, true);
+                        }
                     }
                     finally
                     {

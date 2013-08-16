@@ -108,6 +108,7 @@
          <list>
             <value>RECORD_FOLDER</value>
             <value>RECORD</value>
+            <value>FILE_PLAN_COMPONENT</value>
          </list>
       </property>
       <property name="conditions">

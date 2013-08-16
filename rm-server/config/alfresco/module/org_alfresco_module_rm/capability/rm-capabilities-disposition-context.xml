@@ -129,13 +129,13 @@
       <property name="permission" value="FileDestructionReport" />     <!--  Associated permission -->
       <property name="kinds">
          <list>
-            <value>RECORD</value>									   <!--  Only applies to records and record folders -->
+            <value>RECORD</value>                              <!--  Only applies to records and record folders -->
             <value>RECORD_FOLDER</value>
          </list>
       </property>
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.filling" value="true"/>		<!--  Must have read and file permissions -->
+            <entry key="capabilityCondition.filling" value="true"/>     <!--  Must have read and file permissions -->
             <entry key="capabilityCondition.frozen" value="false"/>     <!--  Not for frozen records -->
             <entry key="capabilityCondition.destroyed" value="true"/>   <!--  Only for destroyed things -->
          </map>
@@ -226,6 +226,7 @@
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.cutoffIsScheduled" value="true" />
          </map>
       </property>
    </bean>
@@ -249,6 +250,7 @@
          <map>
             <entry key="capabilityCondition.cutoff" value="true"/>
             <entry key="capabilityCondition.isTransferring" value="false" />
+            <entry key="capabilityCondition.lastDispositionActionCutoff" value="true"/>
          </map>
       </property>
    </bean>

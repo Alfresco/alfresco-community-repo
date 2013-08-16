@@ -29,14 +29,14 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * UnCutoff action implementation
- * 
+ *
  * @author Roy Wetherall
  */
 public class UnCutoffAction extends RMActionExecuterAbstractBase
-{   
+{
     /** I18N */
     private static final String MSG_UNDO_NOT_LAST = "rm.action.undo-not-last";
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -48,30 +48,14 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
         {
             // Get the last disposition action
             DispositionAction da = dispositionService.getLastCompletedDispostionAction(actionedUponNodeRef);
-            
+
             // Check that the last disposition action was a cutoff
             if (da == null || da.getName().equals("cutoff") == false)
             {
                 // Can not undo cut off since cut off was not the last thing done
                 throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNDO_NOT_LAST));
             }
-            
-            // Delete the current disposition action
-            DispositionAction currentDa = dispositionService.getNextDispositionAction(actionedUponNodeRef);
-            if (currentDa != null)
-            {
-                nodeService.deleteNode(currentDa.getNodeRef());
-            }
-            
-            // Move the previous (cutoff) disposition back to be current
-            nodeService.moveNode(da.getNodeRef(), actionedUponNodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION);
-            
-            // Reset the started and completed property values
-            nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_STARTED_AT, null);
-            nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_STARTED_BY, null);
-            nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_AT, null);
-            nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_BY, null);  
-            
+
             // Remove the cutoff aspect
             nodeService.removeAspect(actionedUponNodeRef, ASPECT_CUT_OFF);
             if (recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
@@ -82,6 +66,22 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
                     nodeService.removeAspect(record, ASPECT_CUT_OFF);
                 }
             }
+
+            // Delete the current disposition action
+            DispositionAction currentDa = dispositionService.getNextDispositionAction(actionedUponNodeRef);
+            if (currentDa != null)
+            {
+                nodeService.deleteNode(currentDa.getNodeRef());
+            }
+
+            // Move the previous (cutoff) disposition back to be current
+            nodeService.moveNode(da.getNodeRef(), actionedUponNodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION);
+
+            // Reset the started and completed property values
+            nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_STARTED_AT, null);
+            nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_STARTED_BY, null);
+            nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_AT, null);
+            nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_BY, null);
         }
-    }    
+    }
 }

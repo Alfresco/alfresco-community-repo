@@ -54,7 +54,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Records management service implementation.
- * 
+ *
  * @author Roy Wetherall
  */
 public class RecordsManagementServiceImpl extends ServiceBaseImpl
@@ -72,7 +72,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     private final static String MSG_PARENT_RECORD_FOLDER_ROOT = "rm.service.parent-record-folder-root";
     private final static String MSG_PARENT_RECORD_FOLDER_TYPE = "rm.service.parent-record-folder-type";
     private final static String MSG_RECORD_FOLDER_TYPE = "rm.service.record-folder-type";
-    
+
     /** Store that the RM roots are contained within */
     @SuppressWarnings("unused")
     @Deprecated
@@ -86,13 +86,13 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
 
     /** Well-known location of the scripts folder. */
     private NodeRef scriptsFolderNodeRef = new NodeRef("workspace", "SpacesStore", "rm_behavior_scripts");
-    
+
     /** Java behaviour */
     private JavaBehaviour onChangeToDispositionActionDefinition;
-    
+
     /** Application context */
     private ApplicationContext applicationContext;
-    
+
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
@@ -101,10 +101,10 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         this.applicationContext = applicationContext;
     }
-    
+
     /**
      * Set the service registry service
-     * 
+     *
      * @param serviceRegistry   service registry
      */
     public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry serviceRegistry)
@@ -113,27 +113,27 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
         this.serviceRegistry = serviceRegistry;
         this.dictionaryService = serviceRegistry.getDictionaryService();
     }
-    
+
     /**
      * Set policy component
-     * 
+     *
      * @param policyComponent   policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * Sets the default RM store reference
      * @param defaultStoreRef    store reference
      */
     @Deprecated
-    public void setDefaultStoreRef(StoreRef defaultStoreRef) 
+    public void setDefaultStoreRef(StoreRef defaultStoreRef)
     {
         this.defaultStoreRef = defaultStoreRef;
     }
-    
+
     private FilePlanService getFilePlanService()
     {
     	return (FilePlanService)applicationContext.getBean("filePlanService");
@@ -143,59 +143,59 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
      * Init method.  Registered behaviours.
      */
     public void init()
-    {        
-        // Register the association behaviours    
+    {
+        // Register the association behaviours
         policyComponent.bindAssociationBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
-                TYPE_FILE_PLAN, 
-                ContentModel.ASSOC_CONTAINS, 
-                new JavaBehaviour(this, "onAddContentToContainer", NotificationFrequency.EVERY_EVENT)); 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"),
+                TYPE_FILE_PLAN,
+                ContentModel.ASSOC_CONTAINS,
+                new JavaBehaviour(this, "onAddContentToContainer", NotificationFrequency.EVERY_EVENT));
         policyComponent.bindAssociationBehaviour(
-                  QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
-                  TYPE_RECORD_CATEGORY, 
-                  ContentModel.ASSOC_CONTAINS, 
+                  QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"),
+                  TYPE_RECORD_CATEGORY,
+                  ContentModel.ASSOC_CONTAINS,
                   new JavaBehaviour(this, "onAddContentToContainer", NotificationFrequency.EVERY_EVENT));
-       
+
         // TODO move this into the record service
         policyComponent.bindAssociationBehaviour(
-               QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
+               QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"),
                ASPECT_RECORD,
                RenditionModel.ASSOC_RENDITION,
                new JavaBehaviour(this, "onAddRecordThumbnail", NotificationFrequency.TRANSACTION_COMMIT)
                );
-        
+
         // Register script execution behaviour on RM property update.
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 ASPECT_FILE_PLAN_COMPONENT,
                 new JavaBehaviour(this, "onChangeToAnyRmProperty", NotificationFrequency.TRANSACTION_COMMIT));
-        
+
         // Disposition behaviours
-        onChangeToDispositionActionDefinition = new JavaBehaviour(this, "onChangeToDispositionActionDefinition", NotificationFrequency.TRANSACTION_COMMIT); 
+        onChangeToDispositionActionDefinition = new JavaBehaviour(this, "onChangeToDispositionActionDefinition", NotificationFrequency.TRANSACTION_COMMIT);
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 TYPE_DISPOSITION_ACTION_DEFINITION,
                 onChangeToDispositionActionDefinition);
 
         // Reference behaviours
-        policyComponent.bindClassBehaviour(RecordsManagementPolicies.ON_CREATE_REFERENCE, 
-                                           ASPECT_RECORD, 
+        policyComponent.bindClassBehaviour(RecordsManagementPolicies.ON_CREATE_REFERENCE,
+                                           ASPECT_RECORD,
                                            new JavaBehaviour(this, "onCreateReference", NotificationFrequency.TRANSACTION_COMMIT));
 
-        policyComponent.bindClassBehaviour(RecordsManagementPolicies.ON_REMOVE_REFERENCE, 
-                                           ASPECT_RECORD, 
+        policyComponent.bindClassBehaviour(RecordsManagementPolicies.ON_REMOVE_REFERENCE,
+                                           ASPECT_RECORD,
                                            new JavaBehaviour(this, "onRemoveReference", NotificationFrequency.TRANSACTION_COMMIT));
-        
+
         // Identifier behaviours
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                                            ASPECT_RECORD_COMPONENT_ID,
-                                           new JavaBehaviour(this, "onIdentifierUpdate", NotificationFrequency.TRANSACTION_COMMIT));    
+                                           new JavaBehaviour(this, "onIdentifierUpdate", NotificationFrequency.TRANSACTION_COMMIT));
     }
-    
+
     /**
      * On add content to container
-     * 
+     *
      * Prevents content nodes being added to record series and record category folders
      * by imap, cifs etc.
-     * 
+     *
      * @param childAssocRef
      * @param bNew
      */
@@ -205,18 +205,18 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
         NodeRef nodeRef = childAssocRef.getChildRef();
         if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true)
         {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER));   
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER));
         }
         if (isFilePlan(parent) == true && isRecordFolder(nodeRef) == true)
         {
             throw new AlfrescoRuntimeException("Operation failed, because you can not place a record folder in the root of the file plan.");
         }
     }
-    
+
     /**
      * Make sure the thumbnails of records are marked as file plan components as are therefore subject to the same
      * permission restrictions.
-     * 
+     *
      * @param childAssocRef
      * @param bNew
      */
@@ -228,15 +228,15 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
             public Void doWork() throws Exception
             {
                 NodeRef thumbnail = childAssocRef.getChildRef();
-                
+
                 if (nodeService.exists(thumbnail) == true)
                 {
                     // apply file plan component aspect to thumbnail
                     nodeService.addAspect(thumbnail, ASPECT_FILE_PLAN_COMPONENT, null);
-                    
+
                     // manage any extended readers
-                    ExtendedSecurityService extendedSecurityService = serviceRegistry.getExtendedSecurityService();            
-                    NodeRef parent = childAssocRef.getParentRef();            
+                    ExtendedSecurityService extendedSecurityService = serviceRegistry.getExtendedSecurityService();
+                    NodeRef parent = childAssocRef.getParentRef();
                     Set<String> readers = extendedSecurityService.getExtendedReaders(parent);
                     Set<String> writers = extendedSecurityService.getExtendedWriters(parent);
                     if (readers != null && readers.size() != 0)
@@ -244,12 +244,12 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
                         extendedSecurityService.addExtendedSecurity(thumbnail, readers, writers, false);
                     }
                 }
-                
+
                 return null;
             }
-        });        
+        });
     }
-    
+
     /**
      * Called after a DispositionActionDefinition property has been updated.
      */
@@ -262,27 +262,27 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
             {
                 // Determine the properties that have changed
                 Set<QName> changedProps = this.determineChangedProps(oldProps, newProps);
-                
+
                 if (nodeService.hasAspect(node, ASPECT_UNPUBLISHED_UPDATE) == false)
-                {                
-                    // Apply the unpublished aspect                
+                {
+                    // Apply the unpublished aspect
                     Map<QName, Serializable> props = new HashMap<QName, Serializable>();
                     props.put(PROP_UPDATE_TO, UPDATE_TO_DISPOSITION_ACTION_DEFINITION);
                     props.put(PROP_UPDATED_PROPERTIES, (Serializable)changedProps);
                     nodeService.addAspect(node, ASPECT_UNPUBLISHED_UPDATE, props);
                 }
                 else
-                {                
+                {
                     Map<QName, Serializable> props = nodeService.getProperties(node);
-                    
+
                     // Check that there isn't a update currently being published
                     if ((Boolean)props.get(PROP_PUBLISH_IN_PROGRESS).equals(Boolean.TRUE) == true)
                     {
                         // Can not update the disposition schedule since there is an outstanding update being published
                         throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UPDATE_DISP_ACT_DEF));
                     }
-                    
-                    // Update the update information                
+
+                    // Update the update information
                     props.put(PROP_UPDATE_TO, UPDATE_TO_DISPOSITION_ACTION_DEFINITION);
                     props.put(PROP_UPDATED_PROPERTIES, (Serializable)changedProps);
                     nodeService.setProperties(node, props);
@@ -294,7 +294,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
             }
         }
     }
-    
+
     /**
      * Called after any Records Management property has been updated.
      */
@@ -309,14 +309,14 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
                 {
                     RecordsManagementServiceImpl.this.lookupAndExecuteScripts(node, oldProps, newProps);
                 }
-                
+
                 return null;
             }});
     }
-    
+
     /**
      * Property update behaviour implementation
-     * 
+     *
      * @param node
      * @param oldProps
      * @param newProps
@@ -348,14 +348,14 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
             // Apply the versioned aspect to the from node
             this.nodeService.addAspect(fromNodeRef, ASPECT_VERSIONED_RECORD, null);
         }
-        
+
         // Execute script if for the reference event
         executeReferenceScript("onCreate", reference, fromNodeRef, toNodeRef);
     }
-    
+
     /**
      * Executes a reference script if present
-     * 
+     *
      * @param policy
      * @param reference
      * @param from
@@ -364,11 +364,11 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     private void executeReferenceScript(String policy, QName reference, NodeRef from, NodeRef to)
     {
         String referenceId = reference.getLocalName();
-    
+
         // This is the filename pattern which is assumed.
         // e.g. a script file onCreate_superceded.js for the creation of a superseded reference
         String expectedScriptName = policy + "_" + referenceId + ".js";
-         
+
         NodeRef scriptNodeRef = nodeService.getChildByName(scriptsFolderNodeRef, ContentModel.ASSOC_CONTAINS, expectedScriptName);
         if (scriptNodeRef != null)
         {
@@ -381,7 +381,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
             serviceRegistry.getScriptService().executeScript(scriptNodeRef, null, objectModel);
         }
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRemoveReference#onRemoveReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
@@ -393,14 +393,14 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
             // Apply the versioned aspect to the from node
             this.nodeService.removeAspect(fromNodeRef, ASPECT_VERSIONED_RECORD);
         }
-        
+
         // Execute script if for the reference event
         executeReferenceScript("onRemove", reference, fromNodeRef, toNodeRef);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isFilePlan(org.alfresco.service.cmr.repository.NodeRef)
-     * 
+     *
      * @deprecated As of 2.1, see {@link FilePlanService#isFilePlan(NodeRef)}
      */
     @Deprecated
@@ -408,7 +408,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().isFilePlan(nodeRef);
     }
-    
+
     /**
      * @deprecated as of 2.1, see {@link FilePlanService#isFilePlanContainer(NodeRef)}
      */
@@ -416,16 +416,16 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     public boolean isRecordsManagementContainer(NodeRef nodeRef)
     {
         return getFilePlanService().isFilePlanContainer(nodeRef);
-    }   
-    
+    }
+
     /**
      * @deprecated as of 2.1, see {@link FilePlanService#isFilePlanComponent(NodeRef)}
      */
     public boolean isFilePlanComponent(NodeRef nodeRef)
     {
-        return getFilePlanService().isFilePlan(nodeRef);
+        return getFilePlanService().isFilePlanComponent(nodeRef);
     }
-    
+
     /**
      * @deprecated as of 2.1, see {@link FilePlanService#getFilePlanComponentKind(NodeRef)}
      */
@@ -433,7 +433,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
     	return getFilePlanService().getFilePlanComponentKind(nodeRef);
     }
-    
+
     /**
      * @deprecated as of 2.1, see {@link FilePlanService#getFilePlanComponentKindFromType(QName)}
      */
@@ -442,7 +442,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().getFilePlanComponentKindFromType(type);
     }
-    
+
     /**
      * @deprecated as of 2.1, see {@link FilePlanService#isRecordCategory(NodeRef)}
      */
@@ -458,7 +458,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return instanceOf(nodeRef, TYPE_RECORD_FOLDER);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isTransfer(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -466,7 +466,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return instanceOf(nodeRef, TYPE_TRANSFER);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isMetadataStub(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -475,7 +475,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return nodeService.hasAspect(nodeRef, ASPECT_GHOSTED);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isCutoff(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -484,7 +484,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return nodeService.hasAspect(nodeRef, ASPECT_CUT_OFF);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getFilePlan(org.alfresco.service.cmr.repository.NodeRef)
      * @deprecated As of 2.1, see {@link FilePlanService#getFilePlan(NodeRef)}
@@ -502,10 +502,10 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().getNodeRefPath(nodeRef);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getRecordsManagementRoots(org.alfresco.service.cmr.repository.StoreRef)
-     * 
+     *
      * @deprecated As of 2.1, see {@link FilePlanService#getFilePlans()}
      */
     @Deprecated
@@ -513,7 +513,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return new ArrayList<NodeRef>(getFilePlanService().getFilePlans());
     }
-    
+
     /**
      * @deprecated as of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, QName, Map)}
      */
@@ -521,7 +521,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().createFilePlan(parent, name, type, properties);
     }
-    
+
     /**
      * @deprecated as of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, Map)}
      */
@@ -529,7 +529,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().createFilePlan(parent, name, properties);
     }
-    
+
     /**
      * @deprecated as of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String)}
      */
@@ -537,7 +537,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().createFilePlan(parent, name);
     }
-    
+
     /**
      * @deprecated as of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, QName)}
      */
@@ -546,7 +546,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().createFilePlan(parent, name, type);
     }
-    
+
     /**
      * @deprecated as of 2.1
      */
@@ -554,7 +554,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().createRecordCategory(parent, name, type, properties);
     }
-    
+
     /**
      * @deprecated as of 2.1
      */
@@ -562,7 +562,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().createRecordCategory(parent, name);
     }
-    
+
     /**
      * @deprecated as of 2.1
      */
@@ -570,7 +570,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().createRecordCategory(parent, name, properties);
     }
-    
+
     /**
      * @deprecated as of 2.1
      */
@@ -578,7 +578,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().createRecordCategory(parent, name, type);
     }
-    
+
     /**
      * @deprecated as of 2.1
      */
@@ -587,7 +587,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().getAllContained(container);
     }
-    
+
     /**
      * @deprecated as of 2.1
      */
@@ -596,7 +596,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
     	return getFilePlanService().getAllContained(container, deep);
     }
-    
+
     /**
      * @deprecated as of 2.1
      */
@@ -605,7 +605,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().getContainedRecordCategories(container);
     }
-    
+
     /**
      * @deprecated as of 2.1
      */
@@ -614,7 +614,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().getContainedRecordCategories(container, deep);
     }
-    
+
     /**
      * @deprecated as of 2.1
      */
@@ -623,7 +623,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().getContainedRecordFolders(container);
     }
-    
+
     /**
      * @deprecated as of 2.1
      */
@@ -632,20 +632,20 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return getFilePlanService().getContainedRecordFolders(container, deep);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isRecordFolderDeclared(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isRecordFolderDeclared(NodeRef recordFolder)
     {
-        // Check we have a record folder 
+        // Check we have a record folder
         if (isRecordFolder(recordFolder) == false)
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_EXPECTED));
         }
-        
+
         boolean result = true;
-        
+
         // Check that each record in the record folder in declared
         List<NodeRef> records = getRecords(recordFolder);
         for (NodeRef record : records)
@@ -656,27 +656,27 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
                 break;
             }
         }
-        
+
         return result;
-        
+
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isRecordFolderClosed(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     public boolean isRecordFolderClosed(NodeRef nodeRef)
     {
-        // Check we have a record folder 
+        // Check we have a record folder
         if (isRecordFolder(nodeRef) == false)
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_EXPECTED));
         }
-        
-        return ((Boolean)this.nodeService.getProperty(nodeRef, PROP_IS_CLOSED)).booleanValue();        
+
+        return ((Boolean)this.nodeService.getProperty(nodeRef, PROP_IS_CLOSED)).booleanValue();
     }
-    
-    
+
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getRecordFolders(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -697,7 +697,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
         }
         return result;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#createRecordFolder(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map)
      */
@@ -706,13 +706,13 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("rmContainer", rmContainer);
         ParameterCheck.mandatory("name", name);
         ParameterCheck.mandatory("type", type);
-        
+
         // Check that we are not trying to create a record folder in a root container
         if (isFilePlan(rmContainer) == true)
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PARENT_RECORD_FOLDER_ROOT));
         }
-        
+
         // Check that the parent is a container
         QName parentType = nodeService.getType(rmContainer);
         if (TYPE_RECORD_CATEGORY.equals(parentType) == false &&
@@ -720,21 +720,21 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PARENT_RECORD_FOLDER_TYPE, parentType.toString()));
         }
-        
+
         // Check that the the provided type is a sub-type of rm:recordFolder
         if (TYPE_RECORD_FOLDER.equals(type) == false &&
             dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER) == false)
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_TYPE, type.toString()));
         }
-        
+
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
         if (properties != null && properties.size() != 0)
         {
             props.putAll(properties);
         }
         props.put(ContentModel.PROP_NAME, name);
-        
+
         return nodeService.createNode(
                 rmContainer,
                 ContentModel.ASSOC_CONTAINS,
@@ -742,7 +742,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
                 type,
                 props).getChildRef();
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#createRecordFolder(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
@@ -752,7 +752,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
         //      context
         return createRecordFolder(rmContrainer, name, TYPE_RECORD_FOLDER);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#createRecordFolder(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map)
      */
@@ -760,7 +760,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return createRecordFolder(parent, name, TYPE_RECORD_FOLDER, properties);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#createRecordFolder(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName)
      */
@@ -768,7 +768,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return createRecordFolder(parent, name, type, null);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getRecords(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -788,24 +788,24 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
             }
         }
         return result;
-    }   
-    
+    }
+
     /**
      * This method examines the old and new property sets and for those properties which
      * have changed, looks for script resources corresponding to those properties.
      * Those scripts are then called via the ScriptService.
-     * 
+     *
      * @param nodeWithChangedProperties the node whose properties have changed.
      * @param oldProps the old properties and their values.
      * @param newProps the new properties and their values.
-     * 
+     *
      * @see #lookupScripts(Map<QName, Serializable>, Map<QName, Serializable>)
      */
     private void lookupAndExecuteScripts(NodeRef nodeWithChangedProperties,
             Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
     {
         List<NodeRef> scriptRefs = lookupScripts(oldProps, newProps);
-        
+
         Map<String, Object> objectModel = new HashMap<String, Object>(1);
         objectModel.put("node", nodeWithChangedProperties);
         objectModel.put("oldProperties", oldProps);
@@ -816,15 +816,15 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
             serviceRegistry.getScriptService().executeScript(scriptRef, null, objectModel);
         }
     }
-    
+
     /**
      * This method determines which properties have changed and for each such property
      * looks for a script resource in a well-known location.
-     * 
+     *
      * @param oldProps the old properties and their values.
      * @param newProps the new properties and their values.
      * @return A list of nodeRefs corresponding to the Script resources.
-     * 
+     *
      * @see #determineChangedProps(Map<QName, Serializable>, Map<QName, Serializable>)
      */
     private List<NodeRef> lookupScripts(Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
@@ -843,14 +843,14 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
             // This is the filename pattern which is assumed.
             // e.g. a script file cm_name.js would be called for changed to cm:name
             String expectedScriptName = shortPrefix + "_" + localName + ".js";
-            
+
             NodeRef nextElement = nodeService.getChildByName(scriptsFolderNodeRef, ContentModel.ASSOC_CONTAINS, expectedScriptName);
             if (nextElement != null) result.add(nextElement);
         }
 
         return result;
     }
-    
+
     /**
      * This method compares the oldProps map against the newProps map and returns
      * a set of QNames of the properties that have changed. Changed here means one of
@@ -878,7 +878,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
                 result.add(qn);
             }
         }
-        
+
         return result;
     }
 
@@ -901,7 +901,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return serviceRegistry.getRecordService().isDeclared(nodeRef);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isHold(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -911,7 +911,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return serviceRegistry.getFreezeService().isHold(nodeRef);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isFrozen(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -921,7 +921,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return serviceRegistry.getFreezeService().isFrozen(nodeRef);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#hasFrozenChildren(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -931,7 +931,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         return serviceRegistry.getFreezeService().hasFrozenChildren(nodeRef);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isRecord(org.alfresco.service.cmr.repository.NodeRef)
      */

@@ -25,14 +25,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Indicates whether a disposable item currently has a disposition date or not.
- * 
+ *
  * @author Roy Wetherall
  */
 public class HasDispositionDateCapabilityCondition extends AbstractCapabilityCondition
-{   
+{
     /** Disposition service */
     private DispositionService dispositionService;
-    
+
     /**
      * @param dispositionService    disposition service
      */
@@ -40,7 +40,7 @@ public class HasDispositionDateCapabilityCondition extends AbstractCapabilityCon
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -48,11 +48,18 @@ public class HasDispositionDateCapabilityCondition extends AbstractCapabilityCon
     public boolean evaluate(NodeRef nodeRef)
     {
         boolean result = false;
-        
+
         DispositionAction dispositionAction = dispositionService.getNextDispositionAction(nodeRef);
         if (dispositionAction != null)
         {
             if (dispositionAction.getAsOfDate() != null)
+            {
+                result = true;
+            }
+        }
+        else if (filePlanService.isFilePlanComponent(nodeRef))
+        {
+            if (nodeService.getProperty(nodeRef, PROP_DISPOSITION_AS_OF) != null)
             {
                 result = true;
             }

@@ -78,7 +78,6 @@ task resetDatabase << {
 	// FIXME - Start: Remove the following lines after fixing the failing tests
 	println "The DB Url is: " + ant.getProperty("db.url")
 	println "The DB Master Url is: " + ant.getProperty("db.master.url")
-	println "The DB Driver is: " + ant.getProperty("db.driver")
 	println "The dir.root is: " + ant.getProperty("dir.root")
 	// FIXME - End
 }

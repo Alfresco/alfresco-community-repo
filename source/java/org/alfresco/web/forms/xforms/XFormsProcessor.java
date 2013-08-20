@@ -426,8 +426,12 @@ public class XFormsProcessor implements FormProcessor
             {
                return result;
             }
-            throw new RuntimeException("widget definitions " + this + 
-                                       " and " + other + " collide");
+            
+            if (LOGGER.isInfoEnabled())
+            {
+               LOGGER.info("widget definitions " + this + " and " + other + " may collide");
+            }
+            return 0;
          }
 
          public String toString()

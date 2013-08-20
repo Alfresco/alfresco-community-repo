@@ -216,10 +216,9 @@ public final class User implements SessionUser
         final NamespaceService namespaceService = registry.getNamespaceService();
         final TransactionService txService = registry.getTransactionService();
         final ConfigurableService configurableService = (ConfigurableService) context.getBean("ConfigurableService");
-        RetryingTransactionHelper txnHelper = registry.getRetryingTransactionHelper();
+        RetryingTransactionHelper txnHelper = registry.getTransactionService().getRetryingTransactionHelper();
         return txnHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
-
             public NodeRef execute() throws Throwable
             {
                 NodeRef prefRef = null;

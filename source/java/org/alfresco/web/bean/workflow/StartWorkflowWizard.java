@@ -34,7 +34,6 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.publishing.PublishingEventHelper;
@@ -68,6 +67,7 @@ import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * Bean implementation for the Start Workflow Wizard.
@@ -85,6 +85,7 @@ public class StartWorkflowWizard extends BaseWizardBean
    transient private Map<String, WorkflowDefinition> workflows;
    
    protected List<String> wcmWorkflows;
+   protected List<String> excludedWorkflows;
    protected List<String> invitationWorkflows;
    protected List<String> publishingWorkflows;
    
@@ -574,6 +575,7 @@ public class StartWorkflowWizard extends BaseWizardBean
       List<String> configuredWcmWorkflows = this.getWCMWorkflowNames();
       List<String> configuredInvitationWorkflows = this.getInvitationServiceWorkflowNames();
       List<String> publishingWorkflows = this.getPublishingWorkflowNames();
+      List<String> excludedWorkflows = this.getExcludedWorkflows();
       
       List<WorkflowDefinition> workflowDefs =  this.getWorkflowService().getDefinitions();
       for (WorkflowDefinition workflowDef : workflowDefs)
@@ -582,7 +584,8 @@ public class StartWorkflowWizard extends BaseWizardBean
          
          if (configuredWcmWorkflows.contains(name) == false &&
         	 configuredInvitationWorkflows.contains(name) == false &&
-        	 publishingWorkflows.contains(name) == false)
+        	 publishingWorkflows.contains(name) == false &&
+        	 excludedWorkflows.contains(name) == false)
          {
             // add the workflow if it is not a WCM specific workflow
             String label = workflowDef.title;
@@ -789,6 +792,36 @@ public class StartWorkflowWizard extends BaseWizardBean
       
       return wcmWorkflows;
    }
+   
+   /**
+    * Get the Names of globally excluded workflow-names.
+    * 
+    * @return The names of the workflows to exclude.
+    */
+   protected List<String> getExcludedWorkflows()   
+   {
+      if ((excludedWorkflows == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
+      {
+         FacesContext fc = FacesContext.getCurrentInstance();
+         ConfigElement config = Application.getConfigService(fc).getGlobalConfig().getConfigElement("excluded-workflows");
+         if (config != null)
+         {
+               StringTokenizer t = new StringTokenizer(config.getValue().trim(), ", ");
+               excludedWorkflows = new ArrayList<String>(t.countTokens());
+               while (t.hasMoreTokens())
+               {
+                  String wfName = t.nextToken();
+                  excludedWorkflows.add(wfName);
+               }
+         }
+         else
+         {
+             excludedWorkflows = Collections.emptyList();
+         }
+      }
+      return excludedWorkflows;
+   }
+   
    /**
     * Get the Names of the Invitation Service Workflows
     * 

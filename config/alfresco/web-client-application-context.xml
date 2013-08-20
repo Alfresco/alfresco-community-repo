@@ -41,26 +41,13 @@
    <!-- Web Client Config Data Cache          -->
    <!-- ===================================== -->
 
-   <!-- The cross-transaction shared cache for in-memory GlobalConfig -->
-   
    <!-- TODO: globalConfigShareCache moved into cache-context.xml files,
         may need a way of defining caches alongside related beans as it was previously. -->
    
-   <!-- The transactional cache for in-memory GlobalConfig -->
-   <!-- TODO: should this move to tx-cache-context.xml -->
-   <bean name="globalConfigCache" class="org.alfresco.repo.cache.TransactionalCache">
-      <property name="sharedCache">
-         <ref bean="globalConfigSharedCache" />
-      </property>
-      <property name="name">
-         <value>org.alfresco.globalConfigTransactionalCache</value>
-      </property>
-      <property name="maxCacheSize">
-         <value>10</value>
-      </property>
+   <bean name="globalConfigCache" class="org.alfresco.repo.config.ConfigDataCache" parent="abstractAsynchronouslyRefreshedCache">
+      <property name="repoXMLConfigService" ref="webClientConfigService" />  <!-- TODO: Must we do this manually? -->
    </bean>
-   
-   
+ 
    <!-- ===================================== -->
    <!-- Web Client Config Service             -->
    <!-- ===================================== -->
@@ -72,7 +59,6 @@
       
       <property name="tenantAdminService" ref="tenantAdminService"/>  
       <property name="transactionService" ref="transactionComponent"/>
-      <property name="authenticationContext" ref="authenticationContext"/>
       
       <property name="configDataCache"   ref="globalConfigCache"/>
       

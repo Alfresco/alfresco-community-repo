@@ -30,6 +30,9 @@ if (!alfresco.log)
   alfresco.log = alfresco.constants.DEBUG ? log : Class.empty;
 }
 
+//MNT-2080: AVM_WEBAPP url rendering in the html view of TinyMCE editor
+tinyMCE.avmWebappUrl = alfresco.constants.AVM_WEBAPP_URL;
+
 function alfresco_TinyMCE_urlconverter_callback(href, element, onsave)
 {
   var result = null;
@@ -47,7 +50,7 @@ function alfresco_TinyMCE_urlconverter_callback(href, element, onsave)
     }
     else if (href.startsWith("/"))
     {
-      result = alfresco.constants.AVM_WEBAPP_URL + href;
+    	result = alfresco.constants.AVM_WEBAPP_URL + href;
     }
     else if (href.startsWith(document.location.href))
     { 

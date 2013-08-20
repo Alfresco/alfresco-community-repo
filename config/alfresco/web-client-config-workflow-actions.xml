@@ -371,4 +371,9 @@
       </actions>
    </config>
    
+   <config>
+      <excluded-workflows>
+         activiti$cloudWorkflow         
+      </excluded-workflows>
+   </config>
 </alfresco-config>

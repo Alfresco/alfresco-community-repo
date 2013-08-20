@@ -13,7 +13,13 @@ function onLoadInit() {
 	if (tinymce.isGecko)
 		document.body.spellcheck = tinyMCEPopup.editor.getParam("gecko_spellcheck");
 
-	document.getElementById('htmlSource').value = tinyMCEPopup.editor.getContent({source_view : true});
+	//MNT-2080: AVM_WEBAPP url rendering in the html view of TinyMCE editor
+	var src = tinyMCEPopup.editor.getContent({source_view : true});
+
+	if (tinyMCE.avmWebappUrl != null)
+		src = src.replace(new RegExp(tinyMCE.avmWebappUrl, 'g'), "");
+
+	document.getElementById('htmlSource').value = src;
 
 	if (tinyMCEPopup.editor.getParam("theme_advanced_source_editor_wrap", true)) {
 		setWrap('soft');

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -59,6 +60,8 @@ import org.alfresco.web.bean.ml.SingleEditionBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.NodePropertyComparator;
+import org.alfresco.web.ui.common.NodeListUtils;
 import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
@@ -711,32 +714,12 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
          List<Node> nodes = this.browseBean.getContent();
          if (nodes.size() > 1)
          {
-            // perform a linear search - this is slow but stateless
-            // otherwise we would have to manage state of last selected node
-            // this gets very tricky as this bean is instantiated once and never
-            // reset - it does not know when the document has changed etc.
-            for (int i=0; i<nodes.size(); i++)
-            {
-               if (id.equals(nodes.get(i).getId()) == true)
-               {
-                  Node next;
-                  // found our item - navigate to next
-                  if (i != nodes.size() - 1)
-                  {
-                     next = nodes.get(i + 1);
-                  }
-                  else
-                  {
-                     // handle wrapping case
-                     next = nodes.get(0);
-                  }
-
-                  // prepare for showing details for this node
-                  getRecentNodeRefsStack().clear();
-                  this.browseBean.setupContentAction(next.getId(), false);
-                  break;
-               }
-            }
+            String currentSortColumn = this.browseBean.getContentRichList().getCurrentSortColumn();
+            boolean currentSortDescending = this.browseBean.getContentRichList().isCurrentSortDescending();
+            Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            Node next = NodeListUtils.nextItem(nodes, id);
+            getRecentNodeRefsStack().clear();
+            this.browseBean.setupContentAction(next.getId(), false);
          }
       }
    }
@@ -754,29 +737,12 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
          List<Node> nodes = this.browseBean.getContent();
          if (nodes.size() > 1)
          {
-            // see above
-            for (int i=0; i<nodes.size(); i++)
-            {
-               if (id.equals(nodes.get(i).getId()) == true)
-               {
-                  Node previous;
-                  // found our item - navigate to previous
-                  if (i != 0)
-                  {
-                     previous = nodes.get(i - 1);
-                  }
-                  else
-                  {
-                     // handle wrapping case
-                     previous = nodes.get(nodes.size() - 1);
-                  }
-
-                  // prepare for showing details for this node
-                  getRecentNodeRefsStack().clear();
-                  this.browseBean.setupContentAction(previous.getId(), false);
-                  break;
-               }
-            }
+            String currentSortColumn = this.browseBean.getContentRichList().getCurrentSortColumn();
+            boolean currentSortDescending = this.browseBean.getContentRichList().isCurrentSortDescending();
+            Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            Node previous = NodeListUtils.previousItem(nodes, id);
+            getRecentNodeRefsStack().clear();
+            this.browseBean.setupContentAction(previous.getId(), false);
          }
       }
    }

@@ -49,6 +49,9 @@
          <!-- Limit search results. -1 for unlimited. -->
          <search-max-results>500</search-max-results>
 
+         <!-- Is bulk fetch enabled for JSF client -->
+         <bulk-fetch-enabled>true</bulk-fetch-enabled>         
+
          <!-- Limit search results within selectors, -1 for unlimited. -->
          <selectors-search-max-results>500</selectors-search-max-results>
          

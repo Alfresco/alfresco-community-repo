@@ -391,25 +391,8 @@ public class Application
          {
             session.invalidate();
          }
-
-         // remove the username cookie value
-         Cookie authCookie = AuthenticationHelper.getAuthCookie(request);
-         if (authCookie != null)
-         {
-            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
-            if (response.isCommitted())
-            {
-               // It's too late to do it now, but we can ask the login page to do it
-               request.getSession().setAttribute(AuthenticationHelper.SESSION_INVALIDATED, true);
-            }
-            else
-            {
-               authCookie.setMaxAge(0);
-               response.addCookie(authCookie);
-            }
-         }
       }
-      
+
       // Explicitly invalidate the Alfresco ticket. This no longer happens on session expiry to allow for ticket
       // 'sharing'
       WebApplicationContext wc = FacesContextUtils.getRequiredWebApplicationContext(context);

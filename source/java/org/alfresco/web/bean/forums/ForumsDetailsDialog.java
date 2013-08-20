@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,7 @@
  */
 package org.alfresco.web.bean.forums;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,8 @@ import org.alfresco.web.bean.BaseDetailsBean;
 import org.alfresco.web.bean.dialog.NavigationSupport;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.NodeListUtils;
+import org.alfresco.web.ui.common.NodePropertyComparator;
 import org.alfresco.web.ui.common.component.UIActionLink;
 
 public class ForumsDetailsDialog extends BaseDetailsBean implements NavigationSupport
@@ -123,7 +126,6 @@ public class ForumsDetailsDialog extends BaseDetailsBean implements NavigationSu
 
    public void nextItem(ActionEvent event)
    {
-      boolean foundNextItem = false;
       UIActionLink link = (UIActionLink) event.getComponent();
       Map<String, String> params = link.getParameterMap();
       String id = params.get("id");
@@ -131,41 +133,16 @@ public class ForumsDetailsDialog extends BaseDetailsBean implements NavigationSu
       {
          NodeRef currNodeRef = new NodeRef(Repository.getStoreRef(), id);
          List<Node> nodes = this.browseBean.getParentNodes(currNodeRef);
+         Node next = null;
          if (nodes.size() > 1)
          {
-            // perform a linear search - this is slow but stateless
-            // otherwise we would have to manage state of last selected node
-            // this gets very tricky as this bean is instantiated once and never
-            // reset - it does not know when the document has changed etc.
-            for (int i = 0; i < nodes.size(); i++)
-            {
-               if (id.equals(nodes.get(i).getId()) == true)
-               {
-                  Node next;
-                  // found our item - navigate to next
-                  if (i != nodes.size() - 1)
-                  {
-                     next = nodes.get(i + 1);
-                  }
-                  else
-                  {
-                     // handle wrapping case
-                     next = nodes.get(0);
-                  }
-
-                  // prepare for showing details for this node
-                  this.browseBean.setupSpaceAction(next.getId(), false);
-
-                  // we found a next item
-                  foundNextItem = true;
-               }
-            }
+            String currentSortColumn = this.browseBean.getSpacesRichList().getCurrentSortColumn();
+            boolean currentSortDescending = this.browseBean.getSpacesRichList().isCurrentSortDescending();
+            Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            next = NodeListUtils.nextItem(nodes, id);
+            this.browseBean.setupSpaceAction(next.getId(), false);
          }
-
-         // if we did not find a next item make sure the current node is
-         // in the dispatch context otherwise the details screen will go back
-         // to the default one.
-         if (foundNextItem == false)
+         if (next == null)
          {
             Node currNode = new Node(currNodeRef);
             this.navigator.setupDispatchContext(currNode);
@@ -176,7 +153,6 @@ public class ForumsDetailsDialog extends BaseDetailsBean implements NavigationSu
 
    public void previousItem(ActionEvent event)
    {
-      boolean foundPreviousItem = false;
       UIActionLink link = (UIActionLink) event.getComponent();
       Map<String, String> params = link.getParameterMap();
       String id = params.get("id");
@@ -184,38 +160,16 @@ public class ForumsDetailsDialog extends BaseDetailsBean implements NavigationSu
       {
          NodeRef currNodeRef = new NodeRef(Repository.getStoreRef(), id);
          List<Node> nodes = this.browseBean.getParentNodes(currNodeRef);
+         Node previous = null;
          if (nodes.size() > 1)
          {
-            // see above
-            for (int i = 0; i < nodes.size(); i++)
-            {
-               if (id.equals(nodes.get(i).getId()) == true)
-               {
-                  Node previous;
-                  // found our item - navigate to previous
-                  if (i != 0)
-                  {
-                     previous = nodes.get(i - 1);
-                  }
-                  else
-                  {
-                     // handle wrapping case
-                     previous = nodes.get(nodes.size() - 1);
-                  }
-
-                  // show details for this node
-                  this.browseBean.setupSpaceAction(previous.getId(), false);
-
-                  // we found a next item
-                  foundPreviousItem = true;
-               }
-            }
+            String currentSortColumn = this.browseBean.getSpacesRichList().getCurrentSortColumn();
+            boolean currentSortDescending = this.browseBean.getSpacesRichList().isCurrentSortDescending();
+            Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            previous = NodeListUtils.previousItem(nodes, id);
+            this.browseBean.setupSpaceAction(previous.getId(), false);
          }
-
-         // if we did not find a previous item make sure the current node is
-         // in the dispatch context otherwise the details screen will go back
-         // to the default one.
-         if (foundPreviousItem == false)
+         if (previous == null)
          {
             Node currNode = new Node(currNodeRef);
             this.navigator.setupDispatchContext(currNode);

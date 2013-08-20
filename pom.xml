@@ -8,13 +8,20 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-parent</artifactId>
-        <version>4.2.d-SNAPSHOT</version>
-        <relativePath>../../pom-experimental.xml</relativePath>
+        <version>4.2.0-QA-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>alfresco</artifactId>
     <packaging>war</packaging>
     <name>Alfresco Web Client</name>
     <description>Alfresco Web Client</description>
+
+    <properties>
+        <maven.tomcat.path>/alfresco</maven.tomcat.path>
+        <maven.tomcat.port>${tomcat.default.alfresco.port}</maven.tomcat.port>
+        <maven.webapp.classifier>webapp</maven.webapp.classifier>
+        <project.build.patchesDirectory>${project.build.directory}/patches</project.build.patchesDirectory>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -53,6 +60,7 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>alfresco-web-framework-commons</artifactId>
             <version>${project.version}</version>
+            <classifier>classes</classifier>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -101,6 +109,10 @@
                     <groupId>xml-apis</groupId>
                     <artifactId>xml-apis</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xerces</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -116,8 +128,17 @@
                     <groupId>xml-apis</groupId>
                     <artifactId>xml-apis</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>commons-digester</groupId>
+                    <artifactId>commons-digester</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+		</dependency>
         <dependency>
             <groupId>net.sf.chiba</groupId>
             <artifactId>chiba</artifactId>
@@ -148,15 +169,10 @@
             <artifactId>standard</artifactId>
             <version>1.1.0</version>
         </dependency>
-
-        <!-- Dependency on the web-framework-commons resources skinny war -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>alfresco-web-framework-commons</artifactId>
-            <version>${project.version}</version>
-            <classifier>webapp</classifier>
-            <type>war</type>
-            <scope>provided</scope> <!-- ALF-16947 -->
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-test-browser</artifactId>
+            <version>${dependency.opencmis.version}</version>
         </dependency>
 
         <!-- 'provided' dependencies, not packaged in war -->
@@ -268,42 +284,143 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
-                    <overlays>
-                        <overlay>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>alfresco-web-framework-commons</artifactId>
-                            <classifier>webapp</classifier>
-                            <excludes>
-                                <exclude>WEB-INF/classes/*</exclude>
-                            </excludes>
-                        </overlay>
-                    </overlays>
-                    <attachClasses>true</attachClasses>
-                    <archiveClasses>true</archiveClasses>
+					<attachClasses>true</attachClasses>
+                    <archiveClasses>false</archiveClasses>
+                    <!-- Temporary ugly hack until we can really move the public_api file out of remote-api without breaking the Ant build -->
+                    <webResources>
+                        <resource>
+                            <directory>../../projects/remote-api/source/web</directory>
+                            <includes>
+                            	<include>WEB-INF/server-config.wsdd</include>
+                            </includes>
+                        </resource>
+                    </webResources>
                 </configuration>
+                <!-- This allows overlays to be prepared on the FS for minification and faster run -->
+				<executions>
+					<execution>
+						<id>pre-exploded-war</id>
+						<goals>
+							<goal>exploded</goal>
+						</goals>
+						<phase>prepare-package</phase>
+					</execution>
+				</executions>
             </plugin>
         </plugins>
     </build>
+    <!-- NOTE: Profiles' order is IMPORTANT as defines the order plugins are executed -->
     <profiles>
-        <!-- Profile to build alfresco-enterprise -->
-        <profile>
-            <id>enterprise</id>
-            <dependencies>
-                <dependency>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>alfresco-enterprise-repository</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>alfresco-enterprise-remote-api</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
+		<profile>
+			<id>solr-http</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-web-xml</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.build.patchesDirectory}</outputDirectory>
+									<resources>
+										<resource>
+	                  						<directory>source/web</directory>
+	                  						<filtering>false</filtering>
+	                  						<includes>
+	                  							<include>WEB-INF/web.xml</include>
+	                  						</includes>
+	                					</resource>
+                					</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- Replaces web.xml where applicable, commenting out the security-constraints -->
+					<plugin>
+						<groupId>com.google.code.maven-replacer-plugin</groupId>
+						<artifactId>replacer</artifactId>
+						<executions>
+							<execution>
+								<id>disable-securecomms</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>replace</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<ignoreErrors>true</ignoreErrors>
+							<file>${project.build.patchesDirectory}/WEB-INF/web.xml</file>
+							<replacements>
+								<replacement>
+									<token><![CDATA[<!-- Toggle securecomms placeholder start -->]]></token>
+									<value><![CDATA[<!-- ]]></value>
+								</replacement>
+								<replacement>
+									<token><![CDATA[<!-- Toggle securecomms placeholder end -->]]></token>
+									<value><![CDATA[--> ]]></value>
+								</replacement>
+							</replacements>
+						</configuration>
+					</plugin>
+					<!-- Configures the war-plugin to use the patches web.xml -->
+					<plugin>
+                		<artifactId>maven-war-plugin</artifactId>
+                		<configuration>
+                			<webResources>
+                				<resource>
+                					<directory>${project.build.patchesDirectory}</directory>
+                				</resource>
+                			</webResources>
+                		</configuration>
+                	</plugin>
+				</plugins>
+			</build>
+		</profile>    
+	    <profile>
+			<id>run</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.tomcat.maven</groupId>
+						<artifactId>tomcat7-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>run-exploded-webapp</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>run-war-only</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<!-- Tweaks required to make the build work in Eclipse -->
+		<profile>
+			<id>m2e</id>
+			<dependencies>
+			    <dependency>
+			       <groupId>commons-logging</groupId>
+			       <artifactId>commons-logging</artifactId>
+			       <version>1.1.1</version>
+			       <!-- This is needed for Maven tomcat run -->
+			       <scope>runtime</scope>
+		        </dependency>
+				<dependency>
+					<groupId>mysql</groupId>
+					<artifactId>mysql-connector-java</artifactId>
+					<version>5.1.14</version>
+				</dependency>			
+			</dependencies>
+	   </profile>
+    </profiles>   
 </project>

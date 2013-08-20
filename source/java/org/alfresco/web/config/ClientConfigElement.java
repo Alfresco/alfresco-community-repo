@@ -86,6 +86,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private int pickerSearchMinimum = 2;
    private boolean checkContextAgainstPath = false;
    private boolean allowUserScriptExecute = false;
+   private boolean isBulkFetchEnabled = true;
    
    
    /**
@@ -963,4 +964,21 @@ public class ClientConfigElement extends ConfigElementAdapter
    {
       this.allowUserScriptExecute = allowUserScriptExecute;
    }
+   
+   /**
+    * @return true if bulk fetch is enabled
+    */
+   public boolean isBulkFetchEnabled()
+   {
+       return isBulkFetchEnabled;
+   }
+
+   /**
+    * @param isBulkFetchEnabled 
+    */
+   /*package*/ void setBulkFetchEnabled(boolean isBulkFetchEnabled)
+   {
+       this.isBulkFetchEnabled = isBulkFetchEnabled;
+   }
+   
 }

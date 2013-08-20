@@ -30,6 +30,8 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationDisallowedException;
@@ -379,6 +381,9 @@ public class LoginBean implements Serializable
             // the app to continue without redirecting to the login page
             Application.setCurrentUser(fc, user);
             
+            // Save the current username to cookie
+            AuthenticationHelper.setUsernameCookie((HttpServletRequest) fc.getExternalContext().getRequest(),(HttpServletResponse) fc.getExternalContext().getResponse(), this.username);
+            
             // Programatically retrieve the LoginOutcomeBean from JSF
             LoginOutcomeBean loginOutcomeBean = (LoginOutcomeBean) fc.getApplication().createValueBinding(
                   "#{LoginOutcomeBean}").getValue(fc);
@@ -388,7 +393,7 @@ public class LoginBean implements Serializable
             String redirectURL = loginOutcomeBean.getRedirectURL();
             
             // ALF-10312: Validate we are redirecting within this web app
-            if (redirectURL != null && !redirectURL.startsWith(fc.getExternalContext().getRequestContextPath()))
+            if (redirectURL != null && !redirectURL.isEmpty() && !redirectURL.startsWith(fc.getExternalContext().getRequestContextPath()))
             {
                 if (logger.isWarnEnabled())
                     logger.warn("Security violation. Unable to redirect to external location: " + redirectURL);

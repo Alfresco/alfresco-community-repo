@@ -43,6 +43,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_SEARCHMINIMUM = "search-minimum";
    public static final String ELEMENT_SEARCHANDTERMS = "search-and-terms";
    public static final String ELEMENT_SEARCHMAXRESULTS = "search-max-results";
+   public static final String ELEMENT_BULKFETCHENABLED = "bulk-fetch-enabled";
    public static final String ELEMENT_SELECTORSSEARCHMAXRESULTS = "selectors-search-max-results";
    public static final String ELEMENT_INVITESEARCHMAXRESULTS = "invite-users-max-results";
    public static final String ELEMENT_TASKSCOMPLETEDMAXRESULTS = "tasks-completed-max-results";
@@ -139,6 +140,13 @@ public class ClientElementReader implements ConfigElementReader
          if (searchMaxResults != null)
          {
             configElement.setSearchMaxResults(Integer.parseInt(searchMaxResults.getTextTrim()));
+         }
+         
+         // get the search max results size
+         Element isBulkFetchEnabled = element.element(ELEMENT_BULKFETCHENABLED);
+         if (isBulkFetchEnabled != null)
+         {
+            configElement.setBulkFetchEnabled(Boolean.parseBoolean(isBulkFetchEnabled.getTextTrim()));
          }
          
          // get the selectors search max results size

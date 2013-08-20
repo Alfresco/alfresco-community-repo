@@ -74,12 +74,12 @@
       <h:outputText id="col6-txt" value="#{r['bpm:status']}" />
    </a:column>
    
-   <%-- Priority column --%>
+    <%-- Priority column --%>
    <a:column id="col7" style="padding:2px;text-align:left">
       <f:facet name="header">
          <a:sortLink id="col7-sort" label="#{msg.priority}" value="bpm:priority" styleClass="header"/>
       </f:facet>
-      <h:outputText id="col7-txt" value="#{r['bpm:priority']}" />
+      <h:outputText id="col7-txt" value="#{r['priorityMessage']}" />
    </a:column>
    
    <%-- Actions column --%>

@@ -28,6 +28,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -168,7 +169,7 @@ public class TemplateMailHelperBean implements Serializable
                MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
                message.setTo(to);
                message.setSubject(subject);
-               message.setText(finalBody);
+               message.setText(finalBody, MailActionExecuter.isHTML(finalBody));
                message.setFrom(from);
             }
          };

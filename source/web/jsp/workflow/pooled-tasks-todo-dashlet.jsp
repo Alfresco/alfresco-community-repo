@@ -79,7 +79,7 @@
       <f:facet name="header">
          <a:sortLink id="col7-sort" label="#{msg.priority}" value="bpm:priority" styleClass="header"/>
       </f:facet>
-      <h:outputText id="col7-txt" value="#{r['bpm:priority']}" />
+      <h:outputText id="col7-txt" value="#{r['priorityMessage']}" />
    </a:column>
    
    <%-- Actions column --%>

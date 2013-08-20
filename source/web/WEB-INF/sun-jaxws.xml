@@ -19,8 +19,10 @@
 -->
 <endpoints xmlns="http://java.sun.com/xml/ns/jax-ws/ri/runtime" version="2.0">
 
-	<endpoint name="RepositoryService" wsdl="WEB-INF/wsdl/CMISWS-Service.wsdl"
-		implementation="org.apache.chemistry.opencmis.server.impl.webservices.RepositoryService"
+	<!-- CMIS 1.0 endpoints -->
+
+	<endpoint name="RepositoryService"
+		implementation="org.apache.chemistry.opencmis.server.impl.webservices.RepositoryService10"
 		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}RepositoryService"
 		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}RepositoryServicePort"
 		url-pattern="/cmisws/RepositoryService" enable-mtom="true">
@@ -33,7 +35,7 @@
 		</handler-chains>
 	</endpoint>
 
-	<endpoint name="NavigationService" wsdl="WEB-INF/wsdl/CMISWS-Service.wsdl"
+	<endpoint name="NavigationService"
 		implementation="org.apache.chemistry.opencmis.server.impl.webservices.NavigationService"
 		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}NavigationService"
 		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}NavigationServicePort"
@@ -47,8 +49,8 @@
 		</handler-chains>
 	</endpoint>
 
-	<endpoint name="ObjectService" wsdl="WEB-INF/wsdl/CMISWS-Service.wsdl"
-		implementation="org.apache.chemistry.opencmis.server.impl.webservices.ObjectService"
+	<endpoint name="ObjectService"
+		implementation="org.apache.chemistry.opencmis.server.impl.webservices.ObjectService10"
 		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}ObjectService"
 		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}ObjectServicePort"
 		url-pattern="/cmisws/ObjectService" enable-mtom="true">
@@ -61,7 +63,7 @@
 		</handler-chains>
 	</endpoint>
 
-	<endpoint name="VersioningService" wsdl="WEB-INF/wsdl/CMISWS-Service.wsdl"
+	<endpoint name="VersioningService"
 		implementation="org.apache.chemistry.opencmis.server.impl.webservices.VersioningService"
 		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}VersioningService"
 		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}VersioningServicePort"
@@ -75,7 +77,7 @@
 		</handler-chains>
 	</endpoint>
 
-	<endpoint name="RelationshipService" wsdl="WEB-INF/wsdl/CMISWS-Service.wsdl"
+	<endpoint name="RelationshipService"
 		implementation="org.apache.chemistry.opencmis.server.impl.webservices.RelationshipService"
 		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}RelationshipService"
 		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}RelationshipServicePort"		
@@ -89,7 +91,7 @@
 		</handler-chains>
 	</endpoint>
 	
-	<endpoint name="DiscoveryService" wsdl="WEB-INF/wsdl/CMISWS-Service.wsdl"
+	<endpoint name="DiscoveryService"
 		implementation="org.apache.chemistry.opencmis.server.impl.webservices.DiscoveryService"
 		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}DiscoveryService"
 		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}DiscoveryServicePort"
@@ -103,7 +105,7 @@
 		</handler-chains>
 	</endpoint>
 
-	<endpoint name="MultiFilingService" wsdl="WEB-INF/wsdl/CMISWS-Service.wsdl"
+	<endpoint name="MultiFilingService"
 		implementation="org.apache.chemistry.opencmis.server.impl.webservices.MultiFilingService"
 		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}MultiFilingService"
 		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}MultiFilingServicePort"
@@ -117,7 +119,7 @@
 		</handler-chains>
 	</endpoint>
 
-	<endpoint name="ACLService" wsdl="WEB-INF/wsdl/CMISWS-Service.wsdl"
+	<endpoint name="ACLService"
 		implementation="org.apache.chemistry.opencmis.server.impl.webservices.AclService"
 		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}ACLService"
 		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}ACLServicePort"
@@ -131,7 +133,7 @@
 		</handler-chains>
 	</endpoint>
 
-	<endpoint name="PolicyService" wsdl="WEB-INF/wsdl/CMISWS-Service.wsdl"
+	<endpoint name="PolicyService"
 		implementation="org.apache.chemistry.opencmis.server.impl.webservices.PolicyService"
 		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}PolicyService"
 		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}PolicyServicePort"
@@ -145,4 +147,132 @@
 		</handler-chains>
 	</endpoint>
 	
+	<!-- CMIS 1.1 endpoints -->
+
+	<endpoint name="RepositoryService11"
+		implementation="org.apache.chemistry.opencmis.server.impl.webservices.RepositoryService"
+		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}RepositoryService"
+		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}RepositoryServicePort"
+		url-pattern="/cmisws11/RepositoryService" enable-mtom="true">
+		<handler-chains xmlns="http://java.sun.com/xml/ns/javaee">
+			<handler-chain>
+				<handler>
+					<handler-class>org.apache.chemistry.opencmis.server.impl.webservices.AuthHandler</handler-class>
+				</handler>
+			</handler-chain>
+		</handler-chains>
+	</endpoint>
+
+	<endpoint name="NavigationService11"
+		implementation="org.apache.chemistry.opencmis.server.impl.webservices.NavigationService"
+		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}NavigationService"
+		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}NavigationServicePort"
+		url-pattern="/cmisws11/NavigationService" enable-mtom="true">
+		<handler-chains xmlns="http://java.sun.com/xml/ns/javaee">
+			<handler-chain>
+				<handler>
+					<handler-class>org.apache.chemistry.opencmis.server.impl.webservices.AuthHandler</handler-class>
+				</handler>
+			</handler-chain>
+		</handler-chains>
+	</endpoint>
+
+	<endpoint name="ObjectService11"
+		implementation="org.apache.chemistry.opencmis.server.impl.webservices.ObjectService"
+		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}ObjectService"
+		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}ObjectServicePort"
+		url-pattern="/cmisws11/ObjectService" enable-mtom="true">
+		<handler-chains xmlns="http://java.sun.com/xml/ns/javaee">
+			<handler-chain>
+				<handler>
+					<handler-class>org.apache.chemistry.opencmis.server.impl.webservices.AuthHandler</handler-class>
+				</handler>
+			</handler-chain>
+		</handler-chains>
+	</endpoint>
+
+	<endpoint name="VersioningService11"
+		implementation="org.apache.chemistry.opencmis.server.impl.webservices.VersioningService"
+		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}VersioningService"
+		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}VersioningServicePort"
+		url-pattern="/cmisws11/VersioningService" enable-mtom="true">
+		<handler-chains xmlns="http://java.sun.com/xml/ns/javaee">
+			<handler-chain>
+				<handler>
+					<handler-class>org.apache.chemistry.opencmis.server.impl.webservices.AuthHandler</handler-class>
+				</handler>
+			</handler-chain>
+		</handler-chains>
+	</endpoint>
+
+	<endpoint name="RelationshipService11"
+		implementation="org.apache.chemistry.opencmis.server.impl.webservices.RelationshipService"
+		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}RelationshipService"
+		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}RelationshipServicePort"		
+		url-pattern="/cmisws11/RelationshipService" enable-mtom="true">
+		<handler-chains xmlns="http://java.sun.com/xml/ns/javaee">
+			<handler-chain>
+				<handler>
+					<handler-class>org.apache.chemistry.opencmis.server.impl.webservices.AuthHandler</handler-class>
+				</handler>
+			</handler-chain>
+		</handler-chains>
+	</endpoint>
+	
+	<endpoint name="DiscoveryService11"
+		implementation="org.apache.chemistry.opencmis.server.impl.webservices.DiscoveryService"
+		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}DiscoveryService"
+		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}DiscoveryServicePort"
+		url-pattern="/cmisws11/DiscoveryService" enable-mtom="true">
+		<handler-chains xmlns="http://java.sun.com/xml/ns/javaee">
+			<handler-chain>
+				<handler>
+					<handler-class>org.apache.chemistry.opencmis.server.impl.webservices.AuthHandler</handler-class>
+				</handler>
+			</handler-chain>
+		</handler-chains>
+	</endpoint>
+
+	<endpoint name="MultiFilingService11"
+		implementation="org.apache.chemistry.opencmis.server.impl.webservices.MultiFilingService"
+		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}MultiFilingService"
+		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}MultiFilingServicePort"
+		url-pattern="/cmisws11/MultiFilingService" enable-mtom="true">
+		<handler-chains xmlns="http://java.sun.com/xml/ns/javaee">
+			<handler-chain>
+				<handler>
+					<handler-class>org.apache.chemistry.opencmis.server.impl.webservices.AuthHandler</handler-class>
+				</handler>
+			</handler-chain>
+		</handler-chains>
+	</endpoint>
+
+	<endpoint name="ACLService11"
+		implementation="org.apache.chemistry.opencmis.server.impl.webservices.AclService"
+		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}ACLService"
+		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}ACLServicePort"
+		url-pattern="/cmisws11/ACLService" enable-mtom="true">
+		<handler-chains xmlns="http://java.sun.com/xml/ns/javaee">
+			<handler-chain>
+				<handler>
+					<handler-class>org.apache.chemistry.opencmis.server.impl.webservices.AuthHandler</handler-class>
+				</handler>
+			</handler-chain>
+		</handler-chains>
+	</endpoint>
+
+	<endpoint name="PolicyService11"
+		implementation="org.apache.chemistry.opencmis.server.impl.webservices.PolicyService"
+		service="{http://docs.oasis-open.org/ns/cmis/ws/200908/}PolicyService"
+		port="{http://docs.oasis-open.org/ns/cmis/ws/200908/}PolicyServicePort"
+		url-pattern="/cmisws11/PolicyService" enable-mtom="true">
+		<handler-chains xmlns="http://java.sun.com/xml/ns/javaee">
+			<handler-chain>
+				<handler>
+					<handler-class>org.apache.chemistry.opencmis.server.impl.webservices.AuthHandler</handler-class>
+				</handler>
+			</handler-chain>
+		</handler-chains>
+	</endpoint>
+
 </endpoints>

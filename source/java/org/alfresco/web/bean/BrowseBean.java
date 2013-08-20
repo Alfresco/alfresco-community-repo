@@ -1093,6 +1093,8 @@ public class BrowseBean implements IContextListener, Serializable
             sp.setLimit(searchLimit);
          }
 
+         sp.setBulkFetchEnabled(Application.getClientConfig(FacesContext.getCurrentInstance()).isBulkFetchEnabled());
+
          results = this.getSearchService().query(sp);
          if (logger.isDebugEnabled())
             logger.debug("Search results returned: " + results.length());

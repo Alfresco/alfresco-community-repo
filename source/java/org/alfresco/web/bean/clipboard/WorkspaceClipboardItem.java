@@ -136,7 +136,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
    public boolean paste(final FacesContext fc, String viewId, final int action)
    {
       final ServiceRegistry serviceRegistry = getServiceRegistry();
-      final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
+      final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getTransactionService().getRetryingTransactionHelper();
       if (super.canCopyToViewId(viewId) || WORKSPACE_PASTE_VIEW_ID.equals(viewId) || FORUMS_PASTE_VIEW_ID.equals(viewId) || 
           FORUM_PASTE_VIEW_ID.equals(viewId))
       {

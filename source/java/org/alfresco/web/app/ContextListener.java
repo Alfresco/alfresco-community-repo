@@ -53,8 +53,6 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
    private static Log logger = LogFactory.getLog(ContextListener.class);
 
    private ServletContext servletContext;
-   private ServletContextListener enterpriseListener;
-   private String enterpriseListenerClass = "org.alfresco.enterprise.repo.EnterpriseContextListener";
 
    /**
     * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
@@ -124,51 +122,15 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
           }
           catch (Exception ex) {}
       }
-      synchronized(this)
-      {
-         findEnterpriseListener();
-         if (enterpriseListener != null)
-         {
-             // Perform any extra context initialisation required for enterprise.
-             enterpriseListener.contextInitialized(event);
-         }
-      }
    }
 
-   protected void findEnterpriseListener()
-   {
-       try
-       {
-          Class<?> c = Class.forName(enterpriseListenerClass);
-          enterpriseListener = (ServletContextListener) c.newInstance();
-       }
-       catch (ClassNotFoundException e)
-       {
-          // It's OK not to have the enterprise context destroyer available.
-       }
-       catch (InstantiationException e)
-       {
-          logger.error("Failed to instantiate enterprise ServletContextListener.", e);
-       }
-       catch (IllegalAccessException e)
-       {
-          logger.error("Failed to instantiate enterprise ServletContextListener.", e);
-       }
-   }
    
    /**
     * {@inheritDoc}
     */
    public void contextDestroyed(ServletContextEvent event)
    {
-       synchronized(this)
-       {
-          if (enterpriseListener != null)
-          {
-              // Perform any extra destruction required for enterprise.
-              enterpriseListener.contextDestroyed(event);
-          }
-       }
+       // NOOP
    }
 
    /**
@@ -187,17 +149,5 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
    {
       if (logger.isDebugEnabled())
          logger.debug("HTTP session destroyed: " + event.getSession().getId());
-   }
-
-   /**
-    * Inject a different class name (from the default) for the enterprise ServletContextListener.
-    * <p>
-    * Useful for testing.
-    *  
-    * @param listenerClass Class name to use.
-    */
-   protected void setEnterpriseListenerClass(String listenerClass)
-   {
-      this.enterpriseListenerClass = listenerClass;
    }
 }

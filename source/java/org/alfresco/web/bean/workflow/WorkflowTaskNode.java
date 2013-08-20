@@ -11,6 +11,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.TransientMapNode;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Wrapper around a {@link WorkflowTask} to allow it to be approached as a {@link Node}.
@@ -68,6 +69,16 @@ public class WorkflowTaskNode extends TransientMapNode {
 	       // add the task itself as a property
 	       propertyWrapper.put("workflowTask", workflowTask);
 	    }
+	    
+        // Add an additional property, containing a human-friendly representation of the priority
+        Integer priority = (Integer) workflowTask.getProperties().get(WorkflowModel.PROP_PRIORITY);
+        String priorityMessage = "";
+        if (priority != null)
+        {
+            priorityMessage = I18NUtil.getMessage(getPriorityMessageKey(priority), I18NUtil.getLocale());
+        }
+        propertyWrapper.put("priorityMessage", priorityMessage);
+	    
 	}
 	
 	@Override
@@ -112,4 +123,9 @@ public class WorkflowTaskNode extends TransientMapNode {
 			return super.put(QName.resolveToQNameString(WorkflowTaskNode.this.getNamespacePrefixResolver(), key.toString()), value);
 		}
 	}
+
+    protected String getPriorityMessageKey(int priority)
+    {
+        return "listconstraint.bpm_allowedPriority." + priority;
+    }
 }

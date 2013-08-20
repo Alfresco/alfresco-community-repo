@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="source/java"/>
+	<classpathentry kind="src" path="source/test-java"/>
 	<classpathentry kind="src" path="config"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="/Repository"/>
@@ -8,7 +9,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/Remote API"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/commons/commons-jxpath-1.2.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/3rd Party"/>
-	<classpathentry kind="lib" path="/3rd Party/lib/xercesImpl-2.8.0.jar"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/xercesImpl-2.10.0.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Jndi-Client"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/bsf-2.4.0.jar"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/fop/xmlgraphics-commons-1.2.jar"/>

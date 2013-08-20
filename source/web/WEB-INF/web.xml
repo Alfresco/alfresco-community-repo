@@ -103,6 +103,12 @@
    <!-- Activiti context param placeholder -->
 
    <filter>
+      <filter-name>CMIS security context cleaning filter</filter-name>
+      <description>Cleans security context before authentication via the CMIS services or filters. Mapped only for CMIS</description>
+      <filter-class>org.alfresco.web.app.servlet.CmisSecurityContextCleanerFilter</filter-class>
+   </filter>
+
+   <filter>
       <filter-name>Authentication Filter</filter-name>
       <description>Authentication filter mapped only to faces URLs. Other URLs generally use proprietary means to talk to the AuthenticationComponent</description>
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
@@ -111,7 +117,7 @@
          <param-value>AuthenticationFilter</param-value>
       </init-param>
    </filter>
-   
+
    <filter>
       <filter-name>Global Authentication Filter</filter-name>
       <description>Authentication filter mapped to all authenticated URLs. Mainly for SSO support</description>
@@ -181,6 +187,16 @@
    <filter-mapping>
       <filter-name>Global Localization Filter</filter-name>
       <url-pattern>/*</url-pattern>
+   </filter-mapping>
+ 
+   <filter-mapping>
+      <filter-name>CMIS security context cleaning filter</filter-name>
+      <url-pattern>/cmisws/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>CMIS security context cleaning filter</filter-name>
+      <url-pattern>/cmisatom/*</url-pattern>
    </filter-mapping>
 
    <filter-mapping>
@@ -366,8 +382,8 @@
 
    <!-- Web Services context listener for OpenCMIS -->
    <listener>
-      <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
-   </listener>
+        <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
+   </listener> 
    
    <!-- Activiti listener placeholder -->
 
@@ -556,31 +572,49 @@
       </init-param>
    </servlet>
 
-   <servlet>
-      <servlet-name>cmisws</servlet-name>
-      <servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
-      <load-on-startup>7</load-on-startup>
-   </servlet>
+    <servlet>
+        <servlet-name>cmisws10</servlet-name>
+        <servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
+        <init-param>
+            <param-name>cmisVersion</param-name>
+            <param-value>1.0</param-value>
+        </init-param>
+        <load-on-startup>7</load-on-startup>
+    </servlet>
+    
+    <servlet>
+        <servlet-name>cmisws11</servlet-name>
+        <servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
+        <init-param>
+            <param-name>cmisVersion</param-name>
+            <param-value>1.1</param-value>
+        </init-param>
+        <load-on-startup>7</load-on-startup>
+    </servlet>
 
-   <servlet>
-      <servlet-name>cmisatom</servlet-name>
-      <servlet-class>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</servlet-class>
-      <init-param>
-         <param-name>callContextHandler</param-name>
-         <param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
-      </init-param>
-      <load-on-startup>8</load-on-startup>
-   </servlet>
+    <servlet>
+        <servlet-name>cmisatom10</servlet-name>
+        <servlet-class>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</servlet-class>
+        <init-param>
+            <param-name>callContextHandler</param-name>
+            <param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
+        </init-param>
+        <init-param>
+            <param-name>cmisVersion</param-name>
+            <param-value>1.0</param-value>
+        </init-param>
+        <load-on-startup>8</load-on-startup>
+    </servlet>
 
-   <servlet>
-      <servlet-name>cmisbrowser</servlet-name>
-      <servlet-class>org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet</servlet-class>
-      <init-param>
-         <param-name>callContextHandler</param-name>
-         <param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
-      </init-param>
-      <load-on-startup>8</load-on-startup>
-   </servlet>
+    <servlet>
+        <servlet-name>cmisbrowser</servlet-name>
+        <servlet-class>org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet</servlet-class>
+        <init-param>
+            <param-name>callContextHandler</param-name>
+            <param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
+        </init-param>
+        <load-on-startup>8</load-on-startup>
+    </servlet>
 
    <servlet>
       <servlet-name>cmistck</servlet-name>
@@ -591,6 +625,15 @@
    <servlet>
       <servlet-name>authenticatorServlet</servlet-name>
       <servlet-class>org.alfresco.repo.web.scripts.servlet.AuthenticatorServlet</servlet-class>
+   </servlet>
+
+   <servlet>
+      <servlet-name>publicapiServlet</servlet-name>
+      <servlet-class>org.alfresco.rest.api.PublicApiWebScriptServlet</servlet-class>
+      <init-param>
+         <param-name>authenticator</param-name>
+         <param-value>publicapi.authenticator</param-value>
+      </init-param>
    </servlet>
    
    <!-- Activiti servlet placeholder -->
@@ -682,7 +725,7 @@
 
    <servlet-mapping>
       <servlet-name>axis</servlet-name>
-      <url-pattern>/api/*</url-pattern>
+      <url-pattern>/soapapi/*</url-pattern>
    </servlet-mapping>
 
    <servlet-mapping>
@@ -766,18 +809,23 @@
    </servlet-mapping>
 
    <servlet-mapping>
-      <servlet-name>cmisws</servlet-name>
+      <servlet-name>cmisws10</servlet-name>
       <url-pattern>/cmisws/*</url-pattern>
    </servlet-mapping>
 
    <servlet-mapping>
-      <servlet-name>cmisatom</servlet-name>
+      <servlet-name>cmisatom10</servlet-name>
       <url-pattern>/cmisatom/*</url-pattern>
    </servlet-mapping>
 
    <servlet-mapping>
       <servlet-name>cmisbrowser</servlet-name>
       <url-pattern>/cmisbrowser/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>publicapiServlet</servlet-name>
+      <url-pattern>/api/*</url-pattern>
    </servlet-mapping>
     
    <!-- The CMIS TCK is deactivated by default. -->
@@ -810,7 +858,9 @@
       <res-auth>Container</res-auth>
       <res-sharing-scope>Unshareable</res-sharing-scope>
    </resource-ref>
-
+   
+   <!-- Toggle securecomms placeholder start -->
+   
    <security-constraint>
       <web-resource-collection>
          <web-resource-name>SOLR</web-resource-name>
@@ -880,6 +930,8 @@
      <role-name>repoclient</role-name>
    </security-role>
 
+   <!-- Toggle securecomms placeholder end -->
+   
    <env-entry>
       <description>A flag that globally enables or disables startup of the major Alfresco subsystems.</description>
       <env-entry-name>properties/startup.enable</env-entry-name>

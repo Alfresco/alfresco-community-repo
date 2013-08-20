@@ -39,10 +39,10 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.webdav.auth.RemoteUserMapper;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.portlet.AlfrescoFacesPortlet;
@@ -85,6 +85,7 @@ public final class AuthenticationHelper
    private static final String REMOTE_USER_MAPPER = "RemoteUserMapper";
    private static final String UNPROTECTED_AUTH_SERVICE = "authenticationService";
    private static final String PERSON_SERVICE = "personService";
+   private static final String AUTHORITY_SERVICE = "AuthorityService";
    
    /** cookie names */
    private static final String COOKIE_ALFUSER = "alfUser0";
@@ -604,8 +605,9 @@ public final class AuthenticationHelper
       // If the remote user mapper is configured, we may be able to map in an externally authenticated user
       if (userId != null)
       {
+         AuthorityService authorityService = (AuthorityService) wc.getBean(AUTHORITY_SERVICE);
          // We have a previously-cached user with the wrong identity - replace them
-         if (user != null && !user.getUserName().equals(userId))
+         if (user != null && !authorityService.isGuestAuthority(user.getUserName()) && !user.getUserName().equals(userId))
          {
              if (logger.isDebugEnabled())
                  logger.debug("We have a previously-cached user with the wrong identity - replace them");

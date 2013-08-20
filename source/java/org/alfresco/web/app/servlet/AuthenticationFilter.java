@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.extensions.config.ConfigService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.web.config.ClientConfigElement;
@@ -114,6 +115,7 @@ public class AuthenticationFilter extends AbstractLifecycleBean implements Depen
         {
             // continue filter chaining
             chain.doFilter(req, res);
+            AuthenticationUtil.clearCurrentSecurityContext();
         }
     }    
 }

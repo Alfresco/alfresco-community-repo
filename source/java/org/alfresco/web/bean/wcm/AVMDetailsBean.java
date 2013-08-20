@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,7 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,10 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.dialog.NavigationSupport;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.NodeListUtils;
+import org.alfresco.web.ui.common.NodePropertyComparator;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
 
@@ -194,31 +198,26 @@ public abstract class AVMDetailsBean extends BaseDialogBean implements Navigatio
          List<AVMNode> nodes = getNodes();
          if (nodes.size() > 1)
          {
-            // perform a linear search - this is slow but stateless
-            // otherwise we would have to manage state of last selected node
-            // this gets very tricky as this bean is instantiated once and never
-            // reset - it does not know when the item has changed etc.
-            for (int i=0; i<nodes.size(); i++)
+            String currentSortColumn;
+            boolean currentSortDescending;
+            if (nodes.get(0).isFile())
             {
-               if (path.equals(nodes.get(i).get("id")) == true)
-               {
-                  AVMNode next;
-                  // found our item - navigate to next
-                  if (i != nodes.size() - 1)
-                  {
-                     next = nodes.get(i + 1);
-                  }
-                  else
-                  {
-                     // handle wrapping case
-                     next = nodes.get(0);
-                  }
-                  
-                  // prepare for showing details for this node
-                  this.avmBrowseBean.setupContentAction(next.getPath(), false);
-                  break;
-               }
+               currentSortColumn = this.avmBrowseBean.getFilesRichList().getCurrentSortColumn();
+               currentSortDescending = this.avmBrowseBean.getFilesRichList().isCurrentSortDescending();
             }
+            else
+            {
+               currentSortColumn = this.avmBrowseBean.getFoldersRichList().getCurrentSortColumn();
+               currentSortDescending = this.avmBrowseBean.getFoldersRichList().isCurrentSortDescending();
+            }
+
+            if (currentSortColumn != null)
+            {
+               Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            }
+                  
+            AVMNode next = (AVMNode) NodeListUtils.nextItem(nodes, path);
+            this.avmBrowseBean.setupContentAction(next.getPath(), false);
          }
       }
    }
@@ -237,28 +236,26 @@ public abstract class AVMDetailsBean extends BaseDialogBean implements Navigatio
          List<AVMNode> nodes = getNodes();
          if (nodes.size() > 1)
          {
-            // see above
-            for (int i=0; i<nodes.size(); i++)
+            String currentSortColumn;
+            boolean currentSortDescending;
+            if (nodes.get(0).isFile())
             {
-               if (path.equals(nodes.get(i).get("id")) == true)
-               {
-                  AVMNode previous;
-                  // found our item - navigate to previous
-                  if (i != 0)
-                  {
-                     previous = nodes.get(i - 1);
-                  }
-                  else
-                  {
-                     // handle wrapping case
-                     previous = nodes.get(nodes.size() - 1);
-                  }
-                  
-                  // prepare for showing details for this node
-                  this.avmBrowseBean.setupContentAction(previous.getPath(), false);
-                  break;
-               }
+               currentSortColumn = this.avmBrowseBean.getFilesRichList().getCurrentSortColumn();
+               currentSortDescending = this.avmBrowseBean.getFilesRichList().isCurrentSortDescending();
             }
+            else
+            {
+               currentSortColumn = this.avmBrowseBean.getFoldersRichList().getCurrentSortColumn();
+               currentSortDescending = this.avmBrowseBean.getFoldersRichList().isCurrentSortDescending();
+            }
+
+            if (currentSortColumn != null)
+            {
+               Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            }
+                  
+            AVMNode previous = (AVMNode) NodeListUtils.previousItem(nodes, path);
+            this.avmBrowseBean.setupContentAction(previous.getPath(), false);
          }
       }
    }

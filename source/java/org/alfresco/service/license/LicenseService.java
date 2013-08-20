@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,8 +18,9 @@
  */
 package org.alfresco.service.license;
 
+import java.io.InputStream;
+
 import org.alfresco.service.NotAuditable;
-import org.alfresco.service.PublicService;
 
 /**
  * Contract for managing licenses.
@@ -28,10 +29,23 @@ import org.alfresco.service.PublicService;
  */
 public interface LicenseService
 {
+    //Constants for return values when loading a license from an input stream
+    public static final String INPUTSTREAM_SUCCESS = "success";
+    public static final String INPUTSTREAM_FAIL = "fail";
+    public static final String INPUTSTREAM_RELOAD_FAIL = "reload-fail";
+    
     /**
      * Force license reload
      */
     public String loadLicense();
+    
+    /**
+     * Load license from the input stream
+     * @param licenseStream The input stream
+     * 
+     * @return confirmation if the license loaded successfully.
+     */
+    public String loadLicense(InputStream licenseStream);
     
     /**
      * Begin the license verification loop. Throws an exception if a new .lic file has been supplied that is invalid.

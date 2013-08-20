@@ -582,7 +582,8 @@ public class People extends BaseScopableProcessorExtension implements Initializi
             pagingRequest.setMaxItems(maxResults);
         }
         
-        if (useCQ)
+        // In order to use a SOLR/Lucene search, we must have a non-empty filter string - see ALF-18876
+        if ((filter == null || filter.trim().isEmpty()) || useCQ)
         {
             persons = getPeopleImplDB(filter, pagingRequest, sortBy, sortAsc);
         }
@@ -698,89 +699,93 @@ public class People extends BaseScopableProcessorExtension implements Initializi
         
         if (t.countTokens() == 1)
         {
-           // single word with no field will go against _PERSON and expand  
-           
-           // fts-alfresco property search i.e. location:"maidenhead"
-           query.append(term.substring(0, propIndex+1))
-                .append('"')
-                .append(term.substring(propIndex+1));
-           if (propIndex > 0)
-           {
-               query.append('"');
-           }
-           else
-           {
-               query.append("*\"");
-           }
-       }
-       else
-       {
-           // scan for non-fts-alfresco property search tokens
-           int nonFtsTokens = 0;
-           while (t.hasMoreTokens())
-           {
-               if (t.nextToken().indexOf(':') == -1) nonFtsTokens++;
-           }
-           t = new StringTokenizer(term, " ");
-           
-                        // multiple terms supplied - look for first and second name etc.
-                        // assume first term is first name, any more are second i.e. "Fraun van de Wiels"
-                        // also allow fts-alfresco property search to reduce results
-                        params.setDefaultOperator(SearchParameters.Operator.AND);
-                        boolean firstToken = true;
-                        boolean tokenSurname = false;
-                        boolean propertySearch = false;
-                        while (t.hasMoreTokens())
+            // single word with no field will go against _PERSON and expand
+
+            // fts-alfresco property search i.e. location:"maidenhead"
+            query.append(term.substring(0, propIndex + 1)).append('"')
+                        .append(term.substring(propIndex + 1));
+            if (propIndex > 0)
+            {
+                query.append('"');
+            }
+            else
+            {
+                query.append("*\"");
+            }
+        }
+        else
+        {
+            // scan for non-fts-alfresco property search tokens
+            int nonFtsTokens = 0;
+            while (t.hasMoreTokens())
+            {
+                if (t.nextToken().indexOf(':') == -1)
+                    nonFtsTokens++;
+            }
+            t = new StringTokenizer(term, " ");
+
+            // multiple terms supplied - look for first and second name etc.
+            // also allow fts-alfresco property search to reduce results
+            params.setDefaultOperator(SearchParameters.Operator.AND);
+            boolean propertySearch = false;
+            StringBuilder multiPartNames = new StringBuilder(term.length());
+            int numOfTokens = t.countTokens();
+            int counter = 1;
+            while (t.hasMoreTokens())
+            {
+                term = t.nextToken();
+                if (!propertySearch && term.indexOf(':') == -1)
+                {
+                    if (nonFtsTokens == 1)
+                    {
+                        // simple search: first name, last name and username
+                        // starting with term
+                        query.append("_PERSON:\"");
+                        query.append(term);
+                        query.append("*\" ");
+                    }
+                    else
+                    {
+                        // ALF-11311, in order to support multi-part firstNames/lastNames,
+                        // we need to use the whole tokenized term for both
+                        // firstName and lastName
+                        if (term.endsWith("*"))
                         {
-                            term = t.nextToken();
-                            if (!propertySearch && term.indexOf(':') == -1)
-                            {
-                                if (nonFtsTokens == 1)
-                                {
-                                    // simple search: first name, last name and username starting with term
-                                    query.append("_PERSON:\"");
-                                    query.append(term);
-                                    query.append("*\" ");
-                                }
-                                else
-                                {
-                                    if (firstToken)
-                                    {
-                                        query.append("firstName:\"");
-                                        query.append(term);
-                                        query.append("*\" ");
-                           
-                           firstToken = false;
-                       }
-                       else
-                       {
-                           if (tokenSurname)
-                           {
-                               query.append("OR ");
-                           }
-                           query.append("lastName:\"");
-                           query.append(term);
-                           query.append("*\" ");
-                           
-                           tokenSurname = true;
-                       }
-                   }
-               }
-               else
-               {
-                   // fts-alfresco property search i.e. "location:maidenhead"
-                   propIndex = term.lastIndexOf(':');
-                   query.append(term.substring(0, propIndex+1))
-                        .append('"')
-                        .append(term.substring(propIndex+1))
-                        .append('"')
-                        .append(' ');
-                   
-                   propertySearch = true;
-               }
-           }
-       }
-       query.append(")");
+                            term = term.substring(0, term.lastIndexOf("*"));
+                        }
+                        multiPartNames.append("\"");
+                        multiPartNames.append(term);
+                        multiPartNames.append("*\"");
+                        if (numOfTokens > counter)
+                        {
+                            multiPartNames.append(' ');
+                        }
+                        counter++;
+                    }
+                }
+                else
+                {
+                    // fts-alfresco property search i.e. "location:maidenhead"
+                    propIndex = term.lastIndexOf(':');
+                    query.append(term.substring(0, propIndex + 1)).append('"')
+                                .append(term.substring(propIndex + 1)).append('"').append(' ');
+
+                    propertySearch = true;
+                }
+            }
+            // ALF-11311, in order to support multi-part firstNames/lastNames,
+            // we need to use the whole tokenized term for both firstName and lastName.
+            // e.g. "john junior lewis martinez", where "john junior" is the first
+            // name and "lewis martinez" is the last name.
+            if (multiPartNames.length() > 0)
+            {
+                query.append("firstName:");
+                query.append(multiPartNames);
+                query.append(" OR lastName:");
+                query.append(multiPartNames);
+            }
+        }
+        query.append(")");
        
        // define the search parameters
        params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
@@ -861,11 +866,10 @@ public class People extends BaseScopableProcessorExtension implements Initializi
     
     private List<NodeRef> getSortedPeopleObjects(List<NodeRef> peopleRefs, final String sortBy, Boolean sortAsc)
     {
-        if(sortBy == null)
+        if (sortBy == null)
         {
             return peopleRefs;
         }
-        
         
         //make copy of peopleRefs because it can be unmodifiable list.
         List<NodeRef> sortedPeopleRefs = new ArrayList<NodeRef>(peopleRefs);

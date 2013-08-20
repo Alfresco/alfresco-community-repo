@@ -35,7 +35,7 @@ import org.apache.commons.logging.Log;
  * 
  * @author Alan Davis
  */
-abstract class TransformerLogger<T> extends LogAdapter
+abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
 {
     static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d MMM yyyy HH:mm:ss");
 
@@ -147,6 +147,7 @@ abstract class TransformerLogger<T> extends LogAdapter
      * Returns the log entries.
      * @param n the maximum number of entries to return. All if n is smaller or equal to zero.
      */
+    @Override
     public String[] getEntries(int n)
     {
         if (getMaxEntries() > 0)

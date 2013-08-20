@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,6 +36,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.invitation.Invitation;
@@ -396,13 +397,10 @@ public class Site implements Serializable
     public boolean isMemberOfGroup(String authorityName)
     {
         boolean isMemberOfGroup = false;
-        if (this.siteService.listSites(authorityName).contains(this.siteInfo))
+        SiteMemberInfo membersRoleInfo = getMembersRoleInfo(authorityName);
+        if (membersRoleInfo != null)
         {
-            SiteMemberInfo membersRoleInfo = getMembersRoleInfo(authorityName);
-            if (membersRoleInfo != null)
-            {
-                isMemberOfGroup = membersRoleInfo.isMemberOfGroup();
-            }
+            isMemberOfGroup = membersRoleInfo.isMemberOfGroup();
         }
         return isMemberOfGroup;
     }
@@ -504,7 +502,21 @@ public class Site implements Serializable
      */
     public ScriptNode createContainer(final String componentId, final String folderType, final Object permissions)
     {
-        NodeRef containerNodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+        final NodeRef containerNodeRef = this.createContainerImpl(componentId, folderType, permissions);
+        if (Site.this.serviceRegistry.getPermissionService().hasPermission(containerNodeRef, PermissionService.READ_PROPERTIES) == AccessStatus.ALLOWED) 
+        {
+            return getContainer(componentId); 
+        }
+        else
+        {
+            // current user has no access.
+            return null;
+        }          
+    }
+    
+    private NodeRef createContainerImpl(final String componentId, final String folderType, final Object permissions)
+    {
+        return AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
         {
             public NodeRef doWork() throws Exception
             {
@@ -545,17 +557,81 @@ public class Site implements Serializable
                 return containerNode;
             }
         }, AuthenticationUtil.SYSTEM_USER_NAME);
-        
-        if (Site.this.serviceRegistry.getPermissionService().hasPermission(containerNodeRef, PermissionService.READ_PROPERTIES) == AccessStatus.ALLOWED) 
-        {
-            return getContainer(componentId); 
-        }
-        else
-        {
-            // current user has no access.
-            return null;
-        }          
+    }
     
+    /**
+     * Gets and if missing, creates a new site container. The Site container is created in a new readwrite txn.
+     * 
+     * @param componentId   component id
+     * @return ScriptNode   the created container
+     */
+    public ScriptNode aquireContainer(final String componentId)
+    {
+        return this.aquireContainer(componentId, null, null);
+    }
+    
+    /**
+     * Gets and if missing, creates a new site container. The Site container is created in a new readwrite txn.
+     * 
+     * @param componentId   component id
+     * @param folderType    folder type to create
+     * @return ScriptNode   the created container
+     */
+    public ScriptNode aquireContainer(final String componentId, final String folderType)
+    {
+        return this.aquireContainer(componentId, folderType, null);
+    }
+    
+    /**
+     * Gets and if missing, creates a new site container. The Site container is created in a new readwrite txn.
+     * 
+     * @param componentId   component id
+     * @param folderType    folder type to create
+     * @return ScriptNode   the created container
+     */
+    public ScriptNode aquireContainer(final String componentId, final String folderType, final Object properties)
+    {
+        ScriptNode container = this.getContainer(componentId);
+        if (container == null)
+        {
+            RetryingTransactionCallback<NodeRef> txnCallback = new RetryingTransactionCallback<NodeRef>()
+            {
+                public NodeRef execute() throws Throwable
+                {
+                    final NodeRef containerRef = createContainerImpl(componentId, folderType, null);
+                    if (properties instanceof ScriptableObject)
+                    {
+                        ScriptableObject scriptable = (ScriptableObject)properties;
+                        Object[] propIds = scriptable.getIds();
+                        for (int i = 0; i < propIds.length; i++)
+                        {
+                            // work on each key in turn
+                            Object propId = propIds[i];
+                            
+                            // we are only interested in keys that are Strings
+                            if (propId instanceof String)
+                            {
+                                final String key = (String)propId;
+                                final Object value = scriptable.get(key, scriptable);
+                                if (value instanceof String)
+                                {                                   
+                                    // Set the property on the container
+                                    QName qname = QName.resolveToQName(serviceRegistry.getNamespaceService(), key);
+                                    serviceRegistry.getNodeService().setProperty(containerRef, qname, (Serializable)value);
+                                }
+                            }
+                        }
+                    }
+                    return containerRef;
+                }
+            };
+            final NodeRef containerNodeRef = serviceRegistry.getRetryingTransactionHelper().doInTransaction(txnCallback, false, true);
+            if (this.serviceRegistry.getPermissionService().hasPermission(containerNodeRef, PermissionService.READ_PROPERTIES) == AccessStatus.ALLOWED) 
+            {
+                container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope);
+            }
+        }
+        return container;
     }
 
     /**

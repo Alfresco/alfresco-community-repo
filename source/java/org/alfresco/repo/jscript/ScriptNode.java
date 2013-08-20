@@ -49,6 +49,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.UnimportantTransformException;
+import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeException;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
@@ -68,7 +69,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -1245,8 +1246,11 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         
         if (getAspectsSet().contains(ContentModel.ASPECT_LOCKABLE))
         {
-            LockStatus lockStatus = this.services.getLockService().getLockStatus(this.nodeRef);
-            if (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER)
+            try
+            {
+                this.services.getLockService().checkForLock(this.nodeRef);
+            }
+            catch (NodeLockedException ex)
             {
                 locked = true;
             }
@@ -2562,6 +2566,26 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                 catch (NoTransformerException e)
                 {
                     // ignore
+                }
+                catch (AlfrescoRuntimeException e)
+                {
+                    Throwable rootCause = ((AlfrescoRuntimeException)e).getRootCause();
+                    String message = rootCause.getMessage();
+                    message = message == null ? "" : message;
+                    if (rootCause instanceof UnimportantTransformException)
+                    {
+                        logger.debug(message);
+                        // ignore
+                    }
+                    else if (rootCause instanceof UnsupportedTransformationException)
+                    {
+                        logger.error(message);
+                        // ignore
+                    }
+                    else
+                    {
+                        throw e;
+                    }
                 }
                 return transformedNode;
             }

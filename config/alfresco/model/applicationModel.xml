@@ -137,6 +137,16 @@
          </properties>
       </aspect>
       
+      <aspect name="app:defaultViewConfig">
+         <title>Default View Config</title>
+         <properties>
+            <property name="app:defaultViewId">
+               <title>Default View Id</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
+      
 	</aspects>
 	
 </model>

@@ -200,6 +200,8 @@ public abstract class AlfrescoTransactionSupport
                 {
                     throw new IllegalStateException("The current operation requires an active read-write transaction.");
                 }
+            case TXN_READ_WRITE:
+                // All good
         }
     }
     

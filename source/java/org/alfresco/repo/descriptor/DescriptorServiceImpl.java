@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.descriptor;
 
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -28,6 +29,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.repo.usage.RepoUsageComponent;
 import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
+import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
@@ -191,6 +193,40 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     }
     
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String loadLicense(final InputStream licenseStream)
+    {
+        // Ensure that we force a writable txn for this operation
+        final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        txnHelper.setForceWritable(true);
+        
+        final RetryingTransactionCallback<String> loadCallback = new RetryingTransactionCallback<String>()
+        {
+            @Override
+            public String execute() throws Throwable
+            {
+                return licenseService.loadLicense(licenseStream);      
+            }
+        };
+        // ... and we have to be 'system' for this, too
+        String result = AuthenticationUtil.runAs(new RunAsWork<String>()
+        {
+            public String doWork() throws Exception
+            {
+                return txnHelper.doInTransaction(loadCallback, false, true);
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Load license call returning: " + result);
+        }
+        return result;
+    }
+    
+    /**
      * On bootstrap load the special services for LicenseComponent and HeartBeat
      * 
      * Also set installedRepoDescriptor and update current
@@ -221,7 +257,15 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         helper.setForceWritable(true);
         
         // create the initial installed descriptor
-        Descriptor installed = installedRepoDescriptorDAO.getDescriptor();
+        RetryingTransactionCallback<Descriptor> getDescriptorCallback = new RetryingTransactionCallback<Descriptor>()
+        {
+            public Descriptor execute() 
+            {
+                    return installedRepoDescriptorDAO.getDescriptor();
+            }
+        };
+        Descriptor installed =  helper.doInTransaction(getDescriptorCallback, false, false);
+       
         if(installed != null)
         {
             installedRepoDescriptor = installed;
@@ -390,6 +434,12 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         public String loadLicense()
         {
             return "Done";
+        }
+
+        @Override
+        public String loadLicense(InputStream licenseStream)
+        {
+            return loadLicense();
         }
 
     }
@@ -647,6 +697,16 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
                             false);
                     repoUsageComponent.setRestrictions(restrictions);
                     
+                    // Reset usage upon loading the unlimited license
+                    if (restrictions.getUsers() == null)
+                    {
+                        repoUsageComponent.resetUsage(UsageType.USAGE_USERS);
+                    }
+                    if (restrictions.getDocuments() == null)
+                    {
+                        repoUsageComponent.resetUsage(UsageType.USAGE_DOCUMENTS);
+                    }
+
                     // persist the server descriptor values in the current repository descriptor
                     if (currentRepoDescriptor == null || newMode != currentRepoDescriptor.getLicenseMode())
                     {
@@ -667,6 +727,8 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             };
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
             txnHelper.setForceWritable(true);
+            // ALF-19629 - Need to sort out trnsaction retry and do we need to Job Lock?
+            //txnHelper.doInTransaction(updateLicenseCallback, false, true);
             txnHelper.doInTransaction(updateLicenseCallback);
         }
     }

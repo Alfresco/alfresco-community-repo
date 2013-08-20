@@ -29,6 +29,8 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
@@ -1402,8 +1404,40 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
     			// Set the key store path
     			
     			ftpConfig.setKeyStorePath( keyStorePath);
-    		}
+    		
+	    		// Check if the key store type has been specified
+	    		
+	    		if ( ftpConfigBean.getKeyStoreType() != null && ftpConfigBean.getKeyStoreType().length() > 0) {
+	    			
+	    			// Get the key store type, and validate
+	    			
+	    			String keyStoreType = ftpConfigBean.getKeyStoreType();
+	    			
+	    			if ( keyStoreType == null || keyStoreType.length() == 0)
+	    				throw new InvalidConfigurationException("FTPS key store type is invalid");
+	    			
+	    			try {
+	    				KeyStore.getInstance( keyStoreType);
+	    			}
+	    			catch ( KeyStoreException ex) {
+	    				throw new InvalidConfigurationException("FTPS key store type is invalid, " + keyStoreType, ex);
+	    			}
+	    			
+	    			// Set the key store type
+	    			
+	    			ftpConfig.setKeyStoreType( keyStoreType);
+	    		}
 
+	    		// Check if the key store passphrase has been specified
+	    		
+	    		if ( ftpConfigBean.getKeyStorePassphrase() != null && ftpConfigBean.getKeyStorePassphrase().length() > 0) {
+
+	    			// Set the key store passphrase
+	    			
+	    			ftpConfig.setKeyStorePassphrase( ftpConfigBean.getKeyStorePassphrase());
+	    		}
+    		}
+    		
     		// Check if the trust store path has been specified
     		
     		if ( ftpConfigBean.getTrustStorePath() != null && ftpConfigBean.getTrustStorePath().length() > 0) {
@@ -1421,15 +1455,38 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
     			// Set the trust store path
     			
     			ftpConfig.setTrustStorePath( trustStorePath);
-    		}
-    		
-    		// Check if the store passphrase has been specified
-    		
-    		if ( ftpConfigBean.getPassphrase() != null && ftpConfigBean.getPassphrase().length() > 0) {
 
-    			// Set the store passphrase
-    			
-    			ftpConfig.setPassphrase( ftpConfigBean.getPassphrase());
+	    		// Check if the trust store type has been specified
+	    		
+	    		if ( ftpConfigBean.getTrustStoreType() != null && ftpConfigBean.getTrustStoreType().length() > 0) {
+	    			
+	    			// Get the trust store type, and validate
+	    			
+	    			String trustStoreType = ftpConfigBean.getTrustStoreType();
+	    			
+	    			if ( trustStoreType == null || trustStoreType.length() == 0)
+	    				throw new InvalidConfigurationException("FTPS trust store type is invalid");
+	    			
+	    			try {
+	    				KeyStore.getInstance( trustStoreType);
+	    			}
+	    			catch ( KeyStoreException ex) {
+	    				throw new InvalidConfigurationException("FTPS trust store type is invalid, " + trustStoreType, ex);
+	    			}
+	    			
+	    			// Set the trust store type
+	    			
+	    			ftpConfig.setTrustStoreType( trustStoreType);
+	    		}
+    		
+	    		// Check if the trust store passphrase has been specified
+	    		
+	    		if ( ftpConfigBean.getTrustStorePassphrase() != null && ftpConfigBean.getTrustStorePassphrase().length() > 0) {
+	
+	    			// Set the trust store passphrase
+	    			
+	    			ftpConfig.setTrustStorePassphrase( ftpConfigBean.getTrustStorePassphrase());
+	    		}
     		}
     		
     		// Check if only secure sessions should be allowed to logon
@@ -1442,13 +1499,13 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
     		}
     		
     		// Check that all the required FTPS parameters have been set
-    		
-    		if ( ftpConfig.getKeyStorePath() != null || ftpConfig.getTrustStorePath() != null || ftpConfig.getPassphrase() != null) {
+    		// MNT-7301 FTPS server requires unnecessarly to have a trustStore while a keyStore should be sufficient
+    		if ( ftpConfig.getKeyStorePath() != null) {
     			
     			// Make sure all parameters are set
     			
-    			if ( ftpConfig.getKeyStorePath() == null || ftpConfig.getTrustStorePath() == null || ftpConfig.getPassphrase() == null)
-    				throw new InvalidConfigurationException("FTPS configuration requires keyStore, trustStore and storePassphrase to be set");
+    			if ( ftpConfig.getKeyStorePath() == null)
+    				throw new InvalidConfigurationException("FTPS configuration requires keyStore to be set");
     		}
     		
     		// Check if SSLEngine debug output should be enabled
@@ -2357,8 +2414,11 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
     @Override
     public void destroy() throws Exception
     {
-        threadPool.shutdownThreadPool();
-        threadPool = null;
+        if (threadPool != null)
+        {
+            threadPool.shutdownThreadPool();
+            threadPool = null;
+        }
     }
 
 }

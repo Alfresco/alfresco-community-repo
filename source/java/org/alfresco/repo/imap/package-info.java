@@ -14,4 +14,6 @@
  * @since 3.2
  * 
  */
+@PackageMarker
 package org.alfresco.repo.imap;
+import org.alfresco.util.PackageMarker;

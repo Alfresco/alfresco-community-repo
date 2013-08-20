@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+<!-- Registration of model -->
+<bean id="com.alfresco.distributionpolicies.model" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+    <property name="models">
+        <list>
+            <value>alfresco/model/distributionPoliciesModel.xml</value>
+        </list>
+    </property>
+    <property name="labels">
+        <list>
+            <value>alfresco/messages/distributionpolicies-model</value>
+        </list>
+    </property>
+</bean>
+</beans>

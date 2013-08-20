@@ -19,14 +19,27 @@
 
 package org.alfresco.repo.rendition.executer;
 
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.TransformerConfig;
 import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.action.ActionServiceException;
+import org.alfresco.service.cmr.action.ActionTrackingService;
+import org.alfresco.service.cmr.action.ExecutionDetails;
+import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.rendition.RenditionCancelledException;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -80,6 +93,12 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
      * pages should be read in order to create an image.
      */
     public static final String PARAM_PAGE_LIMIT = TransformationOptionLimits.OPT_PAGE_LIMIT;
+    
+    /**
+     * The frequency in milliseconds with which the {@link ActionTrackingService} should
+     * be polled for cancellation of the action.
+     */
+    protected static final int CANCELLED_ACTION_POLLING_INTERVAL = 200;
 
     /**
      * This optional {@link String} parameter specifies the type (or use) of the rendition.
@@ -103,6 +122,36 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
         this.sourceOptionsSerializers = sourceOptionsSerializers;
     }
 
+    /**
+     * The <code>ExecutorService</code> to be used for cancel-aware
+     * transforms.
+     */
+    private ExecutorService executorService;
+    
+    /**
+     * Gets the <code>ExecutorService</code> to be used for cancel-aware
+     * transforms.
+     * <p>
+     * If no <code>ExecutorService</code> has been defined a default
+     * of <code>Executors.newCachedThreadPool()</code> is used during
+     * {@link AbstractTransformationRenderingEngine#init()}.
+     * 
+     * @return the defined or default <code>ExecutorService</code>
+     */
+    protected ExecutorService getExecutorService()
+    {
+        return executorService;
+    }
+    
+    public void init()
+    {
+        super.init();
+        if (executorService == null)
+        {
+            executorService = Executors.newCachedThreadPool();
+        }
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.rendition.executer.AbstractRenderingEngine#render(org.alfresco.repo.rendition.executer.AbstractRenderingEngine.RenderingContext)
@@ -116,6 +165,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
         String sourceMimeType = contentReader.getMimetype();
         String targetMimeType = getTargetMimeType(context);
 
+        // The child NodeRef gets created here
         TransformationOptions options = getTransformOptions(context);
 
         // Log the following getTransform() as trace so we can see the wood for the trees
@@ -130,7 +180,6 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
             TransformerDebug.setDebugOutput(orig);
         }
         
-        // Actually perform the rendition.
         if (null == transformer)
         {
             // There's no transformer available for the requested rendition!
@@ -138,30 +187,126 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                         targetMimeType));
         }
 
-        if (transformer.isTransformable(sourceMimeType, contentReader.getSize(), targetMimeType, options))
-        {
-        	//ALF-15715: Use temporary write to avoid operating on the real node for fear of row locking while long transforms are in progress
-            ContentWriter tempContentWriter = contentService.getTempWriter();
-            tempContentWriter.setMimetype(targetMimeType);
-            try
-            {
-                contentService.transform(contentReader, tempContentWriter, options);
-                //Copy content from temp writer to real writer
-                ContentWriter writer = context.makeContentWriter();
-                writer.putContent(tempContentWriter.getReader().getContentInputStream());
-            }
-            catch (NoTransformerException ntx)
-            {
-                {
-                    logger.debug("No transformer found to execute rule: \n" + "   reader: " + contentReader + "\n"
-                                + "   writer: " + tempContentWriter + "\n" + "   action: " + this);
-                }
-                throw new RenditionServiceException(TRANSFORMING_ERROR_MESSAGE + ntx.getMessage(), ntx);
-            } 
-        }
-        else
+        if (!transformer.isTransformable(sourceMimeType, contentReader.getSize(), targetMimeType, options))
         {
             throw new RenditionServiceException(String.format(NOT_TRANSFORMABLE_MESSAGE_PATTERN, sourceMimeType, targetMimeType));
+        }
+        
+        long startTime = new Date().getTime();
+        boolean actionCancelled = false;
+        boolean actionCompleted = false;
+        
+        // Cache the execution summary to get details later
+        ExecutionSummary executionSummary = null;
+        try
+        {
+            executionSummary = getExecutionSummary(context);
+        }
+        catch (ActionServiceException e)
+        {
+            if (logger.isInfoEnabled())
+            {
+                logger.info("Cancelling of multiple concurrent action instances " +
+                		"currently unsupported, this action can't be cancelled");
+            }
+        }
+        
+        // Call the transform in a different thread so we can move on if cancelled
+        FutureTask<ContentWriter> transformTask = new FutureTask<ContentWriter>(
+                new TransformationCallable(contentReader, targetMimeType, options, context));
+        getExecutorService().execute(transformTask);
+        
+        // Start checking for cancellation or timeout
+        while (true)
+        {
+            try
+            {
+                Thread.sleep(CANCELLED_ACTION_POLLING_INTERVAL);
+                if (transformTask.isDone())
+                {
+                    actionCompleted = true;
+                    break;
+                }
+                // Check timeout in case transformer doesn't obey it
+                if (options.getTimeoutMs() > 0 && 
+                        new Date().getTime() - startTime > (options.getTimeoutMs() + CANCELLED_ACTION_POLLING_INTERVAL))
+                {
+                    // We hit a timeout, let the transform thread continue but results will be ignored
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Transformation did not obey timeout limit, " +
+                        		"rendition action is moving on");
+                    }
+                    break;
+                }
+                if (executionSummary != null)
+                {
+                    ExecutionDetails executionDetails = 
+                            actionTrackingService.getExecutionDetails(executionSummary);
+                    if (executionDetails != null)
+                    {
+                        actionCancelled = executionDetails.isCancelRequested();
+                        if (actionCancelled)
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Cancelling transformation");
+                            }
+                            transformTask.cancel(true);
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (InterruptedException e)
+            {
+                // entire thread was asked to stop
+                actionCancelled = true;
+                transformTask.cancel(true);
+                break;
+            }
+        }
+        
+        if (actionCancelled)
+        {
+            throw new RenditionCancelledException("Rendition action cancelled");
+        }
+        
+        if (!actionCompleted && !actionCancelled)
+        {
+            throw new RenditionServiceException("Transformation failed to obey timeout limit");
+        }
+        
+        if (actionCompleted)
+        {
+            // Copy content from temp writer to real writer
+            ContentWriter writer = context.makeContentWriter();
+            try
+            {
+                // We should not need another timeout here, things should be ready for us
+                ContentWriter tempTarget = transformTask.get();
+                if (tempTarget == null)
+                {
+                    // We should never be in this state, but just in case
+                    throw new RenditionServiceException("Target of transformation not present");
+                }
+                writer.putContent(tempTarget.getReader().getContentInputStream());
+            }
+            catch (ExecutionException e)
+            {
+                // Unwrap our cause and throw that
+                Throwable transformException = e.getCause();
+                if (transformException instanceof RuntimeException)
+                {
+                    throw (RuntimeException) e.getCause();
+                }
+                throw new RenditionServiceException(TRANSFORMING_ERROR_MESSAGE + e.getCause().getMessage(), e.getCause());
+            }
+            catch (InterruptedException e)
+            {
+                // We were asked to stop
+                transformTask.cancel(true);
+            }
         }
     }
 
@@ -249,5 +394,58 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                 getParamDisplayLabel(PARAM_USE)));
         
         return paramList;
+    }
+    
+    /**
+     * Implementation of <code>Callable</code> for doing the work of the transformation
+     * which returns the temporary content writer if successful.
+     */
+    protected class TransformationCallable implements Callable<ContentWriter>
+    {
+        private ContentReader contentReader;
+        private String targetMimeType;
+        private TransformationOptions options;
+        private RenderingContext context;
+        
+        public TransformationCallable(ContentReader contentReader, String targetMimeType,
+                TransformationOptions options, RenderingContext context)
+        {
+            this.contentReader = contentReader;
+            this.targetMimeType = targetMimeType;
+            this.options = options;
+            this.context = context;
+        }
+
+        @Override
+        public ContentWriter call() throws Exception
+        {
+            Serializable runAsParam = context.getDefinition().getParameterValue(AbstractRenderingEngine.PARAM_RUN_AS);
+            String runAsName = runAsParam == null ? AbstractRenderingEngine.DEFAULT_RUN_AS_NAME : (String) runAsParam;
+            
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<ContentWriter>()
+            {
+                @Override
+                public ContentWriter doWork() throws Exception
+                {
+                    // ALF-15715: Use temporary write to avoid operating on the real node for fear of row locking while long transforms are in progress
+                    ContentWriter tempContentWriter = contentService.getTempWriter();
+                    tempContentWriter.setMimetype(targetMimeType);
+                    try
+                    {
+                        contentService.transform(contentReader, tempContentWriter, options);
+                        return tempContentWriter;
+                    }
+                    catch (NoTransformerException ntx)
+                    {
+                        {
+                            logger.debug("No transformer found to execute rule: \n" + "   reader: " + contentReader + "\n"
+                                        + "   writer: " + tempContentWriter + "\n" + "   action: " + this);
+                        }
+                        throw new RenditionServiceException(TRANSFORMING_ERROR_MESSAGE + ntx.getMessage(), ntx);
+                    }
+                };
+            }, runAsName);
+        }
+        
     }
 }

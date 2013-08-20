@@ -178,7 +178,7 @@ public class MultiTServiceImpl implements TenantService
         {
             int idx2 = name.indexOf(SEPARATOR, 1);
             String nameDomain = name.substring(1, idx2);
-            if (! tenantDomain.equals(nameDomain))
+            if (! tenantDomain.equalsIgnoreCase(nameDomain))
             {
                 throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
             }
@@ -240,7 +240,7 @@ public class MultiTServiceImpl implements TenantService
         {
             int idx2 = namespace.indexOf(SEPARATOR, 1);
             String nameDomain = namespace.substring(1, idx2);
-            if (! tenantDomain.equals(nameDomain))
+            if (! tenantDomain.equalsIgnoreCase(nameDomain))
             {
                 throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
             }
@@ -273,7 +273,7 @@ public class MultiTServiceImpl implements TenantService
             {
                 int idx2 = name.indexOf(SEPARATOR, 1);
                 String nameDomain = name.substring(1, idx2);
-                if (! tenantDomain.equals(nameDomain))
+                if (! tenantDomain.equalsIgnoreCase(nameDomain))
                 {
                     throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
                 }
@@ -431,7 +431,7 @@ public class MultiTServiceImpl implements TenantService
             {
                 String tenantUserDomain = username.substring(idx2+1);
                 
-                if ((tenantUserDomain == null) || (! tenantDomain.equals(tenantUserDomain)))
+                if ((tenantUserDomain == null) || (! tenantDomain.equalsIgnoreCase(tenantUserDomain)))
                 {
                     throw new TenantDomainMismatchException(tenantDomain, tenantUserDomain);
                 }
@@ -751,12 +751,8 @@ public class MultiTServiceImpl implements TenantService
     protected void checkTenantEnabled(String tenantDomain)
     {
         Tenant tenant = getTenant(tenantDomain);
-        if (tenant == null)
-        {
-            throw new AlfrescoRuntimeException("Tenant does not exist: " + tenantDomain);
-        }
         // note: System user can access disabled tenants
-        if (!AuthenticationUtil.isRunAsUserTheSystemUser() && (! tenant.isEnabled()))
+        if (tenant == null || !AuthenticationUtil.isRunAsUserTheSystemUser() && !tenant.isEnabled())
         {
             throw new TenantDisabledException(tenantDomain);
         }

@@ -76,27 +76,11 @@ public abstract class FeedTaskProcessor
     public static final String FEED_FORMAT_TEXT = "text";
     public static final String FEED_FORMAT_XML = "xml";
     
-    private static final String defaultFormat = FEED_FORMAT_TEXT;
-    
-    private static final String[] formats = {FEED_FORMAT_ATOMENTRY, 
-                                             FEED_FORMAT_RSS, 
-                                             FEED_FORMAT_JSON, 
-                                             FEED_FORMAT_HTML, 
-                                             FEED_FORMAT_XML, 
-                                             defaultFormat};
-    
     private static final String URL_SERVICE_SITES     = "/api/sites";
     private static final String URL_MEMBERSHIPS       = "/memberships";
     
     private static final String URL_SERVICE_TEMPLATES = "/api/activities/templates";
     private static final String URL_SERVICE_TEMPLATE  = "/api/activities/template";
-    
-    private boolean jsonFormatOnly = true; // if true, ignore templates + feed formats - use pass-through JSON only
-    
-    public void setJsonFormatOnly(boolean jsonOnly)
-    {
-        this.jsonFormatOnly = jsonOnly;
-    }
     
     public void process(int jobTaskNode, long minSeq, long maxSeq, RepoCtx ctx) throws Exception
     {
@@ -113,8 +97,6 @@ public abstract class FeedTaskProcessor
         selector.setMaxId(maxSeq);
         selector.setStatus(ActivityPostEntity.STATUS.POSTED.toString());
         
-        String ticket = ctx.getTicket();
-        
         List<ActivityPostEntity> activityPosts = null;
         int totalGenerated = 0;
         
@@ -124,91 +106,19 @@ public abstract class FeedTaskProcessor
             
             if (logger.isDebugEnabled()) { logger.debug("Process: " + activityPosts.size() + " activity posts"); }
             
-            Configuration cfg = getFreemarkerConfiguration(ctx);
-            
             // local caches for this run of activity posts
-            Map<String, List<String>> activityTemplates = new HashMap<String, List<String>>(10);
             Map<String, Set<String>> siteConnectedUsers = new HashMap<String, Set<String>>();                                 // site -> site members
             Map<Pair<String, String>, Set<String>> followerConnectedUsers = new HashMap<Pair<String, String>, Set<String>>(); // user -> followers
             Map<Pair<String, String>, Boolean> canUserReadSite = new HashMap<Pair<String, String>, Boolean>();                // <user, site> -> true/false (note: used when following, implied as true for site members)
             Map<String, List<FeedControlEntity>> userFeedControls = new HashMap<String, List<FeedControlEntity>>();
-            Map<String, Template> templateCache = new TreeMap<String, Template>();
             
-            List<String> fmTemplates = null;
-            
-            if (jsonFormatOnly)
-            {
-                // use generic pass-through only
-                fmTemplates = Arrays.asList(new String[]{"activities/org/alfresco/generic.json.ftl"});
-            }
+            List<String> fmTemplates = Arrays.asList(new String[]{"activities/org/alfresco/generic.json.ftl"});
             
             // for each activity post ...
             for (ActivityPostEntity activityPost : activityPosts)
             {
                 String postingUserId = activityPost.getUserId();
                 String activityType = activityPost.getActivityType();
-                
-                // eg. org.alfresco.folder.added -> added
-                String baseActivityType = getBaseActivityType(activityType);
-                
-                if (! jsonFormatOnly)
-                {
-                    fmTemplates = activityTemplates.get(baseActivityType);
-                    if (fmTemplates == null)
-                    {
-                        // eg. org.alfresco.folder.added -> /org/alfresco/folder/added (note: the leading slash)
-                        String templateSubPath = getTemplateSubPath(activityType);
-                        
-                        fmTemplates = new ArrayList<String>(0);
-                        while (true)
-                        {
-                            int idx = templateSubPath.lastIndexOf("/");
-                            if (idx != -1)
-                            {
-                                templateSubPath = templateSubPath.substring(0, idx);
-                                Map<String, List<String>> templates = null;
-                                try
-                                {
-                                    // Repository callback to get list of FreeMarker templates for given activity type
-                                    templates = getActivityTypeTemplates(ctx.getRepoEndPoint(), ticket, templateSubPath+"/");
-                                }
-                                catch (FileNotFoundException fnfe)
-                                {
-                                    // ignore - path does not exist
-                                }
-                                if (templates != null)
-                                {
-                                    if (templates.get(baseActivityType) != null)
-                                    {
-                                        // add templates, if format not already included
-                                        addMissingFormats(activityType, fmTemplates, templates.get(baseActivityType));
-                                    }
-                                    
-                                    // special fallback case
-                                    if (templates.get("generic") != null)
-                                    {
-                                        // add templates, if format not already included
-                                        addMissingFormats(activityType, fmTemplates, templates.get("generic"));
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                        
-                        activityTemplates.put(baseActivityType, fmTemplates);
-                        
-                        if (logger.isTraceEnabled())
-                        {
-                            for (String fmTemplate : fmTemplates)
-                            {
-                                logger.trace("For activityType '"+activityType+"' found activity type template: "+fmTemplate);
-                            }
-                        }
-                    }
-                }
                 
                 if (fmTemplates.size() == 0)
                 {
@@ -331,29 +241,7 @@ public abstract class FeedTaskProcessor
                             
                             for (String fmTemplate : fmTemplates)
                             {
-                                String formatFound = null;
-                                if (jsonFormatOnly)
-                                {
-                                    formatFound = FeedTaskProcessor.FEED_FORMAT_JSON;
-                                }
-                                else
-                                {
-                                    // determine format - based on template naming convention
-                                    for (String format : formats)
-                                    {
-                                        if (fmTemplate.contains("."+format+"."))
-                                        {
-                                            formatFound = format;
-                                            break;
-                                        }
-                                    }
-                                    
-                                    if (formatFound == null)
-                                    {
-                                        formatFound = defaultFormat;
-                                        logger.warn("Unknown format for: " + fmTemplate + " default to '"+formatFound+"'");
-                                    }
-                                }
+                                String formatFound = FeedTaskProcessor.FEED_FORMAT_JSON;
                                 
                                 ActivityFeedEntity feed = new ActivityFeedEntity();
                                 
@@ -363,16 +251,8 @@ public abstract class FeedTaskProcessor
                                 feed.setActivityType(activityType);
                                 
                                 String activitySummary = null;
-                                if (formatFound.equals(FeedTaskProcessor.FEED_FORMAT_JSON))
-                                {
                                     // allows JSON to simply pass straight through
                                     activitySummary = activityPost.getActivityData();
-                                }
-                                else
-                                {
-                                    // generate feed entry for this format
-                                    activitySummary = processFreemarker(templateCache, fmTemplate, cfg, model);
-                                }
                                 
                                 if (! activitySummary.equals(""))
                                 {
@@ -383,7 +263,6 @@ public abstract class FeedTaskProcessor
                                     else
                                     {
                                         feed.setActivitySummary(activitySummary);
-                                        feed.setActivitySummaryFormat(formatFound);
                                         feed.setSiteNetwork(thisSite);
                                         feed.setAppTool(activityPost.getAppTool());
                                         feed.setPostDate(activityPost.getPostDate());

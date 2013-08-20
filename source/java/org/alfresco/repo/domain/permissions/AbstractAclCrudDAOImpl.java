@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -193,13 +193,17 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         return entityPair.getSecond();
     }
     
-    public Acl getAcl(long id)
+    public Acl getAcl(Long id)
     {
         return getAclImpl(id);
     }
     
-    private AclEntity getAclImpl(long id)
+    private AclEntity getAclImpl(Long id)
     {
+        if (id == null)
+        {
+            return null;
+        }
         Pair<Long, AclEntity> entityPair = aclEntityCache.getByKey(id);
         if (entityPair == null)
         {

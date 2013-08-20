@@ -27,6 +27,7 @@ package org.alfresco.repo.domain.node;
 import java.io.Serializable;
 
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * @author janv
@@ -42,6 +43,10 @@ import org.alfresco.service.namespace.QName;
     
     ChildByNameKey(Long parentNodeId, QName assocTypeQName, String childNodeName)
     {
+    	ParameterCheck.mandatory("childNodeName", childNodeName);
+    	ParameterCheck.mandatory("assocTypeQName", assocTypeQName);
+    	ParameterCheck.mandatory("parentNodeId", parentNodeId);
+    		
         this.parentNodeId = parentNodeId;
         this.assocTypeQName = assocTypeQName;
         this.childNodeName = childNodeName;

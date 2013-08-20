@@ -351,27 +351,22 @@
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="activity_format" order="7">
-          <type>varchar(10)</type>
-          <nullable>true</nullable>
-          <autoincrement>false</autoincrement>
-        </column>
-        <column name="site_network" order="8">
+        <column name="site_network" order="7">
           <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="app_tool" order="9">
+        <column name="app_tool" order="8">
           <type>varchar(36)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="post_user_id" order="10">
+        <column name="post_user_id" order="9">
           <type>varchar(255)</type>
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="feed_date" order="11">
+        <column name="feed_date" order="10">
           <type>datetime</type>
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
@@ -402,11 +397,6 @@
         <index name="feed_sitenetwork_idx" unique="false">
           <columnnames>
             <columnname>site_network</columnname>
-          </columnnames>
-        </index>
-        <index name="feed_activityformat_idx" unique="false">
-          <columnnames>
-            <columnname>activity_format</columnname>
           </columnnames>
         </index>
       </indexes>
@@ -1146,6 +1136,11 @@
             <columnname>orphan_time</columnname>
           </columnnames>
         </index>
+        <index name="idx_alf_conturl_sz" unique="false">
+          <columnnames>
+            <columnname>content_size</columnname>
+          </columnnames>
+        </index>
       </indexes>
     </table>
     <table name="alf_encoding">
@@ -1522,6 +1517,40 @@
             <columnname>type_qname_id</columnname>
           </columnnames>
         </index>
+        <index name="idx_alf_node_mdq" unique="false">
+          <columnnames>
+            <columnname>store_id</columnname>
+            <columnname>type_qname_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_node_cor" unique="false">
+          <columnnames>
+            <columnname>audit_creator</columnname>
+            <columnname>store_id</columnname>
+            <columnname>type_qname_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_node_crd" unique="false">
+          <columnnames>
+            <columnname>audit_created</columnname>
+            <columnname>store_id</columnname>
+            <columnname>type_qname_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_node_mor" unique="false">
+          <columnnames>
+            <columnname>audit_modifier</columnname>
+            <columnname>store_id</columnname>
+            <columnname>type_qname_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_node_mod" unique="false">
+          <columnnames>
+            <columnname>audit_modified</columnname>
+            <columnname>store_id</columnname>
+            <columnname>type_qname_id</columnname>
+          </columnnames>
+        </index>
       </indexes>
     </table>
     <table name="alf_node_aspects">
@@ -1753,6 +1782,18 @@
         <index name="fk_alf_nprop_loc" unique="false">
           <columnnames>
             <columnname>locale_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_nprop_s" unique="false">
+          <columnnames>
+            <columnname>qname_id</columnname>
+            <columnname>string_value</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_nprop_l" unique="false">
+          <columnnames>
+            <columnname>qname_id</columnname>
+            <columnname>long_value</columnname>
           </columnnames>
         </index>
       </indexes>
@@ -2273,12 +2314,7 @@
             <columnname>local_name</columnname>
           </columnnames>
         </index>
-        <index name="fk_alf_qname_ns" unique="false">
-          <columnnames>
-            <columnname>ns_id</columnname>
-          </columnnames>
-        </index>
-      </indexes>
+        </indexes>
     </table>
     <table name="alf_server">
       <columns>

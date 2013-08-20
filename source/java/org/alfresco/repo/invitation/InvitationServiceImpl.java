@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -363,6 +364,15 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         endInvitation(startTask,
                 WorkflowModelNominatedInvitation.WF_TRANSITION_ACCEPT, null,
                 WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING, WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
+        
+        //MNT-9101 Share: Cancelling an invitation for a disabled user, the user gets deleted in the process.
+        NodeRef person = personService.getPersonOrNull(invitation.getInviterUserName());
+        if (person != null && nodeService.hasAspect(person, ContentModel.ASPECT_ANULLABLE))
+        {
+            nodeService.removeAspect(person, ContentModel.ASPECT_ANULLABLE);
+        }
+        
+        
         return invitation;
     }
 
@@ -1144,6 +1154,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             public Object doWork() throws Exception
             {
                 NodeRef person = personService.createPerson(properties);
+                //MNT-9101 Share: Cancelling an invitation for a disabled user, the user gets deleted in the process.
+                nodeService.addAspect(person, ContentModel.ASPECT_ANULLABLE, null);
                 permissionService.setPermission(person, finalUserName, PermissionService.ALL_PERMISSIONS, true);
 
                 return null;
@@ -1309,6 +1321,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 // else there are no existing people who have the given invitee
                 // email address so create new person
                 inviteeUserName = createInviteePerson(inviteeFirstName, inviteeLastName, inviteeEmail);
+
                 created = true;
                 if (logger.isDebugEnabled())
                 {
@@ -1639,7 +1652,9 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             siteTitle = siteInfo.getShortName();
         }
         
-        return I18NUtil.getMessage(messageId, siteTitle);
+        Locale locale = (Locale) this.nodeService.getProperty(siteInfo.getNodeRef(), ContentModel.PROP_LOCALE);
+        
+        return I18NUtil.getMessage(messageId, locale == null ? I18NUtil.getLocale() : locale, siteTitle);
     }
     
     /**

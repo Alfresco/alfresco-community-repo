@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.workflow.WorkflowNode;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
@@ -207,9 +208,13 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
     public ScriptableHashMap<String, String> getTransitions()
     {
         ScriptableHashMap<String, String> transitions = new ScriptableHashMap<String, String>();
-        for (WorkflowTransition transition : task.getPath().getNode().getTransitions())
+        WorkflowNode workflowNode = task.getPath().getNode();
+        if (workflowNode != null)
         {
-            transitions.put(transition.getId(), transition.getTitle());
+            for (WorkflowTransition transition : workflowNode.getTransitions())
+            {
+                transitions.put(transition.getId(), transition.getTitle());
+            }
         }
         return transitions;
     }

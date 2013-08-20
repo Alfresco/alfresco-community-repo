@@ -94,7 +94,7 @@
                </source>
                <target>
                   <class>cm:cmobject</class>
-                  <mandatory>true</mandatory>
+                  <mandatory>false</mandatory>
                   <many>true</many>
                </target>
             </association>

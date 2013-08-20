@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,6 +30,7 @@ import java.util.Set;
 import org.alfresco.cmis.CMISAccessControlService;
 import org.alfresco.cmis.CMISActionEvaluator;
 import org.alfresco.cmis.CMISAllowedActionEnum;
+import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISPropertyId;
@@ -39,10 +40,12 @@ import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.CMISAccessControlFormatEnum;
+import org.alfresco.repo.version.Version2Model;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -52,6 +55,9 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.alfresco.cmis.mapping.ParentTypeActionEvaluator.ParentTypeEnum;
+import org.alfresco.cmis.mapping.PropertyActionEvaluator.PropertyDescriptor;
+import org.alfresco.cmis.mapping.TypeAttributeActionEvaluator.TypeDefinitionAttributeEnum;
 
 
 /**
@@ -61,6 +67,22 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class CMISMapping implements InitializingBean
 {
+    private static final Comparable<Object> CONTENT_STREAM_SUPPORTED_COMPARATOR = new Comparable<Object>()
+    {
+        @Override
+        public int compareTo(Object another)
+        {
+            CMISContentStreamAllowedEnum converted = (CMISContentStreamAllowedEnum) another;
+            return (CMISContentStreamAllowedEnum.NOT_ALLOWED != converted) ? (0) : (-1);
+        }
+    };
+
+    private static final PropertyDescriptor PROPERTY_STREAM_ID = new PropertyDescriptor(CMISDictionaryModel.PROP_CONTENT_STREAM_ID, null, false);
+
+    private static final boolean DEFAULT_ALLOWING = false;
+
+    private static final PropertyDescriptor PROPERTY_MUTABLE = new PropertyDescriptor(CMISDictionaryModel.PROP_IS_IMMUTABLE, false, true);
+
     // Logger
     protected static final Log logger = LogFactory.getLog(CMISMapping.class);
     
@@ -216,51 +238,113 @@ public class CMISMapping implements InitializingBean
         // NOTE: The order of evaluators is important - they must be in the order as specified in CMIS-Core.xsd
         //       so that schema validation passes
         
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_OBJECT, PermissionService.DELETE_NODE));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
-        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_RELATIONSHIPS, true));
-        registerEvaluator(CMISScope.DOCUMENT, new ParentActionEvaluator(new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, PermissionService.READ_PERMISSIONS)));
+        // Depends on cmis:immutable
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_OBJECT).addPermissionCondition(
+                PermissionService.DELETE_NODE).addPropertyCondition(PROPERTY_MUTABLE));
+        // Depends on cmis:immutable
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES).addPermissionCondition(
+                PermissionService.WRITE_PROPERTIES).addAspectCondition(false, Version2Model.ASPECT_VERSION).addPropertyCondition(PROPERTY_MUTABLE));
+        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, DEFAULT_ALLOWING,
+                PermissionService.READ_PROPERTIES));
+        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_RELATIONSHIPS, DEFAULT_ALLOWING,
+                PermissionService.READ_ASSOCIATIONS));
+
+        registerEvaluator(CMISScope.DOCUMENT, new ParentActionEvaluator(new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS,
+                DEFAULT_ALLOWING, PermissionService.READ_PERMISSIONS)));
+
         // Is CAN_MOVE correct mapping?
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT, PermissionService.DELETE_NODE));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_CONTENT_STREAM, PermissionService.WRITE_PROPERTIES, PermissionService.WRITE_CONTENT));
-        registerEvaluator(CMISScope.DOCUMENT, new CanCheckOutActionEvaluator(serviceRegistry));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CANCEL_CHECKOUT, PermissionService.CANCEL_CHECK_OUT));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CHECKIN, PermissionService.CHECK_IN));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_SET_CONTENT_STREAM, PermissionService.WRITE_CONTENT));
+
+        // Depends on cmis:immutable
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT).addPermissionCondition(
+                PermissionService.DELETE_NODE).addAspectCondition(false, Version2Model.ASPECT_VERSION).addPropertyCondition(PROPERTY_MUTABLE));
+
+        // Depends on cmis:immutable
+        // Also depends on content stream appearance definition in the model and whether stream is set...
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_CONTENT_STREAM)
+                .addPermissionCondition(PermissionService.WRITE_CONTENT).addPropertyCondition(PROPERTY_MUTABLE, PROPERTY_STREAM_ID).addAspectCondition(false,
+                        Version2Model.ASPECT_VERSION).addTypeAttributeCondition(TypeDefinitionAttributeEnum.CONTENT_STREAM_ALLOWED, new Comparable<Object>()
+                {
+                    @Override
+                    public int compareTo(Object another)
+                    {
+                        return CMISContentStreamAllowedEnum.ALLOWED.compareTo((CMISContentStreamAllowedEnum) another);
+                    }
+                }));
+
+        // Also depends on cmis:immutable
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_CHECKOUT).addPermissionCondition(
+                PermissionService.CHECK_OUT).addPropertyCondition(PROPERTY_MUTABLE).addLockCondition(LockType.READ_ONLY_LOCK).addPwcCondition(false));
+
+        // Same as check-in. It requires check if specified object is a PWC
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_CANCEL_CHECKOUT).addPermissionCondition(
+                PermissionService.CANCEL_CHECK_OUT).addPwcCondition(true));
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_CHECKIN).addPermissionCondition(
+                PermissionService.CHECK_IN).addPwcCondition(true));
+        // Also depends on model definition... also depends on cmis:immutable
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_SET_CONTENT_STREAM)
+                .addPermissionCondition(PermissionService.WRITE_CONTENT).addAspectCondition(false, Version2Model.ASPECT_VERSION).addPropertyCondition(PROPERTY_MUTABLE)
+                .addTypeAttributeCondition(TypeDefinitionAttributeEnum.CONTENT_STREAM_ALLOWED, CONTENT_STREAM_SUPPORTED_COMPARATOR));
+
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ALL_VERSIONS, true));
-        registerEvaluator(CMISScope.DOCUMENT, new ParentActionEvaluator(new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_ADD_OBJECT_TO_FOLDER, PermissionService.LINK_CHILDREN)));
+        // Depends on cmis:immutable
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_ADD_OBJECT_TO_FOLDER)
+                .addPropertyCondition(PROPERTY_MUTABLE).addPermissionCondition(PermissionService.CREATE_ASSOCIATIONS));
         // Is CAN_REMOVE_FROM_FOLDER correct mapping?
-        registerEvaluator(CMISScope.DOCUMENT, new ParentActionEvaluator(new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_OBJECT_FROM_FOLDER, true)));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_CONTENT_STREAM, PermissionService.READ_CONTENT));
+        // Should be aware about amount of parents. It is not allowed for PRIMARY parent!
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_OBJECT_FROM_FOLDER)
+                .addPermissionCondition(PermissionService.DELETE_ASSOCIATIONS).addPropertyCondition(PROPERTY_MUTABLE).addParentTypeCondition(ParentTypeEnum.MULTI_FILED));
+        // Depends on availability of the stream (including streams of renditions)
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_GET_CONTENT_STREAM)
+                .addPermissionCondition(PermissionService.READ_CONTENT).addPropertyCondition(PROPERTY_STREAM_ID).addTypeAttributeCondition(
+                        TypeDefinitionAttributeEnum.CONTENT_STREAM_ALLOWED, CONTENT_STREAM_SUPPORTED_COMPARATOR));
+
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_POLICY, false));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_APPLIED_POLICIES, true));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_POLICY, false));
-        registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_RELATIONSHIP, true));
+        // Depends on cmis:immutable
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_RELATIONSHIP)
+                .addPermissionCondition(PermissionService.CREATE_ASSOCIATIONS).addPropertyCondition(PROPERTY_MUTABLE));
         registerEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RENDITIONS, true));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ACL, PermissionService.READ_PERMISSIONS));
-        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_ACL, PermissionService.CHANGE_PERMISSIONS));
-        
-        registerEvaluator(CMISScope.FOLDER, new RootActionEvaluator(new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_OBJECT, PermissionService.DELETE_NODE), false));
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_FOLDER_TREE, PermissionService.READ_CHILDREN));
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
-        registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_RELATIONSHIPS, true));
-        registerEvaluator(CMISScope.FOLDER, new ParentActionEvaluator(new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, PermissionService.READ_PERMISSIONS)));
-        registerEvaluator(CMISScope.FOLDER, new ParentActionEvaluator(new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_FOLDER_PARENT, PermissionService.READ_PERMISSIONS)));
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_DESCENDANTS, PermissionService.READ_CHILDREN));
+        registerEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ACL, DEFAULT_ALLOWING,
+                PermissionService.READ_PERMISSIONS));
+        // Depends on cmis:immutable
+        registerEvaluator(CMISScope.DOCUMENT, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_ACL).addPermissionCondition(
+                PermissionService.CHANGE_PERMISSIONS).addPropertyCondition(PROPERTY_MUTABLE));
+
+        registerEvaluator(CMISScope.FOLDER, new RootActionEvaluator<NodeRef>(new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_OBJECT,
+                DEFAULT_ALLOWING, PermissionService.DELETE_NODE), false));
+        registerEvaluator(CMISScope.FOLDER, new CompositeActionEvaluator<NodeRef>(DEFAULT_ALLOWING, serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES)
+                .addPermissionCondition(PermissionService.WRITE_PROPERTIES));
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_FOLDER_TREE, DEFAULT_ALLOWING, PermissionService.READ_CHILDREN));
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, DEFAULT_ALLOWING, PermissionService.READ_PROPERTIES));
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_OBJECT_RELATIONSHIPS, DEFAULT_ALLOWING,
+                PermissionService.READ_ASSOCIATIONS));
+        registerEvaluator(CMISScope.FOLDER, new ParentActionEvaluator(new PermissionActionEvaluator<NodeRef>(serviceRegistry,
+                CMISAllowedActionEnum.CAN_GET_OBJECT_PARENTS, DEFAULT_ALLOWING, PermissionService.READ_PERMISSIONS)));
+        registerEvaluator(CMISScope.FOLDER, new ParentActionEvaluator(new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_FOLDER_PARENT,
+                DEFAULT_ALLOWING, PermissionService.READ_PERMISSIONS)));
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_DESCENDANTS, DEFAULT_ALLOWING,
+                PermissionService.READ_CHILDREN));
         // Is CAN_MOVE_OBJECT correct mapping?
-        registerEvaluator(CMISScope.FOLDER, new RootActionEvaluator(new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT, PermissionService.DELETE_NODE), false));
+        registerEvaluator(CMISScope.FOLDER, new RootActionEvaluator<NodeRef>(new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_MOVE_OBJECT,
+                DEFAULT_ALLOWING, PermissionService.DELETE_NODE), false));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_POLICY, false));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_APPLIED_POLICIES, true));
         registerEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_REMOVE_POLICY, false));
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_CHILDREN, PermissionService.READ_CHILDREN));
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_DOCUMENT, PermissionService.CREATE_CHILDREN));
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_FOLDER, PermissionService.CREATE_CHILDREN));
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_RELATIONSHIP, PermissionService.CREATE_ASSOCIATIONS));
-        registerEvaluator(CMISScope.FOLDER, new RootActionEvaluator(new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_TREE, PermissionService.DELETE_NODE), false));
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ACL, PermissionService.READ_PERMISSIONS));
-        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_ACL, PermissionService.CHANGE_PERMISSIONS));
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_CHILDREN, DEFAULT_ALLOWING,
+                PermissionService.READ_CHILDREN));
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_DOCUMENT, DEFAULT_ALLOWING,
+                PermissionService.CREATE_CHILDREN));
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_FOLDER, DEFAULT_ALLOWING,
+                PermissionService.CREATE_CHILDREN));
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_CREATE_RELATIONSHIP, DEFAULT_ALLOWING,
+                PermissionService.CREATE_ASSOCIATIONS));
+        registerEvaluator(CMISScope.FOLDER, new RootActionEvaluator<NodeRef>(new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_TREE,
+                DEFAULT_ALLOWING, PermissionService.DELETE_NODE), false));
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_GET_ACL, DEFAULT_ALLOWING,
+                PermissionService.READ_PERMISSIONS));
+        registerEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator<Object>(serviceRegistry, CMISAllowedActionEnum.CAN_APPLY_ACL, DEFAULT_ALLOWING,
+                PermissionService.CHANGE_PERMISSIONS));
 
         registerEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator<AssociationRef>(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE_OBJECT, true));
         registerEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator<AssociationRef>(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, false));

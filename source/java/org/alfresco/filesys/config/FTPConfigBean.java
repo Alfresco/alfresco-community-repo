@@ -63,12 +63,15 @@ public class FTPConfigBean
     
     // FTPS configuration
     //
-    // Path to the keystore/truststore files
+    // Keystore/truststore details
     
     private String m_keyStorePath;
-    private String m_trustStorePath;
+    private String m_keyStoreType;
+    private String m_keyStorePass;
     
-    private String m_passphrase;
+    private String m_trustStorePath;
+    private String m_trustStoreType;
+    private String m_trustStorePass;
     
     // Only allow FTPS/encrypted session logons
     
@@ -313,6 +316,15 @@ public class FTPConfigBean
     }
     
     /**
+     * Return the key store type
+     * 
+     * @return String
+     */
+    public final String getKeyStoreType() {
+    	return m_keyStoreType;
+    }
+    
+    /**
      * Return the trust store path
      * 
      * @return String
@@ -322,12 +334,30 @@ public class FTPConfigBean
     }
     
     /**
-     * Return the passphrase for the key store/trust store
+     * Return the trust store type
      * 
      * @return String
      */
-    public final String getPassphrase() {
-  	  return m_passphrase;
+    public final String getTrustStoreType() {
+    	return m_trustStoreType;
+    }
+    
+    /**
+     * Return the passphrase for the key store
+     * 
+     * @return String
+     */
+    public final String getKeyStorePassphrase() {
+  	  return m_keyStorePass;
+    }
+    
+    /**
+     * Return the passphrase for the trust store
+     * 
+     * @return String
+     */
+    public final String getTrustStorePassphrase() {
+  	  return m_trustStorePass;
     }
     
     /**
@@ -358,6 +388,15 @@ public class FTPConfigBean
     }
     
     /**
+     * Set the key store type
+     * 
+     * @param typ String
+     */
+    public final void setKeyStoreType( String typ) {
+    	m_keyStoreType = typ;
+    }
+    
+    /**
      * Set the trust store path
      * 
      * @param path String
@@ -367,12 +406,30 @@ public class FTPConfigBean
     }
     
     /**
-     * Set the passphrase
+     * Set the trust store type
+     * 
+     * @param typ String
+     */
+    public final void setTrustStoreType( String typ) {
+    	m_trustStoreType = typ;
+    }
+    
+    /**
+     * Set the key store passphrase
      * 
      * @param phrase String
      */
-    public final void setPassphrase( String phrase) {
-    	m_passphrase = phrase;
+    public final void setKeyStorePassphrase( String phrase) {
+    	m_keyStorePass = phrase;
+    }
+    
+    /**
+     * Set the trust store passphrase
+     * 
+     * @param phrase String
+     */
+    public final void setTrustStorePassphrase( String phrase) {
+    	m_trustStorePass = phrase;
     }
     
     /**

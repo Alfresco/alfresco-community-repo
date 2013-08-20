@@ -31,4 +31,7 @@
  * <p>
  * @since 4.0
  */
+@PackageMarker
 package org.alfresco.filesys.repo.rules;
+import org.alfresco.util.PackageMarker;
+

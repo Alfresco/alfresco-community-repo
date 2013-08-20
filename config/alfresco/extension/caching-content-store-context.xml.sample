@@ -62,7 +62,10 @@
     <bean id="unlimitedQuotaManager" class="org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy"/>        
 
 
-    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.DefaultSimpleCache"/>
+    <!-- Cache factory creates instances of SimpleCache and is defined in cache-context.xml -->
+    <bean id="cachingContentStoreCache" factory-bean="cacheFactory" factory-method="createLocalCache">
+        <constructor-arg value="cache.cachingContentStoreCache"/>
+    </bean>
 
 
     <bean id="cachingContentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">

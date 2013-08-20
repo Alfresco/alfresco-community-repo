@@ -16,7 +16,6 @@ CREATE TABLE alf_activity_feed
     activity_summary VARCHAR(1024),
     feed_user_id VARCHAR(255),
     activity_type VARCHAR(255) NOT NULL,
-    activity_format VARCHAR(10),
     site_network VARCHAR(255),
     app_tool VARCHAR(36),
     post_user_id VARCHAR(255) NOT NULL,
@@ -27,7 +26,6 @@ CREATE INDEX feed_postdate_idx ON alf_activity_feed (post_date);
 CREATE INDEX feed_postuserid_idx ON alf_activity_feed (post_user_id);
 CREATE INDEX feed_feeduserid_idx ON alf_activity_feed (feed_user_id);
 CREATE INDEX feed_sitenetwork_idx ON alf_activity_feed (site_network);
-CREATE INDEX feed_activityformat_idx ON alf_activity_feed (activity_format);
 
 CREATE SEQUENCE alf_activity_feed_control_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_activity_feed_control

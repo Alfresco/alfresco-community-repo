@@ -727,7 +727,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                         if (getTrackStatus(action))
                         {
                             // Mark the action as starting
-                            actionTrackingService.recordActionExecuting(action);
+                            actionTrackingService.recordActionExecuting(action, actionedUponNodeRef);
                         }
 
                         RunningAction runningAction = monitor.actionStarted(action);
@@ -1655,7 +1655,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                 
                 if (getTrackStatus(action))
                 {
-                    actionTrackingService.recordActionPending(action);
+                    actionTrackingService.recordActionPending(action, actionedUponNodeRef);
                 }
             }
         }

@@ -178,6 +178,15 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
         }
 
         /**
+         * Allows copy of workingCopy top-level node to be renamed 
+         */
+        @Override
+        public boolean isTopLevelCanBeRenamed(QName classQName, CopyDetails copyDetails)
+        {
+            return true;
+        }
+
+        /**
          * Prevents copying off the {@link ContentModel#PROP_NAME <b>cm:name</b>} property.
          */
         @Override

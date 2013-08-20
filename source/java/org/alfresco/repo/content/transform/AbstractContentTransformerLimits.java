@@ -132,7 +132,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
             sizeOkay = maxSourceSizeKBytes < 0 || (maxSourceSizeKBytes > 0 && sourceSize <= maxSourceSizeKBytes*1024);
             if (!sizeOkay && transformerDebug.isEnabled())
             {
-                transformerDebug.unavailableTransformer(this, maxSourceSizeKBytes);
+                transformerDebug.unavailableTransformer(this, sourceMimetype, targetMimetype, maxSourceSizeKBytes);
             }
         }
         return sizeOkay;
@@ -174,7 +174,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     public void setTimeoutMs(long timeoutMs)
     {
-        deprecatedSetter(OPT_TIMEOUT_MS+'='+timeoutMs);
+        deprecatedSetter(null, null, OPT_TIMEOUT_MS+'='+timeoutMs);
     }
     
     /**
@@ -191,7 +191,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     public void setReadLimitTimeMs(long readLimitTimeMs)
     {
-        deprecatedSetter(OPT_READ_LIMIT_TIME_MS+'='+readLimitTimeMs);
+        deprecatedSetter(null, null, OPT_READ_LIMIT_TIME_MS+'='+readLimitTimeMs);
     }
 
     /**
@@ -208,7 +208,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     public void setMaxSourceSizeKBytes(long maxSourceSizeKBytes)
     {
-        deprecatedSetter(OPT_MAX_SOURCE_SIZE_K_BYTES+'='+maxSourceSizeKBytes);
+        deprecatedSetter(null, null, OPT_MAX_SOURCE_SIZE_K_BYTES+'='+maxSourceSizeKBytes);
     }
 
     /**
@@ -225,7 +225,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     public void setReadLimitKBytes(long readLimitKBytes)
     {
-        deprecatedSetter(OPT_READ_LIMIT_K_BYTES+'='+readLimitKBytes);
+        deprecatedSetter(null, null, OPT_READ_LIMIT_K_BYTES+'='+readLimitKBytes);
     }
 
     /**
@@ -242,7 +242,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     public void setMaxPages(int maxPages)
     {
-        deprecatedSetter(OPT_MAX_PAGES+'='+maxPages);
+        deprecatedSetter(null, null, OPT_MAX_PAGES+'='+maxPages);
     }
 
     /**
@@ -259,11 +259,11 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     public void setPageLimit(int pageLimit)
     {
-        deprecatedSetter(OPT_PAGE_LIMIT+'='+pageLimit);
+        deprecatedSetter(null, null, OPT_PAGE_LIMIT+'='+pageLimit);
     }
 
     /**
-     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)} which allows the
+     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions, String)} which allows the
      *             limits to be selected based on mimetype and use.
      */
     protected TransformationOptionLimits getLimits()
@@ -276,7 +276,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     public void setLimits(TransformationOptionLimits limits)
     {
-        deprecatedLimitsSetter("", limits);
+        deprecatedLimitsSetter(null, null, limits);
     }
 
     /**
@@ -286,19 +286,17 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     {
         for (Entry<String, Map<String, TransformationOptionLimits>> source: mimetypeLimits.entrySet())
         {
-            String sourceExt = getExtensionOrAny(source.getKey());
+            String sourceMimetype = source.getKey();
             for (Entry<String, TransformationOptionLimits> target: source.getValue().entrySet())
             {
-                String targetExt = getExtensionOrAny(target.getKey());
+                String targetMimetype = target.getKey();
                 TransformationOptionLimits limits = target.getValue();
-                String mimetypeSuffix = TransformerConfig.EXTENSIONS.substring(1)+sourceExt+'.'+targetExt;
-
-                deprecatedLimitsSetter(mimetypeSuffix, limits);
+                deprecatedLimitsSetter(sourceMimetype, targetMimetype, limits);
             }
         }
     }
 
-    private void deprecatedLimitsSetter(String mimetypeSuffix, TransformationOptionLimits limits)
+    private void deprecatedLimitsSetter(String sourceMimetype, String targetMimetype, TransformationOptionLimits limits)
     {
         if (limits.supported())
         {
@@ -311,13 +309,13 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
             {
                 if (limit != null)
                 {
-                    deprecatedSetter(mimetypeSuffix+'.'+limit);
+                    deprecatedSetter(sourceMimetype, targetMimetype, '.'+limit);
                 }
             }
         }
         else
         {
-            deprecatedSetter(mimetypeSuffix+TransformerConfig.SUPPORTED+"=false");
+            deprecatedSetter(sourceMimetype, targetMimetype, TransformerConfig.SUPPORTED+"=false");
         }
     }
 

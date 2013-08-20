@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2013-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.security.authentication.ldap;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +34,7 @@ import javax.management.openmbean.TabularType;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationStep;
+import org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizerStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,6 +46,8 @@ import org.apache.commons.logging.LogFactory;
 public class Monitor
 {
     LDAPAuthenticationComponentImpl component;
+    ChainingUserRegistrySynchronizerStatus syncMonitor;
+    String id;
     
     private static Log logger = LogFactory.getLog(Monitor.class);
     
@@ -52,11 +56,11 @@ public class Monitor
         this.component = component;
     }
     
-    public String getAuthenticatorType()
+    public void setChainingUserRegistrySynchronizerStatus(ChainingUserRegistrySynchronizerStatus syncStatus)
     {
-        return "ldap";
+        this.syncMonitor = syncStatus;
     }
-    
+       
     /**
      * test authenticate
      * 
@@ -138,4 +142,47 @@ public class Monitor
     {
         return component.getNumberSuccessfulAuthentications();
     }
+    
+    public String getSynchronizationStatus()
+    {
+        return syncMonitor.getSynchronizationStatus(getZone(component.getId()));
+    }
+    
+    public Date getSynchronizationLastUserUpdateTime()
+    {
+        return syncMonitor.getSynchronizationLastUserUpdateTime(getZone(component.getId()));
+    }
+    
+    public Date getSynchronizationLastGroupUpdateTime()
+    {
+        return syncMonitor.getSynchronizationLastGroupUpdateTime(getZone(component.getId()));
+    }
+    
+    public String getSynchronizationLastError()
+    {
+        return syncMonitor.getSynchronizationLastError(getZone(component.getId()));
+    }
+    
+    public String getSynchronizationSummary()
+    {
+        return syncMonitor.getSynchronizationSummary(getZone(component.getId()));
+    }
+    
+    /**
+     * Get the zone for an ldap authentication component.  e.g given [managed,ldap1] return ldap1
+     * @param id ths id of the subsystem
+     * @return the zone
+     */
+    private String getZone(String id)
+    {
+
+        String s = id.replace("[", "");
+        String s2 = s.replace("]", "");
+        String[] ids = s2.split(",");
+        
+        String x = ids[ids.length -1].trim();
+        
+        return x;
+
+    }    
 }

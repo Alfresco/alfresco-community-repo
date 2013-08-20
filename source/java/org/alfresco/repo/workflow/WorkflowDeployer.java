@@ -36,6 +36,10 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -70,6 +74,8 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     public static final String LOCATION = "location";
     public static final String MIMETYPE = "mimetype";
     public static final String REDEPLOY = "redeploy";
+    
+    public static final String CATEGORY_ALFRESCO_INTERNAL = "http://alfresco.org/workflows/internal";
     
     // Dependencies
     private TransactionService transactionService;
@@ -233,7 +239,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         {
             authenticationContext.setSystemUserAsCurrentUser();
         }
-        if (!transactionService.getAllowWrite())
+        if ((!transactionService.getAllowWrite()) && (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE))
         {
             if (logger.isWarnEnabled())
                 logger.warn("Repository is in read-only mode; not deploying workflows.");
@@ -449,15 +455,24 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        // run as System on bootstrap
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {
-                init();
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
+    	RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+    	txnHelper.setForceWritable(true);
+    	txnHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
+
+			@Override
+			public Object execute() throws Throwable {
+				// run as System on bootstrap
+		        return AuthenticationUtil.runAs(new RunAsWork<Object>()
+		        {
+		            public Object doWork()
+		            {
+		                init();
+		                return null;
+		            }
+		        }, AuthenticationUtil.getSystemUserName());
+			}
+    		
+		}, false, true);
         
         tenantAdminService.register(this);
     }

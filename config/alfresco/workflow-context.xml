@@ -21,6 +21,7 @@
    </bean>
    
    <bean id="workflowServiceImpl" class="org.alfresco.repo.workflow.WorkflowServiceImpl">
+      <property name="transactionService" ref="transactionService"/>
       <property name="authorityService" ref="authorityService"/>
       <property name="BPMEngineRegistry" ref="bpm_engineRegistry"/>
       <property name="workflowPackageComponent" ref="workflowPackageImpl"/>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,12 +32,14 @@ import java.util.ResourceBundle.Control;
 import java.util.Set;
 import java.util.Stack;
 
+import org.alfresco.repo.copy.AbstractBaseCopyService.AssociationCopyInfo;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.copy.AbstractBaseCopyService;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.search.QueryParameterDefImpl;
@@ -86,7 +88,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * 
  * @author Derek Hulley
  */
-public class FileFolderServiceImpl implements FileFolderService
+public class FileFolderServiceImpl extends AbstractBaseCopyService implements FileFolderService
 {
     private static final String CANNED_QUERY_FILEFOLDER_LIST = "fileFolderGetChildrenCannedQueryFactory";
     
@@ -133,8 +135,6 @@ public class FileFolderServiceImpl implements FileFolderService
     private MimetypeService mimetypeService;
     private NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry;
     
-    private Set<String> systemNamespaces;
-    
     // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
     private List<String> systemPaths;
     
@@ -146,7 +146,7 @@ public class FileFolderServiceImpl implements FileFolderService
      */
     public FileFolderServiceImpl()
     {
-        systemNamespaces = new HashSet<String>(5);
+        super();
     }
 
     public void setNamespaceService(NamespaceService namespaceService)
@@ -195,22 +195,6 @@ public class FileFolderServiceImpl implements FileFolderService
     public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry)
     {
         this.cannedQueryRegistry = cannedQueryRegistry;
-    }
-
-    /**
-     * Set the namespaces that should be treated as 'system' namespaces.
-     * <p>
-     * When files or folders are renamed, the association path (QName) is normally
-     * modified to follow the name of the node.  If, however, the namespace of the
-     * patch QName is in this list, the association path is left alone.  This allows
-     * parts of the application to use well-known paths even if the end-user is
-     * able to modify the objects <b>cm:name</b> value.
-     * 
-     * @param systemNamespaces          a list of system namespaces
-     */
-    public void setSystemNamespaces(List<String> systemNamespaces)
-    {
-        this.systemNamespaces.addAll(systemNamespaces);
     }
 
     // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
@@ -579,6 +563,9 @@ public class FileFolderServiceImpl implements FileFolderService
 
     public NodeRef searchSimple(NodeRef contextNodeRef, String name)
     {
+    	ParameterCheck.mandatory("name", name);
+    	ParameterCheck.mandatory("contextNodeRef", contextNodeRef);
+    	
         NodeRef childNodeRef = nodeService.getChildByName(contextNodeRef, ContentModel.ASSOC_CONTAINS, name);
         if (logger.isTraceEnabled())
         {
@@ -988,34 +975,11 @@ public class FileFolderServiceImpl implements FileFolderService
 
         boolean nameChanged = (newName.equals(beforeFileInfo.getName()) == false);
 
-        // check is primary parent
-        boolean isPrimaryParent = true;
-        if (sourceParentRef != null)
-        {
-            isPrimaryParent = sourceParentRef.equals(nodeService.getPrimaryParent(sourceNodeRef).getParentRef());
-        }
+        AssociationCopyInfo targetInfo = getAssociationCopyInfo(nodeService, sourceNodeRef, sourceParentRef, newName, nameChanged);
+        QName qname = targetInfo.getTargetAssocQName();
+        boolean isPrimaryParent = targetInfo.getSourceParentAssoc().isPrimary();
+        ChildAssociationRef assocRef = targetInfo.getSourceParentAssoc();
 
-        // we need the current association type
-        ChildAssociationRef assocRef = null;
-        if (isPrimaryParent)
-        {
-            assocRef = nodeService.getPrimaryParent(sourceNodeRef);
-        }
-        else
-        {
-            List<ChildAssociationRef> assocList = nodeService.getParentAssocs(sourceNodeRef);
-            if (assocList != null)
-            {
-                for (ChildAssociationRef assocListEntry : assocList)
-                {
-                    if (sourceParentRef.equals(assocListEntry.getParentRef()))
-                    {
-                        assocRef = assocListEntry;
-                        break;
-                    }
-                }
-            }
-        }
         if (targetParentRef == null)
         {
             targetParentRef = assocRef.getParentRef();
@@ -1033,21 +997,6 @@ public class FileFolderServiceImpl implements FileFolderService
                         "   new name: " + newName);
             }
             return beforeFileInfo;
-        }
-        
-        QName existingQName = assocRef.getQName();
-        QName qname;
-        if (nameChanged && !systemNamespaces.contains(existingQName.getNamespaceURI()))
-        {
-            // Change the localname to match the new name
-            qname = QName.createQName(
-                    assocRef.getQName().getNamespaceURI(),
-                    QName.createValidLocalName(newName));
-        }
-        else
-        {
-            // Keep the localname
-            qname = existingQName;
         }
         
         QName targetParentType = nodeService.getType(targetParentRef);
@@ -1121,6 +1070,16 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         else
         {
+            // Check if during copy top level name will be changed to some new
+            String newNameAfterCopy = copyService.getTopLevelNodeNewName(sourceNodeRef, targetParentRef, assocTypeQname, qname);
+            if (newNameAfterCopy != null && !newNameAfterCopy.equals(newName))
+            {
+                newName = newNameAfterCopy;
+                qname = QName.createQName(
+                        assocRef.getQName().getNamespaceURI(),
+                        QName.createValidLocalName(newNameAfterCopy));
+            }
+
             try
             {
                 // Copy the node.  The cm:name will be dropped and reset later.

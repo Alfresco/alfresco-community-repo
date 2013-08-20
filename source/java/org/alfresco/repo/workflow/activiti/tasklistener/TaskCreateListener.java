@@ -29,11 +29,14 @@ import org.activiti.engine.impl.form.TaskFormHandler;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.IdentityLinkEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
+import org.activiti.engine.task.IdentityLinkType;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.workflow.WorkflowConstants;
 import org.alfresco.repo.workflow.WorkflowNotificationUtils;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
-import org.alfresco.repo.workflow.jbpm.JBPMEngine;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -45,6 +48,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class TaskCreateListener implements TaskListener
 {
+    private static final long serialVersionUID = 1L;
+    
     private ActivitiPropertyConverter propertyConverter;
     private WorkflowNotificationUtils workflowNotificationUtils;
     
@@ -62,12 +67,20 @@ public class TaskCreateListener implements TaskListener
         // Set all default properties, based on the type-definition
         propertyConverter.setDefaultTaskProperties(task);
 
+        String taskFormKey = getFormKey(task);
+        
+        // Fetch definition and extract name again. Possible that the default is used if the provided is missing
+        TypeDefinition typeDefinition = propertyConverter.getWorkflowObjectFactory().getTaskTypeDefinition(taskFormKey, false);
+        taskFormKey = typeDefinition.getName().toPrefixString();
+        
         // The taskDefinition key is set as a variable in order to be available
         // in the history
-        String taskFormKey = getFormKey(task);
-        if (taskFormKey != null)
-        {
-            task.setVariableLocal(ActivitiConstants.PROP_TASK_FORM_KEY, taskFormKey);
+        task.setVariableLocal(ActivitiConstants.PROP_TASK_FORM_KEY, taskFormKey);
+        
+        // Add process initiator as involved person
+        ActivitiScriptNode initiatorNode = (ActivitiScriptNode) task.getExecution().getVariable(WorkflowConstants.PROP_INITIATOR);
+        if(initiatorNode != null) {
+            task.addUserIdentityLink((String) initiatorNode.getProperties().get(ContentModel.PROP_USERNAME.toPrefixString()), IdentityLinkType.STARTER);
         }
         
         // Determine whether we need to send the workflow notification or not

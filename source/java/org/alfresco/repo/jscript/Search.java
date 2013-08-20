@@ -40,6 +40,8 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.ISO9075;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -135,8 +137,10 @@ public class Search extends BaseScopableProcessorExtension
      */
     public ScriptNode findNode(NodeRef ref)
     {
-        ParameterCheck.mandatory("ref", ref);
-        if (this.services.getNodeService().exists(ref))
+        ParameterCheck.mandatory("ref", ref);       
+        if (this.services.getNodeService().exists(ref)
+                    && (this.services.getPermissionService().hasPermission(ref,
+                                PermissionService.READ) == AccessStatus.ALLOWED))
         {
             return new ScriptNode(ref, this.services, getScope());
         }

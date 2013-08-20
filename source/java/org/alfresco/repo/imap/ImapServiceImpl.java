@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,11 +20,8 @@ package org.alfresco.repo.imap;
 
 import static org.alfresco.repo.imap.AlfrescoImapConst.DICTIONARY_TEMPLATE_PREFIX;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,13 +41,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Part;
 import javax.mail.internet.AddressException;
-import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeUtility;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -88,9 +81,7 @@ import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -111,11 +102,9 @@ import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.poi.hmef.HMEFMessage;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.util.FileCopyUtils;
 
 import com.icegreen.greenmail.store.SimpleStoredMessage;
 
@@ -144,7 +133,6 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     private PermissionService permissionService;
     private ServiceRegistry serviceRegistry;
     private BehaviourFilter policyBehaviourFilter;
-    private MimetypeService mimetypeService; 
     private NamespaceService namespaceService;
     private SearchService searchService;
     private AttachmentsExtractor attachmentsExtractor;
@@ -246,11 +234,6 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
-    }
-
-    public void setMimetypeService(MimetypeService mimetypeService)
-    {
-        this.mimetypeService = mimetypeService;
     }
 
     public void setNodeService(NodeService nodeService)
@@ -378,7 +361,6 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         PropertyCheck.mandatory(this, "defaultToAddress", defaultToAddress);
         PropertyCheck.mandatory(this, "repositoryTemplatePath", repositoryTemplatePath);
         PropertyCheck.mandatory(this, "policyBehaviourFilter", policyBehaviourFilter);
-        PropertyCheck.mandatory(this, "mimetypeService", mimetypeService);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "searchService", getSearchService());
         this.folderCache = new MaxSizeMap<Pair<String,String>, FolderStatus>(folderCacheSize, false);
@@ -576,53 +558,53 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             return new AlfrescoImapFolder(user.getLogin(), this, serviceRegistry);
         }
         final NodeRef root;
-        final List<String> pathElements;
+        List<String> pathElements = null;
         ImapViewMode viewMode = ImapViewMode.ARCHIVE;
         int index = mailboxName.indexOf(AlfrescoImapConst.HIERARCHY_DELIMITER);
         int mountPointId = 0;
-        if (index < 0)
+
+        String rootPath = (index > 0) ? (mailboxName.substring(0, index)) : (mailboxName);
+
+        ImapConfigMountPointsBean imapConfigMountPoint = this.imapConfigMountPoints.get(rootPath);
+        if (imapConfigMountPoint != null)
         {
-            root = getUserImapHomeRef(user.getLogin());
-            pathElements = Collections.singletonList(mailboxName);
+            mountPointId = this.mountPointIds.get(rootPath);
+            root = imapConfigMountPoint.getFolderPath(serviceRegistry.getNamespaceService(), nodeService, searchService, fileFolderService);
+
+            if (index > 0)
+            {
+                pathElements = Arrays.asList(mailboxName.substring(index + 1).split(String.valueOf(AlfrescoImapConst.HIERARCHY_DELIMITER)));
+            }
+
+            viewMode = imapConfigMountPoint.getMode();
         }
         else
         {
-            String rootPath = mailboxName.substring(0, index);
-            ImapConfigMountPointsBean imapConfigMountPoint = this.imapConfigMountPoints.get(rootPath);
-            if (imapConfigMountPoint != null)
-            {
-                mountPointId = this.mountPointIds.get(rootPath);
-                root = imapConfigMountPoint.getFolderPath(serviceRegistry.getNamespaceService(), nodeService, searchService, fileFolderService);
-                pathElements = Arrays.asList(mailboxName.substring(index + 1).split(
-                        String.valueOf(AlfrescoImapConst.HIERARCHY_DELIMITER)));
-                viewMode = imapConfigMountPoint.getMode();
-            }
-            else
-            {            
-                root = getUserImapHomeRef(user.getLogin());
-                pathElements = Arrays.asList(mailboxName.split(String.valueOf(AlfrescoImapConst.HIERARCHY_DELIMITER)));
-            }
+            root = getUserImapHomeRef(user.getLogin());
+            pathElements = Arrays.asList(mailboxName.split(String.valueOf(AlfrescoImapConst.HIERARCHY_DELIMITER)));
         }
+
         FileInfo mailFolder;
         try
         {
-            mailFolder = fileFolderService.resolveNamePath(root, pathElements, !mayCreate);
+            if (null != pathElements)
+            {
+                mailFolder = fileFolderService.resolveNamePath(root, pathElements, !mayCreate);
+            }
+            else
+            {
+                mailFolder = fileFolderService.getFileInfo(root);
+            }
         }
         catch (FileNotFoundException e)
         {
-            throw new AlfrescoRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[]
-            {
-                mailboxName
-            });
+            throw new AlfrescoRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[] { mailboxName });
         }
         if (mailFolder == null)
         {
             if (!mayCreate)
             {
-                throw new AlfrescoRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[]
-                {
-                    mailboxName
-                });
+                throw new AlfrescoRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[] { mailboxName });
             }
             if (logger.isDebugEnabled())
             {
@@ -637,8 +619,9 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 throw new AlfrescoRuntimeException(ERROR_FOLDER_ALREADY_EXISTS);
             }
         }
-        return new AlfrescoImapFolder(mailFolder, user.getLogin(), pathElements.get(pathElements.size() - 1), mailboxName, viewMode,
-                this, serviceRegistry, true, isExtractionEnabled(mailFolder.getNodeRef()), mountPointId);
+        String path = (null != pathElements) ? (pathElements.get(pathElements.size() - 1)) : (rootPath);
+        return new AlfrescoImapFolder(mailFolder, user.getLogin(), path, mailboxName, viewMode, this, serviceRegistry, true, isExtractionEnabled(mailFolder.getNodeRef()),
+                mountPointId);
     }
 
     public void deleteMailbox(AlfrescoImapUser user, String mailboxName)
@@ -1781,6 +1764,14 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                     setFlag(childNodeRef, Flags.Flag.DELETED, false);
                     setFlag(childNodeRef, Flags.Flag.SEEN, false);
                 }
+
+                NodeRef folderRef = childAssocRef.getParentRef();
+                long newId = (Long) nodeService.getProperty(childNodeRef, ContentModel.PROP_NODE_DBID);
+                if (nodeService.hasAspect(folderRef, ImapModel.ASPECT_IMAP_FOLDER))
+                {
+                    // Force generation of a new change token and updating the UIDVALIDITY 
+                    getUidValidityTransactionListener(folderRef).recordNewUid(newId);
+                }
                 return null;
             }
         });
@@ -1883,8 +1874,8 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                     {
                         long modifDate = System.currentTimeMillis();
                         Long oldMax = (Long) nodeService.getProperty(folderNodeRef, ImapModel.PROP_MAXUID);
-                        // Only update UIDVALIDITY if a new node has and ID that is smaller than the old maximum (as UIDs are always meant to increase)
-                        if (UidValidityTransactionListener.this.forceNewUidValidity || oldMax == null || UidValidityTransactionListener.this.minUid < oldMax)
+                        // Only update UIDVALIDITY if a new node has and ID that is smaller or equals the old maximum (as UIDs are always meant to increase)
+                        if (UidValidityTransactionListener.this.forceNewUidValidity || oldMax == null || UidValidityTransactionListener.this.minUid <= oldMax)
                         {
                             nodeService.setProperty(folderNodeRef, ImapModel.PROP_UIDVALIDITY, modifDate);                            
                             if (logger.isDebugEnabled())
@@ -1935,174 +1926,6 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         else
         {
             return nodeService.getType(parent).equals(SiteModel.TYPE_SITE) && isInDocLibrary;
-        }
-    }
-
-    /**
-     * Extract attachments from a MimeMessage
-     * 
-     * Puts the attachments into a subfolder below the parent folder.
-     * 
-     * @return the node ref of the folder containing the attachments or null if there are no
-     * attachments.
-     */
-    public NodeRef extractAttachments(
-            NodeRef parentFolder,
-            NodeRef messageFile,
-            MimeMessage originalMessage)
-            throws IOException, MessagingException
-    {
-       
-        String messageName = (String)nodeService.getProperty(messageFile, ContentModel.PROP_NAME);
-        String attachmentsFolderName = messageName + "-attachments";
-        FileInfo attachmentsFolderFileInfo = null;
-        Object content = originalMessage.getContent();
-        if (content instanceof Multipart)
-        {
-            Multipart multipart = (Multipart) content;
-
-            for (int i = 0, n = multipart.getCount(); i < n; i++)
-            {
-                Part part = multipart.getBodyPart(i);
-               
-                if ("attachment".equalsIgnoreCase(part.getDisposition()))
-                {
-                    if (attachmentsFolderFileInfo == null)
-                    {
-                        attachmentsFolderFileInfo = fileFolderService.create(
-                                parentFolder,
-                                attachmentsFolderName,
-                                ContentModel.TYPE_FOLDER);
-                        nodeService.createAssociation(
-                                messageFile,
-                                attachmentsFolderFileInfo.getNodeRef(),
-                                ImapModel.ASSOC_IMAP_ATTACHMENTS_FOLDER);
-                    }
-                    createAttachment(messageFile, attachmentsFolderFileInfo.getNodeRef(), part);
-                }
-            }
-        }
-        if(attachmentsFolderFileInfo != null)
-        {
-            return attachmentsFolderFileInfo.getNodeRef();
-        }
-        else
-        {
-            return null;
-        }
-    }
-    
-    /**
-     * Create an attachment given a mime part
-     * 
-     * @param messageFile the file containing the message
-     * @param destinationFolder where to put the attachment
-     * @param part the mime part
-     * 
-     * @throws MessagingException
-     * @throws IOException
-     */
-    private void createAttachment(NodeRef messageFile, NodeRef destinationFolder, Part part) throws MessagingException, IOException
-    {
-        String fileName = part.getFileName();
-        try
-        {
-            fileName = MimeUtility.decodeText(fileName);
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            if (logger.isWarnEnabled())
-            {
-                logger.warn("Cannot decode file name '" + fileName + "'", e);
-            }
-        }
-
-        ContentType contentType = new ContentType(part.getContentType());
-                
-        if(contentType.getBaseType().equalsIgnoreCase("application/ms-tnef"))
-        {
-            // The content is TNEF
-            HMEFMessage hmef = new HMEFMessage(part.getInputStream());
-            
-            //hmef.getBody();
-            List<org.apache.poi.hmef.Attachment> attachments = hmef.getAttachments();
-            for(org.apache.poi.hmef.Attachment attachment : attachments)
-            {
-                String subName = attachment.getLongFilename();
-                
-                NodeRef attachmentNode = fileFolderService.searchSimple(destinationFolder, subName);
-                if (attachmentNode == null)
-                {
-                    /*
-                     * If the node with the given name does not already exist
-                     * Create the content node to contain the attachment
-                     */
-                    FileInfo createdFile = fileFolderService.create(
-                            destinationFolder,
-                            subName,
-                            ContentModel.TYPE_CONTENT);
-                    
-                    attachmentNode = createdFile.getNodeRef();
-                    
-                    serviceRegistry.getNodeService().createAssociation(
-                            messageFile,
-                            attachmentNode,
-                            ImapModel.ASSOC_IMAP_ATTACHMENT);
-                
-                
-                    byte[] bytes = attachment.getContents();
-                    ContentWriter writer = fileFolderService.getWriter(attachmentNode);
-                    
-                    //TODO ENCODING - attachment.getAttribute(TNEFProperty.);
-                    String extension = attachment.getExtension();
-                    String mimetype = mimetypeService.getMimetype(extension);
-                    if(mimetype != null)
-                    {
-                        writer.setMimetype(mimetype);
-                    }
-                    
-                    OutputStream os = writer.getContentOutputStream();
-                    ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-                    FileCopyUtils.copy(is, os);
-                }
-            }
-        }
-        else
-        {
-            // not TNEF
-            NodeRef attachmentNode = fileFolderService.searchSimple(destinationFolder, fileName);
-            if (attachmentNode == null)
-            {
-                /*
-                 * If the node with the given name does not already exist
-                 * Create the content node to contain the attachment
-                 */
-                FileInfo createdFile = fileFolderService.create(
-                        destinationFolder,
-                        fileName,
-                        ContentModel.TYPE_CONTENT);
-                
-                attachmentNode = createdFile.getNodeRef();
-                
-                serviceRegistry.getNodeService().createAssociation(
-                        messageFile,
-                        attachmentNode,
-                        ImapModel.ASSOC_IMAP_ATTACHMENT);
-            
-
-                // the part is a normal IMAP attachment
-                ContentWriter writer = fileFolderService.getWriter(attachmentNode);
-                writer.setMimetype(contentType.getBaseType());
-        
-                String charset = contentType.getParameter("charset");
-                if(charset != null)
-                {
-                    writer.setEncoding(charset);
-                }
-        
-                OutputStream os = writer.getContentOutputStream();
-                FileCopyUtils.copy(part.getInputStream(), os);
-            }
         }
     }
 

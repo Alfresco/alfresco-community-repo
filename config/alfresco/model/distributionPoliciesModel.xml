@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model name="dp:distributionPoliciesModel"
+        xmlns="http://www.alfresco.org/model/dictionary/1.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.alfresco.org/model/dictionary/1.0 modelSchema.xsd">
+    <description>Distribution Policies Model</description>
+    <author>mike.hatfield@alfresco.com</author>
+    <version>1.0</version>
+    <imports>
+        <!-- Import Alfresco Dictionary Definitions -->
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+        <!-- Import Alfresco Content Domain Model Definitions -->
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+    </imports>
+
+    <!-- Namespaces -->
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/distributionpolicies/1.0/model" prefix="dp" />
+    </namespaces>
+
+    <!-- Constraints -->
+
+    <!-- Types -->
+
+    <!-- Aspects -->
+    <aspects>
+        <!-- Restricted content aspect -->
+        <aspect name="dp:restrictable">
+            <title>Restrictable</title>
+            <description>Applied to documents that should have restricted distribution</description>
+            <properties>
+                <property name="dp:offlineExpiresAfter">
+                    <title>Offline Expires After (milliseconds)</title>
+                    <type>d:long</type>
+                    <default>0</default>
+                </property>
+            </properties>
+        </aspect>
+    </aspects>
+</model>

@@ -73,7 +73,7 @@
       <property name="namespaceService" ref="NamespaceService" />
       <property name="searchService" ref="SearchService" />
       <property name="publishingEventHelper" ref="publishingEventHelper" />
-      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
+	  <property name="transactionService" ref="TransactionService" />
       <property name="permissionService" ref="PermissionService" />
       <property name="publishingStore" value="${spaces.store}" />
       <property name="publishingRootPath" value="${publishing.root}" />

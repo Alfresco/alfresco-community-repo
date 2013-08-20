@@ -204,6 +204,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     private boolean useInMemorySort = true;
 
     private int maxRawResultSetSizeForInMemorySort = 1000;
+    
+    private volatile boolean destroyed = false;
 
     /**
      * Private constructor for the singleton TODO: FIt in with IOC
@@ -769,14 +771,22 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
             {
                 for (LuceneIndexer indexer : indexers.values())
                 {
-                    try
-                    {
-                        indexer.commit();
-                    }
-                    catch (IndexerException e)
+                    if(destroyed && Thread.currentThread().isDaemon())
                     {
                         rollback();
-                        throw e;
+                        throw new IndexerException("Destroyed ..");
+                    }
+                    else
+                    {
+                        try
+                        {
+                            indexer.commit();
+                        }
+                        catch (IndexerException e)
+                        {
+                            rollback();
+                            throw e;
+                        }
                     }
                 }
             }
@@ -2214,6 +2224,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     public void destroy() throws Exception
     {
         IndexInfo.destroy();
+        destroyed = true;
     }
     
     

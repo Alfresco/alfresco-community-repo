@@ -195,4 +195,13 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
             return copiedPointerNodeRef;
         }
     }
+    
+    /**
+     * By default it is forbidden for top-level nodes to be renamed
+     */
+    @Override
+    public boolean isTopLevelCanBeRenamed(QName classQName, CopyDetails copyDetails)
+    {
+        return false;
+    }
 }

@@ -350,7 +350,7 @@
       </property>
    </bean>
 
-   <!-- Import the transformer selector from the transformers subsystem -->
+   <!-- Transformer JMX bean (in addition to sub system properties) -->
    <bean id="transformerConfigMBean" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Transformers" />
@@ -362,7 +362,7 @@
       </property>
    </bean>
 
-      <!-- Logger for transformer debug that may be accessed via JMX -->
+    <!-- Logger for transformer debug that may be accessed via JMX -->
    <bean id="transformerDebugLog" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Transformers" />
@@ -403,7 +403,10 @@
       </property>
    </bean>
    
-   <!-- Abstract bean definition defining base definition for all transformer that are not registered -->
+   <!-- Abstract bean definition defining base definition for all transformer that are not registered.
+        Since 4.2 normally defined as available=false transformers in Alfresco global properties
+        rather than in Spring XML. 
+    -->
    <bean id="unregisteredBaseContentTransformer"
          class="org.alfresco.repo.content.transform.AbstractContentTransformer2"
          abstract="true"
@@ -422,7 +425,10 @@
       </property>
    </bean>
    
-   <!-- Abstract bean definition defining base definition for all complex transformers -->
+   <!-- Abstract bean definition defining base definition for all complex transformers.
+        Since 4.2 normally defined as 'pipeline' transformers in Alfresco global properties
+        rather than in Spring XML.
+    -->
    <bean id="baseComplexContentTransformer"
          class="org.alfresco.repo.content.transform.ComplexContentTransformer"
          abstract="true"
@@ -457,105 +463,9 @@
          parent="baseContentTransformer" >
    </bean>
    
-   <bean  id="transformer.double.ImageMagick"
-      class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-      parent="unregisteredBaseContentTransformer">
-      <property name="transformers">
-         <list>
-            <ref bean="transformer.ImageMagick" />
-            <ref bean="transformer.ImageMagick" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>image/png</value>
-         </list>
-      </property>
-   </bean>
-
-   <!-- Supports the same transformations as the previous version by using either a single
-        ImageMagick transformation to png or two ImageMagick transformation via png.
-        Adobe Illustrator (ai) files are, in fact, PDF files -->
-   <bean id="transformer.complex.PDF.Image"
-        class="org.alfresco.repo.content.transform.FailoverContentTransformer"
-        parent="baseContentTransformer" >
-     <property name="transformers">
-        <list>
-           <ref bean="transformer.ImageMagick"/>
-           <ref bean="transformer.double.ImageMagick"/>
-        </list>
-     </property>  
-   </bean>
-   
-   <bean id="transformer.complex.iWorks.Image"
-         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-         parent="baseContentTransformer">
-      <property name="transformers">
-         <list>
-            <ref bean="transformer.iWorksQuicklooks" />
-            <ref bean="transformer.ImageMagick" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>image/jpeg</value>
-         </list>
-      </property>
-   </bean>
-   
-   <!-- This was called transformer.complex.OOXML.Image, but now the first stage
-        is any transformer to allow fail over when there is no embedded thumbnail. -->
-   <bean id="transformer.complex.Any.Image"
-         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-         parent="baseComplexContentTransformer">
-      <property name="transformers">
-         <list>
-            <null />
-            <ref bean="transformer.ImageMagick" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>image/jpeg</value>
-         </list>
-      </property>
-   </bean>
-   
-   <bean id="transformer.complex.OpenOffice.Image"
-        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseComplexContentTransformer" >
-      <property name="transformers">
-         <list>
-            <ref bean="transformer.OpenOffice.2Pdf" />
-            <ref bean="transformer.complex.PDF.Image" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>application/pdf</value>
-         </list>
-      </property>
-   </bean>   
-
    <bean id="transformer.PdfBox.TextToPdf"
          class="org.alfresco.repo.content.transform.TextToPdfContentTransformer"
          parent="baseContentTransformer" >
-   </bean>
-
-   <bean id="transformer.complex.Text.Image"
-        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseComplexContentTransformer" >
-      <property name="transformers">
-         <list>
-            <null />
-            <ref bean="transformer.complex.PDF.Image" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>application/pdf</value>
-         </list>
-      </property>
    </bean>
 
    <bean id="transformer.TikaAuto"
@@ -621,74 +531,10 @@
       </property>
    </bean>
          
-   <bean id="transformer.complex.OpenOffice.PdfBox"
-        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseComplexContentTransformer" >
-      <property name="transformers">
-         <list>
-            <ref bean="transformer.OpenOffice.2Pdf" />
-            <ref bean="transformer.PdfBox" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>application/pdf</value>
-         </list>    
-      </property>
-   </bean>
-
-   <!--
-    This transformer exists because OpenOffice and LibreOffice have a problem
-    going directly from HTML to PDF. Going via ODT appears a much better option.
-    For example <sub> tags hang the soffice process. ALF-14035 
-     -->
-   <bean id="transformer.OpenOffice.2Pdf"
-        class="org.alfresco.repo.content.transform.FailoverContentTransformer"
-        parent="unregisteredBaseContentTransformer" >
-     <property name="transformers">
-        <list>
-           <ref bean="transformer.OpenOffice"/>
-           <ref bean="transformer.OpenOffice.Html2Pdf"/>
-        </list>
-     </property>  
-   </bean>
-
-   <bean id="transformer.OpenOffice.Html2Pdf"
-        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseComplexContentTransformer" >
-      <property name="transformers">
-         <list>
-            <ref bean="transformer.OpenOffice" />
-            <ref bean="transformer.OpenOffice" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>application/vnd.oasis.opendocument.text</value>
-         </list>
-      </property>
-   </bean>
-   
    <bean id="transformer.OutlookMsg"
          class="org.alfresco.repo.content.transform.MailContentTransformer"
          parent="baseContentTransformer" />
          
-   <bean id="transformer.complex.OutlookMsg2Image" 
-        class="org.alfresco.repo.content.transform.ComplexContentTransformer" 
-        parent="baseComplexContentTransformer" > 
-      <property name="transformers"> 
-         <list> 
-            <ref bean="transformer.OutlookMsg" /> 
-            <null /> 
-         </list> 
-      </property> 
-      <property name="intermediateMimetypes"> 
-         <list> 
-            <value>text/plain</value> 
-         </list> 
-      </property> 
-   </bean> 
-
    <bean id="transformer.RFC822"
          class="org.alfresco.repo.content.transform.EMLTransformer"
          parent="baseContentTransformer" />

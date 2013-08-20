@@ -205,7 +205,10 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
             }
             catch (Exception are)
             {
-                transformationException = are;
+                if (transformationException == null)
+                {
+                    transformationException = are;
+                }
                 
                 if (logger.isDebugEnabled())
                 {
@@ -244,7 +247,7 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
             transformerDebug.debug("          No more transformations to failover to");
             if (logger.isDebugEnabled())
             {
-                logger.debug("All transformations were unsuccessful. Throwing latest exception.", transformationException);
+                logger.debug("All transformations were unsuccessful. Throwing first exception.", transformationException);
             }
             throw transformationException;
         }

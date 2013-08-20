@@ -120,8 +120,18 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     {
         recordActionPending((ActionImpl) action);
     }
-
+    
+    public void recordActionPending(Action action, NodeRef actionedUponNodeRef)
+    {
+        recordActionPending((ActionImpl) action, actionedUponNodeRef);
+    }
+    
     public void recordActionPending(ActionImpl action)
+    {
+        recordActionPending(action, null);
+    }
+
+    public void recordActionPending(ActionImpl action, NodeRef actionedUponNodeRef)
     {
         // Set the status
         action.setExecutionStatus(ActionStatus.Pending);
@@ -131,7 +141,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
 
         // Have it put into the cache, so we can tell it
         // is waiting to be run
-        placeActionInCache(action);
+        placeActionInCache(action, actionedUponNodeRef);
     }
 
     public void recordActionComplete(Action action)
@@ -215,10 +225,15 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
 
     public void recordActionExecuting(Action action)
     {
-        recordActionExecuting((ActionImpl) action);
+        recordActionExecuting((ActionImpl) action, null);
     }
-
-    private void recordActionExecuting(ActionImpl action)
+    
+    public void recordActionExecuting(Action action, NodeRef actionedUponNodeRef)
+    {
+        recordActionExecuting((ActionImpl) action, actionedUponNodeRef);
+    }
+    
+    private void recordActionExecuting(ActionImpl action, NodeRef actionedUponNodeRef)
     {
         if (logger.isDebugEnabled() == true)
         {
@@ -236,7 +251,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         // If it's a synchronous execution, put it into the cache
         if (previousStatus != ActionStatus.Pending)
         {
-            placeActionInCache(action);
+            placeActionInCache(action, actionedUponNodeRef);
         }
         else
         {
@@ -263,7 +278,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
      * pending, or sync action that is running), assign an execution instance
      * and put into the cache
      */
-    private void placeActionInCache(ActionImpl action)
+    private void placeActionInCache(ActionImpl action, NodeRef actionedUponNodeRef)
     {
         // Assign it a (unique) execution ID
         // (Keep checking to see if the key is used as we
@@ -297,7 +312,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         }
 
         // Put it into the cache
-        ExecutionDetails details = buildExecutionDetails(action);
+        ExecutionDetails details = buildExecutionDetails(action, actionedUponNodeRef);
         executingActionsCache.put(key, details);
 
         if (logger.isDebugEnabled() == true)
@@ -462,6 +477,11 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
 
     private void requestActionCancellation(String actionKey)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("requesting cancellation of action: " + actionKey);
+        }
+        
         // See if the action is in the cache
         ExecutionDetails details = executingActionsCache.get(actionKey);
 
@@ -523,6 +543,25 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         }
         return details;
     }
+    
+    public List<ExecutionSummary> getExecutingActions(String type, NodeRef actionedUponNodeRef)
+    {
+        List<ExecutionSummary> executionSummaries = getExecutingActions(type);
+        if (actionedUponNodeRef == null)
+        {
+            return executionSummaries;
+        }
+        List<ExecutionSummary> filteredExecutingActions = new ArrayList<ExecutionSummary>();
+        for (ExecutionSummary executionSummary : executionSummaries)
+        {
+            ExecutionDetails details = getExecutionDetails(executionSummary);
+            if (details.getActionedUponNodeRef() != null && details.getActionedUponNodeRef().equals(actionedUponNodeRef))
+            {
+                filteredExecutingActions.add(executionSummary);
+            }
+        }
+        return filteredExecutingActions;
+    }
 
     public ExecutionDetails getExecutionDetails(ExecutionSummary executionSummary)
     {
@@ -548,11 +587,19 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         return summary.getActionType() + cacheKeyPartSeparator + summary.getActionId()
                 + cacheKeyPartSeparator + summary.getExecutionInstance();
     }
-
+    
     /**
      * Builds up the details to be stored in a cache for a specific action
      */
     protected static ExecutionDetails buildExecutionDetails(Action action)
+    {
+        return buildExecutionDetails(action, null);
+    }
+
+    /**
+     * Builds up the details to be stored in a cache for a specific action
+     */
+    protected static ExecutionDetails buildExecutionDetails(Action action, NodeRef actionedUponNodeRef)
     {
         // Where are we running?
         if (machineName == null)
@@ -569,7 +616,8 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         }
 
         // Generate
-        return new ExecutionDetails(buildExecutionSummary(action), action.getNodeRef(),
+        return new ExecutionDetails(buildExecutionSummary(action), 
+                action.getNodeRef(), actionedUponNodeRef,
                 machineName, action.getExecutionStartDate(), false);
     }
 

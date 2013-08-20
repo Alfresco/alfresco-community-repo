@@ -248,6 +248,7 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
         
         // Define the phases
         final String createParentFoldersPhaseName = "createParentFolders";
+        final String moveFolderThatClashesPhaseName = "moveHomeFolderThatClashesWithParentFolderStructure";
         RunAsWorker[] workers = new RunAsWorker[]
         {
             new RunAsWorker(systemUserName, tenantDomain, "calculateParentFolderStructure")
@@ -260,7 +261,7 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                 }
             },
             
-            new RunAsWorker(systemUserName, tenantDomain, "moveHomeFolderThatClashesWithParentFolderStructure")
+            new RunAsWorker(systemUserName, tenantDomain, moveFolderThatClashesPhaseName)
             {
                 @Override
                 public void doWork(NodeRef person) throws Exception
@@ -301,7 +302,7 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                         name+" --");
             }
             
-            int threadCount = (name.equals(createParentFoldersPhaseName)) ? 1 : 2;
+            int threadCount = (name.equals(createParentFoldersPhaseName) || name.equals(moveFolderThatClashesPhaseName)) ? 1 : 2;
             int peoplePerTransaction = 20;
             
             // Use 2 threads, 20 person objects per transaction. Log every 100 entries.

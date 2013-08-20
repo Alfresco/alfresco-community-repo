@@ -54,7 +54,6 @@ CREATE TABLE alf_qname
     PRIMARY KEY (id)
 );
 CREATE UNIQUE INDEX ns_id ON alf_qname (ns_id, local_name);
-CREATE INDEX fk_alf_qname_ns ON alf_qname (ns_id);
 
 CREATE SEQUENCE alf_permission_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_permission
@@ -234,6 +233,11 @@ CREATE TABLE alf_node
     CONSTRAINT fk_alf_node_loc FOREIGN KEY (locale_id) REFERENCES alf_locale (id)
 );
 CREATE UNIQUE INDEX store_id ON alf_node (store_id, uuid);
+CREATE INDEX idx_alf_node_mdq ON alf_node (store_id, type_qname_id, id);
+CREATE INDEX idx_alf_node_cor ON alf_node (audit_creator, store_id, type_qname_id, id);
+CREATE INDEX idx_alf_node_crd ON alf_node (audit_created, store_id, type_qname_id, id);
+CREATE INDEX idx_alf_node_mor ON alf_node (audit_modifier, store_id, type_qname_id, id);
+CREATE INDEX idx_alf_node_mod ON alf_node (audit_modified, store_id, type_qname_id, id);
 CREATE INDEX idx_alf_node_txn_type ON alf_node (transaction_id, type_qname_id);
 CREATE INDEX fk_alf_node_acl ON alf_node (acl_id);
 CREATE INDEX fk_alf_node_store ON alf_node (store_id);
@@ -324,3 +328,5 @@ CREATE TABLE alf_node_properties
 CREATE INDEX fk_alf_nprop_n ON alf_node_properties (node_id);
 CREATE INDEX fk_alf_nprop_qn ON alf_node_properties (qname_id);
 CREATE INDEX fk_alf_nprop_loc ON alf_node_properties (locale_id);
+CREATE INDEX idx_alf_nprop_s ON alf_node_properties (qname_id, string_value, node_id);
+CREATE INDEX idx_alf_nprop_l ON alf_node_properties (qname_id, long_value, node_id);

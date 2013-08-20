@@ -122,4 +122,10 @@
         </property>
         <property name="serviceRegistry" ref="ServiceRegistry"/>
     </bean>
+    
+    
+    <!-- Behaviours and policies for Ratings -->
+    <bean id="ratingsRelatedAspectBehaviours" class="org.alfresco.repo.rating.RatingsRelatedAspectBehaviours" init-method="init">
+       <property name="policyComponent" ref="policyComponent"/>
+    </bean>
 </beans>

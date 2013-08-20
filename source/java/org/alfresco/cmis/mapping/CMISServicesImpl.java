@@ -1625,7 +1625,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                 if (nodeService.getChildAssocs(
                         nodeRef,
                         ContentModel.ASSOC_CONTAINS,
-                        RegexQNamePattern.MATCH_ALL).size() > 0)
+                        RegexQNamePattern.MATCH_ALL, 1, false).size() > 0)
                 {
                     throw new CMISConstraintException("Could not delete folder with at least one Child");
                 }

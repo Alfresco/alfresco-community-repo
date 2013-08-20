@@ -18,14 +18,17 @@
  */
 package org.alfresco.repo.domain.node;
 
+import java.io.Serializable;
+
 /**
  * Bean to represent <tt>alf_transaction</tt> data.
  * 
  * @author Derek Hulley
  * @since 3.4
  */
-public class TransactionEntity implements Transaction
+public class TransactionEntity implements Transaction, Serializable
 {
+    private static final long serialVersionUID = 1L;
     private Long id;
     private Long version;
     private ServerEntity server;

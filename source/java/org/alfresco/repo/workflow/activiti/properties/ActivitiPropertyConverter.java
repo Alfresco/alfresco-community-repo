@@ -22,6 +22,7 @@ package org.alfresco.repo.workflow.activiti.properties;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -394,12 +395,14 @@ public class ActivitiPropertyConverter
         }
         catch (ConstraintException ce)
         {
-            Integer defaultVal = Integer.valueOf(priorDef.getDefaultValue());
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Task priority value ("+existingValue+") was invalid so it was set to the default value of "+defaultVal+". Task:"+task.getName());
+            if(priorDef != null) {
+                Integer defaultVal = Integer.valueOf(priorDef.getDefaultValue());
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Task priority value ("+existingValue+") was invalid so it was set to the default value of "+defaultVal+". Task:"+task.getName());
+                }
+                defaultValues.put(WorkflowModel.PROP_PRIORITY, defaultVal);
             }
-            defaultValues.put(WorkflowModel.PROP_PRIORITY, defaultVal);
         }    
         
         // Special case for task description default value
@@ -496,6 +499,10 @@ public class ActivitiPropertyConverter
      */
     public Map<String, Object> getStartVariables(HistoricProcessInstance historicProcessInstance)
     {
+        if (historicProcessInstance.getStartActivityId() == null)
+        {
+            return Collections.emptyMap();
+        }
         // Get historic variable values for start-event
         HistoricActivityInstance startEvent = activitiUtil.getHistoryService()
             .createHistoricActivityInstanceQuery()
@@ -943,6 +950,10 @@ public class ActivitiPropertyConverter
         }
         
         return handlerRegistry.handleVariablesToSet(defaultProperties, startTaskType, null, Void.class);
+    }
+    
+    public WorkflowObjectFactory getWorkflowObjectFactory() {
+        return factory;
     }
     
     public void checkMandatoryProperties(DelegateTask task)

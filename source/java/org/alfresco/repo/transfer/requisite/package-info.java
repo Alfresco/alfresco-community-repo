@@ -6,4 +6,6 @@
  * and not hold a large data objects in memory.
  * @since 3.4
  */
+@PackageMarker
 package org.alfresco.repo.transfer.requisite;
+import org.alfresco.util.PackageMarker;

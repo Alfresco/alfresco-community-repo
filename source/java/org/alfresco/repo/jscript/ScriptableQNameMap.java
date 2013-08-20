@@ -181,9 +181,9 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
     /**
      * @see org.mozilla.javascript.Scriptable#getDefaultValue(java.lang.Class)
      */
-    public Object getDefaultValue(Class hint)
+    public Object getDefaultValue(@SuppressWarnings("rawtypes") Class hint)
     {
-        return null;
+        return toString();
     }
 
     /**

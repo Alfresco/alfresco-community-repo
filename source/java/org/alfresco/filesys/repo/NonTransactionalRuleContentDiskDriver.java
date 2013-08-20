@@ -178,12 +178,12 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     public NetworkFile createFile(SrvSession sess, TreeConnection tree,
             FileOpenParams params) throws IOException
     {
+    	int attr = params.getAttributes();
         if(logger.isDebugEnabled())
         {
             int sharedAccess = params.getSharedAccess();
             String strSharedAccess = SharingMode.getSharingModeAsString(sharedAccess);
-            int attr = params.getAttributes();
-           
+    
             logger.debug("createFile:" + params.getPath() 
                     + ", isDirectory: " + params.isDirectory()
                     + ", isStream: " + params.isStream()
@@ -217,7 +217,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         DriverState driverState = getDriverState(sess);
         EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
 
-        Operation o = new CreateFileOperation(file, rootNode, params.getPath(), params.getAllocationSize());
+        Operation o = new CreateFileOperation(file, rootNode, params.getPath(), params.getAllocationSize(), FileAttribute.isHidden(attr));
         Command c = ruleEvaluator.evaluate(ctx, o);
         
         Object ret = commandExecutor.execute(sess, tree, c);

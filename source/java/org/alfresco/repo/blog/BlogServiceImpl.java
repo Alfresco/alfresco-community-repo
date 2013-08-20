@@ -74,13 +74,6 @@ import org.springframework.dao.ConcurrencyFailureException;
  */
 public class BlogServiceImpl implements BlogService
 {
-    /**
-     *  For backwards compatibility with pre-Swift, we are asking the query to give us an accurate total count of how many
-     *  blog-post nodes there are. This may need to change in the future - certainly if the current 'brute force' query
-     *  is replaced by a database query.
-     */
-    private static final int MAX_QUERY_ENTRY_COUNT = 10000;
-    
     public static final String BLOG_COMPONENT = "blog";
     
     /**
@@ -376,7 +369,6 @@ public class BlogServiceImpl implements BlogService
         ParameterCheck.mandatory("pagingReq", pagingReq);
         
         // get canned query
-        pagingReq.setRequestTotalCountMax(MAX_QUERY_ENTRY_COUNT);
         GetBlogPostsCannedQuery cq = (GetBlogPostsCannedQuery)draftPostsCannedQueryFactory.getGetDraftsCannedQuery(blogContainerNode, username, pagingReq);
             
         // execute canned query
@@ -406,7 +398,6 @@ public class BlogServiceImpl implements BlogService
         ParameterCheck.mandatory("pagingReq", pagingReq);
         
         // get canned query
-        pagingReq.setRequestTotalCountMax(MAX_QUERY_ENTRY_COUNT);
         GetBlogPostsCannedQuery cq = (GetBlogPostsCannedQuery)publishedExternallyPostsCannedQueryFactory.getGetPublishedExternallyCannedQuery(blogContainerNode, pagingReq);
             
         // execute canned query
@@ -436,7 +427,6 @@ public class BlogServiceImpl implements BlogService
         ParameterCheck.mandatory("pagingReq", pagingReq);
         
         // get canned query
-        pagingReq.setRequestTotalCountMax(MAX_QUERY_ENTRY_COUNT);
         GetBlogPostsCannedQuery cq = (GetBlogPostsCannedQuery)publishedPostsCannedQueryFactory.getGetPublishedCannedQuery(blogContainerNode, fromDate, toDate, byUser, pagingReq);
             
         // execute canned query
@@ -454,7 +444,6 @@ public class BlogServiceImpl implements BlogService
         ParameterCheck.mandatory("pagingReq", pagingReq);
         
         // get canned query
-        pagingReq.setRequestTotalCountMax(MAX_QUERY_ENTRY_COUNT);
         String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         DraftsAndPublishedBlogPostsCannedQuery cq = (DraftsAndPublishedBlogPostsCannedQuery)draftsAndPublishedBlogPostsCannedQueryFactory.getCannedQuery(blogContainerNode, createdFrom, createdTo, currentUser, pagingReq);
             

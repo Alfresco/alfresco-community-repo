@@ -25,54 +25,6 @@
       </property>
    </bean>
    
-   <bean id="transformer.complex.OpenOffice.Pdf2swf"
-        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseComplexContentTransformer" >
-      <property name="transformers">
-         <list>
-            <ref bean="transformer.OpenOffice.2Pdf" />
-            <ref bean="transformer.Pdf2swf" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>application/pdf</value>
-         </list>
-      </property>
-   </bean>
- 
-   <bean id="transformer.complex.iWorks.Pdf2swf"
-        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseComplexContentTransformer" >
-      <property name="transformers">
-         <list>
-            <ref bean="transformer.iWorksQuicklooks" />
-            <ref bean="transformer.Pdf2swf" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>application/pdf</value>
-         </list>
-      </property>
-   </bean>
-   
-   <bean id="transformer.complex.Text.Pdf2swf"
-        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseComplexContentTransformer" >
-      <property name="transformers">
-         <list>
-            <null />
-            <ref bean="transformer.Pdf2swf" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>application/pdf</value>
-         </list>
-      </property>
-   </bean>
-
    <!-- This transformer allows for the webpreviewing of zip archive files. -->
    <bean id="transformer.complex.Archive.Pdf2swf"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
@@ -96,59 +48,5 @@
          </map>
       </property>
    </bean>
-   
-   <!-- This transformer allows for the webpreviewing of outlook msg files. --> 
-   <bean id="transformer.complex.Msg2swf" 
-        class="org.alfresco.repo.content.transform.ComplexContentTransformer" 
-        parent="baseComplexContentTransformer" > 
-      <property name="transformers"> 
-         <list> 
-            <ref bean="transformer.OutlookMsg" /> 
-            <null />
-            <ref bean="transformer.Pdf2swf" /> 
-         </list> 
-      </property> 
-      <property name="intermediateMimetypes"> 
-         <list> 
-            <value>text/plain</value> 
-            <value>application/pdf</value> 
-         </list> 
-      </property> 
-   </bean> 
-
-      <bean id="transformer.complex.image.Pdf2swf"
-        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseComplexContentTransformer" >
-      <property name="transformers">
-         <list>
-            <null />
-            <ref bean="transformer.Pdf2swf" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>application/pdf</value>
-         </list>
-      </property>
-   </bean>
-   
-   <!-- This transformer allows the webpreviewing of eml files. --> 
-   <bean id="transformer.complex.Rfc822ToSwf" 
-        class="org.alfresco.repo.content.transform.ComplexContentTransformer" 
-        parent="baseComplexContentTransformer" > 
-      <property name="transformers"> 
-         <list> 
-            <ref bean="transformer.RFC822" /> 
-            <null /> 
-            <ref bean="transformer.Pdf2swf" /> 
-         </list> 
-      </property> 
-      <property name="intermediateMimetypes"> 
-         <list> 
-            <value>text/plain</value> 
-            <value>application/pdf</value> 
-         </list> 
-      </property> 
-   </bean> 
    
 </beans>

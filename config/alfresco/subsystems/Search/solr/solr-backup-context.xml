@@ -22,7 +22,7 @@
             <ref bean="search.alfrescoCoreBackupJobDetail" />
         </property>
         <property name="scheduler">
-            <ref bean="schedulerFactory" />
+            <ref bean="searchSchedulerFactory" />
         </property>
         <!-- trigger at 3am each day -->
         <property name="cronExpression">
@@ -68,7 +68,7 @@
             <ref bean="search.archiveCoreBackupJobDetail" />
         </property>
         <property name="scheduler">
-            <ref bean="schedulerFactory" />
+            <ref bean="searchSchedulerFactory" />
         </property>
         <!-- trigger at 3am each day -->
         <property name="cronExpression">

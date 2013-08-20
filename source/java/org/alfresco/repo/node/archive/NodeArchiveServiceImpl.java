@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,11 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQuery;
+import org.alfresco.query.CannedQueryFactory;
+import org.alfresco.query.CannedQueryResults;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
@@ -48,14 +53,17 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.VmShutdownListener;
+import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  * Implementation of the node archive abstraction.
  * 
- * @author Derek Hulley
+ * @author Derek Hulley, Jamal Kaabi-Mofrad
  */
 public class NodeArchiveServiceImpl implements NodeArchiveService
 {
@@ -63,13 +71,15 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     private static final long LOCK_TTL = 60000;
     
     private static final String MSG_BUSY = "node.archive.msg.busy";
-    
+    private static final String CANNED_QUERY_ARCHIVED_NODES_LIST = "archivedNodesCannedQueryFactory";
+        
     private static Log logger = LogFactory.getLog(NodeArchiveServiceImpl.class);
     
     private NodeService nodeService;
     private PermissionService permissionService;
     private TransactionService transactionService;
     private JobLockService jobLockService;
+    private NamedObjectRegistry<CannedQueryFactory<ArchivedNodeEntity>> cannedQueryRegistry;
 
     public void setNodeService(NodeService nodeService)
     {
@@ -94,6 +104,11 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     public void setJobLockService(JobLockService jobLockService)
     {
         this.jobLockService = jobLockService;
+    }
+    
+    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<ArchivedNodeEntity>> cannedQueryRegistry)
+    {
+        this.cannedQueryRegistry = cannedQueryRegistry;
     }
 
     public NodeRef getArchivedNode(NodeRef originalNodeRef)
@@ -536,5 +551,104 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                 // Ignore
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public PagingResults<NodeRef> listArchivedNodes(ArchivedNodesCannedQueryBuilder cannedQueryBuilder)
+    {
+        ParameterCheck.mandatory("cannedQueryBuilder", cannedQueryBuilder);
+
+        Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+
+        // get canned query
+        GetArchivedNodesCannedQueryFactory getArchivedNodesCannedQueryFactory = (GetArchivedNodesCannedQueryFactory) cannedQueryRegistry
+                    .getNamedObject(CANNED_QUERY_ARCHIVED_NODES_LIST);
+
+        GetArchivedNodesCannedQuery cq = (GetArchivedNodesCannedQuery) getArchivedNodesCannedQueryFactory
+                    .getCannedQuery(cannedQueryBuilder.getArchiveRootNodeRef(),
+                                cannedQueryBuilder.getFilter(),
+                                cannedQueryBuilder.isFilterIgnoreCase(),
+                                cannedQueryBuilder.getPagingRequest(),
+                                cannedQueryBuilder.getSortOrderAscending());
+
+        // execute canned query
+        final CannedQueryResults<ArchivedNodeEntity> results = ((CannedQuery<ArchivedNodeEntity>) cq).execute();
+
+        final List<ArchivedNodeEntity> page;
+        if (results.getPageCount() > 0)
+        {
+            page = results.getPages().get(0);
+        }
+        else
+        {
+            page = Collections.emptyList();
+        }
+        
+        // set total count
+        final Pair<Integer, Integer> totalCount;
+        PagingRequest pagingRequest = cannedQueryBuilder.getPagingRequest();
+        if (pagingRequest.getRequestTotalCountMax() > 0)
+        {
+            totalCount = results.getTotalResultCount();
+        }
+        else
+        {
+            totalCount = null;
+        }
+
+        if (start != null)
+        {
+            int skipCount = pagingRequest.getSkipCount();
+            int maxItems = pagingRequest.getMaxItems();
+            int pageNum = (skipCount / maxItems) + 1;
+            
+            if (logger.isDebugEnabled())
+            {
+                StringBuilder sb = new StringBuilder(300);
+                sb.append("listArchivedNodes: ").append(page.size()).append(" items in ")
+                            .append((System.currentTimeMillis() - start)).append("ms ")
+                            .append("[pageNum=").append(pageNum).append(", skip=").append(skipCount)
+                            .append(", max=").append(maxItems).append(", hasMorePages=")
+                            .append(results.hasMoreItems()).append(", totalCount=")
+                            .append(totalCount).append(", filter=")
+                            .append(cannedQueryBuilder.getFilter()).append(", sortOrderAscending=")
+                            .append(cannedQueryBuilder.getSortOrderAscending()).append("]");
+
+                logger.debug(sb.toString());
+            }
+        }
+        return new PagingResults<NodeRef>()
+        {
+            @Override
+            public String getQueryExecutionId()
+            {
+                return results.getQueryExecutionId();
+            }
+
+            @Override
+            public List<NodeRef> getPage()
+            {
+                List<NodeRef> nodeRefs = new ArrayList<NodeRef>(page.size());
+                for (ArchivedNodeEntity entity : page)
+                {
+                    nodeRefs.add(entity.getNodeRef());
+                }
+                return nodeRefs;
+            }
+
+            @Override
+            public boolean hasMoreItems()
+            {
+                return results.hasMoreItems();
+            }
+
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return totalCount;
+            }
+        };
     }
 }

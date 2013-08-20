@@ -60,7 +60,6 @@ import org.json.JSONObject;
  */
 public class PreferenceServiceImpl implements PreferenceService
 {
-
 	private static final String SHARE_SITES_PREFERENCE_KEY = "org.alfresco.share.sites.favourites.";
 	private static final int SHARE_SITES_PREFERENCE_KEY_LEN = SHARE_SITES_PREFERENCE_KEY.length();
 	private static final String EXT_SITES_PREFERENCE_KEY = "org.alfresco.ext.sites.favourites.";
@@ -70,6 +69,8 @@ public class PreferenceServiceImpl implements PreferenceService
     private ContentService contentService;
     private PersonService personService;
     private PermissionService permissionService;
+    
+    /** Authentication Service */
     private AuthenticationContext authenticationContext;
     private AuthorityService authorityService;
     
@@ -87,7 +88,7 @@ public class PreferenceServiceImpl implements PreferenceService
     {
         this.contentService = contentService;
     }
-
+    
 	/**
      * Set the person service
      * 
@@ -505,7 +506,7 @@ public class PreferenceServiceImpl implements PreferenceService
                                 // Remove the prefs that match the filter
                                 List<String> removeKeys = new ArrayList<String>(10);
                                 @SuppressWarnings("unchecked")
-                                Iterator<String> keys = jsonPrefs.keys();
+								Iterator<String> keys = jsonPrefs.keys();
                                 while (keys.hasNext())
                                 {
                                     final String key = (String) keys.next();
@@ -548,7 +549,7 @@ public class PreferenceServiceImpl implements PreferenceService
                     + " does not have sufficient permissions to update the preferences of the user " + userName);
         }
     }
-    
+
     /**
      * Helper to encapsulate the test for whether the currently authenticated user can write to the
      * preferences objects for the given username and person node reference.

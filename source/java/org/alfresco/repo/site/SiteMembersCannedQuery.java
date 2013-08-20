@@ -272,6 +272,14 @@ public class SiteMembersCannedQuery extends AbstractCannedQuery<SiteMembership>
     				}
     				ret = siteRole * multiplier;
     			}
+    			else if(name.equals(SiteService.SortFields.Username))
+    			{
+    				if(personId1 == null || personId2 == null)
+    				{
+    					continue;
+    				}
+    				ret = personId * multiplier;
+    			}
 
     			if(ret != 0)
     			{

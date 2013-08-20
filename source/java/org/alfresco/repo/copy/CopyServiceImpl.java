@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -44,6 +44,7 @@ import org.alfresco.repo.copy.CopyBehaviourCallback.CopyAssociationDetails;
 import org.alfresco.repo.copy.CopyBehaviourCallback.CopyChildAssociationDetails;
 import org.alfresco.repo.copy.query.AbstractCopyCannedQueryFactory;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -61,6 +62,7 @@ import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.CopyServiceException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -83,7 +85,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @author Roy Wetherall
  * @author Derek Hulley
  */
-public class CopyServiceImpl implements CopyService
+public class CopyServiceImpl extends AbstractBaseCopyService implements CopyService
 {
     private static Log logger = LogFactory.getLog(ActionServiceImpl.class);
     
@@ -99,6 +101,7 @@ public class CopyServiceImpl implements CopyService
     private NamedObjectRegistry<CannedQueryFactory<CopyInfo>> cannedQueryRegistry;
     private DictionaryService dictionaryService;     
     private PolicyComponent policyComponent;
+    private BehaviourFilter behaviourFilter;
     private RuleService ruleService;
     private PermissionService permissionService;
     private PublicServiceAccessService publicServiceAccessService;
@@ -107,7 +110,12 @@ public class CopyServiceImpl implements CopyService
     private ClassPolicyDelegate<CopyServicePolicies.OnCopyNodePolicy> onCopyNodeDelegate;
     private ClassPolicyDelegate<CopyServicePolicies.OnCopyCompletePolicy> onCopyCompleteDelegate;
     private ClassPolicyDelegate<CopyServicePolicies.BeforeCopyPolicy> beforeCopyDelegate;
-    
+
+    public CopyServiceImpl()
+    {
+        super();
+    }
+
     /**
      * @param nodeService  the node service
      */
@@ -144,7 +152,15 @@ public class CopyServiceImpl implements CopyService
     {
         this.policyComponent = policyComponent;
     }
-    
+
+    /**
+     * @param behaviourFilter   used to disable specific behaviours while doing background tasks
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
     /**
      * @param ruleService  the rule service
      */
@@ -217,7 +233,17 @@ public class CopyServiceImpl implements CopyService
             // Error - since at the moment we do not support cross store copying
             throw new UnsupportedOperationException("Copying nodes across stores is not currently supported.");
         }
-        
+
+        // ALF-17549: Transform Action causes the Path QName to change to "'cm:copy''
+        QName sourceNodeTypeQName = nodeService.getType(sourceNodeRef);
+
+        if (dictionaryService.isSubClass(sourceNodeTypeQName, ContentModel.TYPE_CONTENT) || dictionaryService.isSubClass(sourceNodeTypeQName, ContentModel.TYPE_FOLDER))
+        {
+            String newName = assocQName.getLocalName();
+            String currentName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME));
+            assocQName = getAssociationCopyInfo(nodeService, sourceNodeRef, null, newName, !currentName.equals(newName)).getTargetAssocQName();
+        }
+
         // Clear out any record of copied associations
         TransactionalResourceHelper.getList(KEY_POST_COPY_ASSOCS).clear();
         
@@ -268,6 +294,15 @@ public class CopyServiceImpl implements CopyService
                 
         // Find a non-duplicate name
         String newName = sourceName;
+
+        // rename top-level node if it should be renamed in process of copy
+        QName qname = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(newName));
+        String newNameAfterCopy = getTopLevelNodeNewName(sourceNodeRef, destinationParent, assocTypeQName, qname);
+        if (newNameAfterCopy != null && !newNameAfterCopy.equals(newName))
+        {
+            newName = newNameAfterCopy;
+        }
+
         while (this.internalNodeService.getChildByName(destinationParent, assocTypeQName, newName) != null)
         {
             newName = I18NUtil.getMessage(COPY_OF_LABEL, newName);                        
@@ -313,8 +348,9 @@ public class CopyServiceImpl implements CopyService
      * 
      * Defer to the standard implementation with copyChildren set to false
      */
-    public void copy(NodeRef sourceNodeRef, NodeRef targetNodeRef)
+    public boolean copy(NodeRef sourceNodeRef, NodeRef targetNodeRef)
     {
+        boolean copied = false;
         QName sourceNodeTypeQName = nodeService.getType(sourceNodeRef);
         QName targetNodeTypeQName = nodeService.getType(targetNodeRef);
         // Check that the source and destination node are the same type
@@ -343,29 +379,45 @@ public class CopyServiceImpl implements CopyService
         
         // Clear out any record of copied associations
         TransactionalResourceHelper.getList(KEY_POST_COPY_ASSOCS).clear();
-        
-        // Copy 
-        copyProperties(copyDetails, targetNodeRef, sourceNodeTypeQName, callbacks);
-        copyAspects(copyDetails, targetNodeRef, Collections.<QName>emptySet(), callbacks);
-        copyResidualProperties(copyDetails, targetNodeRef);
+
+        // Copy and register if there were any copying made
+        if (copyProperties(copyDetails, targetNodeRef, sourceNodeTypeQName, callbacks))
+        {
+            copied = true;
+        }
+        if (copyAspects(copyDetails, targetNodeRef, Collections.<QName>emptySet(), callbacks))
+        {
+            copied = true;
+        }
+        if (copyResidualProperties(copyDetails, targetNodeRef))
+        {
+            copied = true;
+        }
         
         Map<NodeRef, NodeRef> copiedNodeRefs = new HashMap<NodeRef, NodeRef>(1);
         copiedNodeRefs.put(sourceNodeRef, targetNodeRef);
 
         Set<NodeRef> copies = new HashSet<NodeRef>(5);
-        copyChildren(
+        if (copyChildren(
                 copyDetails,
                 targetNodeRef,
                 false,                              // We know that the node has been created
                 true,
                 copiedNodeRefs,
                 copies,
-                callbacks);
+                callbacks))
+        {
+            copied = true;
+        }
         
         // Copy an associations that were left until now
-        copyPendingAssociations(copiedNodeRefs);
+        if (copyPendingAssociations(copiedNodeRefs))
+        {
+            copied = true;
+        }
         // invoke the copy complete policy
-        invokeCopyComplete(sourceNodeRef, targetNodeRef, false, copiedNodeRefs);         
+        invokeCopyComplete(sourceNodeRef, targetNodeRef, false, copiedNodeRefs);
+        return copied;
     }
     
     @Override
@@ -786,8 +838,9 @@ public class CopyServiceImpl implements CopyService
      * Copy any remaining associations that could not be copied or ignored during the copy process.
      * See <a href=http://issues.alfresco.com/jira/browse/ALF-958>ALF-958: Target associations aren't copied</a>.
      */
-    private void copyPendingAssociations(Map<NodeRef, NodeRef> copiedNodeRefs)
+    private boolean copyPendingAssociations(Map<NodeRef, NodeRef> copiedNodeRefs)
     {
+        boolean copied = false;
         // Prepare storage for post-copy association handling
         List<Pair<AssociationRef, AssocCopyTargetAction>> postCopyAssocs =
                 TransactionalResourceHelper.getList(KEY_POST_COPY_ASSOCS);
@@ -809,12 +862,14 @@ public class CopyServiceImpl implements CopyService
             {
                 case USE_ORIGINAL_TARGET:
                     internalNodeService.createAssociation(newSourceForAssoc, oldTargetForAssoc, assocTypeQName);
+                    copied = true;
                     break;
                 case USE_COPIED_TARGET:
                     // Do nothing if the target was not copied
                     if (newTargetForAssoc != null)
                     {
                         internalNodeService.createAssociation(newSourceForAssoc, newTargetForAssoc, assocTypeQName);
+                        copied = true;
                     }
                     break;
                 case USE_COPIED_OTHERWISE_ORIGINAL_TARGET:
@@ -826,12 +881,13 @@ public class CopyServiceImpl implements CopyService
                     {
                         internalNodeService.createAssociation(newSourceForAssoc, newTargetForAssoc, assocTypeQName);
                     }
+                    copied = true;
                     break;
                 default:
                     throw new IllegalStateException("Unknown association action: " + action);
             }
         }
-        
+        return copied;
     }
 
     /**
@@ -988,16 +1044,17 @@ public class CopyServiceImpl implements CopyService
     /**
      * Copies the properties for the node type or aspect onto the destination node.
      */
-    private void copyProperties(
+    private boolean copyProperties(
             CopyDetails copyDetails, 
             NodeRef targetNodeRef,
             QName classQName,
             Map<QName, CopyBehaviourCallback> callbacks)
     {
+        boolean copied = false;
         ClassDefinition targetClassDef = dictionaryService.getClass(classQName);
         if (targetClassDef == null)
         {
-            return;                        // Ignore unknown types
+            return false;                        // Ignore unknown types
         }
         // First check if the aspect must be copied at all
         CopyBehaviourCallback callback = callbacks.get(classQName);
@@ -1009,7 +1066,7 @@ public class CopyServiceImpl implements CopyService
         if (!callback.getMustCopy(classQName, copyDetails))
         {
             // Do nothing with this
-            return;
+            return false;
         }
         // Compile the properties to copy, even if they are empty
         Map<QName, Serializable> classProperties = buildCopyProperties(
@@ -1019,18 +1076,19 @@ public class CopyServiceImpl implements CopyService
         // We don't need permissions as we've just created the node
         if (targetClassDef.isAspect())
         {
-            internalNodeService.addAspect(targetNodeRef, classQName, classProperties);
+            copied = internalNodeService.addAspect(targetNodeRef, classQName, classProperties);
         }
         else
         {
-            internalNodeService.addProperties(targetNodeRef, classProperties);
+            copied = internalNodeService.addProperties(targetNodeRef, classProperties);
         }
+        return copied;
     }
     
     /**
      * Copy properties that do not belong to the source node's type or any of the aspects.
      */
-    private void copyResidualProperties(
+    private boolean copyResidualProperties(
             CopyDetails copyDetails,
             NodeRef targetNodeRef)
     {
@@ -1066,19 +1124,21 @@ public class CopyServiceImpl implements CopyService
         // Add the residual properties to the node
         if (residualProperties.size() > 0)
         {
-            internalNodeService.addProperties(targetNodeRef, residualProperties);
+            return internalNodeService.addProperties(targetNodeRef, residualProperties);
         }
+        return false;
     }
     
     /**
      * Copies aspects from the source to the target node.
      */
-    private void copyAspects(
+    private boolean copyAspects(
             CopyDetails copyDetails, 
             NodeRef targetNodeRef,
             Set<QName> aspectsToIgnore,
             Map<QName, CopyBehaviourCallback> callbacks)
     {
+        boolean copied = false;
         Set<QName> sourceAspectQNames = copyDetails.getSourceNodeAspectQNames();
         for (QName aspectQName : sourceAspectQNames)
         {
@@ -1097,14 +1157,18 @@ public class CopyServiceImpl implements CopyService
             {
                 continue;
             }
-            copyProperties(copyDetails, targetNodeRef, aspectQName, callbacks);
+            if (copyProperties(copyDetails, targetNodeRef, aspectQName, callbacks))
+            {
+                copied = true;
+            }
         }
+        return copied;
     }
     
     /**
      * @param copyChildren              <tt>false</tt> if the client selected not to recurse
      */
-    private void copyChildren(
+    private boolean copyChildren(
             CopyDetails copyDetails,
             NodeRef copyTarget,
             boolean copyTargetIsNew,
@@ -1113,10 +1177,11 @@ public class CopyServiceImpl implements CopyService
             Set<NodeRef> copies,
             Map<QName, CopyBehaviourCallback> callbacks)
     {
+        boolean copied = false;
         QName sourceNodeTypeQName = copyDetails.getSourceNodeTypeQName();
         Set<QName> sourceNodeAspectQNames = copyDetails.getSourceNodeAspectQNames();
         // First check associations on the type
-        copyChildren(
+        if (copyChildren(
                 copyDetails,
                 sourceNodeTypeQName,
                 copyTarget,
@@ -1124,7 +1189,10 @@ public class CopyServiceImpl implements CopyService
                 copyChildren,
                 copiesByOriginals,
                 copies,
-                callbacks);
+                callbacks))
+        {
+            copied = true;
+        }
         // Check associations for the aspects
         for (QName aspectQName : sourceNodeAspectQNames)
         {
@@ -1133,7 +1201,7 @@ public class CopyServiceImpl implements CopyService
             {
                 continue;
             }
-            copyChildren(
+            if (copyChildren(
                     copyDetails,
                     aspectQName,
                     copyTarget,
@@ -1141,15 +1209,19 @@ public class CopyServiceImpl implements CopyService
                     copyChildren,
                     copiesByOriginals,
                     copies,
-                    callbacks);
+                    callbacks))
+            {
+                copied = true;
+            }
         }
+        return copied;
     }
 
     private static final String KEY_POST_COPY_ASSOCS = "CopyServiceImpl.postCopyAssocs";
     /**
      * @param copyChildren              <tt>false</tt> if the client selected not to recurse
      */
-    private void copyChildren(
+    private boolean copyChildren(
             CopyDetails copyDetails,
             QName classQName,
             NodeRef copyTarget,
@@ -1159,13 +1231,14 @@ public class CopyServiceImpl implements CopyService
             Set<NodeRef> copies,
             Map<QName, CopyBehaviourCallback> callbacks)
     {
+        boolean copied = false;
         NodeRef sourceNodeRef = copyDetails.getSourceNodeRef();
         
         ClassDefinition classDef = dictionaryService.getClass(classQName);
         if (classDef == null)
         {
             // Ignore missing types
-            return;
+            return false;
         }
         // Check the behaviour
         CopyBehaviourCallback callback = callbacks.get(classQName);
@@ -1215,7 +1288,10 @@ public class CopyServiceImpl implements CopyService
                             haveRemovedFromCopyTarget = true;
                             for (AssociationRef assocToRemoveRef : internalNodeService.getTargetAssocs(copyTarget, assocTypeQName))
                             {
-                                internalNodeService.removeAssociation(assocToRemoveRef.getSourceRef(), assocToRemoveRef.getTargetRef(), assocTypeQName);
+                                if (internalNodeService.removeAssociation(assocToRemoveRef.getSourceRef(), assocToRemoveRef.getTargetRef(), assocTypeQName))
+                                {
+                                    copied = true;
+                                }
                             }
                         }
                         // Fall through to copy
@@ -1297,6 +1373,7 @@ public class CopyServiceImpl implements CopyService
                         // types of associations between the same parent and child.
                         // Just hook the child up with the association.
                         nodeService.addChild(copyTarget, childNodeRef, childAssocTypeQName, assocQName);
+                        copied = true;
                     }
                     else
                     {
@@ -1318,11 +1395,14 @@ public class CopyServiceImpl implements CopyService
                             throw new IllegalStateException("Unrecognized enum");
                         }
                         // This copy may fail silently
-                        copyImpl(
+                        if (copyImpl(
                                 childNodeRef, copyTarget,
                                 childAssocTypeQName, assocQName,
                                 copyChildren, false,                // Keep child names for deep copies
-                                copiesByOriginals, copies);
+                                copiesByOriginals, copies) != null)
+                        {
+                             copied = true;
+                        }
                     }
                     break;
                 default:
@@ -1330,6 +1410,7 @@ public class CopyServiceImpl implements CopyService
                 }
             }
         }
+        return copied;
     }
 
     /**
@@ -1339,7 +1420,19 @@ public class CopyServiceImpl implements CopyService
     {
         // Remove the cm:copiedfrom aspect
         NodeRef sourceNodeRef = nodeAssocRef.getSourceRef();
-        internalNodeService.removeAspect(sourceNodeRef, ContentModel.ASPECT_COPIEDFROM);
+        // We are about to modify a copied node.  For this specific action, we do not
+        // want to leave any trace of the action as it's a task invisible to the end-user.
+        try
+        {
+            behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_LOCKABLE);
+            behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_AUDITABLE);
+            internalNodeService.removeAspect(sourceNodeRef, ContentModel.ASPECT_COPIEDFROM);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_LOCKABLE);
+            behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_AUDITABLE);
+        }
     }
     
     /**
@@ -1420,4 +1513,49 @@ public class CopyServiceImpl implements CopyService
     {
         return DoNothingCopyBehaviourCallback.getInstance();
     }
+
+    /**
+     * Determines if top-level node name will be changed during copy according to policies.
+     */
+    @Override
+    public String getTopLevelNodeNewName(NodeRef sourceNodeRef, NodeRef targetParentRef, QName assocTypeQName, QName assocQName)
+    {
+        // Build the top-level node's copy details
+        CopyDetails copyDetails = getCopyDetails(sourceNodeRef, targetParentRef, null, assocTypeQName, assocQName);
+        
+        // Get the callbacks that will determine the copy behaviour
+        Map<QName, CopyBehaviourCallback> callbacks = getCallbacks(copyDetails);
+        
+        // Check that the primary (type) callback allows copy
+        QName sourceNodeTypeQName = copyDetails.getSourceNodeTypeQName();
+        CopyBehaviourCallback callback = callbacks.get(sourceNodeTypeQName);
+        if (callback == null)
+        {
+            throw new IllegalStateException("Source node type has no callback: " + sourceNodeTypeQName);
+        }
+        if (!callback.getMustCopy(sourceNodeTypeQName, copyDetails))
+        {
+            // Denied!
+            return null;
+        }
+
+        if (callback.isTopLevelCanBeRenamed(sourceNodeTypeQName, copyDetails))
+        {
+            // Get the type properties to copy
+            Map<QName, Serializable> targetNodeProperties = buildCopyProperties(
+                    copyDetails,
+                    Collections.singleton(sourceNodeTypeQName),
+                    callbacks);
+            String newName = (String) targetNodeProperties.get(ContentModel.PROP_NAME);
+            String oldName = (String) copyDetails.getSourceNodeProperties().get(ContentModel.PROP_NAME);
+            if (oldName.equals(newName))
+            {
+                newName = null;
+            }
+            return newName;
+        }
+
+        return null;
+    }
+
 }

@@ -133,6 +133,19 @@ public class ScriptTestUtils extends BaseScopableProcessorExtension
         }
     }
     
+    public void assertContains(String value, String subString)
+    {
+        assertContains(value, subString, null);
+    }
+    
+    public void assertContains(String value, String subString, String message)
+    {
+        if ( !value.contains(subString))
+        {
+            throw new AlfrescoRuntimeException(message);
+        }
+    }
+    
     public void fail(String message)
     {
         throw new AlfrescoRuntimeException(message);

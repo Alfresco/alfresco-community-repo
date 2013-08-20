@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.activities.feed.FeedTaskProcessor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.JSONtoFmModel;
 import org.json.JSONException;
@@ -43,12 +42,10 @@ public class ActivityFeedEntity
     public static final String KEY_ACTIVITY_FEED_SITE = "siteNetwork";
     public static final String KEY_ACTIVITY_FEED_TYPE = "activityType";
     public static final String KEY_ACTIVITY_FEED_SUMMARY = "activitySummary";
-    public static final String KEY_ACTIVITY_FEED_SUMMARY_FORMAT = "activitySummaryFormat";
     
     private Long id; // internal DB-generated id
     private String activityType;
     private String activitySummary;
-    private String activitySummaryFormat;
     private String feedUserId;
     private String postUserId;
     private NodeRef postUserAvatarNodeRef;
@@ -97,16 +94,6 @@ public class ActivityFeedEntity
     public void setPostUserId(String userid)
     {
         this.postUserId = userid;
-    }
-    
-    public String getActivitySummaryFormat()
-    {
-        return activitySummaryFormat;
-    }
-    
-    public void setActivitySummaryFormat(String format)
-    {
-        this.activitySummaryFormat = format;
     }
     
     public String getSiteNetwork() 
@@ -196,8 +183,6 @@ public class ActivityFeedEntity
         jo.put(KEY_ACTIVITY_FEED_TYPE, getActivityType());
         jo.put(KEY_ACTIVITY_FEED_SUMMARY, getActivitySummary());
         
-        jo.put(KEY_ACTIVITY_FEED_SUMMARY_FORMAT, getActivitySummaryFormat());
-        
         return jo.toString();
     }
     
@@ -214,9 +199,7 @@ public class ActivityFeedEntity
         map.put(KEY_ACTIVITY_FEED_SITE, getSiteNetwork());
         map.put(KEY_ACTIVITY_FEED_TYPE, getActivityType());
         
-        map.put(KEY_ACTIVITY_FEED_SUMMARY_FORMAT, getActivitySummaryFormat());
-        
-        if ((getActivitySummary() != null) && getActivitySummaryFormat().equals(FeedTaskProcessor.FEED_FORMAT_JSON))
+        if (getActivitySummary() != null)
         {
             map.put(KEY_ACTIVITY_FEED_SUMMARY, JSONtoFmModel.convertJSONObjectToMap(getActivitySummary()));
         }
@@ -236,7 +219,6 @@ public class ActivityFeedEntity
         sb.append("id=").append(id).append(",");
         sb.append("activityType=").append(activityType).append(",");
         sb.append("activitySummary=").append(activitySummary).append(",");
-        sb.append("activitySummaryFormat=").append(activitySummaryFormat).append(",");
         sb.append("feedUserId=").append(feedUserId).append(",");
         sb.append("postUserId=").append(postUserId).append(",");
         sb.append("postDate=").append(postDate).append(",");

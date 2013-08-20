@@ -96,16 +96,10 @@
 
       <type name="wf:approvedTask">
          <parent>bpm:workflowTask</parent>
-         <mandatory-aspects>
-            <aspect>bpm:assignee</aspect>
-         </mandatory-aspects>
       </type>
 
       <type name="wf:rejectedTask">
          <parent>bpm:workflowTask</parent>
-         <mandatory-aspects>
-            <aspect>bpm:assignee</aspect>
-         </mandatory-aspects>
       </type>
 
       <type name="wf:rejectedParallelTask">

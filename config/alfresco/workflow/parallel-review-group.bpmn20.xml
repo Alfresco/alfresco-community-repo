@@ -37,6 +37,10 @@
 	        		<activiti:field name="script">
 	                     <activiti:string>
 	                        var members = people.getMembers(bpm_groupAssignee);
+                                if(workflow.maxGroupReviewers > 0 &amp;&amp; members.length > workflow.maxGroupReviewers)
+                                {
+                                   throw new Error("Number of reviewers exceeds the maximum: " + members.length + "(max is " + workflow.maxGroupReviewers + ")");
+                                }
 	                        var memberNames = new java.util.ArrayList();
 	                        
 	                        for(var i in members) 

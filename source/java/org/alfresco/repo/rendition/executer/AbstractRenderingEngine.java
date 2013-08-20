@@ -47,6 +47,9 @@ import org.alfresco.repo.rendition.RenditionNodeManager;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.ActionServiceException;
+import org.alfresco.service.cmr.action.ActionTrackingService;
+import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.rendition.RenderCallback;
@@ -85,7 +88,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     private static Log logger = LogFactory.getLog(AbstractRenderingEngine.class);
 
     protected static final String CONTENT_READER_NOT_FOUND_MESSAGE = "Cannot find Content Reader for document. Operation can't be performed";
-    private static final String DEFAULT_RUN_AS_NAME = AuthenticationUtil.getSystemUserName();
+    protected static final String DEFAULT_RUN_AS_NAME = AuthenticationUtil.getSystemUserName();
 
     // A word on the default* fields below:
     //
@@ -133,6 +136,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /* Injected Services */
     protected ContentService contentService;
     protected MimetypeMap mimetypeMap;
+    protected ActionTrackingService actionTrackingService;
 
     /* Parameter names common to all Rendering Actions */
     /**
@@ -356,6 +360,11 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     public void setMimetypeMap(MimetypeMap mimetypeMap)
     {
         this.mimetypeMap = mimetypeMap;
+    }
+
+    public void setActionTrackingService(ActionTrackingService actionTrackingService)
+    {
+        this.actionTrackingService = actionTrackingService;
     }
 
     @Override
@@ -1068,5 +1077,28 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                 NodeRef tempRendition)
     {
         return renditionLocationResolver.getRenditionLocation(sourceNode, definition, tempRendition);
+    }
+    
+    /**
+     * Gets the <code>ExecutionSummary</code> for the given <code>renderingContext</code>
+     * from the {@link ActionTrackingService}.
+     * <p>
+     * Note that multiple summaries of the same action instance are not currently supported.
+     * @param renderingContext      the rendering context
+     * @return                      the found summary or null
+     */
+    protected ExecutionSummary getExecutionSummary(RenderingContext renderingContext)
+    {
+        List<ExecutionSummary> executionSummaries = actionTrackingService.getExecutingActions(renderingContext.getDefinition());
+        if (executionSummaries == null || executionSummaries.size() == 0)
+        {
+            return null;
+        }
+        if (executionSummaries.size() > 1)
+        {
+            throw new ActionServiceException("getExecutionSummary not supported for " +
+            		"multiple instances of the same action");
+        }
+        return executionSummaries.iterator().next();
     }
 }

@@ -1043,8 +1043,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {
         // Bootstrap Tenant-Specific Spaces Store
         StoreRef bootstrapStoreRef = spacesImporterBootstrap.getStoreRef();
-        bootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
-        spacesImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
+        StoreRef tenantBootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
+        spacesImporterBootstrap.setStoreUrl(tenantBootstrapStoreRef.toString());
     
         // override admin username property
         Properties props = spacesImporterBootstrap.getConfiguration();
@@ -1055,13 +1055,16 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         
         spacesImporterBootstrap.bootstrap();
         
+        // reset since spacesImporterBootstrap is singleton (hence reused)
+        spacesImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
+        
         // calculate any missing usages
         UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent)ctx.getBean("userUsageTrackingComponent");
         userUsageTrackingComponent.bootstrapInternal();
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("Bootstrapped store: "+tenantService.getBaseName(bootstrapStoreRef)+" (Tenant: "+tenantDomain+")");
+            logger.debug("Bootstrapped store: "+tenantService.getBaseName(tenantBootstrapStoreRef)+" (Tenant: "+tenantDomain+")");
         }
     }
    

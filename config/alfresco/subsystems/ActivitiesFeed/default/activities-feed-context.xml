@@ -92,7 +92,6 @@
       <property name="feedControlDAO" ref="feedControlDAO"/>
       
       <property name="useRemoteCallbacks" value="false"/>
-      <property name="jsonFormatOnly" value="${activities.feed.generator.jsonFormatOnly}"/>
       
       <property name="siteService" ref="SiteService"/>
       <property name="nodeService" ref="NodeService"/>

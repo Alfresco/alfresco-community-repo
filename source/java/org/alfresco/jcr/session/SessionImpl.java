@@ -73,6 +73,7 @@ import org.alfresco.jcr.item.ValueFactoryImpl;
 import org.alfresco.jcr.repository.RepositoryImpl;
 import org.alfresco.jcr.util.JCRProxyFactory;
 import org.alfresco.repo.importer.ImporterComponent;
+import org.alfresco.repo.lock.LockServiceImpl;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
@@ -695,7 +696,7 @@ public class SessionImpl implements Session
      */
     public String[] getLockTokens()
     {
-        LockService lockService = getRepositoryImpl().getServiceRegistry().getLockService();
+        LockServiceImpl lockService = (LockServiceImpl) getRepositoryImpl().getServiceRegistry().getLockService();
         List<NodeRef> nodeRefs = lockService.getLocks(getWorkspaceStore(), LockType.WRITE_LOCK);
         String[] tokens = new String[nodeRefs.size()];
         int i = 0;

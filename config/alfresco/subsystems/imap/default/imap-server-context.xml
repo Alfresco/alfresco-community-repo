@@ -16,6 +16,9 @@
         <property name="port">
             <value>${imap.server.port}</value>
         </property>
+        <property name="imapEnabled">
+            <value>${imap.server.imap.enabled}</value>
+        </property>
         <property name="imapsEnabled">
             <value>${imap.server.imaps.enabled}</value>
         </property>
@@ -41,16 +44,7 @@
             </list>
         </property>
     </bean>
-    
-    <bean id="imapContentPolicy" class="org.alfresco.repo.imap.ImapContentPolicy" init-method="init">
-        <property name="actionService">
-            <ref bean="actionService"/>
-        </property>       
-        <property name="policyComponent">
-            <ref bean="policyComponent"/>
-        </property>
-    </bean>
-    
+        
     <!--The configurable list of mount points -->
     <bean id="imap.config.server.mountPoints" class="org.springframework.beans.factory.config.ListFactoryBean" >
         <!-- Uses ImapConfigMountPointsBean with:
@@ -127,6 +121,9 @@
         <property name="attachmentsExtractorMode">
             <value>${imap.attachments.mode}</value>
         </property>        
+        <property name="mimetypeService">
+            <ref bean="mimetypeService" />
+        </property>
     </bean>
     
     <bean id="imapService" class="org.alfresco.repo.imap.ImapServiceImpl" init-method="init">
@@ -180,9 +177,6 @@
         </property>
         <property name="extractAttachmentsEnabled">
             <value>${imap.server.attachments.extraction.enabled}</value>
-        </property>
-        <property name="mimetypeService">
-            <ref bean="mimetypeService" />
         </property>
         <property name="folderCacheSize">
             <value>${imap.server.folder.cache.size}</value>

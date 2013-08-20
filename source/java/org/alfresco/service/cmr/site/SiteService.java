@@ -46,7 +46,7 @@ public interface SiteService
 {
     static String DOCUMENT_LIBRARY = "documentLibrary";
     
-	public enum SortFields { LastName, FirstName, Role, SiteShortName, SiteTitle };
+	public enum SortFields { LastName, FirstName, Role, SiteShortName, SiteTitle, Username };
 
     public interface SiteMembersCallback
     {

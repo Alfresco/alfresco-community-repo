@@ -19,4 +19,7 @@
 /**
  * Provides the public interface for the WCM deployment service.
  */
+@PackageMarker
 package org.alfresco.service.cmr.avm.deploy;
+import org.alfresco.util.PackageMarker;
+

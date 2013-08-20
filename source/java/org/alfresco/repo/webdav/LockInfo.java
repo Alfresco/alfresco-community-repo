@@ -34,17 +34,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public interface LockInfo
 {
     /**
-     * Retrieves the {@link ReentrantReadWriteLock} associated with this LockInfo. This is
-     * to allow client code to protect against invalid concurrent access to the state of
-     * this class.
-     * <p>
-     * Not to be confused with WebDAV locks.
-     * 
-     * @return
-     */
-    ReentrantReadWriteLock getRWLock();
-
-    /**
      * Returns true if node has shared or exclusive locks
      * 
      * @return boolean
@@ -122,12 +111,12 @@ public interface LockInfo
     boolean isShared();
 
     /**
-     * Return the lock info as a string
+     * Return the lock info as a JSON string
      * 
      * @return String
      */
-    String toString();
-
+    String toJSON();
+    
     /**
      * Whether this lock has expired. If no expiry is set (i.e. expires is null)
      * then false is always returned.

@@ -30,13 +30,23 @@
     <!-- Copy Service    -->
     <!--                 -->
 
+   <bean id="abstractBaseCopyService" class="org.alfresco.repo.copy.AbstractBaseCopyService" abstract="true">
+      <property name="systemNamespaces">
+         <list>
+            <value>http://www.alfresco.org/model/application/1.0</value>
+            <value>http://www.alfresco.org/model/site/1.0</value>
+         </list>
+      </property>
+   </bean>
+
     <!-- Note this uses the node service that enforces permissions so you can only copy what you can see -->
 
-    <bean id="copyService" class="org.alfresco.repo.copy.CopyServiceImpl" init-method="init">
+    <bean id="copyService" class="org.alfresco.repo.copy.CopyServiceImpl" parent="abstractBaseCopyService" init-method="init">
         <property name="cannedQueryRegistry" ref="copyServiceCannedQueryRegistry"/>
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="nodeService" ref="NodeService" />
         <property name="policyComponent" ref="policyComponent" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="ruleService" ref="ruleService" />
         <property name="permissionService" ref="permissionService" />
         <property name="publicServiceAccessService" ref="publicServiceAccessService" />

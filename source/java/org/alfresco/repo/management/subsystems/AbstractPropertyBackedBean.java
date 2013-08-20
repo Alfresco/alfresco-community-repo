@@ -341,10 +341,14 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             {
                 if (this.runtimeState == RuntimeState.UNINITIALIZED)
                 {
+                    logger.debug("doInit() createInitialState");
                     this.state = createInitialState();
+                    logger.debug("doInit() applyDefaultOverrides "+state);
                     applyDefaultOverrides(this.state);
                     this.runtimeState = RuntimeState.STOPPED;
+                    logger.debug("doInit() register");
                     this.registry.register(this);
+                    logger.debug("doInit() done");
                 }
             }
             catch (IOException e)
@@ -353,6 +357,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             }
             finally
             {
+                logger.debug("doInit() state="+runtimeState);
                 if (!hadWriteLock)
                 {
                     this.lock.readLock().lock();
@@ -475,14 +480,18 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             {
                 if (this.runtimeState != RuntimeState.UNINITIALIZED)
                 {
+                    logger.debug("destroy() stop state="+runtimeState);
                     stop(false);
+                    logger.debug("destroy() deregister "+isPermanent);
                     this.registry.deregister(this, isPermanent);
                     this.state = null;
                     this.runtimeState = RuntimeState.UNINITIALIZED;
+                    logger.debug("destroy() done");
                 }
             }
             finally
             {
+                logger.debug("destroy() state="+runtimeState);
                 if (!hadWriteLock)
                 {
                     this.lock.readLock().lock();
@@ -694,7 +703,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                         // Re register the bean so new properties are visible in JConsole which does
                         // not check MBeanInfo for changes otherwise.
                         logger.debug("setProperty() destroy");
-                        destroy(false);
+//                      Commented out to avoid "UserTransaction is not visible from class loader" as it drops the context.
+//                      So we have to just live with the JConsole as it is.
+//                      destroy(false);
 
                         // Attempt to start locally
                         start(false, true);
@@ -771,7 +782,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                         // Re register the bean so new properties are visible in JConsole which does
                         // not check MBeanInfo for changes otherwise.
                         logger.debug("setProperties() destroy");
-                        destroy(false);
+//                      Commented out to avoid "UserTransaction is not visible from class loader" as it drops the context.
+//                      So we have to just live with the JConsole as it is.
+//                      destroy(false);
 
                         // Attempt to start locally
                         start(true, false);
@@ -819,38 +832,120 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      *
      * @param propertyNames to be removed.
      */
-    public void removeProperties(Collection<String> propertyNames)
+    public void removeProperties(Collection<String> properties)
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("removeProperties("+propertyNames+")");
+            logger.debug("removeProperties("+properties+")");
         }
-        this.lock.writeLock().lock();
-        try
+        if (!nestedCall.get())
         {
-            Set<String> originalPropertyNames = state.getPropertyNames();
-            Map<String, String> propertiesToKeep = new HashMap<String, String>(originalPropertyNames.size()*2);
-            for (String name: originalPropertyNames)
+            nestedCall.set(true);
+            
+            boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
+            if (!hadWriteLock)
             {
-                if (!propertyNames.contains(name))
+                this.lock.writeLock().lock();
+            }
+            try
+            {
+                boolean mBeanInfoChange = !getPropertyNames().containsAll(properties);
+
+                // When setting properties locally AND there is an MBean, the following broadcast
+                // results in a call to the MBean's setAttributes method, which in turn results
+                // in a nested call back. The call back sets the values in this bean and
+                // localSetProperties will be set to true. The MBean persists the changes and the
+                // broadcast method returns. If there is no MBean (community edition) OR when
+                // initiated from the MBean (say setting a value via JConsole), nothing happens
+                // as a result of the broadcast.
+                if (saveSetProperty)
                 {
-                    propertiesToKeep.put(name, state.getProperty(name));
+                    logger.debug("removeProperties() broadcastRemoveProperties");
+                    this.registry.broadcastRemoveProperties(this, properties);
+                }
+
+                if (localSetProperties.get())
+                {
+                    if (mBeanInfoChange)
+                    {
+                        // Re register the bean so new properties are visible in JConsole which does
+                        // not check MBeanInfo for changes otherwise.
+                        logger.debug("removeProperties() destroy");
+//                      Commented out to avoid "UserTransaction is not visible from class loader" as it drops the context.
+//                      So we have to just live with the JConsole as it is.
+//                      destroy(false);
+
+                        // Attempt to start locally
+                        start(true, false);
+                    }
+                }
+                else
+                {
+                    logger.debug("removeProperties() removePropertiesInternal");
+                    removePropertiesInternal(properties);
                 }
             }
-            
-            // Check just in case there is nothing to do.
-            if (propertiesToKeep.size() != originalPropertyNames.size())
+            finally
             {
-                destroy(true);
-                setProperties(propertiesToKeep);
+                localSetProperties.set(false);
+                nestedCall.set(false);
+                if (!hadWriteLock)
+                {
+                    this.lock.writeLock().unlock();
+                }
             }
         }
-        finally
+        else
         {
-            this.lock.writeLock().unlock();
+            // A nested call indicates there is a MBean and that this method was
+            // NOT originally called from that MBean.
+            localSetProperties.set(true);
+
+            logger.debug("removeProperties() callback removePropertiesInternal");
+            removePropertiesInternal(properties);
         }
     }
 
+    private void removePropertiesInternal(Collection<String> properties)
+    {
+        // Bring down the bean. The caller may have already broadcast this across the cluster
+        stop(false);
+        doInit();
+
+        Map<String, String> previousValues = new HashMap<String, String>(properties.size() * 2);
+        try
+        {
+            // Set each of the properties and back up their previous values just in case
+            for (String property : properties)
+            {
+                String previousValue = state.getProperty(property);
+                this.state.removeProperty(property);
+                previousValues.put(property, previousValue);
+            }
+
+            // Attempt to start locally
+            start(false, true);
+
+            // We still haven't broadcast the start - a persist is required first so this will be done by the caller
+        }
+        catch (Exception e)
+        {
+            // Oh dear - something went wrong. So restore previous state before rethrowing
+            for (Map.Entry<String, String> entry : previousValues.entrySet())
+            {
+                this.state.setProperty(entry.getKey(), entry.getValue());
+            }
+            
+            // Bring the bean back up across the cluster
+            start(true, false);
+            if (e instanceof RuntimeException)
+            {
+                throw (RuntimeException) e;
+            }
+            throw new IllegalStateException(e);
+        }
+    }
+   
     /**
      * {@inheritDoc}
      */

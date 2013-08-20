@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.domain.tenant;
 
+import java.io.Serializable;
+
 import org.alfresco.util.EqualsHelper;
 
 
@@ -27,8 +29,9 @@ import org.alfresco.util.EqualsHelper;
  * @author janv
  * @since 4.0 (thor)
  */
-public class TenantEntity
+public class TenantEntity implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     private Long version;
     private String tenantDomain;
     private String tenantName;

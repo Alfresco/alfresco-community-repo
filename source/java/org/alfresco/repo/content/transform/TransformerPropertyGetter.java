@@ -69,6 +69,13 @@ public class TransformerPropertyGetter
             appendUnconfiguredTransformerSettings(sb, mimetypeService, alreadySpecified,
                     availableTransformers, transformerRegistry);
         }
+        
+        if (sb.length() == 0)
+        {
+            sb.append(changesOnly
+                    ? "No custom transformer properties defined"
+                    : "No transformer properties defined");
+        }
 
         string = sb.toString();
     }

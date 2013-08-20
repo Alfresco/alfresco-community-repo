@@ -57,7 +57,7 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     private final WriteLock tenantContentStoreWriteLock = tenantContentStoreLock.writeLock();
     private final ReadLock tenantContentStoreReadLock = tenantContentStoreLock.readLock();
     
-    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    // note: cache is tenant-aware (if using TransctionalCache impl)
     private SimpleCache<String, ContentStore> singletonCache; // eg. for contentStore
     private final String KEY_CONTENT_STORE = "key.tenant.routing.content.store";
     

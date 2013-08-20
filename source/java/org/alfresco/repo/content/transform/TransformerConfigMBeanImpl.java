@@ -27,8 +27,8 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
     private TransformerDebug transformerDebug;
     private TransformerConfig transformerConfig;
     private MimetypeService mimetypeService;
-    private TransformerLog transformerLog;
-    private TransformerDebugLog transformerDebugLog;
+    private LogEntries transformerLog;
+    private LogEntries transformerDebugLog;
     
     public void setContentTransformerRegistry(ContentTransformerRegistry transformerRegistry)
     {
@@ -50,12 +50,12 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
         this.mimetypeService = mimetypeService;
     }
 
-    public void setTransformerLog(TransformerLog transformerLog)
+    public void setTransformerLog(LogEntries transformerLog)
     {
         this.transformerLog = transformerLog;
     }
 
-    public void setTransformerDebugLog(TransformerDebugLog transformerDebugLog)
+    public void setTransformerDebugLog(LogEntries transformerDebugLog)
     {
         this.transformerDebugLog = transformerDebugLog;
     }
@@ -269,11 +269,13 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
     @Override
     public String setProperties(String propertyNamesAndValues)
     {
-        
         try
         {
-            return "Properties added or changed: "+
-                    transformerConfig.setProperties(nullDefaultParam(propertyNamesAndValues));
+            String nullPropertyNamesAndValues = nullDefaultParam(propertyNamesAndValues);
+            int n = nullPropertyNamesAndValues == null
+                ? 0
+                : transformerConfig.setProperties(nullPropertyNamesAndValues);
+            return "Properties added or changed: "+n;
         }
         catch (IllegalArgumentException e)
         {
@@ -405,6 +407,7 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
                 "   - use or context in which to test the transformation (\"doclib\",\n" +
                 "     \"index\", \"webpreview\", \"syncRule\", \"asyncRule\"...) or blank for\n" +
                 "     the default.\n" +
+                "\n" +
                 "removeProperties(String propertyNames)\n" +
                 "   Removes transformer properties.\n" +
                 "   - propertyNames to be removed. May include =<value> after the property name.\n" +

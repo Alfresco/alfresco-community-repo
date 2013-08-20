@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -387,6 +387,12 @@ public class AuditModelRegistryImpl extends AbstractPropertyBackedBean implement
         public void setProperty(String name, String value)
         {
             properties.put(name, Boolean.parseBoolean(value));
+        }
+
+        @Override
+        public void removeProperty(String name)
+        {
+            throw new UnsupportedOperationException();
         }
 
         /**

@@ -670,6 +670,8 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase im
                         @Override
                         public T2 execute() throws Throwable
                         {
+                            // ALF-18383: Regression in Lucene indexing performance in 4.x
+                            //            We accept the loss of some performance in order to ensure accuracy
                             // Request clean node data
                             if (bulkLoader != null)
                             {

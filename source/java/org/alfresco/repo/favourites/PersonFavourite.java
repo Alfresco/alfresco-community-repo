@@ -41,7 +41,6 @@ public class PersonFavourite
 			this.userName = userName;
 			this.type = type;
 			this.nodeRef = nodeRef;
-			this.title = title;
 			this.createdAt = createdAt;
 		}
 		

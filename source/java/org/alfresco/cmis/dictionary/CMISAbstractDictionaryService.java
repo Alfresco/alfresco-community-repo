@@ -103,7 +103,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
     private final ReentrantReadWriteLock registryLock = new ReentrantReadWriteLock();
     private final WriteLock registryWriteLock = registryLock.writeLock();
     private final ReadLock registryReadLock = registryLock.readLock();
-    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    // note: cache is tenant-aware (if using TransctionalCache impl)
     private SimpleCache<String, DictionaryRegistry> singletonCache; // eg. for cmisDictionaryRegistry
     private final String KEY_CMIS_DICTIONARY_REGISTRY = "key.cmisDictionaryRegistry";
     

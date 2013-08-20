@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,13 +20,11 @@ package org.alfresco.repo.config.xml;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.config.ConfigDataCache;
+import org.alfresco.repo.config.ConfigDataCache.ConfigData;
+import org.alfresco.repo.config.ConfigDataCache.ImmutableConfigData;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantAdminService;
@@ -47,188 +45,141 @@ import org.springframework.extensions.config.xml.elementreader.ConfigElementRead
 
 /**
  * XML-based configuration service which can optionally read config from the Repository
- *
  */
 public class RepoXMLConfigService extends XMLConfigService implements TenantDeployer
 {
     private static final Log logger = LogFactory.getLog(RepoXMLConfigService.class);
     
     /**
-     * Lock objects
+     * Configuration that is manipulated by the current thread.<br/>
+     * This is required because the super classes call back into this mechanism after
+     * receiving the initial object, etc.
      */
-    private ReadWriteLock lock = new ReentrantReadWriteLock();
-    private Lock readLock = lock.readLock();
-    private Lock writeLock = lock.writeLock();
+    private final ThreadLocal<ConfigData> configUnderConstruction = new ThreadLocal<ConfigData>();
     
     // Dependencies
     private TransactionService transactionService;
-    private AuthenticationContext authenticationContext;
     private TenantAdminService tenantAdminService;
-    
-    // Internal cache (clusterable)
-    private SimpleCache<String, ConfigData> configDataCache;
+    private ConfigDataCache configDataCache;
 
-    // used to reset the cache
-    private ThreadLocal<ConfigData> configDataThreadLocal = new ThreadLocal<ConfigData>();
-    
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
     }
 
-    public void setAuthenticationContext(AuthenticationContext authenticationContext)
-    {
-        this.authenticationContext = authenticationContext;
-    }
-       
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
         this.tenantAdminService = tenantAdminService;
     }
 
-    public void setConfigDataCache(SimpleCache<String, ConfigData> configDataCache)
+    /**
+     * Set the asynchronously-controlled cache.
+     */
+    public void setConfigDataCache(ConfigDataCache configDataCache)
     {
         this.configDataCache = configDataCache;
     }
         
-    
     /**
      * Constructs an XMLConfigService using the given config source
-     * 
-     * @param configSource
-     *            A ConfigSource
      */
     public RepoXMLConfigService(ConfigSource configSource)
     {
         super(configSource);
     }
 
+    @Override
     public List<ConfigDeployment> initConfig()
     {
-        return resetRepoConfig().getConfigDeployments();
-    }
-    
-    private ConfigData initRepoConfig(final String tenantDomain)
-    {
-        ConfigData configData;
-
-        // can be null e.g. initial login, after fresh bootstrap
-        String currentUser = authenticationContext.getCurrentUserName();
-        if (currentUser == null)
-        {
-            authenticationContext.setSystemUserAsCurrentUser();
-        }
-
-        try
-        {
-            configData = transactionService.getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionCallback<ConfigData>()
-                    {
-
-                        @Override
-                        public ConfigData execute() throws Throwable
-                        {
-                            // parse config
-                            List<ConfigDeployment> configDeployments = RepoXMLConfigService.super.initConfig();
-
-                            ConfigData configData = getConfigDataLocal(tenantDomain);
-                            if (configData != null)
-                            {
-                                configData.setConfigDeployments(configDeployments);
-                            }
-                            return configData;
-                        }
-                    }, transactionService.isReadOnly());
-
-            logger.info("Config initialised");
-        }
-        finally
-        {
-            if (currentUser == null)
-            {
-                authenticationContext.clearCurrentSecurityContext();
-            }
-        }
-
-        return configData;
-    }
-    
-    public void destroy()
-    {
-        super.destroy();
-        
-        logger.info("Config destroyed");
+        configDataCache.refresh();
+        // Just return whatever is there (no-one uses it)
+        ConfigData configData = configDataCache.get();
+        return configData.getConfigDeployments();
     }
     
     /**
-     * Resets the config service
+     * Get the repository configuration data for a given tenant.
+     * This does the low-level initialization of the configuration and does not do any
+     * caching.
+     * 
+     * @param tenantDomain              the current tenant domain
+     * @return                          return the repository configuration for the given tenant (never <tt>null</tt>)
      */
-    public void reset()
+    public ConfigData getRepoConfig(final String tenantDomain)
     {
-       resetRepoConfig();
-    }
-    
-    /**
-     * Resets the config service
-     */
-    private ConfigData resetRepoConfig()
-    {
-        if (logger.isDebugEnabled())
+        final RetryingTransactionCallback<Void> getConfigWork = new RetryingTransactionCallback<Void>()
         {
-            logger.debug("Resetting repo config service");
-        }
-       
-        String tenantDomain = getTenantDomain();
+            @Override
+            public Void execute() throws Throwable
+            {
+                // parse config
+                RepoXMLConfigService.super.initConfig();
+                return null;
+            }
+        };
+        RunAsWork<Void> getConfigRunAs = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                transactionService.getRetryingTransactionHelper().doInTransaction(getConfigWork, true);
+                return null;
+            }
+        };
+
         try
         {
-            destroy();
-            
-            // create threadlocal, if needed
-            ConfigData configData = getConfigDataLocal(tenantDomain);
-            if (configData == null)
+            if (logger.isDebugEnabled())
             {
-                configData = new ConfigData(tenantDomain);
-                this.configDataThreadLocal.set(configData);
+                logger.debug(
+                        "Fetching repository config data for tenant: \n" +
+                        "   Tenant Domain: " + tenantDomain);
             }
-            
-            configData = initRepoConfig(tenantDomain);
-            
-            if (configData == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to reset configData " + tenantDomain);
-            }
-            
-            try
+            // Put some mutable config onto the current thread and have the superclasses mess with that.
+            ConfigData configData = new ConfigData();
+            configUnderConstruction.set(configData);
+            // Do the work
+            AuthenticationUtil.runAsSystem(getConfigRunAs);
+            // Now wrap the config so that it cannot be changed
+            configData = new ImmutableConfigData(configData);
+            // Done
+            if (logger.isDebugEnabled())
             {
-                writeLock.lock();        
-                configDataCache.put(tenantDomain, configData);
+                logger.debug(
+                        "Fetched repository config data for tenant: \n" +
+                        "   Tenant Domain: " + tenantDomain + "\n" +
+                        "   Config:        " + configData);
             }
-            finally
-            {
-                writeLock.unlock();
-            }
-
             return configData;
         }
+        catch (Exception e)
+        {
+            throw new AlfrescoRuntimeException(
+                    "Failed to fetch repository config data for tenant \n" +
+                    "   Tenant Domain: " + tenantDomain,
+                    e);
+        }
         finally
         {
-            try
-            {
-                readLock.lock();
-                if (configDataCache.get(tenantDomain) != null)
-                {
-                    this.configDataThreadLocal.set(null); // it's in the cache, clear the threadlocal
-                }
-            }
-            finally
-            {
-                readLock.unlock();
-            }
+            configUnderConstruction.remove();
         }
     }
-
-   
+    
+    @Override
+    public void destroy()
+    {
+        reset();
+    }
+    
+    /**
+     * Resets the config values for the current tenant
+     */
+    @Override
+    public void reset()
+    {
+        configDataCache.refresh();
+    }
+    
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -255,85 +206,37 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         // NOOP
     }
   
+    @Override
     public void onEnableTenant()
     {
         initConfig(); // will be called in context of tenant
     }
     
+    @Override
     public void onDisableTenant()
     {
         destroy(); // will be called in context of tenant
     }
     
-    // re-entrant (eg. via reset)
+    /**
+     * Fetch the tenant-specific config data from the cache.  If nothing is
+     * available then the config will be created.
+     * <p/>
+     * Note that this method is used during construction of the config as well.
+     * When this occurs, a thread local value is used in place of the cached
+     * value.  It's not pretty.
+     * 
+     * @return          the tenant-specific configuration (never <tt>null</tt>)
+     */
     private ConfigData getConfigData()
     {
-        String tenantDomain = getTenantDomain();
-        
-        // check threadlocal first - return if set
-        ConfigData configData = getConfigDataLocal(tenantDomain);
-        if (configData != null)
+        if (configUnderConstruction.get() != null)
         {
-            return configData; // return local config
+            // We are busy building some config so we can return it
+            return configUnderConstruction.get();
         }
-
-        try
-        {
-            // check cache second - return if set
-            readLock.lock();
-            configData = configDataCache.get(tenantDomain);
-
-            if (configData != null)
-            {
-                return configData; // return cached config
-            }
-        }
-        finally
-        {
-            readLock.unlock();
-        }
-        
-        // reset caches - may have been invalidated (e.g. in a cluster)
-        configData = resetRepoConfig(); 
-        
-        if (configData == null)
-        {     
-            // unexpected
-            throw new AlfrescoRuntimeException("Failed to get configData " + tenantDomain);
-        }
-        
-        return configData;
-    }
-    
-    // get threadlocal 
-    private ConfigData getConfigDataLocal(String tenantDomain)
-    {
-        ConfigData configData = this.configDataThreadLocal.get();
-        
-        // check to see if domain switched (eg. during login)
-        if ((configData != null) && (tenantDomain.equals(configData.getTenantDomain())))
-        {
-            return configData; // return threadlocal, if set
-        }   
-        
-        return null;
-    }
-    
-    private void removeConfigData()
-    {
-        try
-        {
-            writeLock.lock();
-            String tenantDomain = getTenantDomain();
-            if (configDataCache.get(tenantDomain) != null)
-            {
-                configDataCache.remove(tenantDomain);
-            }
-        }
-        finally
-        {
-            writeLock.unlock();
-        }          
+        // Go to the backing cache
+        return configDataCache.get();
     }
     
     @Override
@@ -351,7 +254,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     @Override
     protected void removeGlobalConfig()
     {
-        removeConfigData();
+        throw new UnsupportedOperationException("'destroy' method must destroy all config.  Piecemeal destruction is not supported.");
     }
     
     @Override
@@ -369,7 +272,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     @Override
     protected void removeEvaluators()
     {
-        removeConfigData();
+        throw new UnsupportedOperationException("'destroy' method must destroy all config.  Piecemeal destruction is not supported.");
     }
     
     @Override
@@ -387,7 +290,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     @Override
     protected void removeSectionsByArea()
     {
-        removeConfigData();
+        throw new UnsupportedOperationException("'destroy' method must destroy all config.  Piecemeal destruction is not supported.");
     }
     
     @Override
@@ -405,7 +308,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     @Override
     protected void removeSections()
     {
-        removeConfigData();
+        throw new UnsupportedOperationException("'destroy' method must destroy all config.  Piecemeal destruction is not supported.");
     }
 
     @Override
@@ -423,84 +326,6 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     @Override
     protected void removeElementReaders()
     {
-        removeConfigData();
-    }
-    
-    // local helper - returns tenant domain (or empty string if default non-tenant)
-    private String getTenantDomain()
-    {
-        return TenantUtil.getCurrentDomain();
-    }
-    
-    private static class ConfigData
-    {
-        private ConfigImpl globalConfig;   
-        private Map<String, Evaluator> evaluators;
-        private Map<String, List<ConfigSection>> sectionsByArea;
-        private List<ConfigSection> sections;
-        private Map<String, ConfigElementReader> elementReaders;
-        
-        private List<ConfigDeployment> configDeployments;
-        
-        private String tenantDomain;
-        
-        public ConfigData(String tenantDomain)
-        {
-            this.tenantDomain = tenantDomain;
-        }
-        
-        public String getTenantDomain()
-        {
-            return tenantDomain;
-        }
-        
-        public ConfigImpl getGlobalConfig()
-        {
-            return globalConfig;
-        }
-        public void setGlobalConfig(ConfigImpl globalConfig)
-        {
-            this.globalConfig = globalConfig;
-        }
-        public Map<String, Evaluator> getEvaluators()
-        {
-            return evaluators;
-        }
-        public void setEvaluators(Map<String, Evaluator> evaluators)
-        {
-            this.evaluators = evaluators;
-        }
-        public Map<String, List<ConfigSection>> getSectionsByArea()
-        {
-            return sectionsByArea;
-        }
-        public void setSectionsByArea(Map<String, List<ConfigSection>> sectionsByArea)
-        {
-            this.sectionsByArea = sectionsByArea;
-        }
-        public List<ConfigSection> getSections()
-        {
-            return sections;
-        }
-        public void setSections(List<ConfigSection> sections)
-        {
-            this.sections = sections;
-        }
-        public Map<String, ConfigElementReader> getElementReaders()
-        {
-            return elementReaders;
-        }
-        public void setElementReaders(Map<String, ConfigElementReader> elementReaders)
-        {
-            this.elementReaders = elementReaders;
-        }
-        public List<ConfigDeployment> getConfigDeployments()
-        {
-            return configDeployments;
-        }
-        public void setConfigDeployments(List<ConfigDeployment> configDeployments)
-        {
-            this.configDeployments = configDeployments;
-        }
+        throw new UnsupportedOperationException("'destroy' method must destroy all config.  Piecemeal destruction is not supported.");
     }
 }

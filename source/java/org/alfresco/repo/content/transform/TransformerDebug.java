@@ -216,12 +216,14 @@ public class TransformerDebug
     private class UnavailableTransformer
     {
         private final String name;
+        private final String priority;
         private final long maxSourceSizeKBytes;
         private final transient boolean debug;
         
-        UnavailableTransformer(String name, long maxSourceSizeKBytes, boolean debug)
+        UnavailableTransformer(String name, String priority, long maxSourceSizeKBytes, boolean debug)
         {
             this.name = name;
+            this.priority = priority;
             this.maxSourceSizeKBytes = maxSourceSizeKBytes;
             this.debug = debug;
         }
@@ -360,7 +362,7 @@ public class TransformerDebug
      * Called to identify a transformer that cannot be used during working out
      * available transformers.
      */
-    public void unavailableTransformer(ContentTransformer transformer, long maxSourceSizeKBytes)
+    public void unavailableTransformer(ContentTransformer transformer, String sourceMimetype, String targetMimetype, long maxSourceSizeKBytes)
     {
         if (isEnabled())
         {
@@ -378,7 +380,8 @@ public class TransformerDebug
                 {
                     frame.unavailableTransformers = new HashSet<UnavailableTransformer>();
                 }
-                frame.unavailableTransformers.add(new UnavailableTransformer(name, maxSourceSizeKBytes, debug));
+                String priority = gePriority(transformer, sourceMimetype, targetMimetype);
+                frame.unavailableTransformers.add(new UnavailableTransformer(name, priority, maxSourceSizeKBytes, debug));
             }
         }
     }
@@ -432,7 +435,10 @@ public class TransformerDebug
                 {
                     int pad = longestNameLength - unavailable.name.length();
                     String reason = "> "+fileSize(unavailable.maxSourceSizeKBytes*1024);
-                    log("--" + (c++) + ")    " + unavailable.name + spaces(pad+1) + reason, unavailable.debug);
+                    if (unavailable.debug || logger.isTraceEnabled())
+                    {
+                        log("--" + (c++) + ") " + unavailable.priority + ' ' + unavailable.name + spaces(pad+1) + reason, unavailable.debug);
+                    }
                 }
             }
         }
@@ -628,11 +634,12 @@ public class TransformerDebug
                         long smallestMaxSourceSizeKBytes = Long.MAX_VALUE;
                         for (UnavailableTransformer unavailable: frame.unavailableTransformers)
                         {
-                            if (smallestMaxSourceSizeKBytes > unavailable.maxSourceSizeKBytes)
+                            if (smallestMaxSourceSizeKBytes > unavailable.maxSourceSizeKBytes && unavailable.maxSourceSizeKBytes > 0)
                             {
                                 smallestMaxSourceSizeKBytes = unavailable.maxSourceSizeKBytes;
                             }
                         }
+                        smallestMaxSourceSizeKBytes = smallestMaxSourceSizeKBytes == Long.MAX_VALUE ? 0 : smallestMaxSourceSizeKBytes;
                         failureReason = "No transformers as file is > "+fileSize(smallestMaxSourceSizeKBytes*1024);
                     }
                 }

@@ -63,7 +63,7 @@ public abstract class TransformerPropertyNameExtractor
             boolean includeSummary, boolean includeUse, TransformerProperties transformerProperties, MimetypeService mimetypeService)
     {
         return new ArrayList<TransformerSourceTargetSuffixValue>(
-                getTransformerSourceTargetValuesMap(suffixes, includeSummary, includeUse, transformerProperties, mimetypeService).values());
+                getTransformerSourceTargetValuesMap(suffixes, includeSummary, true, includeUse, transformerProperties, mimetypeService).values());
     }
     
     /**
@@ -75,7 +75,9 @@ public abstract class TransformerPropertyNameExtractor
      * any regular expression value.
      * @param suffixes possible endings to the property names after the target mimetype extension.
      *        Must start with a '.' if there is a suffix.
-     * @param includeSummary if true will also look for property names without the separator,
+     * @param includeSummary if true will include property names without the separator to
+     *        source mimetype and target mimetype.
+     * @param includeExtensions if false will exclude property names with the separator to
      *        source mimetype and target mimetype.
      * @param includeUse if true, additionally checks for specific usage values that override
      *        the normal defaults. Such properties have a suffix of ".use.<use>" where <use> 
@@ -84,7 +86,7 @@ public abstract class TransformerPropertyNameExtractor
      * @param mimetypeService
      */
     protected Map<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue> getTransformerSourceTargetValuesMap(Collection<String> suffixes,
-            boolean includeSummary, boolean includeUse, TransformerProperties transformerProperties, MimetypeService mimetypeService)
+            boolean includeSummary, boolean includeExtensions, boolean includeUse, TransformerProperties transformerProperties, MimetypeService mimetypeService)
     {
         Map<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue> transformerSourceTargetSuffixValues =
                 new HashMap<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue>();
@@ -125,17 +127,20 @@ public abstract class TransformerPropertyNameExtractor
                             if (i != -1)
                             {
                                 separatorMatch = true;
-                                String extensions = transformerName.substring(i+separator.length());
-                                String[] ext = splitExt(extensions);
-                                if (ext.length == 2)
+                                if (includeExtensions)
                                 {
-                                    transformerName = transformerName.substring(0,  i);
-                                    String firstExpression = ext[0];
-                                    String secondExpression = ext[1];
-                                    handleProperty(transformerName,
-                                            separator, firstExpression, secondExpression,
-                                            suffix, use, value, propertyName, transformerSourceTargetSuffixValues, mimetypeService);
-                                    break suffixesLoop;
+                                    String extensions = transformerName.substring(i+separator.length());
+                                    String[] ext = splitExt(extensions);
+                                    if (ext.length == 2)
+                                    {
+                                        transformerName = transformerName.substring(0,  i);
+                                        String firstExpression = ext[0];
+                                        String secondExpression = ext[1];
+                                        handleProperty(transformerName,
+                                                separator, firstExpression, secondExpression,
+                                                suffix, use, value, propertyName, transformerSourceTargetSuffixValues, mimetypeService);
+                                        break suffixesLoop;
+                                    }
                                 }
                             }
                         }

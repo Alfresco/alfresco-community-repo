@@ -33,13 +33,15 @@ public class CreateFileCommand implements Command
     private NodeRef rootNode;
     private String path;
     private long allocationSize;
+    private boolean isHidden;
     
-    public CreateFileCommand(String name, NodeRef rootNode, String path, long allocationSize)
+    public CreateFileCommand(String name, NodeRef rootNode, String path, long allocationSize, boolean isHidden)
     {
         this.name = name;
         this.path = path;
         this.rootNode = rootNode;
         this.allocationSize = allocationSize;
+        this.isHidden = isHidden;
     }
 
     public String getName()
@@ -72,6 +74,11 @@ public class CreateFileCommand implements Command
     public long getAllocationSize()
     {
         return allocationSize;
+    }
+    
+    public boolean isHidden()
+    {
+    	return isHidden;
     }
     
 }

@@ -227,6 +227,17 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     @Override
     public boolean updateUsage(UsageType usageType)
     {
+        return updateUsage(usageType, false);
+    }
+
+    @Override
+    public boolean resetUsage(UsageType usageType)
+    {
+        return updateUsage(usageType, true);
+    }
+
+    private boolean updateUsage(UsageType usageType, boolean reset)
+    {
         checkTxnState(TxnReadState.TXN_READ_WRITE);
         
         boolean updateUsers = false;
@@ -244,11 +255,11 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
                 updateDocuments = true;
         }
         
-        if (updateUsers && !updateUsers())
+        if (updateUsers && !updateUsers(reset))
         {
             return false;
         }
-        if (updateDocuments && !updateDocuments())
+        if (updateDocuments && !updateDocuments(reset))
         {
             return false;
         }
@@ -266,24 +277,29 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     /**
      * Update number of users with appropriate locking
      */
-    private boolean updateUsers()
+    private boolean updateUsers(boolean reset)
     {
         String lockToken = null;
         try
         {
             // Lock to prevent concurrent queries
             lockToken = jobLockService.getLock(LOCK_USAGE_USERS, LOCK_TTL);
-            // Count users
-            IdsEntity idsParam = new IdsEntity();
-            idsParam.setIdOne(qnameDAO.getOrCreateQName(ContentModel.ASPECT_PERSON_DISABLED).getFirst());
-            idsParam.setIdTwo(qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst());
-            Long userCount = cannedQueryDAO.executeCountQuery(QUERY_NS, QUERY_SELECT_COUNT_PERSONS_NOT_DISABLED, idsParam);
+            Long userCount = 0L;
             
-            // We subtract one to cater for 'guest', which is implicit
-            userCount = userCount > 0L ? userCount - 1L : 0L;
+            if (!reset)
+            {
+                // Count users
+                IdsEntity idsParam = new IdsEntity();
+                idsParam.setIdOne(qnameDAO.getOrCreateQName(ContentModel.ASPECT_PERSON_DISABLED).getFirst());
+                idsParam.setIdTwo(qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst());
+                userCount = cannedQueryDAO.executeCountQuery(QUERY_NS, QUERY_SELECT_COUNT_PERSONS_NOT_DISABLED, idsParam);
+            
+                // We subtract one to cater for 'guest', which is implicit
+                userCount = userCount > 0L ? userCount - 1L : 0L;
 
-            // Lock again to be sure we still have the right to update
-            jobLockService.refreshLock(lockToken, LOCK_USAGE_USERS, LOCK_TTL);
+                // Lock again to be sure we still have the right to update
+                jobLockService.refreshLock(lockToken, LOCK_USAGE_USERS, LOCK_TTL);
+            }
             attributeService.setAttribute(
                     new Long(System.currentTimeMillis()),
                     KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_LAST_UPDATE_USERS);
@@ -310,28 +326,33 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     /**
      * Update number of documents with appropriate locking
      */
-    private boolean updateDocuments()
+    private boolean updateDocuments(boolean reset)
     {
         String lockToken = null;
         try
         {
             // Lock to prevent concurrent queries
             lockToken = jobLockService.getLock(LOCK_USAGE_DOCUMENTS, LOCK_TTL);
-            // Count documents
-            Set<QName> searchTypeQNames = new HashSet<QName>(11);
-            Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_CONTENT, true);
-            searchTypeQNames.addAll(qnames);
-            searchTypeQNames.add(ContentModel.TYPE_CONTENT);
-            qnames = dictionaryService.getSubTypes(ContentModel.TYPE_LINK, true);
-            searchTypeQNames.addAll(qnames);
-            searchTypeQNames.add(ContentModel.TYPE_LINK);
-            Set<Long> searchTypeQNameIds = qnameDAO.convertQNamesToIds(searchTypeQNames, false);
-            IdsEntity idsParam = new IdsEntity();
-            idsParam.setIds(new ArrayList<Long>(searchTypeQNameIds));
-            Long documentCount = cannedQueryDAO.executeCountQuery(QUERY_NS, QUERY_SELECT_COUNT_DOCUMENTS, idsParam);
+            Long documentCount = 0L;
+
+            if (!reset)
+            {
+                // Count documents
+                Set<QName> searchTypeQNames = new HashSet<QName>(11);
+                Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_CONTENT, true);
+                searchTypeQNames.addAll(qnames);
+                searchTypeQNames.add(ContentModel.TYPE_CONTENT);
+                qnames = dictionaryService.getSubTypes(ContentModel.TYPE_LINK, true);
+                searchTypeQNames.addAll(qnames);
+                searchTypeQNames.add(ContentModel.TYPE_LINK);
+                Set<Long> searchTypeQNameIds = qnameDAO.convertQNamesToIds(searchTypeQNames, false);
+                IdsEntity idsParam = new IdsEntity();
+                idsParam.setIds(new ArrayList<Long>(searchTypeQNameIds));
+                documentCount = cannedQueryDAO.executeCountQuery(QUERY_NS, QUERY_SELECT_COUNT_DOCUMENTS, idsParam);
             
-            // Lock again to be sure we still have the right to update
-            jobLockService.refreshLock(lockToken, LOCK_USAGE_DOCUMENTS, LOCK_TTL);
+                // Lock again to be sure we still have the right to update
+                jobLockService.refreshLock(lockToken, LOCK_USAGE_DOCUMENTS, LOCK_TTL);
+            }
             attributeService.setAttribute(
                     new Long(System.currentTimeMillis()),
                     KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_LAST_UPDATE_DOCUMENTS);

@@ -7,4 +7,6 @@
  * <p>
  * The ServiceRegistry provides access to the Alfresco Repository Services for the cases where the spring context is not available.
  */
+@PackageMarker
 package org.alfresco.service;
+import org.alfresco.util.PackageMarker;

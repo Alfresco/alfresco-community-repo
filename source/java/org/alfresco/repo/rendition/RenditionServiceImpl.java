@@ -28,11 +28,18 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.executer.ActionExecuter;
+import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.BeforeCheckOut;
+import org.alfresco.repo.lock.LockServicePolicies.BeforeLock;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.ActionTrackingService;
+import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.rendition.CompositeRenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenderCallback;
 import org.alfresco.service.cmr.rendition.RenderingEngineDefinition;
@@ -57,14 +64,20 @@ import org.apache.commons.logging.LogFactory;
  * @author Neil McErlean
  * @since 3.3
  */
-public class RenditionServiceImpl implements RenditionService, RenditionDefinitionPersister
+public class RenditionServiceImpl implements 
+        RenditionService, 
+        RenditionDefinitionPersister, 
+        BeforeCheckOut,
+        BeforeLock
 {
     private static final Log log = LogFactory.getLog(RenditionServiceImpl.class);
 
     private ActionService actionService;
+    private ActionTrackingService actionTrackingService;
     private ContentService contentService;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
+    private PolicyComponent policyComponent;
     
     private RenditionDefinitionPersister renditionDefinitionPersister;
     
@@ -72,6 +85,11 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
      * @since 4.0.1
      */
     private RenditionPreventionRegistry renditionPreventionRegistry;
+    
+    /**
+     * @since 4.1.6
+     */
+    private List<String> knownCancellableActionTypes;
     
     /**
      * Injects the RenditionDefinitionPersister bean.
@@ -110,12 +128,52 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
     }
 
     /**
+     * Injects the ActionTrackingService bean.
+     * @param actionTrackingService
+     */
+    public void setActionTrackingService(ActionTrackingService actionTrackingService)
+    {
+        this.actionTrackingService = actionTrackingService;
+    }
+
+    /**
      * Injects the DictionaryService bean.
      * @param dictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+
+    /**
+     * Injects the PolicyComponent bean.
+     * @param policyComponent
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+    
+    /**
+     * Sets the list of known cancellable actions used by {@link #cancelRenditions(NodeRef)}.
+     * @param knownCancellableActionTypes
+     * @since 4.1.6
+     */
+    public void setKnownCancellableActionTypes(List<String> knownCancellableActionTypes)
+    {
+        this.knownCancellableActionTypes = knownCancellableActionTypes;
+    }
+
+    public void init()
+    {
+        this.policyComponent.bindClassBehaviour(
+                BeforeCheckOut.QNAME,
+                ContentModel.TYPE_CONTENT,
+                new JavaBehaviour(this, "beforeCheckOut"));
+        this.policyComponent.bindClassBehaviour(
+                BeforeLock.QNAME,
+                ContentModel.TYPE_CONTENT,
+                new JavaBehaviour(this, "beforeLock"));
     }
 
     /*
@@ -546,5 +604,46 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
         {
             return parents.isEmpty() ? null : parents.get(0);
         }
+    }
+    
+    public void cancelRenditions(NodeRef sourceNode)
+    {
+        if (knownCancellableActionTypes == null)
+        {
+            return;
+        }
+        for (String type : knownCancellableActionTypes)
+        {
+            cancelRenditions(sourceNode, type);
+        }
+    }
+    
+    public void cancelRenditions(NodeRef sourceNode, String type)
+    {
+        if (log.isDebugEnabled())
+        {
+            log.debug("cancelling renditions of type " + type + " on nodeRef: " + sourceNode.toString());
+        }
+        List<ExecutionSummary> executionSummaries = actionTrackingService.getExecutingActions(type, sourceNode);
+        for (ExecutionSummary executionSummary : executionSummaries)
+        {
+            actionTrackingService.requestActionCancellation(executionSummary);
+        }
+    }
+    
+    @Override
+    public void beforeCheckOut(
+            NodeRef nodeRef,
+            NodeRef destinationParentNodeRef,           
+            QName destinationAssocTypeQName, 
+            QName destinationAssocQName)
+    {
+        cancelRenditions(nodeRef);
+    }
+
+    @Override
+    public void beforeLock(NodeRef nodeRef, LockType lockType)
+    {
+        cancelRenditions(nodeRef);
     }
 }

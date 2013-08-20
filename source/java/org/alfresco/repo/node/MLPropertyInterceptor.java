@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -212,7 +212,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
                     nodeRef,
                     pivotNodeRef);
             // Now complete the call by passing the converted properties
-            nodeService.setProperties(nodeRef, convertedProperties);
+            ret = nodeService.setProperties(nodeRef, convertedProperties);
             // Done
         }
         else if (methodName.equals("addProperties"))
@@ -233,7 +233,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
                     nodeRef,
                     pivotNodeRef);
             // Now complete the call by passing the converted properties
-            nodeService.addProperties(nodeRef, convertedProperties);
+            ret = nodeService.addProperties(nodeRef, convertedProperties);
             // Done
         }
         else if (methodName.equals("setProperty"))
@@ -249,7 +249,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             inboundValue = convertInboundProperty(contentLangLocale, nodeRef, pivotNodeRef, propertyQName, inboundValue, null);
             
             // Pass this through to the node service
-            nodeService.setProperty(nodeRef, propertyQName, inboundValue);
+            ret = nodeService.setProperty(nodeRef, propertyQName, inboundValue);
             // Done
         }
         else if (methodName.equals("createNode") && args.length > 4)
@@ -298,7 +298,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
                     nodeRef,
                     pivotNodeRef);
             // Now complete the call by passing the converted properties
-            nodeService.addAspect(nodeRef, aspectTypeQName, convertedProperties);
+            ret = nodeService.addAspect(nodeRef, aspectTypeQName, convertedProperties);
             // Done
         }
         else

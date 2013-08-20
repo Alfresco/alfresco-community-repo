@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,18 +20,24 @@ package org.alfresco.repo.admin.patch;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.alfresco.repo.batch.BatchProcessWorkProvider;
+import org.alfresco.repo.batch.BatchProcessor;
+import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.PatchException;
@@ -43,7 +49,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Base implementation of the patch. This class ensures that the patch is thread- and transaction-safe.
@@ -61,6 +66,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
      */
     public static final String ERR_PROPERTY_NOT_SET = "patch.general.property_not_set";
     private static final String MSG_PROGRESS = "patch.progress";
+    private static final String MSG_DEFERRED = "patch.genericBootstrap.result.deferred";
 
     private static final long RANGE_10 = 1000 * 60 * 90;
     private static final long RANGE_5 = 1000 * 60 * 60 * 4;
@@ -75,6 +81,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     private int targetSchema;
     private boolean force;
     private String description;
+    private boolean ignored;
     /** a list of patches that this one depends on */
     private List<Patch> dependsOn;
     /** a list of patches that, if already present, mean that this one should be ignored */
@@ -86,6 +93,8 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     int percentComplete = 0;
     /** start time * */
     long startTime;
+    
+    private boolean deferred = false;
     
     // Does the patch require an enclosing transaction?
     private boolean requiresTransaction = true;
@@ -114,6 +123,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         this.applyToTenants = true;     // by default, apply to each tenant, if tenant service is enabled
         this.dependsOn = Collections.emptyList();
         this.alternatives = Collections.emptyList();
+        this.ignored = false;
     }
 
     @Override
@@ -126,6 +136,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
           .append(", fixesFromSchema=").append(fixesFromSchema)
           .append(", fixesToSchema=").append(fixesToSchema)
           .append(", targetSchema=").append(targetSchema)
+          .append(", ignored=").append(ignored)
           .append("]");
         return sb.toString();
     }
@@ -190,7 +201,10 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         {
             throw new AlfrescoRuntimeException("Mandatory property not set: patchService");
         }
-        patchService.registerPatch(this);
+        if(false == isIgnored())
+        {
+            patchService.registerPatch(this);
+        }
     }
 
     public String getId()
@@ -315,6 +329,22 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     {
         this.description = description;
     }
+    
+    /**
+     * @return the ignored
+     */
+    public boolean isIgnored()
+    {
+        return ignored;
+    }
+
+    /**
+     * @param ignored the ignored to set
+     */
+    public void setIgnored(boolean ignored)
+    {
+        this.ignored = ignored;
+    }
 
     public List<Patch> getDependsOn()
     {
@@ -404,31 +434,121 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     {
         // downgrade integrity checking
         IntegrityChecker.setWarnInTransaction();
-        
+
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("call applyInternal for main context id:" + id);
+        }
         String report = applyInternal();
         
-        if ((tenantAdminService != null) && tenantAdminService.isEnabled() && applyToTenants)
+     	if ((tenantAdminService != null) && tenantAdminService.isEnabled() && applyToTenants)
         {
-            List<Tenant> tenants = tenantAdminService.getAllTenants();
-            for (Tenant tenant : tenants)
+            if(logger.isDebugEnabled())
             {
-                String tenantDomain = tenant.getTenantDomain();
-                String tenantReport = TenantUtil.runAsSystemTenant(new TenantRunAsWork<String>()
-                {
-                    public String doWork() throws Exception
-                    {
-                        return applyInternal();
-                    }
-                }, tenantDomain);
+                logger.debug("call applyInternal for all tennants");
             }
+        	final List<Tenant> tenants = tenantAdminService.getAllTenants();
+        	        	
+        	BatchProcessWorkProvider<Tenant> provider = new BatchProcessWorkProvider<Tenant>()
+        	{
+        	    Iterator<Tenant> i = tenants.iterator();
 
-            report = report + "\n (also applied to " + tenants.size() + " tenants)";
+                @Override
+                public int getTotalEstimatedWorkSize()
+                {
+                    return tenants.size();
+                }
+
+                @Override
+                public Collection<Tenant> getNextWork()
+                {
+                    // return chunks of 10 tenants
+                    ArrayList<Tenant> chunk = new ArrayList<Tenant>(100);
+                    
+                    while(i.hasNext() && chunk.size() <= 100)
+                    {
+                        chunk.add(i.next());
+                    }
+                    return chunk;
+                }
+        	};
+
+        	BatchProcessor<Tenant> batchProcessor = new BatchProcessor<Tenant>(
+        	        "AbstractPatch Processor for " + id,
+                    transactionHelper,
+                    provider, // collection of tenants
+                    10, // worker threads, 
+                    100, // batch size 100,
+                    applicationEventPublisher,
+                    logger,
+                    1000);
+        	
+        	BatchProcessWorker worker = new BatchProcessWorker<Tenant>()
+        	{
+                @Override
+                public String getIdentifier(Tenant entry)
+                {
+                    return entry.getTenantDomain();
+                }
+
+                @Override
+                public void beforeProcess() throws Throwable
+                {
+                    
+                }
+
+                @Override
+                public void process(Tenant entry) throws Throwable
+                {
+                    String tenantDomain = entry.getTenantDomain();
+                    String tenantReport = AuthenticationUtil.runAs(new RunAsWork<String>()
+                    {
+                        public String doWork() throws Exception
+                        {
+                            return applyInternal();
+                        }
+                    }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));                    
+                }
+
+                @Override
+                public void afterProcess() throws Throwable
+                {
+                    
+                }
+        	};
+        	
+        	// Now do the work
+            int numberOfInvocations = batchProcessor.process(worker, true);
             
-            return report;
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("batch worker finished processing id:" + id);
+            }
+            
+            if(batchProcessor.getTotalErrors() > 0)
+            {
+                report = report + "\n" + " and failure during update of tennants total success: " + batchProcessor.getSuccessfullyProcessedEntries() + " number of errors: " +batchProcessor.getTotalErrors() + " lastError" + batchProcessor.getLastError();
+            }
+            else
+            {
+                report = report + "\n" + " and successful batch update of " + batchProcessor.getTotalResults() + "tennants";
+            }
         }
 
         // done?
     	return report;
+    }
+    
+    /**
+     * Apply the patch, regardless of the deferred flag.    So if the patch has not run due to it being deferred earlier 
+     * then this will run it now.   Also ignores the "applied" lock.   So the patch can be executed many times.
+     * 
+     * @return the patch report
+     * @throws PatchException if the patch failed to be applied
+     */
+    public String applyAsync() throws PatchException
+    {	
+    	return apply(true);
     }
 
     /**
@@ -438,11 +558,27 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
      */
     public synchronized String apply() throws PatchException
     {
-        // ensure that this has not been executed already
-        if (applied)
-        {
-            throw new AlfrescoRuntimeException("The patch has already been executed: \n" + "   patch: " + this);
-        }
+    	return apply(false);
+    }
+    
+    private String apply(boolean async)
+    {
+    
+    	if(!async)
+    	{
+            // Do we bug out of patch execution
+            if (deferred)
+            {
+                return I18NUtil.getMessage(MSG_DEFERRED);
+            }
+  
+            // ensure that this has not been executed already
+            if (applied)
+            {
+                throw new AlfrescoRuntimeException("The patch has already been executed: \n" + "   patch: " + this);
+            }
+    	}
+    	
         // check properties
         checkProperties();
 
@@ -594,6 +730,21 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
             }
         }
     }
+    
+    /**
+     * Should the patch be deferred? And not run at bootstrap.
+     * @param deferred
+     */
+	public void setDeferred(boolean deferred) {
+		this.deferred = deferred;
+	}
+
+	/*
+	 * 
+	 */
+	public boolean isDeferred() {
+		return deferred;
+	}
 
     private int getReportingInterval(long soFar, long toGo)
     {

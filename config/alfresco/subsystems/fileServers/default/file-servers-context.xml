@@ -252,13 +252,21 @@
 	 <property name="keyStorePath">
 		 <value>${ftp.keyStore}</value>
 	 </property>
+	 <property name="keyStoreType">
+		 <value>${ftp.keyStoreType}</value>
+	 </property>
+	 <property name="keyStorePassphrase">
+		 <value>${ftp.keyStorePassphrase}</value>
+	 </property>
 	   
 	 <property name="trustStorePath">
 		 <value>${ftp.trustStore}</value>
 	 </property>
-	   
-	 <property name="passphrase">
-		 <value>${ftp.passphrase}</value>
+	 <property name="trustStoreType">
+		 <value>${ftp.trustStoreType}</value>
+	 </property>
+	 <property name="trustStorePassphrase">
+		 <value>${ftp.trustStorePassphrase}</value>
 	 </property>
 	   
 	 <property name="requireSecureSession">

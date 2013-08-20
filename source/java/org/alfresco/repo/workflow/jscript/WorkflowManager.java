@@ -44,6 +44,8 @@ import org.mozilla.javascript.Scriptable;
  */
 public class WorkflowManager extends BaseScopableProcessorExtension
 {
+    /** The maximum number of reviewers for "Group Review and Approve" workflow */
+    private int maxGroupReviewers = 0;
     /** Registry Service property */ 
     private ServiceRegistry services;
 
@@ -57,6 +59,16 @@ public class WorkflowManager extends BaseScopableProcessorExtension
         this.services = services;
     }
     
+    public void setMaxGroupReviewers(int maxGroupReviewers)
+    {
+        this.maxGroupReviewers = maxGroupReviewers;
+    }
+    
+    public int getMaxGroupReviewers()
+    {
+        return maxGroupReviewers;
+    }
+
     /**
      * Get deployed workflow definition by ID
      * 

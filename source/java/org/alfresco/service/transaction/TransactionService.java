@@ -22,7 +22,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.NotAuditable;
-import org.alfresco.service.PublicService;
 
 /**
  * Contract for retrieving access to a user transaction.

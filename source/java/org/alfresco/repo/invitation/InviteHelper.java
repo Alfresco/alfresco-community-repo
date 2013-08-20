@@ -284,11 +284,15 @@ public class InviteHelper implements InitializingBean
                     }
                 }
                 
+                NodeRef person = personService.getPersonOrNull(inviteeUserName);
+                
                 // if invitee's user account is still disabled and there are no pending invites outstanding
                 // for the invitee, then remove the account and delete the invitee's person node
-                if ((authenticationService.isAuthenticationMutable(inviteeUserName))
+                if (person != null 
+                		&& (authenticationService.isAuthenticationMutable(inviteeUserName))
                         && (authenticationService.getAuthenticationEnabled(inviteeUserName) == false)
-                        && (invitesPending == false))
+                        && (invitesPending == false)
+                        && nodeService.hasAspect(person, ContentModel.ASPECT_ANULLABLE))
                 {
                     // delete the invitee's user account
                     authenticationService.deleteAuthentication(inviteeUserName);

@@ -561,8 +561,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 {
                     if (LDAPUserRegistry.this.errorOnMissingUID)
                     {
-                        throw new AlfrescoRuntimeException("User missing user id attribute DN ="
-                                + result.getNameInNamespace() + "  att = " + LDAPUserRegistry.this.userIdAttributeName);
+                        Object[] params = {result.getNameInNamespace(), LDAPUserRegistry.this.userIdAttributeName};
+                        throw new AlfrescoRuntimeException("synchronization.err.ldap.get.user.id.missing", params);
                     }
                     else
                     {
@@ -607,9 +607,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 {
                     if (LDAPUserRegistry.this.errorOnMissingGID)
                     {
-                        throw new AlfrescoRuntimeException(
-                                "NodeDescription returned by group search does not have mandatory group id attribute "
-                                        + result.getNameInNamespace());
+                        Object[] params = {result.getNameInNamespace(), LDAPUserRegistry.this.groupIdAttributeName};
+                        throw new AlfrescoRuntimeException("synchronization.err.ldap.get.group.id.missing", params);
                     }
                     else
                     {
@@ -647,16 +646,26 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         // Work out whether the user and group trees are disjoint. This may allow us to optimize reverse DN
         // resolution.
         final LdapName groupDistinguishedNamePrefix;
-        final LdapName userDistinguishedNamePrefix;
         try
         {
             groupDistinguishedNamePrefix = fixedLdapName(this.groupSearchBase.toLowerCase());
+        }
+        catch (InvalidNameException e)
+        {
+            Object[] params = {this.groupSearchBase.toLowerCase(), e.getLocalizedMessage()};
+            throw new AlfrescoRuntimeException("synchronization.err.ldap.search.base.invalid", params, e);
+        }
+        final LdapName userDistinguishedNamePrefix;
+        try
+        {
             userDistinguishedNamePrefix = fixedLdapName(this.userSearchBase.toLowerCase());
         }
         catch (InvalidNameException e)
         {
-            throw new AlfrescoRuntimeException("User and group import failed", e);
+            Object[] params = {this.userSearchBase.toLowerCase(), e.getLocalizedMessage()};
+            throw new AlfrescoRuntimeException("synchronization.err.ldap.search.base.invalid", params, e);
         }
+ 
         final boolean disjoint = !groupDistinguishedNamePrefix.startsWith(userDistinguishedNamePrefix)
                 && !userDistinguishedNamePrefix.startsWith(groupDistinguishedNamePrefix);
 
@@ -686,9 +695,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 {
                     if (LDAPUserRegistry.this.errorOnMissingGID)
                     {
-                        throw new AlfrescoRuntimeException(
-                                "NodeDescription returned by group search does not have mandatory group id attribute "
-                                        + attributes);
+                        Object[] params = {result.getNameInNamespace(), LDAPUserRegistry.this.groupIdAttributeName};
+                        throw new AlfrescoRuntimeException("synchronization.err.ldap.get.group.id.missing", params);
                     }
                     else
                     {
@@ -829,9 +837,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                             {
                                                 if (LDAPUserRegistry.this.errorOnMissingGID)
                                                 {
-                                                    throw new AlfrescoRuntimeException(
-                                                            "Group returned by group search does not have mandatory group id attribute "
-                                                                    + attributes);
+                                                    Object[] params = {result.getNameInNamespace(), LDAPUserRegistry.this.groupIdAttributeName};
+                                                    throw new AlfrescoRuntimeException("synchronization.err.ldap.get.group.id.missing", params);
                                                 }
                                                 else
                                                 {
@@ -852,8 +859,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                         // Unresolvable name
                                         if (LDAPUserRegistry.this.errorOnMissingMembers)
                                         {
-                                            throw new AlfrescoRuntimeException("Failed to resolve member of group '"
-                                                    + groupShortName + "' with distinguished name: " + attribute, e);
+                                            Object[] params = {groupShortName, attribute, e.getLocalizedMessage() };
+                                            throw new AlfrescoRuntimeException("synchronization.err.ldap.group.member.missing.exception", params, e);
                                         }
                                         LDAPUserRegistry.logger.warn("Failed to resolve member of group '"
                                                 + groupShortName + "' with distinguished name: " + attribute, e);
@@ -862,8 +869,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                 }
                                 if (LDAPUserRegistry.this.errorOnMissingMembers)
                                 {
-                                    throw new AlfrescoRuntimeException("Failed to resolve member of group '"
-                                            + groupShortName + "' with distinguished name: " + attribute);
+                                    Object[] params = {groupShortName, attribute};
+                                    throw new AlfrescoRuntimeException("synchronization.err.ldap.group.member.missing", params);
                                 }
                                 LDAPUserRegistry.logger.warn("Failed to resolve member of group '" + groupShortName
                                         + "' with distinguished name: " + attribute);
@@ -956,7 +963,30 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
 
             if (searchResults.hasMore())
             {
-                return searchResults.next().getNameInNamespace();
+                SearchResult result = searchResults.next();
+                Attributes attributes = result.getAttributes();
+                Attribute uidAttribute = attributes.get(this.userIdAttributeName);
+                if (uidAttribute == null)
+                {
+                    if (this.errorOnMissingUID)
+                    {
+                        throw new AlfrescoRuntimeException(
+                                "User returned by user search does not have mandatory user id attribute "
+                                        + attributes);
+                    }
+                    else
+                    {
+                        LDAPUserRegistry.logger
+                                .warn("User returned by user search does not have mandatory user id attribute "
+                                        + attributes);
+                    }
+                }
+                // MNT:2597 We don't trust the LDAP server's treatment of whitespace, accented characters etc. We will
+                // only resolve this user if the user ID matches
+                else if (userId.equalsIgnoreCase((String) uidAttribute.get(0)))
+                {
+                    return result.getNameInNamespace();
+                }
             }
             
             Object[] args = {userId, query};
@@ -1168,6 +1198,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
      *            the query
      * @param returningAttributes
      *            the attributes to include in search results
+     * @throws AlfrescoRuntimeException           
      */
     private void processQuery(SearchCallback callback, String searchBase, String query, String[] returningAttributes)
     {
@@ -1207,11 +1238,13 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         }
         catch (NamingException e)
         {
-            throw new AlfrescoRuntimeException("User and group import failed", e);
+            Object[] params = {e.getLocalizedMessage()};
+            throw new AlfrescoRuntimeException("synchronization.err.ldap.search", params, e);
         }
         catch (ParseException e)
         {
-            throw new AlfrescoRuntimeException("User and group import failed", e);
+            Object[] params = {e.getLocalizedMessage()};
+            throw new AlfrescoRuntimeException("synchronization.err.ldap.search", params, e);
         }
         finally
         {
@@ -1508,9 +1541,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         {
                             if (LDAPUserRegistry.this.errorOnMissingUID)
                             {
-                                throw new AlfrescoRuntimeException(
-                                        "User returned by user search does not have mandatory user id attribute "
-                                                + attributes);
+                                Object[] params = {result.getNameInNamespace(), LDAPUserRegistry.this.userIdAttributeName};
+                                throw new AlfrescoRuntimeException("synchronization.err.ldap.get.user.id.missing", params);
                             }
                             else
                             {

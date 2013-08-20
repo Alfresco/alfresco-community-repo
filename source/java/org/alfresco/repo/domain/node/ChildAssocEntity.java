@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.domain.node;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.zip.CRC32;
@@ -40,8 +41,10 @@ import org.apache.commons.logging.LogFactory;
  * @author Derek Hulley
  * @since 3.4
  */
-public class ChildAssocEntity
+public class ChildAssocEntity implements Serializable
 {
+    private static final long serialVersionUID = 1L;
+
     private static final Log logger = LogFactory.getLog(ChildAssocEntity.class);
     
     private Long id;

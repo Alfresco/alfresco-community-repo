@@ -24,6 +24,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,6 +65,7 @@ import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.ibatis.SerializableTypeHandler;
+import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.admin.patch.Patch;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -71,7 +73,9 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect;
+import org.alfresco.repo.domain.patch.AppliedPatchDAO;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.DatabaseMetaDataHelper;
 import org.alfresco.util.LogUtil;
@@ -240,6 +244,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     
     private DescriptorService descriptorService;
     private DataSource dataSource;
+    private AppliedPatchDAO appliedPatchDAO;
     private LocalSessionFactoryBean localSessionFactory;
     private String schemaOuputFilename;
     private boolean updateSchema;
@@ -271,6 +276,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     public void setDataSource(DataSource dataSource)
     {
         this.dataSource = dataSource;
+    }
+
+    public void setAppliedPatchDAO(AppliedPatchDAO appliedPatchDAO)
+    {
+        this.appliedPatchDAO = appliedPatchDAO;
     }
 
     public void setLocalSessionFactory(LocalSessionFactoryBean localSessionFactory)
@@ -451,11 +461,22 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      */
     public void addPreUpdateScriptPatch(SchemaUpgradeScriptPatch scriptPatch)
     {
-        if (logger.isDebugEnabled())
+        if(false == scriptPatch.isIgnored())
         {
-            logger.debug("Registered script patch (pre-Hibernate): " + scriptPatch.getId());
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Registered script patch (pre-Hibernate): " + scriptPatch.getId());
+            }
+            this.preUpdateScriptPatches.add(scriptPatch);
         }
-        this.preUpdateScriptPatches.add(scriptPatch);
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Ignoring script patch (pre-Hibernate): " + scriptPatch.getId());
+            }
+        }
+        
     }
 
     /**
@@ -465,11 +486,21 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      */
     public void addPostUpdateScriptPatch(SchemaUpgradeScriptPatch scriptPatch)
     {
-        if (logger.isDebugEnabled())
+        if(false == scriptPatch.isIgnored())
         {
-            logger.debug("Registered script patch (post-Hibernate): " + scriptPatch.getId());
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Registered script patch (post-Hibernate): " + scriptPatch.getId());
+            }
+            this.postUpdateScriptPatches.add(scriptPatch);
         }
-        this.postUpdateScriptPatches.add(scriptPatch);
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Ignoring script patch (post-Hibernate): " + scriptPatch.getId());
+            }
+        }
     }
 
     /**
@@ -479,11 +510,22 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      */
     public void addUpdateActivitiScriptPatch(SchemaUpgradeScriptPatch scriptPatch)
     {
-        if (logger.isDebugEnabled())
+        if(false == scriptPatch.isIgnored())
         {
-            logger.debug("Registered Activiti script patch: " + scriptPatch.getId());
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Registered Activiti script patch: " + scriptPatch.getId());
+            }
+            this.updateActivitiScriptPatches.add(scriptPatch);
         }
-        this.updateActivitiScriptPatches.add(scriptPatch);
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Ignoring Activiti script patch: " + scriptPatch.getId());
+            }
+        }
+        
     }
 
     private static class NoSchemaException extends Exception
@@ -828,22 +870,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         final Dialect dialect = Dialect.getDialect(cfg.getProperties());
         String dialectStr = dialect.getClass().getSimpleName();
 
-        // Initialise Activiti DB, using an unclosable connection
-        if(!checkActivitiTablesExist(connection))
-        {
-        	// Activiti DB updates are performed as patches in alfresco, only give
-        	// control to activiti when creating new one.
-        	initialiseActivitiDBSchema(new UnclosableConnection(connection));
-        }
-        else
-        {
-            // Execute any auto-update scripts for Activiti tables
-            checkSchemaPatchScripts(cfg, connection, updateActivitiScriptPatches, true);
-
-            // verify that all Activiti patches have been applied correctly
-            checkSchemaPatchScripts(cfg, connection, updateActivitiScriptPatches, false);
-        }
-        
         if (create)
         {
             long start = System.currentTimeMillis();
@@ -929,6 +955,44 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             
             // Execute any post-auto-update scripts
             checkSchemaPatchScripts(cfg, connection, postUpdateScriptPatches, true);
+        }
+
+        // Initialise Activiti DB, using an unclosable connection
+        boolean activitiTablesExist = checkActivitiTablesExist(connection);
+        if(!activitiTablesExist)
+        {
+            // Activiti DB updates are performed as patches in alfresco, only give
+            // control to activiti when creating new one.
+            initialiseActivitiDBSchema(new UnclosableConnection(connection));
+            
+            // ALF-18996: Upgrade from 3.4.12 to 4.2.0 fails: Activiti tables have not been bootstrapped
+            // The Activiti bootstrap is effectively doing the work of all the other patches,
+            // which should be considered complete.
+            int installedSchemaNumber = getInstalledSchemaNumber(connection);
+            for (Patch activitiScriptPatch : updateActivitiScriptPatches)
+            {
+                AppliedPatch appliedPatch = new AppliedPatch();
+                appliedPatch.setId(activitiScriptPatch.getId());
+                appliedPatch.setDescription(activitiScriptPatch.getDescription());
+                appliedPatch.setFixesFromSchema(activitiScriptPatch.getFixesFromSchema());
+                appliedPatch.setFixesToSchema(activitiScriptPatch.getFixesToSchema());
+                appliedPatch.setTargetSchema(activitiScriptPatch.getTargetSchema());
+                appliedPatch.setAppliedToSchema(installedSchemaNumber);
+                appliedPatch.setAppliedToServer("UNKNOWN");
+                appliedPatch.setAppliedOnDate(new Date());                   // the date applied
+                appliedPatch.setSucceeded(true);
+                appliedPatch.setWasExecuted(false);
+                appliedPatch.setReport("Placeholder for Activiti bootstrap at schema " + installedSchemaNumber);
+                appliedPatchDAO.createAppliedPatch(appliedPatch);
+            }
+        }
+        else
+        {
+            // Execute any auto-update scripts for Activiti tables
+            checkSchemaPatchScripts(cfg, connection, updateActivitiScriptPatches, true);
+
+            // verify that all Activiti patches have been applied correctly
+            checkSchemaPatchScripts(cfg, connection, updateActivitiScriptPatches, false);
         }
         
         return create;
@@ -1756,7 +1820,26 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             return 0;
         }
     }
-    
+
+    /**
+     * Validates and compares current DB schema with schema reference definition, specified in <code>referenceResource</code> parameter.<br />
+     * <br />
+     * The method supports two mechanisms to report validation results:
+     * <ol>
+     * <li>using an external output stream, specified as <code>out</code>;</li>
+     * <li>using specially created {@link FileOutputStream}, which represents temporary file with name, formatted in accordance with <code>outputFileNameTemplate</code> template.</li>
+     * </ol>
+     * It is necessary to take care about freeing resources of output stream in case of the 1st approach.<br />
+     * <b>N.B.:</b> The method only writes messages of the report. And it <b>doesn't flush and doesn't close</b> the specified output stream!<br />
+     * <br />
+     * 
+     * @param referenceResource - {@link Resource} instance, which determines file of reference schema
+     * @param outputFileNameTemplate - {@link String} value, which determines template of temporary filename for validation report. <b>It can't be <code>null</code> if
+     *        <code>out</code> is <code>null</code></b>!
+     * @param out - {@link PrintWriter} instance, which represents an external output stream for writing a validation report. This stream is never closed or flushed. <b>It can't be
+     *        <code>null</code> if <code>outputFileNameTemplate</code> is <code>null</code></b>!
+     * @return {@link Integer} value, which determines amount of errors or warnings that were detected during validation
+     */
     private int attemptValidateSchema(Resource referenceResource, String outputFileNameTemplate, PrintWriter out)
     {
         Date startTime = new Date(); 
@@ -1826,8 +1909,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             pw.print(SchemaComparator.LINE_SEPARATOR);
         }
 
-        pw.close();
-        
+        // We care only about output streams for reporting, which are created specially for current reference resource...
+        if (null == out)
+        {
+            pw.close();
+        }
+
         if (results.size() == 0)
         {
             LogUtil.info(logger, INFO_SCHEMA_COMP_ALL_OK, referenceResource);

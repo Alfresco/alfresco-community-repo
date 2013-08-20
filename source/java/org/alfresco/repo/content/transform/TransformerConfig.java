@@ -200,6 +200,7 @@ public interface TransformerConfig
             READ_LIMIT_TIME_MS,
             PAGE_LIMIT,
             SUPPORTED,
+            AVAILABLE,
             PRIORITY,
             ERROR_TIME,
             INITIAL_TIME,

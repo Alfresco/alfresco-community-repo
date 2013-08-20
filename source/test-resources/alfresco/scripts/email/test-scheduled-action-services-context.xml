@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <import resource="classpath:alfresco/application-context.xml" />
+  
+    <!--
+    Define the model factory used to generate object models suitable for use with freemarker templates. 
+    -->
+    <bean id="templateActionModelFactory" class="org.alfresco.repo.action.scheduled.FreeMarkerWithLuceneExtensionsModelFactory">
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+    <bean id="scriptAction" class="org.alfresco.repo.action.scheduled.SimpleTemplateActionDefinition">
+        <property name="actionName">
+            <value>script</value>
+        </property>
+        <property name="parameterTemplates">
+            <null/>
+        </property>
+        <property name="templateActionModelFactory">
+            <ref bean="templateActionModelFactory"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService"/>
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+    </bean>
+    
+    <bean id="createNewsEachWeek" class="org.alfresco.repo.action.scheduled.CronScheduledQueryBasedTemplateActionDefinition">
+        <property name="transactionMode">
+            <value>UNTIL_FIRST_FAILURE</value>
+        </property>
+        <property name="compensatingActionMode">
+            <value>IGNORE</value>
+        </property>
+        <property name="searchService">
+            <ref bean="SearchService"/>
+        </property>
+        <property name="templateService">
+            <ref bean="TemplateService"/>
+        </property>
+        <property name="queryLanguage">
+            <value>lucene</value>
+        </property>
+        <property name="stores">
+            <list>
+                <value>workspace://SpacesStore</value>
+            </list>
+        </property>
+        <!-- Find all nodes that do not have the aspect -->
+        <property name="queryTemplate">
+            <value>+TYPE:"cm:folder" +@cm\:name:"Gepubliceerd"</value>
+        </property>
+        <property name="cronExpression">
+            <value>0 50 * * * ?</value>
+        </property>
+        <property name="jobName">
+            <value>jobE</value>
+        </property>
+        <property name="jobGroup">
+            <value>jobGroup</value>
+        </property>
+        <property name="triggerName">
+            <value>triggerE</value>
+        </property>
+        <property name="triggerGroup">
+            <value>triggerGroup</value>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory"/>
+        </property>
+        <property name="actionService">
+            <ref bean="ActionService"/>
+        </property>
+        <property name="templateActionModelFactory">
+            <ref bean="templateActionModelFactory"/>
+        </property>
+        <property name="templateActionDefinition">
+            <ref bean="scriptAction"/>
+        </property>
+        <property name="transactionService">
+            <ref bean="TransactionService"/>
+        </property>
+        <property name="runAsUser">
+            <value>System</value>
+        </property>
+    </bean>
+    
+</beans>

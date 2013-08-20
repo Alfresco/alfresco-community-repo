@@ -1033,7 +1033,10 @@ public class TransferServiceImpl2 implements TransferService2
          * Step 1: Create a chunker and wire it up to the transmitter
          */
         final ContentChunker chunker = new ContentChunkerImpl();
-        final Long fRange = Long.valueOf(definition.getNodes().size()); 
+        final Long removeNodesRange = Long.valueOf(definition.getNodesToRemove() != null ? definition.getNodesToRemove().size() : 0);
+        final Long nodesRange = Long.valueOf( definition.getNodes() != null ? definition.getNodes().size() : 0);
+
+        final Long fRange = removeNodesRange + nodesRange;
         chunker.setHandler(
                 new ContentChunkProcessor(){
                 private long counter = 0;
@@ -1180,7 +1183,7 @@ public class TransferServiceImpl2 implements TransferService2
         this.transmitter = transmitter;
     }
     
-    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    // note: cache is tenant-aware (if using TransctionalCache impl)
     
     private SimpleCache<String, NodeRef> singletonCache; // eg. for transferHomeNodeRef
     private final String KEY_TRANSFER_HOME_NODEREF = "key.transferServiceImpl2Home.noderef";

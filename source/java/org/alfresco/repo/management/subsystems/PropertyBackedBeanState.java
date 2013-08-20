@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -58,6 +58,15 @@ public interface PropertyBackedBeanState
      *            the property value
      */
     public void setProperty(String name, String value);
+
+    /**
+     * Removes a property. This may only be called after {@link #stop()} and should only be called for
+     * property names for which the {@link #isUpdateable(String)} method returns <code>true</code>.
+     * 
+     * @param name
+     *            the property name
+     */
+    public void removeProperty(String name);
 
     /**
      * Starts up the component, using its new property values.

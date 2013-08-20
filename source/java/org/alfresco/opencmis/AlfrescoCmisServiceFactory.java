@@ -100,6 +100,25 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     public void init(Map<String, String> parameters)
     {
     }
+    
+    public void init()
+    {
+//        this.service = getCmisServiceTarget(connector);
+//        
+//        // Wrap it
+//        ProxyFactory proxyFactory = new ProxyFactory(service);
+//        proxyFactory.addInterface(AlfrescoCmisService.class);
+//        proxyFactory.addAdvice(cmisExceptions);
+//        proxyFactory.addAdvice(cmisControl);
+//        proxyFactory.addAdvice(cmisStreams);
+//        proxyFactory.addAdvice(cmisTransactions);
+//        AlfrescoCmisService cmisService = (AlfrescoCmisService) proxyFactory.getProxy();
+//
+//        this.serviceWrapper = new CmisServiceWrapper<CmisService>(
+//                cmisService,
+//                connector.getTypesDefaultMaxItems(), connector.getTypesDefaultDepth(),
+//                connector.getObjectsDefaultMaxItems(), connector.getObjectsDefaultDepth());
+    }
 
     @Override
     public void destroy()
@@ -111,7 +130,7 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
      *      We are producing new instances each time.   
      */
     @Override
-    public CmisService getService(CallContext context)
+    public CmisService getService(final CallContext context)
     {
         if (logger.isDebugEnabled())
         {
@@ -129,17 +148,17 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
             AuthenticationUtil.clearCurrentSecurityContext();
         }
 
-        AlfrescoCmisService cmisServiceTarget = getCmisServiceTarget(connector);
+        AlfrescoCmisService service = getCmisServiceTarget(connector);
         
         // Wrap it
-        ProxyFactory proxyFactory = new ProxyFactory(cmisServiceTarget);
+        ProxyFactory proxyFactory = new ProxyFactory(service);
         proxyFactory.addInterface(AlfrescoCmisService.class);
         proxyFactory.addAdvice(cmisExceptions);
         proxyFactory.addAdvice(cmisControl);
         proxyFactory.addAdvice(cmisStreams);
         proxyFactory.addAdvice(cmisTransactions);
         AlfrescoCmisService cmisService = (AlfrescoCmisService) proxyFactory.getProxy();
-            
+
         CmisServiceWrapper<CmisService> wrapperService = new CmisServiceWrapper<CmisService>(
                 cmisService,
                 connector.getTypesDefaultMaxItems(), connector.getTypesDefaultDepth(),
@@ -147,7 +166,7 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
 
         // We use our specific open method here because only we know about it
         cmisService.open(context);
-        
+
         return wrapperService;
     }
     

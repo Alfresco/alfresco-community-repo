@@ -65,6 +65,7 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -109,6 +110,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     
     private int maximumResultsFromUnlimitedQuery = Integer.MAX_VALUE;
 	
+    public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
+
     public SolrQueryHTTPClient()
     {
     }
@@ -273,6 +276,10 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             url.append("&locale=");
             url.append(encoder.encode(locale.toString(), "UTF-8"));
             url.append("&").append(SearchParameters.ALTERNATIVE_DICTIONARY).append("=").append(alternativeDictionary);
+            for(String paramName : searchParameters.getExtraParameters().keySet())
+            {
+            	url.append("&").append(paramName).append("=").append(searchParameters.getExtraParameters().get(paramName));
+            }
             StringBuffer sortBuffer = new StringBuffer();
             for (SortDefinition sortDefinition : searchParameters.getSortDefinitions())
             {
@@ -404,6 +411,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
 
             body.put("defaultFTSOperator", searchParameters.getDefaultFTSOperator());
             body.put("defaultFTSFieldOperator", searchParameters.getDefaultFTSFieldOperator());
+            body.put("queryConsistency", searchParameters.getQueryConsistency());
             if (searchParameters.getMlAnalaysisMode() != null)
             {
                 body.put("mlAnalaysisMode", searchParameters.getMlAnalaysisMode().toString());
@@ -418,6 +426,10 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             body.put("textAttributes", textAttributes);
 
             PostMethod post = new PostMethod(url.toString());
+            if (body.toString().length() > DEFAULT_SAVEPOST_BUFFER)
+            {
+                post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, true);
+            }
             post.setRequestEntity(new ByteArrayRequestEntity(body.toString().getBytes("UTF-8"), "application/json"));
 
             try

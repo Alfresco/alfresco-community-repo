@@ -86,6 +86,11 @@
                 <ref bean="patch.db-V4.0-AclChangeSet2" />
                 <ref bean="patch.db-V4.0-TenantTables" />
                 <ref bean="patch.db-V4.1-NodeDeleted" />
+                <ref bean="patch.db-V4.1-drop-alfqname-fk-indexes" />
+                <ref bean="patch.db-V4.2-remove-index-acl_id" />
+                <ref bean="patch.db-V4.1-drop-activiti-feed-format" />
+                <ref bean="patch.db-V4.2-metadata-query-indexes" />
+				<ref bean="patch.db-V4.1-fix-Repo-seqs-order" />
             </list>
         </property>
     </bean>
@@ -100,6 +105,7 @@
                 <ref bean="patch.db-V3.4-RemovingLinkValidationMetadata" />
                 <ref bean="patch.db-V3.4-AVM-rename-dupes" />
                 <ref bean="patch.db-V3.4-AVM-index-child-entries-lower" />
+                <ref bean="patch.db-V4.1-fix-AVM-seqs-order" />
             </list>
         </property>
     </bean>
@@ -120,6 +126,7 @@
                 <ref bean="patch.db-V4.1-rename-constraint-activiti" />
                 <ref bean="patch.db-V4.2-add-activti-index-historic-activity" />
                 <ref bean="patch.db-V4.2-upgrade-to-activiti-5.11" />
+                <ref bean="patch.db-V4.2-upgrade-to-activiti-5.13" />
             </list>
         </property>
     </bean>

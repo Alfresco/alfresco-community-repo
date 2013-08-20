@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,9 +21,6 @@ package org.alfresco.repo.content.metadata;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,6 +34,13 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -55,6 +59,11 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xmlbeans.impl.xb.xsdschema.All;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
+import org.joda.time.format.DateTimeParser;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -104,6 +113,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
 {
     public static final String NAMESPACE_PROPERTY_PREFIX = "namespace.prefix.";
     private static final String ERR_TYPE_CONVERSION = "metadata.extraction.err.type_conversion";
+    private static final String PROP_DEFAULT_TIMEOUT = "content.metadataExtracter.default.timeoutMs";
     public static final String PROPERTY_PREFIX_METADATA = "metadata.";
     public static final String PROPERTY_COMPONENT_EXTRACT = ".extract.";
     public static final String PROPERTY_COMPONENT_EMBED = ".embed.";
@@ -119,7 +129,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private Set<String> supportedEmbedMimetypes;
     private OverwritePolicy overwritePolicy;
     private boolean failOnTypeConversion;
-    protected Set<DateFormat> supportedDateFormats = new HashSet<DateFormat>(0);
+    private Set<DateTimeFormatter> supportedDateFormatters;
     private Map<String, Set<QName>> mapping;
     private Map<QName, Set<String>> embedMapping;
     private boolean inheritDefaultMapping;
@@ -128,6 +138,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private String beanName;
     private ApplicationContext applicationContext;
     private Properties properties;
+    private Map<String, MetadataExtracterLimits> mimetypeLimits;
+    private ExecutorService executorService;
 
     /**
      * Default constructor.  If this is called, then {@link #isSupported(String)} should
@@ -335,31 +347,16 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      */
     public void setSupportedDateFormats(List<String> supportedDateFormats)
     {
-        this.supportedDateFormats = new HashSet<DateFormat>(5);
+        supportedDateFormatters = new HashSet<DateTimeFormatter>();
+        
+        // Note: The previous version attempted to create a single DateTimeFormatter from
+        // multiple DateTimeFormatters, but that does not work as the time zone part is lost.
+        // Now have a set of them.
         for (String dateFormatStr : supportedDateFormats)
         {
             try
             {
-                /**
-                 * Regional date format
-                 */
-                DateFormat df = new SimpleDateFormat(dateFormatStr);
-                this.supportedDateFormats.add(df);
-                
-                /**
-                 * 
-                 */
-                
-                /**
-                 * Date format can be locale specific - make sure English format always works
-                 */ 
-                /* 
-                 * TODO MER 25 May 2010 - Added this as a quick fix for IMAP date parsing which is always 
-                 * English regardless of Locale.  Some more thought and/or code is required to configure 
-                 * the relationship between properties, format and locale.
-                 */
-                DateFormat englishFormat = new SimpleDateFormat(dateFormatStr, Locale.US);
-                this.supportedDateFormats.add(englishFormat);
+                supportedDateFormatters.add(DateTimeFormat.forPattern(dateFormatStr));
             }
             catch (Throwable e)
             {
@@ -443,6 +440,42 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     public void setInheritDefaultEmbedMapping(boolean inheritDefaultEmbedMapping)
     {
         this.inheritDefaultEmbedMapping = inheritDefaultEmbedMapping;
+    }
+
+    /**
+     * Sets the map of source mimetypes to metadata extracter limits.
+     * 
+     * @param mimetypeLimits
+     */
+    public void setMimetypeLimits(Map<String, MetadataExtracterLimits> mimetypeLimits)
+    {
+        this.mimetypeLimits = mimetypeLimits;
+    }
+
+    /**
+     * Gets the <code>ExecutorService</code> to be used for timeout-aware
+     * extraction.
+     * <p>
+     * If no <code>ExecutorService</code> has been defined a default
+     * of <code>Executors.newCachedThreadPool()</code> is used during
+     * {@link AbstractMappingMetadataExtracter#init()}.
+     * 
+     * @return the defined or default <code>ExecutorService</code>
+     */
+    protected ExecutorService getExecutorService()
+    {
+        return executorService;
+    }
+
+    /**
+     * Sets the <code>ExecutorService</code> to be used for timeout-aware
+     * extraction.
+     * 
+     * @param executorService the <code>ExecutorService</code> for timeouts
+     */
+    public void setExecutorService(ExecutorService executorService)
+    {
+        this.executorService = executorService;
     }
 
     /**
@@ -1006,6 +1039,30 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     "  Nothing will be extracted by: " + this);
         }
 
+        if (executorService == null)
+        {
+            executorService = Executors.newCachedThreadPool();
+        }
+        
+        if (mimetypeLimits == null)
+        {
+            if (properties != null)
+            {
+                String property = properties.getProperty(PROP_DEFAULT_TIMEOUT);
+                if (property != null)
+                {
+                    Long value = Long.parseLong(property);
+                    if (value != null)
+                    {
+                        MetadataExtracterLimits limits = new MetadataExtracterLimits();
+                        limits.setTimeoutMs(value);
+                        mimetypeLimits = new HashMap<String, MetadataExtracterLimits>(1);
+                        mimetypeLimits.put("*", limits);
+                    }
+                }
+            }
+        }
+
         Map<QName, Set<String>> defaultEmbedMapping = getDefaultEmbedMapping();
 
         // Was a mapping explicitly provided
@@ -1014,6 +1071,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             // No mapping, so use the default
             embedMapping = defaultEmbedMapping;
         }
+        
         else if (inheritDefaultEmbedMapping)
         {
             // Merge the default mapping into the configured mapping
@@ -1039,7 +1097,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 embedMapping.put(modelProperty, globalEmbedMapping.get(modelProperty));
             }
         }
-
         // Done
         initialized = true;
     }
@@ -1141,7 +1198,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             // Check that the content has some meat
             if (reader.getSize() > 0 && reader.exists())
             {
-                rawMetadata = extractRaw(reader);
+                rawMetadata = extractRaw(reader, getLimits(reader.getMimetype()));
             }
             else
             {
@@ -1586,17 +1643,53 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         catch (TypeConversionException e)
         {
             // Try one of the other formats
-            for (DateFormat df : this.supportedDateFormats)
+            if (this.supportedDateFormatters != null)
             {
-                try
+                // Remove text such as " (PDT)" which cannot be parsed.
+                String dateStr2 = (dateStr == null || dateStr.indexOf('(') == -1)
+                        ? dateStr : dateStr.replaceAll(" \\(.*\\)", "");
+                for (DateTimeFormatter supportedDateFormatter: supportedDateFormatters)
                 {
-                    date = df.parse(dateStr);
-                }
-                catch (ParseException ee)
-                {
-                    // Didn't work
+                    // supported DateFormats were defined
+                    /**
+                     * Regional date format
+                     */
+                    try
+                    {
+                        DateTime dateTime = supportedDateFormatter.parseDateTime(dateStr2);
+                        if (dateTime.getCenturyOfEra() > 0)
+                        {
+                            return dateTime.toDate();
+                        }
+                    }
+                    catch (IllegalArgumentException e1)
+                    {
+                        // Didn't work
+                    }
+
+                    /**
+                     * Date format can be locale specific - make sure English format always works
+                     */
+                    /* 
+                     * TODO MER 25 May 2010 - Added this as a quick fix for IMAP date parsing which is always 
+                     * English regardless of Locale.  Some more thought and/or code is required to configure 
+                     * the relationship between properties, format and locale.
+                     */
+                    try
+                    {
+                        DateTime dateTime = supportedDateFormatter.withLocale(Locale.US).parseDateTime(dateStr2);
+                        if (dateTime.getCenturyOfEra() > 0)
+                        {
+                            return dateTime.toDate();
+                        }
+                    }
+                    catch (IllegalArgumentException e1)
+                    {
+                        // Didn't work
+                    }
                 }
             }
+
             if (date == null)
             {
                 // Still no luck
@@ -1863,6 +1956,129 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         return embedMapping;
     }
 
+    /**
+     * Gets the metadata extracter limits for the given mimetype.
+     * <p>
+     * A specific match for the given mimetype is tried first and
+     * if none is found a wildcard of "*" is tried.
+     * 
+     * @param mimetype
+     * @return the found limits or null
+     */
+    protected MetadataExtracterLimits getLimits(String mimetype)
+    {
+        if (mimetypeLimits == null)
+        {
+            return null;
+        }
+        MetadataExtracterLimits limits = null;
+        limits = mimetypeLimits.get(mimetype);
+        if (limits == null)
+        {
+            limits = mimetypeLimits.get("*");
+        }
+        return limits;
+    }
+    
+    /**
+     * <code>Callable</code> wrapper for the 
+     * {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader)} method
+     * to handle timeouts.
+     */
+    private class ExtractRawCallable implements Callable<Map<String,Serializable>>
+    {
+        private ContentReader contentReader;
+        
+        public ExtractRawCallable(ContentReader reader)
+        {
+            this.contentReader = reader;
+        }
+        
+        @Override
+        public Map<String, Serializable> call() throws Exception
+        {
+            try
+            {
+                return extractRaw(contentReader);
+            }
+            catch (Throwable e)
+            {
+                throw new ExtractRawCallableException(e);
+            }
+        }
+    }
+    
+    /**
+     * Exception wrapper to handle any {@link Throwable} from 
+     * {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader)}
+     */
+    private class ExtractRawCallableException extends Exception
+    {
+        private static final long serialVersionUID = 1813857091767321624L;
+        public ExtractRawCallableException(Throwable cause)
+        {
+            super(cause);
+        }
+    }
+    
+    /**
+     * Calls the {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader)} method
+     * using the given limits.
+     * <p>
+     * Currently the only limit supported by {@link MetadataExtracterLimits} is a timeout
+     * so this method uses {@link AbstractMappingMetadataExtracter#getExecutorService()}
+     * to execute a {@link FutureTask} with any timeout defined.
+     * <p>
+     * If no timeout limit is defined or is unlimited (-1),
+     * the <code>extractRaw</code> method is called directly.
+     * 
+     * @param reader        the document to extract the values from.  This stream provided by
+     *                      the reader must be closed if accessed directly.
+     * @param limits        the limits to impose on the extraction
+     * @return              Returns a map of document property values keyed by property name.
+     * @throws              All exception conditions can be handled.
+     */
+    private Map<String, Serializable> extractRaw(
+            ContentReader reader, MetadataExtracterLimits limits) throws Throwable
+    {
+        if (limits == null || limits.getTimeoutMs() == -1)
+        {
+            return extractRaw(reader);
+        }
+        FutureTask<Map<String, Serializable>> task = null;
+        try
+        {
+            task = new FutureTask<Map<String,Serializable>>(new ExtractRawCallable(reader));
+            getExecutorService().execute(task);
+            return task.get(limits.getTimeoutMs(), TimeUnit.MILLISECONDS);
+        }
+        catch (TimeoutException e)
+        {
+            task.cancel(true);
+            if (reader.isChannelOpen())
+            {
+                reader.getReadableChannel().close();
+            }
+            throw e;
+        }
+        catch (InterruptedException e)
+        {
+            // We were asked to stop
+            task.cancel(true);
+            return null;
+        }
+        catch (ExecutionException e)
+        {
+            // Unwrap our cause and throw that
+            Throwable cause = e.getCause();
+            if (cause != null && cause instanceof ExtractRawCallableException)
+            {
+                cause = ((ExtractRawCallableException) cause).getCause();
+            }
+            throw cause;
+        }
+    }
+    
     /**
      * Override to provide the raw extracted metadata values.  An extracter should extract
      * as many of the available properties as is realistically possible.  Even if the

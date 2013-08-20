@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.domain.node;
 
+import java.io.Serializable;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
@@ -32,8 +34,9 @@ import org.alfresco.util.Pair;
  * @author Derek Hulley
  * @since 3.4
  */
-public class NodeEntity implements Node, PermissionCheckValue
+public class NodeEntity implements Node, PermissionCheckValue, Serializable
 {
+    private static final long serialVersionUID = 1L;
     private boolean locked;
     
     private Long id;

@@ -128,7 +128,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         this.fileInfoCache = cache;
     }
     
-    private class FileInfoKey implements Serializable
+    private static class FileInfoKey implements Serializable
     {
         /**
          * 

@@ -21,6 +21,7 @@ package org.alfresco.repo.action.executer;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -58,6 +59,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -79,6 +81,13 @@ import org.springframework.util.StringUtils;
 
 /**
  * Mail action executor implementation.
+ * <p/>
+ * <em>Note on executing this action as System:</em> it is allowed to execute {@link #NAME mail} actions as system.
+ * However there is a limitation if you do so. Because the system user is not a normal user and specifically because
+ * there is no corresponding {@link ContentModel#TYPE_PERSON cm:person} node for system, it is not possible to use
+ * any reference to that person in the associated email template. Various email templates use a '{@link TemplateNode person}' object
+ * in the FTL model to access things like first name, last name etc.
+ * In the case of mail actions sent while running as system, none of these will be available.
  * 
  * @author Roy Wetherall
  */
@@ -192,7 +201,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     private boolean testMode = false;
     private MimeMessage lastTestMessage;
-    
+
+    private TemplateImageResolver imageResolver;
+
     /**
      * @param javaMailSender    the java mail sender
      */
@@ -278,10 +289,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         this.fromDefaultAddress = fromAddress;
     }
 
-    
     public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
         this.sysAdminParams = sysAdminParams;
+    }
+    
+    public void setImageResolver(TemplateImageResolver imageResolver)
+    {
+        this.imageResolver = imageResolver;
     }
     
     public void setTestMessageTo(String testMessageTo)
@@ -385,6 +400,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     @Override
     public void init()
     {
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug("Init called, testMessageTo=" + testMessageTo);
+    	}
+    	
         numberSuccessfulSends.set(0);
         numberFailedSends.set(0);
         
@@ -430,37 +450,48 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             final Action ruleAction,
             final NodeRef actionedUponNodeRef) 
     {
-        // TODO review & test converged code !!
-        if (sendAfterCommit(ruleAction))
+
+    	//Prepare our messages before the commit, in-case of deletes
+    	MimeMessageHelper[] messages = null; 
+    	if (validNodeRefIfPresent(actionedUponNodeRef))
         {
-            AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
+    	messages = prepareEmails(ruleAction, actionedUponNodeRef);
+        }
+    	final MimeMessageHelper[] finalMessages = messages;
+    	
+    	//Send out messages
+    	if(finalMessages!=null){
+        	if (sendAfterCommit(ruleAction))
             {
-                @Override
-                public void afterCommit()
+                AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
                 {
-                    RetryingTransactionHelper helper = serviceRegistry.getRetryingTransactionHelper();
-                    helper.doInTransaction(new RetryingTransactionCallback<Void>()
+                    @Override
+                    public void afterCommit()
                     {
-                        @Override
-                        public Void execute() throws Throwable
+                        RetryingTransactionHelper helper = serviceRegistry.getTransactionService().getRetryingTransactionHelper();
+                        helper.doInTransaction(new RetryingTransactionCallback<Void>()
                         {
-                            if (validNodeRefIfPresent(actionedUponNodeRef))
+                            @Override
+                            public Void execute() throws Throwable
                             {
-                                prepareAndSendEmail(ruleAction, actionedUponNodeRef);
+                            	for (MimeMessageHelper message : finalMessages) {
+                            		sendEmail(ruleAction, message);
+    							}
+                                
+                                return null;
                             }
-                            return null;
-                        }
-                    }, false, true);
-                }
-            });
-        }
-        else
-        {
-            if (validNodeRefIfPresent(actionedUponNodeRef))
-            {
-                prepareAndSendEmail(ruleAction, actionedUponNodeRef);
+                        }, false, true);
+                    }
+                });
             }
-        }
+            else 
+            {
+                	for (MimeMessageHelper message : finalMessages) {
+                		sendEmail(ruleAction, message);
+    				}
+            }
+    	}
+
     }
     
     
@@ -486,7 +517,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         return sendAfterCommit == null ? false : sendAfterCommit.booleanValue();
     }
     
-    private void prepareAndSendEmail(final Action ruleAction, final NodeRef actionedUponNodeRef)
+    private MimeMessageHelper[] prepareEmails(final Action ruleAction, final NodeRef actionedUponNodeRef)
     {
         List<Pair<String, Locale>> recipients = getRecipients(ruleAction);
         
@@ -497,6 +528,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             logger.debug("From: address=" + from.getFirst() + " ,locale=" + from.getSecond());
         }
         
+        MimeMessageHelper[] messages = new MimeMessageHelper[recipients.size()];
+        int recipientIndex = 0;
         for (Pair<String, Locale> recipient : recipients)
         {
             if (logger.isDebugEnabled())
@@ -504,8 +537,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 logger.debug("Recipient: address=" + recipient.getFirst() + " ,locale=" + recipient.getSecond());
             }
             
-            prepareAndSendEmail(ruleAction, actionedUponNodeRef, recipient, from);
+            messages[recipientIndex] = prepareEmail(ruleAction, actionedUponNodeRef, recipient, from);
+            recipientIndex++;
         }
+        return messages;
     }
     
     public MimeMessageHelper prepareEmail(final Action ruleAction , final NodeRef actionedUponNodeRef, final Pair<String, Locale> recipient, final Pair<InternetAddress, Locale> sender)
@@ -659,13 +694,17 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     }
                 }
                 
-                // from person
+                // from person - not to be performed for the "admin" or "system" users
                 NodeRef fromPerson = null;
-            
-                // from is enabled
-                if (! authService.isCurrentUserTheSystemUser())
+                
+                final String currentUserName = authService.getCurrentUserName();
+                
+                final List<String> usersNotToBeUsedInFromField = Arrays.asList(new String[] {AuthenticationUtil.getAdminUserName(),
+                                                                                             AuthenticationUtil.getSystemUserName(),
+                                                                                             AuthenticationUtil.getGuestUserName()});
+                if ( !usersNotToBeUsedInFromField.contains(currentUserName))
                 {
-                    fromPerson = personService.getPerson(authService.getCurrentUserName());
+                    fromPerson = personService.getPerson(currentUserName);
                 }
                 
                 if(isFromEnabled())
@@ -841,11 +880,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 
                 if (text != null)
                 {
-                    // Note: only simplistic match here - expects <html tag at the start of the text
-                    String htmlPrefix = "<html";
-                    String trimmedText = text.trim();
-                    if (trimmedText.length() >= htmlPrefix.length() &&
-                            trimmedText.substring(0, htmlPrefix.length()).equalsIgnoreCase(htmlPrefix))
+                    if (isHTML(text))
                     {
                         isHTML = true;
                     }
@@ -883,9 +918,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         return messageRef[0];
     }
     
-    private void prepareAndSendEmail(final Action ruleAction, final NodeRef actionedUponNodeRef, final Pair<String, Locale> recipient, final Pair<InternetAddress, Locale> sender)
+    private void sendEmail(final Action ruleAction, MimeMessageHelper preparedMessage)
     {
-        MimeMessageHelper preparedMessage = prepareEmail(ruleAction, actionedUponNodeRef, recipient, sender);
 
         try
         {
@@ -957,6 +991,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         
     }
     
+    /**
+     * 
+     * @param ruleAction
+     * @return
+     */
     private Pair<InternetAddress, Locale> getFrom(Action ruleAction)
     {
         try 
@@ -965,8 +1004,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             Locale locale = null;
             // from person
             String fromPersonName = null;
-        
-            // from is enabled
+            
             if (! authService.isCurrentUserTheSystemUser())
             {
                 String currentUserName = authService.getCurrentUserName();
@@ -976,52 +1014,76 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     locale = getLocaleForUser(fromPersonName);
                 }
             }
-
-            // Use the FROM parameter in preference to calculating values.
-            String from = (String)ruleAction.getParameterValue(PARAM_FROM);
-            if (from != null && from.length() > 0)
-            {
-                if(logger.isDebugEnabled())
+                    
+            if(isFromEnabled())
+            {   
+                // Use the FROM parameter in preference to calculating values.
+                String from = (String)ruleAction.getParameterValue(PARAM_FROM);
+                if (from != null && from.length() > 0)
                 {
-                    logger.debug("from specified as a parameter, from:" + from);
-                }
-                
-                // Check whether or not to use a personal name for the email (will be RFC 2047 encoded)
-                String fromPersonalName = (String)ruleAction.getParameterValue(PARAM_FROM_PERSONAL_NAME);
-                if(fromPersonalName != null && fromPersonalName.length() > 0) 
-                {
-                    try
+                    if(logger.isDebugEnabled())
                     {
-                    	address = new InternetAddress(from, fromPersonalName);
+                        logger.debug("from specified as a parameter, from:" + from);
                     }
-                    catch (UnsupportedEncodingException error)
+                
+                    // Check whether or not to use a personal name for the email (will be RFC 2047 encoded)
+                    String fromPersonalName = (String)ruleAction.getParameterValue(PARAM_FROM_PERSONAL_NAME);
+                    if(fromPersonalName != null && fromPersonalName.length() > 0) 
                     {
-                    	address = new InternetAddress(from);
+                        try
+                        {
+                    	    address = new InternetAddress(from, fromPersonalName);
+                        }
+                        catch (UnsupportedEncodingException error)
+                        {
+                    	    address = new InternetAddress(from);
+                        }
+                    }
+                    else
+                    {
+                        address = new InternetAddress(from);
+                    }
+                    if (locale == null)
+                    {
+                        if (personExists(from))
+                        {
+                            locale = getLocaleForUser(from);
+                        }
                     }
                 }
                 else
                 {
-                    address = new InternetAddress(from);
-                }
-                if (locale == null)
-                {
-                    if (personExists(from))
+                    // FROM enabled but not not specified                
+                    String fromActualUser = fromPersonName;
+                    if (fromPersonName != null)
                     {
-                        locale = getLocaleForUser(from);
+                         NodeRef fromPerson = getPerson(fromPersonName);
+                         fromActualUser = (String) nodeService.getProperty(fromPerson, ContentModel.PROP_EMAIL);
+                    }
+              
+                    if (fromActualUser != null && fromActualUser.length() != 0)
+                    {
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("looked up email address for :" + fromPersonName + " email from " + fromActualUser);
+                        }
+                        address = new InternetAddress(fromActualUser);
+                    }
+                    else
+                    {
+                        // from system or user does not have email address
+                        address = new InternetAddress(fromDefaultAddress);
                     }
                 }
             }
             else
             {
-                if (fromPersonName != null && fromPersonName.length() != 0)
+                if(logger.isDebugEnabled())
                 {
-                    address = new InternetAddress(fromPersonName);
+                    logger.debug("from not enabled - sending from default address:" + fromDefaultAddress);
                 }
-                else
-                {
-                    // from system or user does not have email address
-                    address = new InternetAddress(fromDefaultAddress);
-                }
+                // from is not enabled.
+                address = new InternetAddress(fromDefaultAddress);
             }
             
             return new Pair<InternetAddress, Locale>(address, locale);
@@ -1075,10 +1137,33 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     if (authType.equals(AuthorityType.USER))
                     {
                         // Formerly, this code checked personExists(auth) but we now support emailing addresses who are not yet Alfresco users.
-                        if (authority != null && authority.length() != 0 && validateAddress(authority))
+                        // Check the user name to be a valid email and we don't need to log an error in this case
+                        // ALF-19231
+                        // Validate the email, allowing for local email addresses
+                        if (authority != null && authority.length() != 0)
                         {
-                        	Locale locale = getLocaleForUser(authority);
-                            recipients.add(new Pair<String, Locale>(authority, locale));
+                            if (personExists(authority))
+                            {
+                                EmailValidator emailValidator = EmailValidator.getInstance(true);
+                                if (validateAddresses && emailValidator.isValid(authority))
+                                {
+                                    Locale locale = getLocaleForUser(authority);
+                                    recipients.add(new Pair<String, Locale>(authority, locale));
+                                }
+                                else
+                                {
+                                    String address = getPersonEmail(authority);
+                                    if (address != null && address.length() != 0 && validateAddress(address))
+                                    {
+                                        Locale locale = getLocaleForUser(authority);
+                                        recipients.add(new Pair<String, Locale>(address, locale));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                recipients.add(new Pair<String, Locale>(authority, null));
+                            }
                         }
                     }
                     else if (authType.equals(AuthorityType.GROUP) || authType.equals(AuthorityType.EVERYONE))
@@ -1098,11 +1183,31 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         {
                             if (personExists(userAuth))
                             {
-                                if (userAuth != null && userAuth.length() != 0  && validateAddress(userAuth))
+                                // Check the user name to be a valid email and we don't need to log an error in this case
+                                // ALF-19231
+                                // Validate the email, allowing for local email addresses
+                                EmailValidator emailValidator = EmailValidator.getInstance(true);
+                                if (validateAddresses && emailValidator.isValid(userAuth))
                                 {
-                                	Locale locale = getLocaleForUser(userAuth);
-                                    recipients.add(new Pair<String, Locale>(userAuth, locale));
+                                    if (userAuth != null && userAuth.length() != 0)
+                                    {
+                                        Locale locale = getLocaleForUser(userAuth);
+                                        recipients.add(new Pair<String, Locale>(userAuth, locale));
+                                    }
                                 }
+                                else
+                                {
+                                    String address = getPersonEmail(userAuth);
+                                    if (address != null && address.length() != 0 && validateAddress(address))
+                                    {
+                                        Locale locale = getLocaleForUser(userAuth);
+                                        recipients.add(new Pair<String, Locale>(address, locale));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                recipients.add(new Pair<String, Locale>(authority, null));
                             }
                         }
                     }
@@ -1166,6 +1271,28 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             person = personService.getPerson(user);
         }
         return person;
+    }
+    
+    public String getPersonEmail(final String user)
+    {
+        final NodeRef person = getPerson(user);
+        String email = null;
+        String domain = tenantService.getPrimaryDomain(user); // get primary tenant 
+        if (domain != null) 
+        { 
+            email = TenantUtil.runAsTenant(new TenantRunAsWork<String>()
+            {
+                public String doWork() throws Exception
+                {
+                    return (String) nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+                }
+            }, domain);
+        }
+        else
+        {
+            email = (String) nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+        }
+        return email;
     }
     
     /**
@@ -1273,7 +1400,12 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
       // add URLs
       model.put("url", new URLHelper(sysAdminParams));
       model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(this.serviceRegistry.getSysAdminParams()));
-      
+
+      if (imageResolver != null)
+      {
+          model.put(TemplateService.KEY_IMAGE_RESOLVER, imageResolver);
+      }
+
       // if the caller specified a model, use it without overriding
       if(suppliedModel != null && suppliedModel.size() > 0)
       {
@@ -1349,6 +1481,22 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public boolean isFromEnabled()
     {
         return fromEnabled;
+    }
+
+    public static boolean isHTML(String value)
+    {
+        boolean result = false;
+
+        // Note: only simplistic match here - expects <html tag at the start of the text
+        String htmlPrefix = "<html";
+        String trimmedText = value.trim();
+        if (trimmedText.length() >= htmlPrefix.length() &&
+                trimmedText.substring(0, htmlPrefix.length()).equalsIgnoreCase(htmlPrefix))
+        {
+            result = true;
+        }
+
+        return result;
     }
 
     public static class URLHelper

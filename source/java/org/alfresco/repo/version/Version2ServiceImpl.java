@@ -1214,6 +1214,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                 {
                     if (children.contains(versionedChild) == false)
                     {
+                        NodeRef childRef = null;
                         if (this.nodeService.exists(versionedChild.getChildRef()) == true)
                         {
                             // The node was a primary child of the parent, but that is no longer the case.  Despite this
@@ -1221,11 +1222,24 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                             // The best thing to do in this situation will be to re-add the node as a child, but it will not
                             // be a primary child
                         	String childRefName = (String) this.nodeService.getProperty(versionedChild.getChildRef(), ContentModel.PROP_NAME);
-                        	NodeRef childAssocOnVersionNode = this.nodeService.getChildByName(nodeRef, versionedChild.getTypeQName(), childRefName);
-                        	if (childAssocOnVersionNode == null )
-                        	{
-                              this.nodeService.addChild(nodeRef, versionedChild.getChildRef(), versionedChild.getTypeQName(), versionedChild.getQName());
-                        	}
+                            childRef = this.nodeService.getChildByName(nodeRef, versionedChild.getTypeQName(), childRefName);
+                            // we can faced with association that allow duplicate names
+                            if (childRef == null)
+                            {
+                                List<ChildAssociationRef> allAssocs = nodeService.getParentAssocs(versionedChild.getChildRef(), versionedChild.getTypeQName(), RegexQNamePattern.MATCH_ALL);
+                                for (ChildAssociationRef assocToCheck : allAssocs)
+                                {
+                                    if (children.contains(assocToCheck))
+                                    {
+                                        childRef = assocToCheck.getChildRef();
+                                        break;
+                                    }
+                                }
+                            }
+                            if (childRef == null )
+                            {
+                                childRef = this.nodeService.addChild(nodeRef, versionedChild.getChildRef(), versionedChild.getTypeQName(), versionedChild.getQName()).getChildRef();
+                             }
                         }
                         else
                         {
@@ -1236,7 +1250,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                                 if (deep == true && getVersionHistoryNodeRef(versionedChild.getChildRef()) != null)
                                 {
                                     // We're going to try and restore the missing child node and recreate the assoc
-                                    restore(
+                                    childRef = restore(
                                        versionedChild.getChildRef(),
                                        nodeRef,
                                        versionedChild.getTypeQName(),
@@ -1249,6 +1263,10 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                             // else
                             // Since this was never a primary assoc and the child has been deleted we won't recreate
                             // the missing node as it was never owned by the node and we wouldn't know where to put it.
+                        }
+                        if (childRef != null)
+                        {
+                            children.remove(nodeService.getPrimaryParent(childRef));
                         }
                     }
                     else

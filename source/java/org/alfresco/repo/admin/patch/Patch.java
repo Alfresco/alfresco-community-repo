@@ -98,4 +98,10 @@ public interface Patch
      * @throws PatchException if the patch failed to be applied
      */
     public String apply() throws PatchException;
+    
+    /**
+     * Is this patch just ignored - never considered for application
+     * @return
+     */
+    public boolean isIgnored();
 }

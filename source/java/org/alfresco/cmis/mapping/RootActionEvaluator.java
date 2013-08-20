@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,9 +25,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author davidc
  */
-public class RootActionEvaluator extends AbstractActionEvaluator<NodeRef>
+public class RootActionEvaluator<ObjectType> extends AbstractActionEvaluator<ObjectType>
 {
-    private AbstractActionEvaluator<NodeRef> evaluator;
+    private AbstractActionEvaluator<ObjectType> evaluator;
     private boolean allow;
 
     /**
@@ -36,7 +36,7 @@ public class RootActionEvaluator extends AbstractActionEvaluator<NodeRef>
      * @param serviceRegistry
      * @param action
      */
-    protected RootActionEvaluator(AbstractActionEvaluator<NodeRef> evaluator, boolean allow)
+    protected RootActionEvaluator(AbstractActionEvaluator<ObjectType> evaluator, boolean allow)
     {
         super(evaluator.getServiceRegistry(), evaluator.getAction());
         this.evaluator = evaluator;
@@ -47,13 +47,14 @@ public class RootActionEvaluator extends AbstractActionEvaluator<NodeRef>
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISActionEvaluator#isAllowed(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public boolean isAllowed(NodeRef nodeRef)
+    public boolean isAllowed(ObjectType id)
     {
-        if (nodeRef.equals(getServiceRegistry().getCMISService().getDefaultRootNodeRef()))
+        if ((id instanceof NodeRef) && id.equals(getServiceRegistry().getCMISService().getDefaultRootNodeRef()))
         {
             return allow;
         }
-        return evaluator.isAllowed(nodeRef);
+
+        return evaluator.isAllowed(id);
     }
 
     /*
@@ -68,4 +69,3 @@ public class RootActionEvaluator extends AbstractActionEvaluator<NodeRef>
         return builder.toString();
     }
 }
-

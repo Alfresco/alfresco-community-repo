@@ -141,7 +141,7 @@
     <bean id="search.admIndexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail" ref="search.admIndexJobDetail"/>
         <property name="scheduler">
-            <ref bean="schedulerFactory" />
+            <ref bean="searchSchedulerFactory" />
         </property>
         <property name="cronExpression">
             <value>${index.tracking.adm.cronExpression}</value>
@@ -182,7 +182,7 @@
     <bean id="search.avmIndexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail" ref="search.avmIndexJobDetail"/>
         <property name="scheduler">
-            <ref bean="schedulerFactory" />
+            <ref bean="searchSchedulerFactory" />
         </property>
         <property name="cronExpression">
             <value>${index.tracking.avm.cronExpression}</value>
@@ -223,7 +223,7 @@
     <bean id="search.missingFullTextReindexTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail" ref="search.missingFullTextReindexJobDetail"/>
         <property name="scheduler">
-            <ref bean="schedulerFactory" />
+            <ref bean="searchSchedulerFactory" />
         </property>
         <property name="cronExpression">
             <value>${index.reindexMissingContent.cronExpression}</value>

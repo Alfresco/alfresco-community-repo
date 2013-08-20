@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.domain.node;
 
+import java.io.Serializable;
+
 import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
@@ -26,8 +28,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
  * @author Derek Hulley
  * @since 3.4
  */
-public class StoreEntity
+public class StoreEntity implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     private Long id;
     private Long version;
     private String protocol;

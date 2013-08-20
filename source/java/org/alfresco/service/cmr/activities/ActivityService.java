@@ -47,7 +47,7 @@ public interface ActivityService extends ActivityPostService
      * @return list of JSON feed entries
      */
     @NotAuditable
-    public List<String> getUserFeedEntries(String userId, String format, String siteId);
+    public List<String> getUserFeedEntries(String userId, String siteId);
     
     /**
      * Retrieve user feed with optional site filter and optional user filters
@@ -68,7 +68,7 @@ public interface ActivityService extends ActivityPostService
      * @return list of JSON feed entries
      */
     @NotAuditable
-    public List<String> getUserFeedEntries(String userId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers);
+    public List<String> getUserFeedEntries(String userId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers);
 
     
     /**
@@ -92,7 +92,7 @@ public interface ActivityService extends ActivityPostService
      * @return list of JSON feed entries
      */
     @NotAuditable
-    public List<String> getUserFeedEntries(String userId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter);
+    public List<String> getUserFeedEntries(String userId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter);
     
     /**
      * Retrieve user feed with optional site filter and optional user filters and optional min feed DB id
@@ -115,7 +115,7 @@ public interface ActivityService extends ActivityPostService
      * @return list of JSON feed entries
      */
     @NotAuditable
-    public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId);
+    public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId);
     
     /**
      * Retrieve user feed with optional site filter and optional user filters and optional min feed DB id
@@ -140,10 +140,10 @@ public interface ActivityService extends ActivityPostService
      * @return list of JSON feed entries
      */
     @NotAuditable
-    public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter, long minFeedId);
+    public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter, long minFeedId);
     
     @NotAuditable
-    public PagingResults<ActivityFeedEntity> getPagedUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest);
+    public PagingResults<ActivityFeedEntity> getPagedUserFeedEntries(String feedUserId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest);
     
     /**
      * Retrieve site feed
@@ -153,7 +153,7 @@ public interface ActivityService extends ActivityPostService
      * @return list of JSON feed entries
      */
     @NotAuditable
-    public List<String> getSiteFeedEntries(String siteId, String format);
+    public List<String> getSiteFeedEntries(String siteId);
     
     
     /**

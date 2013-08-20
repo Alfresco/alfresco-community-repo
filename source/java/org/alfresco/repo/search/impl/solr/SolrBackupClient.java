@@ -144,6 +144,16 @@ public class SolrBackupClient implements InitializingBean
             params.set("location", remoteBackupLocation);
             params.set("numberToKeep", numberToKeep);
             
+            try
+            {
+                // MNT-6468 fix, ensure that backup job takes at least one second to execute
+                Thread.sleep(1000);
+            }
+            catch (InterruptedException e)
+            {
+                // ignore
+            }
+
             QueryResponse response = solrAdminClient.query(params);
             
             

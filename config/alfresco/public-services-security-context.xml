@@ -241,6 +241,9 @@
         <property name="optimisePermissionsBulkFetchSize">
             <value>${system.readpermissions.bulkfetchsize}</value>
         </property>
+        <property name="anyDenyDenies">
+            <value>${security.anyDenyDenies}</value>
+        </property>
     </bean>
     
     <bean id="afterAclMarking" class="org.alfresco.repo.security.permissions.impl.acegi.MarkingAfterInvocationProvider" />
@@ -589,7 +592,7 @@
                 org.alfresco.service.cmr.lock.LockService.getLockStatus=ACL_NODE.0.sys:base.ReadProperties
                 org.alfresco.service.cmr.lock.LockService.getLockType=ACL_NODE.0.sys:base.ReadProperties
                 org.alfresco.service.cmr.lock.LockService.checkForLock=ACL_NODE.0.sys:base.ReadProperties
-                org.alfresco.service.cmr.lock.LockService.getLocks=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.repo.lock.LockServiceImpl.getLocks=ACL_NODE.0.sys:base.ReadProperties
                 org.alfresco.service.cmr.lock.LockService.*=ACL_DENY
             </value>
         </property>
@@ -756,6 +759,8 @@
                 org.alfresco.service.cmr.security.AuthorityService.hasGuestAuthority=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.isAdminAuthority=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.isGuestAuthority=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.countUsers=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.countGroups=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAuthorities=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAuthoritiesInfo=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAuthoritiesForUser=ACL_METHOD.ROLE_ADMINISTRATOR
@@ -865,6 +870,7 @@
                 org.alfresco.service.cmr.security.PersonService.getPerson=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                 org.alfresco.service.cmr.security.PersonService.getPersonOrNull=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                 org.alfresco.service.cmr.security.PersonService.personExists=ACL_ALLOW
+                org.alfresco.service.cmr.security.PersonService.isEnabled=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.createMissingPeople=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.setCreateMissingPeople=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.PersonService.getMutableProperties=ACL_ALLOW
@@ -993,6 +999,7 @@
                org.alfresco.service.cmr.site.SiteService.canAddMember=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.setMembership=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.updateSite=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.countAuthoritiesWithRole=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.*=ACL_DENY
             </value>
         </property>
@@ -1188,6 +1195,21 @@
             <value>org.alfresco.service.cmr.security.PublicServiceAccessService.hasAccess=ACL_ALLOW
 			</value>
         </property>
+    </bean>
+    
+    
+    <!-- ==================== -->
+    <!-- The Archived Nodes service -->
+    <!-- ==================== -->
+    
+    <!-- This service currently has no restrictions. -->
+        
+    <bean id="ArchivedNodes_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+    <bean id="ArchivedNodes_security_listArchivedNodes" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
+        <property name="methodSecurityInterceptor" ref="ArchivedNodes_security" />
+        <property name="service" value="org.alfresco.repo.node.archive.NodeArchiveService" />
+        <property name="methodName" value="listArchivedNodes" />
     </bean>
 	
 </beans>

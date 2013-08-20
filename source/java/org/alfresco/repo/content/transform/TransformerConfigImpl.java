@@ -21,6 +21,7 @@ package org.alfresco.repo.content.transform;
 import java.util.Properties;
 
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
@@ -36,7 +37,11 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
 {
     private MimetypeService mimetypeService;
     
+    private ContentService contentService;
+
     private ContentTransformerRegistry transformerRegistry;
+    
+    private TransformerDebug transformerDebug;
 
     // Log
     private TransformerLog transformerLog;
@@ -81,6 +86,8 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     private Properties globalProperties;
     
     private TransformerProperties transformerProperties;
+    
+    private TransformerConfigDynamicTransformers dynamicTransformers;
 
     /**
      * Sets of the mimetype service.
@@ -92,9 +99,19 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
         this.mimetypeService = mimetypeService;
     }
 
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+
     public void setContentTransformerRegistry(ContentTransformerRegistry transformerRegistry)
     {
         this.transformerRegistry = transformerRegistry;
+    }
+
+    public void setTransformerDebug(TransformerDebug transformerDebug)
+    {
+        this.transformerDebug = transformerDebug;
     }
 
     public void setTransformerLog(TransformerLog transformerLog)
@@ -120,8 +137,8 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
         ChildApplicationContextFactory subsystem = getSubsystem();
         transformerProperties = new TransformerProperties(subsystem, globalProperties);
         
-        // TODO add dynamic 'pipeline' and 'failover' transformers
-
+        dynamicTransformers = new TransformerConfigDynamicTransformers(this, transformerProperties, mimetypeService,
+                contentService, transformerRegistry, transformerDebug);
         statistics= new TransformerConfigStatistics(this, mimetypeService);
         limits = new TransformerConfigLimits(transformerProperties, mimetypeService);
         supported = new TransformerConfigSupported(transformerProperties, mimetypeService);
@@ -153,6 +170,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
+        dynamicTransformers.removeTransformers(transformerRegistry);
     }
     
     /**

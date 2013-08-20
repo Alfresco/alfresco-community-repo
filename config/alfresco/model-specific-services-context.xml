@@ -45,8 +45,8 @@
          </list>
       </property>
    </bean>
-   
-   <bean name="fileFolderService" class="org.alfresco.repo.model.filefolder.FileFolderServiceImpl" init-method="init">
+
+   <bean name="fileFolderService" class="org.alfresco.repo.model.filefolder.FileFolderServiceImpl" init-method="init" parent="abstractBaseCopyService">
       <property name="namespaceService"><ref bean="namespaceService" /></property>
       <property name="dictionaryService"><ref bean="dictionaryService" /></property>
       <property name="nodeService"><ref bean="nodeService" /></property>
@@ -59,12 +59,6 @@
       <property name="cannedQueryRegistry" ref="fileFolderCannedQueryRegistry"/>
       <property name="defaultListMaxResults" value="${system.filefolderservice.defaultListMaxResults}"/>
       
-      <property name="systemNamespaces">
-         <list>
-            <value>http://www.alfresco.org/model/application/1.0</value>
-            <value>http://www.alfresco.org/model/site/1.0</value>
-         </list>
-      </property>
       <property name="systemPaths">
          <list>
             <value>/${spaces.company_home.childname}</value>
@@ -210,5 +204,30 @@
         </list>
      </property>
    </bean>
+   
+   <!-- Email alias -->
+   <bean id="aliasableAspect"
+        class="org.alfresco.email.server.AliasableAspect"
+        init-method="init">
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="attributeService">
+            <ref bean="attributeService" />
+        </property>
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+   </bean> 
+   
+   <!-- IMAP  -->
+   <bean id="imapContentPolicy" class="org.alfresco.repo.imap.ImapContentPolicy" init-method="init">
+        <property name="actionService">
+            <ref bean="actionService"/>
+        </property>       
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
+    </bean>
    
 </beans>

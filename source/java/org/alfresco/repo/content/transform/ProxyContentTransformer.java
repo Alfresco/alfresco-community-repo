@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -53,6 +53,18 @@ public class ProxyContentTransformer extends AbstractContentTransformer2
     public ContentTransformerWorker getWorker()
     {
         return this.worker;
+    }
+
+    /**
+     * THIS IS A CUSTOM SPRING INIT METHOD 
+     */
+    public void register()
+    {
+        if (worker instanceof ContentTransformerHelper)
+        {
+            logDeprecatedSetter(((ContentTransformerHelper)worker).deprecatedSetterMessages);
+        }
+        super.register();
     }
 
     /**

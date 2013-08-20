@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.query.archivednodes">
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->    
+    <resultMap id="result_ArchivedNodes" type="ArchivedNodes">
+        <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <association property="node" resultMap="alfresco.node.result_Node"/>
+    </resultMap>
+    
+    <!-- GetArchivedNodes Canned Query -->    
+    <select id="select_GetArchivedNodesCannedQuery" parameterType="ArchivedNodes" resultMap="result_ArchivedNodes">
+           select
+            childNode.id             as id,
+            childNode.version        as version,
+            childStore.id            as store_id,
+            childStore.protocol      as protocol,
+            childStore.identifier    as identifier,
+            childNode.uuid           as uuid
+        from
+            alf_child_assoc assoc
+            join alf_node childNode on (childNode.id = assoc.child_node_id)
+            join alf_store childStore on (childStore.id = childNode.store_id)
+            <if test="filter != null">
+            join alf_node_properties prop on (prop.node_id = childNode.id)
+            join alf_qname qname on (prop.qname_id = qname.id and qname.id = #{nameQNameId})
+            </if>
+        where
+            assoc.parent_node_id = #{parentNodeId}
+            and assoc.type_qname_id = #{assocTypeQNameId}
+            <if test="filter != null">
+            <if test="filterIgnoreCase == true">
+            and lower(prop.string_value) like lower(#{filter}) <include refid="alfresco.util.escape"/>
+            </if>
+            <if test="filterIgnoreCase == false">
+            and prop.string_value like #{filter} <include refid="alfresco.util.escape"/>
+            </if>            
+            </if>
+            <if test="sortOrderAscending == true">order by childNode.id ASC</if>
+            <if test="sortOrderAscending == false">order by childNode.id DESC</if>
+    </select>    
+</mapper>

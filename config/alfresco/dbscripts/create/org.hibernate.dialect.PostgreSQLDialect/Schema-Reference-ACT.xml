@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.alfresco.org/repo/db-schema db-schema.xsd"
         name=""
         dbprefix="act_"
-        version="6023"
+        version="6024"
         tablecolumnorder="false">
   <validators>
     <validator class="org.alfresco.util.schemacomp.validator.NameValidator">
@@ -183,6 +183,12 @@
         <index name="act_idx_hi_act_inst_procinst" unique="false">
           <columnnames>
             <columnname>proc_inst_id_</columnname>
+            <columnname>act_id_</columnname>
+          </columnnames>
+        </index>
+        <index name="act_idx_hi_act_inst_exec" unique="false">
+          <columnnames>
+            <columnname>execution_id_</columnname>
             <columnname>act_id_</columnname>
           </columnnames>
         </index>
@@ -589,6 +595,16 @@
         </column>
         <column name="due_date_" order="16">
           <type>timestamp</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="claim_time_" order="17">
+          <type>timestamp</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="form_key_" order="18">
+          <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
@@ -1227,6 +1243,11 @@
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
+        <column name="proc_inst_id_" order="8">
+          <type>varchar(64)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
       </columns>
       <primarykey name="act_ru_identitylink_pkey">
         <columnnames>
@@ -1242,6 +1263,11 @@
         <foreignkey name="act_fk_tskass_task">
           <localcolumn>task_id_</localcolumn>
           <targettable>act_ru_task</targettable>
+          <targetcolumn>id_</targetcolumn>
+        </foreignkey>
+        <foreignkey name="act_fk_idl_procinst">
+          <localcolumn>proc_inst_id_</localcolumn>
+          <targettable>act_ru_execution</targettable>
           <targetcolumn>id_</targetcolumn>
         </foreignkey>
       </foreignkeys>
@@ -1264,6 +1290,11 @@
         <index name="act_idx_tskass_task" unique="false">
           <columnnames>
             <columnname>task_id_</columnname>
+          </columnnames>
+        </index>
+        <index name="act_idx_idl_procinst" unique="false">
+          <columnnames>
+            <columnname>proc_inst_id_</columnname>
           </columnnames>
         </index>
       </indexes>
@@ -1603,6 +1634,62 @@
         <index name="act_idx_variable_task_id" unique="false">
           <columnnames>
             <columnname>task_id_</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="act_hi_identitylink">
+      <columns>
+        <column name="id_" order="1">
+          <type>varchar(64)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="group_id_" order="2">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="type_" order="3">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="user_id_" order="4">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="task_id_" order="5">
+          <type>varchar(64)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="proc_inst_id_" order="6">
+          <type>varchar(64)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+      </columns>
+      <primarykey name="act_hi_identitylink_pkey">
+        <columnnames>
+          <columnname order="1">id_</columnname>
+        </columnnames>
+      </primarykey>
+      <indexes>
+        <index name="act_idx_hi_ident_lnk_user" unique="false">
+          <columnnames>
+            <columnname>user_id_</columnname>
+          </columnnames>
+        </index>
+        <index name="act_idx_hi_ident_lnk_task" unique="false">
+          <columnnames>
+            <columnname>task_id_</columnname>
+          </columnnames>
+        </index>
+        <index name="act_idx_hi_ident_lnk_procinst" unique="false">
+          <columnnames>
+            <columnname>proc_inst_id_</columnname>
           </columnnames>
         </index>
       </indexes>

@@ -298,7 +298,6 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                         logger.trace("Found user activity feed entity: " + userFeedTooMany.toString());
                     }
                     String feedUserId = userFeedTooMany.getFeedUserId();
-                    String format = "json";   // format pending removal
                     // Rather than filter out the two usernames that indicate site-specific
                     // feed entries, we can just filter them out now.
                     if (feedUserId == null || feedUserId.length() == 0)
@@ -314,7 +313,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                     {
                         logger.trace("Get the feeds to keep for user for all sites, not exluding users.");
                     }
-                    List<ActivityFeedEntity> feedsToKeep = feedDAO.selectUserFeedEntries(feedUserId, format, null, false, false, -1L, maxFeedSize);
+                    List<ActivityFeedEntity> feedsToKeep = feedDAO.selectUserFeedEntries(feedUserId, null, false, false, -1L, maxFeedSize);
                     if (logger.isTraceEnabled())
                     {
                         for(ActivityFeedEntity feedToKeep : feedsToKeep)
@@ -338,10 +337,10 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                     {
                         logger.trace("Deleting the oldest feed entry: " + oldestFeedEntry.toString());
                     }
-                    int deletedCount = feedDAO.deleteUserFeedEntries(feedUserId, format, oldestFeedEntry);
+                    int deletedCount = feedDAO.deleteUserFeedEntries(feedUserId, oldestFeedEntry);
                     if (logger.isTraceEnabled())
                     {
-                        logger.trace("Cleaned " + deletedCount + " entries for user '" + feedUserId + "', using format '" + format + "'.");
+                        logger.trace("Cleaned " + deletedCount + " entries for user '" + feedUserId + "'.");
                     }
                     maxSizeDeletedCount += deletedCount;
                 }
@@ -367,13 +366,12 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                         logger.trace("Found site activity feed entity: " + siteFeedTooMany.toString());
                     }
                     String siteId = siteFeedTooMany.getSiteNetwork();
-                    String format = "json"; // format pending removal siteFeedTooMany.getActivitySummaryFormat();
                     // Get the feeds to keep
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Get the feeds to keep for site.");
                     }
-                    List<ActivityFeedEntity> feedsToKeep = feedDAO.selectSiteFeedEntries(siteId, format, maxFeedSize);
+                    List<ActivityFeedEntity> feedsToKeep = feedDAO.selectSiteFeedEntries(siteId, maxFeedSize);
                     if (logger.isTraceEnabled())
                     {
                         for(ActivityFeedEntity feedToKeep : feedsToKeep)
@@ -392,7 +390,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                     {
                         logger.trace("Deleting the oldest feed entry: " + oldestFeedEntry.toString());
                     }
-                    int deletedCount = feedDAO.deleteSiteFeedEntries(siteId, format, oldestFeedEntry);
+                    int deletedCount = feedDAO.deleteSiteFeedEntries(siteId, oldestFeedEntry);
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Cleaned " + deletedCount + " entries for site '" + siteId + "'.");

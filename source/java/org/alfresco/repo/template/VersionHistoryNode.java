@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
@@ -184,19 +183,7 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
             
             for (QName qname : props.keySet())
             {
-                Serializable propValue = props.get(qname);
-                if (propValue instanceof NodeRef)
-                {
-                    // NodeRef object properties are converted to new TemplateNode objects
-                    // so they can be used as objects within a template
-                    propValue = new TemplateNode(((NodeRef)propValue), parent.services, parent.imageResolver);
-                }
-                else if (propValue instanceof ContentData)
-                {
-                    // ContentData object properties are converted to TemplateContentData objects
-                    // so the content and other properties of those objects can be accessed
-                    propValue = parent.new TemplateContentData((ContentData)propValue, qname);
-                }
+                Serializable propValue = parent.new TemplatePropertyConverter().convertProperty(props.get(qname), qname, parent.services, parent.imageResolver);
                 this.properties.put(qname.toString(), propValue);
             }
             

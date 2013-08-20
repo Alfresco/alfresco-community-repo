@@ -310,6 +310,16 @@ public interface CopyBehaviourCallback
     boolean getMustCopy(QName classQName, CopyDetails copyDetails);
     
     /**
+     * Determine if this top-level node with type or aspect can be renamed during copy.
+     * 
+     * @param classQName            the name of the class that this is being invoked for
+     * @param copyDetails           the source node's copy details for quick reference
+     * @return                      <tt>true</tt> if the top-level node with type or aspect
+     *                              can be renamed during copy.
+     */
+    boolean isTopLevelCanBeRenamed(QName classQName, CopyDetails copyDetails);
+    
+    /**
      * Determine the copy behaviour associated with a given peer association.
      * 
      * @param classQName            the name of the class that this is being invoked for

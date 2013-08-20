@@ -40,26 +40,14 @@ import org.springframework.beans.factory.InitializingBean;
  * just need to provide buildCache(String tenanaId)
  * 
  * @author Andy
+ * @since 4.1.3
  */
 public abstract class AbstractAsynchronouslyRefreshedCache<T> implements AsynchronouslyRefreshedCache<T>, RefreshableCacheListener, Callable<Void>, BeanNameAware,
         InitializingBean, TransactionListener
 {
-    private static Log logger = LogFactory.getLog(AbstractAsynchronouslyRefreshedCache.class);
-
     private static final String RESOURCE_KEY_TXN_DATA = "AbstractAsynchronouslyRefreshedCache.TxnData";
     
-    private List<RefreshableCacheListener> listeners = new LinkedList<RefreshableCacheListener>();
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.cache.AsynchronouslyRefreshedCacheRegistry#register(org.alfresco.repo.cache.
-     * RefreshableCacheListener)
-     */
-    @Override
-    public void register(RefreshableCacheListener listener)
-    {
-        listeners.add(listener);
-    }
+    private static Log logger = LogFactory.getLog(AbstractAsynchronouslyRefreshedCache.class);
 
     private enum RefreshState
     {
@@ -67,28 +55,26 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
     };
 
     private ThreadPoolExecutor threadPoolExecutor;
-
     private AsynchronouslyRefreshedCacheRegistry registry;
-
     private TenantService tenantService;
 
     // State
 
+    private List<RefreshableCacheListener> listeners = new LinkedList<RefreshableCacheListener>();
     private final ReentrantReadWriteLock liveLock = new ReentrantReadWriteLock();
-
     private final ReentrantReadWriteLock refreshLock = new ReentrantReadWriteLock();
-
     private final ReentrantReadWriteLock runLock = new ReentrantReadWriteLock();
-
     private HashMap<String, T> live = new HashMap<String, T>();
-
     private LinkedHashSet<Refresh> refreshQueue = new LinkedHashSet<Refresh>();
-
     private String cacheId;
-
     private RefreshState refreshState = RefreshState.IDLE;
-    
     private String resourceKeyTxnData;
+
+    @Override
+    public void register(RefreshableCacheListener listener)
+    {
+        listeners.add(listener);
+    }
 
     /**
      * @param threadPool
@@ -122,10 +108,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
         registry.register(this);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.cache.RefreshableCache#get()
-     */
     @Override
     public T get()
     {
@@ -232,10 +214,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.cache.RefreshableCache#refresh()
-     */
     @Override
     public void refresh()
     {
@@ -247,10 +225,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
         registry.broadcastEvent(new RefreshableCacheRefreshEvent(cacheId, tenantId), true);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.cache.RefreshableCacheListener#onRefreshableCacheEvent()
-     */
     @Override
     public void onRefreshableCacheEvent(RefreshableCacheEvent refreshableCacheEvent)
     {
@@ -304,6 +278,10 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
 
     private void queueRefreshAndSubmit(LinkedHashSet<String> tenantIds)
     {
+        if((tenantIds == null) || (tenantIds.size() == 0))
+        {
+            return;
+        }
         refreshLock.writeLock().lock();
         try
         {
@@ -323,9 +301,7 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
         submit();
     }
 
-    /**
-     * @return
-     */
+    @Override
     public boolean isUpToDate()
     {
        String tenantId = tenantService.getCurrentUserDomain();
@@ -354,8 +330,9 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
        }
     }
     
-    
-    // Must be run with runLock.writeLock
+    /**
+     * Must be run with runLock.writeLock
+     */
     private Refresh getNextRefresh()
     {
         if (runLock.writeLock().isHeldByCurrentThread())
@@ -376,7 +353,9 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
 
     }
 
-    // Must be run with runLock.writeLock
+    /**
+     * Must be run with runLock.writeLock
+     */
     private int countWaiting()
     {
         int count = 0;
@@ -427,10 +406,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Runnable#run()
-     */
     @Override
     public Void call()
     {
@@ -441,7 +416,7 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
         }
         catch (Exception e)
         {
-            logger.warn("Cache update faiiled", e);
+            logger.error("Cache update failed (" + this.getCacheId() + ").", e);
             runLock.writeLock().lock();
             try
             {
@@ -456,10 +431,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
         }
     }
 
-    /**
-     * @return
-     * @throws Exception
-     */
     private void doCall() throws Exception
     {
         Refresh refresh = setUpRefresh();
@@ -484,10 +455,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
         }
     }
 
-    /**
-     * @param refresh
-     * @return
-     */
     private void doRefresh(Refresh refresh)
     {
         if (logger.isDebugEnabled())
@@ -515,6 +482,8 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
             logger.debug("Cache entry updated for tenant" + refresh.getTenantId());
         }
 
+        broadcastEvent(new RefreshableCacheRefreshedEvent(cacheId, refresh.tenantId));
+        
         runLock.writeLock().lock();
         try
         {
@@ -550,7 +519,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
         {
             runLock.writeLock().unlock();
         }
-        broadcastEvent(new RefreshableCacheRefreshedEvent(cacheId, refresh.tenantId));
     }
 
     private Refresh setUpRefresh() throws Exception
@@ -602,10 +570,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
-     */
     @Override
     public void setBeanName(String name)
     {
@@ -613,10 +577,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.cache.AsynchronouslyRefreshedCache#getCacheId()
-     */
     @Override
     public String getCacheId()
     {
@@ -625,9 +585,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
 
     /**
      * Build the cache entry for the specific tenant.
-     * 
-     * @param tenantId
-     * @return
      */
     protected abstract T buildCache(String tenantId);
 
@@ -667,10 +624,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
             this.state = state;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.lang.Object#hashCode()
-         */
         @Override
         public int hashCode()
         {
@@ -681,10 +634,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
             return result;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
         @Override
         public boolean equals(Object obj)
         {
@@ -707,10 +656,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
             return true;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.lang.Object#toString()
-         */
         @Override
         public String toString()
         {
@@ -719,10 +664,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
     @Override
     public void afterPropertiesSet() throws Exception
     {
@@ -749,10 +690,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#flush()
-     */
     @SuppressWarnings("deprecation")
     @Override
     public void flush()
@@ -760,31 +697,18 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
         // Nothing
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean)
-     */
     @Override
     public void beforeCommit(boolean readOnly)
     {
         // Nothing
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#beforeCompletion()
-     */
     @Override
     public void beforeCompletion()
     {
         // Nothing
-
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#afterCommit()
-     */
     @Override
     public void afterCommit()
     {
@@ -792,10 +716,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
         queueRefreshAndSubmit(txnData.tenantIds);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListener#afterRollback()
-     */
     @Override
     public void afterRollback()
     {

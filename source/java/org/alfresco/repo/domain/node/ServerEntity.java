@@ -18,14 +18,17 @@
  */
 package org.alfresco.repo.domain.node;
 
+import java.io.Serializable;
+
 /**
  * Bean to represent <tt>alf_server</tt> data.
  * 
  * @author Derek Hulley
  * @since 3.4
  */
-public class ServerEntity
+public class ServerEntity implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     private Long id;
     private Long version;
     private String ipAddress;

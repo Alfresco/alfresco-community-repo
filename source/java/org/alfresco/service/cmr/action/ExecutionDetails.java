@@ -40,12 +40,14 @@ public class ExecutionDetails implements Serializable {
     private transient ExecutionSummary executionSummary;
     
     private final NodeRef persistedActionRef;
+    private final NodeRef actionedUponNodeRef;
     private final String runningOn;
     private final Date startedAt;
     private final boolean cancelRequested;
     
     public ExecutionDetails() {
        persistedActionRef = null;
+       actionedUponNodeRef = null;
        runningOn = null;
        startedAt = null;
        cancelRequested = false;
@@ -56,10 +58,23 @@ public class ExecutionDetails implements Serializable {
           boolean cancelRequested) {
        this.executionSummary = executionSummary;
        this.persistedActionRef = persistedActionRef;
+       this.actionedUponNodeRef = null;
        this.runningOn = runningOn;
        this.startedAt = startedAt;
        this.cancelRequested = cancelRequested;
     }
+    
+    public ExecutionDetails(ExecutionSummary executionSummary,
+            NodeRef persistedActionRef, NodeRef actionedUponNodeRef, 
+            String runningOn, Date startedAt,
+            boolean cancelRequested) {
+         this.executionSummary = executionSummary;
+         this.persistedActionRef = persistedActionRef;
+         this.actionedUponNodeRef = actionedUponNodeRef;
+         this.runningOn = runningOn;
+         this.startedAt = startedAt;
+         this.cancelRequested = cancelRequested;
+      }
 
     public ExecutionSummary getExecutionSummary() {
        return executionSummary;
@@ -96,8 +111,23 @@ public class ExecutionDetails implements Serializable {
        return executionSummary.getExecutionInstance();
     }
     
+    /**
+     * Gets the <code>NodeRef</code> where the action is persisted.
+     * 
+     * @return <code>NodeRef</code> for the persisted action
+     */
     public NodeRef getPersistedActionRef() {
        return persistedActionRef;
+    }
+
+    /**
+     * Gets the <code>NodeRef</code> the action is acting on.
+     * 
+     * @return <code>NodeRef</code> the action is acting on
+     */
+    public NodeRef getActionedUponNodeRef()
+    {
+        return actionedUponNodeRef;
     }
 
     public String getRunningOn() {

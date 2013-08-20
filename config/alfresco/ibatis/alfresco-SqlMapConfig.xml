@@ -105,6 +105,9 @@ Inbound settings from iBatis
         <!-- Downloads CQ -->
         <typeAlias alias="Download" type="org.alfresco.repo.download.cannedquery.DownloadEntity"/>
         
+        <!-- ArchivedNodes CQ -->
+        <typeAlias alias="ArchivedNodes" type="org.alfresco.repo.node.archive.ArchivedNodeEntity"/>
+        
         <!-- Patch -->
         
         <typeAlias alias="SizeCurrentParams" type="org.alfresco.repo.domain.patch.ibatis.SizeCurrentParams"/>
@@ -169,9 +172,6 @@ Inbound settings from iBatis
         <typeAlias alias="IdListOfIdsParam" type="org.alfresco.repo.domain.patch.ibatis.IdListOfIdsParam"/>
         
         <!-- Canned Queries Test -->
-        
-        <typeAlias alias="TestOne" type="org.alfresco.repo.domain.query.CannedQueryDAOTest$TestOneParams"/>
-        
         <!-- Subscriptions -->
         
         <typeAlias alias="Subscription" type="org.alfresco.repo.domain.subscriptions.SubscriptionEntity"/>
@@ -223,8 +223,7 @@ Inbound settings from iBatis
         <mapper resource="alfresco/ibatis/#resource.dialect#/avm-insert-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/subscriptions-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/tenants-common-SqlMap.xml"/>
-        <!-- Canned queries -->
-        <mapper resource="alfresco/ibatis/#resource.dialect#/query-test-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/metadata-query-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-usages-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-auditable-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-authorities-common-SqlMap.xml"/>
@@ -234,6 +233,7 @@ Inbound settings from iBatis
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-copy-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-downloads-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-discussion-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/query-archived-nodes-common-SqlMap.xml"/>
     </mappers>
     
 </configuration>

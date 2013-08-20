@@ -27,6 +27,7 @@ package org.alfresco.repo.domain.node;
  */
 public class NodeUpdateEntity extends NodeEntity
 {
+    private static final long serialVersionUID = 1L;
     private boolean updateTypeQNameId;
     private boolean updateLocaleId;
     private boolean updateAclId;

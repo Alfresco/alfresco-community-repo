@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -402,15 +402,15 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             final QName destinationAssocTypeQName,
             QName destinationAssocQName)
     {
+        // Invoke before check out policy
+        invokeBeforeCheckOut(nodeRef, destinationParentNodeRef, destinationAssocTypeQName, destinationAssocQName);
+        
         // Apply the lock aspect if required
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE) == false)
         {
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_LOCKABLE, null);
         }
         
-        // Invoke before check out policy
-        invokeBeforeCheckOut(nodeRef, destinationParentNodeRef, destinationAssocTypeQName, destinationAssocQName);
-
         // Get the user 
         final String userName = getUserName();
         
@@ -581,7 +581,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         }
             
         // Copy the contents of the working copy onto the original
-        this.copyService.copy(workingCopyNodeRef, nodeRef);
+        boolean copied = this.copyService.copy(workingCopyNodeRef, nodeRef);
         
         // Handle name change on working copy (only for folders/files)
         if (fileFolderService.getFileInfo(workingCopyNodeRef) != null)
@@ -628,8 +628,10 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
                 }
             }
         }
-            
-        if (versionProperties != null && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+
+        // Create a version if something was modified and copied to th node from working copy
+        // See MNT-8789
+        if (versionProperties != null && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) && copied)
         {
             // Create the new version
             this.versionService.createVersion(nodeRef, versionProperties);
@@ -638,6 +640,9 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         if (keepCheckedOut == false)
         {
             // Delete the working copy
+            // Disable cm:auditable aspect
+            // See MNT-8789
+            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
             behaviourFilter.disableBehaviour(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY);
             try
             {
@@ -652,6 +657,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             {
                 // Just for symmetry; the node is gone
                 behaviourFilter.enableBehaviour(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY);
+                behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
             }
         }
         else

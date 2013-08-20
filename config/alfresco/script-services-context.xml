@@ -201,6 +201,9 @@
         <property name="extensionName">
             <value>workflow</value>
         </property>
+        <property name="maxGroupReviewers">
+            <value>${system.workflow.maxGroupReviewers}</value>
+        </property>		
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>

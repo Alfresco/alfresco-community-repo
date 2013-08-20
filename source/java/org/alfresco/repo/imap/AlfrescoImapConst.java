@@ -32,14 +32,27 @@ public interface AlfrescoImapConst
     {
         /**
          * Defines {@link AlfrescoImapFolder} view mode as virtual mode. Used for IMAP Virtualised View.
+         * <p>
+         * In the virtual mode alfresco nodes of cm:content are shown regardless of whether they are IMAP messages.
+         * <p>
+         * A template is used to generate a "virtual" email message from a content item that is not an email message.
+         * <p>
+         * Only nodes from IMAP favourite sites are shown, non favourite sites are not shown.
          */
         VIRTUAL,
         /**
          * Defines {@link AlfrescoImapFolder} view mode as mixed mode. Used for IMAP Mixed View.
+         * <p>
+         * In mixed mode both IMAP messages and Alfresco nodes of other types are shown.   
+         * Only nodes from IMAP favourite sites are shown, non favourite sites are not shown.
+         * 
          */
         MIXED,
         /**
          * Defines {@link AlfrescoImapFolder} view mode as archive mode. Used for Email Archive View.
+         * <p>
+         * In archive mode only IMAP messages are shown.   Alfresco nodes of other types are not shown.  
+         * And no nodes within sites (favourite or otherwise) are shown.
          */
         ARCHIVE
     }

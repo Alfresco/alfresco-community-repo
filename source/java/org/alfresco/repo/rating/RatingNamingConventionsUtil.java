@@ -42,6 +42,9 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  * </pre>
  * The ratingSchemeName is the spring bean name of the rating scheme and the rollupName is
  * the rollup name as defined in the algorithm class e.g. {@link RatingCountRollupAlgorithm#ROLLUP_NAME}.
+ * <p/>
+ * Since Alfresco 4.1.5, the "cm:" prefix is no longer required and any namespace can be used. These are provided
+ * via injection with {@link RatingSchemeImpl#setModelPrefix(String))}
  * 
  * @author Neil McErlean
  * @since 3.5
@@ -62,6 +65,7 @@ public class RatingNamingConventionsUtil
      */
     public QName getRatingAssocNameFor(String username, String ratingSchemeName)
     {
+        // Note that the hardcoded "cm:" here is intentional. We do not have a requirement for configuring this assoc name.
         StringBuilder compoundString = new StringBuilder();
         compoundString.append("cm:").append(username).append(RATING_ASSOC_SEPARATOR).append(ratingSchemeName);
         QName result = QName.createQName(compoundString.toString(), namespaceService);
@@ -96,6 +100,7 @@ public class RatingNamingConventionsUtil
      * 
      * @param ratingSchemeName the ratingSchemeName, which is the spring bean name.
      * @return the aspect name used to store all property rollups for that scheme.
+     * @deprecated Use {@link #getRollupAspectNameFor(RatingScheme)} instead. This method assumes a "cm" prefix for the aspect.
      */
     public QName getRollupAspectNameFor(String ratingSchemeName)
     {
@@ -112,7 +117,11 @@ public class RatingNamingConventionsUtil
      */
     public QName getRollupAspectNameFor(RatingScheme ratingScheme)
     {
-        return getRollupAspectNameFor(ratingScheme.getName());
+        final String modelPrefix = ratingScheme.getModelPrefix();
+        final String ratingSchemeName = ratingScheme.getName();
+        
+        String result = modelPrefix + ":" + ratingSchemeName + "Rollups";
+        return QName.createQName(result, namespaceService);
     }
     
     /**
@@ -122,6 +131,8 @@ public class RatingNamingConventionsUtil
      * @param ratingSchemeName the ratingSchemeName, which is the spring bean name.
      * @param rollupName the name of the property rollup as given by {@link AbstractRatingRollupAlgorithm#getRollupName()}.
      * @return the property name used to persist the given rollup in the given scheme.
+     * @deprecated Use {@link #getRollupPropertyNameFor(RatingScheme, String)} instead.
+     *             This method assumes a "cm" prefix for the aspect.
      */
     public QName getRollupPropertyNameFor(String ratingSchemeName, String rollupName)
     {
@@ -139,6 +150,10 @@ public class RatingNamingConventionsUtil
      */
     public QName getRollupPropertyNameFor(RatingScheme ratingScheme, String rollupName)
     {
-        return getRollupPropertyNameFor(ratingScheme.getName(), rollupName);
+        final String modelPrefix = ratingScheme.getModelPrefix();
+        final String ratingSchemeName = ratingScheme.getName();
+        
+        String result = modelPrefix + ":" + ratingSchemeName + rollupName;
+        return QName.createQName(result, namespaceService);
     }
 }

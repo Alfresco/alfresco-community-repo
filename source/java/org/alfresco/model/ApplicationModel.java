@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -55,4 +55,8 @@ public interface ApplicationModel
     // feed source aspect
     static final QName ASPECT_FEEDSOURCE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "feedsource");
     static final QName PROP_FEEDTEMPLATE = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "template");
+    
+    // Default view config aspect
+    static final QName ASPECT_DEFAULT_VIEW_CONFIG = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "defaultViewConfig");
+    static final QName PROP_DEFAULT_VIEW_ID = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "defaultViewId");
 }

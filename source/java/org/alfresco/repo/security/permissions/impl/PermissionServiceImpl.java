@@ -492,7 +492,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         }
         
         // Allow permissions for nodes that do not exist
-        if (!nodeService.exists(passedNodeRef))
+        if (passedNodeRef == null || !nodeService.exists(passedNodeRef))
         {
             return AccessStatus.ALLOWED;
         }
@@ -2708,7 +2708,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
      */
     protected boolean isVersionNodeRef(NodeRef nodeRef)
     {
-    	return nodeRef.getStoreRef().getProtocol().equals(VersionModel.STORE_PROTOCOL);
+    	return nodeRef.getStoreRef().getProtocol().equals(VersionModel.STORE_PROTOCOL) || nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID);
     }
 
     /**

@@ -184,6 +184,7 @@
       </property>
       <property name="maxCacheSize" value="100" />
       <property name="mutable" value="true" />
+      <property name="allowEqualsChecks" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    

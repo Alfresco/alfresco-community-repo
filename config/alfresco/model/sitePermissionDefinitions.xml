@@ -29,6 +29,7 @@
       
       <permissionGroup name="SiteConsumer" allowFullControl="false" expose="true">
          <includePermissionGroup permissionGroup="Consumer" type="cm:cmobject" />
+         <includePermissionGroup permissionGroup="ReadPermissions" type="sys:base" />
       </permissionGroup>
       
    </permissionSet>

@@ -40,8 +40,6 @@ public class IndexConfigurationCheckerBootstrapBean extends AbstractLifecycleBea
     
     private IndexConfigurationChecker indexConfigurationChecker;
     
-    private RepositoryState repositoryState;
-    
     private TransactionService transactionService;
 
     private boolean strict;
@@ -55,12 +53,11 @@ public class IndexConfigurationCheckerBootstrapBean extends AbstractLifecycleBea
         {
             public Object execute() throws Exception
             {
-             // reindex
-                if((repositoryState == null) || (false == repositoryState.isBootstrapping()))
-                {
-                    log.info("Checking/Recovering indexes ...");
-                    check();
-                }
+                // reindex
+
+                log.info("Checking/Recovering indexes ...");
+                check();
+
                 return null;
             }
         };
@@ -128,16 +125,6 @@ public class IndexConfigurationCheckerBootstrapBean extends AbstractLifecycleBea
     public void setIndexConfigurationChecker(IndexConfigurationChecker indexConfigurationChecker)
     {
         this.indexConfigurationChecker = indexConfigurationChecker;
-    }
-
-    public RepositoryState getRepositoryState()
-    {
-        return repositoryState;
-    }
-
-    public void setRepositoryState(RepositoryState repositoryState)
-    {
-        this.repositoryState = repositoryState;
     }
 
     public void setStrict(boolean strict)

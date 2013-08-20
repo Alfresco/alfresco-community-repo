@@ -38,9 +38,12 @@ import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.smb.SMBException;
 import org.alfresco.jlan.smb.SMBStatus;
 import org.alfresco.jlan.smb.nt.NTIOCtl;
+import org.alfresco.jlan.smb.server.notify.NotifyChangeHandler;
 import org.alfresco.jlan.util.DataBuffer;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -48,6 +51,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -75,6 +79,7 @@ public class ContentIOControlHandler implements IOControlHandler
     private NodeService nodeService;
     private AuthenticationService authService;
     private CheckOutCheckInService checkOutCheckInService;
+    private TransactionService transactionService;
     
     
     public void init()
@@ -83,6 +88,7 @@ public class ContentIOControlHandler implements IOControlHandler
         PropertyCheck.mandatory(this, "cifsHelper", cifsHelper);
         PropertyCheck.mandatory(this, "authService", authService);
         PropertyCheck.mandatory(this, "checkOutCheckInService", authService);
+        PropertyCheck.mandatory(this, "transactionService", getTransactionService());
     }
         
     /**
@@ -271,7 +277,7 @@ public class ContentIOControlHandler implements IOControlHandler
 	                logger.debug("RunAction");
 	            }
 	        	
-	        	retBuffer = procRunAction(sess, tree, dataBuf, folderNode, netFile, contentDriver, contentContext);
+	        	retBuffer = procRunActionInTransaction(sess, tree, dataBuf, folderNode, netFile, contentDriver, contentContext);
 	        	break;
 
 	        // Return the authentication ticket
@@ -532,6 +538,29 @@ public class ContentIOControlHandler implements IOControlHandler
         return respBuf;
     }
     
+    private final DataBuffer procRunActionInTransaction( final SrvSession sess, final TreeConnection tree, final DataBuffer reqBuf, final NodeRef folderNode,
+            final NetworkFile netFile, final Object contentDriver, final ContentContext contentContext)
+    {
+    
+        RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
+        
+        RetryingTransactionCallback<DataBuffer> notifyCB = new RetryingTransactionCallback<DataBuffer>() {
+
+	        @Override
+	        public DataBuffer execute() throws Throwable
+	        {
+	        	return procRunAction(sess, tree, reqBuf, folderNode,
+	                    netFile, contentDriver, contentContext);
+	        }
+	    };
+        
+	    // Require a new read/write transaction
+        return helper.doInTransaction(notifyCB, false, true);
+    	
+    }
+    
+    
+    
     /**
      * Process the run action request
      * 
@@ -550,7 +579,9 @@ public class ContentIOControlHandler implements IOControlHandler
     	String actionName = reqBuf.getString(true);
     	
     	if ( logger.isDebugEnabled())
+    	{
     		logger.debug("  Run action, name=" + actionName);
+    	}
 
         // Create a response buffer
         
@@ -563,10 +594,13 @@ public class ContentIOControlHandler implements IOControlHandler
         DesktopAction action = null;
         
         if ( deskActions != null)
+        {
         	action = deskActions.getAction(actionName);
+        }
 
         if ( action == null)
         {
+        	logger.debug("no such action");
         	respBuf.putInt(DesktopAction.StsNoSuchAction);
         	respBuf.putString("", true);
         	return respBuf;
@@ -860,4 +894,12 @@ public class ContentIOControlHandler implements IOControlHandler
     
         return cifsHelper.getNodeRef(ctx.getRootNode(), path);
     }
+
+	public void setTransactionService(TransactionService transactionService) {
+		this.transactionService = transactionService;
+	}
+
+	public TransactionService getTransactionService() {
+		return transactionService;
+	}
 }

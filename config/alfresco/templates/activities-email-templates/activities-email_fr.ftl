@@ -47,6 +47,7 @@
                                           <div style="font-size: 14px; margin: 18px 0px 24px 0px; padding-top: 18px; border-top: 1px solid #aaaaaa;">
                                              <#if activities?exists && activities?size &gt; 0>
                                              <#list activities as activity>
+                                                <#if activity.siteNetwork??>
                                                 <#assign userLink="<a href=\"${shareUrl}/page/user/${activity.postUserId?html}/profile\">${activity.activitySummary.firstName!\"\"} ${activity.activitySummary.lastName!\"\"}</a>">
                                                 <#assign secondUserLink="">
                                                 <#assign itemLink="<a href=\"${shareUrl}/page/site/${activity.siteNetwork?html}/${activity.activitySummary.page!\"\"}\">${activity.activitySummary.title!\"\"}</a>">
@@ -94,6 +95,7 @@
                                                 <div style="font-size: 11px; padding: 4px 0px 12px 0px;">
                                                    ${activity.postDate?datetime?string.medium}
                                                 </div>
+                                                </#if>
                                              </#list>
                                              </#if>
                                           </div>

@@ -634,6 +634,15 @@ public interface WorkflowService
     @Auditable(parameters = {"packageItem", "active"})
     public List<NodeRef> getPackageContents(String taskId);
     
+     /**
+     * Get a list of node refs to all the package contents.
+     * 
+     * @param packageRef the nodeRef to the package
+     * @return A list of nodeRefs the package is referring to
+     */
+    @Auditable(parameters = {"packageRef"})
+    public List<NodeRef> getPackageContents(NodeRef packageRef);
+    
     /**
      * @return true, if all workflows (in workflowDeployers) have a copy deployed per tenant and workflows
      * can be deployed in tenant. False when workflows are shared system-wide, regardless of the tenant context.

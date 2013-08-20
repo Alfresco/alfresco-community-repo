@@ -26,22 +26,21 @@ import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.CMISQueryEnum;
 import org.alfresco.cmis.CMISQueryOptions;
+import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISServices;
-import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.cmis.search.CMISQueryParser;
 import org.alfresco.cmis.search.CMISResultSetImpl;
 import org.alfresco.cmis.search.CmisFunctionEvaluationContext;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.repo.search.impl.querymodel.Query;
-import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryModelFactory;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
  * @author Andy
@@ -51,7 +50,7 @@ public class SolrCMISQueryServiceImpl implements CMISQueryService
 {
     private CMISServices cmisService;
     
-    private SolrQueryLanguage solrQueryLanguage;
+    private LuceneQueryLanguageSPI solrQueryLanguage;
 
     private CMISDictionaryService cmisDictionaryService;
 
@@ -64,7 +63,7 @@ public class SolrCMISQueryServiceImpl implements CMISQueryService
         this.cmisService = cmisService;
     }
 
-    public void setSolrQueryLanguage(SolrQueryLanguage solrQueryLanguage)
+    public void setSolrQueryLanguage(LuceneQueryLanguageSPI solrQueryLanguage)
     {
         this.solrQueryLanguage = solrQueryLanguage;
     }

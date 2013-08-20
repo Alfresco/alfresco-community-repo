@@ -127,6 +127,40 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     {
         map.setCapacity(maxItems);
     }
+    
+    /**
+     * Gets the maximum number of items that the cache will hold.
+     * 
+     * @return maxItems
+     */
+    public int getMaxItems()
+    {
+        return map.capacity();
+    }
+    
+    
+    /**
+     * Retrieve the name of this cache.
+     * 
+     * @see #setCacheName(String)
+     * @return the cacheName
+     */
+    public String getCacheName()
+    {
+        return this.cacheName;
+    }
+
+    /**
+     * Since there are many cache instances, it is useful to be able to associate
+     * a name with each one.
+     * 
+     * @see #setBeanName(String)
+     * @param cacheName
+     */
+    public void setCacheName(String cacheName)
+    {
+        this.cacheName = cacheName;
+    }
 
     /**
      * Since there are many cache instances, it is useful to be able to associate

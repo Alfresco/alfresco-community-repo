@@ -42,8 +42,8 @@ import org.springframework.beans.factory.InitializingBean;
  * A 2-level cache that mainains both a transaction-local cache and
  * wraps a non-transactional (shared) cache.
  * <p>
- * It uses the <b>Ehcache</b> <tt>Cache</tt> for it's per-transaction
- * caches as these provide automatic size limitations, etc.
+ * It uses the <b>shared</b> <tt>SimpleCache</tt> for it's per-transaction
+ * caches as these can provide automatic size limitations, etc.
  * <p>
  * Instances of this class <b>do not require a transaction</b>.  They will work
  * directly with the shared cache when no transaction is present.  There is

@@ -22,4 +22,7 @@
  * <p>   
  * @see org.alfresco.service.cmr.lock.LockService
  */
+@PackageMarker
 package org.alfresco.service.cmr.lock;
+import org.alfresco.util.PackageMarker;
+

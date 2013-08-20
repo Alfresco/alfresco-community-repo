@@ -27,4 +27,6 @@
  * @author Alex Miller
  */
 
+@PackageMarker
 package org.alfresco.service.cmr.download;
+import org.alfresco.util.PackageMarker;

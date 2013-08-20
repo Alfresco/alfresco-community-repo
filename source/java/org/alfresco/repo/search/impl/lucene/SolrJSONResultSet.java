@@ -110,8 +110,10 @@ public class SolrJSONResultSet implements ResultSet
             }
             
             // bulk load
-            
-            nodeDao.cacheNodesById(rawDbids);
+            if (searchParameters.isBulkFetchEnabled())
+            {
+                nodeDao.cacheNodesById(rawDbids);
+            }
             
             // filter out rubbish
             

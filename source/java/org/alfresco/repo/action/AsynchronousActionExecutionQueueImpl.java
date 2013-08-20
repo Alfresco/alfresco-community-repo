@@ -30,6 +30,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute;
 import org.alfresco.repo.content.transform.UnimportantTransformException;
+import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rule.RuleServiceImpl;
@@ -446,6 +447,10 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                 if (rootCause instanceof UnimportantTransformException)
                 {
                     logger.debug(message);
+                }
+                else if (rootCause instanceof UnsupportedTransformationException)
+                {
+                    logger.error(message);
                 }
                 else
                 {

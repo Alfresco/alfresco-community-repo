@@ -39,30 +39,23 @@ import org.apache.ibatis.session.RowBounds;
 
 public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFeedDAO
 {
-	private static final int DEFAULT_FETCH_BATCH_SIZE = 150;
+    private static final int DEFAULT_FETCH_BATCH_SIZE = 150;
 
     private TenantService tenantService;
     private int fetchBatchSize = DEFAULT_FETCH_BATCH_SIZE;
     
     public void setTenantService(TenantService tenantService)
     {
-		this.tenantService = tenantService;
-	}
+        this.tenantService = tenantService;
+    }
 
-	public void setFetchBatchSize(int fetchBatchSize)
-	{
-		this.fetchBatchSize = fetchBatchSize;
-	}
-
-	public long insertFeedEntry(ActivityFeedEntity activityFeed) throws SQLException
+    public void setFetchBatchSize(int fetchBatchSize)
     {
-        // ALF-17455 temporary assertion that the format is "json" 
-        // TODO remove the summary format completely.
-        if(!activityFeed.getActivitySummaryFormat().equalsIgnoreCase("json"))
-        {
-            throw new AlfrescoRuntimeException("Obsolete summary format specified - only json expected");
-        }
+        this.fetchBatchSize = fetchBatchSize;
+    }
 
+    public long insertFeedEntry(ActivityFeedEntity activityFeed) throws SQLException
+    {
         template.insert("alfresco.activities.insert.insert_activity_feed", activityFeed);
         Long id = activityFeed.getId();
         return (id != null ? id : -1);
@@ -101,23 +94,21 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     }
     
     @Override
-    public int deleteSiteFeedEntries(String siteId, String format, Date keepDate) throws SQLException
+    public int deleteSiteFeedEntries(String siteId, Date keepDate) throws SQLException
     {
         
         ActivityFeedEntity params = new ActivityFeedEntity();
         params.setSiteNetwork(siteId);
-        params.setActivitySummaryFormat(format);
         params.setPostDate(keepDate);
         
         return template.delete("alfresco.activities.delete_activity_feed_for_site_entries_older_than_date", params);
     }
     
     @Override
-    public int deleteUserFeedEntries(String feedUserId, String format, Date keepDate) throws SQLException
+    public int deleteUserFeedEntries(String feedUserId, Date keepDate) throws SQLException
     {
         ActivityFeedEntity params = new ActivityFeedEntity();
         params.setFeedUserId(feedUserId);
-        params.setActivitySummaryFormat(format);
         params.setPostDate(keepDate);
         
         return template.delete("alfresco.activities.delete_activity_feed_for_feeduser_entries_older_than_date", params);
@@ -139,11 +130,11 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         return (List<ActivityFeedEntity>)template.selectList("alfresco.activities.select_activity_user_feeds_greater_than_max", maxFeedSize);
     }
 
-        public Long countUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, int maxFeedSize) throws SQLException
+    @Override
+    public Long countUserFeedEntries(String feedUserId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, int maxFeedSize) throws SQLException
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
         params.setFeedUserId(feedUserId);
-        params.setActivitySummaryFormat(format);
         
         if (minFeedId > -1)
         {
@@ -154,7 +145,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         {
             if (excludeThisUser && excludeOtherUsers)
             {
-            	return Long.valueOf(0);
+                return Long.valueOf(0);
             }
             if ((!excludeThisUser) && (!excludeOtherUsers))
             {
@@ -179,7 +170,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
             if (excludeThisUser && excludeOtherUsers)
             {
                 // effectively NOOP - return empty feed
-            	return Long.valueOf(0);
+                return Long.valueOf(0);
             }
             if (!excludeThisUser && !excludeOtherUsers)
             {
@@ -202,6 +193,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         throw new AlfrescoRuntimeException("Unexpected: invalid arguments");
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public List<ActivityFeedEntity> selectSiteFeedsToClean(int maxFeedSize) throws SQLException
     {
@@ -210,11 +202,10 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     
     @SuppressWarnings("unchecked")
     @Override
-    public List<ActivityFeedEntity> selectUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, int maxFeedSize) throws SQLException
+    public List<ActivityFeedEntity> selectUserFeedEntries(String feedUserId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, int maxFeedSize) throws SQLException
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
         params.setFeedUserId(feedUserId);
-        params.setActivitySummaryFormat(format);
         
         if (minFeedId > -1)
         {
@@ -283,114 +274,114 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     private PagingResults<ActivityFeedEntity> getPagingResults(PagingRequest pagingRequest, final List<ActivityFeedEntity> feedEntries)
     {
         int maxItems = pagingRequest.getMaxItems();
-    	final boolean hasMoreItems = feedEntries.size() > maxItems;
-    	if(hasMoreItems)
-    	{
-    		feedEntries.remove(feedEntries.size() - 1);
-    	}
+        final boolean hasMoreItems = feedEntries.size() > maxItems;
+        if(hasMoreItems)
+        {
+            feedEntries.remove(feedEntries.size() - 1);
+        }
 
-    	return new PagingResults<ActivityFeedEntity>()
-    	{
-			@Override
-			public List<ActivityFeedEntity> getPage()
-			{
-				return feedEntries;
-			}
+        return new PagingResults<ActivityFeedEntity>()
+        {
+            @Override
+            public List<ActivityFeedEntity> getPage()
+            {
+                return feedEntries;
+            }
 
-			@Override
-			public boolean hasMoreItems() 
-			{
-				return hasMoreItems;
-			}
+            @Override
+            public boolean hasMoreItems() 
+            {
+                return hasMoreItems;
+            }
 
-			@Override
-			public Pair<Integer, Integer> getTotalResultCount()
-			{
-				return new Pair<Integer, Integer>(null, null);
-			}
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return new Pair<Integer, Integer>(null, null);
+            }
 
-			@Override
-			public String getQueryExecutionId()
-			{
-				return null;
-			}
-    	};
+            @Override
+            public String getQueryExecutionId()
+            {
+                return null;
+            }
+        };
     }
     
     /*
      * Get a paged list of activities, filtering out those activities that do not belong to the network "networkId".
      */
     @SuppressWarnings("unchecked")
-	private List<ActivityFeedEntity> filterByNetwork(String networkId, String siteId, String sql, ActivityFeedQueryEntity params, PagingRequest pagingRequest)
+    private List<ActivityFeedEntity> filterByNetwork(String networkId, String siteId, String sql, ActivityFeedQueryEntity params, PagingRequest pagingRequest)
     {
-    	int expectedSkipCount = pagingRequest.getSkipCount();
-    	// +1 to calculate hasMoreItems
-    	int expectedMaxItems = (pagingRequest.getMaxItems() == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? pagingRequest.getMaxItems() : pagingRequest.getMaxItems() + 1);
+        int expectedSkipCount = pagingRequest.getSkipCount();
+        // +1 to calculate hasMoreItems
+        int expectedMaxItems = (pagingRequest.getMaxItems() == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? pagingRequest.getMaxItems() : pagingRequest.getMaxItems() + 1);
 
-    	int skipCount = 0;
-    	int maxItems = fetchBatchSize;
+        int skipCount = 0;
+        int maxItems = fetchBatchSize;
 
-    	List<ActivityFeedEntity> ret = new LinkedList<ActivityFeedEntity>();
+        List<ActivityFeedEntity> ret = new LinkedList<ActivityFeedEntity>();
 
-    	int numMatchingItems = 0;
-    	int numAddedItems = 0;
-    	boolean skipping = true;
+        int numMatchingItems = 0;
+        int numAddedItems = 0;
+        boolean skipping = true;
 
-    	List<ActivityFeedEntity> feedEntries = null;
+        List<ActivityFeedEntity> feedEntries = null;
 
-    	// fetch activities in batches of size "maxItems"
-    	// iterate through them, filtering out any that don't match the networkId
-    	do
-    	{
-	        RowBounds rowBounds = new RowBounds(skipCount, maxItems);
+        // fetch activities in batches of size "maxItems"
+        // iterate through them, filtering out any that don't match the networkId
+        do
+        {
+            RowBounds rowBounds = new RowBounds(skipCount, maxItems);
 
-	        feedEntries = (List<ActivityFeedEntity>)template.selectList(sql, params, rowBounds);
-	        Iterator<ActivityFeedEntity> feedEntriesIt = feedEntries.iterator();
+            feedEntries = (List<ActivityFeedEntity>)template.selectList(sql, params, rowBounds);
+            Iterator<ActivityFeedEntity> feedEntriesIt = feedEntries.iterator();
 
-	    	while(feedEntriesIt.hasNext() && numAddedItems < expectedMaxItems)
-	    	{
-	    		ActivityFeedEntity activityFeedEntry = feedEntriesIt.next();
-	    		
-	            if(siteId == null)
-	            {
-	                // note: pending requirements for THOR-224, for now assume all activities are within context of site and filter by current tenant
-	                if(!networkId.equals(tenantService.getDomain(activityFeedEntry.getSiteNetwork())))
-	                {
-	                    continue;
-	                }
-	            }
+            while(feedEntriesIt.hasNext() && numAddedItems < expectedMaxItems)
+            {
+                ActivityFeedEntity activityFeedEntry = feedEntriesIt.next();
+                
+                if(siteId == null)
+                {
+                    // note: pending requirements for THOR-224, for now assume all activities are within context of site and filter by current tenant
+                    if(!networkId.equals(tenantService.getDomain(activityFeedEntry.getSiteNetwork())))
+                    {
+                        continue;
+                    }
+                }
 
-	            numMatchingItems++;
+                numMatchingItems++;
 
-	            if(skipping)
-	            {
-            		if(numMatchingItems > expectedSkipCount)
-            		{
-            			skipping = false;
-            		}
-            		else
-            		{
-            			continue;
-            		}
-	            }
+                if(skipping)
+                {
+                    if(numMatchingItems > expectedSkipCount)
+                    {
+                        skipping = false;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
 
-	            ret.add(activityFeedEntry);
-	            
-	            numAddedItems++;
-	    	}
+                ret.add(activityFeedEntry);
+                
+                numAddedItems++;
+            }
 
-	    	skipCount += maxItems;
-    	}
-    	while(feedEntries != null && feedEntries.size() > 0 && numAddedItems < expectedMaxItems);
+            skipCount += feedEntries.size();
+        }
+        while(feedEntries != null && feedEntries.size() > 0 && numAddedItems < expectedMaxItems);
 
-    	return ret;
+        return ret;
     }
 
-    public PagingResults<ActivityFeedEntity> selectPagedUserFeedEntries(String feedUserId, String networkId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest) throws SQLException
+    @Override
+    public PagingResults<ActivityFeedEntity> selectPagedUserFeedEntries(String feedUserId, String networkId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest) throws SQLException
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
         params.setFeedUserId(feedUserId);
-        params.setActivitySummaryFormat(format);
         
         if (minFeedId > -1)
         {
@@ -453,11 +444,11 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         throw new AlfrescoRuntimeException("Unexpected: invalid arguments");
     }
 
-    public Long countSiteFeedEntries(String siteId, String format, int maxFeedSize) throws SQLException
+    @Override
+    public Long countSiteFeedEntries(String siteId, int maxFeedSize) throws SQLException
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
         params.setSiteNetwork(siteId);
-        params.setActivitySummaryFormat(format);
 
         // for given site
         return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_site", params);
@@ -465,11 +456,10 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
 
     @SuppressWarnings("unchecked")
     @Override
-    public List<ActivityFeedEntity> selectSiteFeedEntries(String siteId, String format, int maxFeedSize) throws SQLException
+    public List<ActivityFeedEntity> selectSiteFeedEntries(String siteId, int maxFeedSize) throws SQLException
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
         params.setSiteNetwork(siteId);
-        params.setActivitySummaryFormat(format);
         
         int rowLimit = maxFeedSize < 0 ? RowBounds.NO_ROW_LIMIT : maxFeedSize;
         RowBounds rowBounds = new RowBounds(RowBounds.NO_ROW_OFFSET, rowLimit);

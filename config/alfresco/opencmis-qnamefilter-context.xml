@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean id="cmisTypeExclusions" class="org.alfresco.opencmis.dictionary.QNameFilterImpl" init-method="initFilter">
+        <property name="excludedTypes">
+            <list>
+                <value>{http://www.jcp.org/jcr/1.0}*</value>
+                <value>{http://www.jcp.org/jcr/nt/1.0}*</value> 
+                <value>{http://www.jcp.org/jcr/mix/1.0}*</value>
+                <value>{http://www.jcp.org/jcr/sv/1.0}*</value>
+                <value>{http://www.alfresco.org/model/wcmappmodel/1.0}*</value>
+                <value>{http://www.alfresco.org/model/wcmmodel/1.0}*</value>
+            </list>
+        </property>
+    </bean>
+</beans>

@@ -32,13 +32,15 @@ public class CreateFileOperation implements Operation
     private NodeRef rootNodeRef;
     private String path;
     private long allocationSize;
+    boolean isHidden;
     
-    public CreateFileOperation(String name, NodeRef rootNodeRef, String path, long allocationSize)
+    public CreateFileOperation(String name, NodeRef rootNodeRef, String path, long allocationSize, boolean isHidden)
     {
         this.name = name;
         this.rootNodeRef = rootNodeRef;
         this.path = path;
         this.allocationSize = allocationSize;
+        this.isHidden = isHidden;
     }
 
     public String getName()
@@ -87,5 +89,10 @@ public class CreateFileOperation implements Operation
     public long getAllocationSize()
     {
         return allocationSize;
+    }
+    
+    public boolean isHidden()
+    {
+        return isHidden;
     }
 }

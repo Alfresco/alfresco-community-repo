@@ -42,7 +42,7 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
     private static final String CONTENT_PROPERTY = "::content";
 
     private ServiceRegistry serviceRegistry;
-    private CMISConnector connector;
+    protected CMISConnector connector;
     private String propertyName;
 
     /**

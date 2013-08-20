@@ -41,7 +41,6 @@ public class VersionSeriesIdProperty extends AbstractProperty
     @Override
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        return getGuid(nodeInfo.getCurrentNodeId());
-    	//return nodeInfo.getCurrentObjectId();
+    	return connector.constructObjectId(nodeInfo.getCurrentNodeId(), null);
     }
 }

@@ -41,6 +41,7 @@
     <import resource="classpath*:alfresco/flickr-publishing-context.xml" />
     <import resource="classpath*:alfresco/facebook-publishing-context.xml" />
     <import resource="classpath*:alfresco/slideshare-publishing-context.xml" />
+    <import resource="classpath*:alfresco/distributionpolicies-context.xml" />
     <import resource="classpath*:alfresco/slingshot-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
 </beans>

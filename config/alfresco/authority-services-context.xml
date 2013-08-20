@@ -94,21 +94,13 @@
         <property name="policyComponent">
             <ref bean="policyComponent"/>
         </property>
-        <property name="cannedQueryRegistry">
-            <ref bean="cannedQueryRegistry" />
-        </property>
-        <property name="aclDAO">
-            <ref bean="aclDAO" />
-        </property>
-        <property name="authorityBridgeDAO">
-            <ref bean="authorityBridgeDAO" />
-        </property>
-        <property name="authorityBridgeTableCache">
-            <ref bean="authorityBridgeTableCache" />
-        </property>
-        <property name="useBridgeTable">
-            <value>${authority.useBridgeTable}</value>
-        </property>
+        <property name="cannedQueryRegistry" ref="cannedQueryRegistry" />
+        <property name="cannedQueryDAO" ref="cannedQueryDAO" />
+        <property name="qnameDAO" ref="qnameDAO" />
+        <property name="aclDAO" ref="aclDAO" />
+        <property name="authorityBridgeDAO" ref="authorityBridgeDAO" />
+        <property name="authorityBridgeTableCache" ref="authorityBridgeTableCache" />
+        <property name="useBridgeTable" value="${authority.useBridgeTable}" />
     </bean>
     
     <bean name="authorityBridgeDAO" class="org.alfresco.repo.security.authority.AuthorityBridgeDAOImpl">

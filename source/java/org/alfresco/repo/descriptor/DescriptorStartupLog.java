@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -67,36 +67,6 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
         this.transactionService = transactionService;
     }
 
-    /**
-     * Get Organisation from Principal
-     * 
-     * @param holderPrincipal
-     * @return  organisation
-     */
-    private String getHolderOrganisation(Principal holderPrincipal)
-    {
-        String holder = null;
-        if (holderPrincipal != null)
-        {
-            holder = holderPrincipal.getName();
-            if (holder != null)
-            {
-                String[] properties = holder.split(",");
-                for (String property : properties)
-                {
-                    String[] parts = property.split("=");
-                    if (parts[0].equals("O"))
-                    {
-                        holder = parts[1];
-                    }
-                }
-            }
-        }
-        
-        return holder;
-    }
-
-    
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -132,7 +102,16 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
             
             String msg = "Alfresco license: Mode " + licenseMode;
             
-            String holder = getHolderOrganisation(license.getHolder());
+            if(license.isClusterEnabled())
+            {
+                 msg += ", cluster:enabled";	
+            }
+            else
+            {
+                 msg += ", NO CLUSTER";
+            }
+            
+            String holder = license.getHolderOrganisation();
             if (holder != null)
             {
                 msg += " granted to " + holder;

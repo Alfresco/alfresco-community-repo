@@ -25,19 +25,15 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.BridgeTable;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
  * @author Andy
+ * @since 4.1.3
  */
 public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends AbstractAsynchronouslyRefreshedCache<BridgeTable<String>> implements InitializingBean
 {
-    private static Log logger = LogFactory.getLog(AuthorityBridgeTableAsynchronouslyRefreshedCache.class);
-
     private AuthorityBridgeDAO authorityBridgeDAO;
-
     private RetryingTransactionHelper retryingTransactionHelper;
 
     /**
@@ -58,10 +54,6 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends AbstractAs
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.cache.AbstractAsynchronouslyRefreshedCache#buildCache()
-     */
     @Override
     protected BridgeTable<String> buildCache(final String tenantId)
     {
@@ -86,10 +78,6 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends AbstractAs
         return bridgeTable;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.cache.AbstractAsynchronouslyRefreshedCache#afterPropertiesSet()
-     */
     @Override
     public void afterPropertiesSet() throws Exception
     {
@@ -97,5 +85,4 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends AbstractAs
         PropertyCheck.mandatory(this, "retryingTransactionHelper", retryingTransactionHelper);
         super.afterPropertiesSet();
     }
-
 }

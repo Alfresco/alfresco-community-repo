@@ -63,6 +63,10 @@ public class CalendarRecurrenceHelper
    public static final Map<String,Integer> DAY_NAMES_TO_CALENDAR_DAYS =
       Collections.unmodifiableMap(d2cd);
    
+   private final static long DAY_IN_MS = 24 * 60 * 60 * 1000L;
+   private final static long WEEK_IN_MS = DAY_IN_MS * 7L;
+   private final static long MONTH_IN_MS = DAY_IN_MS * 31L;
+   private final static long YEAR_IN_MS = MONTH_IN_MS * 12L;
    /**
     * Returns a lookup from recurrence rule days of the week, to
     *  the proper days of the week in the specified locale
@@ -146,6 +150,9 @@ public class CalendarRecurrenceHelper
     * Outlook does some crazy stuff, which is only just about permitted by
     *  the specification, and is hard to parse, especially for yearly events.
     * Fix these to more normal cases where possible
+    * 
+    * TODO: This method modifies the input, returning the Map perhaps implies a copy is returned.
+    *       Decide whether this should be of return type 'void', or make a defensive copy before modification.
     */
    protected static Map<String,String> fixOutlookRecurrenceQuirks(Map<String,String> params)
    {
@@ -159,7 +166,16 @@ public class CalendarRecurrenceHelper
              //  events that recur yearly on a specific date+month as FREQ=MONTHLY
              // Detect those cases, and treat as YEARLY as per the spec
              params.put("FREQ", "YEARLY");
-             
+
+             // ALF-18928: The interval is likely present, we should change it from months to years
+             // See org.alfresco.module.vti.web.ws.AbstractMeetingFromICalEndpoint.getLastMeeting()
+             String intervalString = params.get("INTERVAL");
+             if(intervalString != null)
+             {
+                 int interval = Integer.parseInt(intervalString);
+                 params.put("INTERVAL", String.valueOf(interval/12));
+             }
+
              // Outlook will sometimes do nth of the month (eg 17) instead as
              //  BYDAY={any}, BYSETPOS=n
              if (params.containsKey("BYDAY") && params.containsKey("BYSETPOS"))
@@ -280,22 +296,23 @@ public class CalendarRecurrenceHelper
          // Start with today, and roll forward
          Calendar currentDate = Calendar.getInstance();
          currentDate.setTime(eventStart);
+         long duration = eventEnd.getTime() - eventStart.getTime();
          
          if ("DAILY".equals(freq))
          {
-            buildDailyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+            buildDailyRecurrences(currentDate, duration, dates, params, onOrAfter, until, firstOnly, interval);
          }
          else if ("WEEKLY".equals(freq))
          {
-            buildWeeklyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+            buildWeeklyRecurrences(currentDate, duration, dates, params, onOrAfter, until, firstOnly, interval);
          }
          else if ("MONTHLY".equals(freq))
          {
-            buildMonthlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+            buildMonthlyRecurrences(currentDate, duration, dates, params, onOrAfter, until, firstOnly, interval);
          }
          else if ("YEARLY".equals(freq))
          {
-            buildYearlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+            buildYearlyRecurrences(currentDate, duration, dates, params, onOrAfter, until, firstOnly, interval);
          }
          else
          {
@@ -312,13 +329,26 @@ public class CalendarRecurrenceHelper
       }
    }
    
-   protected static void buildDailyRecurrences(Calendar currentDate, List<Date> dates, 
+   protected static void buildDailyRecurrences(Calendar currentDate, long duration, List<Date> dates, 
          Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
    {
+       if (onOrAfter.before(currentDate.getTime()))
+       {
+           onOrAfter = currentDate.getTime();
+       }
+       
       // Nice and easy
       while (currentDate.getTime().before(onOrAfter))
       {
          currentDate.add(Calendar.DATE, interval);
+      }
+      
+      currentDate.setTime(new Date(currentDate.getTime().getTime() - DAY_IN_MS * interval * 2));
+      Date currentEventEnd = new Date(currentDate.getTimeInMillis() + duration);
+      while(currentEventEnd.before(onOrAfter))
+      {
+          currentDate.add(Calendar.DATE, interval);
+          currentEventEnd = new Date(currentDate.getTimeInMillis() + duration);
       }
       
       if (firstOnly)
@@ -347,9 +377,14 @@ public class CalendarRecurrenceHelper
       }
    }
    
-   protected static void buildWeeklyRecurrences(Calendar currentDate, List<Date> dates, 
+   protected static void buildWeeklyRecurrences(Calendar currentDate, long duration, List<Date> dates, 
          Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
    {
+       if (onOrAfter.before(currentDate.getTime()))
+       {
+           onOrAfter = currentDate.getTime();
+       }
+       
       // Get a sorted list of the days it applies to
       List<Integer> daysOfWeek = new ArrayList<Integer>(); 
       for (String dayS : params.get("BYDAY").split(","))
@@ -370,6 +405,7 @@ public class CalendarRecurrenceHelper
       boolean going = true;
       boolean valid = false;
       Date origDate = currentDate.getTime();
+      currentDate.setTime(new Date(currentDate.getTime().getTime() - WEEK_IN_MS * interval * 2));
       while (going)
       {
          // Check each day
@@ -378,11 +414,12 @@ public class CalendarRecurrenceHelper
             currentDate.set(Calendar.DAY_OF_WEEK, day);
             if (!valid)
             {
-               if (currentDate.getTime().before(onOrAfter))
+               Date currentEventEnd = new Date(currentDate.getTimeInMillis() + duration);
+               if (currentEventEnd.before(onOrAfter))
                {
                   // To early
                }
-               else if (currentDate.getTime().before(origDate))
+               else if (currentEventEnd.before(origDate))
                {
                   // Too early
                }
@@ -418,11 +455,17 @@ public class CalendarRecurrenceHelper
       }
    }
    
-   protected static void buildMonthlyRecurrences(Calendar currentDate, List<Date> dates, 
+   protected static void buildMonthlyRecurrences(Calendar currentDate, long duration, List<Date> dates, 
          Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int monthInterval)
    {
+       if (onOrAfter.before(currentDate.getTime()))
+       {
+           onOrAfter = currentDate.getTime();
+       }
+       
       if (params.get("BYMONTHDAY") != null)
       {
+          currentDate.setTime(new Date(currentDate.getTime().getTime() - MONTH_IN_MS * monthInterval * 2));
          // eg the 15th of each month
          int dayOfMonth = Integer.parseInt(params.get("BYMONTHDAY"));
          if (currentDate.get(Calendar.DAY_OF_MONTH) > dayOfMonth)
@@ -434,12 +477,19 @@ public class CalendarRecurrenceHelper
          {
             // Move to that date in this month
             currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            if (currentDate.get(Calendar.DAY_OF_MONTH) != dayOfMonth)
+            {
+                currentDate.add(Calendar.DAY_OF_MONTH, -1);
+            }
          }
          
+         
+         Date currentEventEnd = new Date(currentDate.getTimeInMillis() + duration);
          // Go until in the ok range
-         while (currentDate.getTime().before(onOrAfter))
+         while (currentEventEnd.before(onOrAfter))
          {
             addMonthToDayOfMonth(currentDate, dayOfMonth, monthInterval);
+            currentEventEnd = new Date(currentDate.getTimeInMillis() + duration);
          }
          while (true)
          {
@@ -481,21 +531,26 @@ public class CalendarRecurrenceHelper
          
          // Move to the date in this month
          Date origDate = currentDate.getTime();
+         
+         currentDate.setTime(new Date(currentDate.getTime().getTime() - MONTH_IN_MS * monthInterval * 2));
          toDayOfWeekInMonth(currentDate, dayOfWeek, instanceInMonth);
+         Date currentEventEnd = new Date(currentDate.getTimeInMillis() + duration);
          
          // If the instance in this month is in the past, go
          //  forward to the point in the next month
-         if (currentDate.getTime().before(origDate))
+         if (currentEventEnd.before(origDate))
          {
             addMonthToFirstDayOfWeek(currentDate, dayOfWeek, monthInterval);
             toDayOfWeekInMonth(currentDate, dayOfWeek, instanceInMonth);
+            currentEventEnd = new Date(currentDate.getTimeInMillis() + duration);
          }
          
          // Move forward to the required date
-         while (currentDate.getTime().before(onOrAfter))
+         while (currentEventEnd.before(onOrAfter))
          {
             addMonthToFirstDayOfWeek(currentDate, dayOfWeek, monthInterval);
             toDayOfWeekInMonth(currentDate, dayOfWeek, instanceInMonth);
+            currentEventEnd = new Date(currentDate.getTimeInMillis() + duration);
          }
          // Roll on until we get valid matches
          while (true)
@@ -520,14 +575,20 @@ public class CalendarRecurrenceHelper
       }
    }
    
-   protected static void buildYearlyRecurrences(Calendar currentDate, List<Date> dates, 
+   protected static void buildYearlyRecurrences(Calendar currentDate, long duration, List<Date> dates, 
          Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
    {
+      if (onOrAfter.before(currentDate.getTime()))
+      {
+          onOrAfter = currentDate.getTime();
+      }
       int realMonth = Integer.parseInt(params.get("BYMONTH"));
       int month = realMonth - 1; // Java months count from zero
       
       if (params.get("BYMONTHDAY") != null)
       {
+          currentDate.setTime(new Date(currentDate.getTime().getTime() - YEAR_IN_MS * interval *2));
+          
          // eg the 2nd of March every year
          int dayOfMonth = Integer.parseInt(params.get("BYMONTHDAY"));
          if (currentDate.get(Calendar.MONTH) == month &&
@@ -552,11 +613,13 @@ public class CalendarRecurrenceHelper
              currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
          }
          
-         while (currentDate.getTime().before(onOrAfter))
+         Date currentEventEnd = new Date(currentDate.getTimeInMillis() + duration);
+         while (currentEventEnd.before(onOrAfter))
          {
             currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + interval);
             currentDate.set(Calendar.MONTH, month);
             currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            currentEventEnd = new Date(currentDate.getTimeInMillis() + duration);
          }
          while (true)
          {
@@ -598,7 +661,7 @@ public class CalendarRecurrenceHelper
              instanceInMonth = 1;
           }
           
-          
+          currentDate.setTime(new Date(currentDate.getTime().getTime() - YEAR_IN_MS * interval *2));
           // Find when it is this year 
           Date origDate = currentDate.getTime();
           currentDate.set(Calendar.MONTH, month);
@@ -621,14 +684,15 @@ public class CalendarRecurrenceHelper
               currentDate.setTime(thisYear);
           }
           
-          
+          Date currentEventEnd = new Date(currentDate.getTimeInMillis() + duration);
           // Move forward to the required date
-          while (currentDate.getTime().before(onOrAfter))
+          while (currentEventEnd.before(onOrAfter))
           {
               currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + interval);
               currentDate.set(Calendar.MONTH, month);
               currentDate.set(Calendar.DAY_OF_MONTH, 1);
               toDayOfWeekInMonth(currentDate, dayOfWeek, instanceInMonth);
+              currentEventEnd = new Date(currentDate.getTimeInMillis() + duration);
           }
           
           // Roll on until we get valid matches
@@ -666,6 +730,15 @@ public class CalendarRecurrenceHelper
          c.add(Calendar.DATE, 33);
          // Set to the requred day in the month
          c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+         
+         // If we set 31th of April, then calendar instance will be on 1st of May
+         // So, set the last day of moth
+         if (c.get(Calendar.DAY_OF_MONTH) != dayOfMonth)
+         {
+             c.set(Calendar.DAY_OF_MONTH, 1);
+             c.add(Calendar.DAY_OF_MONTH, -1);
+         }
+
       }
    }
    

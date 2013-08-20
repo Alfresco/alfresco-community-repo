@@ -689,13 +689,17 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                     done = true;
                     return;
                 }
-                catch (AlfrescoRuntimeException e)
+                catch (Exception e)
                 {
                     if (exceptions == null)
                     {
                         exceptions = new ArrayList<AlfrescoRuntimeException>();
                     }
-                    exceptions.add(e);
+                    if (!(e instanceof AlfrescoRuntimeException))
+                    {
+                        e = new AlfrescoRuntimeException(e.getMessage(), e);
+                    }
+                    exceptions.add((AlfrescoRuntimeException)e);
 
                     // Set a new reader to refresh the input stream.
                     reader = reader.getReader();

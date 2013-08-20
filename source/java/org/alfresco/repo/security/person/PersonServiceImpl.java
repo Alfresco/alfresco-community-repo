@@ -865,14 +865,23 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             if (homeFolder == null)
             {
                 final ChildAssociationRef ref = nodeService.getPrimaryParent(person);
-                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+                RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                txnHelper.setForceWritable(true);
+                boolean requiresNew = false;
+                if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
+                {
+                    // We can be in a read-only transaction, so force a new transaction
+                    // Note that the transaction will *always* be in read-only mode if the server read-only veto is there 
+                    requiresNew = true;
+                }
+                txnHelper.doInTransaction(new RetryingTransactionCallback<Object>()
                 {
                     public Object execute() throws Throwable
                     {
                         makeHomeFolderAsSystem(ref);
                         return null;
                     }
-                }, transactionService.isReadOnly(), transactionService.isReadOnly() ? false : AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY);
+                }, false, requiresNew);
             }
         }
     }
@@ -943,9 +952,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             throw new AlfrescoRuntimeException("Attempt to create person for an authority which is not a user");
         }
-        
+
         tenantService.checkDomainUser(userName);
-        
+
         if (personExists(userName))
         {
             throw new AlfrescoRuntimeException("Person '" + userName + "' already exists.");
@@ -1591,36 +1600,45 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         else
         {
-
             // multiple terms supplied - look for first and second name etc.
             // assume first term is first name, any more are second i.e.
             // "Fraun van de Wiels"
             // also allow fts-alfresco property search to reduce results
             params.setDefaultOperator(SearchParameters.Operator.AND);
-            boolean firstToken = true;
-            boolean tokenSurname = false;
+            StringBuilder multiPartNames = new StringBuilder(pattern.length());
+            int numOfTokens = t.countTokens();
+            int counter = 1;
+            String term = null;
+            // MNT-8539, in order to support firstname and lastname search
+            while (t.hasMoreTokens())
             {
-                pattern = t.nextToken();
-                if (firstToken)
+                term = t.nextToken();
+                // ALF-11311, in order to support multi-part
+                // firstNames/lastNames, we need to use the whole tokenized term for both
+                // firstName and lastName
+                if (term.endsWith("*"))
                 {
-                    query.append("firstName:\"");
-                    query.append(pattern);
-                    query.append("*\" ");
-
-                    firstToken = false;
+                    term = term.substring(0, term.lastIndexOf("*"));
                 }
-                else
+                multiPartNames.append("\"");
+                multiPartNames.append(term);
+                multiPartNames.append("*\"");
+                if (numOfTokens > counter)
                 {
-                    if (tokenSurname)
-                    {
-                        query.append("OR ");
-                    }
-                    query.append("lastName:\"");
-                    query.append(pattern);
-                    query.append("*\" ");
-
-                    tokenSurname = true;
+                    multiPartNames.append(' ');
                 }
+                counter++;
+            }
+            // ALF-11311, in order to support multi-part firstNames/lastNames,
+            // we need to use the whole tokenized term for both firstName and lastName.
+            // e.g. "john junior lewis martinez", where "john junior" is the first
+            // name and "lewis martinez" is the last name.
+            if (multiPartNames.length() > 0)
+            {
+                query.append("firstName:");
+                query.append(multiPartNames);
+                query.append(" OR lastName:");
+                query.append(multiPartNames);
             }
         }
         query.append(")");
@@ -2113,15 +2131,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         NodeRef noderef = getPerson(userName, false);
         
-        Serializable ser = nodeService.getProperty(noderef, ContentModel.PROP_ENABLED);
-        
-        if (ser == null)
+        for (QName aspectName : nodeService.getAspects(noderef))
         {
-            return true;
+            if (ContentModel.ASPECT_PERSON_DISABLED.isMatch(aspectName))
+            {
+                return false;
+            }
         }
-        else
-        {
-            return DefaultTypeConverter.INSTANCE.booleanValue(ser);
-        }
+
+        return true;
     }
 }

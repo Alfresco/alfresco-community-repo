@@ -89,7 +89,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
     public CMISNodeInfoImpl(CMISConnector connector, String objectId)
     {
         this.connector = connector;
-        this.objectId = objectId;
+        this.objectId = connector.constructObjectId(objectId);
 
         analyseObjectId();
     }
@@ -131,7 +131,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         if (versionHistory == null)
         {
             objecVariant = CMISObjectVariant.CURRENT_VERSION;
-            objectId = getGuid(nodeRef.toString()) + CMISConnector.ID_SEPERATOR + CMISConnector.UNVERSIONED_VERSION_LABEL;
+            objectId = connector.constructObjectId(nodeRef, CMISConnector.UNVERSIONED_VERSION_LABEL);
             versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
             currentObjectId = objectId;
             hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
@@ -141,9 +141,8 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             Version headVersion = versionHistory.getHeadVersion();
 
             versionLabel = (String) connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-            objectId = getGuid(headVersion.getVersionedNodeRef().toString()) + CMISConnector.ID_SEPERATOR + versionLabel;
-            currentObjectId = getGuid(headVersion.getVersionedNodeRef().toString()) + CMISConnector.ID_SEPERATOR
-                    + headVersion.getVersionLabel();
+            objectId = connector.constructObjectId(headVersion.getVersionedNodeRef(), versionLabel);
+            currentObjectId = connector.constructObjectId(headVersion.getVersionedNodeRef(), headVersion.getVersionLabel());
             currentNodeId = headVersion.getVersionedNodeRef().toString();
 
             objecVariant = (headVersion.getVersionLabel().equals(versionLabel) ? CMISObjectVariant.CURRENT_VERSION
@@ -161,8 +160,8 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             {
                 versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
             }
-            objectId = getGuid(nodeRef.toString()) + CMISConnector.ID_SEPERATOR + versionLabel;
-            currentObjectId = getGuid(nodeRef.toString()) + CMISConnector.ID_SEPERATOR + versionLabel;
+            objectId = connector.constructObjectId(nodeRef, versionLabel);
+            currentObjectId = objectId;
             currentNodeId = nodeRef.toString();
             objecVariant = CMISObjectVariant.CURRENT_VERSION;
             hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
@@ -176,23 +175,9 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
     protected void setUnversioned(NodeRef nodeRef)
     {
         objecVariant = CMISObjectVariant.CURRENT_VERSION;
-        objectId = getGuid(nodeRef.toString()) + CMISConnector.ID_SEPERATOR + CMISConnector.UNVERSIONED_VERSION_LABEL;
+        objectId = connector.constructObjectId(nodeRef, CMISConnector.UNVERSIONED_VERSION_LABEL);
         versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
         currentObjectId = objectId;                    
-    }
-    
-    // TODO code convergence - refer to public API and CLOUD-1267 - this needs to be resolved !!
-    private String getGuid(String nodeId)
-    {
-    	int idx = nodeId.lastIndexOf("/");
-    	if(idx != -1)
-    	{
-    		return nodeId.substring(idx+1);
-    	}
-    	else
-    	{
-    		return nodeId;
-    	}
     }
     
     protected void analyseObjectId()
@@ -211,228 +196,219 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
         try
         {
-            // is it a version?
-            int sepIndex = objectId.lastIndexOf(CMISConnector.ID_SEPERATOR);
-            if (sepIndex > -1)
-            {
-                currentNodeId = objectId.substring(0, sepIndex);
-                versionLabel = objectId.substring(sepIndex + 1);
-            }
+        	// is it a version?
+        	int sepIndex = objectId.lastIndexOf(CMISConnector.ID_SEPERATOR);
+        	if (sepIndex > -1)
+        	{
+        		currentNodeId = objectId.substring(0, sepIndex);
+        		versionLabel = objectId.substring(sepIndex + 1);
+        	}
 
-            if (objectId.startsWith(CMISConnector.ASSOC_ID_PREFIX))
-            {
-                // check the association id
-                Long assocId = null;
-                try
-                {
-                    assocId = new Long(objectId.substring(CMISConnector.ASSOC_ID_PREFIX.length()));
-                } catch (NumberFormatException nfe)
-                {
-                    objecVariant = CMISObjectVariant.INVALID_ID;
-                    return;
-                }
+        	if (objectId.startsWith(CMISConnector.ASSOC_ID_PREFIX))
+        	{
+        		// check the association id
+        		Long assocId = null;
+        		try
+        		{
+        			assocId = new Long(objectId.substring(CMISConnector.ASSOC_ID_PREFIX.length()));
+        		} catch (NumberFormatException nfe)
+        		{
+        			objecVariant = CMISObjectVariant.INVALID_ID;
+        			return;
+        		}
 
-                // check the association
-                associationRef = connector.getNodeService().getAssoc(assocId);
-                if (associationRef == null)
-                {
-                    objecVariant = CMISObjectVariant.NOT_EXISTING;
-                } else
-                {
-                    objecVariant = CMISObjectVariant.ASSOC;
-                }
-            }
-            else
-            {
-                currentNodeId = connector.getRootStoreRef() + "/" + currentNodeId;
+        		// check the association
+        		associationRef = connector.getNodeService().getAssoc(assocId);
+        		if (associationRef == null)
+        		{
+        			objecVariant = CMISObjectVariant.NOT_EXISTING;
+        		} else
+        		{
+        			objecVariant = CMISObjectVariant.ASSOC;
+        		}
+        	}
+        	else
+        	{
+        		if(NodeRef.isNodeRef(objectId))
+        		{
+        			NodeRef tmpNodeRef = new NodeRef(objectId);
+        			objectId = connector.constructObjectId(tmpNodeRef, null);
+        		}
 
-                if (NodeRef.isNodeRef(currentNodeId))
-                {
-                    // nodeRef is a "live" node, the version label identifies the specific version of the node
-                    nodeRef = new NodeRef(currentNodeId);
-                    
-                    // check for existence
-                    if (!connector.getNodeService().exists(nodeRef))
-                    {
-                        objecVariant = CMISObjectVariant.NOT_EXISTING;
-                        return;
-                    }
+        		if(!NodeRef.isNodeRef(currentNodeId))
+        		{
+        			currentNodeId = connector.getRootStoreRef() + "/" + currentNodeId;                	
+        		}
 
-                    // check PWC
-                    if (connector.getCheckOutCheckInService().isWorkingCopy(nodeRef))
-                    {
-                        NodeRef checkedOut = connector.getCheckOutCheckInService().getCheckedOut(nodeRef);
-                        if(connector.filter(nodeRef))
-                        {
-                            objecVariant = CMISObjectVariant.NOT_EXISTING;
-                        }
-                        else
-                        {
-                            objecVariant = CMISObjectVariant.PWC;
-                        }
-                        currentObjectId = connector.createObjectId(checkedOut);
-                        currentNodeId = checkedOut.toString();
-                        versionLabel = CMISConnector.PWC_VERSION_LABEL;
-                        hasPWC = true;
-                        return;
-                    }
-                    
-                    if (isFolder())
-                    {
-                        // folders can't be versioned, so no need to check
-                        if(connector.filter(nodeRef))
-                        {
-                            objecVariant = CMISObjectVariant.NOT_EXISTING;
-                        }
-                        else
-                        {
-                            objecVariant = CMISObjectVariant.FOLDER;
-                        }
-                        return;
-                    }
-                    
-	                if (versionLabel == null)
-	                {
-	                    if (isFolder())
-	                    {
-	                        objecVariant = CMISObjectVariant.FOLDER;
-	                    } else if (isDocument())
-	                    {
-	                    	// for a document, absence of a version label implies the current (head) version
-	                        if(connector.filter(nodeRef))
-	                        {
-	                        	objecVariant = CMISObjectVariant.NOT_EXISTING;
-	                        }
-	                        else
-	                        {
-	                        	objecVariant = CMISObjectVariant.CURRENT_VERSION;
-	                        	
-	        	                versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
-	        	                if (versionHistory == null)
-	        	                {
-			                        versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;	        	                	
-	        	                }
-	        	                else
-	        	                {
-	        	                    Version headVersion = versionHistory.getHeadVersion();
-	        	                    versionLabel = headVersion.getVersionLabel();	        	                	
-	        	                }
+        		// nodeRef is a "live" node, the version label identifies the specific version of the node
+        		nodeRef = new NodeRef(currentNodeId);
 
-		                        objectId = getGuid(currentNodeId) + CMISConnector.ID_SEPERATOR + versionLabel;
-		                        currentObjectId = objectId;
-		                        hasPWC = (connector.getLockService().getLockType(nodeRef) == LockType.READ_ONLY_LOCK);
-	                        }
-	                    } else
-	                    {
-	                        objecVariant = CMISObjectVariant.NOT_A_CMIS_OBJECT;
-	                    }
-	                    return;
-	                }
-                    
-                    // check if it has PWC label
-                    if (versionLabel.equals(CMISConnector.PWC_VERSION_LABEL))
-                    {
-                        NodeRef pwcNodeRef = connector.getCheckOutCheckInService().getWorkingCopy(nodeRef);
-                        if (pwcNodeRef == null)
-                        {
-                            objecVariant = CMISObjectVariant.NOT_EXISTING;
-                            return;
-                        }
-                        else if(connector.filter(nodeRef))
-                        {
-                            objecVariant = CMISObjectVariant.NOT_EXISTING;
-                        }
-                        else
-                        {
-                            objecVariant = CMISObjectVariant.PWC;
-                        }
-                        currentObjectId = connector.createObjectId(nodeRef);
-                        currentNodeId = nodeRef.toString();
-                        hasPWC = true;
-                        nodeRef = pwcNodeRef;
-                        return;
-                    }
-                    
-                    // check version
-                    if(!connector.getVersionService().isVersioned(nodeRef))
-                    {
-                        // the node isn't versioned
-                        if(connector.filter(nodeRef))
-                        {
-                            objecVariant = CMISObjectVariant.NOT_EXISTING;
-                        }
-                        else if (versionLabel.equals(CMISConnector.UNVERSIONED_VERSION_LABEL))
-                        {
-                            objecVariant = CMISObjectVariant.CURRENT_VERSION;
-                        } else
-                        {
-                            objecVariant = CMISObjectVariant.NOT_EXISTING;
-                        }
+        		// check for existence
+        		if (!connector.getNodeService().exists(nodeRef))
+        		{
+        			objecVariant = CMISObjectVariant.NOT_EXISTING;
+        			return;
+        		}
 
-                        // check if checked out
-                        hasPWC = connector.getCheckOutCheckInService().isCheckedOut(getCurrentNodeNodeRef());
+        		// check PWC
+        		if (connector.getCheckOutCheckInService().isWorkingCopy(nodeRef))
+        		{
+        			NodeRef checkedOut = connector.getCheckOutCheckInService().getCheckedOut(nodeRef);
+        			if(connector.filter(nodeRef))
+        			{
+        				objecVariant = CMISObjectVariant.NOT_EXISTING;
+        			}
+        			else
+        			{
+        				objecVariant = CMISObjectVariant.PWC;
+        			}
+        			currentObjectId = connector.createObjectId(checkedOut);
+        			currentNodeId = checkedOut.toString();
+        			versionLabel = CMISConnector.PWC_VERSION_LABEL;
+        			hasPWC = true;
+        			return;
+        		}
 
-                        return;
-                    }
+        		if (isFolder())
+        		{
+        			// folders can't be versioned, so no need to check
+        			if(connector.filter(nodeRef))
+        			{
+        				objecVariant = CMISObjectVariant.NOT_EXISTING;
+        			}
+        			else
+        			{
+        				objecVariant = CMISObjectVariant.FOLDER;
+        			}
+        			return;
+        		}
 
-                    try
-                    {
-                        // the node is versioned, determine whether the versionLabel refers to the head version or a
-                        // specific non-head version
-                        String headVersionLabel = (String)connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-                        currentObjectId = currentNodeId + CMISConnector.ID_SEPERATOR + headVersionLabel;
-        
-                        if (versionLabel.equals(headVersionLabel))
-                        {
-                            // the version label refers to the current head version
-                            objecVariant = CMISObjectVariant.CURRENT_VERSION;
-                        }
-                        else
-                        {
-                            // the version label refers to a specific non-head version, find the nodeRef
-                            // of the version node from the version history
-                            versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
-                            if (versionHistory == null)
-                            {
-                                // unexpected null versionHistory, assume not versioned
-                                if (versionLabel.equals(CMISConnector.UNVERSIONED_VERSION_LABEL))
-                                {
-                                    objecVariant = CMISObjectVariant.CURRENT_VERSION;
-        
-                                }
-                                else
-                                {
-                                    objecVariant = CMISObjectVariant.NOT_EXISTING;
-                                }
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    version = versionHistory.getVersion(versionLabel);
-                                    nodeRef = version.getFrozenStateNodeRef();
-                                    objecVariant = CMISObjectVariant.VERSION;
-                                }
-                                catch (VersionDoesNotExistException e)
-                                {
-                                    objecVariant = CMISObjectVariant.NOT_EXISTING;
-                                }
-                            }
-                        }
-                    }
-                    catch (VersionDoesNotExistException e)
-                    {
-                        objecVariant = CMISObjectVariant.NOT_EXISTING;
-                    }
+        		if (versionLabel == null)
+        		{
+        			if (isDocument())
+        			{
+        				// for a document, absence of a version label implies the current (head) version
+        				if(connector.filter(nodeRef))
+        				{
+        					objecVariant = CMISObjectVariant.NOT_EXISTING;
+        				}
+        				else
+        				{
+        					objecVariant = CMISObjectVariant.CURRENT_VERSION;
+        				}
 
-                    // check if checked out
-                    hasPWC = connector.getCheckOutCheckInService().isCheckedOut(getCurrentNodeNodeRef());
-                }
-                else
-                {
-                    objecVariant = CMISObjectVariant.INVALID_ID;
-                }
-            }
+        				// Is it un-versioned, or currently versioned?
+        				Version currentVersion = connector.getVersionService().getCurrentVersion(nodeRef);
+        				if (currentVersion != null)
+        				{
+        					versionLabel = currentVersion.getVersionLabel();
+        					versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
+        				}
+        				else
+        				{
+        					versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
+        				}
+
+        				objectId = connector.constructObjectId(objectId, versionLabel);
+        				currentObjectId = objectId;
+        				hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
+        			}
+        			else
+	        		{
+	        			objecVariant = CMISObjectVariant.NOT_A_CMIS_OBJECT;
+	        		}
+            		return;
+        		}
+
+	        	// check if it has PWC label
+	        	if (versionLabel.equals(CMISConnector.PWC_VERSION_LABEL))
+	        	{
+	        		NodeRef pwcNodeRef = connector.getCheckOutCheckInService().getWorkingCopy(nodeRef);
+	        		if (pwcNodeRef == null)
+	        		{
+	        			objecVariant = CMISObjectVariant.NOT_EXISTING;
+	        			return;
+	        		}
+	        		else if(connector.filter(nodeRef))
+	        		{
+	        			objecVariant = CMISObjectVariant.NOT_EXISTING;
+	        		}
+	        		else
+	        		{
+	        			objecVariant = CMISObjectVariant.PWC;
+	        		}
+	        		currentObjectId = connector.createObjectId(nodeRef);
+	        		currentNodeId = nodeRef.toString();
+	        		hasPWC = true;
+	        		nodeRef = pwcNodeRef;
+	        		return;
+	        	}
+	
+	        	// check version
+	        	if(!connector.getVersionService().isVersioned(nodeRef))
+	        	{
+	        		// the node isn't versioned
+	        		if(connector.filter(nodeRef))
+	        		{
+	        			objecVariant = CMISObjectVariant.NOT_EXISTING;
+	        		}
+	        		else if (versionLabel.equals(CMISConnector.UNVERSIONED_VERSION_LABEL))
+	        		{
+	        			objecVariant = CMISObjectVariant.CURRENT_VERSION;
+	        		} else
+	        		{
+	        			objecVariant = CMISObjectVariant.NOT_EXISTING;
+	        		}
+	        	}
+	        	else
+	        	{
+	        		// the node is versioned, determine whether the versionLabel refers to the head version or a
+	        		// specific non-head version
+	        		String headVersionLabel = (String)connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+	        		currentObjectId = connector.constructObjectId(currentNodeId, headVersionLabel);
+	
+	        		if (versionLabel.equals(headVersionLabel))
+	        		{
+	        			// the version label refers to the current head version
+	        			objecVariant = CMISObjectVariant.CURRENT_VERSION;
+	        		}
+	        		else
+	        		{
+	        			// the version label refers to a specific non-head version, find the nodeRef
+	        			// of the version node from the version history
+	        			versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
+	        			if (versionHistory == null)
+	        			{
+	        				// unexpected null versionHistory, assume not versioned
+	        				if (versionLabel.equals(CMISConnector.UNVERSIONED_VERSION_LABEL))
+	        				{
+	        					objecVariant = CMISObjectVariant.CURRENT_VERSION;
+	
+	        				}
+	        				else
+	        				{
+	        					objecVariant = CMISObjectVariant.NOT_EXISTING;
+	        				}
+	        			}
+	        			else
+	        			{
+	        				try
+	        				{
+	        					version = versionHistory.getVersion(versionLabel);
+	        					nodeRef = version.getFrozenStateNodeRef();
+	        					objecVariant = CMISObjectVariant.VERSION;
+	        				}
+	        				catch (VersionDoesNotExistException e)
+	        				{
+	        					objecVariant = CMISObjectVariant.NOT_EXISTING;
+	        				}
+	        			}
+	        		}
+	        	}
+	
+	        	// check if checked out
+	        	hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
+        	}
         }
         catch (AccessDeniedException e)
         {
@@ -459,19 +435,17 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             objecVariant = CMISObjectVariant.NOT_EXISTING;
             return;
         }
-
+        
+        if (connector.filter(nodeRef))
+        {
+            objecVariant = CMISObjectVariant.NOT_EXISTING;
+            return;
+        }
+        
         if (isFolder())
         {
-            if(connector.filter(nodeRef))
-            {
-                objecVariant = CMISObjectVariant.NOT_EXISTING;
-            return;
-            }
-            else
-            {
-            	objecVariant = CMISObjectVariant.FOLDER;
-            }
-            objectId = nodeRef.getId();
+            objecVariant = CMISObjectVariant.FOLDER;
+            objectId = connector.constructObjectId(nodeRef, null);
             currentObjectId = objectId;
             return;
         }
@@ -491,15 +465,10 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
                 checkedOut = nodeRef;
             }
 
-            if(connector.filter(nodeRef))
-            {
-            	objecVariant = CMISObjectVariant.NOT_EXISTING;
-            }
-            else
-            {
-            	objecVariant = CMISObjectVariant.PWC;
-            }
-            objectId = checkedOut.getId() + CMISConnector.ID_SEPERATOR + CMISConnector.PWC_VERSION_LABEL;
+            objecVariant = CMISObjectVariant.PWC;
+
+            objectId = connector.constructObjectId(checkedOut, CMISConnector.PWC_VERSION_LABEL);
+
             versionLabel = CMISConnector.PWC_VERSION_LABEL;
             currentObjectId = connector.createObjectId(checkedOut);
             currentNodeId = checkedOut.toString();
@@ -508,45 +477,15 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         }
 
         // check version
-        versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
-        if (versionHistory == null)
+        if(connector.getVersionService().isAVersion(nodeRef))
         {
-            if(connector.filter(nodeRef))
-            {
-            	objecVariant = CMISObjectVariant.NOT_EXISTING;
-            }
-            else
-            {
-            	objecVariant = CMISObjectVariant.CURRENT_VERSION;
-            }
-            objectId = nodeRef.getId() + CMISConnector.ID_SEPERATOR + CMISConnector.UNVERSIONED_VERSION_LABEL;
-            versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
-            currentObjectId = objectId;
+            analyseVersionNode();
         }
         else
         {
-            Version headVersion = versionHistory.getHeadVersion();
-
-            versionLabel = (String) connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-
-            objectId = headVersion.getVersionedNodeRef().getId() + CMISConnector.ID_SEPERATOR + versionLabel;
-            
-            currentObjectId = headVersion.getVersionedNodeRef().getId() + CMISConnector.ID_SEPERATOR
-                    + headVersion.getVersionLabel();
-            currentNodeId = headVersion.getVersionedNodeRef().toString();
-
-            if(connector.filter(nodeRef))
-            {
-            	objecVariant = CMISObjectVariant.NOT_EXISTING;
-            }
-            else
-            {
-            	objecVariant = (headVersion.getVersionLabel().equals(versionLabel) ? CMISObjectVariant.CURRENT_VERSION
-                    : CMISObjectVariant.VERSION);
-            }
+            analyseCurrentVersion(nodeRef);
         }
 
-        hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
     }
 
     protected void analyseAssociationRef()
@@ -564,7 +503,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         }
 
         objecVariant = CMISObjectVariant.ASSOC;
-        objectId = CMISConnector.ASSOC_ID_PREFIX + associationRef.getId();
+        objectId = connector.constructObjectId(associationRef, null);
     }
 
     private void determineType()

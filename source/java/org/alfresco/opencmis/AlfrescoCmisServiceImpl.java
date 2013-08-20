@@ -21,6 +21,7 @@ package org.alfresco.opencmis;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -51,12 +52,15 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.Authorization;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -75,6 +79,7 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Acl;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
+import org.apache.chemistry.opencmis.commons.data.BulkUpdateObjectIdAndChangeToken;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.ExtensionsData;
 import org.apache.chemistry.opencmis.commons.data.FailedToDeleteData;
@@ -93,6 +98,7 @@ import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionContainer
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionList;
 import org.apache.chemistry.opencmis.commons.enums.AclPropagation;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.commons.enums.ContentStreamAllowed;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.RelationshipDirection;
@@ -107,6 +113,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisStorageException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisStreamNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisVersioningException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.AccessControlListImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.BulkUpdateObjectIdAndChangeTokenImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.FailedToDeleteDataImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ObjectInFolderContainerImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ObjectInFolderDataImpl;
@@ -147,7 +154,6 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             + "cmis:contentStreamId";
 
     private CMISConnector connector;
-    private CallContext context;
     private Authentication authentication;
     private Map<String, CMISNodeInfo> nodeInfoMap;
     private Map<String, ObjectInfo> objectInfoMap;
@@ -162,19 +168,25 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     @Override
     public void open(CallContext context)
     {
-        this.context = context;
+    	CallContext ctx = getContext();
+    	if(ctx == null)
+    	{
+    		AlfrescoCmisServiceCall.set(context);
+    	}
     }
     
     protected CallContext getContext()
     {
-        return context;
+    	CallContext context = AlfrescoCmisServiceCall.get();
+    	return context;
     }
     
     @Override
     public void close()
     {
+    	AlfrescoCmisServiceCall.clear();
+
         // Put these resources on the transactions
-        context = null;
         nodeInfoMap.clear();
         objectInfoMap.clear();
     }
@@ -246,7 +258,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     @Override
     public List<RepositoryInfo> getRepositoryInfos(ExtensionsData extension)
     {
-        return Collections.singletonList(connector.getRepositoryInfo());
+    	CmisVersion cmisVersion = getContext().getCmisVersion();
+        return Collections.singletonList(connector.getRepositoryInfo(cmisVersion));
     }
 
     @Override
@@ -254,7 +267,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     {
         checkRepositoryId(repositoryId);
 
-        return connector.getRepositoryInfo();
+    	CmisVersion cmisVersion = getContext().getCmisVersion();
+        return connector.getRepositoryInfo(cmisVersion);
     }
 
     @Override
@@ -442,41 +456,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                     
                     if (sort.length > 0)
                     {
-                        PropertyDefinitionWrapper propDef = connector.getOpenCMISDictionaryService()
-                                .findPropertyByQueryName(sort[0]);
-                        if (propDef != null)
-                        {
-                            QName sortProp = null;
-                            if (propDef.getPropertyId().equals(CMISDictionaryModel.PROP_BASE_TYPE_ID))
-                            {
-                                // special-case (see also ALF-13968) - for getChildren, using "cmis:baseTypeId" allows sorting of folders first and vice-versa (cmis:folder <-> cmis:document)
-                                sortProp = GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER;
-                            }
-                            else
-                            {
-                                sortProp = propDef.getPropertyAccessor().getMappedProperty();
-                            }
-                            
-                            if (sortProp != null)
-                            {
-                                boolean sortAsc = (sort.length == 1) || sort[1].equalsIgnoreCase("asc");
-                                sortProps.add(new Pair<QName, Boolean>(sortProp, sortAsc));
-                            }
-                            else
-                            {
-                                if (logger.isDebugEnabled())
-                                {
-                                    logger.debug("Ignore sort property '" + sort[0] + " - mapping not found");
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (logger.isDebugEnabled())
-                            {
-                                logger.debug("Ignore sort property '" + sort[0] + " - query name not found");
-                            }
-                        }
+                    	Pair<QName, Boolean> sortProp = connector.getSortProperty(sort[0], sort.length > 1 ? sort[1] : null);
+                    	sortProps.add(sortProp);
                     }
                 }
             }
@@ -502,6 +483,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             {
                 try
                 {
+                	// TODO this will break the paging if filtering is performed...
                     if(connector.filter(child.getNodeRef()))
                     {
                         continue;
@@ -509,22 +491,23 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
                     // create a child CMIS object
                     CMISNodeInfo ni = createNodeInfo(child.getNodeRef());
-                    
+
                     if (getObjectInfo(repositoryId, ni.getObjectId())==null)
                     {
                         // ignore invalid children
                         continue;
                     }
-                    
+
                     if (CMISObjectVariant.NOT_A_CMIS_OBJECT.equals(ni.getObjectVariant()))
                     {
                         continue;  //Skip non-cmis objects
                     }
                     
                     ObjectData object = connector.createCMISObject(ni, child, filter, includeAllowableActions,
-                            includeRelationships, renditionFilter, false, false);
+                            includeRelationships, renditionFilter, false, false/*, getContext().getCmisVersion()*/);
 
-                    if (getContext().isObjectInfoRequired())
+                	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+                    if (isObjectInfoRequired)
                     {
                         getObjectInfo(repositoryId, ni.getObjectId(), includeRelationships);
                     }
@@ -655,13 +638,15 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                     continue;
                 }
                 
+            	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+
                 // create a child CMIS object
                 ObjectInFolderDataImpl object = new ObjectInFolderDataImpl();
                 CMISNodeInfo ni = createNodeInfo(child.getChildRef());
                 object.setObject(connector.createCMISObject(
                         ni, filter, includeAllowableActions, includeRelationships,
                         renditionFilter, false, false));
-                if (getContext().isObjectInfoRequired())
+                if (isObjectInfoRequired)
                 {
                     getObjectInfo(repositoryId, ni.getObjectId(), includeRelationships);
                 }
@@ -726,7 +711,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         ObjectData result = connector.createCMISObject(
                 parentInfo, filter, false, IncludeRelationships.NONE,
                 CMISConnector.RENDITION_NONE, false, false);
-        if (getContext().isObjectInfoRequired())
+    	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+        if (isObjectInfoRequired)
         {
             getObjectInfo(
                     repositoryId,
@@ -766,7 +752,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 ObjectData object = connector.createCMISObject(
                         parentInfo, filter, includeAllowableActions,
                         includeRelationships, renditionFilter, false, false);
-                if (getContext().isObjectInfoRequired())
+            	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+                if (isObjectInfoRequired)
                 {
                     getObjectInfo(repositoryId, object.getId(), includeRelationships);
                 }
@@ -793,7 +780,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 ObjectData object = connector.createCMISObject(
                         parentInfo, filter, includeAllowableActions,
                         includeRelationships, renditionFilter, false, false);
-                if (getContext().isObjectInfoRequired())
+            	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+                if (isObjectInfoRequired)
                 {
                     getObjectInfo(repositoryId, object.getId(), includeRelationships);
                 }
@@ -956,7 +944,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                             ni, filter, includeAllowableActions,
                             includeRelationships, renditionFilter, false, false);
 
-                    if (getContext().isObjectInfoRequired())
+                	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+                    if (isObjectInfoRequired)
                     {
                         getObjectInfo(repositoryId, ni.getObjectId(), includeRelationships);
                     }
@@ -1028,7 +1017,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisRuntimeException("Creation failed!");
         }
 
-        if (getContext().isObjectInfoRequired())
+    	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+        if (isObjectInfoRequired)
         {
             try
             {
@@ -1074,6 +1064,27 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         return nodeRef.getId();
     }
 
+    private String parseMimeType(ContentStream contentStream)
+    {
+    	String mimeType = null;
+
+    	String tmp = contentStream.getMimeType();
+    	if(tmp != null)
+    	{
+    		int idx = tmp.indexOf(";");
+    		if(idx != -1)
+    		{
+    			mimeType = tmp.substring(0, idx).trim();
+    		}
+    		else
+    		{
+    			mimeType = tmp;
+    		}
+    	}
+
+    	return mimeType;
+    }
+
     @Override
     public String createDocument(
             String repositoryId, final Properties properties, String folderId,
@@ -1114,54 +1125,65 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisConstraintException("This document type is not versionable!");
         }
 
-        FileInfo fileInfo = connector.getFileFolderService().create(
-                parentInfo.getNodeRef(), name, type.getAlfrescoClass());
-        NodeRef nodeRef = fileInfo.getNodeRef();
-
-        connector.setProperties(nodeRef, type, properties, new String[] { PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
-        connector.applyPolicies(nodeRef, type, policies);
-        connector.applyACL(nodeRef, type, addAces, removeAces);
-
-        // handle content
-        File tempFile = null;
         try
         {
-	        if (contentStream != null)
-	        {
-	            // write content
-	            String mimeType = parseMimeType(contentStream);
+        	// don't want auto-versioning to create a version
+            connector.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
 
-	            // copy stream to temp file
-	            // OpenCMIS does this for us ....
-	            tempFile = copyToTempFile(contentStream);
-	            final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
-	                
-	            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-	            writer.setMimetype(mimeType);
-	            writer.setEncoding(encoding.name());
-	            writer.putContent(tempFile);
+	        FileInfo fileInfo = connector.getFileFolderService().create(
+	                parentInfo.getNodeRef(), name, type.getAlfrescoClass());
+	        NodeRef nodeRef = fileInfo.getNodeRef();
+	        connector.setProperties(nodeRef, type, properties, new String[] { PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
+	        connector.applyPolicies(nodeRef, type, policies);
+	        connector.applyACL(nodeRef, type, addAces, removeAces);
+
+	        // handle content
+	        File tempFile = null;
+	        try
+	        {
+		        if (contentStream != null)
+		        {
+		            // write content
+		            String mimeType = parseMimeType(contentStream);
+
+		            // copy stream to temp file
+		            // OpenCMIS does this for us ....
+		            tempFile = copyToTempFile(contentStream);
+		            final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
+		                
+		            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
+		            writer.setMimetype(mimeType);
+		            writer.setEncoding(encoding.name());
+		            writer.putContent(tempFile);
+		        }
 	        }
+	        finally
+	        {
+	        	if(tempFile != null)
+	        	{
+	        		removeTempFile(tempFile);
+	        	}
+	        }
+
+	        connector.extractMetadata(nodeRef);
+
+	        // generate "doclib" thumbnail asynchronously
+	        connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
+
+	        connector.applyVersioningState(nodeRef, versioningState);
+
+	        removeTempFile(tempFile);
+
+	        String objectId = connector.createObjectId(nodeRef);
+
+	        connector.getActivityPoster().postFileFolderAdded(nodeRef);
+	
+	        return objectId;
         }
         finally
         {
-        	if(tempFile != null)
-        	{
-        		removeTempFile(tempFile);
-        	}
+            connector.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
         }
-
-        connector.extractMetadata(nodeRef);
-
-        // generate "doclib" thumbnail asynchronously
-        connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
-
-        connector.applyVersioningState(nodeRef, versioningState);
-
-        String objectId = connector.createObjectId(nodeRef);
-
-        connector.getActivityPoster().postFileFolderAdded(nodeRef);
-
-        return objectId;
     }
 
     @Override
@@ -1198,6 +1220,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         try
         {
+        	// don't want auto-versioning to create a version
+            connector.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+
             FileInfo fileInfo = connector.getFileFolderService().copy(
                     sourceNodeRef, parentInfo.getNodeRef(), name);
             NodeRef nodeRef = fileInfo.getNodeRef();
@@ -1210,14 +1235,23 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
 
             connector.applyVersioningState(nodeRef, versioningState);
+            
+//	        connector.setAutoVersionable(nodeRef);
 
             connector.getActivityPoster().postFileFolderAdded(nodeRef);
+            
+//	        connector.createVersion(nodeRef, VersionType.MINOR, "Thumbnails");
+//            connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
 
             return connector.createObjectId(nodeRef);
         }
         catch (FileNotFoundException e)
         {
             throw new CmisContentAlreadyExistsException("An object with this name already exists!", e);
+        }
+        finally
+        {
+            connector.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
         }
     }
 
@@ -1306,26 +1340,35 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
         }
     }
-    
-    private String parseMimeType(ContentStream contentStream)
+
+    @Override
+    public void appendContentStream(String repositoryId, Holder<String> objectId, Holder<String> changeToken,
+            ContentStream contentStream, boolean isLastChunk, ExtensionsData extension)
     {
-    	String mimeType = null;
+        if ((contentStream == null) || (contentStream.getStream() == null))
+        {
+            throw new CmisInvalidArgumentException("No content!");
+        }
 
-    	String tmp = contentStream.getMimeType();
-    	if(tmp != null)
+        checkRepositoryId(repositoryId);
+
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId.getValue(), "Object");
+        NodeRef nodeRef = info.getNodeRef();
+
+        if (((DocumentTypeDefinition) info.getType().getTypeDefinition(false)).getContentStreamAllowed() == ContentStreamAllowed.NOTALLOWED)
+        {
+            throw new CmisStreamNotSupportedException("Document type doesn't allow content!");
+        }
+
+        try
+        {
+        	connector.appendContent(info, contentStream, isLastChunk);
+            objectId.setValue(connector.createObjectId(nodeRef));
+        }
+    	catch(IOException e)
     	{
-    		int idx = tmp.indexOf(";");
-    		if(idx != -1)
-    		{
-    			mimeType = tmp.substring(0, idx).trim();
-    		}
-    		else
-    		{
-    			mimeType = tmp;
-    		}
+    		throw new ContentIOException("", e);
     	}
-
-    	return mimeType;
     }
 
     @Override
@@ -1404,6 +1447,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         }
 
         connector.getNodeService().setProperty(nodeRef, ContentModel.PROP_CONTENT, null);
+        
+//        connector.createVersion(nodeRef, VersionType.MINOR, "Delete content");
 
         connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
 
@@ -1482,10 +1527,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             final NodeRef nodeRef = info.getNodeRef();
 
             connector.setProperties(nodeRef, info.getType(), properties, new String[0]);
-
+            
             objectId.setValue(connector.createObjectId(nodeRef));
 
-            if (getContext().isObjectInfoRequired())
+        	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+            if (isObjectInfoRequired)
             {
                 getObjectInfo(repositoryId, objectId.getValue(), "*", IncludeRelationships.NONE);
             }
@@ -1535,7 +1581,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             // handle folders
             if (info.isFolder())
             {
-                if (connector.getNodeService().getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL).size() > 0)
+                // Check if there is at least one child
+                if (connector.getNodeService().getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL, 1, false).size() > 0)
                 {
                     throw new CmisConstraintException(
                             "Could not delete folder with at least one child!");
@@ -1645,20 +1692,6 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 }
             }
 
-            // remove not primary parent associations
-            // TODO: This can be removed once we fix node archival
-            List<ChildAssociationRef> childAssociations = connector.getNodeService().getParentAssocs(nodeRef);
-            if (childAssociations != null)
-            {
-                for (ChildAssociationRef childAssoc : childAssociations)
-                {
-                    if (!childAssoc.isPrimary())
-                    {
-                        connector.getNodeService().removeChildAssociation(childAssoc);
-                    }
-                }
-            }
-
             // attempt to delete the node
             connector.deleteNode(nodeRef, true);
         }
@@ -1686,12 +1719,134 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 info, filter, includeAllowableActions, includeRelationships,
                 renditionFilter, includePolicyIds, includeAcl);
 
-        if (getContext().isObjectInfoRequired())
+    	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+        if (isObjectInfoRequired)
         {
             getObjectInfo(repositoryId, info.getObjectId(), includeRelationships);
         }
 
         return object;
+    }
+    
+    @Override
+    public List<BulkUpdateObjectIdAndChangeToken> bulkUpdateProperties(final String repositoryId,
+            List<BulkUpdateObjectIdAndChangeToken> objectIdAndChangeTokens, final Properties properties,
+            final List<String> addSecondaryTypeIds, final List<String> removeSecondaryTypeIds, ExtensionsData extension)
+    {
+        checkRepositoryId(repositoryId);
+
+        if(objectIdAndChangeTokens.size() > 1)
+        {
+        	throw new CmisConstraintException("Bulk update not supported for more than one object.");
+        }
+
+        BulkUpdateContext context = new BulkUpdateContext(objectIdAndChangeTokens.size());
+        RetryingTransactionHelper helper = connector.getRetryingTransactionHelper();
+        for(BulkUpdateObjectIdAndChangeToken objectIdAndChangeToken : objectIdAndChangeTokens)
+        {
+            BulkUpdateCallback callback = new BulkUpdateCallback(context, objectIdAndChangeToken, properties, addSecondaryTypeIds, removeSecondaryTypeIds);
+        	helper.doInTransaction(callback, false, true);
+        }
+
+        for(CMISNodeInfo info : context.getSuccesses())
+        {
+        	NodeRef nodeRef = info.getNodeRef();
+        	connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
+        }
+
+        return context.getChanges();
+    }
+    
+    private class BulkUpdateCallback implements RetryingTransactionCallback<Void>
+    {
+    	private String repositoryId;
+    	private BulkUpdateContext context;
+
+    	private BulkUpdateObjectIdAndChangeToken objectIdAndChangeToken;
+    	private Properties properties;
+    	private List<String> addSecondaryTypeIds;
+    	private List<String> removeSecondaryTypeIds;
+
+    	BulkUpdateCallback(BulkUpdateContext context, BulkUpdateObjectIdAndChangeToken objectIdAndChangeToken,
+    			Properties properties, List<String> addSecondaryTypeIds, List<String> removeSecondaryTypeIds)
+    	{
+    		this.context = context;
+    		this.objectIdAndChangeToken = objectIdAndChangeToken;
+    		this.properties = properties;
+    		this.addSecondaryTypeIds = addSecondaryTypeIds;
+    		this.removeSecondaryTypeIds = removeSecondaryTypeIds;
+    	}
+
+        public Void execute() throws Exception
+        {
+        	try
+        	{
+	        	String objectId = objectIdAndChangeToken.getId();
+	            final CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
+	
+	            if(!info.isVariant(CMISObjectVariant.ASSOC) && !info.isVariant(CMISObjectVariant.VERSION))
+	            {
+	                final NodeRef nodeRef = info.getNodeRef();
+	
+	                connector.setProperties(nodeRef, info.getType(), properties, new String[0]);
+	                
+	            	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+	                if (isObjectInfoRequired)
+	                {
+	                    getObjectInfo(repositoryId, objectId, "*", IncludeRelationships.NONE);
+	                }
+	
+	                connector.addSecondaryTypes(nodeRef, addSecondaryTypeIds);
+	                connector.removeSecondaryTypes(nodeRef, removeSecondaryTypeIds);
+	
+	                if(properties.getProperties().size() > 0 || addSecondaryTypeIds.size() > 0 || removeSecondaryTypeIds.size() > 0)
+	                {
+	                	context.success(info);
+	                }
+	            }
+        	}
+        	catch(Throwable t)
+        	{
+        		// catch all exceptions as per the CMIS specification. Only successful updates are recorded for return to the
+        		// client.
+        	}
+
+            return null;
+        };
+    };
+
+    private static class BulkUpdateContext
+    {
+    	private List<CMISNodeInfo> successes;
+    	
+    	BulkUpdateContext(int size)
+    	{
+    		this.successes = new ArrayList<CMISNodeInfo>(size);
+    	}
+    	
+    	void success(CMISNodeInfo info)
+    	{
+    		successes.add(info);
+    	}
+    	
+    	List<CMISNodeInfo> getSuccesses()
+    	{
+			return successes;
+		}
+
+		List<BulkUpdateObjectIdAndChangeToken> getChanges()
+    	{
+    		List<BulkUpdateObjectIdAndChangeToken> changes = new ArrayList<BulkUpdateObjectIdAndChangeToken>(successes.size());
+    		for(CMISNodeInfo info : successes)
+    		{
+    			BulkUpdateObjectIdAndChangeTokenImpl a = new BulkUpdateObjectIdAndChangeTokenImpl();
+	            a.setId(info.getObjectId());
+//	            a.setNewId(info.getObjectId());
+	            changes.add(a);
+    		}
+
+        	return changes;
+    	}
     }
 
     @Override
@@ -1730,7 +1885,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                         info, fileInfo, filter, includeAllowableActions,
                         includeRelationships, renditionFilter, includePolicyIds, includeAcl);
 
-                if (getContext().isObjectInfoRequired())
+            	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+                if (isObjectInfoRequired)
                 {
                     getObjectInfo(repositoryId, info.getObjectId(), includeRelationships);
                 }
@@ -1752,7 +1908,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         // what kind of object is it?
         CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
-        if (getContext().isObjectInfoRequired())
+    	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+        if (isObjectInfoRequired)
         {
             getObjectInfo(repositoryId, info.getObjectId(), IncludeRelationships.NONE);
         }
@@ -1848,15 +2005,25 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             throw new CmisConstraintException("Document is not versionable!");
         }
-
-        // check out
-        NodeRef pwcNodeRef = connector.getCheckOutCheckInService().checkout(nodeRef);
-        CMISNodeInfo pwcNodeInfo = createNodeInfo(pwcNodeRef);
-        objectId.setValue(pwcNodeInfo.getObjectId());
-
-        if (contentCopied != null)
+        
+        try
         {
-            contentCopied.setValue(connector.getFileFolderService().getReader(pwcNodeRef) != null);
+        	// don't want auto-versioning to create a version
+            connector.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+
+	        // check out
+	        NodeRef pwcNodeRef = connector.getCheckOutCheckInService().checkout(nodeRef);
+	        CMISNodeInfo pwcNodeInfo = createNodeInfo(pwcNodeRef);
+	        objectId.setValue(pwcNodeInfo.getObjectId());
+	
+	        if (contentCopied != null)
+	        {
+	            contentCopied.setValue(connector.getFileFolderService().getReader(pwcNodeRef) != null);
+	        }
+        }
+        finally
+        {
+            connector.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
         }
     }
 
@@ -1876,8 +2043,18 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         // get object
         final NodeRef nodeRef = info.getNodeRef();
 
-        // cancel check out
-        connector.getCheckOutCheckInService().cancelCheckout(nodeRef);
+        try
+        {
+        	// don't want auto-versioning to create a version
+            connector.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+
+	        // cancel check out
+	        connector.getCheckOutCheckInService().cancelCheckout(nodeRef);
+        }
+        finally
+        {
+            connector.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+        }
     }
 
     @Override
@@ -1904,48 +2081,58 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         final File tempFile = copyToTempFile(contentStream);
         final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
 
-        // check in
-        // update PWC
-        connector.setProperties(nodeRef, type, properties,
-                new String[] { PropertyIds.OBJECT_TYPE_ID });
-        connector.applyPolicies(nodeRef, type, policies);
-        connector.applyACL(nodeRef, type, addAces, removeAces);
-
-        // handle content
-        if (contentStream != null)
+        try
         {
-            // write content
-            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-            writer.setMimetype(parseMimeType(contentStream));
-            writer.setEncoding(encoding.name());
-            writer.putContent(tempFile);
-        }
+        	// don't want auto-versioning to create a version
+            connector.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
 
-        // check aspect
-        if (connector.getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == false)
+	        // check in
+	        // update PWC
+	        connector.setProperties(nodeRef, type, properties,
+	                new String[] { PropertyIds.OBJECT_TYPE_ID });
+	        connector.applyPolicies(nodeRef, type, policies);
+	        connector.applyACL(nodeRef, type, addAces, removeAces);
+	
+	        // handle content
+	        if (contentStream != null)
+	        {
+	            // write content
+	            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
+	            writer.setMimetype(parseMimeType(contentStream));
+	            writer.setEncoding(encoding.name());
+	            writer.putContent(tempFile);
+	        }
+	
+	        // check aspect
+	//        if (connector.getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == false)
+	//        {
+	//            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+	//            props.put(ContentModel.PROP_INITIAL_VERSION, false);
+	//            props.put(ContentModel.PROP_AUTO_VERSION, false);
+	//            connector.getNodeService().addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
+	//        }
+	
+	        // create version properties
+	        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(5);
+	        versionProperties.put(VersionModel.PROP_VERSION_TYPE, major ? VersionType.MAJOR
+	                : VersionType.MINOR);
+	        if (checkinComment != null)
+	        {
+	            versionProperties.put(VersionModel.PROP_DESCRIPTION, checkinComment);
+	        }
+	
+	        // check in
+            NodeRef newNodeRef = connector.getCheckOutCheckInService().checkin(nodeRef, versionProperties);
+
+            connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), newNodeRef);
+
+            objectId.setValue(connector.createObjectId(newNodeRef));
+        }
+        finally
         {
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-            props.put(ContentModel.PROP_INITIAL_VERSION, false);
-            props.put(ContentModel.PROP_AUTO_VERSION, false);
-            connector.getNodeService().addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
+            connector.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
         }
-
-        // create version properties
-        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(5);
-        versionProperties.put(VersionModel.PROP_VERSION_TYPE, major ? VersionType.MAJOR
-                : VersionType.MINOR);
-        if (checkinComment != null)
-        {
-            versionProperties.put(VersionModel.PROP_DESCRIPTION, checkinComment);
-        }
-
-        // check in
-        NodeRef newNodeRef = connector.getCheckOutCheckInService().checkin(nodeRef, versionProperties);
-
-        connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), newNodeRef);
-
-        objectId.setValue(connector.createObjectId(newNodeRef));
-
+        
         removeTempFile(tempFile);
     }
 
@@ -1983,15 +2170,14 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         NodeRef nodeRef = info.getNodeRef();
         VersionHistory versionHistory = ((CMISNodeInfoImpl) info).getVersionHistory();
 
-//      Collection<Version> versions = versionHistory.getAllVersions();
-//      if (versionHistory == null || versions.size() == 0  || versions.size() == 1 && versions.contains(versionHistory.getHeadVersion()))
         if (versionHistory == null)
         {
             // add current version
             result.add(connector.createCMISObject(info, filter, includeAllowableActions, IncludeRelationships.NONE,
                     CMISConnector.RENDITION_NONE, false, false));
 
-            if (getContext().isObjectInfoRequired())
+        	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+            if (isObjectInfoRequired)
             {
                 getObjectInfo(repositoryId, info.getObjectId(), IncludeRelationships.NONE);
             }
@@ -2007,7 +2193,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                                 pwcInfo, filter, includeAllowableActions,
                                 IncludeRelationships.NONE, CMISConnector.RENDITION_NONE, false, false));
 
-                if (getContext().isObjectInfoRequired())
+            	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+                if (isObjectInfoRequired)
                 {
                     getObjectInfo(repositoryId, pwcInfo.getObjectId(), IncludeRelationships.NONE);
                 }
@@ -2023,7 +2210,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                                 versionInfo, filter, includeAllowableActions,
                                 IncludeRelationships.NONE, CMISConnector.RENDITION_NONE, false, false));
 
-                if (getContext().isObjectInfoRequired())
+            	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+                if (isObjectInfoRequired)
                 {
                     getObjectInfo(repositoryId, versionInfo.getObjectId(), IncludeRelationships.NONE);
                 }
@@ -2055,7 +2243,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 versionInfo, filter, includeAllowableActions,
                 includeRelationships, renditionFilter, includePolicyIds, includeAcl);
 
-        if (getContext().isObjectInfoRequired())
+    	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+        if (isObjectInfoRequired)
         {
             getObjectInfo(repositoryId, info.getObjectId(), includeRelationships);
         }
@@ -2438,7 +2627,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
      * 
      * (Provided by OpenCMIS, but optimized for Alfresco.)
      */
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     protected ObjectInfo getObjectInfoIntern(String repositoryId, ObjectData object)
     {
         // if the object has no properties, stop here
@@ -2604,6 +2794,10 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 }
                 info.setRenditionInfos(renditionInfos);
             }
+            else
+            {
+            	info.setRenditionInfos(Collections.EMPTY_LIST);
+            }
 
             // relationships
             setRelaionshipsToObjectInfo(object, info);
@@ -2734,6 +2928,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         }
         else
         {
+        	CallContext context = getContext();
             if (context == null)
             {
                 // Service not opened, yet
@@ -2744,7 +2939,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             {
                 // create a session -> set a cookie
                 // if the CMIS client supports cookies that might help in clustered environments
-                ((HttpServletRequest) getContext().get(CallContext.HTTP_SERVLET_REQUEST)).getSession();
+                ((HttpServletRequest)context.get(CallContext.HTTP_SERVLET_REQUEST)).getSession();
             }
             
             // Authenticate

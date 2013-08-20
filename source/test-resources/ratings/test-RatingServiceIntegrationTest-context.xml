@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="test.ratings.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+      <property name="models">
+         <list>
+            <value>ratings/testRatingsModel.xml</value>
+         </list>
+      </property>
+   </bean>
+   
+   <bean name="spinalTapRatingScheme" parent="baseRatingScheme" class="org.alfresco.repo.rating.RatingSchemeImpl">
+      <property name="minRating" value="0"/>
+      <property name="maxRating" value="11"/>
+      <property name="selfRatingAllowed" value="true"/>
+      <property name="modelPrefix" value="testratings"/>
+      
+      <property name="propertyRollups">
+         <list>
+            <bean class="org.alfresco.repo.rating.RatingCountRollupAlgorithm" parent="baseRollupAlgorithm">
+               <property name="ratingSchemeName" value="spinalTapRatingScheme" />
+            </bean>
+            <bean class="org.alfresco.repo.rating.RatingTotalRollupAlgorithm" parent="baseRollupAlgorithm">
+               <property name="ratingSchemeName" value="spinalTapRatingScheme" />
+            </bean>
+         </list>
+      </property>
+   </bean>
+   
+</beans>

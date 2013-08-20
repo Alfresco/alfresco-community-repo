@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.alfresco.repo.rendition.RenditionDefinitionPersister;
 import org.alfresco.service.NotAuditable;
+import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -246,4 +247,25 @@ public interface RenditionService extends RenditionDefinitionPersister
      */
     @NotAuditable
     void render(NodeRef sourceNode, QName renditionDefinitionQName, RenderCallback callback);
+    
+    /**
+     * Cancels all known cancellable running renditions for the given
+     * <code>NodeRef</code> via the {@link ActionTrackingService}.
+     * 
+     * @param sourceNode    the <code>NodeRef</code> the action is acting on
+     * @since 4.1.6
+     */
+    @NotAuditable
+    void cancelRenditions(NodeRef sourceNode);
+    
+    /**
+     * Cancels all known cancellable running renditions for the given
+     * <code>NodeRef</code> and type via the {@link ActionTrackingService}.
+     * 
+     * @param sourceNode    the <code>NodeRef</code> the action is acting on
+     * @param type          the rendition type (rending engine name)
+     * @since 4.1.6
+     */
+    @NotAuditable
+    void cancelRenditions(NodeRef sourceNode, String type);
 }

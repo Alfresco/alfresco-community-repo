@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,6 +26,7 @@ import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -175,10 +176,21 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
             {
                 logger.trace("Activities feed generator started");
             }
-            
+
             // run one job cycle
-            generate();
-            
+            RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
+            // respect read-only server
+            helper.setForceWritable(true);
+            helper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    generate();
+                    return null;
+                }
+            });
+
             if (logger.isTraceEnabled())
             {
                 logger.trace("Activities feed generator completed");

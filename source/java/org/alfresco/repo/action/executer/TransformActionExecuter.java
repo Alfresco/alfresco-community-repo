@@ -257,8 +257,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
                     actionedUponNodeRef, 
                     destinationParent,
                     destinationAssocTypeQName,
-                    destinationAssocQName,
-                    false);
+                    QName.createQName(destinationAssocQName.getNamespaceURI(), newName));
 
             // Adjust the name of the copy
             nodeService.setProperty(copyNodeRef, ContentModel.PROP_NAME, newName);

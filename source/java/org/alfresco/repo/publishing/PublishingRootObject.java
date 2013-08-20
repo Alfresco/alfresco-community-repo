@@ -30,7 +30,9 @@ import java.util.List;
 import org.alfresco.repo.node.NodeUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -41,6 +43,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.springframework.beans.BeansException;
 
 /**
@@ -58,13 +61,18 @@ public class PublishingRootObject
     private PublishingEventHelper publishingEventHelper;
     private NamespaceService namespaceService;
     private SearchService searchService;
-    private RetryingTransactionHelper retryingTransactionHelper;
+    private TransactionService transactionService;
     private PermissionService permissionService;
     
     private StoreRef publishingStore;
     private String publishingRootPath;
     
     
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
     /**
      * @return the approprieate {@link Environment} for the current domain.
      * @throws BeansException
@@ -90,10 +98,25 @@ public class PublishingRootObject
         {
             public Environment doWork() throws Exception
             {
-                NodeRef environmentNode = getEnvironmentNode();
-                PublishingQueueImpl queue = createPublishingQueue(environmentNode);
-                NodeRef channelsContainer = getChannelsContainer(environmentNode);
-                return new Environment(environmentNode, queue, channelsContainer);
+                RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                txnHelper.setForceWritable(true);
+                boolean requiresNew = false;
+                if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
+                {
+                    //We can be in a read-only transaction, so force a new transaction 
+                    requiresNew = true;
+                }
+
+                return txnHelper.doInTransaction(new RetryingTransactionCallback<Environment>()
+                {
+                    public Environment execute() throws Exception
+                    {
+                        NodeRef environmentNode = getEnvironmentNode();
+                        PublishingQueueImpl queue = createPublishingQueue(environmentNode);
+                        NodeRef channelsContainer = getChannelsContainer(environmentNode);
+                        return new Environment(environmentNode, queue, channelsContainer);
+                    }
+                }, false,requiresNew);
             }
 
         }, AuthenticationUtil.getSystemUserName());
@@ -139,7 +162,7 @@ public class PublishingRootObject
 
     private NodeRef getEnvironmentNode()
     {
-        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
             public NodeRef execute() throws Exception
             {
@@ -174,14 +197,6 @@ public class PublishingRootObject
     public void setPublishingRootPath(String publishingRootPath)
     {
         this.publishingRootPath = publishingRootPath;
-    }
-    
-    /**
-     * @param retryingTransactionHelper the retryingTransactionHelper to set
-     */
-    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
-    {
-        this.retryingTransactionHelper = retryingTransactionHelper;
     }
     
     /**

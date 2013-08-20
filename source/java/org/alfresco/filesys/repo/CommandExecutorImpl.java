@@ -215,7 +215,7 @@ public class CommandExecutorImpl implements CommandExecutor
             {
                 logger.debug("create file command");
                 CreateFileCommand create = (CreateFileCommand)command;
-                return repositoryDiskInterface.createFile(create.getRootNode(), create.getPath(), create.getAllocationSize());
+                return repositoryDiskInterface.createFile(create.getRootNode(), create.getPath(), create.getAllocationSize(), create.isHidden());
             }
             else if(command instanceof RestoreFileCommand)
             {

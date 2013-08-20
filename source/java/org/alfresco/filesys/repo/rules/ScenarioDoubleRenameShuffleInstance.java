@@ -134,6 +134,8 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
                 folderEnd = paths2[0];
                 
                 internalState = InternalState.RENAME1;
+                
+                return  new RenameFileCommand(r.getFrom(), r.getTo(), r.getRootNodeRef(), r.getFromPath(), r.getToPath());   
             }
             else
             {

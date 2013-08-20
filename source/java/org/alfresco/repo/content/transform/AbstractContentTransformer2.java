@@ -87,11 +87,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     @Override
     public String toString()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append(this.getClass().getSimpleName())
-          .append("[ average=").append(transformerConfig.getStatistics(this, null, null, true).getAverageTime()).append("ms")
-          .append("]");
-        return sb.toString();
+        return this.getClass().getSimpleName();
     }
     
     /**
@@ -145,7 +141,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
                     getBeanName()+' '+sourceMimetype+" to "+targetMimetype+' '+
                     (sizeOkay
                     ? ""
-                    : transformerDebug.fileSize(sourceSize)+" > "+ transformerDebug.fileSize(maxSourceSizeKBytes)));
+                    : transformerDebug.fileSize(sourceSize)+" > "+ transformerDebug.fileSize(maxSourceSizeKBytes*1024)));
             throw transformerDebug.setCause(e);
         }
         // it all checks out OK

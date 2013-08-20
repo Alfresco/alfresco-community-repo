@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- MyBatis config for Alfresco testing (using common datasource) -->
+    <bean id="repoSqlSessionFactoryTesting" class="org.alfresco.ibatis.HierarchicalSqlSessionFactoryBean">
+        <property name="useLocalCaches" value="${mybatis.useLocalCaches}"/>
+        <property name="resourceLoader" ref="dialectResourceLoader"/>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations">
+	        <list>
+	           <value>classpath:alfresco/ibatis/org.hibernate.dialect.Dialect/query-test-common-SqlMap.xml</value>
+	        </list>
+        </property>
+        <property name="configLocation">
+            <value>classpath:alfresco/ibatis/alfresco-SqlMapConfig.xml</value>
+        </property>
+    </bean>
+    
+    <bean id="sqlSessionTemplateTesting" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="repoSqlSessionFactoryTesting"/>
+    </bean>
+    
+    <bean id="cannedQueryDAOForTesting" class="org.alfresco.repo.domain.query.ibatis.CannedQueryDAOImpl" init-method="init">
+      <property name="sqlSessionTemplate" ref="sqlSessionTemplateTesting"/>
+      <property name="controlDAO" ref="controlDAO"/>
+   </bean>
+
+
+</beans>

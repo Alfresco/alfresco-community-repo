@@ -675,21 +675,13 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                     
                     ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
                     String fileExtension = mimetypeService.getExtension(contentData.getMimetype());
-                    if (fileExtension.equals("docx"))
-                    {
-                        fileExtension = "doc";
-                    }
-                    else if (fileExtension.equals("xlsx"))
-                    {
-                    	fileExtension = "xls";
-                    }
                 
                     if (docType.equals(TYPE_DOCUMENT) || docType.equals(TYPE_PRESENTATION))
                     {
                         StringBuffer buffer = new StringBuffer(this.downloadUrl);
                         buffer.append("/").
                                append(docType).append("s").
-                               append("/Export?docId=").append(document.getDocId()).
+                               append("/Export?id=").append(document.getDocId()).
                                append("&exportFormat=").append(fileExtension);     
                         
                         downloadUrl = buffer.toString();

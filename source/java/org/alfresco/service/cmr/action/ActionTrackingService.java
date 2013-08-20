@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.action;
 import java.util.List;
 
 import org.alfresco.service.PublicService;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Service interface for tracking when actions
@@ -40,11 +41,31 @@ public interface ActionTrackingService
     void recordActionPending(Action action);
     
     /**
+     * Record that an action against a <code>NodeRef</code> 
+     * has been scheduled for asynchronous execution, and is pending
+     * being executed.
+     *  
+     * @param action                the action that has been scheduled
+     * @param actionedUponNodeRef   the <code>NodeRef</code> the action is acting on
+     * @since 4.1.6
+     */
+    void recordActionPending(Action action, NodeRef actionedUponNodeRef);
+    
+    /**
      * Record that an action has begun execution.
      * 
      * @param action  the action that has begun execution
      */
     void recordActionExecuting(Action action);
+    
+    /**
+     * Record that an action has begun execution.
+     * 
+     * @param action                the action that has been scheduled
+     * @param actionedUponNodeRef   the <code>NodeRef</code> the action is acting on
+     * @since 4.1.6
+     */
+    void recordActionExecuting(Action action, NodeRef actionedUponNodeRef);
     
     /**
      * Record that an action has completed execution
@@ -102,18 +123,26 @@ public interface ActionTrackingService
      * Retrieves the execution details on the given
      *  executing action, such as when it started,
      *  and what machine it is executing on.
+     *  
+     * @param executionSummary      the execution summary
+     * @return                      the execution details
      */
     ExecutionDetails getExecutionDetails(ExecutionSummary executionSummary);
     
     /**
      * Retrieve summary details of all the actions
      *  currently executing.  
+     *  
+     * @return                      the execution summaries
      */
     List<ExecutionSummary> getAllExecutingActions();
     
     /**
      * Retrieve summary details of all the actions
-     *  of the given type that are currently executing.  
+     *  of the given type that are currently executing.
+     *  
+     * @param type                  the action type
+     * @return                      the execution summaries
      */
     List<ExecutionSummary> getExecutingActions(String type);
     
@@ -121,6 +150,20 @@ public interface ActionTrackingService
      * Retrieve summary details of all instances of
      *  the specified action that are currently
      *  executing.
+     *  
+     * @return                      the execution summaries
      */
     List<ExecutionSummary> getExecutingActions(Action action);
+    
+    /**
+     * Retrieve summary details of all the actions
+     *  of the given type acting on the given <code>NodeRef</code>
+     *  that are currently executing.
+     *  
+     * @param type                  the action type
+     * @param actionedUponNodeRef   the node the action is acting on
+     * @return                      the execution summaries
+     * @since 4.1.6
+     */
+    List<ExecutionSummary> getExecutingActions(String type, NodeRef actionedUponNodeRef);
 }

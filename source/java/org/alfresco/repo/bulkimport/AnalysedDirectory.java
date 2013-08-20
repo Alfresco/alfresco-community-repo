@@ -43,7 +43,7 @@ public class AnalysedDirectory
 {
     private List<File> originalListing = null;
     private Map<File, ImportableItem> importableItems = null;
-    private List<ImportableItem> importableDirectories = null;
+    private Map<File, ImportableItem> importableDirectories = null;
 
     public AnalysedDirectory(File[] files)
     {
@@ -51,7 +51,7 @@ public class AnalysedDirectory
         // Sort the files/directories so that the *.metadata.properties.xml found later, see ALF-17965 for details.
         Collections.sort(originalListing);
         importableItems = new HashMap<File, ImportableItem>();
-        importableDirectories = new ArrayList<ImportableItem>();    	
+        importableDirectories = new HashMap<File, ImportableItem>();    	
     }
     
     public List<File> getOriginalListing()
@@ -64,9 +64,9 @@ public class AnalysedDirectory
 		return importableItems.values();
 	}
 
-	public List<ImportableItem> getImportableDirectories()
+	public Collection<ImportableItem> getImportableDirectories()
 	{
-		return importableDirectories;
+		return importableDirectories.values();
 	}
 
 	public void addImportableItem(ImportableItem importableItem)
@@ -74,7 +74,7 @@ public class AnalysedDirectory
         if(importableItem.getHeadRevision().contentFileExists() &&
         		ImportableItem.FileType.DIRECTORY.equals(importableItem.getHeadRevision().getContentFileType()))
         {
-        	importableDirectories.add(importableItem);
+        	importableDirectories.put(importableItem.getHeadRevision().getContentFile(), importableItem);
         }
         else
         {
@@ -86,6 +86,10 @@ public class AnalysedDirectory
     {
     	ImportableItem result = null;
     	result = importableItems.get(contentFile);
+    	if(result == null)
+    	{
+    		result = importableDirectories.get(contentFile);
+    	}
         return result;
     }
 }

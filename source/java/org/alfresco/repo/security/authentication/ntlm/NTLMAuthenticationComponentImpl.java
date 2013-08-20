@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,8 +27,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
-import javax.transaction.UserTransaction;
-
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.AuthenticationServiceException;
 import net.sf.acegisecurity.BadCredentialsException;
@@ -48,6 +46,8 @@ import org.alfresco.jlan.smb.SMBStatus;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.NTLMMode;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,7 +65,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
 {
     // Logging
     
-    private static final Log logger = LogFactory.getLog("org.alfresco.passthru.auth");
+    private static final Log logger = LogFactory.getLog(NTLMAuthenticationComponentImpl.class);
 
     // Constants
     //
@@ -389,7 +389,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
             }
             else
             {
-                throw new AlfrescoRuntimeException("JCE provider class is not a valid Provider class");
+                throw new AlfrescoRuntimeException("JCE provider class is not a valid Provider class:" + providerClass);
             }
         }
         catch (ClassNotFoundException ex)
@@ -418,7 +418,9 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
             long sessTmoMilli = Long.parseLong(sessTmo) * 1000L;
             
             if ( sessTmoMilli < MinimumSessionTimeout)
+            {
                 throw new AlfrescoRuntimeException("Authentication session timeout too low, " + sessTmo);
+            }
             
             // Set the authentication session timeout value
             
@@ -441,57 +443,59 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      */
     public void setProtocolOrder(String protoOrder)
     {
-    	// Parse the protocol order list
-    	
-    	StringTokenizer tokens = new StringTokenizer( protoOrder, ",");
-    	int primaryProto = Protocol.None;
-    	int secondaryProto = Protocol.None;
+        // Parse the protocol order list
+        
+        StringTokenizer tokens = new StringTokenizer( protoOrder, ",");
+        int primaryProto = Protocol.None;
+        int secondaryProto = Protocol.None;
 
-    	// There should only be one or two tokens
-    	
-    	if ( tokens.countTokens() > 2)
-    		throw new AlfrescoRuntimeException("Invalid protocol order list, " + protoOrder);
-    	
-    	// Get the primary protocol
-    	
-    	if ( tokens.hasMoreTokens())
-    	{
-    		// Parse the primary protocol
-    		
-    		String primaryStr = tokens.nextToken();
-    		
-    		if ( primaryStr.equalsIgnoreCase( "TCPIP"))
-    			primaryProto = Protocol.NativeSMB;
-    		else if ( primaryStr.equalsIgnoreCase( "NetBIOS"))
-    			primaryProto = Protocol.TCPNetBIOS;
-    		else
-    			throw new AlfrescoRuntimeException("Invalid protocol type, " + primaryStr);
-    		
-    		// Check if there is a secondary protocol, and validate
-    		
-    		if ( tokens.hasMoreTokens())
-    		{
-    			// Parse the secondary protocol
-    			
-    			String secondaryStr = tokens.nextToken();
-    			
-    			if ( secondaryStr.equalsIgnoreCase( "TCPIP") && primaryProto != Protocol.NativeSMB)
-    				secondaryProto = Protocol.NativeSMB;
-    			else if ( secondaryStr.equalsIgnoreCase( "NetBIOS") && primaryProto != Protocol.TCPNetBIOS)
-    				secondaryProto = Protocol.TCPNetBIOS;
-    			else
-    				throw new AlfrescoRuntimeException("Invalid secondary protocol, " + secondaryStr);
-    		}
-    	}
-    	
-    	// Set the protocol order used for passthru authentication sessions
-    	
-    	AuthSessionFactory.setProtocolOrder( primaryProto, secondaryProto);
-    	
-    	// DEBUG
-    	
-    	if (logger.isDebugEnabled())
-    		logger.debug("Protocol order primary=" + Protocol.asString(primaryProto) + ", secondary=" + Protocol.asString(secondaryProto));
+        // There should only be one or two tokens
+        
+        if ( tokens.countTokens() > 2)
+            throw new AlfrescoRuntimeException("Invalid protocol order list, " + protoOrder);
+        
+        // Get the primary protocol
+        
+        if ( tokens.hasMoreTokens())
+        {
+            // Parse the primary protocol
+            
+            String primaryStr = tokens.nextToken();
+            
+            if ( primaryStr.equalsIgnoreCase( "TCPIP"))
+                primaryProto = Protocol.NativeSMB;
+            else if ( primaryStr.equalsIgnoreCase( "NetBIOS"))
+                primaryProto = Protocol.TCPNetBIOS;
+            else
+                throw new AlfrescoRuntimeException("Invalid protocol type, " + primaryStr);
+            
+            // Check if there is a secondary protocol, and validate
+            
+            if ( tokens.hasMoreTokens())
+            {
+                // Parse the secondary protocol
+                
+                String secondaryStr = tokens.nextToken();
+                
+                if ( secondaryStr.equalsIgnoreCase( "TCPIP") && primaryProto != Protocol.NativeSMB)
+                    secondaryProto = Protocol.NativeSMB;
+                else if ( secondaryStr.equalsIgnoreCase( "NetBIOS") && primaryProto != Protocol.TCPNetBIOS)
+                    secondaryProto = Protocol.TCPNetBIOS;
+                else
+                    throw new AlfrescoRuntimeException("Invalid secondary protocol, " + secondaryStr);
+            }
+        }
+        
+        // Set the protocol order used for passthru authentication sessions
+        
+        AuthSessionFactory.setProtocolOrder( primaryProto, secondaryProto);
+        
+        // DEBUG
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Protocol order primary=" + Protocol.asString(primaryProto) + ", secondary=" + Protocol.asString(secondaryProto));
+        }
     }
 
     /**
@@ -516,7 +520,9 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
         // Debug
         
         if ( logger.isDebugEnabled())
+        {
             logger.debug("Authenticate user=" + userName + " via local credentials");
+        }
         
         // Create a local authentication token
         
@@ -525,6 +531,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
         // Authenticate using the token
         
         authenticate( authToken);
+        
     }
 
     /**
@@ -539,7 +546,9 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
         // DEBUG
         
         if ( logger.isDebugEnabled())
+        {
             logger.debug("Authenticate " + auth + " via token");
+        }
         
         // Check if the token is for passthru authentication
         
@@ -572,15 +581,17 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                 authSess = m_passthruServers.openSession();
                 
                 // Check fi the passthru session is valid
-                	
+                    
                 if ( authSess == null)
                 {
                     // DEBUG
                     
                     if ( logger.isDebugEnabled())
-                    	logger.debug( "Failed to open passthru session, or no valid passthru server available for " + ntlmToken);
-                    	
-                	throw new AuthenticationException("Failed to open session to passthru server");
+                    {
+                        logger.debug( "Failed to open passthru session, or no valid passthru server available for " + ntlmToken);
+                    }
+                        
+                    throw new AuthenticationException("authentication.err.connection.passthru.server");
                 }
                 
                 // Authenticate using the credentials supplied
@@ -607,7 +618,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
         {
             // Unsupported authentication token
             
-            throw new AuthenticationException("Unsupported authentication token type");
+            throw new AuthenticationException("authentication.err.passthru.token.unsupported");
         }
 
         // Return the updated authentication token
@@ -643,6 +654,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param ntlmToken NTLMLocalToken
      * @param authSess AuthenticateSession
+     * @throws AutheticationException
      */
     private void authenticateLocal(NTLMLocalToken ntlmToken, AuthenticateSession authSess)
     {
@@ -680,7 +692,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                 {
                     // Guest access not allowed
                     
-                    throw new AuthenticationException("Guest logons disabled");
+                    throw new AuthenticationException("authentication.err.passthru.guest.notenabled");
                 }
             }
             else
@@ -705,25 +717,27 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
             // Debug
             
             if ( logger.isDebugEnabled())
+            {
                 logger.debug("Authenticated token=" + ntlmToken);
+            }
         }
         catch (NoSuchAlgorithmException ex)
         {
             // JCE provider does not have the required encryption/hashing algorithms
             
-            throw new AuthenticationServiceException("JCE provider error", ex);
+            throw new AuthenticationException("JCE provider error", ex);
         }
         catch (InvalidKeyException ex)
         {
             // Problem creating key during encryption
             
-            throw new AuthenticationServiceException("Invalid key error", ex);
+            throw new AuthenticationException("Invalid key error", ex);
         }
         catch (IOException ex)
         {
             // Error connecting to the authentication server
             
-            throw new AuthenticationServiceException("I/O error", ex);
+            throw new AuthenticationException("I/O error", ex);
         }
         catch (SMBException ex)
         {
@@ -739,7 +753,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                     authEx = new AuthenticationException("Logon failure");
                     break;
                 case SMBStatus.NTAccountDisabled:
-                    authEx = new AuthenticationException("Account disabled");
+                    authEx = new AuthenticationException("authentication.err.passthru.user.disabled");
                     break;
                 default:
                     authEx = new AuthenticationException("Logon failure");
@@ -749,7 +763,9 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                 throw authEx;
             }
             else
+            {
                 throw new AuthenticationException("Logon failure");
+            }
         }
     }
     
@@ -757,6 +773,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * Authenticate using passthru authentication with a client
      * 
      * @param ntlmToken NTLMPassthruToken
+     * @throws AuthenticationExcepion
      */
     private void authenticatePassthru(NTLMPassthruToken ntlmToken)
     {
@@ -771,7 +788,9 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
             // timed out
             
             if ( ntlmToken.getChallenge() != null)
-                throw new CredentialsExpiredException("Authentication session expired");
+            {
+                throw new AuthenticationException("Authentication session expired");
+            }
             
             // Open an authentication session for the new token and add to the active session list
             
@@ -780,7 +799,9 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
             // Check if the session was opened to the passthru server
             
             if ( authSess == null)
-            	throw new AuthenticationServiceException("Failed to open passthru auth session");
+            {
+                throw new AuthenticationException("authentication.err.connection.passthru.server");
+            }
             
             ntlmToken.setAuthenticationExpireTime(System.currentTimeMillis() + getSessionTimeout());
             
@@ -810,9 +831,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                 logger.debug("Passthru stage 1 token " + ntlmToken);
         }
         else
-        {
-            UserTransaction tx = null;
-            
+        {   
             try
             {
                 // Stage two of the authentication, send the hashed password to the authentication server
@@ -848,7 +867,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                     {
                         // Guest access not allowed
                         
-                        throw new BadCredentialsException("Guest logons disabled");
+                        throw new AuthenticationException("authentication.err.passthru.guest.notenabled");
                     }
                 }
                 
@@ -858,21 +877,26 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
 
                 // Wrap the service calls in a transaction
                 
-            	tx = getTransactionService().getUserTransaction( false);
-            	tx.begin();
-            	
-                // Map the passthru username to an Alfresco person
+                RetryingTransactionHelper helper = getTransactionService().getRetryingTransactionHelper();
                 
-                clearCurrentSecurityContext();
-                setCurrentUser( username);
-                    
+                final String currentUser = username;
+                
+                helper.doInTransaction(new RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws AuthenticationException
+                    {
+                        clearCurrentSecurityContext();
+                        setCurrentUser(currentUser);
+                        return null;
+                    }
+                });               
             }
             catch (NoSuchPersonException ex)
             {
-            	// Check if authenticated users are allowed on as guest when there is no Alfresco person record
-            	
-            	if ( m_allowAuthUserAsGuest == true)
-            	{
+                // Check if authenticated users are allowed on as guest when there is no Alfresco person record
+                
+                if ( m_allowAuthUserAsGuest == true)
+                {
                     // Set the guest authority
                     
                     GrantedAuthority[] authorities = new GrantedAuthority[1];
@@ -883,28 +907,29 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                     // DEBUG
                     
                     if ( logger.isDebugEnabled())
+                    {
                         logger.debug("Allow passthru authenticated user to logon as guest, user=" + ntlmToken.getName());
-            	}
-            	else
-            	{
-            		// Logon failure, no matching person record
-            		
-                    throw new AuthenticationServiceException("Logon failure", ex);
-            	}
+                    }
+                }
+                else
+                {
+                    // Logon failure, no matching person record
+                    throw new AuthenticationException("authentication.err.passthru.user.notfound", ex);
+                }
             }
             catch (IOException ex)
             {
                 // Error connecting to the authentication server
-                
-                throw new AuthenticationServiceException("I/O error", ex);
+                throw new AuthenticationException("Unable to connect to the authentication server", ex);
             }
             catch (SMBException ex)
             {
                 // Debug
                 
                 if ( logger.isDebugEnabled())
+                {
                     logger.debug("Passthru exception, " + ex);
-                
+                }
                 // Check the returned status code to determine why the logon failed and throw an appropriate exception
                 
                 if ( ex.getErrorClass() == SMBStatus.NTErr)
@@ -917,7 +942,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                         authEx = new AuthenticationException("Logon failure");
                         break;
                     case SMBStatus.NTAccountDisabled:
-                        authEx = new AuthenticationException("Account disabled");
+                        authEx = new AuthenticationException("authentication.err.passthru.user.disabled");
                         break;
                     default:
                         authEx = new AuthenticationException("Logon failure");
@@ -927,14 +952,10 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                     throw authEx;
                 }
                 else
-                    throw new BadCredentialsException("Logon failure");
-            }
-            catch (Exception ex)
-            {
-                // General error
-                
-                throw new AuthenticationServiceException("General error", ex);
-            }
+                {
+                    throw new AuthenticationException("Logon failure");
+                }
+            } 
             finally
             {
                 // Make sure the authentication session is closed
@@ -953,21 +974,9 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                     }
                     catch (Exception ex)
                     {
+                        logger.debug("unable to close session", ex);
                     }
-                }
-                
-                // Commit or rollback the transaction, if active
-                
-                if ( tx != null)
-                {
-                	try
-                	{
-                		tx.commit();
-                	}
-                	catch ( Exception ex)
-                	{
-                	}
-                }
+                }              
             }
         }
     }

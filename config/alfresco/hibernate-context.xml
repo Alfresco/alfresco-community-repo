@@ -31,7 +31,7 @@
     </bean>
 
     <!-- Hibernate session factory -->
-    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean" parent="sessionFactoryBase">
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean" parent="sessionFactoryBase" depends-on="dataSourceCheck">
         <property name="dataSource">
             <ref bean="dataSource" />
         </property>

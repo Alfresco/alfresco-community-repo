@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -308,6 +308,12 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
         public void setProperty(String name, String value)
         {
             this.wrappedBean.setPropertyValue(name, value);
+        }
+
+        @Override
+        public void removeProperty(String name)
+        {
+            throw new UnsupportedOperationException();
         }
 
         /*

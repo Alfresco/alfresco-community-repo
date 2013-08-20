@@ -508,6 +508,11 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
        return Collections.unmodifiableList(intermediateMimetypes);
     }
     
+    public List<ContentTransformer> getIntermediateTransformers()
+    {
+       return Collections.unmodifiableList(transformers);
+    }
+    
     /**
      * Returns the transformer properties predefined (hard coded or implied) by this transformer.
      */

@@ -19,7 +19,6 @@
       <result property="siteNetwork" column="site_network"/>
       <result property="activityType" column="activity_type"/>
       <result property="activitySummary" column="activity_summary"/>
-      <result property="activitySummaryFormat" column="activity_format"/>
       <result property="feedDate" column="feed_date"/>
    </resultMap>
    
@@ -59,13 +58,13 @@
     </sql>
     
     <sql id="insert_ActivityFeed_AutoIncrement">
-         insert into alf_activity_feed (activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date)
-         values (#{activityType}, #{activitySummary}, #{activitySummaryFormat}, #{feedUserId}, #{postUserId}, #{postDate}, #{postId}, #{siteNetwork}, #{appTool}, #{feedDate})
+         insert into alf_activity_feed (activity_type, activity_summary, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date)
+         values (#{activityType}, #{activitySummary}, #{feedUserId}, #{postUserId}, #{postDate}, #{postId}, #{siteNetwork}, #{appTool}, #{feedDate})
     </sql>
     
     <sql id="insert_ActivityFeed_Sequence">
-        insert into alf_activity_feed (id, activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date)
-        values (#{id}, #{activityType}, #{activitySummary,jdbcType=VARCHAR}, #{activitySummaryFormat,jdbcType=VARCHAR}, #{feedUserId,jdbcType=VARCHAR}, #{postUserId}, #{postDate}, #{postId,jdbcType=BIGINT}, #{siteNetwork,jdbcType=VARCHAR}, #{appTool,jdbcType=VARCHAR}, #{feedDate})
+        insert into alf_activity_feed (id, activity_type, activity_summary, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date)
+        values (#{id}, #{activityType}, #{activitySummary,jdbcType=VARCHAR}, #{feedUserId,jdbcType=VARCHAR}, #{postUserId}, #{postDate}, #{postId,jdbcType=BIGINT}, #{siteNetwork,jdbcType=VARCHAR}, #{appTool,jdbcType=VARCHAR}, #{feedDate})
     </sql>
     
     <sql id="insert_ActivityPost_AutoIncrement">
@@ -206,7 +205,6 @@
       delete from alf_activity_feed 
       where post_date < #{postDate}
       and site_network = #{siteNetwork}
-      and activity_format = #{activitySummaryFormat}
       ]]>
    </delete>
    
@@ -220,7 +218,6 @@
       delete from alf_activity_feed 
       where post_date < #{postDate}
       and (feed_user_id IS NULL and #{feedUserId} IS NULL OR feed_user_id = #{feedUserId})
-      and activity_format = #{activitySummaryFormat}
       ]]>
    </delete>
    

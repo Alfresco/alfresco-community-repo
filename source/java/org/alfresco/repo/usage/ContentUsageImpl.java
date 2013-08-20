@@ -361,21 +361,20 @@ public class ContentUsageImpl implements ContentUsageService,
         if (stores.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()) && (! alreadyDeleted(nodeRef)))
         {
             // TODO use data dictionary to get content property
-            ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
             
             if (contentData != null)
             {
                 long contentSize = contentData.getSize();
                 
                 // Get owner/creator
-                String owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER); // allow for case where someone else is deleting the node
-                if (owner == null)
+                String owner = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER); // allow for case where someone else is deleting the node
+                if (owner == null || owner.equals(OwnableService.NO_OWNER))
                 {
-                    
-                    owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_OWNER);
+                    owner = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_OWNER);
                     if ((owner == null) || (owner.equals(OwnableService.NO_OWNER)))
                     {
-                        owner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATOR);
+                        owner = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_CREATOR);
                     }
                 }
                 

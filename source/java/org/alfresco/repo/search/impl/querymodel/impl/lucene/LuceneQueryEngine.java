@@ -203,6 +203,8 @@ public class LuceneQueryEngine implements QueryEngine
         }
         searchParameters.setUseInMemorySort(options.getUseInMemorySort());
         searchParameters.setMaxRawResultSetSizeForInMemorySort(options.getMaxRawResultSetSizeForInMemorySort());
+        searchParameters.setBulkFetchEnabled(options.isBulkFetchEnabled());
+        searchParameters.setQueryConsistency(options.getQueryConsistency());
 
         try
         {

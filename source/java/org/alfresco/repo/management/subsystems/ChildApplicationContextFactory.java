@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -126,11 +126,14 @@ import org.springframework.util.PropertiesPersister;
  * 
  * @author dward
  */
-public class ChildApplicationContextFactory extends AbstractPropertyBackedBean implements ApplicationContextFactory
+public class ChildApplicationContextFactory extends AbstractPropertyBackedBean implements ApplicationContextFactory, PropertyBackedBeanWithMonitor
 {
 
     /** The name of the special read-only property containing the type name. */
     private static final String TYPE_NAME_PROPERTY = "$type";
+    
+    /** The name of the special read-only property containing the instance path . */
+    private static final String INSTANCE_PATH_PROPERTY = "instancePath";
 
     /** The suffix to the property file search path. */
     private static final String PROPERTIES_SUFFIX = "/*.properties";
@@ -154,6 +157,8 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
     private Map<String, Class<?>> compositePropertyTypes = Collections.emptyMap();
 
     private PropertiesPersister persister = new DefaultPropertiesPersister();
+    
+    private Object monitor;
 
     /**
      * Default constructor for container construction.
@@ -325,8 +330,15 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
     @Override
     public boolean isUpdateable(String name)
     {
-        // Only the type property is read only
-        return !name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY);
+        if(name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY))
+        {
+            return false;
+        }
+        if(name.equals(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY))
+        {
+            return false;
+        }
+        return true;
     }
 
     /*
@@ -336,9 +348,19 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
     @Override
     public String getDescription(String name)
     {
-        return name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY) ? "Read-only subsystem type name"
-                : this.compositePropertyTypes.containsKey(name) ? "Comma separated list of child object names" : super
-                        .getDescription(name);
+        if(name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY))
+        {
+             return "Read-only subsystem type name";
+        }
+        if(name.equals(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY))
+        {
+             return "Read-only instance path";
+        }
+        if(this.compositePropertyTypes.containsKey(name))
+        {
+            return "Comma separated list of child object names";
+        }
+        return super.getDescription(name);
     }
 
     /*
@@ -583,6 +605,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         {
             Set<String> result = new TreeSet<String>(((Map) this.properties).keySet());
             result.add(ChildApplicationContextFactory.TYPE_NAME_PROPERTY);
+            result.add(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY);
             result.addAll(ChildApplicationContextFactory.this.compositePropertyTypes.keySet());
             return result;
         }
@@ -596,6 +619,10 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
             if (name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY))
             {
                 return getTypeName();
+            }
+            if (name.equals(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY))
+            {
+                return getInstancePath().toString();
             }
             else if (ChildApplicationContextFactory.this.compositePropertyTypes.containsKey(name))
             {
@@ -633,6 +660,11 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
             {
                 throw new IllegalStateException("Illegal write to property \""
                         + ChildApplicationContextFactory.TYPE_NAME_PROPERTY + "\"");
+            }
+            if (name.equals(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY))
+            {
+                throw new IllegalStateException("Illegal write to property \""
+                        + ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY + "\"");
             }
             this.lastStartupError = null;
             Class<?> type = ChildApplicationContextFactory.this.compositePropertyTypes.get(name);
@@ -720,6 +752,26 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
             }
         }
 
+        @Override
+        public void removeProperty(String name)
+        {
+            if (name.equals(ChildApplicationContextFactory.TYPE_NAME_PROPERTY))
+            {
+                throw new IllegalStateException("Illegal write to property \""
+                        + ChildApplicationContextFactory.TYPE_NAME_PROPERTY + "\"");
+            }
+            this.lastStartupError = null;
+            Class<?> type = ChildApplicationContextFactory.this.compositePropertyTypes.get(name);
+            if (type != null)
+            {
+                throw new UnsupportedOperationException();
+            }
+            else
+            {
+                this.properties.remove(name);
+            }
+        }
+
         /*
          * (non-Javadoc)
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#start()
@@ -736,17 +788,29 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                 {
                     throw this.lastStartupError;
                 }
-
+                
+                Properties prop = new Properties();
+                prop.putAll(this.properties);
+                prop.put(ChildApplicationContextFactory.INSTANCE_PATH_PROPERTY, getInstancePath().toString());
+                
                 ChildApplicationContextFactory.logger
                         .info("Starting '" + getCategory() + "' subsystem, ID: " + getId());
                 ClassPathXmlApplicationContext applicationContext = ChildApplicationContextFactory.this.new ChildApplicationContext(
-                        this.properties, this.compositeProperties);
+                         prop, this.compositeProperties);
+               
                 try
                 {
                     applicationContext.refresh();
                     this.applicationContext = applicationContext;
                     ChildApplicationContextFactory.logger.info("Startup of '" + getCategory() + "' subsystem, ID: "
                             + getId() + " complete");
+                    
+                    if(applicationContext.containsBean("monitor"))
+                    {   
+                    	logger.debug("got a monitor object");
+                        Object m =  applicationContext.getBean("monitor");
+                	    monitor = m;
+                    }
                 }
                 catch (RuntimeException e)
                 {
@@ -828,8 +892,29 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
          */
         public ApplicationContext getApplicationContext()
         {
-            start();
+            return getApplicationContext(true);
+        }
+
+        /**
+         * Gets the application context.
+         * 
+         * @param start indicates whether state should be started
+         * 
+         * @return the application context or <code>null</code> if state was not already started and start == false
+         */
+        public ApplicationContext getApplicationContext(boolean start)
+        {
+            if (start)
+            {
+                start();
+            }
             return this.applicationContext;
         }
+    }
+    
+    @Override
+    public Object getMonitorObject()
+    {
+    	return monitor;
     }
 }

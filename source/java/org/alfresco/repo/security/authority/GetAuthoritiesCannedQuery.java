@@ -126,10 +126,20 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
                 .replaceAll("\\.", "\\\\.")
                 .replaceAll("\\?", ".")
                 .replaceAll("\\*", ".*")
+                .replaceAll("\\[", "\\\\[")
+                .replaceAll("\\]", "\\\\]")
+                .replaceAll("\\(", "\\\\(")
+                .replaceAll("\\)", "\\\\)")
                 .replaceAll("\\{", "\\\\{")
                 .replaceAll("\\}", "\\\\}")
-                .replaceAll("\\[", "\\\\[")
-                .replaceAll("\\]", "\\\\]");
+                .replaceAll("\\^", "\\\\^")
+                .replaceAll("\\$", "\\\\\\$")
+                .replaceAll("\\:", "\\\\:")
+                .replaceAll("\\\"", "\\\\\"")
+                .replaceAll("\\<", "\\\\<")
+                .replaceAll("\\>", "\\\\>")
+                .replaceAll("\\/", "\\\\/")
+                .replaceAll("\\|", "\\\\|");
         return Pattern.compile(searchValue, Pattern.CASE_INSENSITIVE);
     }
     

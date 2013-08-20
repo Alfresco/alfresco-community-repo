@@ -43,6 +43,7 @@
                 <value>hasContainer</value>
                 <value>getSiteRoles</value>
                 <value>getSiteGroup</value>
+                <value>hasSite</value>
                 <value>getSiteRoleGroup</value>
                 <value>getSiteRoot</value>
                 <value>canAddMember</value>

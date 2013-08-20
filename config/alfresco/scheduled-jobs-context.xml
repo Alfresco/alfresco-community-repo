@@ -80,6 +80,30 @@
             <value>${system.content.contentUrlConverter.cronExpression}</value>
         </property>
     </bean>
+    
+    <bean id="patchSharedFolderJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.admin.patch.impl.SharedFolderPatch$SharedFolderPatchJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="sharedFolderPatch">
+                    <ref bean="patch.sharedFolder" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    <bean id="patchSharedFolderTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <ref bean="patchSharedFolderJobDetail" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="cronExpression">
+            <value>${system.patch.sharedFolder.cronExpression}</value>
+        </property>
+    </bean>
 
     <bean id="nodeServiceCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
@@ -106,7 +130,7 @@
     </bean>
     
     <!-- enable scheduler property to activate -->
-    <bean id="userUsageCollapseJob" class="org.alfresco.util.TriggerBean">
+    <bean id="userUsageCollapseJob" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
             <bean id="userUsageTrackingJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
@@ -121,21 +145,8 @@
 	           </property>
 	        </bean>
         </property>
-        
-        <!-- enable this to activate bean -->
-        
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-			    
-        <!-- start after 5 minutes and repeat every 5 minutes -->
-        <property name="startDelayMinutes">
-            <value>5</value>
-        </property>
-        <property name="repeatIntervalMinutes">
-            <value>5</value>
-        </property>
-          
+        <property name="scheduler" ref="schedulerFactory" />
+        <property name="cronExpression" value="0 0/5 * * * ?" />            <!-- run every 5 minutes -->
     </bean>
     
     <!--  note: Activities (feed) jobs have moved to Activities subsystem (since 3.5) -->

@@ -43,6 +43,7 @@ CREATE TABLE alf_content_url
 );
 CREATE UNIQUE INDEX idx_alf_conturl_cr ON alf_content_url (content_url_short, content_url_crc);
 CREATE INDEX idx_alf_conturl_ot ON alf_content_url (orphan_time);
+CREATE INDEX idx_alf_conturl_sz ON alf_content_url (content_size, id);
 
 CREATE SEQUENCE alf_content_data_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_content_data

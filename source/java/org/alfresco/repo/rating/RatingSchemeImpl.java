@@ -47,6 +47,16 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware, Initializi
      */
     private boolean selfRatingAllowed;
     
+    /**
+     * This property is used to determine where in the Alfresco content model the ratings rollup aspect should go.
+     * If it is not injected, a default value of "cm" for the Alfresco content model is used.
+     * Individual rating schemes can provide their own namespace prefixes.
+     * @since 4.1.5
+     * @see RatingNamingConventionsUtil
+     * @see RatingsRelatedAspectBehaviours#getAspectsNotToCopy() to prevent aspect copying.
+     */
+    private String modelPrefix = "cm";
+    
     public RatingSchemeImpl(RatingSchemeRegistry registry)
     {
         this.ratingSchemeRegistry = registry;
@@ -57,6 +67,11 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware, Initializi
         this.propertyRollups = rollupAlgorithms;
     }
     
+    public void setModelPrefix(String prefix)
+    {
+        this.modelPrefix = prefix;
+    }
+    
     public void init()
     {
         ratingSchemeRegistry.register(this.name, this);
@@ -65,6 +80,11 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware, Initializi
     public List<AbstractRatingRollupAlgorithm> getPropertyRollups()
     {
         return Collections.unmodifiableList(this.propertyRollups);
+    }
+    
+    public String getModelPrefix()
+    {
+        return this.modelPrefix;
     }
 
     /*
@@ -168,4 +188,10 @@ public class RatingSchemeImpl implements RatingScheme, BeanNameAware, Initializi
         
         return msg.toString();
     }
+    
+    /**
+     * This method can be used to sort RatingSchemes by name.
+     * @since 4.1.5
+     */
+    @Override public int compareTo(RatingScheme otherScheme) { return this.name.compareTo(otherScheme.getName()); }
 }

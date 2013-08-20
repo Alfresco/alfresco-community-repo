@@ -92,6 +92,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
         METHOD_NAMES_OTHER.add("getWriter");
         METHOD_NAMES_OTHER.add("getType");
         METHOD_NAMES_OTHER.add("exists");
+        METHOD_NAMES_OTHER.add("getNameOnlyPath");
     }
     
     private static Log logger = LogFactory.getLog(MLTranslationInterceptor.class);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,9 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -32,7 +29,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
@@ -54,18 +50,23 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.apache.tika.sax.xpath.Matcher;
 import org.apache.tika.sax.xpath.MatchingContentHandler;
 import org.apache.tika.sax.xpath.XPathParser;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
+import org.joda.time.format.DateTimeParser;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
+
 /**
  * The parent of all Metadata Extractors which use
- *  Apache Tika under the hood.
- * This handles all the common parts of processing the
- *  files, and the common mappings.
- * Individual extractors extend from this to do custom
- *  mappings. 
+ * Apache Tika under the hood. This handles all the
+ * common parts of processing the files, and the common
+ * mappings. Individual extractors extend from this
+ * to do custom mappings. 
 
  * <pre>
  *   <b>author:</b>                 --      cm:author
@@ -91,11 +92,12 @@ public abstract class TikaPoweredMetadataExtracter
     protected static final String KEY_DESCRIPTION = "description";
     protected static final String KEY_COMMENTS = "comments";
 
-    private DateFormat[] tikaDateFormats;
+    private DateTimeFormatter tikaUTCDateFormater;
+    private DateTimeFormatter tikaDateFormater;
     
     /**
-     * Builds up a list of supported mime types by merging an explicit
-     *  list with any that Tika also claims to support
+     * Builds up a list of supported mime types by merging
+     * an explicit list with any that Tika also claims to support
      */
     protected static ArrayList<String> buildSupportedMimetypes(String[] explicitTypes, Parser... tikaParsers) 
     {
@@ -141,34 +143,20 @@ public abstract class TikaPoweredMetadataExtracter
         super(supportedMimeTypes, supportedEmbedMimeTypes);
         
         // TODO Once TIKA-451 is fixed this list will get nicer
-        this.tikaDateFormats = new DateFormat[] {
-              new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
-              new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US),
-              new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ"),
-              new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US),
-              new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"),
-              new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US),
-              new SimpleDateFormat("yyyy-MM-dd"),
-              new SimpleDateFormat("yyyy-MM-dd", Locale.US),
-              new SimpleDateFormat("yyyy/MM/dd HH:mm:ss"),
-              new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US),
-              new SimpleDateFormat("yyyy/MM/dd"),
-              new SimpleDateFormat("yyyy/MM/dd", Locale.US),
-              new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy"),
-              new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy", Locale.US)
+        DateTimeParser[] parsersUTC = {
+            DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").getParser(),
+            DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ").getParser()
         };
-        // Set the timezone on the UTC based formats 
-        for(DateFormat df : this.tikaDateFormats)
-        {
-           if(df instanceof SimpleDateFormat)
-           {
-              SimpleDateFormat sdf = (SimpleDateFormat)df;
-              if(sdf.toPattern().endsWith("'Z'"))
-              {
-                 sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-              }
-           }
-        }
+        DateTimeParser[] parsers = {
+            DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss").getParser(),
+            DateTimeFormat.forPattern("yyyy-MM-dd").getParser(),
+            DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ss").getParser(),
+            DateTimeFormat.forPattern("yyyy/MM/dd").getParser(),
+                DateTimeFormat.forPattern("EEE MMM dd hh:mm:ss zzz yyyy").getParser()
+        };
+
+        this.tikaUTCDateFormater = new DateTimeFormatterBuilder().append(null, parsersUTC).toFormatter().withZone(DateTimeZone.UTC);
+        this.tikaDateFormater = new DateTimeFormatterBuilder().append(null, parsers).toFormatter();
     }
     
     /**
@@ -178,29 +166,39 @@ public abstract class TikaPoweredMetadataExtracter
     @Override
     protected Date makeDate(String dateStr) 
     {
-       // Try our formats first, in order
-       for(DateFormat df : this.tikaDateFormats) 
-       {
-          try
-          {
-              return df.parse(dateStr);
-          }
-          catch (ParseException ee)
-          {
-              // Didn't work
-          }
-       }
-       
-       // Fall back to the normal ones
-       return super.makeDate(dateStr);
+        // Try our formats first, in order
+        try
+        {
+            return this.tikaUTCDateFormater.parseDateTime(dateStr).toDate();
+        }
+        catch (IllegalArgumentException e) {}
+
+        try
+        {
+            return this.tikaUTCDateFormater.withLocale(Locale.US).parseDateTime(dateStr).toDate();
+        }
+        catch (IllegalArgumentException e) {}
+
+        try
+        {
+            return this.tikaDateFormater.parseDateTime(dateStr).toDate();
+        }
+        catch (IllegalArgumentException e) {}
+
+        try
+        {
+            return this.tikaDateFormater.withLocale(Locale.US).parseDateTime(dateStr).toDate();
+        }
+        catch (IllegalArgumentException e) {}
+
+        // Fall back to the normal ones
+        return super.makeDate(dateStr);
     }
     
     /**
-     * Returns the correct Tika Parser to process
-     *  the document.
-     * If you don't know which you want, use
-     *  {@link TikaAutoMetadataExtracter} which
-     *  makes use of the Tika auto-detection.
+     * Returns the correct Tika Parser to process the document.
+     * If you don't know which you want, use {@link TikaAutoMetadataExtracter}
+     * which makes use of the Tika auto-detection.
      */
     protected abstract Parser getParser();
     
@@ -226,8 +224,7 @@ public abstract class TikaPoweredMetadataExtracter
     }
     
     /**
-     * Allows implementation specific mappings
-     *  to be done.
+     * Allows implementation specific mappings to be done.
      */
     protected Map<String, Serializable> extractSpecific(Metadata metadata, 
           Map<String, Serializable> properties, Map<String,String> headers) 
@@ -243,7 +240,8 @@ public abstract class TikaPoweredMetadataExtracter
      * For these cases, buffer out to a local file if not
      *  already there
      */
-    protected InputStream getInputStream(ContentReader reader) throws IOException {
+    protected InputStream getInputStream(ContentReader reader) throws IOException
+    {
        // Prefer the File if available, it's generally quicker
        if(reader instanceof FileContentReader) 
        {
@@ -455,8 +453,7 @@ public abstract class TikaPoweredMetadataExtracter
      */
     protected static class MapCaptureContentHandler implements ContentHandler 
     {
-       protected Map<String,String> tags =
-          new HashMap<String, String>();
+        protected Map<String, String> tags = new HashMap<String, String>();
        private StringBuffer text;
 
       public void characters(char[] ch, int start, int len) 
@@ -466,6 +463,7 @@ public abstract class TikaPoweredMetadataExtracter
             text.append(ch, start, len);
          }
       }
+
       public void endElement(String namespace, String localname, String qname) 
       {
          if(text != null && text.length() > 0) 
@@ -474,6 +472,7 @@ public abstract class TikaPoweredMetadataExtracter
          }
          text = null;
       }
+
       public void startElement(String namespace, String localname, String qname, Attributes attrs) 
       {
          for(int i=0; i<attrs.getLength(); i++) 

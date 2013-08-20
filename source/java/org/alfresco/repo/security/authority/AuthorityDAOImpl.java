@@ -34,17 +34,21 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.cache.AsynchronouslyRefreshedCache;
 import org.alfresco.repo.cache.RefreshableCacheEvent;
 import org.alfresco.repo.cache.RefreshableCacheListener;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
+import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -116,7 +120,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     private SimpleCache<String, Set<String>> userAuthorityCache;
     private SimpleCache<Pair<String, String>, List<ChildAssociationRef>> zoneAuthorityCache;
     private SimpleCache<NodeRef, Pair<Map<NodeRef,String>, List<NodeRef>>> childAuthorityCache;
-    private AuthorityBridgeTableAsynchronouslyRefreshedCache authorityBridgeTableCache;
+    private AsynchronouslyRefreshedCache<BridgeTable<String>> authorityBridgeTableCache;
     private SimpleCache<String, Object> singletonCache; // eg. for system container nodeRefs (authorityContainer and zoneContainer)
     private final String KEY_SYSTEMCONTAINER_NODEREF = "key.systemcontainer.noderef";
     /** Limit the number of copies of authority names floating about by keeping them in a pool **/
@@ -129,6 +133,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     
     private boolean useGetContainingAuthoritiesForIsAuthorityContained = true;
     
+    private QNameDAO qnameDAO;
+    private CannedQueryDAO cannedQueryDAO;
     private AclDAO aclDao;
     private PolicyComponent policyComponent;
     private NamedObjectRegistry<CannedQueryFactory<?>> cannedQueryRegistry;
@@ -230,6 +236,16 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         this.singletonCache = singletonCache;
     }
     
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        this.qnameDAO = qnameDAO;
+    }
+
+    public void setCannedQueryDAO(CannedQueryDAO cannedQueryDAO)
+    {
+        this.cannedQueryDAO = cannedQueryDAO;
+    }
+
     public void setAclDAO(AclDAO aclDao)
     {
         this.aclDao = aclDao;
@@ -261,7 +277,48 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         this.authorityBridgeDAO = authorityBridgeDAO;
     }
 
+    @Override
+    public long getPersonCount()
+    {
+        /* Unboxing accepted.  See CannedQueryDAO javadoc and implementation. */
+        Pair<Long, QName> qnamePair = qnameDAO.getQName(ContentModel.TYPE_PERSON);
+        if (qnamePair == null)
+        {
+            // No results
+            return 0L;
+        }
+        
+        IdsEntity ids = new IdsEntity();
+        ids.setIdOne(qnamePair.getFirst());
+        Long personCount = cannedQueryDAO.executeCountQuery("alfresco.query.authorities", "select_AuthorityCount_People", ids);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Counted authorities (people): " + personCount);
+        }
+        return personCount;
+    }
 
+    @Override
+    public long getGroupCount()
+    {
+        /* Unboxing accepted.  See CannedQueryDAO javadoc and implementation. */
+        Pair<Long, QName> qnamePair = qnameDAO.getQName(ContentModel.TYPE_AUTHORITY_CONTAINER);
+        if (qnamePair == null)
+        {
+            // No results
+            return 0L;
+        }
+        
+        IdsEntity ids = new IdsEntity();
+        ids.setIdOne(qnamePair.getFirst());
+        Long groupCount = cannedQueryDAO.executeCountQuery("alfresco.query.authorities", "select_AuthorityCount_Groups", ids);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Counted authorities (groups):" + groupCount);
+        }
+        return groupCount;
+    }
+    
     public boolean authorityExists(String name)
     {
         NodeRef ref = getAuthorityOrNull(name);
@@ -1230,7 +1287,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                     result = results.isEmpty() ? NULL_NODEREF :results.get(0).getChildRef(); 
                     authorityLookupCache.put(cacheKey, result);
                 }
-                return result == NULL_NODEREF ? null : result;
+                return result.equals(NULL_NODEREF) ? null : result;
             }
         }
         catch (NoSuchPersonException e)

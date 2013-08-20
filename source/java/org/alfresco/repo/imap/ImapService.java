@@ -282,22 +282,6 @@ public interface ImapService
      */
     public boolean isNodeInSitesLibrary(NodeRef nodeRef);
 
-  
-    /**
-     * Extract Attachments
-     * 
-     * @param parentFolder
-     * @param messageFile the node ref of the message.
-     * @param originalMessage
-     * @throws IOException
-     * @throws MessagingException
-     */
-    public NodeRef extractAttachments(
-            NodeRef parentFolder,
-            NodeRef messageFile,
-            MimeMessage originalMessage)
-            throws IOException, MessagingException;
-
     /**
      * Determines whether the IMAP server is enabled.
      * 

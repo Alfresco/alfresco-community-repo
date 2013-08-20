@@ -15,7 +15,6 @@ CREATE TABLE alf_activity_feed
     activity_summary TEXT,
     feed_user_id VARCHAR(255),
     activity_type VARCHAR(255) NOT NULL,
-    activity_format VARCHAR(10),
     site_network VARCHAR(255),
     app_tool VARCHAR(36),
     post_user_id VARCHAR(255) NOT NULL,
@@ -24,8 +23,7 @@ CREATE TABLE alf_activity_feed
     KEY feed_postdate_idx (post_date),
     KEY feed_postuserid_idx (post_user_id),
     KEY feed_feeduserid_idx (feed_user_id),
-    KEY feed_sitenetwork_idx (site_network),
-    KEY feed_activityformat_idx (activity_format)
+    KEY feed_sitenetwork_idx (site_network)
 ) ENGINE=InnoDB;
 
 CREATE TABLE alf_activity_feed_control

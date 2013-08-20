@@ -62,11 +62,13 @@ public class DefaultCacheProvider implements CacheProvider
     @Override
     public void start(Properties properties) throws CacheException
     {
+        log.debug("Starting cache provider");
     }
 
     @Override
     public void stop()
     {
+        log.debug("Stopping cache provider");
     }
 
     @Override

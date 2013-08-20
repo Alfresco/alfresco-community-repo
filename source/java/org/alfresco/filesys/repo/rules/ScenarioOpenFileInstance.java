@@ -166,7 +166,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance, DependentInstance, S
                         ArrayList<Command> commands = new ArrayList<Command>();
                         ArrayList<Command> postCommitCommands = new ArrayList<Command>();
                         ArrayList<Command> postErrorCommands = new ArrayList<Command>();
-                        commands.add(new CreateFileCommand(c.getName(), c.getRootNodeRef(), c.getPath(), c.getAllocationSize()));
+                        commands.add(new CreateFileCommand(c.getName(), c.getRootNodeRef(), c.getPath(), c.getAllocationSize(), c.isHidden()));
                         postCommitCommands.add(newOpenFileCallbackCommand());
                         postErrorCommands.add(newOpenFileErrorCallbackCommand());
                         return new CompoundCommand(commands, postCommitCommands, postErrorCommands);
@@ -600,7 +600,15 @@ class ScenarioOpenFileInstance implements ScenarioInstance, DependentInstance, S
                     }
                     else
                     {
-                        return x;
+                        ArrayList<Command> commands = new ArrayList<Command>();
+                        ArrayList<Command> postCommitCommands = new ArrayList<Command>();
+                        ArrayList<Command> postErrorCommands = new ArrayList<Command>();
+                        commands.add(x);
+                        postCommitCommands.addAll(c.getPostCommitCommands());
+                        postErrorCommands.addAll(c.getPostErrorCommands());
+                        
+                        logger.debug("returning merged high priority executor");
+                        return new CompoundCommand(commands, postCommitCommands, postErrorCommands);
                     }
                 }
             }

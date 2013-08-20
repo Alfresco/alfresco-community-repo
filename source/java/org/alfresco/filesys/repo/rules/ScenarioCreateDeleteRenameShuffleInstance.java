@@ -181,15 +181,18 @@ public class ScenarioCreateDeleteRenameShuffleInstance implements ScenarioInstan
                 {
                     boolean isRightTarget = false;
                     int i = deleteName.lastIndexOf('.');
+                    int j = createName.lastIndexOf('.');
                     
                     if (i > 0)
                     {
-                        String extension = deleteName.substring(i+1,deleteName.length());
-                        if (extension.startsWith("ppt"))
+                        String deleteExt = deleteName.substring(i + 1, deleteName.length());
+                        String createExt = (j > 0) ? createName.substring(j + 1, createName.length()) : "";
+                        
+                        if (deleteExt.startsWith("ppt") && createExt.startsWith("ppt"))
                         {
-                            isRightTarget = (i < createName.length()) && deleteName.substring(0, i).equalsIgnoreCase(createName.substring(0,i)); 
+                            isRightTarget = (i < createName.length()) && deleteName.substring(0, i).equalsIgnoreCase(createName.substring(0, i));
                         }
-                        else if (extension.startsWith("xls"))
+                        else if (deleteExt.startsWith("xls") && createExt.isEmpty())
                         {
                             isRightTarget = !deleteName.startsWith("._") && !deleteName.startsWith("~$");
                         }

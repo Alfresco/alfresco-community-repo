@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONObject;
 import org.json.JSONException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -196,29 +197,29 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#getUserFeedEntries(java.lang.String, java.lang.String, java.lang.String)
      */
-    public List<String> getUserFeedEntries(String feedUserId, String format, String siteId)
+    public List<String> getUserFeedEntries(String feedUserId, String siteId)
     {
-        return getUserFeedEntries(feedUserId, format, siteId, false, false, null, null);
+        return getUserFeedEntries(feedUserId, siteId, false, false, null, null);
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#getUserFeedEntries(java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
-    public List<String> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers)
+    public List<String> getUserFeedEntries(String feedUserId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers)
     {
-        return getUserFeedEntries(feedUserId, format, siteId,excludeThisUser, excludeOtherUsers, null, null);
+        return getUserFeedEntries(feedUserId, siteId, excludeThisUser, excludeOtherUsers, null, null);
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#getUserFeedEntries(java.lang.String, java.lang.String, java.lang.String, boolean, boolean, java.util.Set<String>, java.util.Set<String>)
      */
-    public List<String> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter)
+    public List<String> getUserFeedEntries(String feedUserId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter)
     {
         List<String> activityFeedEntries = new ArrayList<String>();
         
         try
         {
-            List<ActivityFeedEntity> activityFeeds = getUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers, userFilter, actvityFilter, -1);
+            List<ActivityFeedEntity> activityFeeds = getUserFeedEntries(feedUserId, siteId, excludeThisUser, excludeOtherUsers, userFilter, actvityFilter, -1);
             
             if (activityFeeds != null)
             {
@@ -241,13 +242,12 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#getPagedUserFeedEntries(java.lang.String, java.lang.String, java.lang.String, boolean, boolean, java.util.Set<String>, java.util.Set<String>)
      */
-    public PagingResults<ActivityFeedEntity> getPagedUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest)
+    public PagingResults<ActivityFeedEntity> getPagedUserFeedEntries(String feedUserId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest)
     {
-    	try
-    	{
+        try
+        {
             // NOTE: siteId is optional
             ParameterCheck.mandatoryString("feedUserId", feedUserId);
-            ParameterCheck.mandatoryString("format", format);
             
             if(!userNamesAreCaseSensitive)
             {
@@ -270,8 +270,8 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
 
             String networkId = tenantService.getCurrentUserDomain();
 
-	    	PagingResults<ActivityFeedEntity> activityFeedEntries = feedDAO.selectPagedUserFeedEntries(feedUserId, networkId, format, siteId, excludeThisUser, excludeOtherUsers, minFeedId, pagingRequest);
-	        return activityFeedEntries;
+            PagingResults<ActivityFeedEntity> activityFeedEntries = feedDAO.selectPagedUserFeedEntries(feedUserId, networkId, siteId, excludeThisUser, excludeOtherUsers, minFeedId, pagingRequest);
+            return activityFeedEntries;
         }
         catch (SQLException se)
         {
@@ -281,16 +281,86 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
         }
     }
     
-    public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId)
+    /**
+     * Attempts to find the avatar {@link NodeRef} for the user in supplied {@link ActivityFeedEntity}. As this is aimed
+     * at setting the {@link NodeRef} from a client-side point of view there are a couple of activity types where
+     * the user is taken from the activity summary rather than from the poster (e.g. when a user role is changed).
+     * A cache should be passed in from which to retrieve previously fetched {@link NodeRef}s for efficiency.
+     * 
+     * @param activityFeed
+     * @param userIdToAvatarNodeRefCache
+     * @return
+     */
+    protected NodeRef getUserAvatarNodeRef(ActivityFeedEntity activityFeed, Map<String, NodeRef> userIdToAvatarNodeRefCache) 
     {
-        return getUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers, null, null, minFeedId);
+        NodeRef avatarNodeRef = null;
+        String postUserId = null;
+        if (activityFeed.getActivityType().equals("org.alfresco.site.user-role-changed"))
+        {
+            try
+            {
+                JSONObject j = new JSONObject(activityFeed.getActivitySummary());
+                postUserId = j.get("memberUserName").toString();
+            }
+            catch (JSONException e)
+            {
+                // Ignore any exceptions. This is only an attempt to prevent 304 revalidation so 
+                // the consequences of an exception are not significant, we will simply allow
+                // the avatar to be looked up by username.
+            }
+        }
+        else
+        {
+            postUserId = activityFeed.getPostUserId();
+        }
+        if (postUserId == null)
+        {
+            // No action required. We're simply going to allow the feed data to be returned without
+            // an avatarNodeRef being set. The end result will be that the avatar is requested via
+            // user name and this will result in a 304 revalidation request. This should theoretically
+            // be a rare occurrence.
+        }
+        else if (userIdToAvatarNodeRefCache.containsKey(postUserId))
+        {
+            // If we've previously cached the users avatar, or if we've determine that the user doesn't
+            // have an avatar then use the cached data.
+            avatarNodeRef = userIdToAvatarNodeRefCache.get(postUserId);
+        }
+        else
+        {
+            try
+            {
+                NodeRef postPerson = this.personService.getPerson(postUserId);
+                List<AssociationRef> assocRefs = this.nodeService.getTargetAssocs(postPerson, ContentModel.ASSOC_AVATAR);
+                if (!assocRefs.isEmpty())
+                {
+                    // Get the avatar for the user id, set it in the activity feed and update the cache
+                    avatarNodeRef = assocRefs.get(0).getTargetRef();
+                }
+            } 
+            catch (NoSuchPersonException e) 
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.warn("getUserFeedEntries: person no longer exists: "+postUserId);
+                }
+            }
+            
+            // Update the cache (setting null if there is no avatar for the user)...
+            userIdToAvatarNodeRefCache.put(postUserId, avatarNodeRef);
+        }
+        return avatarNodeRef;
+    }
+
+    public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId)
+    {
+        return getUserFeedEntries(feedUserId, siteId, excludeThisUser, excludeOtherUsers, null, null, minFeedId);
     }
     
-    public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter, long minFeedId)
+    public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter, long minFeedId)
     {
         // NOTE: siteId is optional
         ParameterCheck.mandatoryString("feedUserId", feedUserId);
-        ParameterCheck.mandatoryString("format", format);
         
         if (! userNamesAreCaseSensitive)
         {
@@ -325,7 +395,7 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                 siteId = tenantService.getName(siteId);
             }
             
-            List<ActivityFeedEntity> activityFeeds = feedDAO.selectUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers, minFeedId, maxFeedItems);
+            List<ActivityFeedEntity> activityFeeds = feedDAO.selectUserFeedEntries(feedUserId, siteId, excludeThisUser, excludeOtherUsers, minFeedId, maxFeedItems);
 
             // Create a local cache just for this method to map IDs of users to their avatar NodeRef. This
             // is local to the method because we only want to cache per request - there is not point in keeping
@@ -338,7 +408,7 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
             
             if (logger.isDebugEnabled())
             {
-                logger.debug("Selected feed entries for user : '" + feedUserId + "',\n using format : '" + format + "',\n for site : '" + siteId + "',\n excluding this user : '"
+                logger.debug("Selected feed entries for user : '" + feedUserId + "',\n for site : '" + siteId + "',\n excluding this user : '"
                         + excludeThisUser + "',\n excluding other users : '" + excludeOtherUsers + "',\n with min feed id : '" + minFeedId + "',\n with max feed items : '"
                         + maxFeedItems);
             }
@@ -429,12 +499,17 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#getSiteFeedEntries(java.lang.String, java.lang.String)
      */
-    public List<String> getSiteFeedEntries(String siteId, String format)
+    public List<String> getSiteFeedEntries(String siteId)
     {
         ParameterCheck.mandatoryString("siteId", siteId);
-        ParameterCheck.mandatoryString("format", format);
         
         List<String> activityFeedEntries = new ArrayList<String>();
+        
+        // Create a local cache just for this method to map IDs of users to their avatar NodeRef. This
+        // is local to the method because we only want to cache per request - there is not point in keeping
+        // an instance cache because the data will become stale if a user changes their avatar.
+        Map<String, NodeRef> userIdToAvatarNodeRefCache = new HashMap<String, NodeRef>();
+
         
         try
         {
@@ -449,16 +524,53 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
             
             siteId = tenantService.getName(siteId);
             
-            List<ActivityFeedEntity> activityFeeds = feedDAO.selectSiteFeedEntries(siteId, format, maxFeedItems);
+            List<ActivityFeedEntity> activityFeeds = feedDAO.selectSiteFeedEntries(siteId, maxFeedItems);
             
             if (logger.isDebugEnabled())
             {
-                logger.debug("Selected feed entries for site : '" + siteId + "',\n using format : '" + format);
+                logger.debug("Selected feed entries for site : '" + siteId + "'");
             }
             
             for (ActivityFeedEntity activityFeed : activityFeeds)
             {
                 activityFeed.setSiteNetwork(tenantService.getBaseName(activityFeed.getSiteNetwork()));
+                
+                // In order to prevent unnecessary 304 revalidations on user avatars in the activity stream the 
+                // activity posting user avatars will be retrieved and added to the activity feed. This will enable
+                // avatars to be requested using the unique nodeRef which can be safely cached by the browser and
+                // improve performance...
+                NodeRef avatarNodeRef = null;
+                String postUserId = activityFeed.getPostUserId();
+                if (userIdToAvatarNodeRefCache.containsKey(postUserId))
+                {
+                    // If we've previously cached the users avatar, or if we've determine that the user doesn't
+                    // have an avatar then use the cached data.
+                    avatarNodeRef = userIdToAvatarNodeRefCache.get(postUserId);
+                }
+                else
+                {
+                    try
+                    {
+                        NodeRef postPerson = this.personService.getPerson(postUserId);
+                        List<AssociationRef> assocRefs = this.nodeService.getTargetAssocs(postPerson, ContentModel.ASSOC_AVATAR);
+                        if (!assocRefs.isEmpty())
+                        {
+                            // Get the avatar for the user id, set it in the activity feed and update the cache
+                            avatarNodeRef = assocRefs.get(0).getTargetRef();
+                        }
+                    } 
+                    catch (NoSuchPersonException e) 
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.warn("getUserFeedEntries: person no longer exists: "+postUserId);
+                        }
+                    }
+                    
+                    // Update the cache (setting null if there is no avatar for the user)...
+                    userIdToAvatarNodeRefCache.put(postUserId, avatarNodeRef);
+                }
+                activityFeed.setPostUserAvatarNodeRef(avatarNodeRef);
                 activityFeedEntries.add(activityFeed.getJSONString());
                 if (logger.isTraceEnabled())
                 {

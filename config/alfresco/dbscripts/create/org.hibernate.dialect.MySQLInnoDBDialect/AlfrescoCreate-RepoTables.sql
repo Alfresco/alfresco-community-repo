@@ -49,7 +49,6 @@ CREATE TABLE alf_qname
     local_name VARCHAR(200) NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY ns_id (ns_id, local_name),
-    KEY fk_alf_qname_ns (ns_id),
     CONSTRAINT fk_alf_qname_ns FOREIGN KEY (ns_id) REFERENCES alf_namespace (id)
 ) ENGINE=InnoDB;
 
@@ -218,6 +217,11 @@ CREATE TABLE alf_node
     KEY fk_alf_node_store (store_id),
     KEY fk_alf_node_tqn (type_qname_id),
     KEY fk_alf_node_loc (locale_id),
+    KEY idx_alf_node_mdq (store_id, type_qname_id),
+    KEY idx_alf_node_cor (audit_creator, store_id, type_qname_id),
+    KEY idx_alf_node_crd (audit_created, store_id, type_qname_id),
+    KEY idx_alf_node_mor (audit_modifier, store_id, type_qname_id),
+    KEY idx_alf_node_mod (audit_modified, store_id, type_qname_id),
     CONSTRAINT fk_alf_node_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id),
     CONSTRAINT fk_alf_node_store FOREIGN KEY (store_id) REFERENCES alf_store (id),
     CONSTRAINT fk_alf_node_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id),
@@ -302,6 +306,8 @@ CREATE TABLE alf_node_properties
     KEY fk_alf_nprop_n (node_id),
     KEY fk_alf_nprop_qn (qname_id),
     KEY fk_alf_nprop_loc (locale_id),
+    KEY idx_alf_nprop_s (qname_id, string_value(42)),
+    KEY idx_alf_nprop_l (qname_id, long_value),
     CONSTRAINT fk_alf_nprop_loc FOREIGN KEY (locale_id) REFERENCES alf_locale (id),
     CONSTRAINT fk_alf_nprop_n FOREIGN KEY (node_id) REFERENCES alf_node (id),
     CONSTRAINT fk_alf_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id)

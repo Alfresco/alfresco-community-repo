@@ -22,6 +22,7 @@ package org.alfresco.repo.forms.processor.workflow;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormData.FieldData;
@@ -51,6 +52,8 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
     protected WorkflowService workflowService;
 
     protected BehaviourFilter behaviourFilter;
+
+    private ExtendedPropertyFieldProcessor extendedPropertyFieldProcessor;
     
     @Override
     protected void populateForm(Form form, List<String> fields, FormCreationData data)
@@ -77,6 +80,55 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
         return persister.persist();
     }
     
+    @Override
+    protected List<Field> generateDefaultFields(FormCreationData data, List<String> fieldsToIgnore)
+    {
+        if(extendedPropertyFieldProcessor != null)
+        {
+            // Use a custom field-builder, which allows multi-valued escapes
+            ExtendedFieldBuilder fieldBuilder = new ExtendedFieldBuilder(data, fieldProcessorRegistry, namespaceService, fieldsToIgnore, 
+                        extendedPropertyFieldProcessor);
+            return fieldBuilder.buildDefaultFields();
+        }
+        return super.generateDefaultFields(data, fieldsToIgnore);
+    }
+    
+    @Override
+    protected List<Field> generateSelectedFields(List<String> fields, FormCreationData data)
+    {
+        if(extendedPropertyFieldProcessor != null) 
+        {
+            List<Field> fieldData = new ArrayList<Field>(fields.size());
+            for (String fieldName : fields)
+            {
+                Field field = null;
+                if(extendedPropertyFieldProcessor.isApplicableForField(fieldName))
+                {
+                    field = extendedPropertyFieldProcessor.generateField(fieldName, data);
+                }
+                else
+                {
+                    field = fieldProcessorRegistry.buildField(fieldName, data);
+                }
+                if (field == null)
+                {
+                    if (getLogger().isDebugEnabled()) 
+                    {
+                        String msg = "Ignoring unrecognised field \"" + fieldName + "\"";
+                        getLogger().debug(msg);
+                    }
+                }
+                else
+                {
+                    fieldData.add(field);
+                }
+            }
+            return fieldData;
+        }
+        
+        return super.generateSelectedFields(fields, data);
+    }
+    
     /**
      * @param workflowService the workflowService to set
      */
@@ -91,6 +143,15 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
+    }
+    
+    /**
+     * @param extendedPropertyFieldProcessor the processor to set
+     */
+    public void setExtendedPropertyFieldProcessor(
+                ExtendedPropertyFieldProcessor extendedPropertyFieldProcessor)
+    {
+        this.extendedPropertyFieldProcessor = extendedPropertyFieldProcessor;
     }
     
     /*

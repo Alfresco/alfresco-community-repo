@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,9 +18,10 @@
  */
 package org.alfresco.service.descriptor;
 
+import java.io.InputStream;
+
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.license.LicenseDescriptor;
-import org.alfresco.service.license.LicenseService.LicenseChangeHandler;
 
 
 /**
@@ -114,5 +115,11 @@ public interface DescriptorService
      * @return          Returns a message telling the user what happened
      */
     public String loadLicense();
-   
+ 
+    /**
+     * Attempts to load the license from the input stream.
+     * @return          Returns a message telling the user what happened
+     */
+    public String loadLicense(InputStream licenseStream);
+
 }

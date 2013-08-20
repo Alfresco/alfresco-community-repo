@@ -156,9 +156,10 @@ public interface CopyService
      * 
      * @param sourceNodeRef         the source node reference
      * @param destinationNodeRef    the destination node reference
+     * @return                      <tt>true</tt> if the copying was made
      */
     @Auditable(parameters = {"sourceNodeRef", "destinationNodeRef"})
-    public void copy(NodeRef sourceNodeRef, NodeRef destinationNodeRef);   
+    public boolean copy(NodeRef sourceNodeRef, NodeRef destinationNodeRef);
     
     /**
      * Get the original for a given copied node
@@ -238,4 +239,22 @@ public interface CopyService
             NodeRef originalNodeRef,
             NodeRef copyParentNodeRef,
             PagingRequest pagingRequest);
+
+
+    /**
+     * Determines if top-level node name will be changed during copy according to policies.
+     * 
+     * @param sourceNodeRef             the node reference used as the source of the copy
+     * @param targetParentRef           the intended parent of the new node
+     * @param assocTypeQName            the type of the new child assoc         
+     * @param assocQName                the qualified name of the child association from the 
+     *                                  parent to the new node
+     * @param copyChildren              indicates that the children of the node should also be copied                                 
+     * 
+     * @return                          new name if top-level node will be renamed during copy or
+     *                                  <tt>null</tt> if it will remain the same  
+     */
+    public String getTopLevelNodeNewName(NodeRef sourceNodeRef, NodeRef targetParentRef,
+            QName assocTypeQName, QName assocQName);
+
 }

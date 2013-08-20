@@ -23,12 +23,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.usage.UsageDAO;
 import org.alfresco.repo.domain.usage.UsageDAO.MapHandler;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -46,8 +48,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.usage.UsageService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -71,6 +75,7 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
     private UsageService usageService;
     private TenantAdminService tenantAdminService;
     private TenantService tenantService;
+    private JobLockService jobLockService;
     
     private StoreRef personStoreRef;
     
@@ -78,7 +83,8 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
     private int updateBatchSize = 50;
     
     private boolean enabled = true;
-    private Lock writeLock = new ReentrantLock();
+    private static final long LOCK_TTL = 60000L;        // 1 minute
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "org.alfresco.repo.usage.UserUsageTrackingComponent");
     
     private PolicyComponent policyComponent;
 
@@ -87,6 +93,7 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
      */
     public void init()
     {
+        PropertyCheck.mandatory(this, "jobLockService", jobLockService);
         if (enabled)
         {
             this.policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, ContentModel.TYPE_PERSON, new JavaBehaviour(this, "onCreateNode"));
@@ -153,6 +160,48 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
         this.enabled = enabled;
     }
     
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
+
+    private class TrackingJobLockRefreshCallback implements JobLockRefreshCallback
+    {
+        private final AtomicBoolean running = new AtomicBoolean(true);
+
+        @Override
+        public boolean isActive()
+        {
+            return running.get();
+        }
+
+        public void stopRefreshing()
+        {
+            running.set(false);
+        }
+
+        @Override
+        public void lockReleased()
+        {
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("lock released");
+            }
+        }
+    };
+
+    private String getLock(long time)
+    {
+        try
+        {
+            return jobLockService.getLock(LOCK_QNAME, time);
+        }
+        catch (LockAcquisitionException e)
+        {
+            return null;
+        }
+    }
+
     public void execute()
     {
         if (enabled == false || transactionService.isReadOnly())
@@ -160,9 +209,11 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
             return;
         }
         
-        boolean locked = writeLock.tryLock();
-        if (locked)
+        String lockToken = getLock(LOCK_TTL);
+        if (lockToken != null)
         {
+            TrackingJobLockRefreshCallback callback = new TrackingJobLockRefreshCallback();
+            jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, callback);
             // collapse usages - note: for MT environment, will collapse for all tenants
             try
             {
@@ -170,7 +221,9 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
             }
             finally
             {
-                writeLock.unlock();
+                // Release the locks on the job and stop refreshing
+                callback.stopRefreshing();
+                jobLockService.releaseLock(lockToken, LOCK_QNAME);
             }
         }
     }
@@ -206,9 +259,11 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
             return;
         }
         
-        boolean locked = writeLock.tryLock();
-        if (locked)
+        String lockToken = getLock(LOCK_TTL);
+        if (lockToken != null)
         {
+            TrackingJobLockRefreshCallback callback = new TrackingJobLockRefreshCallback();
+            jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, callback);
             try
             {
                 if (enabled)
@@ -227,7 +282,8 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
             }
             finally
             {
-                writeLock.unlock();
+                callback.stopRefreshing();
+                jobLockService.releaseLock(lockToken, LOCK_QNAME);
             }
         }
     }

@@ -106,7 +106,7 @@ public class SitesCannedQuery extends AbstractCannedQuery<SiteMembership>
             	if(siteInfo != null)
             	{
 	        		String role = siteService.getMembersRole(siteName, userName);
-	        		if(role != null)
+	        		if (role != null)
 	        		{
 	        			siteMembers.add(new SiteMembership(siteInfo, authority, SiteRole.valueOf(role)));
 	        		}

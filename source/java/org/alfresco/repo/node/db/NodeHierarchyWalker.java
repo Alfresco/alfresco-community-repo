@@ -103,8 +103,9 @@ public class NodeHierarchyWalker
         Long nodeId = nodePair.getFirst();
         NodeRef nodeRef = nodePair.getSecond();
         QName nodeType = nodeDAO.getNodeType(nodeId);
+        Long nodeAclId = nodeDAO.getNodeAclId(nodeId);
         // Record the first node (parent)
-        VisitedNode visitedNode = new VisitedNode(nodeId, nodeRef, nodeType, parentAssocPair);
+        VisitedNode visitedNode = new VisitedNode(nodeId, nodeRef, nodeType, nodeAclId, parentAssocPair);
         nodesVisitedById.put(nodeId, visitedNode);
         nodesVisitedByNodeRef.put(nodeRef, visitedNode);
         // Now walk
@@ -149,10 +150,11 @@ public class NodeHierarchyWalker
                     Long childNodeId = childNodePair.getFirst();
                     NodeRef childNodeRef = childNodePair.getSecond();
                     QName childNodeType = nodeDAO.getNodeType(childNodeId);
+                    Long childNodeAclId = nodeDAO.getNodeAclId(childNodeId);
                     // Keep the IDs of the nodes for recursion
                     nodesVisitedWorking.add(childNodeId);
                     // We have a node in the hierarchy to record
-                    VisitedNode visitedNode = new VisitedNode(childNodeId, childNodeRef, childNodeType, childAssocPair);
+                    VisitedNode visitedNode = new VisitedNode(childNodeId, childNodeRef, childNodeType, childNodeAclId, childAssocPair);
                     nodesVisitedById.put(childNodeId, visitedNode);
                     nodesVisitedByNodeRef.put(childNodeRef, visitedNode);
                 }
@@ -265,6 +267,7 @@ public class NodeHierarchyWalker
         public final Long id;
         public final NodeRef nodeRef;
         public final QName nodeType;
+        public final Long aclId;
         public final Pair<Long, ChildAssociationRef> primaryParentAssocPair;
         public final List<Pair<Long, ChildAssociationRef>> secondaryParentAssocs;
         public final List<Pair<Long, ChildAssociationRef>> secondaryChildAssocs;
@@ -275,11 +278,13 @@ public class NodeHierarchyWalker
                 Long id,
                 NodeRef nodeRef,
                 QName type,
+                Long aclId,
                 Pair<Long, ChildAssociationRef> primaryParentAssocPair)
         {
             this.id = id;
             this.nodeRef = nodeRef;
             this.nodeType = type;
+            this.aclId = aclId;
             this.primaryParentAssocPair = primaryParentAssocPair;
             this.secondaryParentAssocs = new ArrayList<Pair<Long,ChildAssociationRef>>(17);
             this.secondaryChildAssocs = new ArrayList<Pair<Long,ChildAssociationRef>>(17);

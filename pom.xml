@@ -9,8 +9,8 @@
     <parent>
         <artifactId>alfresco-parent</artifactId>
         <groupId>org.alfresco</groupId>
-        <version>4.2.d-SNAPSHOT</version>
-        <relativePath>../../pom-experimental.xml</relativePath>
+        <version>4.2.0-QA-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <dependencies>
@@ -57,8 +57,7 @@
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
-            <version>1.4</version>
-            <classifier>patched</classifier>
+            <version>1.4-DBCP330</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-pool</groupId>
@@ -317,6 +316,12 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.5.11</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.beanshell</groupId>
@@ -380,7 +385,7 @@
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.9.4</version>
+            <version>1.9.9</version>
         </dependency>
         <dependency>
             <groupId>org.apache.myfaces.core</groupId>
@@ -391,6 +396,16 @@
             <groupId>org.apache.myfaces.core</groupId>
             <artifactId>myfaces-impl</artifactId>
             <version>1.1.8</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-collections</artifactId>
+                    <groupId>commons-collections</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-digester</groupId>
+                    <artifactId>commons-digester</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlbeans</groupId>
@@ -400,17 +415,17 @@
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>1.7.0-alfresco-20130130</version>
+            <version>1.8.2-alfresco-patched</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>fontbox</artifactId>
-            <version>1.7.0</version>
+            <version>1.8.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>jempbox</artifactId>
-            <version>1.7.0</version>
+            <version>1.8.2</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -430,7 +445,7 @@
         <dependency>
             <groupId>org.ccil.cowan.tagsoup</groupId>
             <artifactId>tagsoup</artifactId>
-            <version>1.2</version>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.solr</groupId>
@@ -580,6 +595,10 @@
                     <groupId>nu.validator.htmlparser</groupId>
                     <artifactId>htmlparser</artifactId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>commons-collections</artifactId>
+                    <groupId>commons-collections</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -592,7 +611,7 @@
         <dependency>
             <groupId>org.springframework.social</groupId>
             <artifactId>spring-social-core</artifactId>
-            <version>1.0.0.RC1</version>
+            <version>1.0.3.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.social</groupId>
@@ -607,7 +626,7 @@
         <dependency>
             <groupId>org.springframework.social</groupId>
             <artifactId>spring-social-twitter</artifactId>
-            <version>1.0.0.RC1</version>
+            <version>1.0.5.RELEASE</version>
         </dependency>
 
         <!-- Chemistry -->
@@ -615,12 +634,14 @@
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-commons-impl</artifactId>
             <version>${dependency.opencmis.version}</version>
+            <!-- 
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.xml.ws</groupId>
                     <artifactId>jaxws-rt</artifactId>
                 </exclusion>
             </exclusions>
+             -->
         </dependency>
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
@@ -678,18 +699,50 @@
         <dependency>
             <groupId>org.springframework.social</groupId>
             <artifactId>spring-social-web</artifactId>
-            <version>1.0.0.RELEASE</version>
+            <version>1.0.3.RELEASE</version>
         </dependency>
         <!-- Activiti -->
         <dependency>
             <groupId>org.activiti</groupId>
             <artifactId>activiti-engine</artifactId>
             <version>${dependency.activiti.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>jcl-over-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.activiti</groupId>
             <artifactId>activiti-spring</artifactId>
             <version>${dependency.activiti.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jdbc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-tx</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-orm</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>jcl-over-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Test dependencies -->
@@ -707,7 +760,14 @@
         </dependency>
         <dependency>
             <groupId>junit</groupId>
-            <artifactId>junit-dep</artifactId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-core</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -720,6 +780,13 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-core</artifactId>
             <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
@@ -740,6 +807,12 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.3.168</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xmlunit</groupId>
+            <artifactId>xmlunit</artifactId>
+            <version>1.4</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -825,17 +898,20 @@
                                 <exclude>**/org/alfresco/repo/action/scheduled/ScheduledPersistedActionServiceTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/avm/AVMServiceRemoteSystemTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/blog/BlogIntegrationServiceSystemTest.*</exclude>
+                                <exclude>**/org/alfresco/repo/content/MimetypeMapContentTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/caching/quota/StandardQuotaStrategyTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/caching/ContentCacheImplTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/caching/test/SlowContentStoreTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/metadata/TikaAudioMetadataExtracterTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/transform/OOXMLThumbnailContentTransformerTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/transform/ArchiveContentTransformerTest.*</exclude>
+                                <exclude>**/org/alfresco/repo/content/transform/TransformerDebugTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/domain/avm/AVMStoreDAOTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/transform/FailoverContentTransformerTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/domain/node/NodePropertyHelperTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/googledocs/GoogleDocumentServiceSystemTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/model/filefolder/HiddenAspectTest.*</exclude>
+                                <exclude>**/org/alfresco/repo/notification/NotificationServiceImplSystemTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/publishing/PublishEventActionTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/rendition/executer/AbstractRenderingEngineTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/rule/BaseRuleTest.*</exclude>
@@ -849,45 +925,51 @@
                                 <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiWorkflowComponentTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/workflow/jbpm/JbpmTimerTest.*</exclude>
                                 <exclude>**/org/alfresco/util/schemacomp/model/AbstractDbObjectTest.*</exclude>
-
-                                <!-- TODO tests which pass with Ant, but not here. To investigate -->
-                                <exclude>**/org/alfresco/cmis/renditions/CMISRenditionServiceTest.*</exclude>
-                                <exclude>**/org/alfresco/filesys/FTPServerTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/avm/AVMServiceTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/deploy/DeploymentServiceImplFSTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/deploy/DeploymentServiceTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/rendition/MultiUserRenditionTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/rendition/RenditionServiceIntegrationTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/rendition/RenditionServicePermissionsTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/thumbnail/ThumbnailServiceImplTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/version/NodeServiceImplTest.*</exclude>
-                                <exclude>**/org/alfresco/wcm/**</exclude>
                             </excludes>
                         </configuration>
-                    </plugin>
-
-                    <!-- Create a jar of test classes, to be reused later 
-                        in remote-api -->
-                    <plugin>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>create-test-jar</id>
-                                <!-- Usually bound to package phase, but 
-                                    set earlier so that we can trigger it in sonar.phase -->
-                                <!-- That's because this jar is used later 
-                                    in enterprise-repository, and Sonar hits MDEP-98 -->
-                                <phase>process-test-classes</phase>
-                                <goals>
-                                    <goal>test-jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-    
+
     </profiles>
 
+    <build>
+    	<pluginManagement>
+    		<plugins>
+    			<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+    			<plugin>
+    				<groupId>org.eclipse.m2e</groupId>
+    				<artifactId>lifecycle-mapping</artifactId>
+    				<version>1.0.0</version>
+    				<configuration>
+    					<lifecycleMappingMetadata>
+    						<pluginExecutions>
+    							<pluginExecution>
+    								<pluginExecutionFilter>
+    									<groupId>
+    										org.apache.maven.plugins
+    									</groupId>
+    									<artifactId>
+    										maven-surefire-plugin
+    									</artifactId>
+    									<versionRange>
+    										[2.14,)
+    									</versionRange>
+    									<goals>
+    										<goal>test</goal>
+    									</goals>
+    								</pluginExecutionFilter>
+    								<action>
+    									<ignore></ignore>
+    								</action>
+    							</pluginExecution>
+    						</pluginExecutions>
+    					</lifecycleMappingMetadata>
+    				</configuration>
+    			</plugin>
+    		</plugins>
+    	</pluginManagement>
+    </build>
+    
 </project>

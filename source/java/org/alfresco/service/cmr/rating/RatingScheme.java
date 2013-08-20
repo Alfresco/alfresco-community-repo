@@ -22,6 +22,7 @@ package org.alfresco.service.cmr.rating;
 import java.util.List;
 
 import org.alfresco.repo.rating.AbstractRatingRollupAlgorithm;
+import org.alfresco.repo.rating.RatingNamingConventionsUtil;
 import org.alfresco.repo.rating.RatingSchemeRegistry;
 
 /**
@@ -34,7 +35,7 @@ import org.alfresco.repo.rating.RatingSchemeRegistry;
  * @author Neil McErlean
  * @since 3.4
  */
-public interface RatingScheme
+public interface RatingScheme extends Comparable<RatingScheme>
 {
     /**
      * This method returns the name which uniquely identifies the rating scheme.
@@ -56,6 +57,14 @@ public interface RatingScheme
      * @return the maximum rating.
      */
     public float getMaxRating();
+    
+    /**
+     * This method returns the namespace (prefix e.g. "cm") of the Alfresco content model
+     * containing the definitions of the rollup aspect and properties.
+     * @since 4.1.5
+     * @see RatingNamingConventionsUtil
+     */
+    public String getModelPrefix();
     
     /**
      * This method returns <code>true</code> if the cm:creator of the node is allowed

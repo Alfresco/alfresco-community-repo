@@ -20,6 +20,7 @@ package org.alfresco.repo.node.archive;
 
 import java.util.List;
 
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -176,4 +177,15 @@ public interface NodeArchiveService
      * @param originalStoreRef the store that the items originally came from
      */
     public void purgeAllArchivedNodes(StoreRef originalStoreRef);
+    
+    /**
+     * Get the archived nodes deleted by the current user. If the current user
+     * is an Administrator, then all the deleted nodes are fetched.
+     * 
+     * @param cannedQueryBuilder the object that holds the required and optional
+     *            parameters to perform the canned query
+     * @return the results of the attempted search
+     * @since 4.2
+     */
+    public PagingResults<NodeRef> listArchivedNodes(ArchivedNodesCannedQueryBuilder cannedQueryBuilder);
 }

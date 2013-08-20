@@ -25,6 +25,7 @@ import java.util.Map;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.preference.PreferenceService;
+import org.alfresco.service.transaction.TransactionService;
 import org.mozilla.javascript.NativeObject;
 
 /**
@@ -38,6 +39,13 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
     /** Preference Service */
     private PreferenceService preferenceService;
     
+    private TransactionService transactionService;
+    
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+    
     public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
@@ -46,6 +54,11 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
     public void setPreferenceService(PreferenceService preferenceService)
     {
         this.preferenceService = preferenceService;
+    }
+    
+    public boolean getAllowWrite()
+    {
+        return transactionService.getAllowWrite();
     }
     
     public NativeObject getPreferences(String userName)

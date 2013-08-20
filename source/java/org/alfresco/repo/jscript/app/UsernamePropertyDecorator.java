@@ -59,7 +59,7 @@ public class UsernamePropertyDecorator extends BasePropertyDecorator
         
         if (this.personService.personExists(username))
         {
-            NodeRef personRef = this.personService.getPerson(username);
+            NodeRef personRef = this.personService.getPerson(username, false);
             firstName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
             lastName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
         }

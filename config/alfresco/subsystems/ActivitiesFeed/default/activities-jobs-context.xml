@@ -18,19 +18,10 @@
         </property>
     </bean>
     
-    <bean id="feedCleanerTrigger" class="org.alfresco.util.TriggerBean">
-        <property name="jobDetail">
-            <ref bean="feedCleanerJobDetail" />
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-        <property name="startDelayMinutes">
-            <value>${activities.feed.cleaner.startDelayMins}</value>
-        </property>
-        <property name="repeatIntervalMinutes">
-            <value>${activities.feed.cleaner.repeatIntervalMins}</value>
-        </property>
+    <bean id="feedCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail" ref="feedCleanerJobDetail" />
+        <property name="scheduler" ref="schedulerFactory" />
+        <property name="cronExpression" value="${activities.feed.cleaner.cronExpression}" />
     </bean>
     
     <!-- Activities Feed Generator -->
@@ -48,19 +39,10 @@
         </property>
     </bean>
     
-    <bean id="feedGeneratorTrigger" class="org.alfresco.util.TriggerBean">
-        <property name="jobDetail">
-            <ref bean="feedGeneratorJobDetail" />
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-        <property name="startDelayMinutes">
-            <value>${activities.feed.generator.startDelayMins}</value>
-        </property>
-        <property name="repeatInterval">
-            <value>${activities.feed.generator.repeatIntervalMillis}</value> <!-- eg. 30000 msecs = 30 seconds -->
-        </property>
+    <bean id="feedGeneratorTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail" ref="feedGeneratorJobDetail" />
+        <property name="scheduler" ref="schedulerFactory" />
+        <property name="cronExpression" value="${activities.feed.generator.cronExpression}" />
     </bean>
     
     <!-- Activities Post Lookup (for secondary lookup) -->
@@ -77,19 +59,10 @@
             </map>
         </property>
     </bean>
-    <bean id="postLookupTrigger" class="org.alfresco.util.TriggerBean">
-        <property name="jobDetail">
-            <ref bean="postLookupJobDetail" />
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-        <property name="startDelayMinutes">
-            <value>${activities.post.lookup.startDelayMins}</value>
-        </property>
-        <property name="repeatInterval">
-            <value>${activities.post.lookup.repeatIntervalMillis}</value> <!-- eg. 15000 msecs = 15 seconds -->
-        </property>
+    <bean id="postLookupTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail" ref="postLookupJobDetail" />
+        <property name="scheduler" ref="schedulerFactory" />
+        <property name="cronExpression" value="${activities.post.lookup.cronExpression}" />
     </bean>
     
     <!-- Activities Post Cleaner -->
@@ -107,19 +80,10 @@
         </property>
     </bean>
     
-    <bean id="postCleanerTrigger" class="org.alfresco.util.TriggerBean">
-        <property name="jobDetail">
-            <ref bean="postCleanerJobDetail" />
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-        <property name="startDelayMinutes">
-            <value>${activities.post.cleaner.startDelayMins}</value>
-        </property>
-        <property name="repeatIntervalMinutes">
-            <value>${activities.post.cleaner.repeatIntervalMins}</value>
-        </property>
+    <bean id="postCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail" ref="postCleanerJobDetail" />
+        <property name="scheduler" ref="schedulerFactory" />
+        <property name="cronExpression" value="${activities.post.cleaner.cronExpression}" />
     </bean>
     
      <!-- Activities Email Notifier -->
@@ -140,22 +104,11 @@
         </property>
     </bean>
     
-    <bean id="feedNotifierTrigger" class="org.alfresco.util.TriggerBean">
-        <property name="jobDetail">
-            <ref bean="feedNotifierJobDetail"/>
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory"/>
-        </property>
-        <property name="startDelayMinutes">
-            <value>${activities.feed.notifier.startDelayMins}</value>
-        </property>
-        <property name="repeatIntervalMinutes">
-            <value>${activities.feed.notifier.repeatIntervalMins}</value>
-        </property>
-        <property name="enabled">
-            <value>${activities.feed.notifier.enabled}</value>
-        </property>
+    <bean id="feedNotifierTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail" ref="feedNotifierJobDetail" />
+        <property name="scheduler" ref="schedulerFactory" />
+        <property name="cronExpression" value="${activities.feed.notifier.cronExpression}" />
+        <property name="enabled" value="${activities.feed.notifier.enabled}" />
     </bean>
     
 </beans>

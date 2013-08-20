@@ -89,7 +89,8 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
     @Override
     public String getProperty(String name)
     {
-        if (false == isUpdateable(name))
+        // MNT-9254 fix, use search.solrAdminHTTPCLient bean to retrive property value only if sorl subsystem is active and started (application context in state should be not null)
+        if (false == isUpdateable(name) && ((ApplicationContextState) getState(false)).getApplicationContext(false) != null)
         {
             try
             {
@@ -122,6 +123,11 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
 
                 if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE))
                 {
+                	if(alfrescoActive == null || alfrescoActive.isEmpty())
+                	{
+                		// Admin Console is expecting a true/false value, not blank 
+                		return "false";
+                	}
                     return alfrescoActive;
                 }
                 else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG))
@@ -184,7 +190,59 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
         }
         else
         {
-            return super.getProperty(name);
+        	// solr subsystem is not started or not active
+            if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE))
+            {
+             	return "";
+            }
+            else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE))
+            {
+                return "";
+            }
+            else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG))
+            {
+                return "Unavailable: solr subsystem not started";
+            }
+            else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION))
+            {
+            	return "Unavailable: solr subsystem not started";
+            }
+            else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAST_INDEXED_TXN))
+            {
+            	return "Unavailable: solr subsystem not started";
+            }
+            else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_TXNS_REMAINING))
+            {
+            	return "Unavailable: solr subsystem not started";
+            }
+            else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_INDEXING_TIME_REMAINING))
+            {
+            	return "Unavailable: solr subsystem not started";
+            }
+            else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG))
+            {
+            	return "Unavailable: solr subsystem not started";
+            }
+            else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION))
+            {
+            	return "Unavailable: solr subsystem not started";
+            }
+            else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAST_INDEXED_TXN))
+            {
+            	return "Unavailable: solr subsystem not started";
+            }
+            else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_APPROX_TXNS_REMAINING))
+            {
+            	return "Unavailable: solr subsystem not started";
+            }
+            else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_APPROX_INDEXING_TIME_REMAINING))
+            {
+            	return "Unavailable: solr subsystem not started";
+            }
+            else
+            {
+                return super.getProperty(name);
+            }
         }
     }
 

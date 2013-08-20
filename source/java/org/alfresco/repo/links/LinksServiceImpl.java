@@ -388,11 +388,6 @@ public class LinksServiceImpl implements LinksService
        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
        sp.setQuery(luceneQuery.toString());
        sp.addSort(sortOn, false);
-       if (paging.getMaxItems() > 0)
-       {
-           sp.setLimit(paging.getMaxItems());
-           sp.setLimitBy(LimitBy.FINAL_SIZE);
-       }
        if (paging.getSkipCount() > 0)
        {
            sp.setSkipCount(paging.getSkipCount());
@@ -406,7 +401,7 @@ public class LinksServiceImpl implements LinksService
        try 
        {
           results = searchService.query(sp);
-          pagedResults = wrap(results, container);
+          pagedResults = wrap(results, container, paging);
        }
        finally
        {
@@ -419,14 +414,20 @@ public class LinksServiceImpl implements LinksService
        return pagedResults;
     }
     
-    private PagingResults<LinkInfo> wrap(final ResultSet finalLuceneResults, final NodeRef container)
+    private PagingResults<LinkInfo> wrap(final ResultSet finalLuceneResults, final NodeRef container, final PagingRequest paging)
     {
        final List<LinkInfo> links = new ArrayList<LinkInfo>();
+       int cnt = 1;
        for (ResultSetRow row : finalLuceneResults)
        {
           LinkInfo link = buildLink(
                 row.getNodeRef(), container, row.getQName().getLocalName());
           links.add(link);
+          cnt++;
+          if (paging.getMaxItems()>0 && cnt>paging.getMaxItems())
+          {
+              break;
+          }
        }
        
        // Wrap

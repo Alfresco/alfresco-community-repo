@@ -639,6 +639,7 @@
         </property>
         <property name="transactionAttributes">
             <props>
+                <prop key="getEnabled">PROPAGATION_SUPPORTS</prop>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
         </property>

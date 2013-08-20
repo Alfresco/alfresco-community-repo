@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -124,7 +124,13 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
             diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_LOOKEDUP_USER, true, params);
         }
         else
+        // Otherwise, use the format, but disallow leading or trailing whitespace in the user ID as this can result in
+        // ghost users (MNT-2597)
         {
+            if (!userName.equals(userName.trim()))
+            {
+                throw new AuthenticationException("Invalid user ID with leading or trailing whitespace");
+            }
             // we are using a fixed name format, 
             userDN = String.format(
                     userNameFormat, new Object[]
@@ -190,5 +196,26 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
     protected boolean implementationAllowsGuestLogin()
     {
         return true;
+    }
+    
+    private String id = "default";
+    
+    /**
+     * Set the unique name of this ldap authentication component e.g. "managed,ldap1"
+     * 
+     * @param id
+     */
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+
+    /**
+     * Get the unique name of this ldap authentication component e.g. "managed,ldap1";
+     * @return the unique name of this ldap authentication component
+     */
+    String getId()
+    {
+        return id;
     }
 }

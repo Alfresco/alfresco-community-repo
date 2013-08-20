@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-
-import org.alfresco.cmis.CMISScope;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
@@ -31,6 +29,7 @@ import org.alfresco.opencmis.search.CMISQueryParser;
 import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.opencmis.search.CMISResultSet;
 import org.alfresco.opencmis.search.CmisFunctionEvaluationContext;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryModelFactory;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -38,6 +37,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 import org.apache.chemistry.opencmis.commons.enums.CapabilityJoin;
 import org.apache.chemistry.opencmis.commons.enums.CapabilityQuery;
@@ -48,8 +48,9 @@ import org.apache.chemistry.opencmis.commons.enums.CapabilityQuery;
  */
 public class SolrOpenCMISQueryServiceImpl implements CMISQueryService
 {
+//	private CmisVersion cmisVersion;
 
-    private SolrQueryLanguage solrQueryLanguage;
+    private LuceneQueryLanguageSPI solrQueryLanguage;
     
     private NodeService nodeService;
 
@@ -57,8 +58,7 @@ public class SolrOpenCMISQueryServiceImpl implements CMISQueryService
 
     private CMISDictionaryService cmisDictionaryService;
     
-    
-    public void setSolrQueryLanguage(SolrQueryLanguage solrQueryLanguage)
+    public void setSolrQueryLanguage(LuceneQueryLanguageSPI solrQueryLanguage)
     {
         this.solrQueryLanguage = solrQueryLanguage;
     }
@@ -84,7 +84,9 @@ public class SolrOpenCMISQueryServiceImpl implements CMISQueryService
     @Override
     public CMISResultSet query(CMISQueryOptions options)
     {
-        ResultSet rs = solrQueryLanguage.executeQuery(options.getAsSearchParmeters(), null);
+    	SearchParameters searchParameters = options.getAsSearchParmeters();
+    	searchParameters.addExtraParameter("cmisVersion", options.getCmisVersion().toString());
+        ResultSet rs = solrQueryLanguage.executeQuery(searchParameters, null);
         
         CapabilityJoin joinSupport = getJoinSupport();
         if(options.getQueryMode() == CMISQueryOptions.CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS)

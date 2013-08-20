@@ -160,18 +160,5 @@
 		parent="emailMessageHandlerBase"
 		class="org.alfresco.email.server.handler.TopicEmailMessageHandler" />
 
-	<bean id="aliasableAspect"
-		class="org.alfresco.email.server.AliasableAspect"
-		init-method="init">
-		<property name="nodeService">
-			<ref bean="nodeService" />
-		</property>
-		<property name="attributeService">
-			<ref bean="attributeService" />
-		</property>
-		<property name="policyComponent">
-			<ref bean="policyComponent" />
-		</property>
-	</bean>	
 
 </beans>

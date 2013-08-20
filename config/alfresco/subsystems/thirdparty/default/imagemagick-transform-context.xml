@@ -34,7 +34,7 @@
                   <entry key="GS_LIB">
                      <value>${img.gslib}</value>
                   </entry>
-                  <entry key="DYLD_LIBRARY_PATH">
+                  <entry key="DYLD_FALLBACK_LIBRARY_PATH">
                      <value>${img.dyn}</value>
                   </entry>
                   <entry key="LD_LIBRARY_PATH">

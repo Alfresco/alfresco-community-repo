@@ -2,7 +2,7 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-
+    <import resource="../common-opencmis-context.xml" />
 
     <bean id="search.OpenCMISQueryService" class="org.alfresco.opencmis.search.CMISQueryServiceImpl" >
         <property name="OpenCMISDictionaryService" ref="OpenCMISDictionaryService" />   
@@ -11,7 +11,12 @@
         <property name="alfrescoDictionaryService" ref="dictionaryService" />
     </bean>
     
-    
+    <bean id="search.OpenCMISQueryService1.1" class="org.alfresco.opencmis.search.CMISQueryServiceImpl" >
+        <property name="OpenCMISDictionaryService" ref="OpenCMISDictionaryService1.1" />   
+        <property name="queryEngine"            ref="search.adm.luceneQueryEngine" />
+        <property name="nodeService"            ref="nodeService" />
+        <property name="alfrescoDictionaryService" ref="dictionaryService" />
+    </bean>    
     
     <bean id="search.lucene.sql.cmis.strict" class="org.alfresco.repo.search.impl.lucene.LuceneOpenCMISStrictSqlQueryLanguage" >
         <property name="cmisQueryService">
@@ -26,7 +31,20 @@
         </property>
     </bean>
 
-    <bean id="search.lucene.sql.alfresco" class="org.alfresco.repo.search.impl.lucene.LuceneOpenCMISAlfrescoSqlQueryLanguage">
+    <bean id="search.lucene.sql.cmis.strict1.1" class="org.alfresco.repo.search.impl.lucene.LuceneOpenCMISStrictSqlQueryLanguage" >
+        <property name="cmisQueryService">
+            <ref bean="search.OpenCMISQueryService1.1" />
+        </property>
+        <property name="factories">
+            <list>
+                <ref bean="search.admLuceneIndexerAndSearcherFactory" />
+                <ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />
+                <ref bean="search.avmLuceneIndexerAndSearcherFactory" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="search.cmis.alfresco.index" class="org.alfresco.repo.search.impl.lucene.LuceneOpenCMISAlfrescoSqlQueryLanguage">
         <property name="cmisQueryService">
             <ref bean="search.OpenCMISQueryService" />
         </property>
@@ -38,7 +56,20 @@
             </list>
         </property>
     </bean>
-	
+
+    <bean id="search.cmis.alfresco.index1.1" class="org.alfresco.repo.search.impl.lucene.LuceneOpenCMISAlfrescoSqlQueryLanguage">
+        <property name="cmisQueryService">
+            <ref bean="search.OpenCMISQueryService1.1" />
+        </property>
+        <property name="factories">
+            <list>
+                <ref bean="search.admLuceneIndexerAndSearcherFactory" />
+                <ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />
+                <ref bean="search.avmLuceneIndexerAndSearcherFactory" />
+            </list>
+        </property>
+    </bean>
+    	
     <bean id="search.adm.luceneQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>

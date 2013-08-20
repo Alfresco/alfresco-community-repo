@@ -141,7 +141,7 @@ public class WikiServiceImpl implements WikiService
     private static String buildName(String title)
     {
        // The name is based on the title, but with underscores
-       String name = title.replace(' ', '_');
+       String name = title.replaceAll(" ", "%20");
        name = name.replaceAll("\"", "%22");
        name = name.replaceAll("[*]", "%2a");
        name = name.replaceAll("<", "%3c");

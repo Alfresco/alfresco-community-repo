@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.domain.avm;
 
+import java.io.Serializable;
+
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -26,8 +28,9 @@ import org.alfresco.util.EqualsHelper;
  * @author janv
  * @since 3.2
  */
-public class AVMChildEntryEntity
+public class AVMChildEntryEntity implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     private Long parentNodeId;
     private String name;
     private String lowerName; // Derived from name for case insensitive lookups

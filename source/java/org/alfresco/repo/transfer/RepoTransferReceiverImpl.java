@@ -193,7 +193,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     private JobLockService jobLockService;
     private TransferVersionChecker transferVersionChecker;
     
-    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    // note: cache is tenant-aware (if using TransctionalCache impl)
     private SimpleCache<String, NodeRef> singletonCache; // eg. for transfer temp folder nodeRef
     private final String KEY_TRANSFER_TEMP_NODEREF = "key.transferTempFolder.noderef"; // where temp files are stored
     private final String KEY_INBOUND_TRANSFER_RECORDS_NODEREF = "key.inboundTransferRecordsFolder.noderef"; // where the destination side transfer report is generated

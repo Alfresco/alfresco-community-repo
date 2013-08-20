@@ -40,8 +40,9 @@ import org.alfresco.util.EqualsHelper;
  * @author Derek Hulley
  * @since 3.4
  */
-public class AuditablePropertiesEntity
+public class AuditablePropertiesEntity implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     private static Set<QName> auditablePropertyQNames;
     static
     {

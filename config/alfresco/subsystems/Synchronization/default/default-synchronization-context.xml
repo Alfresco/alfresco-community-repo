@@ -34,7 +34,7 @@
     </bean>
 
     <!-- The chaining user registry synchronizer -->
-    <bean id="userRegistrySynchronizer" class="org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizer">
+    <bean id="userRegistrySynchronizer" class="org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizer" init-method="init" >
         <property name="syncWhenMissingPeopleLogIn">
             <value>${synchronization.syncWhenMissingPeopleLogIn}</value>
         </property>
@@ -59,11 +59,11 @@
         <property name="transactionService">
             <ref bean="transactionService" />
         </property>
-        <property name="ruleService">
-            <ref bean="ruleService" />
-        </property>
         <property name="jobLockService">
             <ref bean="jobLockService" />
+        </property>
+        <property name="sysAdminParams">
+            <ref bean="sysAdminParams" />
         </property>
         <property name="sourceBeanName">
             <value>userRegistry</value>

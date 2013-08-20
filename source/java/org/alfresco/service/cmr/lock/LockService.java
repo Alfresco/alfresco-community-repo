@@ -21,6 +21,8 @@ package org.alfresco.service.cmr.lock;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.repo.lock.mem.Lifetime;
+import org.alfresco.repo.lock.mem.LockState;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -54,7 +56,7 @@ public interface LockService
        throws UnableToAquireLockException;
    
    /**
-    * Places a lock on a node.  
+    * Places a {@link Lifetime#PERSISTENT persistent} lock on a node.  
     * <p>
     * The lock prevents any other user or process from comitting updates 
     * to the node until the lock is released.  
@@ -77,6 +79,60 @@ public interface LockService
    @Auditable(parameters = {"nodeRef", "lockType", "timeToExpire"})
    public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire)
        throws UnableToAquireLockException;
+
+   /**
+    * Places a lock on a node.  
+    * <p>
+    * The lock prevents any other user or process from comitting updates 
+    * to the node until the lock is released.  
+    * <p>
+    * The lock will be owned by the current user.
+    * <p>
+    * If the time to expire is 0 then the lock will never expire.  Otherwise the
+    * timeToExpire indicates the number of seconds before the lock expires.  When
+    * a lock expires the lock is considered to have been released.
+    * <p>
+    * If the node is already locked and the user is the lock owner then the lock will
+    * be renewed with the passed timeToExpire.
+    * 
+    * @param  nodeRef         a reference to a node 
+    * @param  lockType        the lock type
+    * @param  timeToExpire    the number of seconds before the locks expires.
+    * @param  lifetime        allows persistent or ephemeral locks to be specified.
+    * @throws UnableToAquireLockException
+    *                       thrown if the lock could not be obtained
+    */
+   @Auditable(parameters = {"nodeRef", "lockType", "timeToExpire", "lifetime"})
+   public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, Lifetime lifetime)
+               throws UnableToAquireLockException;
+   
+   /**
+    * Places a lock on a node.  
+    * <p>
+    * The lock prevents any other user or process from comitting updates 
+    * to the node until the lock is released.  
+    * <p>
+    * The lock will be owned by the current user.
+    * <p>
+    * If the time to expire is 0 then the lock will never expire.  Otherwise the
+    * timeToExpire indicates the number of seconds before the lock expires.  When
+    * a lock expires the lock is considered to have been released.
+    * <p>
+    * If the node is already locked and the user is the lock owner then the lock will
+    * be renewed with the passed timeToExpire.
+    * 
+    * @param  nodeRef         a reference to a node 
+    * @param  lockType        the lock type
+    * @param  timeToExpire    the number of seconds before the locks expires.
+    * @param  lifetime        allows persistent or ephemeral locks to be specified.
+    * @param  additionalInfo  additional lock data stored alongside core lock data such as
+    *                         timeToExpire. NOTE: only valid for ephemeral locks.
+    * @throws UnableToAquireLockException
+    *                       thrown if the lock could not be obtained
+    */
+   @Auditable(parameters = {"nodeRef", "lockType", "timeToExpire", "lifetime"})
+   public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, Lifetime lifetime, String additionalInfo)
+               throws UnableToAquireLockException;
    
    /**
     * Places a lock on a node and optionally on all its children.  
@@ -270,27 +326,7 @@ public interface LockService
     *                   the user ref and the lock type.
     */
    @Auditable(parameters = {"nodeRef"})
-   public void checkForLock(NodeRef nodeRef);   
-   
-   /**
-    * Get all the node references that the current user has locked.
-    * 
-    * @param    storeRef    the store reference
-    * @return               a list of nodes that the current user has locked.
-    */
-   @Auditable(parameters = {"storeRef"})
-   public List<NodeRef> getLocks(StoreRef storeRef);
-   
-   /**
-    * Get all the node references that the current user has locked filtered by the provided lock type.
-    * 
-    * @param storeRef   the store reference
-    * @param lockType   the lock type to filter the results by
-    * 
-    * @return           a list of nodes that the current user has locked filtered by the lock type provided
-    */
-   @Auditable(parameters = {"storeRef", "lockType"})
-   public List<NodeRef> getLocks(StoreRef storeRef, LockType lockType);
+   public void checkForLock(NodeRef nodeRef);
    
    /**
     * Allow the current transaction to update a node despite any locks that may be on it.
@@ -303,4 +339,26 @@ public interface LockService
     * After calling suspendLocks turn the locks back on.
     */
    public void enableLocks();
+   
+   /**
+    * Retrieve the additional lock info associated with a node ref.
+    * <p>
+    * @param nodeRef
+    * @return Additional info string or null
+    */
+   public String getAdditionalInfo(NodeRef nodeRef);
+   
+   /**
+    * Retrieve the lock properties for the given NodeRef.
+    * <p>
+    * Do NOT use the returned information to determine the actual state of a lock,
+    * use {@link #getLockStatus(NodeRef)} and other LockService methods for this purpose.
+    * <p>
+    * The returned data is intended for information purposes only, e.g. returning the timeout
+    * in a WebDAV response.
+    * 
+    * @param nodeRef
+    * @return LockState
+    */
+   public LockState getLockState(NodeRef nodeRef);
 }

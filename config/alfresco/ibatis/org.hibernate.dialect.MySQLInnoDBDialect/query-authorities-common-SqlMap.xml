@@ -28,6 +28,16 @@
     <!--                -->
     <!-- Statements     -->
     <!--                -->
+
+    <!-- Count authorities: PEOPLE -->
+    <select id="select_AuthorityCount_People" parameterType="ids" resultType="long">
+        select count(type_qname_id) from alf_node where type_qname_id = #{idOne}
+    </select>
+    
+    <!-- Count authorities: GROUPS -->
+    <select id="select_AuthorityCount_Groups" resultType="long">
+        select count(type_qname_id) from alf_node where type_qname_id = #{idOne}
+    </select>
     
     <!-- GetAuthorities - note: take advantage of fact that authority name is also on child assoc (including "username" for users, eg. getAllAuthoritiesInZone) -->
     <select id="select_GetAuthoritiesCannedQuery" parameterType="AuthorityInfo" resultMap="result_AuthorityInfo" fetchSize="-2147483648">

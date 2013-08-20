@@ -60,6 +60,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
 import org.apache.commons.logging.Log;
@@ -77,6 +78,7 @@ public class WorkflowServiceImpl implements WorkflowService
     private static Log logger = LogFactory.getLog("org.alfresco.repo.workflow");
 
     // Dependent services
+    private TransactionService transactionService;
     private AuthorityService authorityService;
     private BPMEngineRegistry registry;
     private WorkflowPackageComponent workflowPackageComponent;
@@ -91,6 +93,14 @@ public class WorkflowServiceImpl implements WorkflowService
     private int maxPooledTasks = -1;
     private boolean deployWorkflowsInTenant = false;
     
+    /**
+     * @param transactionService service that tells if the server is read-only or not
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
     /**
      * Sets the Authority Service
      * 
@@ -980,6 +990,11 @@ public class WorkflowServiceImpl implements WorkflowService
     public boolean isTaskEditable(WorkflowTask task, String username,
     		boolean refreshTask) 
     {
+        if (!transactionService.getAllowWrite())
+        {
+            return false;
+        }
+        
     	if(refreshTask)
     	{
     		task = getTaskById(task.getId()); // Refresh the task.
@@ -1029,6 +1044,11 @@ public class WorkflowServiceImpl implements WorkflowService
     public boolean isTaskReassignable(WorkflowTask task, String username,
     		boolean refreshTask) 
     {
+        if (!transactionService.getAllowWrite())
+        {
+            return false;
+        }
+        
     	if(refreshTask)
     	{
     		task = getTaskById(task.getId()); // Refresh the task.
@@ -1089,6 +1109,11 @@ public class WorkflowServiceImpl implements WorkflowService
     public boolean isTaskClaimable(WorkflowTask task, String username,
     		boolean refreshTask) 
     {
+        if (!transactionService.getAllowWrite())
+        {
+            return false;
+        }
+        
     	if(refreshTask)
     	{
     		task = getTaskById(task.getId()); // Refresh the task.
@@ -1128,6 +1153,11 @@ public class WorkflowServiceImpl implements WorkflowService
     @Override
     public boolean isTaskReleasable(WorkflowTask task, String username,	boolean refreshTask) 
     {
+        if (!transactionService.getAllowWrite())
+        {
+            return false;
+        }
+        
     	if(refreshTask)
     	{
     		task = getTaskById(task.getId()); // Refresh the task.
@@ -1249,13 +1279,21 @@ public class WorkflowServiceImpl implements WorkflowService
         {
             return Collections.emptyList();
         }
-        else if (workflowPackage.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+        else 
         {
-            return getAvmPackageContents(workflowPackage);
+            return getPackageContents(workflowPackage);
+        }
+    }
+    
+    public List<NodeRef> getPackageContents(NodeRef packageRef)
+    {
+        if (packageRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+        {
+            return getAvmPackageContents(packageRef);
         }
         else
         {
-            return getRepositoryPackageContents(workflowPackage);
+            return getRepositoryPackageContents(packageRef);
         }
     }
 

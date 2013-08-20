@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
@@ -1052,6 +1053,10 @@ public class RuleServiceImpl
             // Prevent the same rule being executed more than once in the same transaction    
             if (pendingRules.contains(pendingRuleData) == false)
             {
+                if ((AuthenticationUtil.isRunAsUserTheSystemUser()) && (rule.getAction() instanceof ActionImpl))
+                {
+                    ((ActionImpl)rule.getAction()).setRunAsUser(AuthenticationUtil.SYSTEM_USER_NAME);
+                }
                 pendingRules.add(pendingRuleData);
             }
         }
@@ -1137,6 +1142,12 @@ public class RuleServiceImpl
 
         NodeRef actionedUponNodeRef = pendingRule.getActionedUponNodeRef();
         Rule rule = pendingRule.getRule();
+        
+        boolean isSystemUser = false;
+        if (!(AuthenticationUtil.isRunAsUserTheSystemUser()) && (rule.getAction()!=null) && (rule.getAction() instanceof ActionImpl))
+        {
+            isSystemUser = AuthenticationUtil.SYSTEM_USER_NAME.equals(((ActionImpl) rule.getAction()).getRunAsUser());
+        }
 		
         NodeRef ruleNodeRef = rule.getNodeRef();
         if (!ruleNodeRef.getStoreRef().equals(actionedUponNodeRef.getStoreRef()) && !nodeService.exists(ruleNodeRef))
@@ -1160,7 +1171,24 @@ public class RuleServiceImpl
 
         if (executedRules == null || canExecuteRule(executedRules, actionedUponNodeRef, rule) == true)
         {
-            executeRule(rule, actionedUponNodeRef, executedRules);
+            if (isSystemUser)
+            {
+                final Rule fRule = rule;
+                final NodeRef fActionedUponNodeRef = actionedUponNodeRef;
+                final Set<ExecutedRuleData> fExecutedRules = executedRules;
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        executeRule(fRule, fActionedUponNodeRef, fExecutedRules);
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+            }
+            else
+            {
+                executeRule(rule, actionedUponNodeRef, executedRules);
+            }
         }
     }
     

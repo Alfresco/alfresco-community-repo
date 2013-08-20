@@ -239,6 +239,8 @@
 		<property name="interfaces">
 			<list>
 				<value>org.alfresco.repo.security.sync.UserRegistrySynchronizer</value>
+				<value>org.alfresco.repo.security.sync.TestableChainingUserRegistrySynchronizer</value>
+				<value>org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizerStatus</value>
 			</list>
 		</property>
 	</bean>

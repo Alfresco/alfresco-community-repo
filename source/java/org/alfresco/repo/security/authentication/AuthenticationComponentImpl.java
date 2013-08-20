@@ -31,6 +31,7 @@ import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+import org.alfresco.repo.tenant.TenantDisabledException;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.tenant.TenantContextHolder;
@@ -109,6 +110,10 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
             }
             
             TenantContextHolder.setTenantDomain(tenantDomain);
+        }
+        catch (TenantDisabledException tde)
+        {
+            throw new AuthenticationException(tde.getMessage(), tde);
         }
         catch (net.sf.acegisecurity.AuthenticationException ae)
         {

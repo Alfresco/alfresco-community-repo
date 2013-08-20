@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.node.index;
 
-import org.alfresco.util.PropertyCheck;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -35,7 +34,7 @@ import org.quartz.JobExecutionException;
 public class IndexRecoveryJob implements Job
 {
     public static final String KEY_INDEX_RECOVERY_COMPONENT = "indexRecoveryComponent";
-    public static final String KEY_CLUSTER_NAME = "clusterName";
+    public static final String KEY_CLUSTER_ENABLED = "clusterEnabled";
     
     /**
      * Forces a full index recovery using the {@link IndexRecovery recovery component} passed
@@ -49,10 +48,10 @@ public class IndexRecoveryJob implements Job
         {
             throw new JobExecutionException("Missing job data: " + KEY_INDEX_RECOVERY_COMPONENT);
         }
-        String clusterName = (String) map.get(KEY_CLUSTER_NAME);
-        if (!PropertyCheck.isValidPropertyString(clusterName))
+        boolean clusterEnabled = map.getBooleanValue(KEY_CLUSTER_ENABLED);
+        if (!clusterEnabled)
         {
-            // No cluster name
+            // Nothing to do when clustering disabled.
             return;
         }
         // reindex

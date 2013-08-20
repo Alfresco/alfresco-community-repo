@@ -636,24 +636,19 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
         // Get the transaction service
 
         TransactionService txService = getTransactionService();
-
-        // DEBUG
-
-//        if (logger.isDebugEnabled())
-//        {
-//            logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
-//        }
-	    //
+        
 	    // the repository is read-only, we settle for a read-only transaction
-	    if (txService.isReadOnly())
+	    if (txService.isReadOnly() || !txService.getAllowWrite())
 	    {
-	        return txService.getRetryingTransactionHelper().doInTransaction(callback, true, false);
+	        return txService.getRetryingTransactionHelper().doInTransaction(callback, 
+	        		/* READ ONLY */ true, 
+	        		/* DOES NOT REQUIRE NEW TRAN */false);
 	    }
 	
 	    // otherwise we want force a writable transaction 
         return txService.getRetryingTransactionHelper().doInTransaction(callback, 
-                false, 
-                false);
+                /* READ/WRITE */ false, 
+                /* DOES NOT REQUIRE NEW TRAN */false);
 
     }
 

@@ -137,6 +137,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private ContentDataDAO contentDataDAO;
     private LocaleDAO localeDAO;
     private UsageDAO usageDAO;
+
     private NodeIndexer nodeIndexer; 
     
     private int cachingThreshold = 10;
@@ -1248,6 +1249,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         
         // Get the parent node
         Node parentNode = getNodeNotNull(parentNodeId, true);
+        
         // Find an initial ACL for the node
         Long parentAclId = parentNode.getAclId();
         AccessControlListProperties inheritedAcl = null;
@@ -1913,13 +1915,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // The node's version has moved on so no need to invalidate caches
         }
 
-        // ALF-16366: Ensure index impact is accounted for. If the node is being deleted we would expect the
-        // appropriate events to be fired manually
-        if (!nodeUpdate.isUpdateTypeQNameId() || !getNodeNotNull(nodeId, false).getDeleted(qnameDAO))
-        {
-            nodeIndexer.indexUpdateNode(oldNode.getNodeRef());
-        }
-
         // Done
         if (isDebugEnabled)
         {
@@ -1940,6 +1935,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         nodeUpdateEntity.setAclId(aclId);
         nodeUpdateEntity.setUpdateAclId(true);
         updateNodeImpl(oldNode, nodeUpdateEntity, null);
+        // Node must be indexed.
+        // Calls to this method are usually made directly
+        nodeIndexer.indexUpdateNode(oldNode.getNodeRef());          // Fix MNT-8485 and refix MNT-3337
     }
     
     public void setPrimaryChildrenSharedAclId(

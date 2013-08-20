@@ -54,7 +54,7 @@ public class TransformerConfigProperty  extends TransformerPropertyNameExtractor
         // Gets all the transformer, source and target combinations in properties that define
         // this value.
         Map<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue> properties =
-                getTransformerSourceTargetValuesMap(Collections.singletonList(suffix), true, false, transformerProperties, mimetypeService);
+                getTransformerSourceTargetValuesMap(Collections.singletonList(suffix), true, true, false, transformerProperties, mimetypeService);
 
         // Add the system wide default if it does not exist, as we always need this one
         TransformerSourceTargetSuffixValue transformerSourceTargetValue = 

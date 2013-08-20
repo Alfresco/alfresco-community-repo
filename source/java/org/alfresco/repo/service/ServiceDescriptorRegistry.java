@@ -221,12 +221,14 @@ public class ServiceDescriptorRegistry
         return (TransactionService)getService(TRANSACTION_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getRetryingTransactionHelper()
+    /**
+     * @deprecated Use {@link TransactionService#getRetryingTransactionHelper()}: ALF-18718
      */
+    @Deprecated
     public RetryingTransactionHelper getRetryingTransactionHelper()
     {
-        return (RetryingTransactionHelper)getService(RETRYING_TRANSACTION_HELPER);
+        TransactionService txnService = (TransactionService) getService(TRANSACTION_SERVICE);
+        return txnService.getRetryingTransactionHelper();
     }
 
     /* (non-Javadoc)

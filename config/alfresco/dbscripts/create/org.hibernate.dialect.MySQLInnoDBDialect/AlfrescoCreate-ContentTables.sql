@@ -38,6 +38,7 @@ CREATE TABLE alf_content_url
    orphan_time BIGINT NULL,
    UNIQUE INDEX idx_alf_conturl_cr (content_url_short, content_url_crc),
    INDEX idx_alf_conturl_ot (orphan_time),
+   INDEX idx_alf_conturl_sz (content_size),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 

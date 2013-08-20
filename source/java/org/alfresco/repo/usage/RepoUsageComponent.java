@@ -87,6 +87,15 @@ public interface RepoUsageComponent
     boolean updateUsage(UsageType usageType);
     
     /**
+     * Force a reset of the current repository usage.  Usage data will be zero'd
+     * 
+     * @param usageType             the type of usage data that must be reset
+     * @return                      <tt>true</tt> if the reset succeeded or <tt>false</tt> if
+     *                              some other client was already performing the same reset
+     */
+    boolean resetUsage(UsageType usageType);
+    
+    /**
      * Get the current repository usage data.  This will not trigger an update of the data if it
      * is not available; only {@link #updateUsage() pre-loaded data} will be used.
      * 

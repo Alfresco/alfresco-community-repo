@@ -616,6 +616,11 @@
          <description>Indicates that a cm:person type has been disabled.</description>
       </aspect>
 
+      <aspect name="cm:annullable">
+         <title>Annullable</title>
+         <description>Indicates that a node can be deleted if a pending activity is cancelled</description>
+      </aspect>
+
       <aspect name="cm:transformable">
          <title>Transformable</title>
          <associations>

@@ -27,7 +27,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.admin.SysAdminParams;
-import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -50,7 +50,6 @@ public class TransactionServiceImpl implements TransactionService
     private static VmShutdownListener shutdownListener = new VmShutdownListener("TransactionService");
 
     private PlatformTransactionManager transactionManager;
-    private AuthenticationContext authenticationContext;
     private int maxRetries = -1;
     private int minRetryWaitMs = -1;
     private int maxRetryWaitMs = -1;
@@ -86,17 +85,6 @@ public class TransactionServiceImpl implements TransactionService
         this.transactionManager = transactionManager;
     }
 
-    /**
-     * Sets the authentication context.
-     * 
-     * @param authenticationContext
-     *            the authentication context
-     */
-    public void setAuthenticationContext(AuthenticationContext authenticationContext)
-    {
-        this.authenticationContext = authenticationContext;
-    }
-
     public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
         this.sysAdminParams = sysAdminParams;
@@ -111,7 +99,7 @@ public class TransactionServiceImpl implements TransactionService
         vetoReadLock.lock();
         try
         {
-            return writeVeto.isEmpty();
+            return writeVeto.isEmpty() && this.sysAdminParams.getAllowWrite();
         }
         finally
         {
@@ -184,7 +172,7 @@ public class TransactionServiceImpl implements TransactionService
         vetoReadLock.lock();
         try
         {
-            if (this.authenticationContext.isCurrentUserTheSystemUser())
+            if (AuthenticationUtil.isRunAsUserTheSystemUser())
             {
                 return false;
             }

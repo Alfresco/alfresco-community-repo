@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.FormService;
 import org.activiti.engine.HistoryService;
@@ -48,8 +49,11 @@ import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.bpmn.behavior.ReceiveTaskActivityBehavior;
+import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.bpmn.deployer.BpmnDeployer;
 import org.activiti.engine.impl.bpmn.diagram.ProcessDiagramGenerator;
+import org.activiti.engine.impl.form.DefaultTaskFormHandler;
+import org.activiti.engine.impl.form.TaskFormHandler;
 import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -74,6 +78,7 @@ import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.workflow.BPMEngine;
 import org.alfresco.repo.workflow.WorkflowAuthorityManager;
 import org.alfresco.repo.workflow.WorkflowConstants;
+import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.repo.workflow.WorkflowEngine;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.WorkflowNodeConverter;
@@ -156,7 +161,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private static final String ERR_END_UNEXISTING_TASK = "activiti.engine.end.task.unexisting.error";
     private static final String ERR_GET_TASK_BY_ID = "activiti.engine.get.task.by.id.error";
     private static final String ERR_END_TASK_INVALID_TRANSITION = "activiti.engine.end.task.invalid.transition";
-    
     
     public static final QName QNAME_INITIATOR = QName.createQName(NamespaceService.DEFAULT_URI, WorkflowConstants.PROP_INITIATOR);
     
@@ -312,6 +316,25 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                  .addInputStream(resourceName, workflowDefinition)
                  .name(name)
                  .deploy();
+             
+             List<ProcessDefinition> definitionList = repoService.createProcessDefinitionQuery().deploymentId(deployment.getId()).list();
+             if (definitionList != null && definitionList.size() > 0)
+             {
+                 boolean internalCategory = true;
+                 for (ProcessDefinition processDefinition : definitionList)
+                 {
+                    if (WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL.equals(processDefinition.getCategory()) == false)
+                    {
+                        internalCategory = false;
+                        break;
+                    }
+                 }
+                 
+                 if (internalCategory)
+                 {
+                     repoService.setDeploymentCategory(deployment.getId(), WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL);
+                 }
+             }
              
              // No problems can be added to the WorkflowDeployment, warnings are
              // not exposed
@@ -611,6 +634,26 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         }
         
        return defs;
+    }
+    
+    private String getFormKey(PvmActivity act)
+    {
+        if(act instanceof ActivityImpl) 
+        {
+            ActivityImpl actImpl = (ActivityImpl) act;
+            if (actImpl.getActivityBehavior() instanceof UserTaskActivityBehavior)        
+            {
+                UserTaskActivityBehavior uta = (UserTaskActivityBehavior) actImpl.getActivityBehavior();
+                TaskFormHandler handler = uta.getTaskDefinition().getTaskFormHandler();
+                if(handler != null && handler instanceof DefaultTaskFormHandler)
+                {
+                    // We cast to DefaultTaskFormHandler since we do not configure our own
+                    return ((DefaultTaskFormHandler)handler).getFormKey().getExpressionText();
+                }
+                
+            }
+        }
+        return null;
     }
 
     private boolean isReceiveTask(PvmActivity act)
@@ -941,12 +984,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 }
             }
             
-            if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled()) 
-            {
-            	// Specify which tenant domain the workflow was started in using a variable
-            	variables.put(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
-            }
-            
             // Start the process-instance
             ProcessInstance instance = runtimeService.startProcessInstanceById(processDefId, variables);
             if(instance.isEnded()) 
@@ -1047,15 +1084,13 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         // If the process is finished, there is no diagram available
         if (pi != null)
         {
-            // Fetch the process-definition. Not using query API, since the returned
-            // processdefinition isn't initialized with all activities
-            ProcessDefinitionEntity processDefinition = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repoService)
-                        .getDeployedProcessDefinition(pi.getProcessDefinitionId());
+            // Fetch the bpmn model
+            BpmnModel model = repoService.getBpmnModel(pi.getProcessDefinitionId());
 
-            if (processDefinition != null && processDefinition.isGraphicalNotationDefined()) 
+            if (model != null && model.getLocationMap().size() > 0) 
             { 
                 return ProcessDiagramGenerator
-                        .generateDiagram(processDefinition,
+                        .generateDiagram(model,
                                     ActivitiConstants.PROCESS_INSTANCE_IMAGE_FORMAT,
                                     runtimeService.getActiveActivityIds(processInstanceId)); 
             }
@@ -1357,7 +1392,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 	                .taskAssignee(authority)
 	                .finished();
             	
-            	if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+            	if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
             	{
             		taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
             	}

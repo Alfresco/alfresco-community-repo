@@ -51,6 +51,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
@@ -559,6 +560,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     protected void onBootstrap(ApplicationEvent event)
     {
         register();
+        ((ApplicationContext) event.getSource()).publishEvent(new DictionaryRepositoryBootstrappedEvent(this));
     }
 
     @Override

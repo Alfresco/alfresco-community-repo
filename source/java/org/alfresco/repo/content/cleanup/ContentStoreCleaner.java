@@ -75,6 +75,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ContentStoreCleaner
 {
+    /*
+     * TODO: Use the ScheduledJobLockExecuter, which borrows (and fixes) some of the code use here
+     */
+    
     /**
      * Enumeration of actions to take in the even that an orphaned binary fails to get deleted.
      * Most stores are able to delete orphaned content, but it is possible that stores have
@@ -261,6 +265,7 @@ public class ContentStoreCleaner
                 jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL);
                 lastLock = System.currentTimeMillis();
                 lockPair = new Pair<Long, String>(lastLock, lockToken);
+                lockThreadLocal.set(lockPair);
             }
         }
     }

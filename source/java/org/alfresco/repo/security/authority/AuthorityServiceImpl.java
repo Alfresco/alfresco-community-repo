@@ -53,41 +53,32 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 {
     private static Set<String> DEFAULT_ZONES = new HashSet<String>();
     
-    private PersonService personService;
-    
-    private TenantService tenantService;
-
-    private AuthorityDAO authorityDAO;
-    
-    private UserNameMatcher userNameMatcher;
-	
-    private AuthenticationService authenticationService;
-    
-    private PermissionServiceSPI permissionServiceSPI;
-    
-    private Set<String> adminSet = Collections.singleton(PermissionService.ADMINISTRATOR_AUTHORITY);
-
-    private Set<String> guestSet = Collections.singleton(PermissionService.GUEST_AUTHORITY);
-
-    private Set<String> allSet = Collections.singleton(PermissionService.ALL_AUTHORITIES);
-
-    private Set<String> adminGroups = Collections.emptySet();
-    
-    private Set<String> guestGroups = Collections.emptySet();
-
-    private boolean useGetContainingAuthoritiesForHasAuthority = true;
-    
     static
     {
         DEFAULT_ZONES.add(AuthorityService.ZONE_APP_DEFAULT);
         DEFAULT_ZONES.add(AuthorityService.ZONE_AUTH_ALFRESCO);
     }
     
+    private PersonService personService;
+    private TenantService tenantService;
+    private AuthorityDAO authorityDAO;
+    private UserNameMatcher userNameMatcher;
+    private AuthenticationService authenticationService;
+    private PermissionServiceSPI permissionServiceSPI;
+    
+    private Set<String> adminSet = Collections.singleton(PermissionService.ADMINISTRATOR_AUTHORITY);
+    private Set<String> guestSet = Collections.singleton(PermissionService.GUEST_AUTHORITY);
+    private Set<String> allSet = Collections.singleton(PermissionService.ALL_AUTHORITIES);
+    private Set<String> adminGroups = Collections.emptySet();
+    private Set<String> guestGroups = Collections.emptySet();
+
+    private boolean useGetContainingAuthoritiesForHasAuthority = true;
+    
     public AuthorityServiceImpl()
     {
         super();
     }
-    
+   
     /**
      * @param useGetContainingAuthoritiesForHasAuthority the useGetContainingAuthoritiesForHasAuthority to set
      */
@@ -239,6 +230,20 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         
     }
     
+    @Override
+    public long countUsers()
+    {
+        long usersCount = authorityDAO.getPersonCount();
+        return usersCount > 0L ? usersCount : 0L;
+    }
+
+    @Override
+    public long countGroups()
+    {
+        long groupsCount = authorityDAO.getGroupCount();
+        return groupsCount;
+    }
+
     /**
      * {@inheritDoc}
      */

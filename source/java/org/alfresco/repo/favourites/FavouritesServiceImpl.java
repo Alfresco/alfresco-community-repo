@@ -575,7 +575,7 @@ public class FavouritesServiceImpl implements FavouritesService, InitializingBea
 	    			{
 						createdAt = (createdAtStr != null ? ISO8601DateFormat.parse(createdAtStr): null);
 	    			}
-	        		PersonFavourite personFavourite = new PersonFavourite(userName, siteInfo.getNodeRef(), Type.SITE, siteInfo.getTitle(), createdAt);
+	        		PersonFavourite personFavourite = new PersonFavourite(userName, siteInfo.getNodeRef(), Type.SITE, siteId, createdAt);
 	        		sortedFavouriteNodes.put(personFavourite.getKey(), personFavourite);
 	        	}
     		}

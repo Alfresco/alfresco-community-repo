@@ -221,7 +221,7 @@ public class PostLookup
                     logger.debug("Update: " + activityPosts.size() + " activity post"+(activityPosts.size() == 1 ? "s" : ""));
                 }
                 
-                // execute in WRITE txn
+                // execute in READ txn
                 transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() 
                 {
                     public Object execute() throws Throwable
@@ -232,7 +232,7 @@ public class PostLookup
                     }
                 }, true);
                 
-                // execute in READ txn 
+                // execute in WRITE txn 
                 List<ActivityPostEntity> activityPostsToUpdate = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<ActivityPostEntity>>() 
                 {
                     public List<ActivityPostEntity> execute() throws Throwable

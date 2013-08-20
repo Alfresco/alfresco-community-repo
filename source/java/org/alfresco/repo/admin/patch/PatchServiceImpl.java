@@ -587,4 +587,13 @@ public class PatchServiceImpl implements PatchService
             return i1.compareTo(i2);
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.admin.patch.PatchService#getAppliedPatch(java.lang.String)
+     */
+    @Override
+    public AppliedPatch getPatch(String id)
+    {
+       return appliedPatchDAO.getAppliedPatch(id);
+    }
 }

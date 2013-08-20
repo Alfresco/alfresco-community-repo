@@ -24,10 +24,8 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.alfresco.email.server.EmailServiceImpl;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
@@ -275,8 +273,6 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
      */
     protected NodeRef addContentNode(NodeService nodeService, NodeRef parent, String name, QName assocType, boolean overwrite)
     {
-        NodeRef childNodeRef = null;
-        
         String workingName =  encodeSubject(name);
         
         // Need to work out a new safe name.
@@ -292,9 +288,9 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
         {
             QName safeQName = QName.createQNameWithValidLocalName(NamespaceService.CONTENT_MODEL_1_0_URI, workingName);
 
-            List<ChildAssociationRef> childNodeRefs = nodeService.getChildAssocs(parent, ContentModel.ASSOC_CONTAINS, safeQName);
-        
-            if (childNodeRefs.size() > 0)
+            NodeRef childNodeRef = nodeService.getChildByName(parent, ContentModel.ASSOC_CONTAINS, workingName);
+            
+            if (childNodeRef != null)
             {
                 if(overwrite)
                 {
@@ -302,7 +298,6 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
                     {
                         logger.debug("overwriting existing node :" + workingName);
                     }
-                    childNodeRef=childNodeRefs.get(0).getChildRef();
                 
                     // Node already exists
                     // The node is present already.  Make sure the name case is correct

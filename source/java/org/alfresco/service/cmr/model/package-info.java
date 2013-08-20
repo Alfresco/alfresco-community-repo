@@ -31,4 +31,7 @@
    <p>
    FileFolderUtil provides a utility methods.
  */
+@PackageMarker
 package org.alfresco.service.cmr.model;
+import org.alfresco.util.PackageMarker;
+

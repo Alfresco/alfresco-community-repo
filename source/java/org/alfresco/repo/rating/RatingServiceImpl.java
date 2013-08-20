@@ -429,13 +429,13 @@ public class RatingServiceImpl implements RatingService
             throw new RatingServiceException("Cannot retrieve rollup. Unrecognized rating scheme " + ratingSchemeName);
         }
         
-        QName rollupAspectName = ratingNamingConventions.getRollupAspectNameFor(ratingSchemeName);
+        QName rollupAspectName = ratingNamingConventions.getRollupAspectNameFor(scheme);
 
         Serializable result = null;
         // If the rated node has the rollup aspect applied
         if (nodeService.hasAspect(targetNode, rollupAspectName))
         {
-            QName rollupPropertyName = ratingNamingConventions.getRollupPropertyNameFor(ratingSchemeName, ratingRollupName);
+            QName rollupPropertyName = ratingNamingConventions.getRollupPropertyNameFor(scheme, ratingRollupName);
             result = nodeService.getProperty(targetNode, rollupPropertyName);
         }
         

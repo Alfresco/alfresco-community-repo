@@ -125,8 +125,15 @@ public class AttributeServiceImpl implements AttributeService
     {
         PropertyUniqueContextCallback propertyUniqueContextCallback = new PropertyUniqueContextCallback()
         {
+            private boolean more = true;
             public void handle(Long id, Long valueId, Serializable[] resultKeyIds)
             {
+                if (!more)
+                {
+                    // The callback has terminated fetching
+                    return;
+                }
+                
                 Serializable value = null;
                 if (valueId != null)
                 {
@@ -143,7 +150,7 @@ public class AttributeServiceImpl implements AttributeService
                     }
                 }
                 
-                callback.handleAttribute(id, value, resultsKeyValues);
+                more = callback.handleAttribute(id, value, resultsKeyValues);
                 
                 // Done
                 if (logger.isTraceEnabled())

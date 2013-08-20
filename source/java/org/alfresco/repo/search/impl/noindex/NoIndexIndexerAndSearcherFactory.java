@@ -18,12 +18,9 @@
  */
 package org.alfresco.repo.search.impl.noindex;
 
-import org.alfresco.repo.search.Indexer;
-import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.SearcherException;
-import org.alfresco.repo.search.impl.lucene.AbstractIndexerAndSearcher;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.repo.search.impl.solr.SolrIndexerAndSearcherFactory;
+import org.alfresco.repo.search.impl.solr.SolrSearchService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 
@@ -31,42 +28,8 @@ import org.alfresco.service.cmr.search.SearchService;
  * @author Andy
  *
  */
-public class NoIndexIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
+public class NoIndexIndexerAndSearcherFactory extends SolrIndexerAndSearcherFactory
 {
-
-    private DictionaryService dictionaryService;
-    private NodeService nodeService;
-  
-    public DictionaryService getDictionaryService()
-    {
-        return dictionaryService;
-    }
-
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-
-    public NodeService getNodeService()
-    {
-        return nodeService;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.search.IndexerAndSearcher#getIndexer(org.alfresco.service.cmr.repository.StoreRef)
-     */
-    @Override
-    public Indexer getIndexer(StoreRef storeRef) throws IndexerException
-    {
-        NoIndexIndexer indexer = new NoIndexIndexer();
-        return indexer;
-    }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.IndexerAndSearcher#getSearcher(org.alfresco.service.cmr.repository.StoreRef, boolean)
@@ -74,21 +37,12 @@ public class NoIndexIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
     @Override
     public SearchService getSearcher(StoreRef storeRef, boolean searchDelta) throws SearcherException
     {
-        //storeRef = tenantService.getName(storeRef);
-
          NoIndexSearchService searchService = new NoIndexSearchService();
-         searchService.setDictionaryService(dictionaryService);
-         searchService.setNodeService(nodeService);
+         searchService.setDictionaryService(getDictionaryService());
+         searchService.setNamespacePrefixResolver(getNamespacePrefixResolver());
+         searchService.setNodeService(getNodeService());
+         searchService.setQueryLanguages(getQueryLanguages());
+         searchService.setQueryRegister(getQueryRegister());
          return searchService;
     }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.search.IndexerAndSearcher#flush()
-     */
-    @Override
-    public void flush()
-    {
-        // Nothing to do
-    }
-
 }

@@ -17,7 +17,7 @@
             <ref bean="dictionaryService" />
         </property>
         <property name="solrQueryLanguage">
-            <ref bean="search.lucene.sql.alfresco" />
+            <ref bean="search.cmis.alfresco.switching" />
         </property>
     </bean>
    

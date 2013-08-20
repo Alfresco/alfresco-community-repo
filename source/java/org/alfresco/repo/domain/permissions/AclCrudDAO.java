@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -56,7 +56,7 @@ public interface AclCrudDAO
     //
     
     public Acl createAcl(AclEntity entity);
-    public Acl getAcl(long aclEntityId);
+    public Acl getAcl(Long aclEntityId);
     public AclUpdateEntity getAclForUpdate(long aclEntityId);
     public List<Long> getAclsThatInheritFromAcl(long aclEntityId);
     public Long getLatestAclByGuid(String aclGuid);

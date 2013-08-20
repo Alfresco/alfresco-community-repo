@@ -26,4 +26,7 @@
  * <p>
  * CifsAuthenticatorBase abstract base class.
  */
+@PackageMarker
 package org.alfresco.filesys.auth.cifs;
+import org.alfresco.util.PackageMarker;
+

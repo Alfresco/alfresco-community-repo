@@ -285,6 +285,12 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
             updateOrder(value, this.defaultTypeName);
         }
 
+        @Override
+        public void removeProperty(String name)
+        {
+            throw new UnsupportedOperationException();
+        }
+
         /*
          * (non-Javadoc)
          * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#start()

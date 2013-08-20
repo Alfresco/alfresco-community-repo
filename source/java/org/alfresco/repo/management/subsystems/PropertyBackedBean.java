@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.management.subsystems;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -71,4 +72,14 @@ public interface PropertyBackedBean extends PropertyBackedBeanState
      * @param properties
      */
     public void setProperties(Map<String, String> properties);
+
+    /**
+     * Tries removing the given properties on this component. Will leave the component in a started state consisting of
+     * the new properties if they are valid, or the previous state otherwise. Note that the new state still has to be
+     * confirmed to the entire cluster with {@link #start()}, presumably after persistence of the new state has been
+     * completed.
+     * 
+     * @param properties
+     */
+    public void removeProperties(Collection<String> attributes);
 }

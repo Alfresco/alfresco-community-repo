@@ -2,6 +2,7 @@ package org.alfresco.filesys.repo;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -13,8 +14,10 @@ import java.util.Map;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.DirectoryEntry;
 import org.apache.poi.poifs.filesystem.EntryUtils;
 import org.apache.poi.poifs.filesystem.FilteringDirectoryNode;
@@ -228,14 +231,27 @@ public class CIFSContentComparator implements ContentComparator
             /**
              * Use POI to compare the content of the XLS file, exluding certain properties
              */
+            File tpm1 = null;
+            File tpm2 = null;
             InputStream leftIs = null;
-            try
+            try 
             {  
                 Collection<String> excludes = new HashSet<String>();
                 
-                leftIs = existingContent.getContentInputStream();
-                NPOIFSFileSystem fs2 = new NPOIFSFileSystem(leftIs);              
-                NPOIFSFileSystem fs1 = new NPOIFSFileSystem(newFile);                
+                tpm1 = TempFileProvider.createTempFile("CIFSContentComparator1", "xls");
+                tpm2 = TempFileProvider.createTempFile("CIFSContentComparator2", "xls");
+                
+                HSSFWorkbook wb1 = new HSSFWorkbook(existingContent.getContentInputStream());
+                HSSFWorkbook wb2 = new HSSFWorkbook(new FileInputStream(newFile));
+                wb1.writeProtectWorkbook("", "CIFSContentComparator");
+                wb2.writeProtectWorkbook("", "CIFSContentComparator");
+                
+                wb1.write(new FileOutputStream(tpm1));
+                wb2.write(new FileOutputStream(tpm2));
+                
+                
+                NPOIFSFileSystem fs2 = new NPOIFSFileSystem(tpm1);              
+                NPOIFSFileSystem fs1 = new NPOIFSFileSystem(tpm2);                
                 
                 DirectoryEntry de1 = fs1.getRoot();
                 DirectoryEntry de2 = fs2.getRoot();
@@ -263,6 +279,28 @@ public class CIFSContentComparator implements ContentComparator
             }
             finally
             {
+            	if(tpm1 != null)
+            	{
+            		try 
+            		{
+            	        tpm1.delete();
+            		}
+            		catch (Exception e)
+            		{
+            			// ignore
+            		}
+            	}
+            	if(tpm2 != null)
+            	{
+            		try 
+            		{
+            		    tpm2.delete();
+        		    }
+        		    catch (Exception e)
+        		    {
+        			    // ignore
+        		    }
+            	}
                 if(leftIs != null)
                 {
                     try

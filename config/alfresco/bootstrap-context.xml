@@ -54,6 +54,9 @@
        <property name="dataSource">
           <ref bean="dataSource"/>
        </property>
+       <property name="appliedPatchDAO">
+          <ref bean="appliedPatchDAO"/>
+       </property>
        <property name="localSessionFactory">
           <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
        </property>
@@ -308,6 +311,7 @@
                <value>alfresco/workflow/wcmWorkflowModel.xml</value>
                <value>alfresco/workflow/invitation-nominated-workflow-model.xml</value>
                <value>alfresco/workflow/invitation-moderated-workflow-model.xml</value>
+               <value>alfresco/workflow/publishingWorkflowModel.xml</value>
             </list>
         </property>
         <property name="labels">
@@ -375,22 +379,6 @@
          before reindexing begins. -->
     <import resource="classpath*:alfresco/enterprise/bootstrap/*-context.xml" />
 
-
-    <!-- Perform index recovery before applying any patches -->
-    <!-- rebuild the index if required - before we check that it is there -->
-    
-    <bean id="indexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
-       <property name="indexRecoveryComponent">
-           <ref bean="indexRecoveryComponent"/>
-       </property>
-    </bean>
-    
-    <bean id="avmIndexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
-       <property name="indexRecoveryComponent">
-          <ref bean="avmIndexRecoveryComponent"/>
-       </property>
-    </bean>
-    
     <!-- This component checks the interconnection between the metadata, indexes and content -->
     <bean id="configurationChecker" class="org.alfresco.repo.admin.ConfigurationChecker">
        <property name="strict">
@@ -433,6 +421,19 @@
         <property name="patchService">
             <ref bean="PatchService" />
         </property>
+    </bean>
+
+
+    <bean id="metdataQueryIndexesCheck" class="org.alfresco.repo.admin.patch.OptionalPatchApplicationCheckBootstrapBean">
+        <property name="patchService">
+            <ref bean="PatchService" />
+        </property>
+        <property name="descriptorService">
+            <ref bean="descriptorComponent" />
+        </property>
+        <property name="patch">
+            <ref bean="patch.db-V4.2-metadata-query-indexes" />
+        </property>      
     </bean>
 
     <!-- Import other Alfresco bootstrap components -->
@@ -635,6 +636,9 @@
         </property>
         <property name="tenantService">
             <ref bean="tenantService" />
+        </property>
+        <property name="jobLockService">
+            <ref bean="jobLockService" />
         </property>
         <property name="clearBatchSize">
             <value>${system.usages.clearBatchSize}</value>

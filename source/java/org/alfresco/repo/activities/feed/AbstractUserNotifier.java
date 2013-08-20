@@ -156,7 +156,7 @@ public abstract class AbstractUserNotifier implements UserNotifier
 		{
 		    logger.debug("Get user feed entries: " + feedUserId + ", " + feedDBID);
 		}
-		List<ActivityFeedEntity> feedEntries = activityService.getUserFeedEntries(feedUserId, FeedTaskProcessor.FEED_FORMAT_JSON, null, false, false, null, null, feedDBID);
+		List<ActivityFeedEntity> feedEntries = activityService.getUserFeedEntries(feedUserId, null, false, false, null, null, feedDBID);
 		
 		if (feedEntries.size() > 0)
 		{

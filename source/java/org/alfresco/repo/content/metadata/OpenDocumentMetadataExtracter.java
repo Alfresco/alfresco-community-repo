@@ -19,8 +19,6 @@
 package org.alfresco.repo.content.metadata;
 
 import java.io.Serializable;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
@@ -31,6 +29,8 @@ import org.alfresco.service.namespace.QName;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.odf.OpenDocumentParser;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 
 /**
@@ -97,7 +97,7 @@ public class OpenDocumentMetadataExtracter extends TikaPoweredMetadataExtracter
         }, new OpenDocumentParser()
     );
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+    private static final DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     public OpenDocumentMetadataExtracter()
     {
@@ -138,15 +138,17 @@ public class OpenDocumentMetadataExtracter extends TikaPoweredMetadataExtracter
        
        return properties;
     }
+
     private Date getDateOrNull(String dateString)
     {
         if (dateString != null && dateString.length() != 0)
         {
-            try {
-               return dateFormat.parse(dateString);
-            } catch(ParseException e) {}
+            try
+            {
+                return dateFormatter.parseDateTime(dateString).toDate();
+            }
+            catch (IllegalArgumentException e) {}
         }
-
         return null;
     }
 }

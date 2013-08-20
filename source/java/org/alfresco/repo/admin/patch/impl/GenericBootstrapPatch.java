@@ -41,13 +41,14 @@ import org.alfresco.service.cmr.repository.StoreRef;
  */
 public class GenericBootstrapPatch extends AbstractPatch
 {
-    private static final String MSG_EXISTS = "patch.genericBootstrap.result.exists";
-    private static final String MSG_CREATED = "patch.genericBootstrap.result.created";
-    private static final String ERR_MULTIPLE_FOUND = "patch.genericBootstrap.err.multiple_found";
+    protected static final String MSG_EXISTS = "patch.genericBootstrap.result.exists";
+    protected static final String MSG_CREATED = "patch.genericBootstrap.result.created";
+    protected static final String MSG_DEFERRED = "patch.genericBootstrap.result.deferred";
+    protected static final String ERR_MULTIPLE_FOUND = "patch.genericBootstrap.err.multiple_found";
     
-    private ImporterBootstrap importerBootstrap;
-    private String checkPath;
-    private Properties bootstrapView;
+    protected ImporterBootstrap importerBootstrap;
+    protected String checkPath;
+    protected Properties bootstrapView;
 
     /**
      * @param importerBootstrap the bootstrap bean that performs the user store bootstrap
@@ -87,6 +88,7 @@ public class GenericBootstrapPatch extends AbstractPatch
         super.checkProperties();
     }
 
+
     @Override
     protected String applyInternal() throws Exception
     {
@@ -122,4 +124,6 @@ public class GenericBootstrapPatch extends AbstractPatch
         // done
         return I18NUtil.getMessage(MSG_CREATED, path, rootNodeRef);
     }
+
+
 }

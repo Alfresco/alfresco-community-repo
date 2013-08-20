@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.sf.acegisecurity.AuthenticationException;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.processor.ProcessorExtension;
@@ -473,19 +475,27 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             // insert supplied object model into root of the default scope
             for (String key : model.keySet())
             {
-                // set the root scope on appropriate objects
-                // this is used to allow native JS object creation etc.
-                Object obj = model.get(key);
-                if (obj instanceof Scopeable)
-                {
-                    ((Scopeable)obj).setScope(scope);
-                }
-                
-                // convert/wrap each object to JavaScript compatible
-                Object jsObject = Context.javaToJS(obj, scope);
-                
-                // insert into the root scope ready for access by the script
-                ScriptableObject.putProperty(scope, key, jsObject);
+            	try
+            	{
+	                // set the root scope on appropriate objects
+	                // this is used to allow native JS object creation etc.
+	                Object obj = model.get(key);
+	                if (obj instanceof Scopeable)
+	                {
+	                    ((Scopeable)obj).setScope(scope);
+	                }
+	                
+	                // convert/wrap each object to JavaScript compatible
+	                Object jsObject = Context.javaToJS(obj, scope);
+	                
+	                // insert into the root scope ready for access by the script
+	                ScriptableObject.putProperty(scope, key, jsObject);
+            	}
+            	catch(AuthenticationException e)
+            	{
+            		// ok, log and don't add to the root scope
+            		logger.info("Unable to add " + key + " to root scope: ", e);
+            	}
             }
             
             // execute the script and return the result

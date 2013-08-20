@@ -30,6 +30,8 @@ import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISQueryException;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
+import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.querymodel.FunctionArgument;
@@ -42,6 +44,8 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.Upper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
@@ -453,6 +457,40 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
             throw new CMISQueryException("Unknown column/property " + propertyName);
         }
         return propDef.getCardinality() == CMISCardinalityEnum.MULTI_VALUED;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#getAlfrescoPropertyName(java.lang.String)
+     */
+    @Override
+    public String getAlfrescoPropertyName(String propertyName)
+    {
+        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyName, null);
+        if(propertyDef != null)
+        {
+            QName mapped =  propertyDef.getPropertyAccessor().getMappedProperty();
+            if(mapped == null)
+            {
+                return propertyName;
+            }
+            else
+            {
+                return mapped.toString();
+            }
+        }
+        else
+        {
+            throw new CmisInvalidArgumentException("Unknown column/property " + propertyName);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext#getAlfrescoTypeName(java.lang.String)
+     */
+    @Override
+    public String getAlfrescoTypeName(String typeName)
+    {
+        throw new CMISQueryException("Unsupported");
     }
     
 }

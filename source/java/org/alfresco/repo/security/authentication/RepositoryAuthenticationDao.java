@@ -80,7 +80,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     
     private TransactionService transactionService;
 
-    // note: caches are tenant-aware (if using EhCacheAdapter shared cache)
+    // note: cache is tenant-aware (if using TransctionalCache impl)
     
     private SimpleCache<String, NodeRef> singletonCache; // eg. for user folder nodeRef
     private final String KEY_USERFOLDER_NODEREF = "key.userfolder.noderef";
@@ -294,7 +294,8 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             QName qnameAssocSystem = QName.createQName("sys", "system", namespacePrefixResolver);
             QName qnameAssocUsers = QName.createQName("sys", "people", namespacePrefixResolver);
             
-            StoreRef userStoreRef = tenantService.getName(caseSensitiveUserName, new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier()));
+            //StoreRef userStoreRef = tenantService.getName(caseSensitiveUserName, new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier()));
+            StoreRef userStoreRef = new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier());
             
             // AR-527
             NodeRef rootNode = nodeService.getRootNode(userStoreRef);
@@ -788,8 +789,9 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         }
     }
     
-    static class CacheEntry
+    static class CacheEntry implements Serializable
     {
+        private static final long serialVersionUID = 1L;
         public NodeRef nodeRef;
         public UserDetails userDetails;
         public Date credentialExpiryDate;

@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.domain.avm;
 
+import java.io.Serializable;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMNodeType;
 import org.alfresco.util.EqualsHelper;
@@ -29,8 +31,9 @@ import org.alfresco.util.EqualsHelper;
  * @author janv
  * @since 3.2
  */
-public class AVMNodeEntity
+public class AVMNodeEntity implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     private Long id;
     private Long version;
     private Integer type;

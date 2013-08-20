@@ -54,6 +54,11 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
 	 */
 	protected RuntimeActionService runtimeActionService;
     
+	/**
+	 * Indicates whether or not ad-hoc properties can be provided. Default so false. 
+	 */
+	protected boolean adhocPropertiesAllowed = false;
+	
     /**
      * @return Return a short title and description string
      */
@@ -117,6 +122,16 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
 	}	
 	
 	/**
+	 * Setter for Spring injection of adhocPropertiesAllowed property
+	 * 
+	 * @param allowed
+	 */
+	public void setAdhocPropertiesAllowed(boolean allowed)
+	{
+	    this.adhocPropertiesAllowed = allowed;
+	}
+	
+	/**
 	 * Indicates whether adhoc property definitions are allowed or not
 	 * 
 	 * @return	true if they are, by default false
@@ -124,7 +139,7 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
 	protected boolean getAdhocPropertiesAllowed()
 	{
 		// By default adhoc properties are not allowed
-		return false;
+		return this.adhocPropertiesAllowed;
 	}
 
 	/**

@@ -126,7 +126,7 @@
         </property>
     </bean>
 	
-	<bean id="search.lucene.fts.alfresco" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoFtsQueryLanguage" >
+	<bean id="search.fts.alfresco.index" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoFtsQueryLanguage" >
         <property name="queryEngine">
             <ref bean="search.adm.luceneQueryEngineImpl" />
         </property>

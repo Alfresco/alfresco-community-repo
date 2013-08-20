@@ -44,7 +44,7 @@ public class ContentTransformerHelper implements BeanNameAware
     private MimetypeService mimetypeService;
     protected TransformerConfig transformerConfig;
     
-    private List<String> deprecatedSetterMessages;
+    List<DeprecatedSetter> deprecatedSetterMessages;
     private static boolean firstDeprecatedSetter = true;
 
     /** The bean name. */
@@ -74,9 +74,6 @@ public class ContentTransformerHelper implements BeanNameAware
     public void setExplicitTransformations(List<ExplictTransformationDetails> explicitTransformations)
     {
         deprecatedSupportedTransformations(explicitTransformations, null);
-        // TODO Should suggest properties that indicate lower priority transformers should be unsupported.
-        //      This is for completeness rather than needed as the priority will avoid the non explicit
-        //      transformers from being used. Explicit transformers are given a priority of 50 rather than 100.
     }
 
     /**
@@ -150,7 +147,7 @@ public class ContentTransformerHelper implements BeanNameAware
      */
     public void register()
     {
-        logDeprecatedSetter();
+        logDeprecatedSetter(deprecatedSetterMessages);
     }
     
     /**
@@ -184,33 +181,34 @@ public class ContentTransformerHelper implements BeanNameAware
     /**
      * Called by deprecated property setter methods that should no longer be called
      * by Spring configuration as the values are now set using global properties.
-     * @param suffixAndValue that should have been used. The first part of the
-     *        property name "content.transformer.<name>." should not be included.
-     *        The reason is that the setter methods might be called before the bean
-     *        name is set.  
+     * @param sourceMimetype so that the source extension can be worked out once the mimetypeService
+     *        has been set. 
+     * @param targetMimetype so that the target extension can be worked out once the mimetypeService
+     *        has been set. 
+     * @param suffixAndValue that should be used.
      */
-    protected void deprecatedSetter(String suffixAndValue)
+    protected void deprecatedSetter(String sourceMimetype, String targetMimetype, String suffixAndValue)
     {
         if (deprecatedSetterMessages == null)
         {
-            deprecatedSetterMessages = new ArrayList<String>();
+            deprecatedSetterMessages = new ArrayList<DeprecatedSetter>();
         }
-        deprecatedSetterMessages.add(suffixAndValue);
+        deprecatedSetterMessages.add(new DeprecatedSetter(sourceMimetype, targetMimetype, suffixAndValue));
     }
     
     /**
      * Called when the bean name is set after all the deprecated setters to log
      * INFO messages with the Alfresco global properties that should now be set
-     * (if no set) to replace Spring configuration.
+     * (if not set) to replace Spring configuration.
      */
-    private void logDeprecatedSetter()
+    void logDeprecatedSetter(List<DeprecatedSetter> deprecatedSetterMessages)
     {
         if (deprecatedSetterMessages != null)
         {
             StringBuilder sb = new StringBuilder();
-            for (String suffixAndValue: deprecatedSetterMessages)
+            for (DeprecatedSetter deprecatedSetter: deprecatedSetterMessages)
             {
-                String propertyNameAndValue = TransformerConfig.CONTENT+beanName+'.'+suffixAndValue;
+                String propertyNameAndValue = deprecatedSetter.getPropertyNameAndValue(beanName);
                 String propertyName = propertyNameAndValue.replaceAll("=.*", "");
                 if (transformerConfig.getProperty(propertyName) == null)
                 {
@@ -254,12 +252,16 @@ public class ContentTransformerHelper implements BeanNameAware
             {
                 String sourceMimetype = transformation.getSourceMimetype();
                 String targetMimetype = transformation.getTargetMimetype();
-                String sourceExt = getExtensionOrAny(sourceMimetype);
-                String targetExt = getExtensionOrAny(targetMimetype);
-                deprecatedSetter(TransformerConfig.EXTENSIONS.substring(1)+sourceExt+'.'+targetExt+
-                        (value == null // same as: transformation instanceof ExplictTransformationDetails
-                        ? TransformerConfig.PRIORITY+"="+TransformerConfig.PRIORITY_EXPLICIT
-                        : TransformerConfig.SUPPORTED+"="+value));
+                
+                if (value == null)
+                {
+                    deprecatedSetter(sourceMimetype, targetMimetype, TransformerConfig.PRIORITY+"="+TransformerConfig.PRIORITY_EXPLICIT);
+                    deprecatedSetter(sourceMimetype, targetMimetype, TransformerConfig.SUPPORTED+"=true");
+                }
+                else
+                {
+                    deprecatedSetter(sourceMimetype, targetMimetype, TransformerConfig.SUPPORTED+"="+value);
+                }
             }
         }
     }
@@ -318,7 +320,7 @@ public class ContentTransformerHelper implements BeanNameAware
      * Returns the transformer's simple name and an indication if the transformer is not
      * available for selection.
      */
-    private String getCommentNameAndAvailable(boolean available)
+    String getCommentNameAndAvailable(boolean available)
     {
         String name = this instanceof ContentTransformer ? getSimpleName((ContentTransformer)this) : getName();
         StringBuilder sb = new StringBuilder();
@@ -415,5 +417,28 @@ public class ContentTransformerHelper implements BeanNameAware
         else if (!beanName.equals(other.beanName))
             return false;
         return true;
+    }
+    
+    private class DeprecatedSetter
+    {
+        private final String sourceMimetype;
+        private final String targetMimetype;
+        private final String suffixAndValue;
+        
+        DeprecatedSetter(String sourceMimetype, String targetMimetype, String suffixAndValue)
+        {
+            this.sourceMimetype = sourceMimetype;
+            this.targetMimetype = targetMimetype;
+            this.suffixAndValue = suffixAndValue;
+        }
+
+        public String getPropertyNameAndValue(String beanName)
+        {
+            return TransformerConfig.CONTENT+beanName+
+                    (sourceMimetype != null
+                    ? TransformerConfig.EXTENSIONS+getExtensionOrAny(sourceMimetype)+'.'+getExtensionOrAny(targetMimetype)
+                    : ".")+
+                    suffixAndValue;
+        }
     }
 }

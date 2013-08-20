@@ -48,5 +48,8 @@
       <property name="storesCache" ref="routingContentStoreCache" />
       <property name="singletonCache" ref="immutableSingletonCache"/>
    </bean>
-   
+
+   <bean id="networksService" class="org.alfresco.repo.tenant.NetworksServiceImpl">
+      <property name="tenantAdminService" ref="tenantAdminService" />
+   </bean>
 </beans>

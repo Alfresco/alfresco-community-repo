@@ -9,6 +9,54 @@
 <!-- which flash can then easily play    -->
 <!-- =================================== -->
 
+<!--
+    THE FOLLOWING alfresco-global.properties MUST ALSO BE SET
+    =========================================================
+
+# ffmpeg.flv
+# ==========
+content.transformer.ffmpeg.flv.priority=50
+content.transformer.ffmpeg.flv.extensions.3g2.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.3gp.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.asf.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.avi.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.avx.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.mov.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.movie.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.mp4.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.mpeg2.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.mpg.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.ogv.flv.supported=true
+content.transformer.ffmpeg.flv.extensions.wmv.flv.supported=true
+
+# ffmpeg.mp4
+# ==========
+content.transformer.ffmpeg.mp4.priority=50
+content.transformer.ffmpeg.mp4.extensions.3g2.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.3gp.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.asf.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.avx.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.mov.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.movie.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.mpeg2.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.mpg.mp4.supported=true
+content.transformer.ffmpeg.mp4.extensions.wmv.mp4.supported=true
+# The avi and ogv to mp4 transformations did not work with ffmpeg 0.8.6
+# Please check the latest ffmpeg documentation for the latest information
+# content.transformer.avi.mp4.extensions.mpg.mp4.supported=true
+# content.transformer.ogv.mp4.extensions.wmv.mp4.supported=true
+
+# ffmpeg.mp3
+# ==========
+content.transformer.ffmpeg.mp3.priority=50
+content.transformer.ffmpeg.mp3.extensions.aiff.mp3.supported=true
+content.transformer.ffmpeg.mp3.extensions.au.mp3.supported=true
+content.transformer.ffmpeg.mp3.extensions.m4a.mp3.supported=true
+content.transformer.ffmpeg.mp3.extensions.oga.mp3.supported=true
+content.transformer.ffmpeg.mp3.extensions.wav.mp3.supported=true
+
+-->
+
 <beans>
   <!-- Content Transformations -->
 
@@ -65,108 +113,6 @@
           </props>
         </property>
       </bean>
-    </property>
-
-    <property name="explicitTransformations">
-      <list>
-        <!-- Transform to FLV -->
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/mpeg</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/x-flv</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/mp4</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/x-flv</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/3gpp</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/x-flv</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/3gpp2</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/x-flv</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/mpeg2</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/x-flv</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/x-sgi-movie</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/x-flv</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/x-msvideo</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/x-flv</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/quicktime</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/x-flv</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/x-ms-asf</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/x-flv</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/x-ms-wmv</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/x-flv</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/x-rad-screenplay</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/x-flv</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/ogg</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/x-flv</value>
-          </property>
-        </bean>
-      </list>
     </property>
     <property name="mimetypeService">
       <ref bean="mimetypeService"/>
@@ -229,104 +175,6 @@
         </property>
       </bean>
     </property>
-
-    <property name="explicitTransformations">
-      <list>
-        <!-- Transform to MP4 -->
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/mpeg</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/mp4</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/mpeg2</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/mp4</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/x-sgi-movie</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/mp4</value>
-          </property>
-        </bean>
-        <!-- //Did not work in ffmpeg 0.8.6 - Please check the latest ffmpeg documentation for the correct setttings
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/x-msvideo</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/mp4</value>
-          </property>
-        </bean>
-        -->
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/quicktime</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/mp4</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/3gpp</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/mp4</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/3gpp2</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/mp4</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/x-ms-asf</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/mp4</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/x-ms-wmv</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/mp4</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/x-rad-screenplay</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/mp4</value>
-          </property>
-        </bean>
-        <!-- //Did not work in ffmpeg 0.8.6 - Please check the latest ffmpeg documentation for the correct setttings
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>video/ogg</value>
-          </property>
-          <property name="targetMimetype">
-            <value>video/mp4</value>
-          </property>
-        </bean>
-      -->
-      </list>
-    </property>
     <property name="mimetypeService">
       <ref bean="mimetypeService"/>
     </property>
@@ -385,51 +233,6 @@
           </props>
         </property>
       </bean>
-    </property>
-    <property name="explicitTransformations">
-      <list>
-        <!-- Transform to MP3 -->
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>audio/x-aiff</value>
-          </property>
-          <property name="targetMimetype">
-            <value>audio/mpeg</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>audio/basic</value>
-          </property>
-          <property name="targetMimetype">
-            <value>audio/mpeg</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>audio/x-wav</value>
-          </property>
-          <property name="targetMimetype">
-            <value>audio/mpeg</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>audio/ogg</value>
-          </property>
-          <property name="targetMimetype">
-            <value>audio/mpeg</value>
-          </property>
-        </bean>
-        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-          <property name="sourceMimetype">
-            <value>audio/mp4</value>
-          </property>
-          <property name="targetMimetype">
-            <value>audio/mpeg</value>
-          </property>
-        </bean>
-      </list>
     </property>
     <property name="mimetypeService">
       <ref bean="mimetypeService"/>

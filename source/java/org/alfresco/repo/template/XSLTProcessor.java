@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -399,7 +399,8 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
             if (o instanceof String || o instanceof Number || o instanceof Boolean)
             {
                 el.appendChild(xslTemplate.createTextNode(o.toString()));
-                docEl.insertBefore(el, docEl.getFirstChild());
+                // ALF-15413. Add the variables at the end of the list of children
+                docEl.insertBefore(el, null);
             }
         }
     }

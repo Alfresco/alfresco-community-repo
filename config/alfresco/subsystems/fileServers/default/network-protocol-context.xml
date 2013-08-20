@@ -52,12 +52,59 @@
        <property name="cifsHelper"><ref bean="cifsHelper" /></property>
        <property name="authenticationService"><ref bean="authenticationService"/></property>
        <property name="checkOutCheckInService"><ref bean="CheckoutCheckinService"/></property>
+       <property name="transactionService"><ref bean="transactionService"/></property>
    </bean>
    
    <!--  Content Comparator -->
    <bean name="contentComparator" class="org.alfresco.filesys.repo.CIFSContentComparator" init-method="init">
-   
    </bean>
+   
+   <!-- Non Clustered Backing Cache,  this is where the per node locking stuff goes -->
+  <bean name="lockKeeperBackingCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
+     <property name="cacheName">
+       <value>lockKeeperBackingCache</value>
+     </property>
+   </bean>
+   
+   <bean name="lockKeeperTransactionalCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache"><ref bean="lockKeeperBackingCache" /></property>
+      <property name="name"><value>lockKeeperTransactionalCache</value></property>
+      <property name="maxCacheSize"><value>200000</value></property>
+   </bean>
+   
+   <!--  LockKeeper Used to track and make/break CIFS write locks-->
+   <bean name="lockKeeper" class="org.alfresco.filesys.repo.LockKeeperImpl" init-method="init">
+        <property name="lockService"><ref bean="lockService"/></property>
+        <property name="transactionService"><ref bean="transactionService"/></property>
+        <property name="lockKeeperTransactionalCache"><ref bean="lockKeeperTransactionalCache"/></property>
+        <property name="lockEnabled"><value>${filesystem.lockKeeperEnabled}</value></property>
+        <property name="timeToExpire"><value>${filesystem.lockKeeperTimeout}</value></property>
+   </bean>
+   
+   <bean id="cifsLockKeeperRefreshTrigger" class="org.alfresco.util.CronTriggerBean">         
+      <property name="jobDetail">
+         <bean id="cifsLockKeeperRefreshJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+            <property name="jobClass">
+               <value>org.alfresco.filesys.repo.LockKeeperRefreshJob</value>
+            </property>
+            <property name="jobDataAsMap">
+               <map>
+                  <entry key="alfrescoLockKeeper">
+                     <ref bean="lockKeeper"/>
+                  </entry>
+               </map>
+            </property>
+         </bean>
+      </property>
+      <property name="scheduler">
+         <ref bean="schedulerFactory" />
+      </property>
+      <property name="cronExpression">
+         <value>${filesystem.lockKeeperRefreshCronExpression}</value>
+      </property>
+    </bean>
+   
+   
 
    <!-- Filesystem Interface -->
    <bean id="oldContentDiskDriver" class="org.alfresco.filesys.repo.ContentDiskDriver">
@@ -245,6 +292,13 @@
                    <property name="ranking"><value>HIGH</value></property>
                 </bean>
                 
+                <!-- Keynote 5.3 on Mac Mountain Lion OS X 10.8.3 -->				
+                <bean id="keynote53MountainLion" class="org.alfresco.filesys.repo.rules.ScenarioDoubleRenameShuffle">
+                    <property name="pattern"><value>.*~[.][^.]*</value></property>
+                    <property name="timeout"><value>20000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>  
+                
             </list>
         </property>
        
@@ -285,7 +339,6 @@
                 <value>setFileInformation</value>
                 <value>copyContent</value>
                 <value>deleteEmptyFile</value>
-                <value>processIOControl</value>
             </list>
         </property>
     </bean>
@@ -300,6 +353,7 @@
                 <value>openFile</value>
                 <value>getFileInformation</value> 
                 <value>startSearch</value>
+                <value>processIOControl</value>
             </list>
         </property>
     </bean>
@@ -347,6 +401,7 @@
       <property name="contentComparator"><ref bean="contentComparator"/></property>
       <property name="nodeArchiveService" ><ref bean="nodeArchiveService"/></property>
       <property name="hiddenAspect" ><ref bean="hiddenAspect"/></property>
+      <property name="alfrescoLockKeeper" ><ref bean="lockKeeper"/></property>
 
    </bean>
 

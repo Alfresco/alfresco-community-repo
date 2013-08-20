@@ -51,19 +51,22 @@
         class="org.alfresco.repo.workflow.activiti.variable.ScriptNodeListVariableType">
         <property name="serviceRegistry" ref="ServiceRegistry" />
     </bean>
+    
+    <bean id="activitiProcessParseHandler" class="org.alfresco.repo.workflow.activiti.AlfrescoProcessBpmnParseHandler">
+       <property name="processCreateListener" ref="activitiProcessCreateListener" />
+       <property name="tenantService" ref="tenantService" />
+       <property name="multiTenancyEnabled" value="${system.workflow.deployWorkflowsInTenant}" />
+   	</bean>
 
+    	<bean id="activitiCallActivityParseHandler" class="org.alfresco.repo.workflow.activiti.AlfrescoCallActivityBpmnParseHandler">
+		<property name="tenantService" ref="tenantService" />
+      <property name="multiTenancyEnabled" value="${system.workflow.deployWorkflowsInTenant}" />
+	</bean>
 
-    <!-- BPMN Parse listener which adds tasklisteners to all userTasks -->
-    <bean id="activitiParseListener"
-        class="org.alfresco.repo.workflow.activiti.AlfrescoBpmnParseListener">
-        <property name="createTaskListener" ref="activitiCreateTaskListener" />
-        <property name="completeTaskListener" ref="activitiCompleteTaskListener" />
-        <property name="processCreateListener" ref="activitiProcessCreateListener" />
-        <property name="tenantService" ref="tenantService" />
-        <property name="deployWorkflowsInTenant">
-        	<value>${system.workflow.deployWorkflowsInTenant}</value>
-        </property>
-    </bean>
+   	<bean id="activitiUserTaskParseHandler" class="org.alfresco.repo.workflow.activiti.AlfrescoUserTaskBpmnParseHandler">
+		<property name="createTaskListener" ref="activitiCreateTaskListener" />
+		<property name="completeTaskListener" ref="activitiCompleteTaskListener" />
+	</bean>
 
     <!-- -->
     <!-- Activiti Process Engine -->
@@ -88,11 +91,13 @@
                 <ref bean="activitiScriptNodeListType" />
             </list>
         </property>
-        <property name="customPreBPMNParseListeners">
-            <list>
-                <ref bean="activitiParseListener" />
-            </list>
-        </property>
+        <property name="postBpmnParseHandlers">
+           <list>
+               <ref bean="activitiProcessParseHandler" />
+               <ref bean="activitiCallActivityParseHandler" />
+               <ref bean="activitiUserTaskParseHandler" />
+           </list>
+       	</property>
         <property name="unprotectedNodeService" ref="nodeService" />
         <property name="idBlockSize" value="${system.workflow.engine.activiti.idblocksize}"></property>
         
@@ -111,6 +116,12 @@
     </util:map>
 
     <bean id="baseJavaDelegate" class="org.alfresco.repo.workflow.activiti.BaseJavaDelegate"
+        abstract="true">
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+        <property name="beanRegistry" ref="activitiBeanRegistry" />
+    </bean>
+    
+    <bean id="baseExecutionListener" class="org.alfresco.repo.workflow.activiti.BaseExecutionListener"
         abstract="true">
         <property name="serviceRegistry" ref="ServiceRegistry" />
         <property name="beanRegistry" ref="activitiBeanRegistry" />
@@ -217,8 +228,10 @@
         <property name="workflowNotification" ref="workflowNotification" />
     </bean>
 
-    <bean id="activitiProcessCreateListener"
-        class="org.alfresco.repo.workflow.activiti.listener.ProcessStartExecutionListener" />
+    <bean id="activitiProcessCreateListener" class="org.alfresco.repo.workflow.activiti.listener.ProcessStartExecutionListener">
+      <property name="tenantService" ref="tenantService" />
+      <property name="deployWorkflowsInTenant" value="${system.workflow.deployWorkflowsInTenant}" />
+    </bean>
 
     <bean id="activitiRepositoryService" factory-bean="activitiProcessEngine"
         factory-method="getRepositoryService" />

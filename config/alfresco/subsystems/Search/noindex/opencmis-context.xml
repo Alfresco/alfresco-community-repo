@@ -3,6 +3,8 @@
 
 <beans>
 
+   <import resource="../common-opencmis-context.xml" />
+
    <bean id="search.OpenCMISQueryService" class="org.alfresco.repo.search.impl.noindex.NoIndexOpenCMISQueryServiceImpl" >
        <property name="cmisDictionaryService">
             <ref bean="OpenCMISDictionaryService" />

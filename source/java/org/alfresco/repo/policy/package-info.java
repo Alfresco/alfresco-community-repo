@@ -21,7 +21,9 @@
  * @see org.alfresco.repo.policy.PolicyComponent
  * @see org.alfresco.repo.policy.BehaviourFilter
  */
+@PackageMarker
 package org.alfresco.repo.policy;
+import org.alfresco.util.PackageMarker;
 
 
 

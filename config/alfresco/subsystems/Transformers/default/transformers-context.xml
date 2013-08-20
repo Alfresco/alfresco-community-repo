@@ -7,8 +7,14 @@
       <property name="mimetypeService">
          <ref bean="mimetypeService"/>
       </property>
+      <property name="contentService">
+         <ref bean="contentService" />
+      </property>
       <property name="contentTransformerRegistry">
          <ref bean="contentTransformerRegistry" />
+      </property>
+      <property name="transformerDebug">
+         <ref bean="transformerDebug" />
       </property>
       <property name="transformerLog">
          <ref bean="transformerLog" />

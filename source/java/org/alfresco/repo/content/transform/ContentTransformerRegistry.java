@@ -44,8 +44,8 @@ public class ContentTransformerRegistry
 {
     private static final Log logger = LogFactory.getLog(ContentTransformerRegistry.class);
     
-    private List<ContentTransformer> transformers;
-    private List<ContentTransformer> allTransformers;
+    private final List<ContentTransformer> transformers;
+    private final List<ContentTransformer> allTransformers;
     
     private final TransformerSelector transformerSelector;
     
@@ -64,7 +64,7 @@ public class ContentTransformerRegistry
      *  
      * @param transformer a content transformer
      */
-    public void addTransformer(ContentTransformer transformer)
+    public synchronized void addTransformer(ContentTransformer transformer)
     {
         transformers.add(transformer);
         allTransformers.add(transformer);
@@ -81,15 +81,25 @@ public class ContentTransformerRegistry
      * included as a component of complex transformers.
      * @param transformer a content transformer
      */
-    public void addComponentTransformer(ContentTransformer transformer)
+    public synchronized void addComponentTransformer(ContentTransformer transformer)
     {
         allTransformers.add(transformer);
     }
 
     /**
+     * Removes a dynamically created transformer.
+     * @param transformer to be removed.
+     */
+    public synchronized void removeTransformer(ContentTransformer transformer)
+    {
+        transformers.remove(transformer);
+        allTransformers.remove(transformer);
+    }
+
+    /**
      * @return a list of transformers that may be queried to check for applicability.
      */
-    public List<ContentTransformer> getTransformers()
+    public synchronized List<ContentTransformer> getTransformers()
     {
         return Collections.unmodifiableList(transformers);
     }
@@ -98,7 +108,7 @@ public class ContentTransformerRegistry
      * @return a list of all transformers, including those that only exist as a
      *         component of another transformer.
      */
-    public List<ContentTransformer> getAllTransformers()
+    public synchronized List<ContentTransformer> getAllTransformers()
     {
         return Collections.unmodifiableList(allTransformers);
     }
@@ -107,7 +117,7 @@ public class ContentTransformerRegistry
      * Returns a transformer identified by name.
      * @throws IllegalArgumentException if transformerName is not found.
      */
-    public ContentTransformer getTransformer(String transformerName)
+    public synchronized ContentTransformer getTransformer(String transformerName)
     {
         if (transformerName != null)
         {

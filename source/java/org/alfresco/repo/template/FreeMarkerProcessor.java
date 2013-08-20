@@ -45,6 +45,7 @@ import freemarker.cache.MruCacheStorage;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.core.Environment;
 import freemarker.template.Configuration;
+import freemarker.template.ObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 
@@ -81,6 +82,7 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
     
     /** Template encoding */
     private String defaultEncoding;
+    private ObjectWrapper qnameObjectWrapper = new QNameAwareObjectWrapper();
     
     /** Enable/disable Freemarker's localized lookup feature*/
     private boolean localizedLookup = DEFAULT_LOCALIZED_LOOKUP_VALUE;
@@ -122,7 +124,7 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
                     this.services.getNodeService(), this.services.getContentService(), defaultEncoding));
             
             // use our custom object wrapper that can deal with QNameMap objects directly
-            config.setObjectWrapper(new QNameAwareObjectWrapper());
+            config.setObjectWrapper(qnameObjectWrapper);
             
             // rethrow any exception so we can deal with them
             config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
@@ -162,7 +164,7 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
         config.setTemplateLoader(stringTemplateLoader);
         
         // use our custom object wrapper that can deal with QNameMap objects directly
-        config.setObjectWrapper(new QNameAwareObjectWrapper());
+        config.setObjectWrapper(qnameObjectWrapper);
         
         // rethrow any exception so we can deal with them
         config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);

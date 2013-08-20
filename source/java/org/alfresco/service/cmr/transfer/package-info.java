@@ -30,4 +30,7 @@
  * @see org.alfresco.service.cmr.transferTransferService
  * @since 3.3
  */
+@PackageMarker
 package org.alfresco.service.cmr.transfer;
+import org.alfresco.util.PackageMarker;
+

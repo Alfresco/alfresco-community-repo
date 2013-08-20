@@ -518,6 +518,30 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                                 return true;
                             }
                             break;
+                        case ENDSWITH:
+                            if (val.endsWith(filter))
+                            {
+                                return true;
+                            }
+                            break;
+                        case ENDSWITH_IGNORECASE:
+                            if (val.toLowerCase().endsWith(filter.toLowerCase()))
+                            {
+                                return true;
+                            }
+                            break;
+                        case MATCHES:
+                            if (val.matches(filter))
+                            {
+                                return true;
+                            }
+                            break;
+                        case MATCHES_IGNORECASE:
+                            if (val.toLowerCase().matches(filter.toLowerCase()))
+                            {
+                                return true;
+                            }
+                            break;
                         default:
                     }
                 }

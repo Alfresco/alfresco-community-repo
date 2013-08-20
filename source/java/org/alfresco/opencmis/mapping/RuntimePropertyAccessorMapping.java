@@ -36,6 +36,7 @@ import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -140,6 +141,10 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         registerPropertyAccessor(new AllowedChildObjectTypeIdsProperty(serviceRegistry, cmisConnector, cmisMapping));
         registerPropertyAccessor(new SourceIdProperty(serviceRegistry, cmisConnector));
         registerPropertyAccessor(new TargetIdProperty(serviceRegistry, cmisConnector));
+        if(cmisMapping.getCmisVersion().equals(CmisVersion.CMIS_1_1))
+        {
+        	registerPropertyAccessor(new SecondaryTypesProperty(serviceRegistry, cmisConnector, cmisMapping));
+        }
 
         //
         // Action Evaluator Mappings
@@ -274,6 +279,10 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
                 false));
         registerEvaluator(BaseTypeId.CMIS_POLICY, new FixedValueActionEvaluator(serviceRegistry, Action.CAN_APPLY_ACL,
                 false));
+    }
+    
+    public void init()
+    {
     }
 
     /**

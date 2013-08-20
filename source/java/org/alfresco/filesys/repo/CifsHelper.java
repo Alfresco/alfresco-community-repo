@@ -209,8 +209,8 @@ public class CifsHelper
      * cached here.
      * 
      * @param nodeRef the node
-     * @param readOnly
-     * @param lockedFilesAsOffline
+     * @param readOnly, should the file be shown as "read only", regardless of its permissions?
+     * @param lockedFilesAsOffline should a locked file be marked as offline
      * 
      * @return Returns the file information pertinent to the node
      * @throws FileNotFoundException if the path refers to a non-existent file

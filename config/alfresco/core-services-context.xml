@@ -36,6 +36,7 @@
             <list>
                 <value>classpath:alfresco/repository.properties</value>
                 <value>classpath:alfresco/domain/transaction.properties</value>
+                <value>classpath:alfresco/caches.properties</value>
                 <!-- Enterprise defaults -->
                 <!--  Overrides supplied if this is an enterprise install (none exist for community) -->
                 <value>classpath*:alfresco/enterprise/repository.properties</value>
@@ -134,6 +135,9 @@
 
     <bean id="dynamicExporter" class="org.alfresco.repo.management.DynamicMBeanExporter">
        <property name="server" ref="alfrescoMBeanServer"/>
+    </bean>
+    
+    <bean id="managedResource" class="org.alfresco.repo.management.DummyManagedResource">
     </bean>
 
     <!--  
@@ -323,15 +327,18 @@
             <ref bean="defaultDataSource" />
         </property>
     </bean>
+    
+    <bean id="dataSourceCheck" class="org.alfresco.repo.domain.schema.DataSourceCheck">
+        <constructor-arg index="0" value="${db.url}" />
+        <constructor-arg index="1" value="${db.username}" />
+        <constructor-arg index="2" ref="dataSource" />
+    </bean>
 
     <!-- transaction service -->
     <alias name="transactionService" alias="transactionComponent"/>
     <bean id="transactionService" class="org.alfresco.repo.transaction.TransactionServiceImpl">
         <property name="transactionManager">
             <ref bean="transactionManager" />
-        </property>
-        <property name="authenticationContext">
-            <ref bean="authenticationContext" />
         </property>
         <property name="sysAdminParams">
             <ref bean="sysAdminParams"/>
@@ -501,10 +508,22 @@
     <!--  Lock Service           -->
     <!--                               -->
 
+    <bean id="lockStoreFactory" class="org.alfresco.repo.lock.mem.DefaultLockStoreFactory"/>
+    
+    <bean id="lockStore" factory-bean="lockStoreFactory" factory-method="createLockStore"/>
+    
+    <bean id="lockableAspectInterceptor" class="org.alfresco.repo.lock.mem.LockableAspectInterceptor">
+        <property name="nodeService" ref="mlAwareNodeService"/>
+        <property name="lockStore" ref="lockStore"/>
+        <property name="authenticationService" ref="authenticationService"/>
+    </bean>
+    
     <bean id="lockService" class="org.alfresco.repo.lock.LockServiceImpl" init-method="init">
         <property name="nodeService" ref="nodeService" />
         <property name="tenantService" ref="tenantService" />
+        <property name="lockStore" ref="lockStore" />
         <property name="policyComponent" ref="policyComponent" />
+        <property name="lockableAspectInterceptor" ref="lockableAspectInterceptor" />
         <property name="authenticationService" ref="authenticationService" />
         <property name="searchService" ref="admSearchService" />
         <property name="behaviourFilter" ref="policyBehaviourFilter" />      
@@ -1000,6 +1019,9 @@
                 <property name="retryWaitIncrementMs">
                     <value>1</value>
                 </property>
+                <property name="forceWritable">
+                    <value>true</value>
+                </property>				
             </bean>
         </property>
         <property name="lockDAO" ref="lockDAO" />
@@ -1388,5 +1410,7 @@
          </list>
       </property>
    </bean>
+   
+   <bean id="defaultImageResolver" class="org.alfresco.util.DefaultImageResolver" />
    
 </beans>

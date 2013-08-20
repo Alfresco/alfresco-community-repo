@@ -114,6 +114,14 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
                 // the store is invalid and will therefore not have a root node entry
                 continue;
             }
+            
+            // Are we creating the store - in which case we do not check
+            
+            if(nodeService.getChildAssocs(rootNodeRef).size() == 0)
+            {
+                continue;
+            }
+            
             if (indexRecoveryMode != RecoveryMode.FULL)
             {
                 if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))

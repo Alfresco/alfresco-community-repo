@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,9 +29,12 @@ import org.alfresco.service.cmr.security.PermissionService;
  * 
  * @author davidc
  */
-public class PermissionActionEvaluator extends AbstractActionEvaluator<NodeRef>
+public class PermissionActionEvaluator<ObjectType> extends AbstractActionEvaluator<ObjectType>
 {
     private String[] permissions;
+
+    private boolean defaultAllowing;
+
     private PermissionService permissionService;
 
     /**
@@ -40,10 +43,11 @@ public class PermissionActionEvaluator extends AbstractActionEvaluator<NodeRef>
      * @param serviceRegistry
      * @param permission
      */
-    protected PermissionActionEvaluator(ServiceRegistry serviceRegistry, CMISAllowedActionEnum action, String... permission)
+    protected PermissionActionEvaluator(ServiceRegistry serviceRegistry, CMISAllowedActionEnum action, boolean defaultAllowing, String... permission)
     {
         super(serviceRegistry, action);
         this.permissions = permission;
+        this.defaultAllowing = defaultAllowing;
         this.permissionService = serviceRegistry.getPermissionService();
     }
 
@@ -51,8 +55,14 @@ public class PermissionActionEvaluator extends AbstractActionEvaluator<NodeRef>
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISActionEvaluator#isAllowed(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public boolean isAllowed(NodeRef nodeRef)
+    public boolean isAllowed(ObjectType object)
     {
+        if (!(object instanceof NodeRef))
+        {
+            return defaultAllowing;
+        }
+
+        NodeRef nodeRef = (NodeRef) object;
         for (String permission : permissions)
         {
             if (permissionService.hasPermission(nodeRef, permission) == AccessStatus.DENIED)
@@ -60,9 +70,10 @@ public class PermissionActionEvaluator extends AbstractActionEvaluator<NodeRef>
                 return false;
             }
         }
+
         return true;
     }
-    
+
     @Override
     public String toString()
     {
@@ -76,5 +87,5 @@ public class PermissionActionEvaluator extends AbstractActionEvaluator<NodeRef>
         builder.append("]");
         return builder.toString();
     }
-    
+
 }

@@ -47,6 +47,8 @@ import org.alfresco.service.namespace.NamespaceService;
  */
 public class TaskCompleteListener implements TaskListener
 {
+    private static final long serialVersionUID = 1L;
+    
     private ActivitiPropertyConverter propertyConverter;
     private WorkflowQNameConverter qNameConverter;
     

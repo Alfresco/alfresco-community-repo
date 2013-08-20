@@ -28,7 +28,6 @@ public class ActivityFeedQueryEntity
 {
     private Long minId;
     private Long maxId;
-    private String activitySummaryFormat;
     private String feedUserId;
     private String siteNetwork;
     
@@ -52,16 +51,6 @@ public class ActivityFeedQueryEntity
 		this.maxId = maxId;
 	}
 
-	public String getActivitySummaryFormat()
-    {
-        return activitySummaryFormat;
-    }
-    
-    public void setActivitySummaryFormat(String activitySummaryFormat)
-    {
-        this.activitySummaryFormat = activitySummaryFormat;
-    }
-    
     public String getFeedUserId()
     {
         return feedUserId;

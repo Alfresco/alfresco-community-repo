@@ -41,7 +41,6 @@ public class SolrIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
     private NamespacePrefixResolver namespacePrefixResolver;
     private NodeService nodeService;
     private QueryRegisterComponent queryRegister;
-    private String baseUrl;
     
     public DictionaryService getDictionaryService()
     {
@@ -83,15 +82,6 @@ public class SolrIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
         this.queryRegister = queryRegister;
     }
 
-    public String getBaseUrl()
-    {
-        return baseUrl;
-    }
-
-    public void setBaseUrl(String baseUrl)
-    {
-        this.baseUrl = baseUrl;
-    }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.IndexerAndSearcher#getIndexer(org.alfresco.service.cmr.repository.StoreRef)

@@ -1,0 +1,399 @@
+<model name="test:lucenetest" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Test Model for Lucene tests</description>
+   <author>Alfresco</author>
+   <published>2005-07-13</published>
+   <version>0.1</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+   
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/test/lucenetest" prefix="test"/>
+    </namespaces>
+
+    <types>
+        <type name="test:testSuperContentType">
+            <title>Test Super Content Type</title>
+            <parent>cm:content</parent>
+            <mandatory-aspects>
+                <aspect>test:testSuperAspect</aspect>
+            </mandatory-aspects>
+        </type>
+        
+        <type name="test:testContentType">
+            <title>Test Content Type</title>
+            <parent>test:testSuperContentType</parent>
+            <mandatory-aspects>
+                <aspect>test:testAspect</aspect>
+            </mandatory-aspects>
+        </type>
+        
+        <type name="test:testSuperFolderType">
+            <title>Test Super Folder Type</title>
+            <parent>cm:folder</parent>
+            <mandatory-aspects>
+                <aspect>test:testSuperAspect</aspect>
+            </mandatory-aspects>
+        </type>
+        
+        <type name="test:testFolderType">
+            <title>Test Folder Type</title>
+            <parent>test:testSuperFolderType</parent>
+            <mandatory-aspects>
+                <aspect>test:testAspect</aspect>
+            </mandatory-aspects>
+        </type>
+    </types>
+   
+   <aspects>
+       <aspect name="test:testSuperAspect">
+            <title>Test Super Aspect</title>
+            <properties>
+                <property name="test:neverIndexed">
+                    <type>d:any</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="false"/>
+                </property>
+                <property name="test:createdDate">
+                    <type>d:date</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:orderDouble">
+                    <type>d:double</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:orderFloat">
+                    <type>d:float</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:orderLong">
+                    <type>d:long</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:orderInt">
+                    <type>d:int</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+				<property name="test:orderText">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+				<property name="test:orderMLText">
+                    <type>d:mltext</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+            </properties>
+            <associations>
+                <child-association name="test:assoc">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </source>
+                    <target>
+                        <class>sys:base</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </child-association>
+            </associations>
+        </aspect>
+        
+        <aspect name="test:testAspect">
+            <title>Test Aspect</title>
+            <parent>test:testSuperAspect</parent>
+            <properties>
+                <property name="test:text-indexed-stored-tokenised-atomic">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:text-indexed-unstored-tokenised-atomic">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:text-indexed-stored-tokenised-nonatomic">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>false</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:int-ista">
+                    <type>d:int</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:long-ista">
+                    <type>d:long</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:float-ista">
+                    <type>d:float</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:double-ista">
+                    <type>d:double</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:date-ista">
+                    <type>d:date</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:datetime-ista">
+                    <type>d:datetime</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:boolean-ista">
+                    <type>d:boolean</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:qname-ista">
+                    <type>d:qname</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:category-ista">
+                    <type>d:category</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:noderef-ista">
+                    <type>d:noderef</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="test:verbatim">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+				<property name="test:ml">
+                    <type>d:mltext</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+				<property name="test:null">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+				<property name="test:path-ista">
+                    <type>d:path</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+				<property name="test:locale-ista">
+                    <type>d:locale</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+				<!-- Any -->
+				<property name="test:any-many-ista">
+                    <type>d:any</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+				<!-- Complex multiples -->
+				<property name="test:content-many-ista">
+                    <type>d:any</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+				<property name="test:mltext-many-ista">
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+				<property name="test:period-ista">
+                    <type>d:period</type>
+                    <mandatory>false</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+            </properties>
+            <mandatory-aspects>
+                <aspect>test:testAspect</aspect>
+            </mandatory-aspects>
+        </aspect>
+        
+      <aspect name="test:aspectWithChildren">
+         <title>Aspect With Children</title>
+         <associations>
+             <child-association name="test:unused">
+                 <source>
+                     <mandatory>false</mandatory>
+                     <many>true</many>
+                 </source>
+                 <target>
+                     <class>sys:base</class>
+                     <mandatory>false</mandatory>
+                     <many>true</many>
+                 </target>
+             </child-association>
+         </associations>
+      </aspect>
+
+   </aspects>
+
+</model>

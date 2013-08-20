@@ -9,17 +9,11 @@
        <property name="indexRecoveryComponent">
            <ref bean="search.indexRecoveryComponent"/>
        </property>
-       <property name="repositoryState">
-           <ref bean="repositoryState"/>
-       </property>
     </bean>
     
     <bean id="search.avmIndexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
        <property name="indexRecoveryComponent">
           <ref bean="search.avmIndexRecoveryComponent"/>
-       </property>
-       <property name="repositoryState">
-           <ref bean="repositoryState"/>
        </property>
     </bean>
     
@@ -38,9 +32,6 @@
        <property name="indexConfigurationChecker">
            <ref bean="search.indexConfigurationChecker"/>
         </property>
-        <property name="repositoryState">
-           <ref bean="repositoryState"/>
-       </property>
     </bean>
     
     <bean id="search.fullTextSearchIndexerBootstrap" class="org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexerBootstrapBean" >
@@ -49,6 +40,12 @@
        </property>
        <property name="fullTextSearchIndexer">
            <ref bean="search.luceneFullTextSearchIndexer"/>
+       </property>
+    </bean>
+    
+    <bean id="searchSchedulerStarter" class="org.alfresco.util.SchedulerStarterBean" >
+       <property name="scheduler">
+           <ref bean="searchSchedulerFactory"/>
        </property>
     </bean>
     

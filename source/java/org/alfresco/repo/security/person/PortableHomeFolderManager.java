@@ -71,7 +71,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
     /**
      * Cache the result of the path look up.
      */
-    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    // note: cache is tenant-aware (if using TransctionalCache impl)
     
     private SimpleCache<String, NodeRef> singletonCache; // eg. for rootPathNodeRef
     private final String KEY_HOME_PATH_NODEREF = "key.homeFolder.rootPathNodeRef";

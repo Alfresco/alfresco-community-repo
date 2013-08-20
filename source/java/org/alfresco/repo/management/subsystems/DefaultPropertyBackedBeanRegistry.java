@@ -18,10 +18,12 @@
  */
 package org.alfresco.repo.management.subsystems;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.dictionary.DictionaryRepositoryBootstrappedEvent;
 import org.alfresco.repo.domain.schema.SchemaAvailableEvent;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
@@ -38,6 +40,8 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
 {
     /** Is the database schema available yet? */
     private boolean isSchemaAvailable;
+
+    private boolean wasDictionaryBootstrapped = false;
 
     /** Events deferred until the database schema is available. */
     private List<PropertyBackedBeanEvent> deferredEvents = new LinkedList<PropertyBackedBeanEvent>();
@@ -123,6 +127,12 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
         broadcastEvent(new PropertyBackedBeanSetPropertiesEvent(bean, properties));
     }
 
+    @Override
+    public void broadcastRemoveProperties(PropertyBackedBean bean, Collection<String> properties)
+    {
+        broadcastEvent(new PropertyBackedBeanRemovePropertiesEvent(bean, properties));
+    }
+
     /**
      * Broadcast event.
      * 
@@ -132,7 +142,7 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
     private void broadcastEvent(PropertyBackedBeanEvent event)
     {
         // If the system is up and running, broadcast the event immediately
-        if (this.isSchemaAvailable)
+        if (this.isSchemaAvailable && this.wasDictionaryBootstrapped)
         {
             for (ApplicationListener listener : this.listeners)
             {
@@ -157,6 +167,8 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
         {
             this.isSchemaAvailable = true;
 
+            if (wasDictionaryBootstrapped && isSchemaAvailable)
+            {
             // Broadcast all the events we had been deferring until this event
             for (PropertyBackedBeanEvent event1 : this.deferredEvents)
             {
@@ -164,5 +176,24 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
             }
             this.deferredEvents.clear();
         }
+
+           
+        }
+        if (event instanceof DictionaryRepositoryBootstrappedEvent)
+        {
+            this.wasDictionaryBootstrapped = true;
+            
+            if (wasDictionaryBootstrapped && isSchemaAvailable)
+            {
+                // Broadcast all the events we had been deferring until this event
+                for (PropertyBackedBeanEvent event1 : this.deferredEvents)
+                {
+                    broadcastEvent(event1);
+                }
+                this.deferredEvents.clear();
+            }
+        }
+        
+        
     }
 }

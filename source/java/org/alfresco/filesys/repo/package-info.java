@@ -16,4 +16,6 @@
  * Quota Management which contains a UserQuota for each active user.
  * 
  */
+@PackageMarker
 package org.alfresco.filesys.repo;
+import org.alfresco.util.PackageMarker;

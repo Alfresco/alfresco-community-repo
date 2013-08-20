@@ -18,14 +18,17 @@
  */
 package org.alfresco.repo.domain.propval;
 
+import java.io.Serializable;
+
 /**
  * Entity bean for <b>alf_prop_unique_ctx</b> table.
  * 
  * @author Derek Hulley
  * @since 3.2
  */
-public class PropertyUniqueContextEntity
+public class PropertyUniqueContextEntity implements Serializable
 {
+    private static final long serialVersionUID = 1L;
     private Long id;
     private short version;
     private Long value1PropId;

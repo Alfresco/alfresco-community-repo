@@ -18,11 +18,17 @@
       <property name="LDAPAuthenticationComponent">
            <ref bean="authenticationComponent" />
       </property>
+      
+      <property name="ChainingUserRegistrySynchronizerStatus">
+           <ref bean="userRegistrySynchronizer" />
+      </property>
    </bean>
    
-
    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.ldap.LDAPAuthenticationComponentImpl"
       parent="authenticationComponentBase">
+      <property name="id">
+         <value>${instancePath}</value>
+      </property>
       <property name="active">
          <value>${ldap.authentication.active}</value>
       </property>

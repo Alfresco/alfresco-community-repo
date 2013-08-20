@@ -34,6 +34,8 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
     private TransactionServiceImpl transactionService;
 
     private AbstractAuthenticationService authenticationService;
+    
+    private ClassLoader managedResourceClassLoader = Thread.currentThread().getContextClassLoader();
 
     public void setTransactionService(TransactionServiceImpl transactionService)
     {
@@ -55,17 +57,38 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
 
     public int getTicketCountNonExpired()
     {
-        return authenticationService.countTickets(true);
+        return useManagedResourceClassloader(new Work<Integer>()
+        {
+            @Override
+            Integer doWork()
+            {
+                return authenticationService.countTickets(true);                
+            }
+        });
     }
 
     public int getTicketCountAll()
     {
-        return authenticationService.countTickets(false);
+        return useManagedResourceClassloader(new Work<Integer>()
+        {
+            @Override
+            Integer doWork()
+            {                
+                return authenticationService.countTickets(false);
+            }
+        });
     }
 
     public int getUserCountNonExpired()
     {
-        return authenticationService.getUsersWithTickets(true).size();
+        return useManagedResourceClassloader(new Work<Integer>()
+        {
+            @Override
+            Integer doWork()
+            {                
+                return authenticationService.getUsersWithTickets(true).size();
+            }
+        });
     }
 
     public int getUserCountAll()
@@ -78,40 +101,106 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
 
     public String[] listUserNamesNonExpired()
     {
-        Set<String> userSet = authenticationService.getUsersWithTickets(true);
-        SortedSet<String> sorted = new TreeSet<String>(userSet);
-        return sorted.toArray(new String[0]);
+        return useManagedResourceClassloader(new Work<String[]>()
+        {
+            @Override
+            String[] doWork()
+            {
+                Set<String> userSet = authenticationService.getUsersWithTickets(true);
+                SortedSet<String> sorted = new TreeSet<String>(userSet);
+                return sorted.toArray(new String[0]);        
+            }
+        });
     }
 
     public String[] listUserNamesAll()
     {
-        Set<String> userSet = authenticationService.getUsersWithTickets(false);
-        SortedSet<String> sorted = new TreeSet<String>(userSet);
-        return sorted.toArray(new String[0]);
+        return useManagedResourceClassloader(new Work<String[]>()
+        {
+            @Override
+            String[] doWork()
+            {
+                Set<String> userSet = authenticationService.getUsersWithTickets(false);
+                SortedSet<String> sorted = new TreeSet<String>(userSet);
+                return sorted.toArray(new String[0]);
+            }
+        });
     }
 
     public int invalidateTicketsExpired()
     {
-        int count = authenticationService.invalidateTickets(true);
-        log.info("Expired tickets invalidated: " + count);
-        return count;
+        return useManagedResourceClassloader(new Work<Integer>()
+        {
+            @Override
+            Integer doWork()
+            {                
+                int count = authenticationService.invalidateTickets(true);
+                log.info("Expired tickets invalidated: " + count);
+                return count;           
+            }
+        });
     }
 
     public int invalidateTicketsAll()
     {
-        int count = authenticationService.invalidateTickets(false);
-        log.info("All tickets invalidated: " + count);
-        return count;
+        return useManagedResourceClassloader(new Work<Integer>()
+        {
+            @Override
+            Integer doWork()
+            {           
+                int count = authenticationService.invalidateTickets(false);
+                log.info("All tickets invalidated: " + count);
+                return count;
+            }
+        });
     }
 
-    public void invalidateUser(String username)
+    public void invalidateUser(final String username)
     {
-        authenticationService.invalidateUserSession(username);
-        log.info("User invalidated: " + username);
+        useManagedResourceClassloader(new Work<Void>()
+        {
+            @Override
+            Void doWork()
+            {
+                authenticationService.invalidateUserSession(username);
+                log.info("User invalidated: " + username);
+                return null;                
+            }
+        });
     }
 
     public int getMaxUsers()
     {
         return authenticationService.getMaxUsers();
+    }
+    
+    
+    /**
+     * TODO: This is the same as the classloader related portion of the {@link MBeanSupport} class
+     * in the enterprise repository. Review whether this code should be factored out somewhere common.
+     * 
+     * This method allows a unit of work to be executed under the same class loader used
+     * to load this managed reosource.
+     * 
+     * @param work The unit of work to perform.
+     * @return Parameterized return type.
+     */
+    private <T> T useManagedResourceClassloader(Work<T> work)
+    {
+        ClassLoader origClassLoader = Thread.currentThread().getContextClassLoader();
+        try
+        {
+            Thread.currentThread().setContextClassLoader(managedResourceClassLoader);
+            return work.doWork();
+        }
+        finally
+        {
+            Thread.currentThread().setContextClassLoader(origClassLoader);            
+        }
+    }
+    
+    private abstract static class Work<T>
+    {
+        abstract T doWork();
     }
 }

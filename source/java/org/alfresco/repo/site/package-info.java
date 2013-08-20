@@ -5,4 +5,6 @@
  * @See org.alfresco.service.cmr.site.SiteService
  * @since 3.0
  */
+@PackageMarker
 package org.alfresco.repo.site;
+import org.alfresco.util.PackageMarker;

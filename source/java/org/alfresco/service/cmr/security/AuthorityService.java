@@ -113,6 +113,22 @@ public interface AuthorityService
     public boolean isGuestAuthority(String authorityName);
 
     /**
+     * Count the number of groups
+     * 
+     * @return                      Returns the number of groups
+     */
+    @Auditable
+    public long countUsers();
+    
+    /**
+     * Count the number of users (not groups)
+     * 
+     * @return                      Returns the number of usrs
+     */
+    @Auditable
+    public long countGroups();
+    
+    /**
      * Get the authorities for the current user
      * 
      * @return authorities for the current user
@@ -134,9 +150,11 @@ public interface AuthorityService
      * @param type  the type of authorities - cannot be null
      * @return all authorities by type
      * 
+     * @deprecated use {@link #getAuthorities(AuthorityType, String, String, boolean, boolean, PagingRequest)} at least
      * @see getAuthorities (paged)
      */
     @Auditable(parameters = {"type"})
+    @Deprecated
     public Set<String> getAllAuthorities(AuthorityType type);
     
     /**

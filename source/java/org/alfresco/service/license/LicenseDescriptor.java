@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -74,6 +74,13 @@ public interface LicenseDescriptor
     public Principal getHolder();
 
     /**
+     * Gets the Organisation that the license was granted to.
+     *
+     * @return the holder
+     */
+    public String getHolderOrganisation();
+
+    /**
      * Gets the issuer of the license
      * 
      * @return the issuer
@@ -118,4 +125,11 @@ public interface LicenseDescriptor
      * @return the cloud sync key
      */
     public String getCloudSyncKey();
+    
+    /**
+     * Does this license allow clustering?
+     * 
+     * @return <code>true</code> if the license allows clustering
+     */
+    public boolean isClusterEnabled();
 }

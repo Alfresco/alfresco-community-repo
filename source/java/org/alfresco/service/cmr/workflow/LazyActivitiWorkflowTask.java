@@ -205,7 +205,7 @@ public class LazyActivitiWorkflowTask extends WorkflowTask
 			} 
 			else if(WorkflowModel.PROP_TASK_ID.equals(key)) 
 			{
-				return id;
+				return getId();
 			} 
 			else
 			{
@@ -246,6 +246,18 @@ public class LazyActivitiWorkflowTask extends WorkflowTask
 		@Override
 		public Collection<Serializable> values() {
 			return ensureProperties().values();
+		}
+		
+		private String getId()
+		{
+			if(task != null)
+			{
+				return task.getId();
+			}
+			else
+			{
+				return historicTask.getExecutionId();
+			}
 		}
 		
 		private Date getDueDate()

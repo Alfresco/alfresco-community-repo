@@ -400,7 +400,7 @@ public class Asset implements Serializable
         {
             public QName doWork() throws Exception
             {
-                RetryingTransactionHelper helper = getSandbox().getWebproject().getWebProjects().getServiceRegistry().getRetryingTransactionHelper();
+                RetryingTransactionHelper helper = getSandbox().getWebproject().getWebProjects().getServiceRegistry().getTransactionService().getRetryingTransactionHelper();
                 return helper.doInTransaction(new RetryingTransactionCallback<QName>()
                 {
                     public QName execute() throws Throwable

@@ -66,4 +66,12 @@ public interface PatchService
      * @return Returns all applied patches (successful or not)
      */
     public List<AppliedPatch> getPatches(Date fromDate, Date toDate);
+    
+    /**
+     * Retrieve an existing patch
+     * 
+     * @param id the patch unique ID
+     * @return Returns the patch instance or <tt>null</tt> if one has not been persisted
+     */
+    public AppliedPatch getPatch(String id);
 }

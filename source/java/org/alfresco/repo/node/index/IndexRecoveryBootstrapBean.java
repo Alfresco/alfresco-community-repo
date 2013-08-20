@@ -29,18 +29,15 @@ public class IndexRecoveryBootstrapBean extends AbstractLifecycleBean
     protected final static Log log = LogFactory.getLog(IndexRecoveryBootstrapBean.class);
 
     IndexRecovery indexRecoveryComponent;
-    
-    RepositoryState repositoryState;
 
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
         // reindex
-        if((repositoryState == null) || (false == repositoryState.isBootstrapping()))
-        {
-            log.info("Checking/Recovering indexes ...");
-            indexRecoveryComponent.reindex();
-        }
+
+        log.info("Checking/Recovering indexes ...");
+        indexRecoveryComponent.reindex();
+        
     }
 
     @Override
@@ -58,16 +55,4 @@ public class IndexRecoveryBootstrapBean extends AbstractLifecycleBean
     {
         this.indexRecoveryComponent = indexRecoveryComponent;
     }
-
-    public RepositoryState getRepositoryState()
-    {
-        return repositoryState;
-    }
-
-    public void setRepositoryState(RepositoryState repositoryState)
-    {
-        this.repositoryState = repositoryState;
-    }
-
-    
 }

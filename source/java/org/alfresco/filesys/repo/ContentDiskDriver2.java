@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -70,6 +70,7 @@ import org.alfresco.jlan.server.locking.OpLockInterface;
 import org.alfresco.jlan.server.locking.OpLockManager;
 import org.alfresco.jlan.smb.SMBException;
 import org.alfresco.jlan.smb.server.SMBServer;
+import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.jlan.util.DataBuffer;
 import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.model.ContentModel;
@@ -148,6 +149,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     private ContentComparator contentComparator;
     private NodeArchiveService nodeArchiveService;
     private HiddenAspect hiddenAspect;
+    private LockKeeper lockKeeper;
 
     // TODO Should not be here - should be specific to a context.
 	private boolean isLockedFilesAsOffline;
@@ -175,6 +177,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         PropertyCheck.mandatory(this, "contentComparator", getContentComparator());
         PropertyCheck.mandatory(this, "nodeArchiveService", nodeArchiveService);
         PropertyCheck.mandatory(this, "hiddenAspect", hiddenAspect);
+        PropertyCheck.mandatory(this, "lockKeeper", lockKeeper);
     }
     
     /**
@@ -396,6 +399,14 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     public void setHiddenAspect(HiddenAspect hiddenAspect)
     {
         this.hiddenAspect = hiddenAspect;
+    }
+    
+    /**
+     * @param hiddenAspect
+     */
+    public void setAlfrescoLockKeeper(LockKeeper lockKeeper)
+    {
+        this.lockKeeper = lockKeeper;
     }
     
    // Configuration key names
@@ -628,6 +639,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         }
         ContentContext ctx = (ContentContext) tree.getContext();
         
+        boolean readOnly = !m_transactionService.getAllowWrite();
+        
         if ( path == null || path.length() == 0)
         {
             path = FileName.DOS_SEPERATOR_STR;
@@ -666,7 +679,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             {
                 // Get the file information for the node
                 
-                finfo = getCifsHelper().getFileInformation(nodeRef, false, isLockedFilesAsOffline);
+                finfo = getCifsHelper().getFileInformation(nodeRef, readOnly, isLockedFilesAsOffline);
                 
                 /**
                  * Special processing for root node
@@ -1234,6 +1247,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                     
             if (fileFolderService.exists(nodeRef))
             {
+            	lockKeeper.removeLock(nodeRef);
+            	
                 // Get the size of the file being deleted        
                 final FileInfo fInfo = quotaMgr == null ? null : getFileInformation(session, tree, path);
 
@@ -2337,7 +2352,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     }
 
     @Override
-    public NetworkFile createFile(NodeRef rootNode, String path, long allocationSize)
+    public NetworkFile createFile(NodeRef rootNode, String path, long allocationSize, boolean isHidden)
             throws IOException
     {
           
@@ -2387,6 +2402,17 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             {
                 nodeRef = cifsHelper.createNode(dirNodeRef, folderName, ContentModel.TYPE_CONTENT);
                 nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
+                lockKeeper.addLock(nodeRef);
+            }
+            
+            if(isHidden)
+            {
+                // yes is hidden
+                if ( logger.isDebugEnabled())
+                {
+                        logger.debug("Set hidden aspect, nodeRef:" + nodeRef);
+                }
+                hiddenAspect.hideNodeExplicit(nodeRef);
             }
             
             File file = TempFileProvider.createTempFile("cifs", ".bin");
@@ -2538,6 +2564,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
 
             case READ_WRITE:
             case WRITE_ONLY:
+            	if(!m_transactionService.getAllowWrite())
+            	{
+            		 throw new AccessDeniedException("Repo is write only, No write access to " + path);
+            	}
                 if(permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
                 {
                     if(logger.isDebugEnabled())
@@ -2551,6 +2581,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 readOnly=false;
                 break;
             case DELETE:  
+            	if(!m_transactionService.getAllowWrite())
+            	{
+            		 throw new AccessDeniedException("Repo is write only, No write access to " + path);
+            	}
                 lockService.checkForLock(nodeRef);
                 
             }
@@ -2588,6 +2622,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                         {
                             logger.debug("open file for read write");
                             File file = TempFileProvider.createTempFile("cifs", ".bin");
+                            
+                            lockKeeper.addLock(nodeRef);
 
                             if(!truncate)
                             {
@@ -2661,7 +2697,12 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 String srvName = null;
                 SMBServer cifsServer = (SMBServer) session.getServer().getConfiguration().findServer( "CIFS");
 
-                if ( cifsServer != null)
+                if(session instanceof SMBSrvSession)
+                {
+                    SMBSrvSession smbSess = (SMBSrvSession)session;
+                    srvName = smbSess.getShareHostName();
+                }
+                else if ( cifsServer != null)
                 {
                     // Use the CIFS server name in the URL
 
@@ -2678,6 +2719,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 String pathl = getPathForNode( rootNode, linkRef);
                 path = pathl.replace( FileName.DOS_SEPERATOR, '/');
 
+                String lnkForWinPath = convertStringToUnicode(path);
+                
                 // Build the URL file data
 
                 StringBuilder urlStr = new StringBuilder();
@@ -2687,7 +2730,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 urlStr.append( srvName);
                 urlStr.append("/");
                 urlStr.append( tree.getSharedDevice().getName());
-                urlStr.append( path);
+                urlStr.append( lnkForWinPath);
                 urlStr.append("\r\n");
 
                 // Create the in memory pseudo file for the URL link
@@ -2705,7 +2748,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 // Create the network file using the in-memory file data
 
                 netFile = new LinkMemoryNetworkFile( fInfo.getFileName(), urlData, fInfo, nodeRef);
-                netFile.setFullName( path);
+                netFile.setFullName( pathl);
             }
 
             // Generate a file id for the file
@@ -2761,6 +2804,39 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
 
             throw new IOException("Open file " + path, ex);
         }        
+    }
+    
+    private String convertStringToUnicode(String str)
+    {
+        StringBuffer ostr = new StringBuffer();
+        for (int i = 0; i < str.length(); i++)
+        {
+            char ch = str.charAt(i);
+            // Does the char need to be converted to unicode?
+            if ((ch >= 0x0020) && (ch <= 0x007e))
+            {
+                // No
+                ostr.append(ch);
+            }
+            else if (ch > 0xFF)
+            {
+                // No
+                ostr.append(ch);
+            }
+            // Yes.
+            else
+            {
+                ostr.append("%");
+                String hex = Integer.toHexString(str.charAt(i) & 0xFFFF);
+                hex.length();
+                // Prepend zeros because unicode requires 2 digits
+                for (int j = 0; j < 2 - hex.length(); j++)
+
+                    ostr.append("0");
+                ostr.append(hex.toLowerCase());
+            }
+        }
+        return (new String(ostr));
     }
     
     /**
@@ -2834,6 +2910,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             TempNetworkFile tempFile =(TempNetworkFile)file;
             
             NodeRef target = getCifsHelper().getNodeRef(rootNode, tempFile.getFullName());
+            
+            lockKeeper.removeLock(target);
             
             if(nodeService.hasAspect(target, ContentModel.ASPECT_NO_CONTENT))
             {
@@ -3082,21 +3160,20 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         }
         
         NodeRef archivedNodeRef = getNodeArchiveService().getArchivedNode(originalNodeRef);
-        RestoreNodeReport report = getNodeArchiveService().restoreArchivedNode(archivedNodeRef);
         
-        if(report.getStatus().isSuccess())
+        if(nodeService.exists(archivedNodeRef))
         {
-            NodeRef newNodeRef = report.getRestoredNodeRef();
+            NodeRef restoredNodeRef = nodeService.restoreNode(archivedNodeRef, null, null, null);
             if (logger.isDebugEnabled())
             {
-                logger.debug("node has been restored");
+                logger.debug("node has been restored nodeRef," + restoredNodeRef + ", path " + path);
             }
             
             return openFile(sess, tree, rootNode, path, OpenFileMode.READ_WRITE, true);
         }
         else
         {
-            return createFile(rootNode, path, allocationSize);
+            return createFile(rootNode, path, allocationSize, false);
         }
     }
 

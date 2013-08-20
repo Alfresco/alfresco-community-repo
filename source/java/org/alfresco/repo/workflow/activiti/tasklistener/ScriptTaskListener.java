@@ -48,6 +48,8 @@ import org.alfresco.service.cmr.repository.ScriptService;
  */
 public class ScriptTaskListener extends ActivitiScriptBase implements TaskListener
 {
+    private static final long serialVersionUID = 1L;
+    
     private static final String TASK_BINDING_NAME = "task";
     
     @Override

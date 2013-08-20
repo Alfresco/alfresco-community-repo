@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.alfresco.org/repo/db-schema db-schema.xsd"
         name=""
         dbprefix="act_"
-        version="6023"
+        version="6024"
         tablecolumnorder="false">
   <validators>
     <validator class="org.alfresco.util.schemacomp.validator.NameValidator">
@@ -291,6 +291,16 @@
         </column>
         <column name="DUE_DATE_" order="16">
           <type>datetime</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="CLAIM_TIME_" order="17">
+          <type>datetime</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="FORM_KEY_" order="18">
+          <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
@@ -921,6 +931,11 @@
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
+        <column name="PROC_INST_ID_" order="7">
+          <type>varchar(64)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
       </columns>
       <primarykey name="PRIMARY">
         <columnnames>
@@ -936,6 +951,11 @@
         <foreignkey name="ACT_FK_TSKASS_TASK">
           <localcolumn>TASK_ID_</localcolumn>
           <targettable>ACT_RU_TASK</targettable>
+          <targetcolumn>ID_</targetcolumn>
+        </foreignkey>
+        <foreignkey name="ACT_FK_IDL_PROCINST">
+          <localcolumn>PROC_INST_ID_</localcolumn>
+          <targettable>ACT_RU_EXECUTION</targettable>
           <targetcolumn>ID_</targetcolumn>
         </foreignkey>
       </foreignkeys>
@@ -958,6 +978,11 @@
         <index name="ACT_FK_TSKASS_TASK" unique="false">
           <columnnames>
             <columnname>TASK_ID_</columnname>
+          </columnnames>
+        </index>
+        <index name="ACT_FK_IDL_PROCINST" unique="false">
+          <columnnames>
+            <columnname>PROC_INST_ID_</columnname>
           </columnnames>
         </index>
       </indexes>
@@ -1301,6 +1326,62 @@
         </index>
       </indexes>
     </table>
+     <table name="ACT_HI_IDENTITYLINK">
+      <columns>
+        <column name="ID_" order="1">
+          <type>varchar(64)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="GROUP_ID_" order="2">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="TYPE_" order="3">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="USER_ID_" order="4">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="TASK_ID_" order="5">
+          <type>varchar(64)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="PROC_INST_ID_" order="6">
+          <type>varchar(64)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+      </columns>
+      <primarykey name="PRIMARY">
+        <columnnames>
+          <columnname order="1">ID_</columnname>
+        </columnnames>
+      </primarykey>
+      <indexes>
+        <index name="ACT_IDX_HI_IDENT_LNK_USER" unique="false">
+          <columnnames>
+            <columnname>USER_ID_</columnname>
+          </columnnames>
+        </index>
+        <index name="ACT_IDX_HI_IDENT_LNK_TASK" unique="false">
+          <columnnames>
+            <columnname>TASK_ID_</columnname>
+          </columnnames>
+        </index>
+        <index name="ACT_IDX_HI_IDENT_LNK_PROCINST" unique="false">
+          <columnnames>
+            <columnname>PROC_INST_ID_</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
     <table name="act_hi_actinst">
       <columns>
         <column name="ID_" order="1">
@@ -1389,6 +1470,12 @@
         <index name="ACT_IDX_HI_ACT_INST_PROCINST" unique="false">
           <columnnames>
             <columnname>PROC_INST_ID_</columnname>
+            <columnname>ACT_ID_</columnname>
+          </columnnames>
+        </index>
+        <index name="ACT_IDX_HI_ACT_INST_EXEC" unique="false">
+          <columnnames>
+            <columnname>EXECUTION_ID_</columnname>
             <columnname>ACT_ID_</columnname>
           </columnnames>
         </index>

@@ -41,6 +41,10 @@ import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
 import org.alfresco.repo.rendition.executer.ReformatRenderingEngine;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
@@ -58,6 +62,7 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -101,6 +106,7 @@ public class ThumbnailServiceImpl implements ThumbnailService,
      */
     private PolicyComponent policyComponent;
 
+    private TransactionService transactionService;
     
     /**
      * Set the behaviour filter.
@@ -149,6 +155,11 @@ public class ThumbnailServiceImpl implements ThumbnailService,
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     /**
@@ -295,18 +306,36 @@ public class ThumbnailServiceImpl implements ThumbnailService,
             }
         }
         
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        txnHelper.setForceWritable(true);
+        boolean requiresNew = false;
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
         {
-            public NodeRef doWork() throws Exception
+            //We can be in a read-only transaction, so force a new transaction 
+            requiresNew = true;
+        }
+        return txnHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+
+            @Override
+            public NodeRef execute() throws Throwable
             {
-                return createThumbnailNode( node, 
-                                            contentProperty,
-                                            mimetype, 
-                                            transformationOptions, 
-                                            thumbnailName, 
-                                            assocDetails);
+                return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+                {
+                    public NodeRef doWork() throws Exception
+                    {
+                       return createThumbnailNode( node, 
+                                                   contentProperty,
+                                                    mimetype, 
+                                                    transformationOptions, 
+                                                    thumbnailName, 
+                                                    assocDetails);
+                    }
+                }, AuthenticationUtil.getSystemUserName());
             }
-        }, AuthenticationUtil.getSystemUserName());
+    
+        }, false, requiresNew);
+        
     }
     
     private QName getThumbnailQName(String localThumbnailName)
@@ -585,6 +614,8 @@ public class ThumbnailServiceImpl implements ThumbnailService,
         // Create the renditionDefinition
         String renderingEngineName = getRenderingEngineNameFor(transformationOptions);
         RenditionDefinition definition = renditionService.createRenditionDefinition(thumbnailQName, renderingEngineName);
+        // Track thumbnail rendition actions so cancellation can be requested
+        definition.setTrackStatus(true);
         return definition;
     }
 

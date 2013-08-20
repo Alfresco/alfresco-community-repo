@@ -33,7 +33,11 @@ public class FilterPropString implements FilterProp
         STARTSWITH_IGNORECASE,
         STARTSWITH,
         EQUALS_IGNORECASE,
-        EQUALS
+        EQUALS,
+        ENDSWITH_IGNORECASE,
+        ENDSWITH,
+        MATCHES_IGNORECASE,
+        MATCHES        
     }
     
     private QName propName;

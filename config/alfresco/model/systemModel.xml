@@ -130,9 +130,30 @@
          </properties>
       </type>
       
+      <!-- Container for recovery of orphaned items -->      
       <type name="sys:lost_found">
          <title>Lost+Found</title>
          <parent>sys:container</parent>
+      </type>
+      
+      <!-- Container for each user performing deletes -->      
+      <type name="sys:archiveUser">
+         <title>Archive User</title>
+         <description>Type to gather all nodes archived by a user</description>
+         <parent>sys:base</parent>
+         <associations>
+            <child-association name="sys:archivedLink">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:archived</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
       </type>
       
    </types>
@@ -237,6 +258,26 @@
          <archive>false</archive>
       </aspect>
       
+      <!-- Aspect attached to archive root -->
+      <aspect name="sys:archiveRoot">
+         <title>Archive Root</title>
+         <description>Aspect attached to root of archive store</description>
+         <associations>
+            <child-association name="sys:archiveUserLink">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:archiveUser</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </aspect>
+
       <!-- details stored on archived nodes -->
       <aspect name="sys:archived">
          <title>Archived</title>
@@ -315,6 +356,18 @@
          <archive>false</archive>
       </aspect>
 
+      <!-- Aspect to record append content stream status for a node -->
+      <aspect name="sys:CMISUpdateContext">
+         <title>CMIS Update Context</title>
+         <properties>
+            <property name="sys:gotFirstChunk">
+               <title>Got First Content Chunk</title>
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <multiple>false</multiple>
+            </property>
+         </properties>
+      </aspect>
    </aspects>
 
 </model>

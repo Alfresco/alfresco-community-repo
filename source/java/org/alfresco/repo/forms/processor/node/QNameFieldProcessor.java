@@ -79,9 +79,18 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
     protected QName getFullName(String name)
     {
         String[] parts = name.split(FormFieldConstants.FIELD_NAME_SEPARATOR);
-        String prefix = parts[1];
-        String localName = parts[2];
-        return QName.createQName(prefix, localName, namespaceService);
+        if(parts.length == 2)
+        {
+            String prefix = parts[0];
+            String localName = parts[1];
+            return QName.createQName(prefix, localName, namespaceService);
+        }
+        else
+        {
+            String prefix = parts[1];
+            String localName = parts[2];
+            return QName.createQName(prefix, localName, namespaceService);
+        }
     }
     
     protected String getPrefixedName(ClassAttributeDefinition attribDef) 

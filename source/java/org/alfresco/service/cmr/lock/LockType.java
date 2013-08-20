@@ -22,12 +22,28 @@ package org.alfresco.service.cmr.lock;
  * The type of lock to be used by the lock service
  * <p>
  * The lock owner or the administrator can release the lock.
- * <ul>
- * <li>NODE_LOCK - no-one can update or delete the locked node.</li>
- * <li>READ_ONLY_LOCK - no-one can update or delete the locked node. No one can add children to the locked node</li>
- * <li>WRITE_LOCK - the owner can update or delete the locked node. The owner can add children to the locked node</li>
- * </ul>
  */
-public enum LockType {READ_ONLY_LOCK, 
-    WRITE_LOCK, 
-    NODE_LOCK }
+public enum LockType
+{
+    /**
+     * NODE_LOCK - no-one can update or delete the locked node.
+     * 
+     * @deprecated Deprecated in 4.1.6.  Will be replaced by a more descriptive name.
+     */
+    @Deprecated
+    READ_ONLY_LOCK,
+    /**
+     * READ_ONLY_LOCK - no-one can update or delete the locked node. No one can add children to the locked node.
+     * 
+     * @deprecated Deprecated in 4.1.6.  Will be replaced by a more descriptive name.
+     */
+    @Deprecated
+    WRITE_LOCK,
+    /**
+     * WRITE_LOCK - the owner can update or delete the locked node. The owner can add children to the locked node.
+     * 
+     * @deprecated Deprecated in 4.1.6.  Will be replaced by a more descriptive name.
+     */
+    @Deprecated
+    NODE_LOCK
+}

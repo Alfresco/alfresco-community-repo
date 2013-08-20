@@ -21,7 +21,9 @@ package org.alfresco.repo.audit;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -331,11 +333,27 @@ public class AuditMethodInterceptor implements MethodInterceptor
         {
             return null;
         }
-        
-        Serializable audit = instanceofNonAuditClass(value);
-        if (audit == null)
+
+        Serializable audit;
+        if (instanceofNonAuditClass(value))
         {
-            if (value instanceof Serializable)
+            // We will not be recording it
+            audit = NOT_RECORDABLE;
+        }
+        else
+        {
+            if(value instanceof List)
+            {
+                List valueList = (List) value;
+                List<Serializable> recordableList = new ArrayList<Serializable>();
+                for (Object valueListItem : valueList)
+                {
+                    recordableList.add(getRecordableValue(valueListItem));
+                }
+                audit = (Serializable) recordableList;
+            }
+            // TODO we won't bother with Maps, yet.
+            else if (value instanceof Serializable)
             {
                 audit = (Serializable) value;
             }
@@ -360,16 +378,16 @@ public class AuditMethodInterceptor implements MethodInterceptor
     }
     
     // Returns a non null value if the supplied value is a non auditable class.
-    private Serializable instanceofNonAuditClass(Object value)
+    private boolean instanceofNonAuditClass(Object value)
     {
         for (@SuppressWarnings("rawtypes") Class clazz: NON_RECORDABLE_CLASSES)
         {
             if (clazz.isInstance(value))
             {
-                return NOT_RECORDABLE;
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
     /**

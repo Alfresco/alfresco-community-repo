@@ -388,8 +388,8 @@ public class SortedResultSet implements ResultSet
                         }
                         else if (dataType.getName().equals(DataTypeDefinition.MLTEXT))
                         {
-                            String s1 = DefaultTypeConverter.INSTANCE.convert(MLText.class, o1).getValue(locale);
-                            String s2 = DefaultTypeConverter.INSTANCE.convert(MLText.class, o2).getValue(locale);
+                            String s1 = DefaultTypeConverter.INSTANCE.convert(MLText.class, o1).getClosestValue(locale);
+                            String s2 = DefaultTypeConverter.INSTANCE.convert(MLText.class, o2).getClosestValue(locale);
 
                             if (s1 == null)
                             {

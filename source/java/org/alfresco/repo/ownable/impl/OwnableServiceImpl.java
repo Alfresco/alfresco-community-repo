@@ -25,17 +25,20 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -65,6 +68,7 @@ public class OwnableServiceImpl implements
     private PolicyComponent policyComponent;
     private TenantService tenantService;
     private Set<String> storesToIgnorePolicies = Collections.emptySet();
+    private DictionaryService dictionaryService;
 
     public OwnableServiceImpl()
     {
@@ -106,6 +110,15 @@ public class OwnableServiceImpl implements
     {
         this.nodeOwnerCache = ownerCache;
     }
+    
+   
+    /**
+     * @param dictionaryService the dictionaryService to set
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
 
     public void afterPropertiesSet() throws Exception
     {
@@ -113,6 +126,7 @@ public class OwnableServiceImpl implements
         PropertyCheck.mandatory(this, "authenticationService", authenticationService);
         PropertyCheck.mandatory(this, "nodeOwnerCache", nodeOwnerCache);
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
+        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
     }
     
     public void init()
@@ -170,7 +184,11 @@ public class OwnableServiceImpl implements
         if (userName == null)
         {
             // If ownership is not explicitly set then we fall back to the creator
-            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
+            if(isRendition(nodeRef))
+            {
+                userName = getOwner(nodeService.getPrimaryParent(nodeRef).getParentRef());
+            }
+            else if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
             {
                 userName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_OWNER));
             }
@@ -186,6 +204,11 @@ public class OwnableServiceImpl implements
 
     public void setOwner(NodeRef nodeRef, String userName)
     {
+        if(isRendition(nodeRef))
+        {
+           return;
+        }
+        
         if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
         {
             HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>(1, 1.0f);
@@ -313,5 +336,20 @@ public class OwnableServiceImpl implements
         {
             return true;
         }
+    }
+    
+    private boolean isRendition(NodeRef node)
+    {
+        final QName aspectToCheckFor = RenditionModel.ASPECT_RENDITION;
+        
+        Set<QName> existingAspects = nodeService.getAspects(node);
+        for (QName nextAspect : existingAspects)
+        {
+            if (nextAspect.equals(aspectToCheckFor) || dictionaryService.isSubClass(nextAspect, aspectToCheckFor))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

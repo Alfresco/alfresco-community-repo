@@ -21,26 +21,26 @@
             <value>RECORD</value>
          </list>
       </property>
-   </bean>   
+   </bean>
 
    <bean id="rm-ac-disposition-action-relative-positions" class="org.alfresco.repo.action.constraint.EnumParameterConstraint" parent="action-constraint">
       <property name="enumClassName" value="org.alfresco.module.org_alfresco_module_rm.action.evaluator.DispositionActionRelativePositions" />
-   </bean>   
+   </bean>
 
    <bean id="rm-ac-disposition-actions" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.DispositionActionParameterConstraint" parent="action-constraint">
       <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
-   </bean>   
+   </bean>
 
    <bean id="rm-ac-record-types" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.RecordTypeParameterConstraint" parent="action-constraint">
       <property name="recordService" ref="RecordService"/>
       <property name="dictionaryService" ref="DictionaryService"/>
-   </bean>   
-   
-   <bean id="rm-ac-manual-events" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.ManualEventParameterConstraint" parent="action-constraint">      
+   </bean>
+
+   <bean id="rm-ac-manual-events" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.ManualEventParameterConstraint" parent="action-constraint">
       <property name="recordsManagementEventService" ref="RecordsManagementEventService"/>
    </bean>
-   
-   <bean id="rm-ac-scripts" class="org.alfresco.repo.action.constraint.FolderContentsParameterConstraint" parent="action-constraint">      
+
+   <bean id="rm-ac-scripts" class="org.alfresco.repo.action.constraint.FolderContentsParameterConstraint" parent="action-constraint">
       <property name="dictionaryService" ref="DictionaryService"/>
       <property name="searchService" ref="SearchService"/>
       <property name="nodeService" ref="NodeService"/>
@@ -54,40 +54,40 @@
          </list>
       </property>
    </bean>
-      
+
    <!--  Conditions -->
    <bean id="rmCapabilityConditionEvaluator"
          parent="action-condition-evaluator"
          abstract="true"
          class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.CapabilityConditionEvaluator">
       <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
-      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />      
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
 
-   <bean id="isKind" 
-         parent="action-condition-evaluator" 
+   <bean id="isKind"
+         parent="action-condition-evaluator"
          class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.IsKindEvaluator">
       <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
       <property name="filePlanService" ref="FilePlanService" />
    </bean>
 
-   <bean id="hasDispositionAction" 
-         parent="action-condition-evaluator" 
+   <bean id="hasDispositionAction"
+         parent="action-condition-evaluator"
          class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.HasDispositionActionEvaluator">
       <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
       <property name="dispositionService" ref="DispositionService" />
    </bean>
 
-   <bean id="isRecordType" 
-         parent="action-condition-evaluator" 
+   <bean id="isRecordType"
+         parent="action-condition-evaluator"
          class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.IsRecordTypeEvaluator">
       <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
       <property name="nodeService" ref="NodeService" />
    </bean>
-   
+
    <bean id="isCutoff" parent="rmCapabilityConditionEvaluator">
       <property name="capabilityCondition" ref="capabilityCondition.cutoff"/>
    </bean>
@@ -103,7 +103,7 @@
    <bean id="isFrozen" parent="rmCapabilityConditionEvaluator">
       <property name="capabilityCondition" ref="capabilityCondition.frozen"/>
    </bean>
-   
+
    <bean id="isRecordFiled" parent="rmCapabilityConditionEvaluator">
    	  <property name="capabilityCondition" ref="capabilityCondition.recordFiled"/>
    </bean>
@@ -177,7 +177,7 @@
          </value>
       </property>
    </bean>
-      
+
     <!-- Cutoff action -->
 
    <bean id="cutoff_proxy" parent="rmProxyAction" >
@@ -908,6 +908,7 @@
    <bean id="setPropertyValue" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction">
       <property name="publicAction" value="true"/>
       <property name="delegateAction" ref="set-property-value" />
+      <property name="adhocPropertiesAllowed" value="true" />
    </bean>
-       
+
 </beans>

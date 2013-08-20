@@ -16,7 +16,8 @@ function getTreeNode()
          evalChildFolders = args["children"] !== "false",
          resultsTrimmed = false,
          argMax = parseInt(args["max"], 10),
-         maxItems = isNaN(argMax) ? -1 : argMax;
+         maxItems = isNaN(argMax) ? -1 : argMax,
+         maxNumChildren = 100;
       
       // Use helper function to get the arguments
       var parsedArgs = ParseArgs.getParsedArgs();
@@ -32,9 +33,17 @@ function getTreeNode()
       {
          resultsTrimmed = true;
       }
-      
+
+      var numChildren = 1;
+
       for each (item in pagedResult.page)
       {
+      	 numChildren++;
+         if (numChildren == maxNumChildren)
+         {
+           	evalChildFolders = false;
+         }
+
          if (evalChildFolders)
          {
             hasSubfolders = item.childFileFolders(false, true, ignoredTypes, 1).page.length > 0;

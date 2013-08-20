@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -558,21 +558,37 @@ public class Utils
     /**
      * Gets the current http session id
      * 
-     * @return  the current http session id, null if none found
+     * @return the current http session id, null if none found
      */
     public static String getSessionId()
     {
-        String result = null;
-        ServletEndpointContext endpointContext = (ServletEndpointContext)MessageContext.getCurrentContext().getProperty("servletEndpointContext");
+        HttpSession session = getSession();
+        return ((session != null) ? (session.getId()) : (null));
+    }
+
+    private static HttpSession getSession()
+    {
+        HttpSession result = null;
+
+        ServletEndpointContext endpointContext = (ServletEndpointContext) MessageContext.getCurrentContext().getProperty("servletEndpointContext");
         if (endpointContext != null)
         {
-            HttpSession session = endpointContext.getHttpSession();
-            if (session != null)
-            {
-                result = session.getId();
-            }
+            result = endpointContext.getHttpSession();
         }
+
         return result;
+    }
+
+    /**
+     * Invalidates the current http session
+     */
+    public static void invalidateSession()
+    {
+        HttpSession session = getSession();
+        if (session != null)
+        {
+            session.invalidate();
+        }
     }
 
     /**

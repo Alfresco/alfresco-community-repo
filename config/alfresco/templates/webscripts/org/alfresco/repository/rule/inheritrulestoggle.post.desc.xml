@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Toggles the inherit rule state</shortname>
+  <description>Toggles the state of the inherit rules flag</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/ruleset/inheritrules/toggle</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

@@ -127,7 +127,7 @@
    <wsdl:service name="AuthenticationService">
       <wsdl:documentation>Provides simple authentication capability.</wsdl:documentation>
       <wsdl:port binding="auth:AuthenticationServiceSoapBinding" name="AuthenticationService">
-         <wsdlsoap:address location="http://localhost:8080/alfresco/api/AuthenticationService"/>
+         <wsdlsoap:address location="http://localhost:8080/alfresco/soapapi/AuthenticationService"/>
       </wsdl:port>
    </wsdl:service>
    

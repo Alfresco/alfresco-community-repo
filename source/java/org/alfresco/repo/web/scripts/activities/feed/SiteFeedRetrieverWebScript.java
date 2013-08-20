@@ -88,7 +88,7 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
         
         try
         {
-            List<String> feedEntries = activityService.getSiteFeedEntries(siteId, format);
+            List<String> feedEntries = activityService.getSiteFeedEntries(siteId);
             
             
             if (format.equals(FeedTaskProcessor.FEED_FORMAT_JSON))

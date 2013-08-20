@@ -153,6 +153,10 @@ function resolveVirtualNodeRef(nodeRef)
    {
       node = companyhome.childrenByXPath("st:sites")[0];
    }
+   else if (nodeRef == "alfresco://shared")
+   {
+      node = companyhome.childrenByXPath("app:shared")[0];
+   }
    return node;
 }
 

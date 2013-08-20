@@ -174,11 +174,12 @@ public class NodeContentGet extends StreamContent
         {
             // get the transformer
             TransformationOptions options = new TransformationOptions();
+            options.setUse("index");
             options.setSourceNodeRef(nodeRef);
             transformerDebug.pushAvailable(reader.getContentUrl(), reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
             long sourceSize = reader.getSize();
             List<ContentTransformer> transformers = contentService.getActiveTransformers(reader.getMimetype(), sourceSize, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
-            transformerDebug.availableTransformers(transformers, sourceSize, options, "NodeContentGet");
+            transformerDebug.availableTransformers(transformers, sourceSize, options, "SolrIndexer");
 
             if (transformers.isEmpty())
             {
@@ -227,7 +228,7 @@ public class NodeContentGet extends StreamContent
             else
             {
                 res.setStatus(HttpStatus.SC_OK);
-                streamContentImpl(req, res, textReader, null, null, false, modified, String.valueOf(modified.getTime()), null);            
+                streamContentImpl(req, res, textReader, null, null, false, modified, String.valueOf(modified.getTime()), null, null);            
             }
         }
         finally

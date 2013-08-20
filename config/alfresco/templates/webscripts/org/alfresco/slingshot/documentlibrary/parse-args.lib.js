@@ -380,27 +380,12 @@ var ParseArgs =
          rootNode = siteNode.getContainer(containerId);
          if (rootNode === null)
          {
-            rootNode = siteNode.createContainer(containerId, containerType || "cm:folder");
+            rootNode = siteNode.aquireContainer(containerId, containerType || "cm:folder", {"cm:description": "Document Library"});
             if (rootNode === null)
             {
                status.setCode(status.STATUS_GONE, "Document Library container '" + containerId + "' not found in '" + siteId + "'. (No permission?)");
                return null;
             }
-            
-            rootNode.properties["cm:description"] = "Document Library";
-
-            /**
-             * MOB-593: Add email alias on documentLibrary container creation
-             *
-            rootNode.addAspect("emailserver:aliasable");
-            var emailAlias = siteId;
-            if (containerId != "documentLibrary")
-            {
-               emailAlias += "-" + containerId;
-            }
-            rootNode.properties["emailserver:alias"] = emailAlias;
-            */
-            rootNode.save();
          }
       }
 
@@ -483,6 +468,10 @@ var ParseArgs =
          else if (reference == "alfresco://sites/home")
          {
             node = companyhome.childrenByXPath("st:sites")[0];
+         }
+         else if (reference == "alfresco://shared")
+         {
+            node = companyhome.childrenByXPath("app:shared")[0];
          }
          else if (reference.indexOf("://") > 0)
          {

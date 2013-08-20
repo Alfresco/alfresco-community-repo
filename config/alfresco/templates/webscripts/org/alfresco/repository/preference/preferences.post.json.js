@@ -16,7 +16,10 @@ function main()
    try
    {
       // Set the preferences
-      preferenceService.setPreferences(userid, preferences);
+      if (preferenceService.getAllowWrite())
+      {
+         preferenceService.setPreferences(userid, preferences);
+      }
    }
    catch (error)
    {

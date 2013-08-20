@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<webscript>
+  <shortname>Handles DELETE of a resource</shortname>
+  <description>Hands back a little bit of JSON</description>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}/</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}/{relationshipId}/</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}/{relationshipId}</url>
+  <authentication>user</authentication>
+  <format default="json">argument</format>
+  <!-- Note: the transaction is created in AbstractResourceWebScript -->
+  <transaction>none</transaction>
+</webscript>

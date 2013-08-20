@@ -513,7 +513,7 @@
    <wsdl:service name="RepositoryService">
       <wsdl:documentation>Provides read and write operations against a repository.</wsdl:documentation>
       <wsdl:port binding="rep:RepositoryServiceSoapBinding" name="RepositoryService">
-         <wsdlsoap:address location="http://localhost:8080/alfresco/api/RepositoryService"/>
+         <wsdlsoap:address location="http://localhost:8080/alfresco/soapapi/RepositoryService"/>
       </wsdl:port>
    </wsdl:service>
    

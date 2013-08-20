@@ -33,6 +33,8 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
@@ -47,6 +49,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class UserCalendarEntriesGet extends AbstractCalendarListingWebScript
 {
+   private PermissionService permissionService;
+    
    @Override
    protected Map<String, Object> executeImpl(WebScriptRequest req,
          Status status, Cache cache) 
@@ -188,6 +192,12 @@ public class UserCalendarEntriesGet extends AbstractCalendarListingWebScript
          result.put("siteName", site.getShortName());
          result.put("siteTitle", site.getTitle());
          
+         // Check the permissions the user has on the entry
+         AccessStatus canEdit = permissionService.hasPermission(entry.getNodeRef(), PermissionService.WRITE);
+         AccessStatus canDelete = permissionService.hasPermission(entry.getNodeRef(), PermissionService.DELETE);
+         result.put("canEdit", (canEdit == AccessStatus.ALLOWED));
+         result.put("canDelete", (canDelete == AccessStatus.ALLOWED));
+         
          // Replace nulls with blank strings for the JSON
          for (String key : result.keySet())
          {
@@ -278,5 +288,10 @@ public class UserCalendarEntriesGet extends AbstractCalendarListingWebScript
       }
       
       return duration.toString();
+   }
+   
+   public void setPermissionService(PermissionService permissionService)
+   {
+      this.permissionService = permissionService;
    }
 }

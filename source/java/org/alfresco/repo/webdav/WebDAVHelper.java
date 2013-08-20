@@ -194,7 +194,7 @@ public class WebDAVHelper
     /**
      * @return          Return the lock service
      */
-    public final WebDAVLockService getLockService()
+    public WebDAVLockService getLockService()
     {
         return m_lockService;
     }

@@ -582,7 +582,7 @@
    <wsdl:service name="AuthoringService">
       <wsdl:documentation>Provides support for collaborative editing of content.</wsdl:documentation>
       <wsdl:port binding="author:AuthoringServiceSoapBinding" name="AuthoringService">
-         <wsdlsoap:address location="http://localhost:8080/alfresco/api/AuthoringService"/>
+         <wsdlsoap:address location="http://localhost:8080/alfresco/soapapi/AuthoringService"/>
       </wsdl:port>
    </wsdl:service>
    

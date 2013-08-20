@@ -20,6 +20,7 @@ package org.alfresco.repo.web.scripts.wiki;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -114,11 +115,26 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        return new ScriptPagingDetails(req, MAX_QUERY_ENTRY_COUNT);
     }
     
+    protected void addActivityEntry(String event, WikiPageInfo wikiPage, SiteInfo site, 
+            WebScriptRequest req, JSONObject json)
+    {
+        addActivityEntry(event, wikiPage, site, req, json, Collections.<String, String>emptyMap());
+    }
+    
     /**
      * Generates an activity entry for the link
+     * 
+     * @param event    a String representing the event.
+     * @param wikiPage the wiki page generating the activity.
+     * @param site     the site in which the wiki page was created.
+     * @param req      the {@link WebScriptRequest}.
+     * @param json
+     * @param additionalData any additional data required for the activity.
      */
-    protected void addActivityEntry(String event, WikiPageInfo wikiPage, SiteInfo site, 
-          WebScriptRequest req, JSONObject json)
+    protected void addActivityEntry(String event,
+            WikiPageInfo wikiPage, SiteInfo site, 
+            WebScriptRequest req, JSONObject json,
+            Map<String, String> additionalData)
     {
        // What page is this for?
        String page = req.getParameter("page");
@@ -142,6 +158,10 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
           activity.startObject();
           activity.writeValue("title", wikiPage.getTitle());
           activity.writeValue("page", page + "?title=" + URLEncoder.encodeUriComponent(wikiPage.getTitle()));
+          for (Map.Entry<String, String> entry : additionalData.entrySet())
+          {
+              activity.writeValue(entry.getKey(), entry.getValue());
+          }
           activity.endObject();
           
           activityService.postActivity(

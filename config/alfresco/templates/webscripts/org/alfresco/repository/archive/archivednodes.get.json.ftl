@@ -16,7 +16,8 @@
             "displayPath": "${deletedNode.displayPath!""}",
             "firstName": "${deletedNode.firstName!""}",
             "lastName": "${deletedNode.lastName!""}",
-            "nodeType": "${deletedNode.nodeType!""}"
+            "nodeType": "${deletedNode.nodeType!""}",
+            "isContentType": ${deletedNode.isContentType?string}
          }<#if deletedNode_has_next>,</#if>
          </#list>
       ]

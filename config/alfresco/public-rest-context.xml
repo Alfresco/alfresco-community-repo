@@ -1,0 +1,961 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+   <bean id="publicapi.webscripts.store" parent="webscripts.repoclasspathstore">
+      <property name="mustExist"><value>true</value></property>
+      <property name="classPath"><value>alfresco/templates/publicapi</value></property>
+   </bean>
+
+   <bean id="publicapi.webscripts.searchpath" class="org.springframework.extensions.webscripts.SearchPath">
+      <property name="searchPath">
+          <list>
+             <ref bean="publicapi.webscripts.store" />
+          </list>
+      </property>
+   </bean>
+      
+   <bean id="publicapi.index" class="org.springframework.extensions.webscripts.JaxRSUriIndex"/>
+   
+   <bean id="publicapi.index.prototype" class="org.springframework.extensions.webscripts.JaxRSUriIndex" scope="prototype"/>
+
+   <bean id="publicapi.registry" class="org.alfresco.rest.api.PublicApiDeclarativeRegistry">
+      <property name="container" ref="publicapi.container" />
+      <property name="uriIndex" ref="publicapi.index" />
+      <property name="searchPath" ref="publicapi.webscripts.searchpath" />
+      <property name="defaultWebScript"><value>webscript.default</value></property>
+      <property name="getNetworksWebScript" ref="getNetworksWebScript" />
+      <property name="getNetworkWebScript" ref="getNetworkWebScript" />
+   </bean>
+   
+   <bean id="publicapi.registry.prototype" parent="publicapi.registry" scope="prototype">
+      <property name="uriIndex" ref="publicapi.index.prototype" />
+   </bean>
+
+   <bean id="publicapi.container" class="org.alfresco.rest.api.PublicApiRepositoryContainer" parent="webscripts.abstractcontainer" init-method="setup">
+      <property name="name"><value>Public Api</value></property>
+      <property name="registryFactory">
+          <bean class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
+             <property name="targetBeanName"><idref local="publicapi.registry.prototype"/></property>
+          </bean>
+      </property>
+      <!-- Use the time-limited transaction helper to keep request times to an acceptable duration -->
+      <property name="transactionService" ref="transactionService" />
+      <!-- The transaction helper used to generate error responses must be unlimited -->
+      <property name="fallbackTransactionHelper" ref="retryingTransactionHelper" />
+      <property name="authorityService" ref="AuthorityService" />
+      <property name="repository" ref="repositoryHelper" />
+      <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />
+      <property name="templateProcessorRegistry" ref="webscripts.repo.registry.templateprocessor" />
+      <property name="scriptProcessorRegistry" ref="webscripts.repo.registry.scriptprocessor" />
+      <property name="descriptorService" ref="DescriptorService" />
+      <property name="tenantAdminService" ref="tenantAdminService" />
+      <property name="webScriptsRegistryCache" ref="publicapi.webScriptsRegistryCache"/>
+      <property name="encryptTempFiles" value="${webscripts.encryptTempFiles}"/>
+      <property name="tempDirectoryName" value="${webscripts.tempDirectoryName}"/>
+      <property name="memoryThreshold" value="${webscripts.memoryThreshold}"/>
+      <property name="maxContentSize" value="${webscripts.setMaxContentSize}"/>
+   </bean>
+   
+   <!--  Public Api Authenticator -->
+
+   <bean id="webScriptAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener"/>
+   
+   <bean id="publicapi.tenantAuthenticator" class="org.alfresco.rest.api.PublicApiTenantAuthentication">
+      <property name="tenantAdminService" ref="tenantAdminService"/>
+   </bean>
+   
+   <bean id="publicapi.authenticator" class="org.alfresco.rest.api.PublicApiAuthenticatorFactory">
+      <property name="authenticationService" ref="AuthenticationService" />
+      <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
+      <property name="transactionHelper" ref="web.retryingTransactionHelper" />
+      <property name="tenantAuthentication" ref="publicapi.tenantAuthenticator"/>
+      <property name="validAuthentictorKeys">
+         <bean class="org.springframework.util.StringUtils" factory-method="commaDelimitedListToSet">
+            <constructor-arg type="java.lang.String" value="${alfresco.authentication.validAuthenticatorKeys}"/>
+         </bean>   
+      </property>
+      <property name="outboundHeaders">
+         <bean class="org.springframework.util.StringUtils" factory-method="commaDelimitedListToSet">
+            <constructor-arg type="java.lang.String" value="${alfresco.authentication.gateway.outboundHeaders}"/>
+         </bean>
+      </property>
+   </bean>
+
+    <bean id="apiBootstrapBean" class="org.alfresco.rest.framework.core.ApiBootstrap">
+		<property name="apiDictionary" ref="apiLookup" />
+	</bean>
+	<bean id="apiLookup" class="org.alfresco.rest.framework.core.ResourceLookupDictionary">
+	</bean>
+	<bean id="frameworkMessageResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.rest-framework-messages</value>
+            </list>
+        </property>
+   </bean>
+   
+   <bean id="restJsonModule" class="org.alfresco.rest.framework.jacksonextensions.RestJsonModule">
+        <property name="jsonSerializers">
+            <list>
+                <bean class="org.alfresco.rest.framework.jacksonextensions.SerializerOfExecutionResult" />
+                <bean class="org.alfresco.rest.framework.jacksonextensions.SerializerOfCollectionWithPaging" />
+                <bean class="org.alfresco.rest.framework.jacksonextensions.NodeRefSerializer" />
+            </list>
+        </property>
+        <property name="jsonDeserializers">
+            <map>
+                <entry key="org.alfresco.service.cmr.repository.NodeRef"><bean class="org.alfresco.rest.framework.jacksonextensions.NodeRefDeserializer" /></entry>            
+                <entry key="java.lang.String"><bean class="org.alfresco.rest.framework.jacksonextensions.RestApiStringDeserializer" /></entry>
+                <entry key="org.alfresco.rest.api.model.Target"><bean class="org.alfresco.rest.framework.jacksonextensions.TargetDeserializer" /></entry>
+            </map>
+        </property>
+    </bean>
+    <bean id="jsonHelper" class="org.alfresco.rest.framework.jacksonextensions.JacksonHelper">
+         <property name="module" ref="restJsonModule" />
+    </bean>
+    <bean id="simpleMappingExceptionResolver" class="org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver">
+       <property name="exceptionMappings">
+            <map>
+                <entry key="org.alfresco.rest.framework.core.exceptions.ApiException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_INTERNAL_SERVER_ERROR}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.InvalidArgumentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.NotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.EntityNotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.PermissionDeniedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_FORBIDDEN}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_METHOD_NOT_ALLOWED}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.StaleEntityException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />         
+            </map>
+        </property>
+    </bean>
+	<!-- Using annotation-config=false means AutowiredAnnotationBeanPostProcessor 
+		and CommonAnnotationBeanPostProcessor are both NOT included implicitly -->
+	<!-- context:component-scan base-package="org.alfresco.deleteme" annotation-config="false" 
+		/> <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" 
+		/> -->
+
+    <bean id="apiWebScriptParent" abstract="true" parent="webscript">
+        <property name="resolver" ref="simpleMappingExceptionResolver" />
+        <property name="jsonHelper" ref="jsonHelper" />
+    </bean>
+ 
+    <alias name="webscript.org.alfresco.api.ResourceWebScript.get" alias="executorForHttpGet"/>
+    
+    <bean id="webscriptHelper" class="org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper">
+        <property name="locator" ref="apiLookup" />
+        <property name="executor" ref="executorForHttpGet" />
+    </bean>
+
+	<!-- Webscripts -->
+	<bean   id="webscript.org.alfresco.api.ResourceWebScript.get" 
+	        class="org.alfresco.rest.framework.webscripts.ResourceWebScriptGet" parent="apiWebScriptParent">              
+        <property name="helper" ref="webscriptHelper" />
+        <property name="locator" ref="apiLookup" />
+        <property name="transactionService" ref="transactionService" />
+        <property name="streamer" ref="webscript.content.streamer" />   
+	</bean>
+	
+    <bean   id="webscript.org.alfresco.api.ResourceWebScript.post" 
+            class="org.alfresco.rest.framework.webscripts.ResourceWebScriptPost" parent="apiWebScriptParent">
+        <property name="helper" ref="webscriptHelper" />
+        <property name="locator" ref="apiLookup" />        
+        <property name="transactionService" ref="transactionService" />
+        <property name="streamer" ref="webscript.content.streamer" />
+   </bean>
+ 
+    <bean   id="webscript.org.alfresco.api.ResourceWebScript.put" 
+            class="org.alfresco.rest.framework.webscripts.ResourceWebScriptPut" parent="apiWebScriptParent">
+        <property name="helper" ref="webscriptHelper" />
+        <property name="locator" ref="apiLookup" />
+        <property name="transactionService" ref="transactionService" />
+        <property name="streamer" ref="webscript.content.streamer" />
+   </bean>
+    
+    <bean   id="webscript.org.alfresco.api.ResourceWebScript.delete" 
+            class="org.alfresco.rest.framework.webscripts.ResourceWebScriptDelete" parent="apiWebScriptParent">
+        <property name="helper" ref="webscriptHelper" />
+        <property name="locator" ref="apiLookup" />
+        <property name="transactionService" ref="transactionService" />
+        <property name="streamer" ref="webscript.content.streamer" />
+   </bean>
+
+   <bean id="webscript.org.alfresco.api.InfoWebScript.get"
+      class="org.alfresco.rest.framework.webscripts.metadata.InfoWebScriptGet" parent="apiWebScriptParent">
+       <property name="lookupDictionary" ref="apiLookup" />
+   </bean>
+
+   <bean id="webscript.org.alfresco.api.MetaDataWebScript.options"
+      class="org.alfresco.rest.framework.webscripts.metadata.WebScriptOptionsMetaData" parent="apiWebScriptParent">
+        <property name="lookupDictionary" ref="apiLookup" />
+    </bean>  
+
+	<!-- Bean defintions, hopefully later we can replace them with autowired 
+		beans -->
+
+    <bean id="defaultExceptionInterceptor" class="org.alfresco.rest.api.impl.ExceptionInterceptor">
+        <property name="exceptionHandlers">
+            <list>
+                <bean class="org.alfresco.rest.api.impl.DefaultExceptionHandler"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="legacyExceptionInterceptor" class="org.alfresco.rest.api.impl.ExceptionInterceptor">
+        <property name="exceptionHandlers">
+            <list>
+                <bean class="org.alfresco.rest.api.impl.LegacyExceptionHandler"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="siteMembershipRequestsExceptionInterceptor" class="org.alfresco.rest.api.impl.ExceptionInterceptor">
+        <property name="exceptionHandlers">
+            <list>
+                <bean class="org.alfresco.rest.api.impl.SiteMembershipRequestsExceptionHandler"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="activitySummaryProcessorRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+        <property name="storageType" value="org.alfresco.rest.api.impl.activities.ActivitySummaryProcessor"/>
+    </bean>
+    
+    <bean id="activitySummaryParser" class="org.alfresco.rest.api.impl.activities.ActivitySummaryParser">
+        <property name="processors" ref="activitySummaryProcessorRegistry" />
+    </bean>
+
+    <bean id="commentsActivitySummaryProcessor" class="org.alfresco.rest.api.impl.activities.BaseActivitySummaryProcessor">
+        <property name="registry" ref="activitySummaryParser" />
+        <property name="eventTypes">
+            <list>
+                <value>org.alfresco.comments.comment-created</value>
+                <value>org.alfresco.comments.comment-updated</value>
+                <value>org.alfresco.comments.comment-deleted</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="documentLibraryActivitySummaryProcessor" class="org.alfresco.rest.api.impl.activities.BaseActivitySummaryProcessor">
+        <property name="registry" ref="activitySummaryParser" />
+        <property name="eventTypes">
+            <list>
+                <value>org.alfresco.documentlibrary.files-added</value>
+                <value>org.alfresco.documentlibrary.files-updated</value>
+                <value>org.alfresco.documentlibrary.files-deleted</value>
+                <value>org.alfresco.documentlibrary.file-added</value>
+                <value>org.alfresco.documentlibrary.file-created</value>
+                <value>org.alfresco.documentlibrary.file-deleted</value>
+                <value>org.alfresco.documentlibrary.file-liked</value>
+                <value>org.alfresco.documentlibrary.inline-edit</value>
+                <value>org.alfresco.documentlibrary.folder-liked</value>
+                <value>org.alfresco.documentlibrary.folder-added</value>
+                <value>org.alfresco.documentlibrary.folder-deleted</value>
+                <value>org.alfresco.documentlibrary.folders-added</value>
+                <value>org.alfresco.documentlibrary.folders-deleted</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="siteActivitySummaryProcessor" class="org.alfresco.rest.api.impl.activities.SiteActivitySummaryProcessor">
+        <property name="registry" ref="activitySummaryParser" />
+        <property name="eventTypes">
+            <list>
+                <value>org.alfresco.site.user-joined</value>
+                <value>org.alfresco.site.user-left</value>
+                <value>org.alfresco.site.user-role-changed</value>
+                <value>org.alfresco.site.group-added</value>
+                <value>org.alfresco.site.group-removed</value>
+                <value>org.alfresco.site.group-role-changed</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="discussionsActivitySummaryProcessor" class="org.alfresco.rest.api.impl.activities.DiscussionsActivitySummaryProcessor">
+        <property name="registry" ref="activitySummaryParser" />
+        <property name="eventTypes">
+            <list>
+                <value>org.alfresco.discussions.reply-created</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="subscriptionsActivitySummaryProcessor" class="org.alfresco.rest.api.impl.activities.SubscriptionsActivitySummaryProcessor">
+        <property name="registry" ref="activitySummaryParser" />
+        <property name="eventTypes">
+            <list>
+                <value>org.alfresco.subscriptions.followed</value>
+                <value>org.alfresco.subscriptions.subscribed</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="wikiActivitySummaryProcessor" class="org.alfresco.rest.api.impl.activities.BaseActivitySummaryProcessor">
+        <property name="registry" ref="activitySummaryParser" />
+        <property name="eventTypes">
+            <list>
+                <value>org.alfresco.wiki.page-created</value>
+                <value>org.alfresco.wiki.page-edited</value>
+                <value>org.alfresco.wiki.page-renamed</value>
+                <value>org.alfresco.wiki.page-deleted</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="nodeRatingSchemeRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+        <property name="storageType" value="org.alfresco.rest.api.impl.node.ratings.RatingScheme"/>
+    </bean>
+
+    <bean id="apiLikesRatingScheme" class="org.alfresco.rest.api.impl.node.ratings.LikesRatingScheme">
+        <property name="nodeService" ref="NodeService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="activityService" ref="activityService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="nodeRatingSchemeRegistry" ref="nodeRatingSchemeRegistry" />
+        <property name="ratingService" ref="RatingService" />
+    </bean>
+
+    <bean id="apiFiveStarRatingScheme" class="org.alfresco.rest.api.impl.node.ratings.FiveStarRatingScheme">
+        <property name="nodeService" ref="NodeService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="activityService" ref="activityService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="nodeRatingSchemeRegistry" ref="nodeRatingSchemeRegistry" />
+        <property name="ratingService" ref="RatingService" />
+    </bean>
+
+    <bean id="activities" class="org.alfresco.rest.api.impl.ActivitiesImpl">
+        <property name="people" ref="people" />
+        <property name="activityService" ref="activityService" />
+        <property name="activitySummaryParser" ref="activitySummaryParser" />
+        <property name="tenantService" ref="tenantService" />
+        <property name="sites" ref="sites" />
+    </bean>
+
+    <bean id="Activities" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.api.Activities</value>
+       </property>
+       <property name="target">
+          <ref bean="activities" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+    
+    <bean id="comments" class="org.alfresco.rest.api.impl.CommentsImpl">
+        <property name="nodes" ref="nodes" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="commentService" ref="CommentService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="permissionService" ref="PermissionService" />
+        <property name="lockService" ref="LockService" />
+        <property name="typeConstraint">
+          <bean class="org.alfresco.util.TypeConstraint" init-method="init">
+              <property name="nodeService" ref="NodeService" />
+              <property name="expectedTypes">
+                 <list>
+                    <value>{http://www.alfresco.org/model/content/1.0}folder</value>
+                    <value>{http://www.alfresco.org/model/content/1.0}content</value>
+                    <value>{http://www.alfresco.org/model/cmis/custom}*</value>
+                 </list>
+              </property>
+              <property name="excludedTypes">
+                 <list>
+                    <value>{http://www.alfresco.org/model/forum/1.0}forums</value>
+                    <value>{http://www.alfresco.org/model/forum/1.0}forum</value>
+                    <value>{http://www.alfresco.org/model/forum/1.0}topic</value>
+                    <value>{http://www.alfresco.org/model/forum/1.0}post</value>
+                    <value>{http://www.alfresco.org/model/content/1.0}category</value>
+                 </list>
+              </property>
+          </bean>
+        </property>
+    </bean>
+
+    <bean id="Comments" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.api.Comments</value>
+       </property>
+       <property name="target">
+          <ref bean="comments" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+    
+    <bean id="nodeRatings" class="org.alfresco.rest.api.impl.NodeRatingsImpl">
+        <property name="nodes" ref="nodes" />
+        <property name="ratingService" ref="RatingService" />
+        <property name="nodeRatingSchemeRegistry" ref="nodeRatingSchemeRegistry" />
+        <property name="typeConstraint">
+          <bean class="org.alfresco.util.TypeConstraint" init-method="init">
+              <property name="nodeService" ref="NodeService" />
+              <property name="expectedTypes">
+                 <list>
+                    <value>{http://www.alfresco.org/model/content/1.0}folder</value>
+                    <value>{http://www.alfresco.org/model/content/1.0}content</value>
+                    <value>{http://www.alfresco.org/model/cmis/custom}*</value>
+                 </list>
+              </property>
+              <property name="excludedTypes">
+                 <list>
+                     <value>{http://www.alfresco.org/model/forum/1.0}forums</value>
+                     <value>{http://www.alfresco.org/model/forum/1.0}forum</value>
+                     <value>{http://www.alfresco.org/model/forum/1.0}topic</value>
+                     <value>{http://www.alfresco.org/model/forum/1.0}post</value>
+                     <value>{http://www.alfresco.org/model/content/1.0}category</value>
+                 </list>
+              </property>
+          </bean>
+        </property>
+    </bean>
+
+    <bean id="NodeRatings" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.api.NodeRatings</value>
+       </property>
+       <property name="target">
+          <ref bean="nodeRatings" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+    
+    <bean id="nodes" class="org.alfresco.rest.api.impl.NodesImpl">
+        <property name="nodeService" ref="NodeService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="cmisConnector" ref="CMISConnector" />
+    </bean>
+
+    <bean id="Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.api.Nodes</value>
+       </property>
+       <property name="target">
+          <ref bean="nodes" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+
+    <bean id="favourites" class="org.alfresco.rest.api.impl.FavouritesImpl">
+        <property name="people" ref="People" />
+        <property name="sites" ref="Sites" />
+        <property name="nodes" ref="Nodes" />
+        <property name="siteService" ref="SiteService" />
+        <property name="favouritesService" ref="FavouritesService" />
+    </bean>
+
+    <bean id="Favourites" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.api.Favourites</value>
+       </property>
+       <property name="target">
+          <ref bean="favourites" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="defaultExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+
+    <bean id="siteMembershipRequests" class="org.alfresco.rest.api.impl.SiteMembershipRequestsImpl">
+        <property name="people" ref="People" />
+        <property name="sites" ref="Sites" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="invitationService" ref="invitationService" />
+        <property name="networksService" ref="networksService" />
+    </bean>
+
+    <bean id="SiteMembershipRequests" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.api.SiteMembershipRequests</value>
+       </property>
+       <property name="target">
+          <ref bean="siteMembershipRequests" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="siteMembershipRequestsExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+
+    <bean id="people" class="org.alfresco.rest.api.impl.PeopleImpl">
+        <property name="nodes" ref="Nodes" />
+        <property name="sites" ref="sites" />
+        <property name="siteService" ref="SiteService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="personService" ref="PersonService" />
+        <property name="authenticationService" ref="AuthenticationService" />
+        <property name="contentUsageService" ref="contentUsageImpl" />
+        <property name="contentService" ref="ContentService" />
+        <property name="thumbnailService" ref="ThumbnailService" />
+    </bean>
+
+    <bean id="People" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.api.People</value>
+       </property>
+       <property name="target">
+          <ref bean="people" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+    
+    <bean id="preferences" class="org.alfresco.rest.api.impl.PreferencesImpl">
+        <property name="people" ref="people" />
+        <property name="preferenceService" ref="PreferenceService" />
+    </bean>
+    
+    <bean id="Preferences" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.api.Preferences</value>
+       </property>
+       <property name="target">
+          <ref bean="preferences" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+    
+    <bean id="sites" class="org.alfresco.rest.api.impl.SitesImpl">
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="nodes" ref="Nodes" />
+        <property name="people" ref="people" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="favouritesService" ref="FavouritesService" />
+        <property name="preferenceService" ref="PreferenceService" />
+    </bean>
+    
+    <bean id="Sites" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.api.Sites</value>
+       </property>
+       <property name="target">
+          <ref bean="sites" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+    
+    <bean id="tags" class="org.alfresco.rest.api.impl.TagsImpl">
+        <property name="nodes" ref="nodes" />
+        <property name="taggingService" ref="TaggingService" />
+        <property name="typeConstraint">
+          <bean class="org.alfresco.util.TypeConstraint" init-method="init">
+              <property name="nodeService" ref="NodeService" />
+              <property name="expectedTypes">
+                 <list>
+                    <value>{http://www.alfresco.org/model/content/1.0}folder</value>
+                    <value>{http://www.alfresco.org/model/content/1.0}content</value>
+                    <value>{http://www.alfresco.org/model/cmis/custom}*</value>
+                 </list>
+              </property>
+              <property name="excludedTypes">
+                 <list>
+                     <value>{http://www.alfresco.org/model/forum/1.0}forums</value>
+                     <value>{http://www.alfresco.org/model/forum/1.0}forum</value>
+                     <value>{http://www.alfresco.org/model/forum/1.0}topic</value>
+                     <value>{http://www.alfresco.org/model/forum/1.0}post</value>
+                     <value>{http://www.alfresco.org/model/content/1.0}category</value>
+                 </list>
+              </property>
+          </bean>
+        </property>
+    </bean>
+
+    <bean id="Tags" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.api.Tags</value>
+       </property>
+       <property name="target">
+          <ref bean="tags" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+
+    <bean id="networks" class="org.alfresco.rest.api.impl.NetworksImpl">
+        <property name="people" ref="People" />
+        <property name="networksService" ref="networksService" />
+    </bean>
+
+    <bean id="Networks" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.api.Networks</value>
+       </property>
+       <property name="target">
+          <ref bean="networks" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+
+    <!-- API webscripts -->
+
+	<bean class="org.alfresco.rest.api.sites.SiteEntityResource">
+		<property name="sites" ref="Sites" />
+	</bean>
+
+    <bean class="org.alfresco.rest.api.networks.NetworksEntityResource">
+        <property name="networks" ref="Networks" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.sites.SiteMembersRelation">
+        <property name="sites" ref="Sites" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.sites.SiteContainersRelation">
+        <property name="sites" ref="Sites" />
+    </bean>
+
+	<bean class="org.alfresco.rest.api.people.PeopleEntityResource">
+		<property name="people" ref="People" />
+	</bean>
+	
+	<bean class="org.alfresco.rest.api.tags.TagsEntityResource">
+        <property name="tags" ref="Tags" />
+    </bean>
+	
+	<bean class="org.alfresco.rest.api.people.PersonSitesRelation">
+		<property name="sites" ref="Sites" />
+	</bean>
+
+    <bean class="org.alfresco.rest.api.people.PersonNetworksRelation">
+        <property name="networks" ref="Networks" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.people.PersonActivitiesRelation">
+        <property name="activities" ref="Activities" />
+    </bean>
+    
+    <bean class="org.alfresco.rest.api.people.PersonPreferencesRelation">
+        <property name="preferences" ref="Preferences" />
+    </bean>
+    
+    <bean class="org.alfresco.rest.api.people.PersonFavouriteSitesRelation">
+        <property name="sites" ref="Sites" />
+    </bean>
+
+	<bean class="org.alfresco.rest.api.nodes.NodesEntityResource">
+        <property name="nodes" ref="Nodes" />
+	</bean>
+	
+	<bean class="org.alfresco.rest.api.nodes.NodeCommentsRelation">
+        <property name="comments" ref="Comments" />
+	</bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeRatingsRelation">
+        <property name="nodeRatings" ref="NodeRatings" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeTagsRelation">
+        <property name="tags" ref="Tags" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.people.PersonFavouritesRelation">
+        <property name="favourites" ref="Favourites" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.people.PersonSiteMembershipRequestsRelation">
+        <property name="siteMembershipRequests" ref="SiteMembershipRequests" />
+    </bean>
+
+    <bean   id="getNetworksWebScript" 
+           class="org.alfresco.rest.api.NetworksWebScriptGet">
+        <property name="networks" ref="Networks" />
+        <property name="jsonHelper" ref="jsonHelper" />
+        <property name="helper" ref="webscriptHelper" />
+    </bean>
+
+    <bean   id="getNetworkWebScript" 
+           class="org.alfresco.rest.api.NetworkWebScriptGet">
+        <property name="networks" ref="Networks" />
+        <property name="jsonHelper" ref="jsonHelper" />
+        <property name="helper" ref="webscriptHelper" />
+    </bean>
+
+    <!-- OpenCMIS -->
+
+    <bean id="publicApiCMISServiceFactory" class="org.alfresco.opencmis.PublicApiAlfrescoCmisServiceFactory" init-method="init">
+        <property name="cmisConnector"          ref="CMISConnector" />
+        <property name="cmisTransactions"       ref="CMISService_Transactions" />
+        <property name="cmisExceptions"         ref="CMISService_Exceptions" />
+        <property name="cmisControl"            ref="CMISService_Control" />
+        <property name="cmisStreams"            ref="CMISService_Streams" />
+        <property name="authorityService"       ref="AuthorityService" />
+        <property name="tenantAdminService"     ref="tenantAdminService"/>
+        <property name="networksService"        ref="networksService"/>
+    </bean>
+
+    <bean id="publicApiCMISServiceFactory1.1" class="org.alfresco.opencmis.PublicApiAlfrescoCmisServiceFactory" init-method="init">
+        <property name="cmisConnector"          ref="CMISConnector1.1" />
+        <property name="cmisTransactions"       ref="CMISService_Transactions" />
+        <property name="cmisExceptions"         ref="CMISService_Exceptions" />
+        <property name="cmisControl"            ref="CMISService_Control" />
+        <property name="cmisStreams"            ref="CMISService_Streams" />
+        <property name="authorityService"       ref="AuthorityService" />
+        <property name="tenantAdminService"     ref="tenantAdminService"/>
+        <property name="networksService"        ref="networksService"/>
+    </bean>
+
+    <bean   id="cmisDispatcherRegistry" class="org.alfresco.opencmis.CMISDispatcherRegistryImpl">
+    </bean>
+
+    <bean   id="cmisAtomPubDispatcher" class="org.alfresco.opencmis.PublicApiAtomPubCMISDispatcher" init-method="init">
+        <property name="descriptorService"  ref="DescriptorService"/>
+        <property name="cmisServiceFactory" ref="publicApiCMISServiceFactory"/>
+        <property name="registry"           ref="cmisDispatcherRegistry" />
+        <property name="serviceName"        value="cmis" />
+        <property name="baseUrlGenerator"   ref="baseUrlGenerator" />
+        <property name="version"            value="1.0"/>
+    </bean>
+
+    <bean   id="cmisAtomPubDispatcher1.1" class="org.alfresco.opencmis.PublicApiAtomPubCMISDispatcher" init-method="init">
+        <property name="descriptorService"  ref="DescriptorService"/>
+        <property name="cmisServiceFactory" ref="publicApiCMISServiceFactory1.1"/>
+        <property name="registry"           ref="cmisDispatcherRegistry" />
+        <property name="serviceName"        value="cmis" />
+        <property name="baseUrlGenerator"   ref="baseUrlGenerator" />
+        <property name="version"            value="1.1"/>
+    </bean>
+
+    <bean   id="cmisBrowserDispatcher1.0" class="org.alfresco.opencmis.PublicApiBrowserCMISDispatcher" init-method="init">
+        <property name="descriptorService"  ref="DescriptorService"/>
+        <property name="cmisServiceFactory" ref="publicApiCMISServiceFactory"/>
+        <property name="baseUrlGenerator"   ref="baseUrlGenerator"/>
+        <property name="registry"           ref="cmisDispatcherRegistry" />
+        <property name="serviceName"        value="cmis" />
+        <property name="version"            value="1.0"/>
+    </bean>
+
+    <bean   id="cmisBrowserDispatcher1.1" class="org.alfresco.opencmis.PublicApiBrowserCMISDispatcher" init-method="init">
+        <property name="descriptorService"  ref="DescriptorService"/>
+        <property name="cmisServiceFactory" ref="publicApiCMISServiceFactory1.1"/>
+        <property name="baseUrlGenerator"   ref="baseUrlGenerator"/>
+        <property name="registry"           ref="cmisDispatcherRegistry" />
+        <property name="serviceName"        value="cmis" />
+        <property name="version"            value="1.1"/>
+    </bean>
+
+    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.get" 
+            class="org.alfresco.opencmis.CMISWebScript">
+        <property name="registry"           ref="cmisDispatcherRegistry" />
+    </bean>
+
+    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.post" 
+            class="org.alfresco.opencmis.CMISWebScript">
+        <property name="registry"           ref="cmisDispatcherRegistry" />
+    </bean>
+ 
+    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.put" 
+            class="org.alfresco.opencmis.CMISWebScript">
+        <property name="registry"           ref="cmisDispatcherRegistry" />
+    </bean>
+    
+    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.delete" 
+            class="org.alfresco.opencmis.CMISWebScript">
+        <property name="registry"           ref="cmisDispatcherRegistry" />
+    </bean>
+
+    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.options" 
+            class="org.alfresco.opencmis.CMISWebScript">
+        <property name="registry"           ref="cmisDispatcherRegistry" />
+    </bean>
+
+    <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.head" 
+            class="org.alfresco.opencmis.CMISWebScript">
+        <property name="registry"           ref="cmisDispatcherRegistry" />
+    </bean>
+
+    <bean id="cmisPathGenerator" class="org.alfresco.opencmis.PublicApiPathGenerator">
+    </bean>
+
+    <bean id="baseUrlGenerator" class="org.alfresco.opencmis.DefaultBaseUrlGenerator">
+        <property name="overrideContext" value="${opencmis.context.override}" />
+        <property name="contextOverride" value="${opencmis.context.value}" />
+        <property name="overrideServletPath" value="${opencmis.servletpath.override}" />
+        <property name="servletPathOverride" value="${opencmis.servletpath.value}" />
+        <property name="overrideServer" value="${opencmis.server.override}" />
+        <property name="serverOverride" value="${opencmis.server.value}" />
+        <property name="pathGenerator" ref="cmisPathGenerator" />
+    </bean>
+    
+    <!-- Workflow REST API -->
+   <bean id="restVariableHelper" class="org.alfresco.rest.workflow.api.impl.RestVariableHelper">
+      <property name="nodeService" ref="nodeService" />
+      <property name="namespaceService" ref="namespaceService" />
+   </bean>
+   
+   <bean id="baseWorkflowRest" class="org.alfresco.rest.workflow.api.impl.WorkflowRestImpl" abstract="true">
+      <property name="activitiProcessEngine" ref="activitiProcessEngine" />
+      <property name="authorityService" ref="authorityService" />
+      <property name="deployWorkflowsInTenant" value="${system.workflow.deployWorkflowsInTenant}" />
+      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="namespaceService" ref="NamespaceService" />
+      <property name="tenantService" ref="tenantService" />
+      
+    </bean>
+   
+	<bean id="deployments" class="org.alfresco.rest.workflow.api.impl.DeploymentsImpl" parent="baseWorkflowRest">
+   </bean>
+
+    <bean id="Deployments" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.workflow.api.Deployments</value>
+       </property>
+       <property name="target">
+          <ref bean="deployments" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+    
+    <bean id="processDefinitions" class="org.alfresco.rest.workflow.api.impl.ProcessDefinitionsImpl" parent="baseWorkflowRest">
+        <property name="messageService" ref="messageService" />
+        <property name="engineId" value="activiti" />
+        <property name="deployWorkflowsInTenant" value="${system.workflow.deployWorkflowsInTenant}" />
+    </bean>
+
+    <bean id="ProcessDefinitions" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.workflow.api.ProcessDefinitions</value>
+       </property>
+       <property name="target">
+          <ref bean="processDefinitions" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+    
+    <bean id="processes" class="org.alfresco.rest.workflow.api.impl.ProcessesImpl" parent="baseWorkflowRest">
+        <property name="workflowPackageComponent" ref="workflowPackageImpl"/>
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+        <property name="authorityDAO" ref="authorityDAO" />
+        <property name="nodeService" ref="nodeService"/>
+        <property name="personService" ref="PersonService" />
+        <property name="messageService" ref="messageService" />
+        <property name="engineId" value="activiti" />
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="restVariableHelper" ref="restVariableHelper" />
+    </bean>
+
+    <bean id="Processes" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.workflow.api.Processes</value>
+       </property>
+       <property name="target">
+          <ref bean="processes" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+    
+    <bean id="tasks" class="org.alfresco.rest.workflow.api.impl.TasksImpl" parent="baseWorkflowRest">
+        <property name="restVariableHelper" ref="restVariableHelper" />
+        <property name="messageService" ref="messageService" />
+        <property name="processes" ref="processes"/>
+    </bean>
+
+    <bean id="Tasks" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.workflow.api.Tasks</value>
+       </property>
+       <property name="target">
+          <ref bean="tasks" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+
+	<bean class="org.alfresco.rest.workflow.api.deployments.DeploymentsRestEntityResource">
+        <property name="deployments" ref="Deployments"/>
+	</bean>
+    
+	<bean class="org.alfresco.rest.workflow.api.processdefinitions.ProcessDefinitionsRestEntityResource">
+        <property name="processDefinitions" ref="ProcessDefinitions"/>
+	</bean>
+	
+   <bean class="org.alfresco.rest.workflow.api.processdefinitions.StartFormModelRelation">
+        <property name="processDefinitions" ref="processDefinitions"/>
+   </bean>
+    
+	<bean class="org.alfresco.rest.workflow.api.processes.ProcessesRestEntityResource">
+        <property name="processes" ref="Processes"/>
+	</bean>
+	
+	<bean class="org.alfresco.rest.workflow.api.processes.ProcessItemsRelation">
+        <property name="processes" ref="processes"/>
+	</bean>
+	<bean class="org.alfresco.rest.workflow.api.processes.ProcessVariablesRelation">
+        <property name="processes" ref="processes"/>
+	</bean>
+	
+	<bean class="org.alfresco.rest.workflow.api.tasks.TasksRestEntityResource">
+        <property name="tasks" ref="Tasks"/>
+	</bean>
+	
+	<bean class="org.alfresco.rest.workflow.api.tasks.TaskCandidatesRelation">
+        <property name="tasks" ref="Tasks"/>
+	</bean>
+   
+   <bean class="org.alfresco.rest.workflow.api.tasks.TaskVariablesRelation">
+        <property name="tasks" ref="Tasks"/>
+   </bean>
+   
+    <bean class="org.alfresco.rest.workflow.api.tasks.TaskFormModelRelation">
+        <property name="tasks" ref="Tasks"/>
+   </bean>
+   
+   <bean class="org.alfresco.rest.workflow.api.tasks.TaskItemsRelation">
+        <property name="tasks" ref="tasks"/>
+   </bean>
+</beans>

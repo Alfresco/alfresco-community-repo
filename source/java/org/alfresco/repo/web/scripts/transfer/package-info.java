@@ -7,4 +7,7 @@
  * <p>
  * @since 3.3
  */
+@PackageMarker
 package org.alfresco.repo.web.scripts.transfer;
+import org.alfresco.util.PackageMarker;
+

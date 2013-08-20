@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="taskAssigneeExample" 
+  xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:activiti="http://activiti.org/bpmn"
+  targetNamespace="TaskTest">
+	
+	<process id="TaskTest" name="Task Test Name" isExecutable="true">
+	
+		<startEvent id="theStart" />
+		
+		<sequenceFlow sourceRef="theStart" targetRef="fork" />
+
+      <parallelGateway id="fork" />
+		<sequenceFlow sourceRef="fork" targetRef="task1" />
+		<sequenceFlow sourceRef="fork" targetRef="task2" />
+      
+		<userTask id="task1" name="Task name" activiti:formKey="testFormKey" activiti:assignee="kermit" activiti:candidateUsers="fozzie" activiti:candidateGroups="sales">
+			<documentation>This is a test description</documentation>
+		</userTask>
+      
+      <userTask id="task2" name="Another task name" activiti:formKey="anotherFormKey" activiti:assignee="fozzie">
+         <documentation>This is another test description</documentation>
+      </userTask>
+		
+		<sequenceFlow sourceRef="task1" targetRef="join" />
+		<sequenceFlow sourceRef="task2" targetRef="join" />
+
+      <parallelGateway id="join" />
+		<sequenceFlow sourceRef="join" targetRef="theEnd" />
+      
+		<endEvent id="theEnd" />
+		
+	</process>
+
+</definitions>

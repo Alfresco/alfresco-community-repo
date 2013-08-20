@@ -244,6 +244,10 @@ var ParseArgs =
          {
             node = companyhome.childrenByXPath("st:sites")[0];
          }
+         else if (reference == "alfresco://shared")
+         {
+            node = companyhome.childrenByXPath("app:shared")[0];
+         }
          else if (reference.indexOf("://") > 0)
          {
             node = search.findNode(reference);

@@ -24,7 +24,7 @@
 <html>
 <head>
   <title>Bulk Filesystem Import Status</title>
-  <link rel="stylesheet" href="/alfresco/css/main.css" type="text/css"/>
+  <link rel="stylesheet" href="${url.context}/css/main.css" type="text/css"/>
 [#if importStatus.inProgress()]
   <meta http-equiv="refresh" content="${refreshIntervalInSeconds}" />
 [/#if]

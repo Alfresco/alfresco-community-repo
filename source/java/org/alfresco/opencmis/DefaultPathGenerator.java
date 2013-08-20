@@ -21,7 +21,7 @@ package org.alfresco.opencmis;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
-import org.alfresco.repo.web.scripts.TenantWebScriptServlet;
+import org.alfresco.repo.tenant.TenantUtil;
 
 /**
  * Default generator for OpenCMIS paths based on the repositoryId and binding.
@@ -41,7 +41,7 @@ public class DefaultPathGenerator implements PathGenerator
 	    }
 	    else
 	    {
-	        url.append(TenantWebScriptServlet.DEFAULT_TENANT);
+	        url.append(TenantUtil.DEFAULT_TENANT);
 	    }
 	}
 

@@ -1,8 +1,8 @@
-<script type="text/javascript" src="/alfresco/yui/build/yahoo/yahoo.js"></script> 
-<script type="text/javascript" src="/alfresco/yui/build/event/event.js" ></script> 
-<script type="text/javascript" src="/alfresco/yui/build/dom/dom.js" ></script> 	 
-<script type="text/javascript" src="/alfresco/yui/build/calendar/calendar.js"></script> 
-<link type="text/css" rel="stylesheet" href="/alfresco/yui/build/calendar/assets/calendar.css"> 
+<script type="text/javascript" src="${url.context}/yui/build/yahoo/yahoo.js"></script> 
+<script type="text/javascript" src="${url.context}/yui/build/event/event.js" ></script> 
+<script type="text/javascript" src="${url.context}/yui/build/dom/dom.js" ></script> 	 
+<script type="text/javascript" src="${url.context}/yui/build/calendar/calendar.js"></script> 
+<link type="text/css" rel="stylesheet" href="${url.context}/yui/build/calendar/assets/calendar.css"> 
 
 <script type="text/javascript">
 YAHOO.namespace("example.calendar"); 

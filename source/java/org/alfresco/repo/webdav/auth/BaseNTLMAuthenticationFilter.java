@@ -50,11 +50,13 @@ import org.alfresco.jlan.server.auth.ntlm.Type3NTLMMessage;
 import org.alfresco.jlan.util.DataPacker;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 import org.alfresco.repo.security.authentication.ntlm.NTLMPassthruToken;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.web.auth.GuestCredentials;
 import org.alfresco.repo.web.auth.NTLMCredentials;
 import org.alfresco.repo.web.auth.TicketCredentials;
@@ -452,8 +454,25 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         String domain = type3Msg.getDomain();
         
         // ALF-10997 fix, normalize the userName
-        String normalized = personService.getUserIdentifier(userName);
-        
+        //the system runAs is acceptable because we are resolving a username i.e. it's a system-wide operation that does not need permission checks
+
+        final String userName_f = userName;
+        String normalized = transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionHelper.RetryingTransactionCallback<String>()
+                {
+                    public String execute() throws Throwable
+                    {
+                        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>()
+                        {
+                            public String doWork() throws Exception
+                            {
+                                String normalized = personService.getUserIdentifier(userName_f);
+                                return normalized;
+                            }
+                        }, AuthenticationUtil.SYSTEM_USER_NAME);
+                    }
+                }, true);
+
         if (normalized != null)
         {
             userName = normalized;

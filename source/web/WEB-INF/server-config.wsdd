@@ -6,7 +6,7 @@
 		<parameter name="sendMultiRefs" value="true"/>
 		<parameter name="sendXMLDeclaration" value="true"/>
 		<parameter name="axis.sendMinimizedElements" value="true"/>
-		<parameter name="axis.servicesPath" value="/api/"/>
+		<parameter name="axis.servicesPath" value="/soapapi/"/>
 		<parameter name="axis.disableServiceList" value="true"/>
 		<parameter name="axis.development.system" value="true"/>
 	</globalConfiguration>

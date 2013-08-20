@@ -29,7 +29,7 @@ function findNodeInSite()
    var node = site.getContainer(containerId);
    if (node === null)
    {
-      node = site.createContainer(containerId);
+      node = site.aquireContainer(containerId);
       if (node === null)
       {
       	status.setCode(status.STATUS_NOT_FOUND, "Unable to fetch container '" + containerId + "' of site '" + siteId + "'. (No write permission?)");
@@ -67,6 +67,10 @@ function findFromReference()
    else if (nodeRef == "alfresco://sites/home")
    {
       node = companyhome.childrenByXPath("st:sites")[0];
+   }
+   else if (nodeRef == "alfresco://shared")
+   {
+      node = companyhome.childrenByXPath("app:shared")[0];
    }
    else
    {

@@ -273,7 +273,7 @@
    <wsdl:service name="ClassificationService">
       <wsdl:documentation>Provides support for classifying content resources.</wsdl:documentation>
       <wsdl:port binding="cls:ClassificationServiceSoapBinding" name="ClassificationService">
-         <wsdlsoap:address location="http://localhost:8080/alfresco/api/ClassificationService"/>
+         <wsdlsoap:address location="http://localhost:8080/alfresco/soapapi/ClassificationService"/>
       </wsdl:port>
    </wsdl:service>
    

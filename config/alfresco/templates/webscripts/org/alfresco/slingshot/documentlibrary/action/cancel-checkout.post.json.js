@@ -33,8 +33,18 @@ function runAction(p_params)
       }
       else if (p_params.destNode.isLocked && !p_params.destNode.hasAspect("trx:transferred"))
       {
-         // ...or, if the node is locked then just unlock it...
-         p_params.destNode.unlock();
+         var assocs = p_params.destNode.getAssocs();
+         if (assocs["{http://www.alfresco.org/model/content/1.0}workingcopylink"] !==null && assocs["{http://www.alfresco.org/model/content/1.0}workingcopylink"][0])
+         {
+            // original document: edit offline case
+            originalDoc = assocs["{http://www.alfresco.org/model/content/1.0}workingcopylink"][0].cancelCheckout();
+         }
+         else
+         {
+            // original document: edit online case
+            // ...or, if the node is locked then just unlock it...
+            p_params.destNode.unlock();
+         }
       }
 
       var resultId = originalDoc.name,

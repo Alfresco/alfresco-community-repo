@@ -60,6 +60,7 @@
          "create": "${links.hasPermission("CreateChildren")?string}"
       }
    },
+   "totalRecordsUpper": ${data.totalRecordsUpper?string("true","false")},
    <@gen.pagedResults data=data ; item>
       <@linkJSON item=item />
    </@gen.pagedResults>

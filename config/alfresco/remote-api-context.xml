@@ -11,7 +11,8 @@
     
     <bean id="webDAVLockService" class="org.alfresco.repo.webdav.WebDAVLockServiceImpl">
       <property name="lockService">
-         <ref bean="LockService" />
+         <!-- TODO: change from LockService to lockService to be reviewed -->
+         <ref bean="lockService" />
       </property>
       <property name="nodeService">
          <ref bean="NodeService" />
@@ -22,7 +23,6 @@
       <property name="checkOutCheckInService">
          <ref bean="CheckoutCheckinService" />
       </property>
-      <property name="lockStoreFactory" ref="webdavLockStoreFactory"/>
    </bean>
    
    <bean id="baseWebDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper" abstract="true">
@@ -75,7 +75,15 @@
          <value>${system.webdav.url.path.prefix}</value>
       </property>
     </bean>   
+   
+   <bean id="defaultImageResolver" class="org.alfresco.repo.utils.FacesImageResolver" />
 
     <bean id="webDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper" parent="baseWebDAVHelper" />
 
+   <!--  Content Streamer -->
+   <bean id="webscript.content.streamer" class="org.alfresco.repo.web.scripts.content.ContentStreamer">
+      <property name="nodeService" ref="NodeService" />
+      <property name="mimetypeService" ref="MimetypeService" />
+      <property name="contentService" ref="ContentService" />
+   </bean>
 </beans>

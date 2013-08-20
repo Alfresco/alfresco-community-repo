@@ -1,6 +1,7 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "success": true,
-   "name": "${name}"
+   "name": "${result.name}",
+   "nodeRef": "${result.nodeRef}"
 }
 </#escape>

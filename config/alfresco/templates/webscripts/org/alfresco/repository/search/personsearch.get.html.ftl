@@ -1,7 +1,7 @@
 <html>
   <head profile="http://a9.com/-/spec/opensearch/1.1/"> 
     <title>Alfresco Person Search: ${search.searchTerms?html}</title>
-    <link rel="stylesheet" href="/alfresco/css/main.css" TYPE="text/css">
+    <link rel="stylesheet" href="${url.context}/css/main.css" TYPE="text/css">
     <link rel="search" type="application/opensearchdescription+xml" href="${url.serviceContext}/api/search/person/description.xml" title="Alfresco Person Search"/>
     <meta name="totalResults" content="${search.totalResults}"/>
     <meta name="startIndex" content="${search.startIndex}"/>

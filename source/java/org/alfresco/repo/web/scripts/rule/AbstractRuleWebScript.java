@@ -351,15 +351,24 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
             
             // Get the parameter definition we care about
             ParameterDefinition paramDef = definition.getParameterDefintion(propertyName);
-            if (paramDef == null)
+            if (paramDef == null && !definition.getAdhocPropertiesAllowed())
             {
                 throw new AlfrescoRuntimeException("Invalid parameter " + propertyName + " for action/condition " + name);
             }
-            QName typeQName = paramDef.getType();
+            if (paramDef != null)
+            {
+                QName typeQName = paramDef.getType();
 
-            // Convert the property value
-            Serializable value = convertValue(typeQName, propertyValue);
-            parameterValues.put(propertyName, value);
+                // Convert the property value
+                Serializable value = convertValue(typeQName, propertyValue);
+                parameterValues.put(propertyName, value);
+            }
+            else
+            {
+                // If there is no parameter definition we can only rely on the .toString() representation of the ad-hoc property
+                parameterValues.put(propertyName, propertyValue.toString());
+            }
+            
         }
 
         return parameterValues;

@@ -204,24 +204,16 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         
         if (lockInfo != null)
         {
-            lockInfo.getRWLock().readLock().lock();
-            try
+            if (lockInfo.isLocked() && !lockInfo.getOwner().equals(userName))
             {
-                if (lockInfo.isLocked() && !lockInfo.getOwner().equals(userName))
+                if (logger.isDebugEnabled())
                 {
-                    if (logger.isDebugEnabled())
-                    {
-                        String path = getPath();
-                        String owner = lockInfo.getOwner();
-                        logger.debug("Node locked: path=["+path+"], owner=["+owner+"], current user=["+userName+"]");
-                    }
-                    // Indicate that the resource is locked
-                    throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+                    String path = getPath();
+                    String owner = lockInfo.getOwner();
+                    logger.debug("Node locked: path=["+path+"], owner=["+owner+"], current user=["+userName+"]");
                 }
-            }
-            finally
-            {
-                lockInfo.getRWLock().readLock().unlock();            
+                // Indicate that the resource is locked
+                throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
             }
         }
         // ALF-16808: We disable the versionable aspect if we are overwriting

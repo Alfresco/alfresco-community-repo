@@ -13,12 +13,6 @@ import org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServl
  */
 public class BrowserCMISDispatcher extends CMISServletDispatcher
 {
-	public void init()
-	{
-		super.init();
-		registry.registerDispatcher(getBinding(), this);
-	}
-
     @Override
     protected Binding getBinding()
     {

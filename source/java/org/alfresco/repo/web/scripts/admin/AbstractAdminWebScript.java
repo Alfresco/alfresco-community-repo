@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Alfresco Software Limited.
+ * Copyright (C) 2009-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,6 +24,8 @@ import java.util.Map;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.admin.RepoUsageStatus.RepoUsageLevel;
+import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.license.LicenseDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -44,6 +46,7 @@ public abstract class AbstractAdminWebScript extends DeclarativeWebScript
     public static final String JSON_KEY_READ_ONLY = "readOnly";
     public static final String JSON_KEY_UPDATED = "updated";
     public static final String JSON_KEY_LICENSE_VALID_UNTIL = "licenseValidUntil";
+    public static final String JSON_KEY_LICENSE_HOLDER = "licenseHolder";
     public static final String JSON_KEY_LEVEL = "level";
     public static final String JSON_KEY_WARNINGS = "warnings";
     public static final String JSON_KEY_ERRORS = "errors";
@@ -54,6 +57,7 @@ public abstract class AbstractAdminWebScript extends DeclarativeWebScript
     protected final Log logger = LogFactory.getLog(this.getClass());
     
     protected RepoAdminService repoAdminService;
+    protected DescriptorService descriptorService;
 
     /**
      * @param repoAdminService  the service that provides the functionality
@@ -61,6 +65,14 @@ public abstract class AbstractAdminWebScript extends DeclarativeWebScript
     public void setRepoAdminService(RepoAdminService repoAdminService)
     {
         this.repoAdminService = repoAdminService;
+    }
+
+    /**
+     * @param descriptorService  the service that provides the functionality
+     */
+    public void setDescriptorService(DescriptorService descriptorService)
+    {
+        this.descriptorService = descriptorService;
     }
 
     /**
@@ -88,7 +100,14 @@ public abstract class AbstractAdminWebScript extends DeclarativeWebScript
         model.put(JSON_KEY_READ_ONLY, repoUsage.isReadOnly());
         model.put(JSON_KEY_LICENSE_VALID_UNTIL, repoUsage.getLicenseExpiryDate());
         model.put(JSON_KEY_UPDATED, updated);
-        
+
+        // Add license holder
+        LicenseDescriptor license = descriptorService.getLicenseDescriptor();
+        if (license != null)
+        {
+            model.put(JSON_KEY_LICENSE_HOLDER, license.getHolderOrganisation());
+        }
+
         model.put(JSON_KEY_LEVEL, RepoUsageLevel.OK.ordinal());
         model.put(JSON_KEY_WARNINGS, Collections.emptyList());
         model.put(JSON_KEY_ERRORS, Collections.emptyList());

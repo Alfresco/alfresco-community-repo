@@ -15,7 +15,6 @@ function exitUpload(statusCode, statusMsg)
    status.code = statusCode;
    status.message = statusMsg;
    status.redirect = true;
-   formdata.cleanup();
 }
 
 function main()
@@ -47,7 +46,7 @@ function main()
       // Note: DON'T use a "!==" comparison for "null" here.
       var fnFieldValue = function(p_field)
       {
-         return field.value.length() > 0 && field.value != "null" ? field.value : null;
+         return p_field.value.length() > 0 && p_field.value != "null" ? p_field.value : null;
       };
 
       // allow the locale to be set via an argument
@@ -88,17 +87,16 @@ function main()
 
             case "uploaddirectory":
                uploadDirectory = fnFieldValue(field);
-               if (uploadDirectory !== null)
+               if ((uploadDirectory !== null) && (uploadDirectory.length() > 0))
                {
-                  // Remove any leading "/" from the uploadDirectory
-                  if (uploadDirectory.substr(0, 1) == "/")
-                  {
-                     uploadDirectory = uploadDirectory.substr(1);
-                  }
-                  // Ensure uploadDirectory ends with "/" if not the root folder
-                  if ((uploadDirectory.length > 0) && (uploadDirectory.substring(uploadDirectory.length - 1) != "/"))
+                  if (uploadDirectory.charAt(uploadDirectory.length() - 1) != "/")
                   {
                      uploadDirectory = uploadDirectory + "/";
+                  }
+                  // Remove any leading "/" from the uploadDirectory
+                  if (uploadDirectory.charAt(0) == "/")
+                  {
+                     uploadDirectory = uploadDirectory.substr(1);
                   }
                }
                break;
@@ -133,6 +131,13 @@ function main()
          }
       }
 
+      //MNT-7213 When alf_data runs out of disk space, Share uploads result in a success message, but the files do not appear
+      if (formdata.fields.length == 0)
+      {
+         exitUpload(404, " No disk space available");
+         return;
+      }
+	  
       // Ensure mandatory file attributes have been located. Need either destination, or site + container or updateNodeRef
       if ((filename === null || content === null) || (destination === null && (siteId === null || containerId === null) && updateNodeRef === null))
       {
@@ -296,8 +301,7 @@ function main()
                // Record the file details ready for generating the response
                model.document = existingFile;
 
-               // We're finished - bail out here
-               formdata.cleanup();
+               // MNT-8745 fix: Do not clean formdata temp files to allow for retries. Temp files will be deleted later when GC call DiskFileItem#finalize() method or by temp file cleaner.
                return;
             }
             else
@@ -372,9 +376,7 @@ function main()
          // Record the file details ready for generating the response
          model.document = newFile;
       }
-      
-      // final cleanup of temporary resources created during request processing
-      formdata.cleanup();
+      // MNT-8745 fix: Do not clean formdata temp files to allow for retries. Temp files will be deleted later when GC call DiskFileItem#finalize() method or by temp file cleaner.
    }
    catch (e)
    {
@@ -383,9 +385,17 @@ function main()
       //       file cleanup.
       
       // capture exception, annotate it accordingly and re-throw
-      if (e.message && e.message.indexOf("org.alfresco.service.cmr.usage.ContentQuotaException") == 0)
+      if (e.message && e.message.indexOf("AccessDeniedException") != -1)
+      {
+         e.code = 403;
+      }
+      else if (e.message && e.message.indexOf("org.alfresco.service.cmr.usage.ContentQuotaException") == 0)
       {
          e.code = 413;
+      }
+      else if (e.message && e.message.indexOf("org.alfresco.repo.content.ContentLimitViolationException") == 0)
+      {
+         e.code = 409;
       }
       else
       {

@@ -9,8 +9,8 @@
     <parent>
         <artifactId>alfresco-parent</artifactId>
         <groupId>org.alfresco</groupId>
-        <version>4.2.d-SNAPSHOT</version>
-        <relativePath>../../pom-experimental.xml</relativePath>
+        <version>4.2.0-QA-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <dependencies>
@@ -22,6 +22,10 @@
                 <exclusion>
                     <artifactId>xml-apis</artifactId>
                     <groupId>xml-apis</groupId>
+                </exclusion>
+                <exclusion>
+                	<artifactId>commons-logging</artifactId>
+                	<groupId>commons-logging</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -51,6 +55,12 @@
             <groupId>axis</groupId>
             <artifactId>axis</artifactId>
             <version>1.4</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -71,12 +81,26 @@
                     <artifactId>xml-apis</artifactId>
                     <groupId>xml-apis</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>commons-collections</artifactId>
+                    <groupId>commons-collections</groupId>
+                </exclusion>
+                <exclusion>
+                	<artifactId>commons-logging</artifactId>
+                	<groupId>commons-logging</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.extensions.surf</groupId>
             <artifactId>spring-cmis-framework</artifactId>
             <version>${dependency.surf.version}</version>
+            <exclusions>
+            	<exclusion>
+            		<artifactId>commons-logging</artifactId>
+            		<groupId>commons-logging</groupId>
+            	</exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.facebook.api</groupId>
@@ -86,7 +110,7 @@
         <dependency>
             <groupId>org.alfresco.cmis.client</groupId>
             <artifactId>alfresco-opencmis-extension</artifactId>
-            <version>0.3</version>
+            <version>0.6</version>
             <exclusions>
                 <exclusion>
                     <groupId>junit</groupId>
@@ -123,8 +147,16 @@
             <version>2.0.4</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>xml-apis</artifactId>
                     <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>commons-logging</groupId>
+                	<artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>org.apache.geronimo.specs</groupId>
+                	<artifactId>geronimo-javamail_1.4_spec</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -134,10 +166,18 @@
             <version>0.9</version>
         </dependency>
 
+        <!-- This is needed at runtime by Web Client, so not really a test dependency -->
+        <dependency>
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-test-tck</artifactId>
+            <version>${dependency.opencmis.version}</version>
+            <!-- <scope>test</scope> -->
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
-            <artifactId>junit-dep</artifactId>
+            <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -156,12 +196,6 @@
             <groupId>org.apache.chemistry</groupId>
             <artifactId>chemistry-tck-atompub</artifactId>
             <version>0.1-incubating-unreleased</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-test-tck</artifactId>
-            <version>0.8.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -184,6 +218,12 @@
             <version>${dependency.surf.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-collections</artifactId>
+                    <groupId>commons-collections</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
@@ -250,69 +290,20 @@
                 </executions>
             </plugin>
 
-            <!-- Fetch ImageMagick, needed for ThumbnailServiceTest -->
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>unpack-imagemagick</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.imagemagick</groupId>
-                                    <artifactId>imagemagick-distrib</artifactId>
-                                    <version>6.3.6</version>
-                                    <classifier>${imagemagick.classifier}</classifier>
-                                    <type>zip</type>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- Exclude tests which should not run -->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <includes>
-                        <include>**/*Test.*</include>
-                    </includes>
                     <excludes>
                         <exclude>**/*SystemTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/web/scripts/**/*Test.*</exclude>
-                        <exclude>**/WebScriptTestSuite.*</exclude> <!-- TODO investigate why it's failing -->
+                        <exclude>**/org/alfresco/repo/cmis/ws/*Test.*</exclude>
                     </excludes>
-                    <environmentVariables>
-                        <MAGICK_CONFIGURE_PATH>${imagemagick.home}/lib/ImageMagick-6.5.1/config:${imagemagick.home}/share/ImageMagick-6.5.1/config</MAGICK_CONFIGURE_PATH>
-                        <MAGICK_CODER_MODULE_PATH>${imagemagick.home}/lib/ImageMagick-6.5.1/modules-Q16/coders</MAGICK_CODER_MODULE_PATH>
-                    </environmentVariables>
-                    <systemPropertyVariables>
-                        <img.root>${imagemagick.home}</img.root>
-                        <img.exe>${imagemagick.exe}</img.exe>
-                        <img.dyn>${imagemagick.home}/lib</img.dyn>
-                    </systemPropertyVariables>
                 </configuration>
             </plugin>
 
-            <!--  Create a jar of test classes, to be reused later in remote-api -->
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                 <executions>
-                    <execution>
-                        <id>create-test-jar</id>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Use Axis to generate Java code from wsdl files -->
+            <!-- Use Axis to generate Java code from wsdl files
+                 TODO: complete ast this not used at the moment, we still use the committed source/generated
+             
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>axistools-maven-plugin</artifactId>
@@ -392,90 +383,8 @@
                     </execution>
                 </executions>
             </plugin>
+         -->
         </plugins>
     </build>
-
-  <profiles>
-    <!-- Complement to the legacy-layout profile to treat the source/generated folder -->
-    <!-- TODO: regenerate these properly with Apache CXF! -->
-    <profile>
-        <id>legacy-layout</id>
-        <activation>
-            <file>
-                <exists>source</exists>
-            </file>
-        </activation>
-        <build>
-            <plugins>
-                <plugin>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>copy-generated-sources</id>
-                            <phase>validate</phase>
-                            <goals><goal>copy-resources</goal></goals>
-                            <configuration>
-                                <outputDirectory>${maven.build.layout.src.main.folder}</outputDirectory>
-                                <resources>          
-                                    <resource>
-                                        <directory>source/generated</directory>
-                                        <filtering>${maven.build.filtering.enabled}</filtering>
-                                        <includes>
-                                            <include>org/alfresco/repo/cmis/**/*.java</include>
-                                        </includes>
-                                    </resource>
-                                </resources> 
-                            </configuration>
-                        </execution>
-                    </executions>    
-                </plugin>                            
-            </plugins>
-        </build>
-    </profile>
-
-    <profile>
-        <id>imagemagick-windows</id>
-        <activation>
-            <os>
-              <family>windows</family>
-            </os>
-        </activation>
-        <properties>
-            <imagemagick.classifier>windows</imagemagick.classifier>
-            <imagemagick.exe>${imagemagick.home}/convert.exe</imagemagick.exe>
-        </properties>
-    </profile>
-
-    <profile>
-        <id>imagemagick-linux</id>
-        <activation>
-            <os>
-              <family>linux</family>
-            </os>
-        </activation>
-        <properties>
-            <imagemagick.classifier>linux</imagemagick.classifier>
-            <imagemagick.exe>${imagemagick.home}/bin/.convert.bin</imagemagick.exe>
-        </properties>
-    </profile>
-
-   <profile>
-        <id>imagemagick-mac</id>
-        <activation>
-            <os>
-              <family>mac</family>
-            </os>
-        </activation>
-        <properties>
-            <imagemagick.classifier>linux</imagemagick.classifier>
-            <imagemagick.exe>${imagemagick.home}/bin/.convert.bin</imagemagick.exe>
-        </properties>
-    </profile>
-
-  </profiles>
-
-  <properties>
-      <imagemagick.home>${project.build.directory}/dependency/ImageMagick</imagemagick.home>
-  </properties>
 
 </project>

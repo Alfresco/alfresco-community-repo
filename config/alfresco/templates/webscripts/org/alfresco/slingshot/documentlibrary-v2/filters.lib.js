@@ -115,6 +115,7 @@ var Filters =
          case "all":
             filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
             filterQuery += " +TYPE:\"cm:content\"";
+            filterQuery += " -ASPECT:\"cm:checkedOut\"";
             filterParams.query = filterQuery + filterQueryDefaults;
             break;
 

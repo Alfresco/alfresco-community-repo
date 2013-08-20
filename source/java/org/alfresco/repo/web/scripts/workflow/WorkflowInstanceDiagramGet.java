@@ -80,6 +80,6 @@ public class WorkflowInstanceDiagramGet extends StreamContent
         FileCopyUtils.copy(imageData, os);
         
         // stream temporary file back to client
-        streamContent(req, res, file, false);
+        streamContent(req, res, file);
     }
 }

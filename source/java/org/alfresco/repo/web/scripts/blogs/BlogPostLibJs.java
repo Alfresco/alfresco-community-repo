@@ -67,7 +67,12 @@ public class BlogPostLibJs
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("node", node);
         String creator = (String)services.getNodeService().getProperty(node, ContentModel.PROP_CREATOR);
-        data.put("author", services.getPersonService().getPerson(creator));
+        //ALF-18527
+        NodeRef person = services.getPersonService().getPersonOrNull(creator);
+        if (person != null)
+        {
+            data.put("author", person);
+        }
         
         data.put("commentCount", CommentsLibJs.getCommentsCount(node, services));
        

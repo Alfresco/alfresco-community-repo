@@ -47,7 +47,9 @@
 
         if (result)
         {
-          result = validateRequired(form.targetPath, document.getElementById("targetPathMessage"), "Target space is mandatory.");
+          result = ( (validateRequired(form.targetPath, document.getElementById("targetSpaceMessage"), "Target space or noderef is mandatory.")) ||
+                     (validateRequired(form.targetNodeRef, document.getElementById("targetSpaceMessage"), "Target space or noderef is mandatory."))
+                   ) ;
         }
 
         return result;
@@ -67,17 +69,31 @@
         <tr>
           <td>Import directory:</td><td><input type="text" name="sourceDirectory" size="128" /></td><td id="sourceDirectoryMessage" style="color:red"></td>
         </tr>
+
+        <tr>
+          <td><br/><label for="targetPath">Target space :</label></td>
+          <td id="targetSpaceMessage" style="color:red"></td>
+        </tr>
+
         <tr>
         <!-- TODO i18n for this string -->
-          <td><br/><label for="targetPath">Target space (NodeRef or Path):</label></td>
+          <td><br/><label for="targetPath">Path:</label></td>
           <td>
             <div id="targetNodeRefAutoComplete">
               <input id="targetPath" type="text" name="targetPath" size="128" />
               <div id="targetPathAutoSuggestContainer"></div>
             </div>
           </td>
-          <td id="targetPathMessage" style="color:red"></td>
         </tr>
+
+        <tr>
+        <!-- TODO i18n for this string -->
+          <td><br/><label for="targetNodeRef">or NodeRef:</label></td>
+          <td>
+              <input id="targetNodeRef" type="text" name="targetNodeRef" size="128" />
+          </td>
+        </tr>
+
         <tr>
           <td colspan="3">&nbsp;</td>
         </tr>

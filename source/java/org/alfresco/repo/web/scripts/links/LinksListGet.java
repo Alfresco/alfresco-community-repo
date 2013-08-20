@@ -62,11 +62,6 @@ public class LinksListGet extends AbstractLinksWebScript
       {
          tagFiltering = false;
       }
-      else
-      {
-         // Tags can be full unicode strings, so decode
-         tag = URLDecoder.decode(tag);
-      }
       
       // User?
       boolean userFiltering = false;
@@ -92,6 +87,7 @@ public class LinksListGet extends AbstractLinksWebScript
       
       // Get the links for the list
       PagingRequest paging = buildPagingRequest(req);
+      paging.setRequestTotalCountMax(paging.getSkipCount() + paging.getRequestTotalCountMax());
       PagingResults<LinkInfo> links;
       if (tagFiltering)
       {
@@ -133,6 +129,15 @@ public class LinksListGet extends AbstractLinksWebScript
          total = links.getTotalResultCount().getFirst();
       }
       data.put("total", total);
+      
+      if (total == paging.getRequestTotalCountMax())
+      {
+          data.put("totalRecordsUpper", true);
+      }
+      else
+      {
+          data.put("totalRecordsUpper", false);
+      }
       
       // We need the container node for permissions checking
       NodeRef container;

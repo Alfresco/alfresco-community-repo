@@ -222,7 +222,7 @@
    <wsdl:service name="DictionaryService">
       <wsdl:documentation>Provides read access to the Repository Dictionary.</wsdl:documentation>
       <wsdl:port binding="dict:DictionaryServiceSoapBinding" name="DictionaryService">
-         <wsdlsoap:address location="http://localhost:8080/alfresco/api/DictionaryService"/>
+         <wsdlsoap:address location="http://localhost:8080/alfresco/soapapi/DictionaryService"/>
       </wsdl:port>
    </wsdl:service>
    

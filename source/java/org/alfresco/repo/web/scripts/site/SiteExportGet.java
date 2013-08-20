@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.exporter.ACPExportPackageHandler;
@@ -44,8 +46,6 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.Location;
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipOutputStream;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.AbstractWebScript;
@@ -108,8 +108,22 @@ public class SiteExportGet extends AbstractWebScript
         
         // Export the users who are members of the site's groups
         // Also includes the list of their site related groups
-        mainZip.putNextEntry(new ZipEntry("People.acp"));
-        doPeopleACPExport(site, outputForNesting);
+        //
+        // If there are no users in this site (other than the built-ins like admin, guest)
+        // then include a special marker entry to that effect.
+        final List<NodeRef> peopleNodes = getPersonNodesInSiteGroup(site);
+        if (peopleNodes.isEmpty())
+        {
+            mainZip.putNextEntry(new ZipEntry("No_Persons_In_Site.txt"));
+            String text = "Person nodes were not exported because the site does not contain\n"+
+                          "any members other than the built-ins e.g. admin, guest.";
+            outputForNesting.write(text.getBytes("ASCII"));
+        }
+        else
+        {
+            mainZip.putNextEntry(new ZipEntry("People.acp"));
+            doPeopleACPExport(peopleNodes, site, outputForNesting);
+        }
         
         // Export the Site's groups listings
         mainZip.putNextEntry(new ZipEntry("Groups.txt"));
@@ -132,6 +146,13 @@ public class SiteExportGet extends AbstractWebScript
             mainZip.putNextEntry(new ZipEntry("Users_Skipped_As_Wrong_Authentication.txt"));
             String text = "Users were not exported because the Authentication\n"+
                           "Subsystem you are using is not repository based";
+            outputForNesting.write(text.getBytes("ASCII"));
+        }
+        else if (peopleNodes.isEmpty())
+        {
+            mainZip.putNextEntry(new ZipEntry("No_Users_In_Site.txt"));
+            String text = "User nodes were not exported because the site does not contain\n"+
+                          "any members other than the built-ins e.g. admin, guest.";
             outputForNesting.write(text.getBytes("ASCII"));
         }
         else
@@ -164,7 +185,34 @@ public class SiteExportGet extends AbstractWebScript
         exporterService.exportView(handler, parameters, null);
     }
     
-    protected void doPeopleACPExport(SiteInfo site, CloseIgnoringOutputStream writeTo) throws IOException
+    protected void doPeopleACPExport(final List<NodeRef> peopleNodes, SiteInfo site, CloseIgnoringOutputStream writeTo) throws IOException
+    {
+        if (!peopleNodes.isEmpty())
+        {
+            // Build the parameters
+            ExporterCrawlerParameters parameters = new ExporterCrawlerParameters();
+            parameters.setExportFrom(new Location(peopleNodes.toArray(new NodeRef[peopleNodes.size()])));
+            parameters.setCrawlChildNodes(true);
+            parameters.setCrawlSelf(true);
+            parameters.setCrawlContent(true);
+            
+            // And the export handler
+            ACPExportPackageHandler handler = new ACPExportPackageHandler(
+                    writeTo,
+                    new File(site.getShortName() + "-people.xml"),
+                    new File(site.getShortName() + "-people"),
+                    mimetypeService);
+            
+            // Do the export
+            exporterService.exportView(handler, parameters, null);
+        }
+    }
+    
+    /**
+     * Gets the NodeRefs for cm:person nodes in the specified site - excluding admin, guest.
+     * @since 4.1.5
+     */
+    private List<NodeRef> getPersonNodesInSiteGroup(SiteInfo site)
     {
         // Find the root group
         String siteGroup = AbstractSiteWebScript.buildSiteGroup(site);
@@ -182,24 +230,7 @@ public class SiteExportGet extends AbstractWebScript
                 peopleNodes.add(authorityService.getAuthorityNodeRef(authority));
             }
         }
-        
-
-        // Build the parameters
-        ExporterCrawlerParameters parameters = new ExporterCrawlerParameters();
-        parameters.setExportFrom(new Location(peopleNodes.toArray(new NodeRef[peopleNodes.size()])));
-        parameters.setCrawlChildNodes(true);
-        parameters.setCrawlSelf(true);
-        parameters.setCrawlContent(true);
-        
-        // And the export handler
-        ACPExportPackageHandler handler = new ACPExportPackageHandler(
-                writeTo,
-                new File(site.getShortName() + "-people.xml"),
-                new File(site.getShortName() + "-people"),
-                mimetypeService);
-        
-        // Do the export
-        exporterService.exportView(handler, parameters, null);
+        return peopleNodes;
     }
     
     protected void doGroupExport(SiteInfo site, CloseIgnoringOutputStream writeTo) throws IOException

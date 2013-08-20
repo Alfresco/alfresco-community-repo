@@ -4,7 +4,7 @@
   <url>/api/admin/restrictions</url>
   <format default="json" />
   <authentication>guest</authentication>
-  <transaction allow="readwrite">required</transaction>
+  <transaction allow="readonly">required</transaction>
   <family>Admin</family>
   <lifecycle>internal</lifecycle>
 </webscript>

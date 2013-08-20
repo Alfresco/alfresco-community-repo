@@ -153,7 +153,7 @@
       "owner": "<#if permissions.owner?exists>${permissions.owner}</#if>"
    }
    <#elseif results??>
-   "numResults": ${results?size},
+   "numResults": ${results?size?c},
    "results": [
    <#list results as result>
    	<#assign qnamePath=result.qnamePath />
@@ -170,7 +170,8 @@
          "parentNodeRef": "<#if result.parent??>${result.parent.nodeRef}</#if>"
       }<#if result_has_next>,</#if>
    </#list>
-   ]
+   ],
+   "searchElapsedTime": ${(searchElapsedTime!0)?c}
    <#elseif stores??>
    "stores": [
    	<#list stores as store>"${store}"<#if store_has_next>,</#if>

@@ -1,21 +1,21 @@
 <!-- Calendar Code v2.1 -->
 
-<link rel="stylesheet" type="text/css" href="/alfresco/yui/example.css">
-<link rel="stylesheet" type="text/css" href="/alfresco/yui/assets/tabview.css">
-<link rel="stylesheet" type="text/css" href="/alfresco/yui/assets/round_tabs.css">
-<link type="text/css" rel="stylesheet" href="/alfresco/yui/fonts.css"/>
-<link type="text/css" rel="stylesheet" href="/alfresco/yui/assets/calendar.css"/>
-<link type="text/css" rel="stylesheet" href="/alfresco/yui/Custom.css"/>
+<link rel="stylesheet" type="text/css" href="${url.context}/yui/example.css">
+<link rel="stylesheet" type="text/css" href="${url.context}/yui/assets/tabview.css">
+<link rel="stylesheet" type="text/css" href="${url.context}/yui/assets/round_tabs.css">
+<link type="text/css" rel="stylesheet" href="${url.context}/yui/fonts.css"/>
+<link type="text/css" rel="stylesheet" href="${url.context}/yui/assets/calendar.css"/>
+<link type="text/css" rel="stylesheet" href="${url.context}/yui/Custom.css"/>
 
-<script type="text/javascript" src="/alfresco/yui/yahoo.js"></script>
-<script type="text/javascript" src="/alfresco/yui/event.js"></script>
-<script type="text/javascript" src="/alfresco/yui/dom.js"></script>
-<script type="text/javascript" src="/alfresco/yui/element-beta.js"></script>
-<script type="text/javascript" src="/alfresco/yui/tabview.js"></script>
-<script type="text/javascript" src="/alfresco/yui/yahoo-min.js" ></script>
-<script type="text/javascript" src="/alfresco/yui/event-min.js" ></script>
-<script type="text/javascript" src="/alfresco/yui/connection-min.js" ></script>
-<script type="text/javascript" src="/alfresco/yui/calendar.js"></script>
+<script type="text/javascript" src="${url.context}/yui/yahoo.js"></script>
+<script type="text/javascript" src="${url.context}/yui/event.js"></script>
+<script type="text/javascript" src="${url.context}/yui/dom.js"></script>
+<script type="text/javascript" src="${url.context}/yui/element-beta.js"></script>
+<script type="text/javascript" src="${url.context}/yui/tabview.js"></script>
+<script type="text/javascript" src="${url.context}/yui/yahoo-min.js" ></script>
+<script type="text/javascript" src="${url.context}/yui/event-min.js" ></script>
+<script type="text/javascript" src="${url.context}/yui/connection-min.js" ></script>
+<script type="text/javascript" src="${url.context}/yui/calendar.js"></script>
 
 <script type="text/javascript">
 var tabView;
@@ -23,27 +23,27 @@ var spaceRef = '${args["nodeRef"]}';
 
 function showColorWindow(txtColor)
 {
-	win2 = window.open("/alfresco/images/calendar/color_picker.htm", "colorwind", "height=160,width=200,status=0");
+	win2 = window.open("${url.context}/images/calendar/color_picker.htm", "colorwind", "height=160,width=200,status=0");
 	win2.colorControl = txtColor;
 }
 </script>
 
-<script type="text/javascript" src="/alfresco/scripts/calendar/calendarScripts.js" ></script>
-<script type="text/javascript" src="/alfresco/scripts/calendar/initializeEventDetails.js" ></script>
-<script type="text/javascript" src="/alfresco/scripts/calendar/saveEventDetails.js" ></script>
-<script type="text/javascript" src="/alfresco/scripts/calendar/eventRetrieversMonthView.js" ></script>
-<script type="text/javascript" src="/alfresco/scripts/calendar/eventRetrieversWeekView.js" ></script>
-<script type="text/javascript" src="/alfresco/scripts/calendar/captureWeekViewEvents.js" ></script>
-<script type="text/javascript" src="/alfresco/scripts/calendar/eventRetrieversDayView.js" ></script>
-<script type="text/javascript" src="/alfresco/scripts/calendar/captureDayViewEvents.js" ></script>
-<script type="text/javascript" src="/alfresco/scripts/calendar/eventCaptureHandlers.js" ></script>
-<script type="text/javascript" src="/alfresco/scripts/calendar/editEventHandlers.js" ></script>
-<script type="text/javascript" src="/alfresco/scripts/calendar/calendarSearch.js" ></script>
-<script type="text/javascript" src="/alfresco/scripts/calendar/calendarUtil.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/calendarScripts.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/initializeEventDetails.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/saveEventDetails.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/eventRetrieversMonthView.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/eventRetrieversWeekView.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/captureWeekViewEvents.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/eventRetrieversDayView.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/captureDayViewEvents.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/eventCaptureHandlers.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/editEventHandlers.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/calendarSearch.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/calendarUtil.js" ></script>
 
-<script type="text/javascript" src="/alfresco/scripts/calendar/ColorPicker2.js" ></script>
+<script type="text/javascript" src="${url.context}/scripts/calendar/ColorPicker2.js" ></script>
 
-<link type="text/css" rel="stylesheet" href="/alfresco/css/calendar/calendarMain.css"/>
+<link type="text/css" rel="stylesheet" href="${url.context}/css/calendar/calendarMain.css"/>
 
 <style type="text/css">
 	#demo .yui-content { padding:1em; } /* pad content container */
@@ -64,11 +64,11 @@ function showColorWindow(txtColor)
 		<div id="showMonthEvents">
 			<BR>
 			<div style="text-align:center">
-				<img src="/alfresco/yui/img/prev.gif" title="Previous Year" onclick="addYearsMonthView(-1)" style="cursor:pointer" />
-				<img src="/alfresco/yui/img/prevMinor.gif" title="Previous Month" onclick="addMonthsMonthView(-1)" style="cursor:pointer" />
-				<img src="/alfresco/yui/img/now.gif" title="This Month" onclick="setCurrentMonthView(event)" style="cursor:pointer" />
-				<img src="/alfresco/yui/img/nextMinor.gif" title="Next Month" onclick="addMonthsMonthView(1)"  style="cursor:pointer"/>
-				<img src="/alfresco/yui/img/next.gif" title="Next Year" onclick="addYearsMonthView(1)" style="cursor:pointer" />
+				<img src="${url.context}/yui/img/prev.gif" title="Previous Year" onclick="addYearsMonthView(-1)" style="cursor:pointer" />
+				<img src="${url.context}/yui/img/prevMinor.gif" title="Previous Month" onclick="addMonthsMonthView(-1)" style="cursor:pointer" />
+				<img src="${url.context}/yui/img/now.gif" title="This Month" onclick="setCurrentMonthView(event)" style="cursor:pointer" />
+				<img src="${url.context}/yui/img/nextMinor.gif" title="Next Month" onclick="addMonthsMonthView(1)"  style="cursor:pointer"/>
+				<img src="${url.context}/yui/img/next.gif" title="Next Year" onclick="addYearsMonthView(1)" style="cursor:pointer" />
 				<span id="spnCurrentDisplayMonth"></span>
 			</div>
 			
@@ -92,9 +92,9 @@ function showColorWindow(txtColor)
 		<div id="showWeekEvents">
 			<BR>
 			<div style="text-align:center">
-				<img src="/alfresco/yui/img/prevMinor.gif" title="Previous Week" onclick="callLoadersWeekView(-7)" style="cursor:pointer" />
-				<img src="/alfresco/yui/img/now.gif" title="This Week" onclick="callLoadersWeekView(0)" style="cursor:pointer" />
-				<img src="/alfresco/yui/img/nextMinor.gif" title="Next Week" onclick="callLoadersWeekView(7)" style="cursor:pointer" />
+				<img src="${url.context}/yui/img/prevMinor.gif" title="Previous Week" onclick="callLoadersWeekView(-7)" style="cursor:pointer" />
+				<img src="${url.context}/yui/img/now.gif" title="This Week" onclick="callLoadersWeekView(0)" style="cursor:pointer" />
+				<img src="${url.context}/yui/img/nextMinor.gif" title="Next Week" onclick="callLoadersWeekView(7)" style="cursor:pointer" />
 				<span id="spnCurrentDisplayWeek"></span>
 			</div>
 			<table id="tabWeekViewMain" border="0" cellpadding="2" cellspacing="2" width="100%">
@@ -117,9 +117,9 @@ function showColorWindow(txtColor)
 		<div id="showDayEvents">
 			<BR>
 			<div style="text-align:center">
-				<img src="/alfresco/yui/img/prevMinor.gif" title="Previous Day" onclick="callLoadersDayView(-1)" style="cursor:pointer" />
-				<img src="/alfresco/yui/img/now.gif" title="Today" onclick="callLoadersDayView(0)" style="cursor:pointer" />
-				<img src="/alfresco/yui/img/nextMinor.gif" title="Next Day" onclick="callLoadersDayView(1)" style="cursor:pointer" />
+				<img src="${url.context}/yui/img/prevMinor.gif" title="Previous Day" onclick="callLoadersDayView(-1)" style="cursor:pointer" />
+				<img src="${url.context}/yui/img/now.gif" title="Today" onclick="callLoadersDayView(0)" style="cursor:pointer" />
+				<img src="${url.context}/yui/img/nextMinor.gif" title="Next Day" onclick="callLoadersDayView(1)" style="cursor:pointer" />
 				<span id="spnCurrentDisplayDay"></span>
 			</div>
 			<table id="tabDayViewMain" border="0" cellpadding="2" cellspacing="2" width="100%">

@@ -10,7 +10,7 @@ function getDraftBlogPostList()
            " -ISNOTNULL:\"{http://www.alfresco.org/model/content/1.0}published\"" +
            " +@cm\\:creator:\"" + person.properties.userName + '"';
    
-   nodes = search.luceneSearch(q, 'cm:modified', false, 3);
+   nodes = search.luceneSearch(q, '@cm:modified', false, 3);
    
    return processResults(nodes, 3);
 }
@@ -21,7 +21,7 @@ function getWikiPages()
            " +PATH:\"/app:company_home/st:sites/*/cm:wiki/*\"" +
            " +@cm\\:modifier:\"" + person.properties.userName + '"';
 
-   nodes = search.luceneSearch(q, 'cm:modified', false, 3);
+   nodes = search.luceneSearch(q, '@cm:modified', false, 3);
 
    return processResults(nodes, 3);
 }
@@ -34,7 +34,7 @@ function getDiscussions()
 
    // NOTE: pull back all posts as first reply on each post will also find the root post
    //       the posts will be discarded until the root post for each topic is found.
-   nodes = search.luceneSearch(q, 'cm:modified', false);
+   nodes = search.luceneSearch(q, '@cm:modified', false);
 
    return processResults(nodes, 3);         
 }

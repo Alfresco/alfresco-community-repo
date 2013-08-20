@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<webscript>
+  <shortname>Handles GET of resource info for api resources</shortname>
+  <description>Returns a json respresentation with metadata describing the resources</description>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}</url>
+  <authentication>user</authentication>
+  <format default="json">argument</format>
+  <transaction allow="readonly">required</transaction>
+</webscript>

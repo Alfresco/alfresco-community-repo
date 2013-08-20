@@ -198,7 +198,7 @@ public class MoveMethod extends HierarchicalMethod
         }
         // ALF-7079 fix, if destination exists then its content is updated with source content and source is deleted if
         // this is a move
-        if (destFileInfo != null)
+        if (destFileInfo != null && !sourceParentNodeRef.equals(destParentNodeRef))
         {
             copyContentOnly(sourceFileInfo, destFileInfo, fileFolderService);
             fileFolderService.setHidden(destFileInfo.getNodeRef(), false);
@@ -225,7 +225,7 @@ public class MoveMethod extends HierarchicalMethod
         }
         // If this is a move and the destination looks like the start of a shuffle operation, then the source is just
         // copied to destination and the source is hidden.
-        else if (getDAVHelper().isRenameShuffle(destPath) && !getDAVHelper().isRenameShuffle(sourcePath))
+        else if (!sourceFileInfo.isFolder() && getDAVHelper().isRenameShuffle(destPath) && !getDAVHelper().isRenameShuffle(sourcePath))
         {
             destFileInfo = fileFolderService.create(destParentNodeRef, name, ContentModel.TYPE_CONTENT);
             copyContentOnly(sourceFileInfo, destFileInfo, fileFolderService);

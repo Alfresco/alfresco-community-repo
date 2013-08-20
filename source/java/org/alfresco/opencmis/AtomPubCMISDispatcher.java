@@ -31,18 +31,6 @@ import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
  */
 public class AtomPubCMISDispatcher extends CMISServletDispatcher
 {
-	public void init()
-	{
-		super.init();
-		registry.registerDispatcher(getBinding(), this);
-	}
-	
-//	@Override
-//	protected CMISHttpServletRequest getHttpRequest(WebScriptRequest req)
-//	{
-//		return super.getHttpRequest(req);
-//	}
-
     @Override
     protected Binding getBinding()
     {

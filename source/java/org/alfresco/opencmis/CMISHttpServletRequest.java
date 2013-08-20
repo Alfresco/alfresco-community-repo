@@ -36,9 +36,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.web.scripts.TenantWebScriptServlet;
 import org.alfresco.repo.web.scripts.TenantWebScriptServletRequest;
+import org.alfresco.service.descriptor.Descriptor;
 import org.apache.chemistry.opencmis.commons.impl.Constants;
 import org.apache.chemistry.opencmis.server.shared.Dispatcher;
 import org.apache.commons.collections.map.HashedMap;
@@ -55,13 +56,16 @@ public class CMISHttpServletRequest implements HttpServletRequest
 {
 	protected WebScriptRequest req;
 	protected HttpServletRequest httpReq;
+	protected String networkId;
 	protected String repositoryId;
 	protected String operation;
+	protected String id; // object id (or path for browser binding)
 	protected String serviceName;
 	protected BaseUrlGenerator baseUrlGenerator;
 	protected Binding binding;
+	protected Descriptor currentDescriptor;
 
-	public CMISHttpServletRequest(WebScriptRequest req, String serviceName, BaseUrlGenerator baseUrlGenerator, Binding binding)
+	public CMISHttpServletRequest(WebScriptRequest req, String serviceName, BaseUrlGenerator baseUrlGenerator, Binding binding, Descriptor currentDescriptor)
 	{
 		this.req = req;
 		this.serviceName = serviceName;
@@ -73,12 +77,17 @@ public class CMISHttpServletRequest implements HttpServletRequest
 		if(!pathInfo.startsWith("/cmis") && (baseReq instanceof TenantWebScriptServletRequest))
 		{
 			TenantWebScriptServletRequest servletReq = (TenantWebScriptServletRequest)baseReq;
-			this.repositoryId = servletReq.getTenant();
-
-			if(TenantWebScriptServlet.DEFAULT_TENANT.equals(this.repositoryId))
+			this.networkId = servletReq.getTenant();
+			if(TenantUtil.DEFAULT_TENANT.equals(this.networkId) || TenantUtil.SYSTEM_TENANT.equals(this.networkId))
 			{
-				this.repositoryId = TenantUtil.getCurrentDomain();
+				this.repositoryId = TenantService.DEFAULT_DOMAIN;
 			}
+
+//			if(TenantUtil.DEFAULT_TENANT.equals(this.repositoryId) || TenantUtil.SYSTEM_TENANT.equals(this.repositoryId))
+//			{
+////				this.repositoryId = currentDescriptor.getId()/*TenantUtil.getCurrentDomain()*/;
+//				this.repositoryId = TenantUtil.getCurrentDomain();
+//			}
 		}
 
 		Match match = req.getServiceMatch();
@@ -87,6 +96,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
         HttpServletRequest httpReq = WebScriptServletRuntime.getHttpServletRequest(req);
 		this.httpReq = httpReq;
 		this.operation = templateVars.get("operation");
+		this.id = templateVars.get("id");
 
     	addAttributes();
 	}
@@ -273,7 +283,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getProtocol()
 	{
-		return null;
+		return httpReq.getProtocol();
 	}
 
 	@Override
@@ -310,7 +320,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	@Override
 	public RequestDispatcher getRequestDispatcher(String arg0)
 	{
-		return null;
+		return httpReq.getRequestDispatcher(arg0);
 	}
 
 	@Override
@@ -414,7 +424,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	public String getPathInfo()
 	{
 		StringBuilder sb = new StringBuilder("/");
-		sb.append(repositoryId == null ? TenantWebScriptServlet.DEFAULT_TENANT : repositoryId);
+		sb.append(networkId == null ? TenantUtil.DEFAULT_TENANT : networkId);
 		if(operation != null)
 		{
 			sb.append("/");
@@ -432,23 +442,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getQueryString()
 	{
-		String queryString = httpReq.getQueryString();
-		StringBuilder queryStringBuilder = new StringBuilder();
-		if(queryString != null)
-		{
-			queryStringBuilder.append(queryString);
-		}
-		if(this.repositoryId != null)
-		{
-			if(queryString != null && queryString.length() > 0)
-			{
-				queryStringBuilder.append("&");
-			}
-			queryStringBuilder.append(Constants.PARAM_REPOSITORY_ID);
-			queryStringBuilder.append("=");
-			queryStringBuilder.append(this.repositoryId);
-		}
-		return queryStringBuilder.toString();
+		return httpReq.getQueryString();
 	}
 
 	@Override
@@ -460,7 +454,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getRequestURI()
 	{
-		String requestURI = baseUrlGenerator.getRequestURI(httpReq, repositoryId, operation);
+		String requestURI = baseUrlGenerator.getRequestURI(httpReq, networkId, operation, id);
 		return requestURI;
 	}
 

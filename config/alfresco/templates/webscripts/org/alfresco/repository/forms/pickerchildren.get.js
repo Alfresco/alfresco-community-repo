@@ -165,7 +165,7 @@ function main()
             }
             else
             {
-               parent = search.findNode(nodeRef);
+               parent = resolveNode(nodeRef);
                categoryResults = parent.children;
             }
             
@@ -366,6 +366,10 @@ function resolveNode(reference)
       else if (reference == "alfresco://sites/home")
       {
          node = companyhome.childrenByXPath("st:sites")[0];
+      }
+      else if (reference == "alfresco://shared")
+      {
+         node = companyhome.childrenByXPath("app:shared")[0];
       }
       else if (reference.indexOf("://") > 0)
       {

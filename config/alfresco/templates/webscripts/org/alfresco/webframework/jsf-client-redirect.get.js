@@ -9,7 +9,7 @@ if("browse" == model.command)
 		var storeId = url.templateArgs["storeId"];
 		var nodeId = url.templateArgs["nodeId"];
 	
-		model.redirectUrl = "/alfresco/n/browse/"+storeType+"/"+storeId+"/"+nodeId;
+		model.redirectUrl = url.context + "/n/browse/"+storeType+"/"+storeId+"/"+nodeId;
 	}
 	
 	if("webproject" == model.objectType)
@@ -39,7 +39,7 @@ if("browse" == model.command)
 				var storeId = webprojects[i].properties["{http://www.alfresco.org/model/system/1.0}store-identifier"];
 				var nodeId = webprojects[i].properties["{http://www.alfresco.org/model/system/1.0}node-uuid"];
 				
-				model.redirectUrl = "/alfresco/n/browse/"+storeType+"/"+storeId+"/"+nodeId;
+				model.redirectUrl = url.context + "/n/browse/"+storeType+"/"+storeId+"/"+nodeId;
 			}
 		}
 	}

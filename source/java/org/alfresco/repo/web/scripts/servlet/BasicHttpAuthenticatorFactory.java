@@ -18,9 +18,17 @@
  */
 package org.alfresco.repo.web.scripts.servlet;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.repo.web.auth.AuthenticationListener;
@@ -52,7 +60,20 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
     // Component dependencies
     private AuthenticationService authenticationService;
     private AuthenticationListener listener;
+    
+    private CharsetDecoder utf8Decoder;
+    private CharsetDecoder isoDecoder;
 
+    public BasicHttpAuthenticatorFactory()
+    {
+        this.utf8Decoder = Charset.forName("UTF-8").newDecoder();  
+        utf8Decoder.onMalformedInput(CodingErrorAction.REPORT);  
+        utf8Decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+
+        this.isoDecoder = Charset.forName("ISO-8859-1").newDecoder();  
+        isoDecoder.onMalformedInput(CodingErrorAction.REPORT);  
+        isoDecoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+    }
     
     /**
      * @param authenticationService
@@ -130,6 +151,42 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
             this.authorization = httpReq.getHeader("Authorization");
             this.ticket = httpReq.getParameter("alf_ticket");
         }
+        
+        /*
+         * ALF-18742
+         * 
+         * Browsers may send Authorization header in an encoding other than UTF-8. This will try UTF-8
+         * first and, failing that, ISO-8859-1. Any other encoding will result in a runtime exception because
+         * we don't know what the encoding is in this case and can't work it out). 
+         */
+        private String decodeAuth(byte[] authBytes)
+        {
+        	String decodedAuth = null;
+            ByteBuffer uniBuf = ByteBuffer.wrap(authBytes);  
+
+            try
+            {  
+            	// try UTF-8 first
+            	CharBuffer charBuf = utf8Decoder.decode(uniBuf);  
+            	decodedAuth = charBuf.toString();
+            }
+            catch(CharacterCodingException e)
+            {
+            	// try ISO-8859-1
+            	uniBuf = ByteBuffer.wrap(authBytes);
+            	try
+            	{
+	            	CharBuffer charBuf = isoDecoder.decode(uniBuf);
+	            	decodedAuth = charBuf.toString();
+                }
+                catch(CharacterCodingException e1)
+                {
+                	throw new AlfrescoRuntimeException("Unknown authentication character encoding (tried UTF-8 and ISO-8859-1)", e1);
+                }
+            }  
+
+            return decodedAuth;
+        }
     
         /* (non-Javadoc)
          * @see org.alfresco.web.scripts.Authenticator#authenticate(org.alfresco.web.scripts.Description.RequiredAuthentication, boolean)
@@ -198,8 +255,8 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
                 {
                     throw new WebScriptException("Authorization '" + authorizationParts[0] + "' not supported.");
                 }
-                
-                String decodedAuthorisation = new String(Base64.decode(authorizationParts[1]));
+
+                String decodedAuthorisation = decodeAuth(Base64.decode(authorizationParts[1]));
                 Authorization auth = new Authorization(decodedAuthorisation);
                 try
                 {

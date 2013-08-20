@@ -32,12 +32,12 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class CMISDispatcherRegistryImpl implements CMISDispatcherRegistry
 {
-	private Map<Binding, CMISDispatcher> registry = new HashMap<Binding, CMISDispatcher>();
+	private Map<Endpoint, CMISDispatcher> registry = new HashMap<Endpoint, CMISDispatcher>();
 
 	@Override
-	public void registerDispatcher(Binding binding, CMISDispatcher dispatcher)
+	public void registerDispatcher(Endpoint endpoint, CMISDispatcher dispatcher)
 	{
-		registry.put(binding, dispatcher);
+		registry.put(endpoint, dispatcher);
 	}
 
 	@Override
@@ -48,7 +48,8 @@ public class CMISDispatcherRegistryImpl implements CMISDispatcherRegistry
 		Match match = req.getServiceMatch();
 		Map<String, String> templateVars = match.getTemplateVars();
 		String bindingStr = templateVars.get("binding");
-		if(bindingStr != null)
+		String apiVersion = templateVars.get("apiVersion");
+		if(bindingStr != null && apiVersion != null)
 		{
 			Binding binding = null;
 			try
@@ -59,9 +60,15 @@ public class CMISDispatcherRegistryImpl implements CMISDispatcherRegistry
 			{
 				// nothing to do, binding remains null
 			}
+			
 			if(binding != null)
 			{
-				dispatcher = registry.get(binding);
+				Endpoint endpoint = new Endpoint(binding, apiVersion);
+				dispatcher = registry.get(endpoint);
+			}
+			else
+			{
+				// TODO
 			}
 		}
 

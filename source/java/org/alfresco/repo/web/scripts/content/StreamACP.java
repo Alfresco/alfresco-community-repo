@@ -109,7 +109,7 @@ public class StreamACP extends StreamContent
             tempACPFile = createACP(params, ACPExportPackageHandler.ACP_EXTENSION, false);
                 
             // stream the ACP back to the client as an attachment (forcing save as)
-            streamContent(req, res, tempACPFile, true, tempACPFile.getName());
+            streamContent(req, res, tempACPFile, true, tempACPFile.getName(), null);
         } 
         catch (IOException ioe)
         {

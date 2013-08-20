@@ -8,6 +8,7 @@
    "readOnly" : ${readOnly?string("true","false")},
    "updated" : ${updated?string("true","false")},
    "licenseValidUntil" : <#if licenseValidUntil??>${licenseValidUntil?c}<#else>null</#if>,
+   "licenseHolder" : "<#if licenseHolder??>${licenseHolder}</#if>",
    "level" : ${level?c},
    "warnings": [<#list warnings as x>"${x}"<#if x_has_next>, </#if></#list>],
    "errors": [<#list errors as x>"${x}"<#if x_has_next>, </#if></#list>]

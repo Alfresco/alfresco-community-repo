@@ -921,19 +921,10 @@ public class PropFindMethod extends WebDAVMethod
     protected void generateLockDiscoveryResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir) throws Exception
     {
         // Output the lock status response
-
         LockInfo lockInfo = getNodeLockInfo(nodeInfo);
-        lockInfo.getRWLock().readLock().lock();
-        try
+        if (lockInfo.isLocked())
         {
-            if (lockInfo.isLocked())
-            {
-                generateLockDiscoveryXML(xml, nodeInfo, lockInfo);
-            }
-        }
-        finally
-        {            
-            lockInfo.getRWLock().readLock().unlock();
+            generateLockDiscoveryXML(xml, nodeInfo, lockInfo);
         }
     }
 
@@ -951,9 +942,8 @@ public class PropFindMethod extends WebDAVMethod
             xml.startElement(WebDAV.DAV_NS, WebDAV.XML_SUPPORTED_LOCK, WebDAV.XML_NS_SUPPORTED_LOCK, nullAttr);
 
             // Output exclusive lock
+            // Shared locks are not supported, as they cannot be supported by the LockService (relevant to ALF-16449).
             writeLock(xml, WebDAV.XML_NS_EXCLUSIVE);
-            // Output shared lock
-            writeLock(xml, WebDAV.XML_NS_SHARED);
 
             xml.endElement(WebDAV.DAV_NS, WebDAV.XML_SUPPORTED_LOCK, WebDAV.XML_NS_SUPPORTED_LOCK);
         }

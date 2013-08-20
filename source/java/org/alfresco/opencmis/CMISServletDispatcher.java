@@ -38,6 +38,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.alfresco.opencmis.CMISDispatcherRegistry.Endpoint;
+import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
 import org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener;
 import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
@@ -53,12 +56,25 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime
  */
 public abstract class CMISServletDispatcher implements CMISDispatcher
 {
+	private DescriptorService descriptorService;
+    private Descriptor currentDescriptor;
     protected CmisServiceFactory cmisServiceFactory;
     protected HttpServlet servlet;
 	protected CMISDispatcherRegistry registry;
 	protected String serviceName;
 	protected BaseUrlGenerator baseUrlGenerator;
+	protected String version;
 	
+	public void setDescriptorService(DescriptorService descriptorService)
+	{
+		this.descriptorService = descriptorService;
+	}
+
+	public void setVersion(String version)
+	{
+		this.version = version;
+	}
+
 	public void setBaseUrlGenerator(BaseUrlGenerator baseUrlGenerator)
 	{
 		this.baseUrlGenerator = baseUrlGenerator;
@@ -82,6 +98,34 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 	public String getServiceName()
 	{
 		return serviceName;
+	}
+	
+	protected synchronized Descriptor getCurrentDescriptor()
+	{
+		if(this.currentDescriptor == null)
+		{
+			this.currentDescriptor = descriptorService.getCurrentRepositoryDescriptor();
+		}
+
+		return this.currentDescriptor;
+	}
+	
+	public void init()
+	{
+		Endpoint endpoint = new Endpoint(getBinding(), version);
+		registry.registerDispatcher(endpoint, this);
+
+		try
+		{
+			// fake the CMIS servlet
+			ServletConfig config = getServletConfig();
+	    	this.servlet = getServlet();
+	    	servlet.init(config);
+		}
+		catch(ServletException e)
+		{
+			throw new AlfrescoRuntimeException("Failed to initialise CMIS servlet dispatcher", e);
+		}
 	}
 
 	/*
@@ -109,26 +153,11 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
     	ServletConfig config = new CMISServletConfig();
     	return config;
     }
-    
-	public void init()
-	{
-		try
-		{
-			// fake the CMIS AtomPub servlet
-			ServletConfig config = getServletConfig();
-	    	this.servlet = getServlet();
-	    	servlet.init(config);
-		}
-		catch(ServletException e)
-		{
-			throw new AlfrescoRuntimeException("Failed to initialise CMIS webscript", e);
-		}
-	}
 
-	protected CMISHttpServletRequest getHttpRequest(WebScriptRequest req)
+    protected CMISHttpServletRequest getHttpRequest(WebScriptRequest req)
 	{
 		String serviceName = getServiceName();
-		CMISHttpServletRequest httpReqWrapper = new CMISHttpServletRequest(req, serviceName, baseUrlGenerator, getBinding());
+		CMISHttpServletRequest httpReqWrapper = new CMISHttpServletRequest(req, serviceName, baseUrlGenerator, getBinding(), currentDescriptor);
     	return httpReqWrapper;
 	}
 
@@ -138,8 +167,7 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 		{
 	        HttpServletResponse httpResp = WebScriptServletRuntime.getHttpServletResponse(res);
 
-			// fake a servlet request. Note that getPathInfo is the only method that the servlet uses,
-			// hence the other methods are not implemented.
+			// fake a servlet request.
 	    	CMISHttpServletRequest httpReqWrapper = getHttpRequest(req);
 
 	    	servlet.service(httpReqWrapper, httpResp);
@@ -172,7 +200,11 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 		{
 			if(arg0.equals(CmisAtomPubServlet.PARAM_CALL_CONTEXT_HANDLER))
 			{
-				return "org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler";
+				return "org.alfresco.opencmis.PublicApiCallContextHandler";
+			}
+			else if(arg0.equals(CmisAtomPubServlet.PARAM_CMIS_VERSION))
+			{
+				return version;
 			}
 			return null;
 		}

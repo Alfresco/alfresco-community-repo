@@ -12,20 +12,20 @@
 
     <rule>
         <note>Map CMIS service document to -default- network</note>
-        <from>^/publicapi/cmis/versions/1.0/atom$</from>
-        <to type="forward" last="true">/a/-default-/cmis/versions/1.0/atom</to>
+        <from>^/publicapi/cmis/versions/(.*)$/(.*)$</from>
+        <to type="forward" last="true">/api/-default-/cmis/versions/$1/$2</to>
     </rule>
     
     <rule>
         <note>Map new-style Public APIs to network/tenant root</note>
         <from>^/publicapi/(.*)$</from>
-        <to type="forward" last="true">/a/$1</to>
+        <to type="forward" last="true">/api/$1</to>
     </rule>
     
     <rule>
         <note>Map Public APIs root to network/tenant root</note>
         <from>^/publicapi$</from>
-        <to type="forward" last="true">/a/</to>
+        <to type="forward" last="true">/api/</to>
     </rule>
     
 </urlrewrite>

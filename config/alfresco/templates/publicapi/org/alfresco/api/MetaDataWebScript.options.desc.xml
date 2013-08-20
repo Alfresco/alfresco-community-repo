@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<webscript>
+  <shortname>Options meta info for a resource</shortname>
+  <description>Shows the options for a particular rest api call</description>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}/</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}/{relationshipId}/</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}/{relationshipId}</url>
+  <authentication>user</authentication>
+  <format default="json">argument</format>
+  <transaction>none</transaction>
+</webscript>

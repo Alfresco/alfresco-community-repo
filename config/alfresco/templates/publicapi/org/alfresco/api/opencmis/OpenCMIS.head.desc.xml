@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<webscript>
+  <shortname>Handles OpenCMIS HEAD Requests</shortname>
+  <description>Handles OpenCMIS HEAD Requests</description>
+  <url>/cmis/versions/{apiVersion}/{binding}</url>
+  <url>/cmis/versions/{apiVersion}/{binding}/{operation}/{id}</url>
+  <url>/cmis/versions/{apiVersion}/{binding}/{operation}</url>
+  <url>/{apiScope}/cmis/versions/{apiVersion}</url>
+  <url>/{apiScope}/cmis/versions/{apiVersion}/{binding}</url>
+  <url>/{apiScope}/cmis/versions/{apiVersion}/{binding}/{operation}/{id}</url>
+  <url>/{apiScope}/cmis/versions/{apiVersion}/{binding}/{operation}</url>
+  <authentication>user</authentication>
+  <format default="json">argument</format>
+  <!-- Note transactions are handled by the CMISServiceFactory -->
+  <transaction>none</transaction>
+</webscript>

@@ -853,7 +853,7 @@
     <wsdl:service name="AccessControlService">
        <wsdl:documentation>Access control service.</wsdl:documentation>
        <wsdl:port binding="acs:AccessControlServiceSoapBinding" name="AccessControlService">
-          <wsdlsoap:address location="http://localhost:8080/alfresco/api/AccessControlService"/>
+          <wsdlsoap:address location="http://localhost:8080/alfresco/soapapi/AccessControlService"/>
        </wsdl:port>
     </wsdl:service>
 

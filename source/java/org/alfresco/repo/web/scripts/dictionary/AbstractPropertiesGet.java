@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
@@ -42,6 +43,12 @@ public abstract class AbstractPropertiesGet extends DictionaryWebServiceBase
     private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
     private static final String PARAM_NAME = "name";
     private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
+    
+    /**
+     * This request parameter can be passed to filter the propertes based on 
+     * type. More than one type can be supplied.
+     */
+    private static final String REQ_PARM_ALLOWED_TYPE = "type";
 
     /**
      * @Override method from DeclarativeWebScript
@@ -100,6 +107,28 @@ public abstract class AbstractPropertiesGet extends DictionaryWebServiceBase
             {
                 props.add(entry.getValue());
             }
+        }
+
+        // Filter the properties by the allowed types...
+        String[] filterTypes = req.getParameterValues(REQ_PARM_ALLOWED_TYPE);
+        if (filterTypes != null && filterTypes.length > 0)
+        {
+            List<PropertyDefinition> typeFilteredProps = new ArrayList<PropertyDefinition>(props.size());
+            for (PropertyDefinition prop: props)
+            {
+                for (String type: filterTypes)
+                {
+                    DataTypeDefinition dtd = prop.getDataType();
+                    if (dtd.getName().getPrefixString().equals(type))
+                    {
+                        typeFilteredProps.add(prop);
+                        break;
+                    }
+                }
+            }
+            
+            // Important to change the props variable to reference the type filtered properties...
+            props = typeFilteredProps;
         }
 
         // Order property definitions by title

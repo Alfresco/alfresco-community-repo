@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!--              -->   
+   <!--  API Testing -->
+   <!--              -->   
+
+   <bean id="webscripts.test" class="org.alfresco.repo.web.scripts.TestWebScriptRepoServer">
+      <property name="container" ref="webscripts.container" />
+      <property name="authenticationService" ref="authenticationService" />
+      <property name="configService" ref="web.config" />
+      <property name="transactionHelper" ref="retryingTransactionHelper" />
+      <property name="messages">
+         <bean class="org.springframework.context.support.ResourceBundleMessageSource">
+            <property name="basenames">
+               <list>
+                  <value>webscripts/messages/webscripts</value>
+               </list>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- Moved from main context, as it's a test bean -->
+   <bean id="webscript.org.alfresco.cmis.test.post" class="org.alfresco.repo.cmis.rest.test.CMISTestRunnerWebScript" parent="webscript" />
+   
+ 
+</beans>

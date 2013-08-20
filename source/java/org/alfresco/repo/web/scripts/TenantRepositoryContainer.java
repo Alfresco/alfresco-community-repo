@@ -40,11 +40,11 @@ public class TenantRepositoryContainer extends RepositoryContainer implements Te
     protected static final Log logger = LogFactory.getLog(TenantRepositoryContainer.class);
 
     /** Component Dependencies */
-    private TenantAdminService tenantAdminService;
-    private TransactionService transactionService;
-    private ObjectFactory registryFactory;
-    private SimpleCache<String, Registry> webScriptsRegistryCache;
-    private boolean initialized;
+    protected TenantAdminService tenantAdminService;
+    protected TransactionService transactionService;
+    protected ObjectFactory registryFactory;
+    protected SimpleCache<String, Registry> webScriptsRegistryCache;
+    protected boolean initialized;
 
     /**
      * @param webScriptsRegistryCache

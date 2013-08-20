@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,21 +16,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.repo.web.scripts.archive;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import javax.servlet.http.HttpServletResponse;
+
+import org.alfresco.query.PagingResults;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.ScriptPagingDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -49,6 +54,15 @@ public class ArchivedNodesDelete extends AbstractArchivedNodeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
+        
+        // Current user
+        String userID = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (userID == null)
+        {
+            throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script ["
+                        + req.getServiceMatch().getWebScript().getDescription()
+                        + "] requires user authentication.");
+        }
 
         StoreRef storeRef = parseRequestForStoreRef(req);
         NodeRef nodeRef = parseRequestForNodeRef(req);
@@ -56,6 +70,9 @@ public class ArchivedNodesDelete extends AbstractArchivedNodeWebScript
         List<NodeRef> nodesToBePurged = new ArrayList<NodeRef>();
         if (nodeRef != null)
         {
+            // check if the current user has the permission to purge the node
+            validatePermission(nodeRef, userID);
+            
             // If there is a specific NodeRef, then that is the only Node that should be purged.
             // In this case, the NodeRef points to the actual node to be purged i.e. the node in
             // the archive store.
@@ -65,11 +82,10 @@ public class ArchivedNodesDelete extends AbstractArchivedNodeWebScript
         {
             // But if there is no specific NodeRef and instead there is only a StoreRef, then
             // all nodes which were originally in that StoreRef should be purged.
-            SortedSet<ChildAssociationRef> archiveNodes = getArchivedNodesFrom(storeRef);
-            for (ChildAssociationRef chAssRef : archiveNodes)
-            {
-                nodesToBePurged.add(chAssRef.getChildRef());
-            }
+            // Create paging
+            ScriptPagingDetails paging = new ScriptPagingDetails(maxSizeView, 0);
+            PagingResults<NodeRef> result = getArchivedNodesFrom(storeRef, paging, null);
+            nodesToBePurged.addAll(result.getPage());            
         }
         
         if (log.isDebugEnabled())

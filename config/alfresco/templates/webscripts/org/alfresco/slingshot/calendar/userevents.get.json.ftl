@@ -26,7 +26,13 @@
             "allday": "${event.allday?string}",
             "tags": [<#list event.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],
             "duration": "${event.duration}",
-            "isoutlook": "${event.isoutlook?string}"
+            "isoutlook": "${event.isoutlook?string}",
+			
+            "permissions":
+            {
+                "isEdit": ${event.canEdit?string},
+                "isDelete": ${event.canDelete?string}
+            }
          }<#if event_has_next>,</#if>
       </#list>
       ]

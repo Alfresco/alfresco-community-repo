@@ -54,7 +54,7 @@ function main()
       logoNode.properties.content.guessMimetype(filename);
       var resizedImage = logoNode.transformImage(logoNode.properties.content.mimetype, transformationOptions, tmpFolder);
       logoNode.properties.content.write(resizedImage.properties.content);
-      resizedImage.remove();
+      // CLOUD-951, no need to delete the resizedImage, as removing the tmpFolder will remove resizedImage too.
       tmpFolder.remove();
       logoNode.save();
       

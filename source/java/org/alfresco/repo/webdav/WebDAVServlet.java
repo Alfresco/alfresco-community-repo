@@ -81,7 +81,7 @@ public class WebDAVServlet extends HttpServlet
     // WebDAV method handlers
     protected Hashtable<String,Class<? extends WebDAVMethod>> m_davMethods;
     
-    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    // note: cache is tenant-aware (if using TransctionalCache impl)
     
     private static SimpleCache<String, NodeRef> singletonCache; // eg. for webdavRootNodeRef
     private static final String KEY_WEBDAV_ROOT_NODEREF = "key.webdavRoot.noderef";

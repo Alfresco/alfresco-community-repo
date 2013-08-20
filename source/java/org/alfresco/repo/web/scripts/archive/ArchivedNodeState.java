@@ -51,6 +51,7 @@ public class ArchivedNodeState
     private String firstName;
     private String lastName;
     private String nodeType;
+    private boolean isContentType;
     
     /**
      * To prevent unauthorised construction.
@@ -70,7 +71,9 @@ public class ArchivedNodeState
         result.name = (String) properties.get(ContentModel.PROP_NAME);
         result.title = (String) properties.get(ContentModel.PROP_TITLE);
         result.description = (String) properties.get(ContentModel.PROP_DESCRIPTION);
-        result.nodeType = nodeService.getType(archivedNode).toPrefixString(serviceRegistry.getNamespaceService());
+        QName type = nodeService.getType(archivedNode);
+        result.isContentType = (type.equals(ContentModel.TYPE_CONTENT) || serviceRegistry.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT));
+        result.nodeType = type.toPrefixString(serviceRegistry.getNamespaceService());
 
         PersonService personService = serviceRegistry.getPersonService();
         if (result.archivedBy != null && personService.personExists(result.archivedBy))
@@ -145,5 +148,10 @@ public class ArchivedNodeState
     public String getNodeType()
     {
         return this.nodeType;
+    }
+    
+    public boolean getIsContentType()
+    {
+        return this.isContentType;
     }
 }

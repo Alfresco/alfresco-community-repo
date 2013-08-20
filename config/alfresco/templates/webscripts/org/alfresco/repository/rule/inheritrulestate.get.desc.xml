@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Get state of inherited rules</shortname>
+  <description>Returns the state of inherited rule flag</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/ruleset/inheritrules/state</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

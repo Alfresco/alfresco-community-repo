@@ -46,6 +46,9 @@ public class WikiPageMovePost extends AbstractWikiWebScript
    private static final String MSG_MOVED_HERE = "page-moved-here";
    private static final String MSG_NOT_FOUND= "page-not-found";
    
+   // The 'custom0' key here refers to the org.alfresco.wiki.page-renamed {2} in activity-list.get.properties
+   private static final String OLD_TITLE_KEY = "custom0";
+   
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String pageTitle,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
@@ -92,9 +95,11 @@ public class WikiPageMovePost extends AbstractWikiWebScript
                           "|" + rb.getString(MSG_MOVED_HERE) + "]].";
       wikiService.createWikiPage(site.getShortName(), oldTitle, movedContent); 
       
+      Map<String, String> additionalData = new HashMap<String, String>();
+      additionalData.put(OLD_TITLE_KEY, oldTitle);
       
       // Add an activity entry for the rename
-      addActivityEntry("renamed", page, site, req, json);
+      addActivityEntry("renamed", page, site, req, json, additionalData);
 
 
       // All done

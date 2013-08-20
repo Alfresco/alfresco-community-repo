@@ -96,7 +96,8 @@ function parsePermissions(p_permissions, p_settable)
             authority =
             {
                avatar: null,
-               name: authorityId
+               name: authorityId,
+               displayName: null
             };
             nameProperty = "name";
          }

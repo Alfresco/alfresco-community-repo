@@ -201,6 +201,10 @@ function getBlogPostItem(siteId, containerId, pathParts, node, populate)
     * are replies or folders
     */
    var site = siteService.getSite(siteId);
+   if (site === null)
+   {
+      return null;
+   }
    var container = site.getContainer(containerId);
    
    /**
@@ -537,7 +541,10 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath)
    {
       var nodeDisplayPath = utils.displayPath(node).split("/");
       nodeDisplayPath = nodeDisplayPath.splice(rootNodeDisplayPath.length);
-      nodeDisplayPath.unshift("");
+      for (var i = 0; i < rootNodeQNamePath.split("/").length-1; i++)
+      {
+         nodeDisplayPath.unshift(null);
+      }
       displayPath = nodeDisplayPath;
    }
    
@@ -753,6 +760,10 @@ function resolveRootNode(reference)
       {
          node = companyhome.childrenByXPath("st:sites")[0];
       }
+      else if (reference == "alfresco://shared")
+      {
+         node = companyhome.childrenByXPath("app:shared")[0];
+      }
       else if (reference.indexOf("://") > 0)
       {
          if (reference.indexOf(":") < reference.indexOf("://"))
@@ -920,7 +931,14 @@ function getSearchResults(params)
                   }
                   else
                   {
-                     formQuery += (first ? '' : ' AND ') + escapeQName(propName) + ':"' + propValue + '"';
+                     if (propValue.charAt(0) === '"' && propValue.charAt(propValue.length-1) === '"')
+                     {
+                        formQuery += (first ? '' : ' AND ') + escapeQName(propName) + ':' + propValue;
+                     }
+                     else
+                     {
+                        formQuery += (first ? '' : ' AND ') + escapeQName(propName) + ':\\"' + propValue + '\\"';
+                     }
                      first = false;
                   }
                }

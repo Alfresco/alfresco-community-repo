@@ -16,25 +16,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.repo.web.scripts.archive;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingResults;
+import org.alfresco.repo.node.archive.ArchivedNodesCannedQueryBuilder;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.ScriptPagingDetails;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
@@ -42,7 +41,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * This class is an abstract base class for the various webscript controllers in the
  * NodeArchiveService.
  * 
- * @author Neil McErlean
+ * @author Neil McErlean, Jamal Kaabi-Mofrad
  * @since 3.5
  */
 public abstract class AbstractArchivedNodeWebScript extends DeclarativeWebScript
@@ -60,11 +59,12 @@ public abstract class AbstractArchivedNodeWebScript extends DeclarativeWebScript
     public static final String NODE_TYPE     = "nodeType";
     public static final String DELETED_NODES = "deletedNodes";
     
+    public static final int DEFAULT_MAX_ITEMS_PER_PAGE = 50;
+    
     // Injected services
     protected ServiceRegistry serviceRegistry;
     protected NodeArchiveService nodeArchiveService;
-
-    private int maxSizeView = 1000;
+    protected int maxSizeView = 1000;
     
     /**
      * Sets the serviceRegistry instance
@@ -162,46 +162,39 @@ public abstract class AbstractArchivedNodeWebScript extends DeclarativeWebScript
     }
     
     /**
-     * This method gets all nodes from the archive which were originally contained
-     * within the specified StoreRef.
+     * * This method gets all nodes from the archive which were originally
+     * contained within the specified StoreRef.
+     * 
+     * @param storeRef mandatory store ref
+     * @param paging mandatory paging
+     * @param filter optional filter
+     * @return
      */
-    protected SortedSet<ChildAssociationRef> getArchivedNodesFrom(StoreRef storeRef)
+    protected PagingResults<NodeRef> getArchivedNodesFrom(StoreRef storeRef, ScriptPagingDetails paging, String filter)
     {
         NodeService nodeService = serviceRegistry.getNodeService();
-        NodeRef archiveRootNode = nodeService.getStoreArchiveNode(storeRef);
+        NodeRef archiveStoreRootNodeRef = nodeService.getStoreArchiveNode(storeRef);
 
-        List<ChildAssociationRef> children = nodeService.getChildAssocs(archiveRootNode, null, null, maxSizeView, true);
-    
-        // We must get the sys:archived children in order of their archiving.
-        Comparator<ChildAssociationRef> archivedNodeSorter = new ArchivedDateComparator();
-        SortedSet<ChildAssociationRef> orderedChildren = new TreeSet<ChildAssociationRef>(archivedNodeSorter);
-        for (ChildAssociationRef chAssRef : children)
-        {
-            if (nodeService.hasAspect(chAssRef.getChildRef(), ContentModel.ASPECT_ARCHIVED))
-            {
-                orderedChildren.add(chAssRef);
-            }
-        }
-        return orderedChildren;
+        // Create canned query
+        ArchivedNodesCannedQueryBuilder queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(
+                    archiveStoreRootNodeRef, paging).filterIgnoreCase(true).filter(filter)
+                    .sortOrderAscending(false).build();
+
+        // Query the DB
+        PagingResults<NodeRef> result = nodeArchiveService.listArchivedNodes(queryBuilder);
+
+        return result;
     }
-
-    /**
-     * This class is used to sort ChildAssociationRefs into the correct order based on archivedDate.
-     * 
-     * @author Neil Mc Erlean.
-     */
-    protected class ArchivedDateComparator implements Comparator<ChildAssociationRef>
+    
+    protected void validatePermission(NodeRef nodeRef, String currentUser)
     {
-        
-        @Override
-        public int compare(ChildAssociationRef chAssRef1, ChildAssociationRef chAssRef2)
+        String archivedBy = (String) serviceRegistry.getNodeService().getProperty(nodeRef, ContentModel.PROP_ARCHIVED_BY);
+        if (!(currentUser.equals(archivedBy)))
         {
-            NodeService nodeService = serviceRegistry.getNodeService();
-            Date archivedDate1 = (Date)nodeService.getProperty(chAssRef1.getChildRef(), ContentModel.PROP_ARCHIVED_DATE);
-            Date archivedDate2 = (Date)nodeService.getProperty(chAssRef2.getChildRef(), ContentModel.PROP_ARCHIVED_DATE);
-            
-            // We want the dates to be in reverse order i.e. most recent first. Hence the reversal of 2 and 1 below.
-            return archivedDate2.compareTo(archivedDate1);
+            if (!(serviceRegistry.getAuthorityService().isAdminAuthority(currentUser)))
+            {
+                throw new WebScriptException(Status.STATUS_FORBIDDEN, "You don't have permission to act on the node.");
+            }
         }
     }
 }

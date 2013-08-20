@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,15 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.repo.web.scripts.archive;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ModelUtil;
@@ -34,71 +34,56 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This class is the controller for the deletednodes.get web script.
+ * This class is the controller for the archivednodes.get web script.
  * 
- * @author Neil McErlean
+ * @author Neil McErlean, Jamal Kaabi-Mofrad
  * @since 3.5
  */
 public class ArchivedNodesGet extends AbstractArchivedNodeWebScript
 {
-    private static final String MAX_ITEMS          = "maxItems";
-    private static final String SKIP_COUNT         = "skipCount";
-    
+    private static final String MAX_ITEMS = "maxItems";
+    private static final String SKIP_COUNT = "skipCount";
+    private static final String NAME_FILTER = "nf";
+
     List<ArchivedNodesFilter> nodeFilters = new ArrayList<ArchivedNodesFilter>();
 
     /**
      * This method is used to inject {@link ArchivedNodeFilter node filters} on this GET call.
+     * 
      * @param nodeFilters
      */
     public void setArchivedNodeFilters(List<ArchivedNodesFilter> nodeFilters)
     {
         this.nodeFilters = nodeFilters;
     }
-    
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-
-        // We want to get all nodes in the archive which were originally contained in the
-        // following StoreRef.
+        
+        // We want to get all nodes in the archive which were originally
+        // contained in the following StoreRef.
         StoreRef storeRef = parseRequestForStoreRef(req);
         
+        // Create paging
+        ScriptPagingDetails paging = new ScriptPagingDetails(getIntParameter(req, MAX_ITEMS, DEFAULT_MAX_ITEMS_PER_PAGE),
+                    getIntParameter(req, SKIP_COUNT, 0));
         
-        SortedSet<ChildAssociationRef> orderedChildren = getArchivedNodesFrom(storeRef);
-        
-        List<ArchivedNodeState> deletedNodes = new ArrayList<ArchivedNodeState>(orderedChildren.size());
+        PagingResults<NodeRef> result = getArchivedNodesFrom(storeRef, paging, req.getParameter(NAME_FILTER));
+        List<NodeRef> nodeRefs = result.getPage();
 
-        for (ChildAssociationRef chAssRef : orderedChildren)
+        List<ArchivedNodeState> deletedNodes = new ArrayList<ArchivedNodeState>(nodeRefs.size());
+        for (NodeRef archivedNode : nodeRefs)
         {
-            NodeRef nextArchivedNode = chAssRef.getChildRef();
-            boolean nodeIsFilteredOut = false;
-            for (ArchivedNodesFilter filter : nodeFilters)
-            {
-                if (filter.accept(nextArchivedNode) == false)
-                {
-                    nodeIsFilteredOut = true;
-                    break; // Break from the loop over filters.
-                }
-            }
-            if (!nodeIsFilteredOut)
-            {
-                ArchivedNodeState state = ArchivedNodeState.create(nextArchivedNode, serviceRegistry);
-                deletedNodes.add(state);
-            }
+            ArchivedNodeState state = ArchivedNodeState.create(archivedNode, serviceRegistry);
+            deletedNodes.add(state);
         }
-        
-        // Grab the paging parameters
-        ScriptPagingDetails paging = new ScriptPagingDetails(
-                    getIntParameter(req, MAX_ITEMS, deletedNodes.size()),
-                    getIntParameter(req, SKIP_COUNT, 0)
-        );
-        
-        // Now do the paging
-        model.put(DELETED_NODES, ModelUtil.page(deletedNodes, paging)); 
-        model.put("paging", ModelUtil.buildPaging(paging));
 
+        // Now do the paging
+        model.put(DELETED_NODES, ModelUtil.page(deletedNodes, paging));
+        model.put("paging", ModelUtil.buildPaging(paging));
+        
         return model;
     }
 }
-

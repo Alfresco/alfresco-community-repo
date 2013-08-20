@@ -285,7 +285,7 @@
    <wsdl:service name="ContentService">
       <wsdl:documentation>Provides read and write access to content streams.</wsdl:documentation>
       <wsdl:port binding="content:ContentServiceSoapBinding" name="ContentService">
-         <wsdlsoap:address location="http://localhost:8080/alfresco/api/ContentService"/>
+         <wsdlsoap:address location="http://localhost:8080/alfresco/soapapi/ContentService"/>
       </wsdl:port>
    </wsdl:service>
    

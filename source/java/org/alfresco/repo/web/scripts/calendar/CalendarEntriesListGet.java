@@ -92,6 +92,12 @@ public class CalendarEntriesListGet extends AbstractCalendarListingWebScript
          boolean removeTimezone = isAllDay && !entry.isOutlook();
          result.put(RESULT_START, removeTimeZoneIfRequired(entry.getStart(), isAllDay, removeTimezone));
          result.put(RESULT_END,   removeTimeZoneIfRequired(entry.getEnd(), isAllDay, removeTimezone));
+         if (isAllDay)
+         {
+             long dayLong = 86400000;
+             Date newDay = new Date(entry.getEnd().getTime()+dayLong);
+             result.put("allDayEnd", newDay);
+         }
          
          String legacyDateFormat = "M/d/yyyy";
          String legacyTimeFormat ="HH:mm";

@@ -136,8 +136,8 @@
       <property name="name"><value>Repository Script Processor</value></property>
       <property name="extension"><value>js</value></property>
    </bean>
- 
-   <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.TenantRepositoryContainer" parent="webscripts.abstractcontainer">
+
+   <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.TenantRepositoryContainer" parent="webscripts.abstractcontainer" init-method="setup">
       <property name="name"><value>Repository</value></property>
       <property name="scriptObjects">
          <map merge="true">
@@ -222,8 +222,12 @@
       <property name="descriptorService" ref="DescriptorService" />
       <property name="tenantAdminService" ref="tenantAdminService" />
       <property name="webScriptsRegistryCache" ref="webScriptsRegistryCache"/>
+      <property name="encryptTempFiles" value="${webscripts.encryptTempFiles}"/>
+      <property name="tempDirectoryName" value="${webscripts.tempDirectoryName}"/>
+      <property name="memoryThreshold" value="${webscripts.memoryThreshold}"/>
+      <property name="maxContentSize" value="${webscripts.setMaxContentSize}"/>
    </bean>
-   
+
    <bean id="webscripts.index.prototype" class="org.springframework.extensions.webscripts.JaxRSUriIndex" scope="prototype"/>
    
    <bean id="webscripts.registry.prototype" parent="webscripts.registry" scope="prototype">
@@ -232,11 +236,9 @@
 
    <bean id="webscripts.js.paging" class="org.alfresco.repo.web.util.paging.Paging" />
 
-
    <!--                            -->
    <!--  Web Script Authenticators -->
    <!--                            -->
-   <bean id="webScriptAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener"/>
 
    <!--  HTTP Basic Authenticator (Servlet based) -->
    <bean id="webscripts.authenticator.basic" class="org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory">
@@ -339,7 +341,9 @@
    <bean id="webscript.org.alfresco.cmiskind" class="org.alfresco.repo.cmis.rest.CMISWebScript" parent="webscript" scope="prototype" />
 
    <!-- CMIS Test Runner Web Script -->
+   <!-- This is a test and should not be in the bundled with the webapp. Redefined in the test context 
    <bean id="webscript.org.alfresco.cmis.test.post" class="org.alfresco.repo.cmis.rest.test.CMISTestRunnerWebScript" parent="webscript" />
+   -->
 
    <!--  Content Retrieval -->
    <bean id="webscript.org.alfresco.cmis.content.get" class="org.alfresco.repo.web.scripts.content.ContentGet" parent="webscript">
@@ -347,10 +351,10 @@
       <property name="namespaceService" ref="NamespaceService" />
       <property name="permissionService" ref="PermissionService" />
       <property name="nodeService" ref="NodeService" />
-      <property name="contentService" ref="ContentService" />
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="CMISRenditionService" ref="CMISRenditionService" />
+      <property name="delegate" ref="webscript.content.streamer" />
    </bean>
    
    <!--  Content Info -->
@@ -358,8 +362,8 @@
       <property name="referenceFactory" ref="CMISReferenceFactory" />
       <property name="permissionService" ref="PermissionService" />
       <property name="nodeService" ref="NodeService" />
-      <property name="contentService" ref="ContentService" />
       <property name="mimetypeService" ref="MimetypeService" />
+      <property name="delegate" ref="webscript.content.streamer" />
    </bean>
    
    <!--  Content Write -->
@@ -395,7 +399,7 @@
    <bean id="webscripts.js.cmis.client" class="org.alfresco.repo.cmis.client.CMISLocalConnectionManagerImpl" init-method="init">
       <property name="authenticationService" ref="AuthenticationService" />
       <property name="configService" ref="webscripts.config" />
-      <property name="cmisConnector" ref="CMISConnector" />
+      <property name="cmisConnector" ref="CMISConnector1.1" />
    </bean>
 
    <!--   
@@ -461,8 +465,8 @@
    <bean id="webscript.org.alfresco.repository.content.stream" class="org.alfresco.repo.web.scripts.content.StreamContent" parent="webscript" scope="prototype">
       <property name="permissionService" ref="PermissionService" />
       <property name="nodeService" ref="NodeService" />
-      <property name="contentService" ref="ContentService" />
       <property name="mimetypeService" ref="MimetypeService" />
+      <property name="delegate" ref="webscript.content.streamer" />
    </bean>
    
    <!--  Content Write -->
@@ -688,6 +692,11 @@
       <property name="personService" ref="PersonService"/>
    </bean>
 
+
+	   <!--                         -->
+	   <!-- Import public REST API -->
+	   <!--                         -->
+   <import resource="classpath:alfresco/public-rest-context.xml"/>
    
    <!--                         -->
    <!-- Invite Service REST API -->
@@ -1151,6 +1160,7 @@
           parent="webscript">
        <property name="mimetypeService" ref="MimetypeService" />
        <property name="workflowService" ref="WorkflowService" />
+       <property name="delegate" ref="webscript.content.streamer" />
     </bean>
 
     <!-- Retrieves all workflow instances. -->
@@ -1308,6 +1318,7 @@
     <!-- abstract admin web script -->
     <bean id="abstractAdminWebScript" parent="webscript" abstract="true">
         <property name="repoAdminService" ref="RepoAdminService" />
+        <property name="descriptorService" ref="DescriptorService" />
     </bean>
 
     <!-- Gets the current usage restrictions -->
@@ -1547,6 +1558,7 @@
       <property name="nodeService" ref="nodeService"/>
       <property name="nodeDAO" ref="nodeDAO"/>
       <property name="transformerDebug" ref="transformerDebug" />
+      <property name="delegate" ref="webscript.content.streamer" />
    </bean>
 
    <bean id="webscript.org.alfresco.repository.solr.model.get"
@@ -1814,6 +1826,7 @@
    <bean id="webscript.org.alfresco.slingshot.calendar.userevents.get"
          class="org.alfresco.repo.web.scripts.calendar.UserCalendarEntriesGet"
          parent="abstractCalendarWebScript">
+       <property name="permissionService" ref="PermissionService" />
    </bean>
 
   <!-- Java-backed Web Scripts for the bulk filesystem importer -->
@@ -1898,12 +1911,12 @@
         <property name="namespaceService" ref="NamespaceService" />
         <property name="permissionService" ref="PermissionService" />
         <property name="nodeService" ref="NodeService" />
-        <property name="contentService" ref="ContentService" />
         <property name="dictionaryService" ref="DictionaryService" />
         <property name="mimetypeService" ref="MimetypeService" />
         <property name="CMISRenditionService" ref="CMISRenditionService" />
         <property name="quickShareService" ref="QuickShareService"/>
         <property name="enabled" value="${system.quickshare.enabled}" />
+        <property name="delegate" ref="webscript.content.streamer" />
     </bean>
     
     <!-- unauthenticated (note: equivalent to authenticated "thumbnail.get") -->
@@ -1911,6 +1924,7 @@
         <property name="thumbnailService" ref="ThumbnailService" />
         <property name="scriptThumbnailService" ref="thumbnailServiceScript" />
         <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="delegate" ref="webscript.content.streamer" />
     </bean>
     
     <bean id="org.alfresco.repository.quickshare.abstract" class="org.alfresco.repo.web.scripts.quickshare.AbstractQuickShareContent" abstract="true">

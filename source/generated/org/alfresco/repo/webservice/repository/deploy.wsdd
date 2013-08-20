@@ -15,7 +15,7 @@
   <service name="RepositoryService" provider="java:RPC" style="wrapped" use="literal">
       <parameter name="wsdlTargetNamespace" value="http://www.alfresco.org/ws/service/repository/1.0"/>
       <parameter name="wsdlServiceElement" value="RepositoryService"/>
-      <parameter name="schemaQualified" value="http://www.alfresco.org/ws/service/repository/1.0,http://www.alfresco.org/ws/headers/1.0,http://www.alfresco.org/ws/model/content/1.0,http://www.alfresco.org/ws/cml/1.0"/>
+      <parameter name="schemaQualified" value="http://www.alfresco.org/ws/cml/1.0,http://www.alfresco.org/ws/model/content/1.0,http://www.alfresco.org/ws/headers/1.0,http://www.alfresco.org/ws/service/repository/1.0"/>
       <parameter name="wsdlServicePort" value="RepositoryService"/>
       <parameter name="className" value="org.alfresco.repo.webservice.repository.RepositoryServiceSoapBindingImpl"/>
       <parameter name="wsdlPortType" value="RepositoryServiceSoapPort"/>
@@ -63,60 +63,36 @@
         <parameter qname="pns:where" xmlns:pns="http://www.alfresco.org/ws/service/repository/1.0" type="tns:Predicate" xmlns:tns="http://www.alfresco.org/ws/model/content/1.0"/>
         <fault name="RepositoryFault" qname="fns:RepositoryFault" xmlns:fns="http://www.alfresco.org/ws/service/repository/1.0" class="org.alfresco.repo.webservice.repository.RepositoryFault" type="tns:RepositoryFault" xmlns:tns="http://www.alfresco.org/ws/service/repository/1.0"/>
       </operation>
-      <parameter name="allowedMethods" value="describe query update get queryParents queryAssociated getStores createStore queryChildren fetchMore"/>
+      <parameter name="allowedMethods" value="update queryAssociated queryChildren get createStore query describe getStores fetchMore queryParents"/>
 
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:ParentReference"
-        type="java:org.alfresco.repo.webservice.types.ParentReference"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
-        qname="ns:>CML>move"
-        type="java:org.alfresco.repo.webservice.types.CMLMove"
+        qname="ns:Query"
+        type="java:org.alfresco.repo.webservice.types.Query"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:ContentFormat"
-        type="java:org.alfresco.repo.webservice.types.ContentFormat"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Node"
-        type="java:org.alfresco.repo.webservice.types.Node"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Predicate"
-        type="java:org.alfresco.repo.webservice.types.Predicate"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
-        qname="ns:>CML>update"
-        type="java:org.alfresco.repo.webservice.types.CMLUpdate"
+        qname="ns:Store"
+        type="java:org.alfresco.repo.webservice.types.Store"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/headers/1.0"
-        qname="ns:NamespaceConfigurationInner"
-        type="java:org.alfresco.repo.webservice.types.NamespaceConfigurationInner"
+        qname="ns:QueryConfiguration"
+        type="java:org.alfresco.repo.webservice.types.QueryConfiguration"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Category"
+        type="java:org.alfresco.repo.webservice.types.Category"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
@@ -131,112 +107,31 @@
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Category"
-        type="java:org.alfresco.repo.webservice.types.Category"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
-        qname="ns:>CML>removeChild"
-        type="java:org.alfresco.repo.webservice.types.CMLRemoveChild"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:ValueDefinition"
-        type="java:org.alfresco.repo.webservice.types.ValueDefinition"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/service/repository/1.0"
-        qname="ns:RepositoryFault"
-        type="java:org.alfresco.repo.webservice.repository.RepositoryFault"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/service/repository/1.0"
-        qname="ns:QueryResult"
-        type="java:org.alfresco.repo.webservice.repository.QueryResult"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Reference"
-        type="java:org.alfresco.repo.webservice.types.Reference"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:NamedValue"
-        type="java:org.alfresco.repo.webservice.types.NamedValue"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:UUID"
+        qname="ns:Name"
         type="java:java.lang.String"
         serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
         encodingStyle=""
       />
       <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/service/repository/1.0"
-        qname="ns:Association"
-        type="java:org.alfresco.repo.webservice.repository.Association"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:>ResultSetRow>node"
-        type="java:org.alfresco.repo.webservice.types.ResultSetRowNode"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Classification"
-        type="java:org.alfresco.repo.webservice.types.Classification"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
-        qname="ns:>CML>writeContent"
-        type="java:org.alfresco.repo.webservice.types.CMLWriteContent"
+        qname="ns:>CML>copy"
+        type="java:org.alfresco.repo.webservice.types.CMLCopy"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
       />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
-        qname="ns:>CML>removeAspect"
-        type="java:org.alfresco.repo.webservice.types.CMLRemoveAspect"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+      <arrayMapping
+        xmlns:ns="http://www.alfresco.org/ws/headers/1.0"
+        qname="ns:NamespaceConfiguration"
+        type="java:org.alfresco.repo.webservice.types.NamespaceConfigurationInner[]"
+        innerType="cmp-ns:NamespaceConfigurationInner" xmlns:cmp-ns="http://www.alfresco.org/ws/headers/1.0"
         encodingStyle=""
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Store"
-        type="java:org.alfresco.repo.webservice.types.Store"
+        qname="ns:PropertyDefinition"
+        type="java:org.alfresco.repo.webservice.types.PropertyDefinition"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
@@ -251,48 +146,16 @@
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:PropertyDefinition"
-        type="java:org.alfresco.repo.webservice.types.PropertyDefinition"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/headers/1.0"
-        qname="ns:QueryConfiguration"
-        type="java:org.alfresco.repo.webservice.types.QueryConfiguration"
+        qname="ns:ParentReference"
+        type="java:org.alfresco.repo.webservice.types.ParentReference"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
-        qname="ns:>CML>createAssociation"
-        type="java:org.alfresco.repo.webservice.types.CMLCreateAssociation"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:ClassDefinition"
-        type="java:org.alfresco.repo.webservice.types.ClassDefinition"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Cardinality"
-        type="java:org.alfresco.repo.webservice.types.Cardinality"
-        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
-        qname="ns:>CML>delete"
-        type="java:org.alfresco.repo.webservice.types.CMLDelete"
+        qname="ns:>CML>update"
+        type="java:org.alfresco.repo.webservice.types.CMLUpdate"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
@@ -306,41 +169,9 @@
         encodingStyle=""
       />
       <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
-        qname="ns:>CML>addAspect"
-        type="java:org.alfresco.repo.webservice.types.CMLAddAspect"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:ResultSetRow"
-        type="java:org.alfresco.repo.webservice.types.ResultSetRow"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Path"
-        type="java:java.lang.String"
-        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:ResultSet"
-        type="java:org.alfresco.repo.webservice.types.ResultSet"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:ResultSetMetaData"
-        type="java:org.alfresco.repo.webservice.types.ResultSetMetaData"
+        qname="ns:ContentFormat"
+        type="java:org.alfresco.repo.webservice.types.ContentFormat"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
@@ -353,89 +184,10 @@
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
       />
-      <arrayMapping
-        xmlns:ns="http://www.alfresco.org/ws/headers/1.0"
-        qname="ns:NamespaceConfiguration"
-        type="java:org.alfresco.repo.webservice.types.NamespaceConfigurationInner[]"
-        innerType="cmp-ns:NamespaceConfigurationInner" xmlns:cmp-ns="http://www.alfresco.org/ws/headers/1.0"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:>ContentFormat>mimetype"
-        type="java:java.lang.String"
-        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Query"
-        type="java:org.alfresco.repo.webservice.types.Query"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
-        qname="ns:>CML>removeAssociation"
-        type="java:org.alfresco.repo.webservice.types.CMLRemoveAssociation"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:Name"
-        type="java:java.lang.String"
-        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:>ContentFormat>encoding"
-        type="java:java.lang.String"
-        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
-        qname="ns:CML"
-        type="java:org.alfresco.repo.webservice.types.CML"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
-        qname="ns:>CML>copy"
-        type="java:org.alfresco.repo.webservice.types.CMLCopy"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/service/repository/1.0"
-        qname="ns:UpdateResult"
-        type="java:org.alfresco.repo.webservice.repository.UpdateResult"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:AssociationDefinition"
-        type="java:org.alfresco.repo.webservice.types.AssociationDefinition"
-        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
-        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
-        encodingStyle=""
-      />
-      <typeMapping
-        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
-        qname="ns:RoleDefinition"
-        type="java:org.alfresco.repo.webservice.types.RoleDefinition"
+        qname="ns:RepositoryFault"
+        type="java:org.alfresco.repo.webservice.repository.RepositoryFault"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
         encodingStyle=""
@@ -450,10 +202,258 @@
       />
       <typeMapping
         xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:UUID"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/repository/1.0"
+        qname="ns:UpdateResult"
+        type="java:org.alfresco.repo.webservice.repository.UpdateResult"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Reference"
+        type="java:org.alfresco.repo.webservice.types.Reference"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Predicate"
+        type="java:org.alfresco.repo.webservice.types.Predicate"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
+        qname="ns:>CML>removeChild"
+        type="java:org.alfresco.repo.webservice.types.CMLRemoveChild"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ClassDefinition"
+        type="java:org.alfresco.repo.webservice.types.ClassDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
+        qname="ns:>CML>createAssociation"
+        type="java:org.alfresco.repo.webservice.types.CMLCreateAssociation"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ResultSetMetaData"
+        type="java:org.alfresco.repo.webservice.types.ResultSetMetaData"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
+        qname="ns:>CML>removeAssociation"
+        type="java:org.alfresco.repo.webservice.types.CMLRemoveAssociation"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
+        qname="ns:CML"
+        type="java:org.alfresco.repo.webservice.types.CML"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
+        qname="ns:>CML>removeAspect"
+        type="java:org.alfresco.repo.webservice.types.CMLRemoveAspect"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:NamedValue"
+        type="java:org.alfresco.repo.webservice.types.NamedValue"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ValueDefinition"
+        type="java:org.alfresco.repo.webservice.types.ValueDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:>ResultSetRow>node"
+        type="java:org.alfresco.repo.webservice.types.ResultSetRowNode"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:RoleDefinition"
+        type="java:org.alfresco.repo.webservice.types.RoleDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
+        qname="ns:>CML>delete"
+        type="java:org.alfresco.repo.webservice.types.CMLDelete"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
         qname="ns:VersionHistory"
         type="java:org.alfresco.repo.webservice.types.VersionHistory"
         serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
         deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
+        qname="ns:>CML>writeContent"
+        type="java:org.alfresco.repo.webservice.types.CMLWriteContent"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Cardinality"
+        type="java:org.alfresco.repo.webservice.types.Cardinality"
+        serializer="org.apache.axis.encoding.ser.EnumSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/headers/1.0"
+        qname="ns:NamespaceConfigurationInner"
+        type="java:org.alfresco.repo.webservice.types.NamespaceConfigurationInner"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Classification"
+        type="java:org.alfresco.repo.webservice.types.Classification"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:AssociationDefinition"
+        type="java:org.alfresco.repo.webservice.types.AssociationDefinition"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:>ContentFormat>mimetype"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
+        qname="ns:>CML>move"
+        type="java:org.alfresco.repo.webservice.types.CMLMove"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ResultSet"
+        type="java:org.alfresco.repo.webservice.types.ResultSet"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/repository/1.0"
+        qname="ns:Association"
+        type="java:org.alfresco.repo.webservice.repository.Association"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/service/repository/1.0"
+        qname="ns:QueryResult"
+        type="java:org.alfresco.repo.webservice.repository.QueryResult"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Path"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/cml/1.0"
+        qname="ns:>CML>addAspect"
+        type="java:org.alfresco.repo.webservice.types.CMLAddAspect"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:Node"
+        type="java:org.alfresco.repo.webservice.types.Node"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:ResultSetRow"
+        type="java:org.alfresco.repo.webservice.types.ResultSetRow"
+        serializer="org.apache.axis.encoding.ser.BeanSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory"
+        encodingStyle=""
+      />
+      <typeMapping
+        xmlns:ns="http://www.alfresco.org/ws/model/content/1.0"
+        qname="ns:>ContentFormat>encoding"
+        type="java:java.lang.String"
+        serializer="org.apache.axis.encoding.ser.SimpleSerializerFactory"
+        deserializer="org.apache.axis.encoding.ser.SimpleDeserializerFactory"
         encodingStyle=""
       />
   </service>

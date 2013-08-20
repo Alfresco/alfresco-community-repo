@@ -12,7 +12,7 @@
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}?c={queueforcecreate?}&amp;ph={placeholder?}</url>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}/{filename}?c={queueforcecreate?}&amp;ph={placeholder?}</url>  
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}/{filename}?c={queueforcecreate?}&amp;ph={placeholder?}</url>
-  <transaction allow="readwrite" buffer="-1">required</transaction>
+  <transaction allow="readonly">required</transaction>
   <format default="">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>

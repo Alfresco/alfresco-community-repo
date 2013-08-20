@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <bean id="apiLookup" class="org.alfresco.rest.framework.core.ResourceLookupDictionary">
+    </bean>
+      <bean id="frameworkMessageResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.rest-framework-messages</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="restJsonModule" class="org.alfresco.rest.framework.jacksonextensions.RestJsonModule">
+        <property name="jsonSerializers">
+            <list>
+                <bean class="org.alfresco.rest.framework.jacksonextensions.SerializerOfExecutionResult" />
+                <bean class="org.alfresco.rest.framework.jacksonextensions.SerializerOfCollectionWithPaging" />
+                <bean class="org.alfresco.rest.framework.jacksonextensions.NodeRefSerializer" />
+            </list>
+        </property>
+        <property name="jsonDeserializers">
+            <map>
+                <entry key="org.alfresco.service.cmr.repository.NodeRef"><bean class="org.alfresco.rest.framework.jacksonextensions.NodeRefDeserializer" /></entry>            
+                <entry key="java.lang.String"><bean class="org.alfresco.rest.framework.jacksonextensions.RestApiStringDeserializer" /></entry>
+            </map>
+        </property>
+    </bean>
+    <bean id="jsonHelper" class="org.alfresco.rest.framework.jacksonextensions.JacksonHelper">
+         <property name="module" ref="restJsonModule" />
+    </bean>
+    <bean id="simpleMappingExceptionResolver" class="org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver">
+       <property name="exceptionMappings">
+            <map>
+                <entry key="org.alfresco.rest.framework.core.exceptions.ApiException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_INTERNAL_SERVER_ERROR}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.InvalidArgumentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.NotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.PermissionDeniedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_FORBIDDEN}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_METHOD_NOT_ALLOWED}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.StaleEntityException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />         
+            </map>
+        </property>
+    </bean>
+    <context:component-scan base-package="org.alfresco.rest.framework.tests.api"/> 
+    
+    <bean id="webscriptHelper" class="org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper">
+        <property name="locator" ref="apiLookup" />
+        <property name="executor" ref="executorOfGets" />
+    </bean>
+    
+    <bean id="executorOfGets" class="org.alfresco.rest.framework.webscripts.ResourceWebScriptGet">
+         <property name="helper" ref="webscriptHelper" />
+    </bean>
+    
+    <bean id="defaultMetaWriter" class="org.alfresco.rest.framework.webscripts.metadata.WebScriptOptionsMetaData">
+        <property name="lookupDictionary" ref="apiLookup" />
+        <property name="resolver" ref="simpleMappingExceptionResolver" />
+        <property name="jsonHelper" ref="jsonHelper" />
+   </bean>  
+</beans>

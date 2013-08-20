@@ -43,6 +43,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -81,6 +83,8 @@ public class NodeBrowserScript extends DeclarativeWebScript
         queryLanguages.add(SearchService.LANGUAGE_CMIS_ALFRESCO);
         queryLanguages.add(SearchService.LANGUAGE_JCR_XPATH);
     }
+
+    private Long searchElapsedTime = null;
 
     // stores and node
     transient private List<StoreRef> stores = null;
@@ -471,8 +475,9 @@ public class NodeBrowserScript extends DeclarativeWebScript
      * 
      * @return next action
      */
-    public List<Node> submitSearch(final String store, final String query, final String queryLanguage) throws IOException
+    public List<Node> submitSearch(final String store, final String query, final String queryLanguage, final int maxResults) throws IOException
     {
+        long start = System.currentTimeMillis();
     	final StoreRef storeRef = new StoreRef(store);
         RetryingTransactionCallback<List<Node>> searchCallback = new RetryingTransactionCallback<List<Node>>()
         {
@@ -500,9 +505,18 @@ public class NodeBrowserScript extends DeclarativeWebScript
                     searchResults.add(new Node(nodeRef));
                     return searchResults;
                 }
+                SearchParameters sp = new SearchParameters();
+                sp.addStore(storeRef);
+                sp.setLanguage(queryLanguage);
+                sp.setQuery(query);
+                if (maxResults > 0)
+                {
+                    sp.setLimit(maxResults);
+                    sp.setLimitBy(LimitBy.FINAL_SIZE);
+                }
 
                 // perform search
-                List<NodeRef> nodeRefs = getSearchService().query(storeRef, queryLanguage, query).getNodeRefs();
+                List<NodeRef> nodeRefs = getSearchService().query(sp).getNodeRefs();
                 searchResults = new ArrayList<Node>(nodeRefs.size());
                 for (NodeRef nodeRef : nodeRefs) {
                 	searchResults.add(new Node(nodeRef));
@@ -513,12 +527,22 @@ public class NodeBrowserScript extends DeclarativeWebScript
 
         try
         {
-            return getTransactionService().getRetryingTransactionHelper().doInTransaction(searchCallback, true);
+            List<Node> results = getTransactionService().getRetryingTransactionHelper().doInTransaction(searchCallback, true);
+            this.searchElapsedTime = System.currentTimeMillis() - start;
+            return results;
         }
         catch (Throwable e)
         {
             throw new IOException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * @return the searchElapsedTime
+     */
+    protected Long getSearchElapsedTime()
+    {
+        return this.searchElapsedTime;
     }
 
     @Override
@@ -551,8 +575,19 @@ public class NodeBrowserScript extends DeclarativeWebScript
 					status.setRedirect(true);
 					return null;
 				}
-				nodes = submitSearch(req.getParameter("store"), req.getParameter("q"), req.getParameter("lang"));
+
+                int maxResult = 0;
+                try
+                {
+                    maxResult = Integer.parseInt(req.getParameter("maxResults"));
+                }
+                catch (NumberFormatException ex)
+                {
+                }
+
+				nodes = submitSearch(req.getParameter("store"), req.getParameter("q"), req.getParameter("lang"), maxResult);
 	    		tmplMap.put("results", nodes);
+	    		tmplMap.put("searchElapsedTime", getSearchElapsedTime());
 			}
 			catch (IOException e)
 			{

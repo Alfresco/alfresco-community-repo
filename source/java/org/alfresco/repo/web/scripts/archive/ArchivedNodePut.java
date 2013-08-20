@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.node.archive.RestoreNodeReport;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -42,12 +43,24 @@ public class ArchivedNodePut extends AbstractArchivedNodeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
+        
+        // Current user
+        String userID = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (userID == null)
+        {
+            throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script ["
+                        + req.getServiceMatch().getWebScript().getDescription()
+                        + "] requires user authentication.");
+        }
 
         NodeRef nodeRefToBeRestored = parseRequestForNodeRef(req);
         if (nodeRefToBeRestored == null)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "nodeRef not recognised. Could not restore.");
         }
+        
+        // check if the current user has the permission to restore the node
+        validatePermission(nodeRefToBeRestored, userID);
         
         RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(nodeRefToBeRestored);
 

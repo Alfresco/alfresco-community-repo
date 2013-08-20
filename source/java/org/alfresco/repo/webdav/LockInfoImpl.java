@@ -22,7 +22,10 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.alfresco.repo.lock.mem.LockStore;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * Class to represent a WebDAV lock info. Instances of this class are accessible
@@ -36,8 +39,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class LockInfoImpl implements Serializable, LockInfo
 {
     private static final long serialVersionUID = 1L;
-
-    private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     
     // Exclusive lock token
     private String exclusiveLockToken = null;
@@ -78,21 +79,6 @@ public class LockInfoImpl implements Serializable, LockInfo
         this.scope = scope;
         this.depth = depth;
     }
-
-    /**
-     * Retrieves the {@link ReentrantReadWriteLock} associated with this LockInfo. This is
-     * to allow client code to protect against invalid concurrent access to the state of
-     * this class.
-     * <p>
-     * Not to be confused with WebDAV locks.
-     * 
-     * @return
-     */
-    @Override
-    public ReentrantReadWriteLock getRWLock()
-    {
-        return rwLock;
-    }
     
     /**
      * Returns true if node has shared or exclusive locks
@@ -100,8 +86,10 @@ public class LockInfoImpl implements Serializable, LockInfo
      * @return boolean
      */
     @Override
+    @JsonIgnore
     public boolean isLocked()
     {
+        // TODO: return (owner != null || isExclusive() || isShared());
         return (isExclusive() || isShared());
     }
     
@@ -195,7 +183,7 @@ public class LockInfoImpl implements Serializable, LockInfo
     @Override
     public void setSharedLockTokens(Set<String> sharedLockTokens)
     {
-        if (isExclusive())
+        if (!sharedLockTokens.isEmpty() && isExclusive())
         {
             throw new IllegalStateException("Cannot add shared lock tokens [" + sharedLockTokens +
                         "] to exclusive lock [" + toString() + "]");
@@ -226,6 +214,7 @@ public class LockInfoImpl implements Serializable, LockInfo
      * @return true if shared.
      */
     @Override
+    @JsonIgnore
     public boolean isShared()
     {
         return (!sharedLockTokens.isEmpty());
@@ -237,7 +226,6 @@ public class LockInfoImpl implements Serializable, LockInfo
      * 
      * @return String
      */
-    @Override
     public String toString()
     {
         StringBuilder str = new StringBuilder();
@@ -262,6 +250,37 @@ public class LockInfoImpl implements Serializable, LockInfo
         return str.toString();
     }
 
+    
+    @Override
+    public String toJSON()
+    {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json;
+        try
+        {
+            json = objectMapper.writeValueAsString(this);
+        }
+        catch (Throwable e)
+        {
+            throw new RuntimeException("Unable to generate JSON for " + toString(), e);
+        }
+        return json;
+    }
+
+    public static LockInfo fromJSON(String json)
+    {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try
+        {
+            LockInfo lockInfo = objectMapper.readValue(json, LockInfoImpl.class);
+            return lockInfo;
+        }
+        catch (Throwable e)
+        {
+            throw new RuntimeException("Unable to parse JSON from [" + json + "]", e);
+        }
+    }
+    
     /**
      * Whether this lock has expired. If no expiry is set (i.e. expires is null)
      * then false is always returned.
@@ -269,6 +288,7 @@ public class LockInfoImpl implements Serializable, LockInfo
      * @return true if expired.
      */
     @Override
+    @JsonIgnore
     public boolean isExpired()
     {
         if (expires == null)
@@ -285,6 +305,7 @@ public class LockInfoImpl implements Serializable, LockInfo
      * @return true if exclusive.
      */
     @Override
+    @JsonIgnore
     public boolean isExclusive()
     {
         return (exclusiveLockToken != null && exclusiveLockToken.length() > 0);
@@ -296,6 +317,7 @@ public class LockInfoImpl implements Serializable, LockInfo
      * @return the owner
      */
     @Override
+    @JsonIgnore
     public String getOwner()
     {
         return owner;
@@ -307,6 +329,7 @@ public class LockInfoImpl implements Serializable, LockInfo
      * @param owner Owner's username
      */
     @Override
+    @JsonIgnore
     public void setOwner(String owner)
     {
         this.owner = owner;
@@ -318,6 +341,7 @@ public class LockInfoImpl implements Serializable, LockInfo
      * @param expires the expires to set
      */
     @Override
+    @JsonIgnore
     public void setExpires(Date expires)
     {
         this.expires = expires;
@@ -329,6 +353,7 @@ public class LockInfoImpl implements Serializable, LockInfo
      * @return the expires
      */
     @Override
+    @JsonIgnore
     public Date getExpires()
     {
         return expires;
@@ -338,6 +363,7 @@ public class LockInfoImpl implements Serializable, LockInfo
      * Remaining time before lock expires, in seconds.
      */
     @Override
+    @JsonIgnore
     public long getRemainingTimeoutSeconds()
     {
         Date expires = getExpires();
@@ -360,6 +386,7 @@ public class LockInfoImpl implements Serializable, LockInfo
      * @param lockTimeoutSecs
      */
     @Override
+    @JsonIgnore
     public void setTimeoutSeconds(int lockTimeoutSecs)
     {
         if (lockTimeoutSecs == WebDAV.TIMEOUT_INFINITY)
@@ -382,6 +409,7 @@ public class LockInfoImpl implements Serializable, LockInfo
      * @param lockTimeoutMins
      */
     @Override
+    @JsonIgnore
     public void setTimeoutMinutes(int lockTimeoutMins)
     {
         if (lockTimeoutMins != WebDAV.TIMEOUT_INFINITY)

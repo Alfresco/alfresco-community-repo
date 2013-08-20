@@ -21,7 +21,7 @@ package org.alfresco.opencmis;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
-import org.alfresco.repo.web.scripts.TenantWebScriptServlet;
+import org.alfresco.repo.tenant.TenantUtil;
 
 /**
  * Generates an OpenCMIS base url based on the request, repository id and binding.
@@ -109,7 +109,7 @@ public abstract class AbstractBaseUrlGenerator implements BaseUrlGenerator
 	}
 	
 	@Override
-    public String getRequestURI(HttpServletRequest req, String repositoryId, String operation)
+    public String getRequestURI(HttpServletRequest req, String repositoryId, String operation, String id)
     {
         StringBuilder url = new StringBuilder();
 
@@ -133,13 +133,19 @@ public abstract class AbstractBaseUrlGenerator implements BaseUrlGenerator
 
 		if(repositoryId != null)
 		{
-			url.append(repositoryId == null ? TenantWebScriptServlet.DEFAULT_TENANT : repositoryId);
+			url.append(repositoryId == null ? TenantUtil.DEFAULT_TENANT : repositoryId);
 			url.append("/");
 		}
 		
 		if(operation != null)
 		{
 			url.append(operation);
+			url.append("/");
+		}
+		
+		if(id != null)
+		{
+			url.append(id);
 		}
 		
 		int length = url.length();

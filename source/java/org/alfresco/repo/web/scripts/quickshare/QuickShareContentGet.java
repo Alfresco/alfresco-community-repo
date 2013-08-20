@@ -169,6 +169,6 @@ public class QuickShareContentGet extends ContentGet
         boolean attach = Boolean.valueOf(req.getParameter("a"));
         
         // Stream the content
-        streamContent(req, res, nodeRef, propertyQName, attach, model);
+        streamContent(req, res, nodeRef, propertyQName, attach, null, model);
 	}
 }

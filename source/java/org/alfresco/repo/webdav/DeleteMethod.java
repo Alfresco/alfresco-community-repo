@@ -122,7 +122,7 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
         // Don't post activity data for hidden files, resource forks etc.
         if (!getDAVHelper().isRenameShuffle(path))
         {
-             postActivity(parentFile, fileInfo, siteId);
+            postActivity(parentFile, fileInfo, siteId);
         }
         
         // MNT-181: working copies and versioned nodes are hidden rather than deleted

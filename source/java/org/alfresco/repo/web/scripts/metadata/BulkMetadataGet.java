@@ -13,6 +13,8 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,6 +39,7 @@ public class BulkMetadataGet extends AbstractWebScript
     private ServiceRegistry services;
     private NodeService nodeService;
     private DictionaryService dictionaryService;
+    private PermissionService permissionService;
 
     private String getMimeType(ContentData contentProperty)
     {
@@ -112,6 +115,8 @@ public class BulkMetadataGet extends AbstractWebScript
                                     jsonOut.writeValue("name", (String)properties.get(ContentModel.PROP_NAME));
                                     jsonOut.writeValue("title", (String)properties.get(ContentModel.PROP_TITLE));
                                     jsonOut.writeValue("mimeType", getMimeType((ContentData)properties.get(ContentModel.PROP_CONTENT)));
+                                    jsonOut.writeValue("hasWritePermission", permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED);
+                                    jsonOut.writeValue("hasDeletePermission", permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.ALLOWED);
                                 }
                                 jsonOut.endObject();
                             }
@@ -155,6 +160,7 @@ public class BulkMetadataGet extends AbstractWebScript
         this.services = services;
         this.nodeService = services.getNodeService();
         this.dictionaryService = services.getDictionaryService();
+        this.permissionService = services.getPermissionService();
     }
         
 }

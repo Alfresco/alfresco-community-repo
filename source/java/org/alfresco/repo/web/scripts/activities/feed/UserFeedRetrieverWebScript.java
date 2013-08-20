@@ -172,7 +172,7 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         
         try
         {
-            List<String> feedEntries = activityService.getUserFeedEntries(feedUserId, format, siteId, exclThisUser, exclOtherUsers, userFilter, activityFilter);
+            List<String> feedEntries = activityService.getUserFeedEntries(feedUserId, siteId, exclThisUser, exclOtherUsers, userFilter, activityFilter);
             
             if (format.equals(FeedTaskProcessor.FEED_FORMAT_JSON))
             {

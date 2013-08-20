@@ -143,7 +143,7 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
         model.put("data", blogPostsData);
 
         // fetch the contentLength param
-        String contentLengthStr = req.getServiceMatch().getTemplateVars().get("contentLength");
+        String contentLengthStr = req.getParameter("contentLength");
         int contentLength = contentLengthStr == null ? -1 : Integer.parseInt(contentLengthStr);
         model.put("contentLength", contentLength);
         

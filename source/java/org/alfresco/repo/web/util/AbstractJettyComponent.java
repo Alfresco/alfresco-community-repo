@@ -20,6 +20,7 @@ package org.alfresco.repo.web.util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -31,6 +32,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.util.BaseApplicationContextHelper;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.WebApplicationContextLoader;
 import org.apache.commons.logging.Log;
@@ -51,37 +53,29 @@ import org.springframework.web.context.support.GenericWebApplicationContext;
  * @author steveglover
  *
  */
-public abstract class AbstractJettyComponent
+public abstract class AbstractJettyComponent implements JettyComponent
 {
-    private static final Log logger = LogFactory.getLog(AbstractJettyComponent.class);
+	protected static final Log logger = LogFactory.getLog(AbstractJettyComponent.class);
 
     public static final int JETTY_STOP_PORT = 8079;
     public static final String JETTY_LOCAL_IP = "127.0.0.1";
 
-    private String contextPath = "/alfresco";
-
-    private String[] configLocations;
-
-    private int port = 8081;
-    private static Server server;
+    protected int port = 8081;
+    protected String contextPath = "/alfresco";
+    protected String publicApiServletName = "api";
+    protected String[] configLocations;
+    protected String[] classLocations;
+    protected static Server server;
 
     private WebAppContext webAppContext;
 
-	public AbstractJettyComponent(int port, String[] configLocations)
+	public AbstractJettyComponent(int port, String contextPath, String[] configLocations, String[] classLocations)
 	{
 		this.configLocations = configLocations;
+		this.classLocations = classLocations;
 		this.port = port;
-	    server = new Server(port);
-	}
-	
-	public void setContextPath(String contextPath)
-	{
 		this.contextPath = contextPath;
-	}
-
-	public void setPort(int port)
-	{
-		this.port = port;
+	    server = new Server(port);
 	}
 	
 	public int getPort()
@@ -95,16 +89,7 @@ public abstract class AbstractJettyComponent
 	 */
 	protected WebApplicationContext createWebApplicationContext(ServletContext sc, ApplicationContext parent)
 	{
-//		AbstractRefreshableConfigApplicationContext
-
 		GenericWebApplicationContext wac = (GenericWebApplicationContext) BeanUtils.instantiateClass(GenericWebApplicationContext.class);
-
-//		Class<?> contextClass = determineContextClass(sc);
-//		if (!ConfigurableWebApplicationContext.class.isAssignableFrom(contextClass)) {
-//			throw new ApplicationContextException("Custom context class [" + contextClass.getName() +
-//					"] is not of type [" + ConfigurableWebApplicationContext.class.getName() + "]");
-//		}
-//		ConfigurableWebApplicationContext wac = (ConfigurableWebApplicationContext) BeanUtils.instantiateClass(AbstractRefreshableWebApplicationContext.class);
 
 		// Assign the best possible id value.
 		wac.setId(ConfigurableWebApplicationContext.APPLICATION_CONTEXT_ID_PREFIX + contextPath);
@@ -120,6 +105,8 @@ public abstract class AbstractJettyComponent
 	{
 		return (ConfigurableApplicationContext)webAppContext.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
 	}
+	
+	protected abstract void configureWebAppContext(WebAppContext webAppContext);
 
 	public void start()
 	{
@@ -149,6 +136,8 @@ public abstract class AbstractJettyComponent
 		    Thread monitor = new MonitorThread();
 		    monitor.start();
 		    
+		    configureWebAppContext(webAppContext);
+
 		    server.start();
 
 			if(logger.isDebugEnabled())
@@ -164,6 +153,16 @@ public abstract class AbstractJettyComponent
 	
 	protected void configure(WebAppContext webAppContext)
 	{
+        try
+        {
+        	ClassLoader classLoader = BaseApplicationContextHelper.buildClassLoader(classLocations);
+            webAppContext.setClassLoader(classLoader);
+        }
+        catch (IOException e)
+        {
+            throw new ExceptionInInitializerError(e);
+        }
+        
 	    webAppContext.addEventListener(new ServletContextListener()
 		{
 	    	public void contextInitialized(ServletContextEvent sce)
@@ -175,7 +174,7 @@ public abstract class AbstractJettyComponent
 		    		ServletContext servletContext = sce.getServletContext();
 
 		    		// initialise web application context
-		    		WebApplicationContextLoader.getApplicationContext(servletContext, configLocations);
+		    		WebApplicationContextLoader.getApplicationContext(servletContext, configLocations, classLocations);
 
 					if(logger.isDebugEnabled())
 					{
@@ -185,7 +184,7 @@ public abstract class AbstractJettyComponent
 	    		catch(Throwable t)
 	    		{
 	    			logger.error("Failed to start Jetty server: " + t);
-	    			throw new RuntimeException(t);
+	    			throw new AlfrescoRuntimeException("Failed to start Jetty server", t);
 	    		}
 	    	}
 

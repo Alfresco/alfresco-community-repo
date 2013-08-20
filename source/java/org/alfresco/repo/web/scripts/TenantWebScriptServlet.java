@@ -39,8 +39,8 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime
  */
 public class TenantWebScriptServlet extends WebScriptServlet
 {
-    public static final String SYSTEM_TENANT = "-system-";
-    public static final String DEFAULT_TENANT = "-default-";
+//    public static final String SYSTEM_TENANT = "-system-";
+//    public static final String DEFAULT_TENANT = "-default-";
     
     private static final long serialVersionUID = 2954663814419046489L;
     

@@ -9,7 +9,7 @@
          "avatar": "${"api/node/" + perm.authority.avatar.nodeRef?string?replace('://','/') + "/content/thumbnails/avatar"}",
       </#if>
          "name": "${perm.authority.name}",
-         "displayName": "${perm.authority.displayName}"
+         "displayName": "${perm.authority.displayName!perm.authority.name}"
       },
       "role": "${perm.role}"
    }<#if perm_has_next>,</#if>

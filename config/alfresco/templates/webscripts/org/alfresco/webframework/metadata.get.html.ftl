@@ -96,6 +96,7 @@
 </#macro>
 
 <#macro serializeSequence sequence>
+<#escape x as jsonUtils.encodeJSONString(x)>
 [
 <#local first = true>
 <#list sequence as e>
@@ -109,6 +110,7 @@
    </#if>
 </#list>
 ]
+</#escape>
 </#macro>
 
 <#macro serializeHash hash>

@@ -21,8 +21,6 @@ package org.alfresco.repo.web.scripts;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -50,6 +48,8 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
+import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStream;
+import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStreamFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -81,6 +81,7 @@ import org.springframework.util.FileCopyUtils;
 /**
  * Repository (server-tier) container for Web Scripts
  * 
+ * @author steveglover
  * @author davidc
  */
 public class RepositoryContainer extends AbstractRuntimeContainer
@@ -96,7 +97,51 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     private AuthorityService authorityService;
     private DescriptorService descriptorService;
 
-    /**
+    private boolean encryptTempFiles = false;
+    private String tempDirectoryName = null;
+    private int memoryThreshold = 4 * 1024 * 1024; // 4mb
+    private long maxContentSize = (long) 4 * 1024 * 1024 * 1024; // 4gb
+    private ThresholdOutputStreamFactory streamFactory = null;
+
+    /*
+     * Shame init is already used (by TenantRepositoryContainer).
+     */
+    public void setup()
+    {
+        File tempDirectory = new File(TempFileProvider.getTempDir(), tempDirectoryName);
+    	this.streamFactory = ThresholdOutputStreamFactory.newInstance(tempDirectory, memoryThreshold, maxContentSize, encryptTempFiles);
+    }
+
+    public void setEncryptTempFiles(Boolean encryptTempFiles)
+    {
+		if(encryptTempFiles != null)
+		{
+			this.encryptTempFiles = encryptTempFiles.booleanValue();
+		}
+	}
+
+	public void setTempDirectoryName(String tempDirectoryName)
+	{
+		this.tempDirectoryName = tempDirectoryName;
+	}
+
+	public void setMemoryThreshold(Integer memoryThreshold)
+	{
+		if(memoryThreshold != null)
+		{
+			this.memoryThreshold = memoryThreshold.intValue();
+		}
+	}
+
+	public void setMaxContentSize(Long maxContentSize)
+	{
+		if(maxContentSize != null)
+		{
+			this.maxContentSize = maxContentSize.longValue();
+		}
+	}
+
+	/**
      * @param repository
      */
     public void setRepository(Repository repository)
@@ -312,6 +357,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                     // The Web Script has its own txn management with potential runAs() user
                     transactionedExecuteAs(script, scriptReq, scriptRes);
                 }
+                else
+                {
+                    throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed for Web Script " + desc.getId());
+                }
             }
             finally
             {
@@ -357,7 +406,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                         logger.debug("Creating Transactional Response for ReadWrite transaction; buffersize=" + trxParams.getBufferSize());
 
                     // create buffered request and response that allow transaction retrying
-                    bufferedReq = new BufferedRequest(scriptReq);
+                    bufferedReq = new BufferedRequest(scriptReq, streamFactory);
                     bufferedRes = new BufferedResponse(scriptRes, trxParams.getBufferSize());
                 }
                 else
@@ -801,27 +850,33 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     
     private static class BufferedRequest implements WrappingWebScriptRequest
     {
+    	private ThresholdOutputStreamFactory streamFactory;
         private WebScriptRequest req;
         private File requestBody;
         private InputStream contentStream;
         private BufferedReader contentReader;
         
-        public BufferedRequest(WebScriptRequest req)
+        public BufferedRequest(WebScriptRequest req, ThresholdOutputStreamFactory streamFactory)
         {
             this.req = req;
+            this.streamFactory = streamFactory;
         }
 
-        // If a web script wants access to the request stream, we copy it to a temporary file, so we can have several
-        // retries at the transaction
-        private File getRequestBodyAsFile() throws IOException
+        private InputStream bufferInputStream() throws IOException
         {
-            if (this.requestBody == null)
+            ThresholdOutputStream bufferStream = streamFactory.newOutputStream();
+
+            try
             {
-                this.requestBody = TempFileProvider.createTempFile("webscript_", ".bin");
-                OutputStream out = new FileOutputStream(this.requestBody);
-                FileCopyUtils.copy(req.getContent().getInputStream(), out);
+            	FileCopyUtils.copy(req.getContent().getInputStream(), bufferStream);
             }
-            return this.requestBody;
+            catch (IOException e)
+            {
+                bufferStream.destroy(); // remove temp file
+                throw e;
+            }
+
+            return bufferStream.getInputStream();
         }
 
         public void reset()
@@ -936,7 +991,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                     {
                         try
                         {
-                            BufferedRequest.this.contentStream = new FileInputStream(getRequestBodyAsFile());
+                            BufferedRequest.this.contentStream = bufferInputStream();
                         }
                         catch (IOException e)
                         {
@@ -956,8 +1011,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                     if (BufferedRequest.this.contentReader == null)
                     {
                         String encoding = wrapped.getEncoding();
-                        BufferedRequest.this.contentReader = new BufferedReader(new InputStreamReader(new FileInputStream(
-                                getRequestBodyAsFile()), encoding == null ? "ISO-8859-1" : encoding));
+                        InputStream in = bufferInputStream();
+                        BufferedRequest.this.contentReader = new BufferedReader(new InputStreamReader(in, encoding == null ? "ISO-8859-1" : encoding));
                     }
                     return BufferedRequest.this.contentReader;
                 }

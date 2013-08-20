@@ -7,12 +7,14 @@
   HTML form data
   <ul>
     <li>filedata, (mandatory) HTML type file</li>
-    <li>siteid</li>
-    <li>containerid</li>
-    <li>uploaddirectory</li>
-    <li>updatenoderef</li>
-    <li>description</li>
-    <li>contenttype</li>
+    <li>You must specify one of:
+       <br>&nbsp;destination (the folder NodeRef where the node will be created)
+       <br>&nbsp;updateNodeRef (the NodeRef of an existing node that will be updated)
+       <br>&nbsp;siteid and containerid (the Site name and the container in that site where the document will be created)
+    </li>
+    <li>uploaddirectory - name of the folder (either in the site container or the destination) where the document will be uploaded. This folder must already exist</li>
+    <li>description - Description for a version update (versionDescription)</li>
+    <li>contenttype - The content type that this document should be specialised to</li>
     <li>majorversion</li>
     <li>overwrite</li>
     <li>thumbnails</li>

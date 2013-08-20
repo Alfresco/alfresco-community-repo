@@ -20,6 +20,7 @@ package org.alfresco.repo.webdav;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.net.SocketException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -53,6 +55,7 @@ public class GetMethod extends WebDAVMethod
     // Request parameters
 
     private static final String RANGE_HEADER_UNIT_SPECIFIER = "bytes=";
+    private static final int MAX_RECURSE_ERROR_STACK = 20;
     private ArrayList<String> ifMatchTags = null;
     private ArrayList<String> ifNoneMatchTags = null;
     private Date m_ifModifiedSince = null;
@@ -164,6 +167,13 @@ public class GetMethod extends WebDAVMethod
         NodeRef rootNodeRef = getRootNodeRef();
         String path = getPath();
 
+        if (!m_returnContent)
+        {
+            // There are multiple cases where no content is sent (due to a HEAD request).
+            // All of them require that the content length is set appropriately.
+            m_response.setContentLength(0);
+        }
+        
         FileInfo nodeInfo = null;
         try
         {
@@ -247,34 +257,85 @@ public class GetMethod extends WebDAVMethod
                     I18NUtil.getMessage(FileContentReader.MSG_MISSING_CONTENT),
                     realNodeInfo.getNodeRef(), reader);
             
-            if (byteRanges != null && byteRanges.startsWith(RANGE_HEADER_UNIT_SPECIFIER))
+            readContent(realNodeInfo, reader);
+        }
+    }
+
+
+    protected void readContent(FileInfo realNodeInfo, ContentReader reader) throws IOException,
+                WebDAVServerException
+    {
+        try
+        {
+            attemptReadContent(realNodeInfo, reader);                
+        }
+        catch (ContentIOException e)
+        {
+            boolean logAsError = true;
+            Throwable t = e;
+            // MNT-8989: Traverse the exception cause hierarchy, if we find a SocketException at fault,
+            // assume this is a dropped connection and do not log a stack trace.
+            int levels = 0;
+            while (t.getCause() != null)
             {
-                HttpRangeProcessor rangeProcessor = new HttpRangeProcessor(getContentService());
-                String userAgent = m_request.getHeader(WebDAV.HEADER_USER_AGENT);
-                
-                if (m_returnContent)
+                if (t == t.getCause() || ++levels == MAX_RECURSE_ERROR_STACK)
                 {
-                    rangeProcessor.processRange(
-                            m_response,
-                            reader,
-                            byteRanges.substring(6),
-                            realNodeInfo.getNodeRef(),
-                            ContentModel.PROP_CONTENT,
-                            reader.getMimetype(),
-                            userAgent);
+                    // Avoid infinite loops.
+                    break;
+                }
+                t = t.getCause();
+                if (t instanceof SocketException)
+                {
+                    logAsError = false;
                 }
             }
-            else
+            
+            if (logAsError && logger.isErrorEnabled())
             {
+                // Only log at ERROR level when not a SocketException as underlying cause.
+                logger.error("Error while reading content", e);
+            }
+            else if (logger.isDebugEnabled())
+            {
+                // Log other errors at DEBUG level.
+                logger.debug("Error while reading content", e);                
+            }
+            
+            // Note no cause parameter supplied - avoid logging stack trace elsewhere.
+            throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    protected void attemptReadContent(FileInfo realNodeInfo, ContentReader reader)
+                throws IOException
+    {
+        if (byteRanges != null && byteRanges.startsWith(RANGE_HEADER_UNIT_SPECIFIER))
+        {
+            HttpRangeProcessor rangeProcessor = new HttpRangeProcessor(getContentService());
+            String userAgent = m_request.getHeader(WebDAV.HEADER_USER_AGENT);
+            
+            if (m_returnContent)
+            {
+                rangeProcessor.processRange(
+                        m_response,
+                        reader,
+                        byteRanges.substring(6),
+                        realNodeInfo.getNodeRef(),
+                        ContentModel.PROP_CONTENT,
+                        reader.getMimetype(),
+                        userAgent);
+            }
+        }
+        else
+        {
+                if (m_returnContent)
+                {
                 // there is content associated with the node
                 m_response.setHeader(WebDAV.HEADER_CONTENT_LENGTH, Long.toString(reader.getSize()));
                 m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, reader.getMimetype());
                 
-                if (m_returnContent)
-                {
-                    // copy the content to the response output stream
-                    reader.getContent(m_response.getOutputStream());
-                }
+                // copy the content to the response output stream
+                reader.getContent(m_response.getOutputStream());
             }
         }
     }

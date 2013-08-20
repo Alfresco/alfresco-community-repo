@@ -12,10 +12,18 @@ PRODID:-//Alfresco Software//Calendar 1.1//EN
 <#assign created = event.createdAt>
 BEGIN:VEVENT
 UID:${event.nodeRef.id}
+<#if item.allDayEnd?exists>
+DTSTART;VALUE=DATE:${from?string(dateFormat)}
+DTEND;VALUE=DATE:${item.allDayEnd?string(dateFormat)}
+<#else>
 DTSTART:${from?string(dateFormat)}T${from?string(timeFormat)}Z
 DTEND:${to?string(dateFormat)}T${to?string(timeFormat)}Z
+</#if>
 SUMMARY:${event.title!""}
 DTSTAMP:${created?string(dateFormat)}T${created?string(timeFormat)}Z
+<#if event.recurrenceRule??>
+RRULE:${event.recurrenceRule}
+</#if>
 <#if event.description?exists>
 DESCRIPTION:${event.description?replace("\\", "\\\\")?replace(",", "\\,")?replace(";", "\\;")?replace("\r?\n", "\\n", "r")}
 </#if>

@@ -376,7 +376,7 @@
     <wsdl:service name="AdministrationService">
        <wsdl:documentation>Administration service.</wsdl:documentation>
        <wsdl:port binding="admin:AdministrationServiceSoapBinding" name="AdministrationService">
-          <wsdlsoap:address location="http://localhost:8080/alfresco/api/AdministrationService"/>
+          <wsdlsoap:address location="http://localhost:8080/alfresco/soapapi/AdministrationService"/>
        </wsdl:port>
     </wsdl:service>
 

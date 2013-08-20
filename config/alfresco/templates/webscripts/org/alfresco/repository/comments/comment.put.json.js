@@ -45,7 +45,8 @@ function main()
       var data =
       {
          title: json.get("itemTitle"),
-         page: json.get("page") + (strParams != "" ? "?" + strParams.substring(0, strParams.length - 1) : "")
+         page: json.get("page") + (strParams != "" ? "?" + strParams.substring(0, strParams.length - 1) : ""),
+         nodeRef: node.getNodeRef()
       }
 
       activities.postActivity("org.alfresco.comments.comment-updated", json.get("site"), "comments", jsonUtils.toJSONString(data));

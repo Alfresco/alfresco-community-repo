@@ -38,6 +38,8 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.namespace.QName;
 import org.dom4j.io.XMLWriter;
 import org.w3c.dom.Document;
@@ -202,6 +204,11 @@ public class LockMethod extends WebDAVMethod
                     break OUTER;
                 }
             }
+            if (!createExclusive)
+            {
+                // We do not support shared locks - return 412 (section 8.10.7 of RFC 2518)
+                throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
+            }
         }
     }
     
@@ -211,6 +218,28 @@ public class LockMethod extends WebDAVMethod
      * @exception WebDAVServerException
      */
     protected void executeImpl() throws WebDAVServerException, Exception
+    {
+        RuleService ruleService = getServiceRegistry().getRuleService();
+        try
+        {
+            // Temporarily disable update rules.
+            ruleService.disableRuleType(RuleType.UPDATE);
+            attemptLock();
+        }
+        finally
+        {
+            // Re-instate update rules.
+            ruleService.enableRuleType(RuleType.UPDATE);
+        }
+    }
+
+    /**
+     * The main lock implementation method.
+     * 
+     * @throws WebDAVServerException
+     * @throws Exception
+     */
+    protected void attemptLock() throws WebDAVServerException, Exception
     {
         FileFolderService fileFolderService = getFileFolderService();
         final String path = getPath();
@@ -341,35 +370,19 @@ public class LockMethod extends WebDAVMethod
         if (hasLockToken())
         {
             lockInfo = checkNode(lockNodeInfo);
-            lockInfo.getRWLock().writeLock().lock();
-            try
-            {
-                // If a request body is not defined and "If" header is sent we have createExclusive as false,
-                // but we need to check a previous LOCK was an exclusive. I.e. get the property for node. It
-                // is already has got in a checkNode method, so we need just get a scope from lockInfo.
-                // This particular case was raised as ALF-4008.
-                this.createExclusive = WebDAV.XML_EXCLUSIVE.equals(this.lockInfo.getScope());
-                // Refresh an existing lock
-                refreshLock(lockNodeInfo, userName);
-            }
-            finally
-            {
-                lockInfo.getRWLock().writeLock().unlock();
-            }
+            // If a request body is not defined and "If" header is sent we have createExclusive as false,
+            // but we need to check a previous LOCK was an exclusive. I.e. get the property for node. It
+            // is already has got in a checkNode method, so we need just get a scope from lockInfo.
+            // This particular case was raised as ALF-4008.
+            this.createExclusive = WebDAV.XML_EXCLUSIVE.equals(this.lockInfo.getScope());
+            // Refresh an existing lock
+            refreshLock(lockNodeInfo, userName);
         }
         else
         {
             lockInfo = checkNode(lockNodeInfo, true, createExclusive);
-            lockInfo.getRWLock().writeLock().lock();
-            try
-            {
-                // Create a new lock
-                createLock(lockNodeInfo, userName);
-            }
-            finally
-            {
-                lockInfo.getRWLock().writeLock().unlock();
-            }
+            // Create a new lock
+            createLock(lockNodeInfo, userName);
         }
 
         m_response.setHeader(WebDAV.HEADER_LOCK_TOKEN, "<" + WebDAV.makeLockToken(lockNodeInfo.getNodeRef(), userName) + ">");
@@ -405,49 +418,31 @@ public class LockMethod extends WebDAVMethod
         // Create Lock token
         lockToken = WebDAV.makeLockToken(lockNode.getNodeRef(), userName);
 
-        lockInfo.getRWLock().writeLock().lock();
-        try
+        if (createExclusive)
         {
-            if (createExclusive)
-            {
-                if (lockInfo.isLocked() && lockInfo.isShared())
-                {
-                    // http://www.webdav.org/specs/rfc2518.html#rfc.section.8.10.6
-                    throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
-                }
-
-                // Lock the node
-                lockInfo.setTimeoutSeconds(getLockTimeout());
-                lockInfo.setExclusiveLockToken(lockToken);
-            }
-            else
-            {
-                if (lockInfo.isLocked() && lockInfo.isExclusive())
-                {
-                    // http://www.webdav.org/specs/rfc2518.html#rfc.section.8.10.6
-                    throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
-                }
-                lockInfo.addSharedLockToken(lockToken);
-            }
-
-            // Store lock depth
-            lockInfo.setDepth(WebDAV.getDepthName(m_depth));
-            // Store lock scope (shared/exclusive)
-            String scope = createExclusive ? WebDAV.XML_EXCLUSIVE : WebDAV.XML_SHARED;
-            lockInfo.setScope(scope);
-            // Store the owner of this lock
-            lockInfo.setOwner(userName);
             // Lock the node
-            getDAVLockService().lock(lockNode.getNodeRef(), lockInfo);
-            
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Locked node " + lockNode + ": " + lockInfo);
-            }
+            lockInfo.setTimeoutSeconds(getLockTimeout());
+            lockInfo.setExclusiveLockToken(lockToken);
         }
-        finally
+        else
         {
-            lockInfo.getRWLock().writeLock().unlock();
+            // Shared lock creation should already have been prohibited when parsing the request body
+            throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
+        }
+
+        // Store lock depth
+        lockInfo.setDepth(WebDAV.getDepthName(m_depth));
+        // Store lock scope (shared/exclusive)
+        String scope = createExclusive ? WebDAV.XML_EXCLUSIVE : WebDAV.XML_SHARED;
+        lockInfo.setScope(scope);
+        // Store the owner of this lock
+        lockInfo.setOwner(userName);
+        // Lock the node
+        getDAVLockService().lock(lockNode.getNodeRef(), lockInfo);
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Locked node " + lockNode + ": " + lockInfo);
         }
     }
 
@@ -462,16 +457,8 @@ public class LockMethod extends WebDAVMethod
     {
         if (this.createExclusive)
         {
-            lockInfo.getRWLock().writeLock().lock();
-            try
-            {
-                // Update the expiry for the lock
-                lockInfo.setTimeoutSeconds(getLockTimeout());
-            }
-            finally
-            {
-                lockInfo.getRWLock().writeLock().unlock();
-            }
+            // Update the expiry for the lock
+            lockInfo.setTimeoutSeconds(getLockTimeout());
         }
     }
 
@@ -485,30 +472,22 @@ public class LockMethod extends WebDAVMethod
         String owner;
         Date expiry;
         
-        lockInfo.getRWLock().readLock().lock();
-        try
+        if (lockToken != null)
         {
-            if (lockToken != null)
-            {
-                // In case of lock creation take the scope from request header
-                scope = this.createExclusive ? WebDAV.XML_EXCLUSIVE : WebDAV.XML_SHARED;
-                // Output created lock
-                lt = lockToken;
-            }
-            else
-            {
-                // In case of lock refreshing take the scope from previously stored lock
-                scope = this.lockInfo.getScope();
-                // Output refreshed lock
-                lt = this.lockInfo.getExclusiveLockToken();
-            }
-            owner = lockInfo.getOwner();
-            expiry = lockInfo.getExpires();
+            // In case of lock creation take the scope from request header
+            scope = this.createExclusive ? WebDAV.XML_EXCLUSIVE : WebDAV.XML_SHARED;
+            // Output created lock
+            lt = lockToken;
         }
-        finally
+        else
         {
-            lockInfo.getRWLock().readLock().unlock();
+            // In case of lock refreshing take the scope from previously stored lock
+            scope = this.lockInfo.getScope();
+            // Output refreshed lock
+            lt = this.lockInfo.getExclusiveLockToken();
         }
+        owner = lockInfo.getOwner();
+        expiry = lockInfo.getExpires();
         
         XMLWriter xml = createXMLWriter();
 

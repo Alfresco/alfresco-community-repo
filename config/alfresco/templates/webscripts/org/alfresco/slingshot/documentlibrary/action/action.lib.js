@@ -175,24 +175,11 @@ function getSiteInputParams()
             var rootNode = siteNode.getContainer(containerId);
             if (rootNode === null)
             {
-               rootNode = siteNode.createContainer(containerId);
+               rootNode = siteNode.aquireContainer(containerId);
                if (rootNode === null)
                {
                   return "Component container '" + containerId + "' not found in '" + siteId + "'.";
                }
-
-               /**
-                * MOB-593: Add email alias on documentLibrary container creation
-                *
-               rootNode.addAspect("emailserver:aliasable");
-               var emailAlias = siteId;
-               if (containerId != "documentLibrary")
-               {
-                  emailAlias += "-" + containerId;
-               }
-               rootNode.properties["emailserver:alias"] = emailAlias;
-               rootNode.save();
-               */
             }
          }
 

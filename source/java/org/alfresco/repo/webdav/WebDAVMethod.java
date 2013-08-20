@@ -881,18 +881,10 @@ public abstract class WebDAVMethod
         String owner, scope, depth;
         Date expiry;
         
-        lockInfo.getRWLock().readLock().lock();
-        try
-        {
-            owner = lockInfo.getOwner();
-            expiry = lockInfo.getExpires();
-    	    scope = lockInfo.getScope();
-            depth = lockInfo.getDepth();
-        }
-        finally
-        {
-            lockInfo.getRWLock().readLock().unlock();            
-        }
+        owner = lockInfo.getOwner();
+        expiry = lockInfo.getExpires();
+	    scope = lockInfo.getScope();
+        depth = lockInfo.getDepth();
         
         generateLockDiscoveryXML(xml, lockNodeInfo, false, scope, depth,
 	                WebDAV.makeLockToken(lockNodeInfo.getNodeRef(), owner), owner, expiry);
@@ -1015,44 +1007,37 @@ public abstract class WebDAVMethod
     protected LockInfo checkNode(FileInfo fileInfo, boolean ignoreShared, boolean lockMethod) throws WebDAVServerException
     {
         LockInfo nodeLockInfo = getNodeLockInfo(fileInfo);
-        nodeLockInfo.getRWLock().readLock().lock();
-        try
-        {
-            String nodeETag = getDAVHelper().makeQuotedETag(fileInfo);
-            NodeRef nodeRef = fileInfo.getNodeRef();
+        NodeRef nodeRef = fileInfo.getNodeRef();
 
-            // Regardless of WebDAV locks, if we can't write to this node, then it's locked!
-            if (getDAVHelper().isLockedAndReadOnly(nodeRef))
-            {
-                throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
-            }
+        // Regardless of WebDAV locks, if we can't write to this node, then it's locked!
+        if (getDAVHelper().isLockedAndReadOnly(nodeRef))
+        {
+            throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+        }
         
-            // Handle the case where there are no conditions and no lock token stored on the node. Node just needs to be writable with no shared locks
-            if (m_conditions == null)
-            {            
-                // ALF-3681 fix. WebDrive 10 client doesn't send If header when locked resource is updated so check the node by lockOwner.
-                if (!nodeLockInfo.isExclusive() || (m_userAgent != null && m_userAgent.equals(WebDAV.AGENT_MICROSOFT_DATA_ACCESS_INTERNET_PUBLISHING_PROVIDER_DAV)))
+        String nodeETag = getDAVHelper().makeQuotedETag(fileInfo);
+    
+        // Handle the case where there are no conditions and no lock token stored on the node. Node just needs to be writable with no shared locks
+        if (m_conditions == null)
+        {            
+            // ALF-3681 fix. WebDrive 10 client doesn't send If header when locked resource is updated so check the node by lockOwner.
+            if (!nodeLockInfo.isExclusive() || (m_userAgent != null && m_userAgent.equals(WebDAV.AGENT_MICROSOFT_DATA_ACCESS_INTERNET_PUBLISHING_PROVIDER_DAV)))
+            {    
+                if (!ignoreShared && nodeLockInfo.isShared() && !nodeLockInfo.getSharedLockTokens().isEmpty())
                 {
-                    if (!ignoreShared && nodeLockInfo.isShared() && !nodeLockInfo.getSharedLockTokens().isEmpty())
-                    {
-                        throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
-                    }
-                    return nodeLockInfo;
+                    throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
                 }
+                return nodeLockInfo;
             }
+        }
 
-            // Checking of the If tag consists of two checks:
-            // 1. Check the appropriate lock token for the node has been supplied (if the node is locked)
-            // 2. If there are conditions, check at least one condition (corresponding to this node) is satisfied.
-            checkLockToken(nodeLockInfo, ignoreShared, lockMethod);
-            checkConditions(nodeLockInfo.getExclusiveLockToken(), nodeETag);
-            
-            return nodeLockInfo;
-        }
-        finally
-        {
-            nodeLockInfo.getRWLock().readLock().unlock();            
-        }
+        // Checking of the If tag consists of two checks:
+        // 1. Check the appropriate lock token for the node has been supplied (if the node is locked)
+        // 2. If there are conditions, check at least one condition (corresponding to this node) is satisfied.
+        checkLockToken(nodeLockInfo, ignoreShared, lockMethod);
+        checkConditions(nodeLockInfo.getExclusiveLockToken(), nodeETag);
+        
+        return nodeLockInfo;
     }
 
     /**
@@ -1078,75 +1063,67 @@ public abstract class WebDAVMethod
      */
     private void checkLockToken(LockInfo lockInfo, boolean ignoreShared, boolean lockMethod) throws WebDAVServerException
     {
-        lockInfo.getRWLock().readLock().lock();
-        try
+        String nodeLockToken = lockInfo.getExclusiveLockToken();
+        Set<String> sharedLockTokens = lockInfo.getSharedLockTokens();
+        
+        if (m_conditions != null)
         {
-            String nodeLockToken = lockInfo.getExclusiveLockToken();
-            Set<String> sharedLockTokens = lockInfo.getSharedLockTokens();
-            
-            if (m_conditions != null)
+            // Request has conditions to check
+            if (lockInfo.isShared())
             {
-                // Request has conditions to check
-                if (lockInfo.isShared())
+                // Node has shared lock. Check if conditions contains lock token of the node.
+                // If not throw exception
+                if (!sharedLockTokens.isEmpty())
                 {
-                    // Node has shared lock. Check if conditions contains lock token of the node.
-                    // If not throw exception
-                    if (!sharedLockTokens.isEmpty())
+                    if (!ignoreShared)
                     {
-                        if (!ignoreShared)
+                        for (Condition condition : m_conditions)
                         {
-                            for (Condition condition : m_conditions)
+                            for (String sharedLockToken : sharedLockTokens)
                             {
-                                for (String sharedLockToken : sharedLockTokens)
+                                if (condition.getLockTokensMatch().contains(sharedLockToken))
                                 {
-                                    if (condition.getLockTokensMatch().contains(sharedLockToken))
-                                    {
-                                        return;
-                                    }
+                                    return;
                                 }
                             }
-                            throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
                         }
-                        return;
+                        throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
                     }
+                    return;
                 }
-                else
-                {
+            }
+            else
+            {
                 // This particular node is not locked so it will not be part of the conditions
                 if (nodeLockToken == null)
                 {
                     return;
                 }
-                    // Node has exclusive lock. Check if conditions contains lock token of the node
-                    // If not throw exception
-                    for (Condition condition : m_conditions)
-                    {
-                        if (condition.getLockTokensMatch().contains(nodeLockToken))
-                        {
-                            return;
-                        }
-                    }
-                    throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
-                }
-            }
-            else
-            {
-                // Request has no conditions
-                if (lockInfo.isShared())
+                // Node has exclusive lock. Check if conditions contains lock token of the node
+                // If not throw exception
+                for (Condition condition : m_conditions)
                 {
-                    // If lock is shared and check was called not from LOCK method return
-                    if (!lockMethod)
+                    if (condition.getLockTokensMatch().contains(nodeLockToken))
                     {
                         return;
                     }
-                    // Throw exception - we can't set lock on node with shared lock
-                    throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
                 }
+                throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
             }
         }
-        finally
+        else
         {
-            lockInfo.getRWLock().readLock().unlock();            
+            // Request has no conditions
+            if (lockInfo.isShared())
+            {
+                // If lock is shared and check was called not from LOCK method return
+                if (!lockMethod)
+                {
+                    return;
+                }
+                // Throw exception - we can't set lock on node with shared lock
+                throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+            }
         }
                 
         throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
@@ -1288,17 +1265,9 @@ public abstract class WebDAVMethod
             
                     if (lockInfo != null)
                     {
-                        lockInfo.getRWLock().readLock().lock();
-                        try
+                        if (lockInfo.isLocked())
                         {
-                            if (lockInfo.isLocked())
-                            {
-                                return lockInfo;
-                            }
-                        }
-                        finally
-                        {
-                            lockInfo.getRWLock().readLock().unlock();                    
+                            return lockInfo;
                         }
                     }
                     
@@ -1346,19 +1315,11 @@ public abstract class WebDAVMethod
             return null;
         }
         
-        lock.getRWLock().readLock().lock();
-        try
+        if (lock.isLocked())
         {
-            if (lock.isLocked())
-            {
-                return lock;
-            }
-            return null;
+            return lock;
         }
-        finally
-        {            
-            lock.getRWLock().readLock().unlock();
-        }        
+        return null;        
     }
     
     /**
@@ -1375,22 +1336,30 @@ public abstract class WebDAVMethod
         {
             return null;
         }
+        
+        // In this case node is locked indirectly.
+        if (parentLock.isLocked() && WebDAV.INFINITY.equals(parentLock.getDepth()))
+        {
+            // In this case node is locked indirectly.
+            // Get lock scope
+            // Get shared lock tokens
 
-        parentLock.getRWLock().readLock().lock();
-        try
-        {
-            // now check for lock status ...
-            if (parentLock.isLocked() && WebDAV.INFINITY.equals(parentLock.getDepth()))
-            {
-                // In this case node is locked indirectly.
-                return parentLock;
-            }
-            return null;
+            // Store lock information to the lockInfo object
+
+            // Get lock token of the locked node - this is indirect lock token.
+
+            return parentLock;
         }
-        finally
-        {
-            parentLock.getRWLock().readLock().unlock();
-        }
+        return null;
+
+        // No has no exclusive lock but can be locked with shared lock
+        // Check node lock depth.
+        // If depth is WebDAV.INFINITY then return this node's Lock token.
+        // In this case node is locked indirectly.
+
+        // Get lock scope
+
+        // Node has it's own Lock token.
     }
     
     /**

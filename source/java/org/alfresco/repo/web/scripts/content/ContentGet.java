@@ -177,11 +177,11 @@ public class ContentGet extends StreamContent implements ServletContextAware
         if (attach && rfc5987Supported)
         {
             String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-            streamContent(req, res, nodeRef, propertyQName, attach, name);
+            streamContent(req, res, nodeRef, propertyQName, attach, name, null);
         }
         else
         {
-            streamContent(req, res, nodeRef, propertyQName, attach);
+            streamContent(req, res, nodeRef, propertyQName, attach, null, null);
         }
     }
 

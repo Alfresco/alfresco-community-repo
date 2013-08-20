@@ -124,6 +124,7 @@
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-web-framework-commons</artifactId>
         <version>${alfresco.version}</version>
+        <classifier>classes</classifier>
         <scope>provided</scope>
       </dependency>
       <!-- == Share JARs/WAR  == -->

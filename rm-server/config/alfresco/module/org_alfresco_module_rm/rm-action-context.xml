@@ -892,5 +892,22 @@
       <property name="publicAction" value="true"/>
       <property name="delegateAction" ref="mail" />
    </bean>
+
+   <!-- Set property value action -->
+
+   <bean id="setProperty_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+      <property name="target">
+         <ref bean="setPropertyValue"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="allow_security"/>
+         </list>
+      </property>
+   </bean>
+   <bean id="setPropertyValue" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction">
+      <property name="publicAction" value="true"/>
+      <property name="delegateAction" ref="set-property-value" />
+   </bean>
        
 </beans>

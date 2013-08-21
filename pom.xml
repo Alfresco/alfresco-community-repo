@@ -27,6 +27,12 @@
                 	<artifactId>commons-logging</artifactId>
                 	<groupId>commons-logging</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>
+                        chemistry-opencmis-client-impl
+                    </artifactId>
+                    <groupId>org.apache.chemistry.opencmis</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -100,6 +106,10 @@
             		<artifactId>commons-logging</artifactId>
             		<groupId>commons-logging</groupId>
             	</exclusion>
+            	<exclusion>
+            	    <artifactId>chemistry-opencmis-client-impl</artifactId>
+            	    <groupId>org.apache.chemistry.opencmis</groupId>
+            	</exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -172,6 +182,14 @@
             <artifactId>chemistry-opencmis-test-tck</artifactId>
             <version>${dependency.opencmis.version}</version>
             <!-- <scope>test</scope> -->
+            <exclusions>
+                <exclusion>
+                    <artifactId>
+                        chemistry-opencmis-client-impl
+                    </artifactId>
+                    <groupId>org.apache.chemistry.opencmis</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Test dependencies -->

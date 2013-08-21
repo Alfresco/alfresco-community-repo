@@ -27,12 +27,6 @@
                 	<artifactId>commons-logging</artifactId>
                 	<groupId>commons-logging</groupId>
                 </exclusion>
-                <exclusion>
-                    <artifactId>
-                        chemistry-opencmis-client-impl
-                    </artifactId>
-                    <groupId>org.apache.chemistry.opencmis</groupId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

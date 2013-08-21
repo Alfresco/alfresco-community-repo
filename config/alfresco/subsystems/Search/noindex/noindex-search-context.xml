@@ -129,6 +129,16 @@
             <value>solr-cmis</value>
         </property>
     </bean>
-    
+
+    <bean id="search.cmis.alfresco.index1.1" class="org.alfresco.repo.search.impl.solr.NoIndexQueryLanguage"  >
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>solr-cmis</value>
+        </property>
+    </bean>    
 	
 </beans>

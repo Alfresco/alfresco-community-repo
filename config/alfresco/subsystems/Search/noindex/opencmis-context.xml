@@ -16,4 +16,17 @@
             <ref bean="dictionaryService" />
         </property>
     </bean>
+
+   <bean id="search.OpenCMISQueryService1.1" class="org.alfresco.repo.search.impl.noindex.NoIndexOpenCMISQueryServiceImpl" >
+       <property name="cmisDictionaryService">
+            <ref bean="OpenCMISDictionaryService1.1" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="alfrescoDictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+    </bean>
+
 </beans>

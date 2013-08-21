@@ -30,7 +30,7 @@
             <ref bean="dictionaryService" />
         </property>
         <property name="solrQueryLanguage">
-            <ref bean="search.cmis.alfresco.switching1.1" />
+            <ref bean="search.cmis.alfresco.switching" />
         </property>
     </bean>
     
@@ -47,18 +47,4 @@
             <ref bean="search.solrQueryHTTPCLient" />
         </property>
     </bean>
-
-    <bean id="search.cmis.alfresco.index1.1" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
-        <property name="factories">
-            <list>
-                <ref bean="search.indexerAndSearcherFactory" />
-            </list>
-        </property>
-        <property name="name">
-            <value>solr-cmis</value>
-        </property>
-        <property name="solrQueryHTTPClient">
-            <ref bean="search.solrQueryHTTPCLient" />
-        </property>
-    </bean>	
 </beans>

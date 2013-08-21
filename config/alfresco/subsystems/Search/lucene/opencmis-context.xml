@@ -30,36 +30,10 @@
             </list>
         </property>
     </bean>
-
-    <bean id="search.lucene.sql.cmis.strict1.1" class="org.alfresco.repo.search.impl.lucene.LuceneOpenCMISStrictSqlQueryLanguage" >
-        <property name="cmisQueryService">
-            <ref bean="search.OpenCMISQueryService1.1" />
-        </property>
-        <property name="factories">
-            <list>
-                <ref bean="search.admLuceneIndexerAndSearcherFactory" />
-                <ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />
-                <ref bean="search.avmLuceneIndexerAndSearcherFactory" />
-            </list>
-        </property>
-    </bean>
     
     <bean id="search.cmis.alfresco.index" class="org.alfresco.repo.search.impl.lucene.LuceneOpenCMISAlfrescoSqlQueryLanguage">
         <property name="cmisQueryService">
             <ref bean="search.OpenCMISQueryService" />
-        </property>
-        <property name="factories">
-            <list>
-                <ref bean="search.admLuceneIndexerAndSearcherFactory" />
-                <ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />
-                <ref bean="search.avmLuceneIndexerAndSearcherFactory" />
-            </list>
-        </property>
-    </bean>
-
-    <bean id="search.cmis.alfresco.index1.1" class="org.alfresco.repo.search.impl.lucene.LuceneOpenCMISAlfrescoSqlQueryLanguage">
-        <property name="cmisQueryService">
-            <ref bean="search.OpenCMISQueryService1.1" />
         </property>
         <property name="factories">
             <list>

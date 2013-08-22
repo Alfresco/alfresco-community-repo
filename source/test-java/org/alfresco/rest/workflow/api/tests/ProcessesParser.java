@@ -38,10 +38,14 @@ public class ProcessesParser extends ListParser<ProcessInfo>
         processesRest.setProcessDefinitionKey((String) entry.get("processDefinitionKey"));
         processesRest.setStartedAt(WorkflowApiClient.parseDate(entry, "startedAt"));
         processesRest.setEndedAt(WorkflowApiClient.parseDate(entry, "endedAt"));
-        processesRest.setDurationInMillis((Long) entry.get("durationInMillis"));
+        processesRest.setDurationInMs((Long) entry.get("durationInMs"));
         processesRest.setDeleteReason((String) entry.get("deleteReason"));
         processesRest.setBusinessKey((String) entry.get("businessKey"));
         processesRest.setSuperProcessInstanceId((String) entry.get("superProcessInstanceId"));
+        processesRest.setStartActivityId((String) entry.get("startActivityId"));
+        processesRest.setStartUserId((String) entry.get("startUserId"));
+        processesRest.setEndActivityId((String) entry.get("endActivityId"));
+        processesRest.setCompleted((Boolean) entry.get("completed"));
         processesRest.setVariables((Map<String,Object>) entry.get("variables"));
         processesRest.setItems((Set<String>) entry.get("item"));
         return processesRest;

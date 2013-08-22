@@ -21,6 +21,7 @@ package org.alfresco.rest.workflow.api.model;
 import java.util.Date;
 
 import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.task.DelegationState;
 
 public class Task
 {
@@ -60,6 +61,18 @@ public class Task
         this.owner = taskInstance.getOwner();
         this.assignee = taskInstance.getAssignee();
         this.formResourceKey = taskInstance.getFormKey();
+        if (taskInstance.getEndTime() != null)
+        {
+        	this.state = TaskStateTransition.COMPLETED.name().toLowerCase();
+        }
+        else if (taskInstance.getAssignee() != null)
+        {
+        	this.state = TaskStateTransition.CLAIMED.name().toLowerCase();
+        }
+        else
+        {
+        	this.state = TaskStateTransition.UNCLAIMED.name().toLowerCase();
+        }
     }
     
     public Task(org.activiti.engine.task.Task taskInstance)
@@ -75,6 +88,18 @@ public class Task
         this.priority = taskInstance.getPriority();
         this.owner = taskInstance.getOwner();
         this.assignee = taskInstance.getAssignee();
+        if (taskInstance.getDelegationState() == DelegationState.PENDING)
+        {
+        	
+        }
+        if (taskInstance.getAssignee() != null)
+        {
+        	this.state = TaskStateTransition.CLAIMED.name().toLowerCase();
+        }
+        else
+        {
+        	this.state = TaskStateTransition.UNCLAIMED.name().toLowerCase();
+        }
     }
 
     public String getId()

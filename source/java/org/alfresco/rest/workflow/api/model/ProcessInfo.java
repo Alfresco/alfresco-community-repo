@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,10 +32,14 @@ public class ProcessInfo
     String processDefinitionKey;
     Date startedAt;
     Date endedAt;
-    Long durationInMillis;
+    Long durationInMs;
     String deleteReason;
+    String startUserId;
+    String startActivityId;
+    String endActivityId;
     String businessKey;
     String superProcessInstanceId;
+    boolean completed;
     
     Map<String, Object> variables;
     Set<String> items;
@@ -50,9 +54,14 @@ public class ProcessInfo
         this.processDefinitionId = processInstance.getProcessDefinitionId();
         this.startedAt = processInstance.getStartTime();
         this.endedAt = processInstance.getEndTime();
-        this.durationInMillis = processInstance.getDurationInMillis();
+        this.durationInMs = processInstance.getDurationInMillis();
         this.deleteReason = processInstance.getDeleteReason();
+        this.startUserId = processInstance.getStartUserId();
+        this.startActivityId = processInstance.getStartActivityId();
+        this.endActivityId = processInstance.getEndActivityId();
         this.businessKey = processInstance.getBusinessKey();
+        this.superProcessInstanceId = processInstance.getSuperProcessInstanceId();
+        this.completed = (processInstance.getEndTime() != null);
     }
 
     public String getId()
@@ -75,14 +84,14 @@ public class ProcessInfo
         this.processDefinitionId = processDefinitionId;
     }
 
-    public Long getDurationInMillis()
+    public Long getDurationInMs()
     {
-        return durationInMillis;
+        return durationInMs;
     }
 
-    public void setDurationInMillis(Long durationInMillis)
+    public void setDurationInMs(Long durationInMs)
     {
-        this.durationInMillis = durationInMillis;
+        this.durationInMs = durationInMs;
     }
 
     public String getDeleteReason()
@@ -143,6 +152,46 @@ public class ProcessInfo
     public void setEndedAt(Date endedAt)
     {
         this.endedAt = endedAt;
+    }
+
+    public String getStartUserId()
+    {
+        return startUserId;
+    }
+
+    public void setStartUserId(String startUserId)
+    {
+        this.startUserId = startUserId;
+    }
+
+    public String getStartActivityId()
+    {
+        return startActivityId;
+    }
+
+    public void setStartActivityId(String startActivityId)
+    {
+        this.startActivityId = startActivityId;
+    }
+
+    public String getEndActivityId()
+    {
+        return endActivityId;
+    }
+
+    public void setEndActivityId(String endActivityId)
+    {
+        this.endActivityId = endActivityId;
+    }
+
+    public boolean isCompleted()
+    {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed)
+    {
+        this.completed = completed;
     }
 
     public Map<String, Object> getVariables()

@@ -16,6 +16,7 @@ import org.alfresco.rest.workflow.api.model.Deployment;
 import org.alfresco.rest.workflow.api.model.ProcessDefinition;
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
 import org.apache.commons.lang.StringUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 public class WorkflowApiClient extends PublicApiClient
@@ -143,6 +144,20 @@ public class WorkflowApiClient extends PublicApiClient
             return ProcessesParser.INSTANCE.parseEntry(entry);
         }
         
+        public JSONObject getTasks(String processInstanceId, Map<String, String> params) throws PublicApiException
+        {
+            HttpResponse response = getAll("processes", processInstanceId, "tasks", null, params, "Failed to get task instances of processInstanceId " + processInstanceId);
+            JSONObject list = (JSONObject) response.getJsonResponse().get("list");
+            return list;
+        }
+        
+        public JSONObject getActivities(String processInstanceId, Map<String, String> params) throws PublicApiException
+        {
+            HttpResponse response = getAll("processes", processInstanceId, "activities", null, params, "Failed to get activity instances of processInstanceId " + processInstanceId);
+            JSONObject list = (JSONObject) response.getJsonResponse().get("list");
+            return list;
+        }
+        
         public JSONObject findProcessItems(String processInstanceId) throws PublicApiException
         {
             HttpResponse response = getAll("processes", processInstanceId, "items", null, null,
@@ -159,6 +174,12 @@ public class WorkflowApiClient extends PublicApiClient
             return list;
         }
         
+        public JSONObject createVariables(String processId, JSONArray variables) throws PublicApiException
+        {
+            HttpResponse response = create("processes", processId, "variables", null, variables.toJSONString(), "Failed to create variables");
+            return response.getJsonResponse();
+        }
+        
         public JSONObject updateVariable(String processId, String variableName, JSONObject variable) throws PublicApiException
         {
             HttpResponse response = update("processes", processId, "variables", variableName, variable.toJSONString(), "Failed to update variable");
@@ -168,6 +189,11 @@ public class WorkflowApiClient extends PublicApiClient
         public void deleteVariable(String processId, String variableName) throws PublicApiException
         {
             remove("processes", processId, "variables", variableName, "Failed to delete variable");
+        }
+        
+        public void addProcessItem(String processId, String body) throws PublicApiException
+        {
+            create("processes", processId, "items", null, body, "Failed to add item");
         }
         
         public void deleteProcessItem(String processId, String itemId) throws PublicApiException
@@ -232,6 +258,12 @@ public class WorkflowApiClient extends PublicApiClient
         public JSONObject findTaskVariables(String taskId) throws PublicApiException
         {
             return findTaskVariables(taskId, null);
+        }
+        
+        public JSONObject createTaskVariables(String taskId, JSONArray variables) throws PublicApiException
+        {
+            HttpResponse response = create("tasks", taskId, "variables", null, variables.toJSONString(), "Failed to create task variables");
+            return response.getJsonResponse();
         }
         
         public JSONObject updateTaskVariable(String taskId, String variableName, JSONObject variable) throws PublicApiException

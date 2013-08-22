@@ -18,6 +18,8 @@
  */
 package org.alfresco.rest.workflow.api.tasks;
 
+import java.util.List;
+
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
@@ -35,7 +37,7 @@ import org.alfresco.rest.workflow.api.model.VariableScope;
  *
  */
 @RelationshipResource(name = "variables", entityResource = TasksRestEntityResource.class, title = "Variables for the current task")
-public class TaskVariablesRelation implements RelationshipResourceAction.Read<TaskVariable>, 
+public class TaskVariablesRelation implements RelationshipResourceAction.Read<TaskVariable>, RelationshipResourceAction.Create<TaskVariable>,
     RelationshipResourceAction.Update<TaskVariable>, RelationshipResourceAction.Delete
 {
     private Tasks tasks;
@@ -63,6 +65,16 @@ public class TaskVariablesRelation implements RelationshipResourceAction.Read<Ta
             scope = callback.getScope();
         }
         return tasks.getTaskVariables(taskId, parameters.getPaging(), scope);
+    }
+    
+    /**
+     * Creates or updates multiple task variables. If the variable name doesn't exist yet it will be created
+     */
+    @Override
+    @WebApiDescription(title = "Create or Update Variables", description = "Create or update multiple variable")
+    public List<TaskVariable> create(String taskId, List<TaskVariable> variables, Parameters parameters)
+    {
+        return tasks.updateTaskVariables(taskId, variables);
     }
 
     /**

@@ -18,6 +18,8 @@
  */
 package org.alfresco.rest.workflow.api.processes;
 
+import java.util.List;
+
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
@@ -32,7 +34,7 @@ import org.alfresco.rest.workflow.api.model.Variable;
  *
  */
 @RelationshipResource(name = "variables", entityResource = ProcessesRestEntityResource.class, title = "Variables for the current process")
-public class ProcessVariablesRelation implements RelationshipResourceAction.Read<Variable>, 
+public class ProcessVariablesRelation implements RelationshipResourceAction.Read<Variable>, RelationshipResourceAction.Create<Variable>, 
     RelationshipResourceAction.Update<Variable>, RelationshipResourceAction.Delete
 {
     protected Processes processes;
@@ -50,6 +52,16 @@ public class ProcessVariablesRelation implements RelationshipResourceAction.Read
     public CollectionWithPagingInfo<Variable> readAll(String processId, Parameters parameters)
     {
         return processes.getVariables(processId, parameters.getPaging());
+    }
+    
+    /**
+     * Creates or updates multiple variables. If the variable name doesn't exist yet it will be created
+     */
+    @Override
+    @WebApiDescription(title = "Create or Update Variables", description = "Create or update multiple variable")
+    public List<Variable> create(String processId, List<Variable> variables, Parameters parameters)
+    {
+        return processes.updateVariables(processId, variables);
     }
 
     /**

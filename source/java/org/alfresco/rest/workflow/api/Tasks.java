@@ -18,6 +18,8 @@
  */
 package org.alfresco.rest.workflow.api;
 
+import java.util.List;
+
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -26,11 +28,14 @@ import org.alfresco.rest.workflow.api.model.Item;
 import org.alfresco.rest.workflow.api.model.Task;
 import org.alfresco.rest.workflow.api.model.TaskCandidate;
 import org.alfresco.rest.workflow.api.model.TaskVariable;
+import org.alfresco.rest.workflow.api.model.Variable;
 import org.alfresco.rest.workflow.api.model.VariableScope;
 
 public interface Tasks
 {
      CollectionWithPagingInfo<Task> getTasks(Parameters parameters);
+     
+     CollectionWithPagingInfo<Task> getTasks(String processId, Parameters parameters);
     
      Task getTask(String taskId);
     
@@ -44,6 +49,8 @@ public interface Tasks
      CollectionWithPagingInfo<TaskVariable> getTaskVariables(String taskId, Paging paging, VariableScope scope);
     
      TaskVariable updateTaskVariable(String taskId, TaskVariable taskVariable);
+     
+     List<TaskVariable> updateTaskVariables(String taskId, List<TaskVariable> variables);
     
      void deleteTaskVariable(String taskId, String variableName);
 

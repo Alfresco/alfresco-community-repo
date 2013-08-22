@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-@WebApi(name="alfresco", scope=Api.SCOPE.PUBLIC, version=1)
+@WebApi(name="workflow", scope=Api.SCOPE.PUBLIC, version=1)
 package org.alfresco.rest.workflow.api.processes;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.WebApi;

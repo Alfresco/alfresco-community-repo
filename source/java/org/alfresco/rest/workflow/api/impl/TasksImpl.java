@@ -30,6 +30,8 @@ import org.activiti.engine.ActivitiTaskAlreadyClaimedException;
 import org.activiti.engine.form.FormData;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
+import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.task.IdentityLink;
 import org.activiti.engine.task.IdentityLinkType;
 import org.activiti.engine.task.TaskQuery;
@@ -57,6 +59,7 @@ import org.alfresco.rest.workflow.api.model.FormModelElement;
 import org.alfresco.rest.workflow.api.model.Item;
 import org.alfresco.rest.workflow.api.model.Task;
 import org.alfresco.rest.workflow.api.model.TaskCandidate;
+import org.alfresco.rest.workflow.api.model.TaskStateTransition;
 import org.alfresco.rest.workflow.api.model.TaskVariable;
 import org.alfresco.rest.workflow.api.model.VariableScope;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -64,8 +67,10 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO8601DateFormat;
 
 public class TasksImpl extends WorkflowRestImpl implements Tasks
 {
@@ -76,12 +81,12 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
      * All properties that are read-only and cannot be updated on a single task-resource.
      */
     private static final List<String> TASK_READ_ONLY_PROPERTIES = Arrays.asList(
-        "id", "processId", "processDefinitionId", "actibityDefinitionId", "startedAt", "endedAt", "durationInMs", "formResourceKey"
+        "id", "processId", "processDefinitionId", "activityDefinitionId", "startedAt", "endedAt", "durationInMs", "formResourceKey"
     );
     
     private static final Set<String> TASK_COLLECTION_EQUALS_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "status", "assignee", "owner", "candidateUser", "candidateGroup", "name", "description", "priority", "processInstanceId",
-        "processInstanceBusinessKey", "activityDefinitionId", "processDefinitionId", "processDefinitionName", "startedAt", "dueAt"
+        "status", "assignee", "owner", "candidateUser", "candidateGroup", "name", "description", "priority", "processId",
+        "processBusinessKey", "activityDefinitionId", "processDefinitionId", "processDefinitionName", "startedAt", "dueAt"
     ));
     
     private static final Set<String> TASK_COLLECTION_MATCHES_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
@@ -102,6 +107,14 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     
     private static final Set<String> TASK_COLLECTION_LESSTHANOREQUAL_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
         "priority"
+    ));
+    
+    private static final Set<String> TASK_COLLECTION_RUNNING_SORT_PROPERTIES = new HashSet<String>(Arrays.asList(
+        "id", "name", "description", "priority", "processId", "assignee", "startedAt", "dueAt"
+    ));
+    
+    private static final Set<String> TASK_COLLECTION_HISTORY_SORT_PROPERTIES = new HashSet<String>(Arrays.asList(
+        "id", "name", "description", "priority", "processId", "processDefinitionId", "assignee", "owner", "startedAt", "endedAt", "durationInMs", "dueAt"
     ));
     
     private RestVariableHelper restVariableHelper;
@@ -155,8 +168,8 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         Integer priority = propertyWalker.getProperty("priority", WhereClauseParser.EQUALS, Integer.class);
         Integer priorityGreaterThanOrEquals = propertyWalker.getProperty("priority", WhereClauseParser.GREATERTHANOREQUALS, Integer.class);
         Integer priorityLessThanOrEquals = propertyWalker.getProperty("priority", WhereClauseParser.LESSTHANOREQUALS, Integer.class);
-        String processInstanceId = propertyWalker.getProperty("processInstanceId", WhereClauseParser.EQUALS);
-        String processInstanceBusinessKey = propertyWalker.getProperty("processInstanceBusinessKey", WhereClauseParser.EQUALS);
+        String processInstanceId = propertyWalker.getProperty("processId", WhereClauseParser.EQUALS);
+        String processInstanceBusinessKey = propertyWalker.getProperty("processBusinessKey", WhereClauseParser.EQUALS);
         String activityDefinitionId = propertyWalker.getProperty("activityDefinitionId", WhereClauseParser.EQUALS);
         String activityDefinitionIdLike = propertyWalker.getProperty("activityDefinitionId", WhereClauseParser.MATCHES);
         String processDefinitionId = propertyWalker.getProperty("processDefinitionId", WhereClauseParser.EQUALS);
@@ -177,7 +190,30 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             
             if (assignee != null) query.taskAssignee(assignee);
             if (owner != null) query.taskOwner(owner);
-            if (candidateUser != null) query.taskCandidateUser(candidateUser);
+            if (candidateUser != null)
+            {
+            	Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, candidateUser, false);
+            	if (parents != null)
+            	{
+            		List<String> authorities = new ArrayList<String>();
+            		authorities.addAll(parents);
+            		
+            		// there's a limitation in at least Oracle for using an IN statement with more than 1000 items
+            		if (parents.size() > 1000)
+            		{
+            			authorities = authorities.subList(0, 1000);
+            		}
+            		
+            		if (authorities.size() > 0)
+            		{
+            		    query.taskCandidateGroupIn(authorities);
+            		}
+            		else
+            		{
+            		    query.taskCandidateUser(candidateUser);
+            		}
+            	}
+            }
             if (candidateGroup != null) query.taskCandidateGroup(candidateGroup);
             if (name != null) query.taskName(name);
             if (nameLike != null) query.taskNameLike(nameLike);
@@ -207,6 +243,30 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                     if (queryVariableHolder.getOperator() == WhereClauseParser.EQUALS)
                     {    
                         query.taskVariableValueEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                    }
+                    else if (queryVariableHolder.getOperator() == WhereClauseParser.GREATERTHAN)
+                    {
+                        query.taskVariableValueGreaterThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                    }
+                    else if (queryVariableHolder.getOperator() == WhereClauseParser.GREATERTHANOREQUALS)
+                    {
+                        query.taskVariableValueGreaterThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                    }
+                    else if (queryVariableHolder.getOperator() == WhereClauseParser.LESSTHAN)
+                    {
+                        query.taskVariableValueLessThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                    }
+                    else if (queryVariableHolder.getOperator() == WhereClauseParser.LESSTHANOREQUALS)
+                    {
+                        query.taskVariableValueLessThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                    }
+                    else if (queryVariableHolder.getOperator() == WhereClauseParser.MATCHES)
+                    {
+                        if (queryVariableHolder.getPropertyValue() instanceof String == false)
+                        {
+                            throw new InvalidArgumentException("the matches operator can only be used with a String value for property " + queryVariableHolder.getPropertyName());
+                        }
+                        query.taskVariableValueLike(queryVariableHolder.getPropertyName(), (String) queryVariableHolder.getPropertyValue());
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.NEGATION)
                     {
@@ -285,6 +345,30 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                     {    
                         query.taskVariableValueEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
                     }
+                    else if (queryVariableHolder.getOperator() == WhereClauseParser.GREATERTHAN)
+                    {
+                        query.taskVariableValueGreaterThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                    }
+                    else if (queryVariableHolder.getOperator() == WhereClauseParser.GREATERTHANOREQUALS)
+                    {
+                        query.taskVariableValueGreaterThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                    }
+                    else if (queryVariableHolder.getOperator() == WhereClauseParser.LESSTHAN)
+                    {
+                        query.taskVariableValueLessThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                    }
+                    else if (queryVariableHolder.getOperator() == WhereClauseParser.LESSTHANOREQUALS)
+                    {
+                        query.taskVariableValueLessThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                    }
+                    else if (queryVariableHolder.getOperator() == WhereClauseParser.MATCHES)
+                    {
+                        if (queryVariableHolder.getPropertyValue() instanceof String == false)
+                        {
+                            throw new InvalidArgumentException("the matches operator can only be used with a String value for property " + queryVariableHolder.getPropertyName());
+                        }
+                        query.taskVariableValueLike(queryVariableHolder.getPropertyName(), (String) queryVariableHolder.getPropertyValue());
+                    }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.NEGATION)
                     {
                         query.taskVariableValueNotEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
@@ -308,6 +392,220 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
             
             query.orderByTaskDueDate().asc();
+            
+            List<HistoricTaskInstance> tasks = query.listPage(paging.getSkipCount(), paging.getMaxItems());
+
+            page = new ArrayList<Task>(tasks.size());
+            for (HistoricTaskInstance taskInstance: tasks) 
+            {
+                Task task = new Task(taskInstance);
+                page.add(task);
+            }
+        } 
+        else 
+        {
+            throw new InvalidArgumentException("Invalid status parameter: " + status);
+        }
+        
+        return CollectionWithPagingInfo.asPaged(paging, page, false, page.size());
+    }
+    
+    @Override
+    public CollectionWithPagingInfo<Task> getTasks(String processId, Parameters parameters)
+    {
+        Paging paging = parameters.getPaging();
+        String status = parameters.getParameter("status");
+        
+        validateIfUserAllowedToWorkWithProcess(processId);
+
+        List<Task> page = null;
+        if (status == null || STATUS_ACTIVE.equals(status))
+        {
+            TaskQuery query = activitiProcessEngine
+                    .getTaskService()
+                    .createTaskQuery();
+            
+            query.processInstanceId(processId);
+            
+            String sortParam = parameters.getParameter("sort");
+            if (sortParam != null)
+            {
+                if (TASK_COLLECTION_RUNNING_SORT_PROPERTIES.contains(sortParam))
+                {
+                    if ("id".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskId();
+                    }
+                    else if ("name".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskName();
+                    }
+                    else if ("description".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskDescription();
+                    }
+                    else if ("priority".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskPriority();
+                    }
+                    else if ("processId".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByProcessInstanceId();
+                    }
+                    else if ("assignee".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskAssignee();
+                    }
+                    else if ("startedAt".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskCreateTime();
+                    }
+                    else if ("dueAt".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByDueDate();
+                    }
+                }
+                else
+                {
+                    throw new InvalidArgumentException("sort " + sortParam + 
+                            " is not supported, supported items are " + TASK_COLLECTION_RUNNING_SORT_PROPERTIES.toArray());
+                }
+                
+                String sortOrderParam = parameters.getParameter("sortOrder");
+                if (sortOrderParam != null)
+                {
+                    if ("asc".equalsIgnoreCase(sortOrderParam))
+                    {
+                        query.asc();
+                    }
+                    else if ("desc".equalsIgnoreCase(sortOrderParam))
+                    {
+                        query.desc();
+                    }
+                    else
+                    {
+                        throw new InvalidArgumentException("sort order " + sortOrderParam + 
+                                " is not supported, supported items are asc and desc");
+                    }
+                }
+            }
+            else
+            {
+                query.orderByDueDate().asc();
+            }
+            
+            List<org.activiti.engine.task.Task> tasks = query.listPage(paging.getSkipCount(), paging.getMaxItems());
+
+            page = new ArrayList<Task>(tasks.size());
+            for (org.activiti.engine.task.Task taskInstance: tasks) 
+            {
+                Task task = new Task(taskInstance);
+                task.setFormResourceKey(getFormResourceKey(taskInstance));
+                page.add(task);
+            }
+        }
+        else if (STATUS_COMPLETED.equals(status) || STATUS_ANY.equals(status))
+        {
+            HistoricTaskInstanceQuery query = activitiProcessEngine
+                    .getHistoryService()
+                    .createHistoricTaskInstanceQuery();
+            
+            if (STATUS_COMPLETED.equals(status)) query.finished();
+            
+            query.processInstanceId(processId);
+            
+            // Add tenant filtering
+            if(tenantService.isEnabled()) {
+                query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+            }
+            
+            // Add involvment filtering if user is not admin
+            if(!authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) {
+                query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
+            }
+            
+            String sortParam = parameters.getParameter("sort");
+            if (sortParam != null)
+            {
+                if (TASK_COLLECTION_HISTORY_SORT_PROPERTIES.contains(sortParam))
+                {
+                    if ("id".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskId();
+                    }
+                    else if ("name".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskName();
+                    }
+                    else if ("description".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskDescription();
+                    }
+                    else if ("priority".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskPriority();
+                    }
+                    else if ("processId".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByProcessInstanceId();
+                    }
+                    else if ("processDefinitionId".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByProcessDefinitionId();
+                    }
+                    else if ("assignee".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskAssignee();
+                    }
+                    else if ("owner".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskOwner();
+                    }
+                    else if ("startedAt".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByHistoricTaskInstanceStartTime();
+                    }
+                    else if ("endedAt".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByHistoricTaskInstanceEndTime();
+                    }
+                    else if ("durationInMs".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByHistoricTaskInstanceDuration();
+                    }
+                    else if ("dueAt".equalsIgnoreCase(sortParam))
+                    {
+                        query.orderByTaskDueDate();
+                    }
+                }
+                else
+                {
+                    throw new InvalidArgumentException("sort " + sortParam + 
+                            " is not supported, supported items are " + TASK_COLLECTION_HISTORY_SORT_PROPERTIES.toArray());
+                }
+                
+                String sortOrderParam = parameters.getParameter("sortOrder");
+                if (sortOrderParam != null)
+                {
+                    if ("asc".equalsIgnoreCase(sortOrderParam))
+                    {
+                        query.asc();
+                    }
+                    else if ("desc".equalsIgnoreCase(sortOrderParam))
+                    {
+                        query.desc();
+                    }
+                    else
+                    {
+                        throw new InvalidArgumentException("sort order " + sortOrderParam + 
+                                " is not supported, supported items are asc and desc");
+                    }
+                }
+            }
+            else
+            {
+                query.orderByTaskDueDate().asc();
+            }
             
             List<HistoricTaskInstance> tasks = query.listPage(paging.getSkipCount(), paging.getMaxItems());
 
@@ -509,7 +807,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         
         // Lookup type definition for the task
-        TypeDefinition taskType = workflowFactory.getTaskFullTypeDefinition(formData.getFormKey(), true);
+        TypeDefinition taskType = getWorkflowFactory().getTaskFullTypeDefinition(formData.getFormKey(), true);
         return getFormModelElements(taskType, paging);
     }
     
@@ -543,7 +841,25 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     public TaskVariable updateTaskVariable(String taskId, TaskVariable taskVariable) 
     {
         org.activiti.engine.task.Task taskInstance = getValidTask(taskId, true);
-        
+        return updateVariableInTask(taskId, taskInstance, taskVariable);
+    }
+    
+    public List<TaskVariable> updateTaskVariables(String taskId, List<TaskVariable> variables)
+    {
+        org.activiti.engine.task.Task taskInstance = getValidTask(taskId, true);
+        List<TaskVariable> updatedVariables = new ArrayList<TaskVariable>();
+        if (variables != null)
+        {
+            for (TaskVariable variable : variables)
+            {
+                updatedVariables.add(updateVariableInTask(taskId, taskInstance, variable));
+            }
+        }
+        return updatedVariables;
+    }
+    
+    protected TaskVariable updateVariableInTask(String taskId, org.activiti.engine.task.Task taskInstance, TaskVariable taskVariable)
+    {
         if(taskVariable.getName() == null)
         {
             throw new InvalidArgumentException("Variable name is required.");
@@ -603,12 +919,22 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
         }
         
-        if(dataTypeDefinition == null)
+        if (dataTypeDefinition == null)
         {
             throw new InvalidArgumentException("Unsupported type of variable: '" + taskVariable.getType() +"'.");
         }
         
-        Object actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, taskVariable.getValue());
+        Object actualValue = null;
+        if ("java.util.Date".equalsIgnoreCase(dataTypeDefinition.getJavaClassName()))
+        {
+            // fix for different ISO 8601 Date format classes in Alfresco (org.alfresco.util and Spring Surf)
+            actualValue = ISO8601DateFormat.parse((String) taskVariable.getValue());
+        }
+        else
+        {
+            actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, taskVariable.getValue());
+        }
+        taskVariable.setValue(actualValue);
         
         if (VariableScope.LOCAL.equals(taskVariable.getVariableScope()))
         {
@@ -716,10 +1042,27 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         return processes.getItems(task.getProcessInstanceId(), paging);
     }
 
-    protected String getFormResourceKey(org.activiti.engine.task.Task task) {
+    protected String getFormResourceKey(final org.activiti.engine.task.Task task) 
+    {
         if (task.getProcessDefinitionId() != null)
         {
-            return activitiProcessEngine.getFormService().getTaskFormKey(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+            ProcessDefinitionEntity definitionEntity = getCachedProcessDefinition(task.getProcessDefinitionId());
+            
+            String formKey = null;
+            if (definitionEntity != null)
+            {
+                TaskDefinition taskDefinition = definitionEntity.getTaskDefinitions().get(task.getTaskDefinitionKey());
+                if (taskDefinition != null)
+                {
+                    formKey = taskDefinition.getTaskFormHandler().getFormKey().getExpressionText();
+                }
+            }
+            else
+            {
+                formKey = activitiProcessEngine.getFormService().getTaskFormKey(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+            }
+            
+            return formKey;
         } 
         else 
         {
@@ -910,10 +1253,10 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                     // Task is not yet finished, so potentially claimable. If user is part of a "candidateGroup", the task is accessible to the
                     // user regardless of not being involved/owner/assignee
                     isTaskClaimable = activitiProcessEngine.getTaskService()
-                    .createTaskQuery()
-                    .taskCandidateGroupIn(new ArrayList<String>(authorityService.getAuthoritiesForUser(AuthenticationUtil.getRunAsUser())))
-                    .taskId(taskId)
-                    .count() == 1;
+                            .createTaskQuery()
+                            .taskCandidateGroupIn(new ArrayList<String>(authorityService.getAuthoritiesForUser(AuthenticationUtil.getRunAsUser())))
+                            .taskId(taskId)
+                            .count() == 1;
                 }
                 
                 if(!isTaskClaimable)
@@ -942,27 +1285,5 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         ActivitiConstants.ENGINE_ID, WorkflowModel.TYPE_ACTIVTI_START_TASK);
         }
         return workflowFactory;
-    }
-    
-    
-    private enum TaskStateTransition {
-        
-        COMPLETED, CLAIMED, UNCLAIMED, DELEGATED, RESOLVED;
-        
-        /**
-         * @return the {@link TaskStateTransition} for the given string
-         * @throws InvalidArgumentException when no action exists for the given string
-         */
-        public static TaskStateTransition getTaskActionFromString(String action) 
-        {
-            for(TaskStateTransition taskAction : values())
-            {
-                if(taskAction.name().toLowerCase().equals(action))
-                {
-                    return taskAction;
-                }
-            }
-            throw new InvalidArgumentException("The task state property has an invalid value: " + action);
-        }
     }
 }

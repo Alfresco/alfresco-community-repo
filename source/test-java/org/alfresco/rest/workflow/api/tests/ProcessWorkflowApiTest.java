@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -31,9 +32,11 @@ import java.util.Map;
 
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.task.Task;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
+import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
@@ -47,7 +50,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
-
 /**
  * Process related Rest api tests using http client to communicate with the rest apis in the repository.
  * 
@@ -89,10 +91,41 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         
         createProcessObject.put("variables", variablesObject);
         
-        final ProcessInfo processRest = processesClient.createProcess(createProcessObject.toJSONString());
+        ProcessInfo processRest = processesClient.createProcess(createProcessObject.toJSONString());
+        assertNotNull(processRest);
+        assertNotNull(processRest.getId());
+        
+        HistoricProcessInstance processInstance = activitiProcessEngine.getHistoryService().createHistoricProcessInstanceQuery()
+                .processInstanceId(processRest.getId()).singleResult();
+        
+        assertEquals(processInstance.getId(), processRest.getId());
+        assertEquals(processInstance.getStartActivityId(), processRest.getStartActivityId());
+        assertEquals(processInstance.getStartUserId(), processRest.getStartUserId());
+        assertEquals(processInstance.getStartTime(), processRest.getStartedAt());
+        assertEquals(processInstance.getProcessDefinitionId(), processRest.getProcessDefinitionId());
+        assertEquals("activitiAdhoc", processRest.getProcessDefinitionKey());
+        assertNull(processRest.getBusinessKey());
+        assertNull(processRest.getDeleteReason());
+        assertNull(processRest.getDurationInMs());
+        assertNull(processRest.getEndActivityId());
+        assertNull(processRest.getEndedAt());
+        assertNull(processRest.getSuperProcessInstanceId());
+        
+        Map<String, Object> variables = activitiProcessEngine.getRuntimeService().getVariables(processRest.getId());
+       
+        assertEquals("test description", variables.get("bpm_description"));
+        assertEquals(1, variables.get("bpm_priority"));
+        
+        cleanupProcessInstance(processRest.getId());
+        
+        // Test same create method with an admin user
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        publicApiClient.setRequestContext(new RequestContext(requestContext.getNetworkId(), tenantAdmin));
+        
+        processRest = processesClient.createProcess(createProcessObject.toJSONString());
         assertNotNull(processRest);
         
-        final Map<String, Object> variables = activitiProcessEngine.getRuntimeService().getVariables(processRest.getId());
+        variables = activitiProcessEngine.getRuntimeService().getVariables(processRest.getId());
        
         assertEquals("test description", variables.get("bpm_description"));
         assertEquals(1, variables.get("bpm_priority"));
@@ -100,6 +133,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         cleanupProcessInstance(processRest.getId());
         
         // Try with unexisting process definition ID
+        publicApiClient.setRequestContext(requestContext);
         createProcessObject = new JSONObject();
         createProcessObject.put("processDefinitionId", "unexisting");
         try 
@@ -145,13 +179,29 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         ProcessInfo processRest = processesClient.createProcess(createProcessObject.toJSONString());
         assertNotNull(processRest);
         
-        final Map<String, Object> variables = activitiProcessEngine.getRuntimeService().getVariables(processRest.getId());
+        Map<String, Object> variables = activitiProcessEngine.getRuntimeService().getVariables(processRest.getId());
        
         assertEquals("test description", variables.get("bpm_description"));
         assertEquals(1, variables.get("bpm_priority"));
         
         cleanupProcessInstance(processRest.getId());
         
+        // Test same create method with an admin user
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        publicApiClient.setRequestContext(new RequestContext(requestContext.getNetworkId(), tenantAdmin));
+        
+        processRest = processesClient.createProcess(createProcessObject.toJSONString());
+        assertNotNull(processRest);
+        
+        variables = activitiProcessEngine.getRuntimeService().getVariables(processRest.getId());
+       
+        assertEquals("test description", variables.get("bpm_description"));
+        assertEquals(1, variables.get("bpm_priority"));
+        
+        cleanupProcessInstance(processRest.getId());
+        
+        // Test create process with wrong key
+        publicApiClient.setRequestContext(requestContext);
         createProcessObject = new JSONObject();
         createProcessObject.put("processDefinitionKey", "activitiAdhoc2");
         
@@ -165,6 +215,61 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             // Exception expected because of wrong process definition key
             assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
             assertErrorSummary("No workflow definition could be found with key 'activitiAdhoc2'.", e.getHttpResponse());
+        }
+    }
+    
+    @Test
+    public void testCreateProcessInstanceForPooledReview() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        final ProcessInfo processInfo = startReviewPooledProcess(requestContext);
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testCreateProcessInstanceFormOtherNetwork() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        
+        org.activiti.engine.repository.ProcessDefinition processDefinition = activitiProcessEngine
+                .getRepositoryService()
+                .createProcessDefinitionQuery()
+                .processDefinitionKey("@" + requestContext.getNetworkId() + "@activitiAdhoc")
+                .singleResult();
+
+        TestNetwork anotherNetwork = getOtherNetwork(requestContext.getNetworkId());
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + anotherNetwork.getId();
+        RequestContext otherContext = new RequestContext(anotherNetwork.getId(), tenantAdmin);
+        publicApiClient.setRequestContext(otherContext);
+        
+        ProcessesClient processesClient = publicApiClient.processesClient();
+        
+        JSONObject createProcessObject = new JSONObject();
+        createProcessObject.put("processDefinitionId", processDefinition.getId());
+        final JSONObject variablesObject = new JSONObject();
+        variablesObject.put("bpm_dueDate", ISO8601DateFormat.format(new Date()));
+        variablesObject.put("bpm_priority", 1);
+        variablesObject.put("bpm_description", "test description");
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                variablesObject.put("bpm_assignee", requestContext.getRunAsUser());
+                return null;
+            }
+        }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+        
+        
+        createProcessObject.put("variables", variablesObject);
+        
+        try
+        {
+            processesClient.createProcess(createProcessObject.toJSONString());
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
         }
     }
     
@@ -236,15 +341,73 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             ProcessInfo processInfo = processesClient.findProcessById(process.getId());
             assertNotNull(processInfo);
             
-            assertEquals(process.getId(), processInfo.getId());
-            assertEquals(process.getBusinessKey(), processInfo.getBusinessKey());
+            final Map<String, Object> variables = activitiProcessEngine.getRuntimeService().getVariables(processInfo.getId());
+            assertEquals(1, variables.get("bpm_priority"));
+
+            HistoricProcessInstance processInstance = activitiProcessEngine.getHistoryService().createHistoricProcessInstanceQuery()
+                    .processInstanceId(processInfo.getId()).singleResult();
+            
+            assertNotNull(processInfo.getId());
+            assertEquals(processInstance.getId(), processInfo.getId());
+            assertNotNull(processInfo.getStartActivityId());
+            assertEquals(processInstance.getStartActivityId(), processInfo.getStartActivityId());
+            assertNotNull(processInfo.getStartUserId());
+            assertEquals(processInstance.getStartUserId(), processInfo.getStartUserId());
+            assertNotNull(processInfo.getStartedAt());
+            assertEquals(processInstance.getStartTime(), processInfo.getStartedAt());
+            assertNotNull(processInfo.getProcessDefinitionId());
+            assertEquals(processInstance.getProcessDefinitionId(), processInfo.getProcessDefinitionId());
+            assertNotNull(processInfo.getProcessDefinitionKey());
+            assertEquals("activitiAdhoc", processInfo.getProcessDefinitionKey());
+            assertNull(processInfo.getBusinessKey());
             assertNull(processInfo.getDeleteReason());
-            assertEquals(process.getDurationInMillis(), processInfo.getDurationInMillis());
-            assertEquals(process.getEndedAt(), processInfo.getEndedAt());
-            assertEquals(process.getProcessDefinitionId(), processInfo.getProcessDefinitionId());
-            assertEquals(process.getProcessDefinitionKey(), processInfo.getProcessDefinitionKey());
-            assertEquals(process.getStartedAt(), processInfo.getStartedAt());
-            assertEquals(process.getSuperProcessInstanceId(), processInfo.getSuperProcessInstanceId());
+            assertNull(processInfo.getDurationInMs());
+            assertNull(processInfo.getEndActivityId());
+            assertNull(processInfo.getEndedAt());
+            assertNull(processInfo.getSuperProcessInstanceId());
+            assertFalse(processInfo.isCompleted());
+            
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    // now complete the process and see if ending info is available in the REST response
+                    Task task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(process.getId()).singleResult();
+                    activitiProcessEngine.getTaskService().complete(task.getId());
+                    task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(process.getId()).singleResult();
+                    activitiProcessEngine.getTaskService().complete(task.getId());
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            
+            processInstance = activitiProcessEngine.getHistoryService().createHistoricProcessInstanceQuery()
+                    .processInstanceId(processInfo.getId()).singleResult();
+            
+            processInfo = processesClient.findProcessById(processInfo.getId());
+            
+            assertNotNull(processInfo.getId());
+            assertEquals(processInstance.getId(), processInfo.getId());
+            assertNotNull(processInfo.getStartActivityId());
+            assertEquals(processInstance.getStartActivityId(), processInfo.getStartActivityId());
+            assertNotNull(processInfo.getStartUserId());
+            assertEquals(processInstance.getStartUserId(), processInfo.getStartUserId());
+            assertNotNull(processInfo.getStartedAt());
+            assertEquals(processInstance.getStartTime(), processInfo.getStartedAt());
+            assertNotNull(processInfo.getProcessDefinitionId());
+            assertEquals(processInstance.getProcessDefinitionId(), processInfo.getProcessDefinitionId());
+            assertNotNull(processInfo.getProcessDefinitionKey());
+            assertEquals("activitiAdhoc", processInfo.getProcessDefinitionKey());
+            assertNull(processInfo.getBusinessKey());
+            assertNull(processInfo.getDeleteReason());
+            assertNotNull(processInfo.getDurationInMs());
+            assertEquals(processInstance.getDurationInMillis(), processInfo.getDurationInMs());
+            assertNotNull(processInfo.getEndActivityId());
+            assertEquals(processInstance.getEndActivityId(), processInfo.getEndActivityId());
+            assertNotNull(processInfo.getEndedAt());
+            assertEquals(processInstance.getEndTime(), processInfo.getEndedAt());
+            assertNull(processInfo.getSuperProcessInstanceId());
+            assertTrue(processInfo.isCompleted());
         }
         finally
         {
@@ -271,9 +434,18 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
     public void testDeleteProcessInstanceById() throws Exception
     {
         final RequestContext requestContext = initApiClientWithTestUser();
+        
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        final RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
+        
+        TestNetwork anotherNetwork = getOtherNetwork(requestContext.getNetworkId());
+        tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + anotherNetwork.getId();
+        final RequestContext otherContext = new RequestContext(anotherNetwork.getId(), tenantAdmin);
+        
         ProcessesClient processesClient = publicApiClient.processesClient();
         
-        final ProcessInfo process = startAdhocProcess(requestContext, null);
+        // delete with user starting the process instance
+        ProcessInfo process = startAdhocProcess(requestContext, null);
         try 
         {
             processesClient.deleteProcessById(process.getId());
@@ -287,6 +459,45 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertNotNull(deletedInstance);
             assertNotNull(deletedInstance.getEndTime());
             assertNull(deletedInstance.getDeleteReason());
+        }
+        finally
+        {
+            cleanupProcessInstance(process.getId());
+        }
+        
+        // delete with admin in same network as the user starting the process instance
+        process = startAdhocProcess(requestContext, null);
+        try 
+        {
+            publicApiClient.setRequestContext(adminContext);
+            processesClient.deleteProcessById(process.getId());
+            
+            // Check if the process was actually deleted
+            assertNull(activitiProcessEngine.getRuntimeService().createProcessInstanceQuery()
+                        .processInstanceId(process.getId()).singleResult());
+            
+            HistoricProcessInstance deletedInstance = activitiProcessEngine.getHistoryService()
+                .createHistoricProcessInstanceQuery().processInstanceId(process.getId()).singleResult();
+            assertNotNull(deletedInstance);
+            assertNotNull(deletedInstance.getEndTime());
+            assertNull(deletedInstance.getDeleteReason());
+        }
+        finally
+        {
+            cleanupProcessInstance(process.getId());
+        }
+        
+        // delete with admin from other network as the user starting the process instance
+        process = startAdhocProcess(requestContext, null);
+        try 
+        {
+            publicApiClient.setRequestContext(otherContext);
+            processesClient.deleteProcessById(process.getId());
+            fail("Expect permission exception");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(HttpStatus.FORBIDDEN.value(), e.getHttpResponse().getStatusCode());
         }
         finally
         {
@@ -409,18 +620,295 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         
         // Test the variable where-clause
         paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(variables/bpm_priority = 'd_int 1'))");
+        paramMap.put("where", "(variables/bpm_priority = 'd_int 1')");
         processList = processesClient.getProcesses(paramMap);
         assertNotNull(processList);
         assertEquals(3, processList.getList().size());
         
         paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(variables/bpm_priority = 'd_int 5'))");
+        paramMap.put("where", "(variables/bpm_priority = 'd:int 1')");
+        processList = processesClient.getProcesses(paramMap);
+        assertNotNull(processList);
+        assertEquals(3, processList.getList().size());
+        
+        paramMap = new HashMap<String, String>();
+        paramMap.put("where", "(variables/bpm_priority = 'd_int 5')");
         processList = processesClient.getProcesses(paramMap);
         assertNotNull(processList);
         assertEquals(0, processList.getList().size());
         
+        // test with date variable
+        Calendar dateCal = Calendar.getInstance();
+        Map<String, Object> variablesToSet = new HashMap<String, Object>();
+        variablesToSet.put("testVarDate", dateCal.getTime());
+        
+        activitiProcessEngine.getRuntimeService().setVariables(process1.getId(), variablesToSet);
+        paramMap = new HashMap<String, String>();
+        paramMap.put("where", "(variables/testVarDate = 'd_datetime " + ISO8601DateFormat.format(dateCal.getTime())+ "')");
+        processList = processesClient.getProcesses(paramMap);
+        assertNotNull(processList);
+        assertEquals(1, processList.getList().size());
+        
         cleanupProcessInstance(process1.getId(), process2.getId(), process3.getId());
+    }
+    
+    // No sorting support yet
+    /*@Test
+    public void testGetProcessInstancesWithSorting() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        
+        final ProcessInfo process1 = startAdhocProcess(requestContext, null, "akey");
+        final ProcessInfo process2 = startAdhocProcess(requestContext, null, "bkey");
+        final ProcessInfo process3 = startAdhocProcess(requestContext, null, "aakey");
+        
+        try
+        {
+            // sort on business key ascending
+            ProcessesClient processesClient = publicApiClient.processesClient();
+            Map<String, String> paramMap = new HashMap<String, String>();
+            paramMap.put("sort", "businessKey");
+            paramMap.put("sortOrder", "asc");
+            ListResponse<ProcessInfo> processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+            
+            assertEquals(process3.getId(), processList.getList().get(0).getId());
+            assertEquals(process1.getId(), processList.getList().get(1).getId());
+            assertEquals(process2.getId(), processList.getList().get(2).getId());
+            
+            // sort on business key descending
+            paramMap.put("sort", "businessKey");
+            paramMap.put("sortOrder", "desc");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+            
+            assertEquals(process2.getId(), processList.getList().get(0).getId());
+            assertEquals(process1.getId(), processList.getList().get(1).getId());
+            assertEquals(process3.getId(), processList.getList().get(2).getId());
+            
+            // sort on non existing key
+            paramMap.put("sort", "businessKey2");
+            try 
+            {
+                processList = processesClient.getProcesses(paramMap);
+                fail();
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
+            }
+            
+            // sort on non existing sort order
+            paramMap.put("sort", "businessKey");
+            paramMap.put("sortOrder", "asc2");
+            try 
+            {
+                processList = processesClient.getProcesses(paramMap);
+                fail();
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
+            }
+        }
+        finally
+        {
+            cleanupProcessInstance(process1.getId(), process2.getId(), process3.getId());
+        }
+    }*/
+    
+    @Test
+    public void testGetProcessTasks() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        final RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
+        
+        TestNetwork anotherNetwork = getOtherNetwork(requestContext.getNetworkId());
+        tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + anotherNetwork.getId();
+        final RequestContext otherContext = new RequestContext(anotherNetwork.getId(), tenantAdmin);
+        
+        final ProcessInfo process1 = startAdhocProcess(requestContext, null);
+        
+        try
+        {
+            ProcessesClient processesClient = publicApiClient.processesClient();
+            Map<String, String> paramMap = new HashMap<String, String>();
+            JSONObject tasksJSON = processesClient.getTasks(process1.getId(), paramMap);
+            assertNotNull(tasksJSON);
+            JSONArray entriesJSON = (JSONArray) tasksJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 1);
+            JSONObject taskJSONObject = (JSONObject) ((JSONObject) entriesJSON.get(0)).get("entry");
+            assertNotNull(taskJSONObject.get("id"));
+            assertEquals(process1.getId(), taskJSONObject.get("processId"));
+            assertEquals(process1.getProcessDefinitionId(), taskJSONObject.get("processDefinitionId"));
+            assertEquals("adhocTask", taskJSONObject.get("activityDefinitionId"));
+            assertEquals("Adhoc Task", taskJSONObject.get("name"));
+            assertEquals(requestContext.getRunAsUser(), taskJSONObject.get("assignee"));
+            assertEquals(2l, taskJSONObject.get("priority"));
+            assertEquals("wf:adhocTask", taskJSONObject.get("formResourceKey"));
+            assertNull(taskJSONObject.get("endedAt"));
+            assertNull(taskJSONObject.get("durationInMs"));
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("status", "active");
+            tasksJSON = processesClient.getTasks(process1.getId(), paramMap);
+            assertNotNull(tasksJSON);
+            entriesJSON = (JSONArray) tasksJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 1);
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("status", "completed");
+            tasksJSON = processesClient.getTasks(process1.getId(), paramMap);
+            assertNotNull(tasksJSON);
+            entriesJSON = (JSONArray) tasksJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 0);
+            
+            paramMap = new HashMap<String, String>();
+            try {
+                processesClient.getTasks("fakeid", paramMap);
+                fail("Exception expected");
+            } catch(PublicApiException expected) {
+                assertEquals(HttpStatus.NOT_FOUND.value(), expected.getHttpResponse().getStatusCode());
+                assertErrorSummary("The entity with id: fakeid was not found", expected.getHttpResponse());
+            }
+            
+            // get tasks with admin from the same tenant as the process initiator
+            publicApiClient.setRequestContext(adminContext);
+            paramMap = new HashMap<String, String>();
+            tasksJSON = processesClient.getTasks(process1.getId(), paramMap);
+            assertNotNull(tasksJSON);
+            entriesJSON = (JSONArray) tasksJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 1);
+            
+            // get tasks with admin from another tenant as the process initiator
+            publicApiClient.setRequestContext(otherContext);
+            paramMap = new HashMap<String, String>();
+            try
+            {
+                tasksJSON = processesClient.getTasks(process1.getId(), paramMap);
+                fail("forbidden expected");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.FORBIDDEN.value(), e.getHttpResponse().getStatusCode());
+            }
+        }
+        finally
+        {
+            cleanupProcessInstance(process1.getId());
+        }
+    }
+    
+    @Test
+    public void testGetProcessActivities() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        final RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
+        
+        TestNetwork anotherNetwork = getOtherNetwork(requestContext.getNetworkId());
+        tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + anotherNetwork.getId();
+        final RequestContext otherContext = new RequestContext(anotherNetwork.getId(), tenantAdmin);
+        
+        final ProcessInfo process1 = startAdhocProcess(requestContext, null);
+        
+        try
+        {
+            ProcessesClient processesClient = publicApiClient.processesClient();
+            Map<String, String> paramMap = new HashMap<String, String>();
+            JSONObject activitiesJSON = processesClient.getActivities(process1.getId(), paramMap);
+            assertNotNull(activitiesJSON);
+            JSONArray entriesJSON = (JSONArray) activitiesJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 2);
+            
+            Map<String, JSONObject> activitiesMap = new HashMap<String, JSONObject>();
+            for (Object entry : entriesJSON) {
+                JSONObject jsonEntry = (JSONObject) entry;
+                JSONObject activityJSONObject = (JSONObject) jsonEntry.get("entry");
+                activitiesMap.put((String) activityJSONObject.get("activityDefinitionId"), activityJSONObject);
+            }
+            
+            JSONObject activityJSONObject = activitiesMap.get("start");
+            assertNotNull(activityJSONObject);
+            assertNotNull(activityJSONObject.get("id"));
+            assertEquals("start", activityJSONObject.get("activityDefinitionId"));
+            assertNull(activityJSONObject.get("activityDefinitionName"));
+            assertEquals("startEvent", activityJSONObject.get("activityDefinitionType"));
+            assertNotNull(activityJSONObject.get("startedAt"));
+            assertNotNull(activityJSONObject.get("endedAt"));
+            assertNotNull(activityJSONObject.get("durationInMs"));
+            
+            activityJSONObject = activitiesMap.get("adhocTask");
+            assertNotNull(activityJSONObject);
+            assertNotNull(activityJSONObject.get("id"));
+            assertEquals("adhocTask", activityJSONObject.get("activityDefinitionId"));
+            assertEquals("Adhoc Task", activityJSONObject.get("activityDefinitionName"));
+            assertEquals("userTask", activityJSONObject.get("activityDefinitionType"));
+            assertNotNull(activityJSONObject.get("startedAt"));
+            assertNull(activityJSONObject.get("endedAt"));
+            assertNull(activityJSONObject.get("durationInMs"));
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("status", "active");
+            activitiesJSON = processesClient.getActivities(process1.getId(), paramMap);
+            assertNotNull(activitiesJSON);
+            entriesJSON = (JSONArray) activitiesJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 1);
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("status", "completed");
+            activitiesJSON = processesClient.getActivities(process1.getId(), paramMap);
+            assertNotNull(activitiesJSON);
+            entriesJSON = (JSONArray) activitiesJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 1);
+            
+            paramMap = new HashMap<String, String>();
+            try {
+                processesClient.getActivities("fakeid", paramMap);
+                fail("Exception expected");
+            } catch(PublicApiException expected) {
+                assertEquals(HttpStatus.NOT_FOUND.value(), expected.getHttpResponse().getStatusCode());
+                assertErrorSummary("The entity with id: fakeid was not found", expected.getHttpResponse());
+            }
+            
+            // get activities with admin from the same tenant as the process initiator
+            publicApiClient.setRequestContext(adminContext);
+            paramMap = new HashMap<String, String>();
+            activitiesJSON = processesClient.getActivities(process1.getId(), paramMap);
+            assertNotNull(activitiesJSON);
+            entriesJSON = (JSONArray) activitiesJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 2);
+            
+            // get tasks with admin from another tenant as the process initiator
+            publicApiClient.setRequestContext(otherContext);
+            paramMap = new HashMap<String, String>();
+            try
+            {
+                processesClient.getActivities(process1.getId(), paramMap);
+                fail("forbidden expected");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.FORBIDDEN.value(), e.getHttpResponse().getStatusCode());
+            }
+        }
+        finally
+        {
+            cleanupProcessInstance(process1.getId());
+        }
     }
     
     @Test
@@ -447,7 +935,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             JSONObject entryJSON = (JSONObject) entryObjectJSON.get("entry");
             if (entryJSON.get("name").equals("Test Doc1")) {
                 doc1Found = true;
-                assertEquals(docNodeRefs[0].toString(), entryJSON.get("id"));
+                assertEquals(docNodeRefs[0].getId(), entryJSON.get("id"));
                 assertEquals("Test Doc1", entryJSON.get("name"));
                 assertEquals("Test Doc1 Title", entryJSON.get("title"));
                 assertEquals("Test Doc1 Description", entryJSON.get("description"));
@@ -459,7 +947,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
                 assertNotNull(entryJSON.get("mimeType"));
             } else {
                 doc2Found = true;
-                assertEquals(docNodeRefs[1].toString(), entryJSON.get("id"));
+                assertEquals(docNodeRefs[1].getId(), entryJSON.get("id"));
                 assertEquals("Test Doc2", entryJSON.get("name"));
                 assertEquals("Test Doc2 Title", entryJSON.get("title"));
                 assertEquals("Test Doc2 Description", entryJSON.get("description"));
@@ -488,10 +976,11 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         
         final String newProcessInstanceId = processRest.getId();
         ProcessesClient processesClient = publicApiClient.processesClient();
-        JSONObject itemJSON = processesClient.findProcessItem(newProcessInstanceId, docNodeRefs[0].toString());
+        System.out.println("node ref " + docNodeRefs[0].toString());
+        JSONObject itemJSON = processesClient.findProcessItem(newProcessInstanceId, docNodeRefs[0].getId());
         assertNotNull(itemJSON);
         
-        assertEquals(docNodeRefs[0].toString(), itemJSON.get("id"));
+        assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
         assertEquals("Test Doc1", itemJSON.get("name"));
         assertEquals("Test Doc1 Title", itemJSON.get("title"));
         assertEquals("Test Doc1 Description", itemJSON.get("description"));
@@ -503,6 +992,61 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertNotNull(itemJSON.get("mimeType"));
         
         cleanupProcessInstance(processRest.getId());
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testAddProcessItem() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        
+        NodeRef[] docNodeRefs = createTestDocuments(requestContext);
+        final ProcessInfo processRest = startAdhocProcess(requestContext, null);
+        try
+        {
+            assertNotNull(processRest);
+            
+            final String newProcessInstanceId = processRest.getId();
+            ProcessesClient processesClient = publicApiClient.processesClient();
+            
+            JSONObject createItemObject = new JSONObject();
+            createItemObject.put("id", docNodeRefs[0].getId());
+            
+            // Add the item
+            processesClient.addProcessItem(newProcessInstanceId, createItemObject.toJSONString());
+            
+            // Fetching the item
+            JSONObject itemJSON = publicApiClient.processesClient().findProcessItem(newProcessInstanceId, docNodeRefs[0].getId());
+            assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
+            assertEquals("Test Doc1", itemJSON.get("name"));
+            assertEquals("Test Doc1 Title", itemJSON.get("title"));
+            assertEquals("Test Doc1 Description", itemJSON.get("description"));
+            assertNotNull(itemJSON.get("createdAt"));
+            assertEquals(requestContext.getRunAsUser(), itemJSON.get("createdBy"));
+            assertNotNull(itemJSON.get("modifiedAt"));
+            assertEquals(requestContext.getRunAsUser(), itemJSON.get("modifiedBy"));
+            assertNotNull(itemJSON.get("size"));
+            assertNotNull(itemJSON.get("mimeType"));
+            
+            // add non existing item
+            createItemObject = new JSONObject();
+            createItemObject.put("id", "blablabla");
+            
+            // Add the item
+            try
+            {
+                processesClient.addProcessItem(newProcessInstanceId, createItemObject.toJSONString());
+                fail("not found expected");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.NOT_FOUND.value(), e.getHttpResponse().getStatusCode());
+            }
+        }
+        finally
+        {
+            cleanupProcessInstance(processRest.getId());
+        }
     }
     
     @Test
@@ -520,16 +1064,31 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             ProcessesClient processesClient = publicApiClient.processesClient();
             
             // Delete the item
-            processesClient.deleteProcessItem(newProcessInstanceId, docNodeRefs[0].toString());
+            processesClient.deleteProcessItem(newProcessInstanceId, docNodeRefs[0].getId());
             
             // Fetching the item should result in 404
-            try {
-                publicApiClient.processesClient().findProcessItem(newProcessInstanceId, docNodeRefs[0].toString());
+            try 
+            {
+                publicApiClient.processesClient().findProcessItem(newProcessInstanceId, docNodeRefs[0].getId());
                 fail("Exception expected");
-            } catch(PublicApiException expected) {
+            } 
+            catch(PublicApiException expected) 
+            {
                 assertEquals(HttpStatus.NOT_FOUND.value(), expected.getHttpResponse().getStatusCode());
-                assertErrorSummary("The entity with id: " + docNodeRefs[0].toString() + " was not found", expected.getHttpResponse());
+                assertErrorSummary("The entity with id: " + docNodeRefs[0].getId() + " was not found", expected.getHttpResponse());
             }
+            
+            // Deleting the item again should give an error
+            try
+            {
+                processesClient.deleteProcessItem(newProcessInstanceId, docNodeRefs[0].getId());
+                fail("Expected not found");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.NOT_FOUND.value(), e.getHttpResponse().getStatusCode());
+            }
+            
         }
         finally
         {
@@ -542,6 +1101,13 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
     {
         RequestContext requestContext = initApiClientWithTestUser();
         
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
+        
+        TestNetwork anotherNetwork = getOtherNetwork(requestContext.getNetworkId());
+        tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + anotherNetwork.getId();
+        final RequestContext otherContext = new RequestContext(anotherNetwork.getId(), tenantAdmin);
+        
         ProcessInfo processRest = startAdhocProcess(requestContext, null);
         
         try
@@ -551,50 +1117,127 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             
             JSONObject processvariables = publicApiClient.processesClient().getProcessvariables(processInstanceId);
             assertNotNull(processvariables);
+            validateVariablesResponse(processvariables, requestContext.getRunAsUser());
             
-            // Add process variables to map for easy lookup
-            Map<String, JSONObject> variablesByName = new HashMap<String, JSONObject>();
-            JSONObject entry = null;
-            JSONArray entries = (JSONArray) processvariables.get("entries");
-            assertNotNull(entries);
-            for(int i=0; i<entries.size(); i++) 
+            // get variables with admin from same network
+            publicApiClient.setRequestContext(adminContext);
+            processvariables = publicApiClient.processesClient().getProcessvariables(processInstanceId);
+            assertNotNull(processvariables);
+            validateVariablesResponse(processvariables, requestContext.getRunAsUser());
+            
+            // get variables with admin from other network
+            publicApiClient.setRequestContext(otherContext);
+            try
             {
-                entry = (JSONObject) entries.get(i);
-                assertNotNull(entry);
-                entry = (JSONObject) entry.get("entry");
-                assertNotNull(entry);
-                variablesByName.put((String) entry.get("name"), entry);
+                processvariables = publicApiClient.processesClient().getProcessvariables(processInstanceId);
+                fail("forbidden expected");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.FORBIDDEN.value(), e.getHttpResponse().getStatusCode());
             }
             
-            // Test some well-known variables
-            JSONObject variable = variablesByName.get("bpm_description");
-            assertNotNull(variable);
-            assertEquals("d:text", variable.get("type"));
-            assertNull(variable.get("value"));
-            
-            variable = variablesByName.get("bpm_percentComplete");
-            assertNotNull(variable);
-            assertEquals("d:int", variable.get("type"));
-            assertEquals(0L, variable.get("value"));
-            
-            variable = variablesByName.get("bpm_sendEMailNotifications");
-            assertNotNull(variable);
-            assertEquals("d:boolean", variable.get("type"));
-            assertEquals(Boolean.FALSE, variable.get("value"));
-            
-            variable = variablesByName.get("bpm_package");
-            assertNotNull(variable);
-            assertEquals("bpm:workflowPackage", variable.get("type"));
-            assertNotNull(variable.get("value"));
-            
-            variable = variablesByName.get("bpm_assignee");
-            assertNotNull(variable);
-            assertEquals("cm:person", variable.get("type"));
-            assertEquals(requestContext.getRunAsUser(), variable.get("value"));
+            // get variables with non existing process id
+            try
+            {
+                processvariables = publicApiClient.processesClient().getProcessvariables("fakeid");
+                fail("not found expected");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.NOT_FOUND.value(), e.getHttpResponse().getStatusCode());
+            }
         }
         finally
         {
             cleanupProcessInstance(processRest.getId());
+        }
+    }
+    
+    protected void validateVariablesResponse(JSONObject processvariables, String user) 
+    {
+        // Add process variables to map for easy lookup
+        Map<String, JSONObject> variablesByName = new HashMap<String, JSONObject>();
+        JSONObject entry = null;
+        JSONArray entries = (JSONArray) processvariables.get("entries");
+        assertNotNull(entries);
+        for(int i=0; i<entries.size(); i++) 
+        {
+            entry = (JSONObject) entries.get(i);
+            assertNotNull(entry);
+            entry = (JSONObject) entry.get("entry");
+            assertNotNull(entry);
+            variablesByName.put((String) entry.get("name"), entry);
+        }
+        
+        // Test some well-known variables
+        JSONObject variable = variablesByName.get("bpm_description");
+        assertNotNull(variable);
+        assertEquals("d:text", variable.get("type"));
+        assertNull(variable.get("value"));
+        
+        variable = variablesByName.get("bpm_percentComplete");
+        assertNotNull(variable);
+        assertEquals("d:int", variable.get("type"));
+        assertEquals(0L, variable.get("value"));
+        
+        variable = variablesByName.get("bpm_sendEMailNotifications");
+        assertNotNull(variable);
+        assertEquals("d:boolean", variable.get("type"));
+        assertEquals(Boolean.FALSE, variable.get("value"));
+        
+        variable = variablesByName.get("bpm_package");
+        assertNotNull(variable);
+        assertEquals("bpm:workflowPackage", variable.get("type"));
+        assertNotNull(variable.get("value"));
+        
+        variable = variablesByName.get("bpm_assignee");
+        assertNotNull(variable);
+        assertEquals("cm:person", variable.get("type"));
+        assertEquals(user, variable.get("value"));
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testCreateVariablesPresentInModel() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+
+        ProcessInfo processInstance = startAdhocProcess(requestContext, null);
+        try
+        {
+            JSONArray variablesArray = new JSONArray();
+            JSONObject variableBody = new JSONObject();
+            variableBody.put("name", "bpm_percentComplete");
+            variableBody.put("value", 20);
+            variableBody.put("type", "d:int");
+            variablesArray.add(variableBody);
+            variableBody = new JSONObject();
+            variableBody.put("name", "bpm_workflowPriority");
+            variableBody.put("value", 50);
+            variableBody.put("type", "d:int");
+            variablesArray.add(variableBody);
+            
+            JSONObject result = publicApiClient.processesClient().createVariables(processInstance.getId(), variablesArray);
+            assertNotNull(result);
+            JSONObject resultObject = (JSONObject) result.get("list");
+            JSONArray resultList = (JSONArray) resultObject.get("entries");
+            assertEquals(2, resultList.size());
+            JSONObject firstResultObject = (JSONObject) ((JSONObject) resultList.get(0)).get("entry");
+            assertEquals("bpm_percentComplete", firstResultObject.get("name"));
+            assertEquals(20L, firstResultObject.get("value"));
+            assertEquals("d:int", firstResultObject.get("type"));
+            assertEquals(20, activitiProcessEngine.getRuntimeService().getVariable(processInstance.getId(), "bpm_percentComplete"));
+            
+            JSONObject secondResultObject = (JSONObject) ((JSONObject) resultList.get(1)).get("entry");
+            assertEquals("bpm_workflowPriority", secondResultObject.get("name"));
+            assertEquals(50L, secondResultObject.get("value"));
+            assertEquals("d:int", secondResultObject.get("type"));
+            assertEquals(50, activitiProcessEngine.getRuntimeService().getVariable(processInstance.getId(), "bpm_workflowPriority"));
+        }
+        finally
+        {
+            cleanupProcessInstance(processInstance.getId());
         }
     }
     
@@ -603,6 +1246,9 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
     public void testUpdateProcessVariables() throws Exception
     {
         RequestContext requestContext = initApiClientWithTestUser();
+        
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
         
         ProcessInfo processRest = startAdhocProcess(requestContext, null);
         
@@ -626,7 +1272,6 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals("d:long", result.get("type"));
             assertEquals(1234L, activitiProcessEngine.getRuntimeService().getVariable(processId, "newVariable"));
             
-            
             // Update an unexisting variable, creates a new one using no tying
             variableJson = new JSONObject();
             variableJson.put("name", "stringVariable");
@@ -640,7 +1285,6 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals("This is a string value", result.get("value"));
             assertEquals("d:text", result.get("type"));
             assertEquals("This is a string value", activitiProcessEngine.getRuntimeService().getVariable(processId, "stringVariable"));
-            
             
             // Update an existing variable, creates a new one using explicit typing (d:long)
             variableJson = new JSONObject();
@@ -657,7 +1301,6 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals("d:long", result.get("type"));
             assertEquals(4567L, activitiProcessEngine.getRuntimeService().getVariable(processId, "newVariable"));
             
-            
             // Update an existing variable, creates a new one using no explicit typing 
             variableJson = new JSONObject();
             variableJson.put("name", "stringVariable");
@@ -671,6 +1314,93 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals("Updated string variable", result.get("value"));
             assertEquals("d:text", result.get("type"));
             assertEquals("Updated string variable", activitiProcessEngine.getRuntimeService().getVariable(processId, "stringVariable"));
+            
+            // Update an unexisting variable with wrong variable data
+            variableJson = new JSONObject();
+            variableJson.put("name", "newLongVariable");
+            variableJson.put("value", "text");
+            variableJson.put("type", "d:long");
+            
+            try
+            {
+                publicApiClient.processesClient().updateVariable(processId, "newLongVariable", variableJson);
+                fail("Expected server error exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getHttpResponse().getStatusCode());
+            }
+            
+            // Update an unexisting variable with no variable data
+            variableJson = new JSONObject();
+            variableJson.put("name", "newNoValueVariable");
+            variableJson.put("type", "d:datetime");
+            
+            resultEntry = publicApiClient.processesClient().updateVariable(processId, "newNoValueVariable", variableJson);
+            assertNotNull(resultEntry);
+            result = (JSONObject) resultEntry.get("entry");
+            
+            assertEquals("newNoValueVariable", result.get("name"));
+            assertNotNull(result.get("value"));
+            assertEquals("d:datetime", result.get("type"));
+            assertNotNull(activitiProcessEngine.getRuntimeService().getVariable(processId, "newNoValueVariable"));
+            
+            // Test update variable with admin user
+            publicApiClient.setRequestContext(adminContext);
+            variableJson = new JSONObject();
+            variableJson.put("name", "newVariable");
+            variableJson.put("value", 1234L);
+            variableJson.put("type", "d:long");
+            
+            resultEntry = publicApiClient.processesClient().updateVariable(processId, "newVariable", variableJson);
+            assertNotNull(resultEntry);
+            result = (JSONObject) resultEntry.get("entry");
+            
+            assertEquals("newVariable", result.get("name"));
+            assertEquals(1234L, result.get("value"));
+            assertEquals("d:long", result.get("type"));
+            assertEquals(1234L, activitiProcessEngine.getRuntimeService().getVariable(processId, "newVariable"));
+        }
+        finally
+        {
+            cleanupProcessInstance(processRest.getId());
+        }
+        
+        // test update variable with admin user that also started the process instance
+        
+        processRest = startAdhocProcess(adminContext, null);
+        
+        try
+        {
+            assertNotNull(processRest);
+            String processId = processRest.getId();
+            
+            // Update an unexisting variable, creates a new one using explicit typing (d:long)
+            JSONObject variableJson = new JSONObject();
+            variableJson.put("name", "newVariable");
+            variableJson.put("value", 1234L);
+            variableJson.put("type", "d:long");
+            
+            JSONObject resultEntry = publicApiClient.processesClient().updateVariable(processId, "newVariable", variableJson);
+            assertNotNull(resultEntry);
+            JSONObject result = (JSONObject) resultEntry.get("entry");
+            
+            assertEquals("newVariable", result.get("name"));
+            assertEquals(1234L, result.get("value"));
+            assertEquals("d:long", result.get("type"));
+            assertEquals(1234L, activitiProcessEngine.getRuntimeService().getVariable(processId, "newVariable"));
+            
+            // test update variable with user not involved in the process instance
+            publicApiClient.setRequestContext(requestContext);
+            try
+            {
+                publicApiClient.processesClient().updateVariable(processId, "newVariable", variableJson);
+                fail("Expected forbidden exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.FORBIDDEN.value(), e.getHttpResponse().getStatusCode());
+            }
         }
         finally
         {

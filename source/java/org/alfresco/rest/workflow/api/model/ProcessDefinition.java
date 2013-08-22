@@ -27,7 +27,8 @@ public class ProcessDefinition
     String category;
     int version;
     String deploymentId;
-
+    String title;
+    String description;
     String startFormResourceKey;
     Boolean isGraphicNotationDefined;
     
@@ -38,7 +39,6 @@ public class ProcessDefinition
     public ProcessDefinition(org.activiti.engine.repository.ProcessDefinition processDefinition)
     {
         this.id = processDefinition.getId();
-        this.key = processDefinition.getKey();
         this.name = processDefinition.getName();
         this.category = processDefinition.getCategory();
         this.version = processDefinition.getVersion();
@@ -103,6 +103,26 @@ public class ProcessDefinition
     public void setDeploymentId(String deploymentId)
     {
         this.deploymentId = deploymentId;
+    }
+    
+    public String getTitle()
+    {
+        return title;
+    }
+
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
 
     public String getStartFormResourceKey()

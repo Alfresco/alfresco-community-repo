@@ -915,6 +915,22 @@
           </list>
        </property>
     </bean>
+    
+    <bean id="workflowActivities" class="org.alfresco.rest.workflow.api.impl.ActivitiesImpl" parent="baseWorkflowRest" />
+
+    <bean id="WorkflowActivities" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.workflow.api.Activities</value>
+       </property>
+       <property name="target">
+          <ref bean="workflowActivities" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
 
 	<bean class="org.alfresco.rest.workflow.api.deployments.DeploymentsRestEntityResource">
         <property name="deployments" ref="Deployments"/>
@@ -925,18 +941,24 @@
 	</bean>
 	
    <bean class="org.alfresco.rest.workflow.api.processdefinitions.StartFormModelRelation">
-        <property name="processDefinitions" ref="processDefinitions"/>
+        <property name="processDefinitions" ref="ProcessDefinitions"/>
    </bean>
     
 	<bean class="org.alfresco.rest.workflow.api.processes.ProcessesRestEntityResource">
         <property name="processes" ref="Processes"/>
 	</bean>
 	
+	<bean class="org.alfresco.rest.workflow.api.processes.ProcessTasksRelation">
+        <property name="tasks" ref="Tasks"/>
+	</bean>
+	<bean class="org.alfresco.rest.workflow.api.processes.ProcessActivitiesRelation">
+        <property name="activities" ref="WorkflowActivities"/>
+	</bean>
 	<bean class="org.alfresco.rest.workflow.api.processes.ProcessItemsRelation">
-        <property name="processes" ref="processes"/>
+        <property name="processes" ref="Processes"/>
 	</bean>
 	<bean class="org.alfresco.rest.workflow.api.processes.ProcessVariablesRelation">
-        <property name="processes" ref="processes"/>
+        <property name="processes" ref="Processes"/>
 	</bean>
 	
 	<bean class="org.alfresco.rest.workflow.api.tasks.TasksRestEntityResource">
@@ -956,6 +978,6 @@
    </bean>
    
    <bean class="org.alfresco.rest.workflow.api.tasks.TaskItemsRelation">
-        <property name="tasks" ref="tasks"/>
+        <property name="tasks" ref="Tasks"/>
    </bean>
 </beans>

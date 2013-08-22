@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +49,6 @@ import org.alfresco.repo.workflow.WorkflowConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
-import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.MemberOfSite;
@@ -807,6 +805,53 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
     }
     
     @Test
+    @SuppressWarnings("unchecked")
+    public void testChangeDueDate() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+        ProcessInstance processInstance = startAdhocProcess(requestContext.getRunAsUser(), requestContext.getNetworkId(), null);
+        try 
+        {
+            Task task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
+            
+            TasksClient tasksClient = publicApiClient.tasksClient();
+            JSONObject taskObject = tasksClient.findTaskById(task.getId());
+            assertNull(taskObject.get("dueAt"));
+            
+            List<String> selectedFields = new ArrayList<String>();
+            selectedFields.addAll(Arrays.asList(new String[] { "name", "description", "dueAt", "priority", "assignee", "owner"}));
+            
+            // set due date
+            JSONObject taskBody = new JSONObject();
+            String dueAt = formatDate(new Date());
+            taskBody.put("dueAt", dueAt);
+            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            
+            taskObject = tasksClient.findTaskById(task.getId());
+            assertNotNull(taskObject.get("dueAt"));
+            
+            taskBody = new JSONObject();
+            taskBody.put("dueAt", taskObject.get("dueAt"));
+            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            
+            taskObject = tasksClient.findTaskById(task.getId());
+            assertNotNull(taskObject.get("dueAt"));
+            
+            JSONObject variableBody = new JSONObject();
+            variableBody.put("name", "bpm_workflowDueDate");
+            variableBody.put("value", formatDate(new Date()));
+            variableBody.put("type", "d:datetime");
+            variableBody.put("scope", "global");
+            
+            tasksClient.updateTaskVariable(task.getId(), "bpm_workflowDueDate", variableBody);
+        }
+        finally
+        {
+            cleanupProcessInstance(processInstance);
+        }
+    }
+    
+    @Test
     public void testGetTasks() throws Exception
     {
         // Alter current engine date
@@ -922,27 +967,28 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         activitiProcessEngine.getTaskService().saveTask(activeTask);
         activitiProcessEngine.getTaskService().addCandidateUser(activeTask.getId(), anotherUserId);
         activitiProcessEngine.getTaskService().addCandidateGroup(activeTask.getId(), "sales");
+        activitiProcessEngine.getTaskService().setVariableLocal(activeTask.getId(), "numberVar", 10);
        
         TasksClient tasksClient = publicApiClient.tasksClient();
         
         // Test status filtering - active
         Map<String, String> params = new HashMap<String, String>();
-        params.put("where", "(status = 'active' AND processInstanceId = '" + processInstance.getId() + "')");
+        params.put("where", "(status = 'active' AND processId = '" + processInstance.getId() + "')");
         assertTasksPresentInTaskQuery(params, tasksClient, false, activeTask.getId());
         
         // Test status filtering - completed
         params.clear();
-        params.put("where", "(status = 'completed' AND processInstanceId = '" + processInstance.getId() + "')");
+        params.put("where", "(status = 'completed' AND processId = '" + processInstance.getId() + "')");
         assertTasksPresentInTaskQuery(params, tasksClient, false, completedTask.getId());
         
         // Test status filtering - any
         params.clear();
-        params.put("where", "(status = 'any' AND processInstanceId = '" + processInstance.getId() + "')");
+        params.put("where", "(status = 'any' AND processId = '" + processInstance.getId() + "')");
         assertTasksPresentInTaskQuery(params, tasksClient, false, activeTask.getId(), completedTask.getId());
         
         // Test status filtering - no value should default to 'active'
         params.clear();
-        params.put("where", "(processInstanceId = '" + processInstance.getId() + "')");
+        params.put("where", "(processId = '" + processInstance.getId() + "')");
         assertTasksPresentInTaskQuery(params, tasksClient, false, activeTask.getId());
         
         // Test status filtering - illegal status
@@ -1021,11 +1067,11 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         
         // Candidate group filtering, only available for active tasks. When used with completed/any 400 is returned
         params.clear();
-        params.put("where", "(status = 'active' AND candidateGroup = 'sales' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'active' AND candidateGroup = 'sales' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
         
         params.clear();
-        params.put("where", "(status = 'completed' AND candidateGroup = 'sales' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'completed' AND candidateGroup = 'sales' AND processId='" + processInstance.getId() +"')");
         try
         {
             tasksClient.findTasks(params);
@@ -1038,7 +1084,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         }
         
         params.clear();
-        params.put("where", "(status = 'any' AND candidateGroup = 'sales' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'any' AND candidateGroup = 'sales' AND processId='" + processInstance.getId() +"')");
         try
         {
             tasksClient.findTasks(params);
@@ -1052,94 +1098,94 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         
         // Name filtering
         params.clear();
-        params.put("where", "(status = 'active' AND name = 'Task name' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'active' AND name = 'Task name' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
         
         params.clear();
-        params.put("where", "(status = 'completed' AND name = 'Another task name' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'completed' AND name = 'Another task name' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
         
         params.clear();
-        params.put("where", "(status = 'any' AND name = 'Another task name' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'any' AND name = 'Another task name' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
         
         // Description filtering
         params.clear();
-        params.put("where", "(status = 'active' AND description = 'This is a test description' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'active' AND description = 'This is a test description' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
         
         params.clear();
-        params.put("where", "(status = 'completed' AND description = 'This is another test description' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'completed' AND description = 'This is another test description' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
         
         params.clear();
-        params.put("where", "(status = 'any' AND description = 'This is another test description' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'any' AND description = 'This is another test description' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
         
         // Priority filtering
         params.clear();
-        params.put("where", "(status = 'active' AND priority = 2 AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'active' AND priority = 2 AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
         
-        params.put("where", "(status = 'completed' AND priority = 3 AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'completed' AND priority = 3 AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
         
-        params.put("where", "(status = 'any' AND priority = 3 AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'any' AND priority = 3 AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
         
         // Process instance business-key filtering
         params.clear();
-        params.put("where", "(status = 'active' AND processInstanceBusinessKey = '" + businessKey + "')");
+        params.put("where", "(status = 'active' AND processBusinessKey = '" + businessKey + "')");
         assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
         
         params.clear();
-        params.put("where", "(status = 'completed' AND processInstanceBusinessKey = '" + businessKey + "')");
+        params.put("where", "(status = 'completed' AND processBusinessKey = '" + businessKey + "')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
          
         params.clear();
-        params.put("where", "(status = 'any' AND processInstanceBusinessKey = '" + businessKey + "')");
+        params.put("where", "(status = 'any' AND processBusinessKey = '" + businessKey + "')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId(), activeTask.getId());
         
         // Activity definition id filtering
         params.clear();
-        params.put("where", "(status = 'active' AND activityDefinitionId = 'verifyTaskDone' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'active' AND activityDefinitionId = 'verifyTaskDone' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
         
         params.clear();
-        params.put("where", "(status = 'completed' AND activityDefinitionId = 'adhocTask' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'completed' AND activityDefinitionId = 'adhocTask' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
         
         params.clear();
-        params.put("where", "(status = 'any' AND activityDefinitionId = 'adhocTask' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'any' AND activityDefinitionId = 'adhocTask' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
         
         // Process definition id filtering
         params.clear();
         params.put("where", "(status = 'active' AND processDefinitionId = '" + processInstance.getProcessDefinitionId() + 
-                    "' AND processInstanceId='" + processInstance.getId() +"')");
+                    "' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
         
         params.clear();
         params.put("where", "(status = 'completed' AND processDefinitionId = '" + processInstance.getProcessDefinitionId() + 
-                    "' AND processInstanceId='" + processInstance.getId() +"')");
+                    "' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
         
         params.clear();
         params.put("where", "(status = 'any' AND processDefinitionId = '" + processInstance.getProcessDefinitionId() + 
-                    "' AND processInstanceId='" + processInstance.getId() +"')");
+                    "' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId(), completedTask.getId());
         
         // Process definition name filerting 
         params.clear();
-        params.put("where", "(status = 'active' AND processDefinitionName = 'Adhoc Activiti Process' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'active' AND processDefinitionName = 'Adhoc Activiti Process' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
         
         params.clear();
-        params.put("where", "(status = 'completed' AND processDefinitionName = 'Adhoc Activiti Process' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'completed' AND processDefinitionName = 'Adhoc Activiti Process' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
         
         params.clear();
-        params.put("where", "(status = 'any' AND processDefinitionName = 'Adhoc Activiti Process' AND processInstanceId='" + processInstance.getId() +"')");
+        params.put("where", "(status = 'any' AND processDefinitionName = 'Adhoc Activiti Process' AND processId='" + processInstance.getId() +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId(), completedTask.getId());
         
         // Due date filtering
@@ -1167,6 +1213,38 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         params.clear();
         params.put("where", "(status = 'any' AND startedAt = '" + ISO8601DateFormat.format(taskCreated.getTime()) +"')");
         assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId(), activeTask.getId());
+        
+        params.clear();
+        params.put("where", "(variables/numberVar > 'd:int 5')");
+        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+        
+        params.clear();
+        params.put("where", "(variables/numberVar > 'd:int 10')");
+        assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+        
+        params.clear();
+        params.put("where", "(variables/numberVar >= 'd_int 10')");
+        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+        
+        params.clear();
+        params.put("where", "(variables/numberVar >= 'd:int 11')");
+        assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+        
+        params.clear();
+        params.put("where", "(variables/numberVar <= 'd:int 10')");
+        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+        
+        params.clear();
+        params.put("where", "(variables/numberVar <= 'd:int 9')");
+        assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+        
+        params.clear();
+        params.put("where", "(variables/numberVar < 'd_int 15')");
+        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+        
+        params.clear();
+        params.put("where", "(variables/numberVar < 'd:int 10')");
+        assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
     }
     
     @Test
@@ -1240,7 +1318,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             TasksClient tasksClient = publicApiClient.tasksClient();
             
             Map<String, String> params = new HashMap<String, String>();
-            params.put("processInstanceId", processInstance.getId());
+            params.put("processId", processInstance.getId());
             
             JSONObject resultingTasks = tasksClient.findTasks(params);
             assertNotNull(resultingTasks);
@@ -1865,6 +1943,64 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
     }
     
     @Test
+    @SuppressWarnings("unchecked")
+    public void testCreateTaskVariablesPresentInModel() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+
+        ProcessInstance processInstance = startAdhocProcess(requestContext.getRunAsUser(), requestContext.getNetworkId(), null);
+        try
+        {
+            Task task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
+            assertNotNull(task);
+            
+            Map<String, Object> actualLocalVariables = activitiProcessEngine.getTaskService().getVariablesLocal(task.getId());
+            Map<String, Object> actualGlobalVariables = activitiProcessEngine.getRuntimeService().getVariables(processInstance.getId());
+            assertEquals(5, actualGlobalVariables.size());
+            assertEquals(7, actualLocalVariables.size());
+            
+            // Update a global value that is present in the model with type given
+            JSONArray variablesArray = new JSONArray();
+            JSONObject variableBody = new JSONObject();
+            variableBody.put("name", "bpm_percentComplete");
+            variableBody.put("value", 20);
+            variableBody.put("type", "d:int");
+            variableBody.put("scope", "global");
+            variablesArray.add(variableBody);
+            variableBody = new JSONObject();
+            variableBody.put("name", "bpm_workflowPriority");
+            variableBody.put("value", 50);
+            variableBody.put("type", "d:int");
+            variableBody.put("scope", "local");
+            variablesArray.add(variableBody);
+            
+            TasksClient tasksClient = publicApiClient.tasksClient();
+            JSONObject result = tasksClient.createTaskVariables(task.getId(), variablesArray);
+            assertNotNull(result);
+            JSONObject resultObject = (JSONObject) result.get("list");
+            JSONArray resultList = (JSONArray) resultObject.get("entries");
+            assertEquals(2, resultList.size());
+            JSONObject firstResultObject = (JSONObject) ((JSONObject) resultList.get(0)).get("entry");
+            assertEquals("bpm_percentComplete", firstResultObject.get("name"));
+            assertEquals(20L, firstResultObject.get("value"));
+            assertEquals("d:int", firstResultObject.get("type"));
+            assertEquals("global", firstResultObject.get("scope")); 
+            assertEquals(20, activitiProcessEngine.getRuntimeService().getVariable(processInstance.getId(), "bpm_percentComplete"));
+            
+            JSONObject secondResultObject = (JSONObject) ((JSONObject) resultList.get(1)).get("entry");
+            assertEquals("bpm_workflowPriority", secondResultObject.get("name"));
+            assertEquals(50L, secondResultObject.get("value"));
+            assertEquals("d:int", secondResultObject.get("type"));
+            assertEquals("local", secondResultObject.get("scope")); 
+            assertEquals(50, activitiProcessEngine.getTaskService().getVariable(task.getId(), "bpm_workflowPriority"));
+        }
+        finally
+        {
+            cleanupProcessInstance(processInstance);
+        }
+    }
+    
+    @Test
     public void testGetTaskVariablesRawVariableTypes() throws Exception
     {
         RequestContext requestContext = initApiClientWithTestUser();
@@ -2244,16 +2380,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             
             // Check well-known properties and their types
             
-            // Validate bpm:description
-            JSONObject modelEntry = modelFieldsByName.get("bpm_description");
-            assertNotNull(modelEntry);
-            assertEquals("Description", modelEntry.get("title"));
-            assertEquals("{http://www.alfresco.org/model/bpm/1.0}description", modelEntry.get("qualifiedName"));
-            assertEquals("d:text", modelEntry.get("dataType"));
-            assertFalse((Boolean)modelEntry.get("required"));
-            
-            // Validate bpm:description
-            modelEntry = modelFieldsByName.get("bpm_completionDate");
+            // Validate bpm:completionDate
+            JSONObject modelEntry = modelFieldsByName.get("bpm_completionDate");
             assertNotNull(modelEntry);
             assertEquals("Completion Date", modelEntry.get("title"));
             assertEquals("{http://www.alfresco.org/model/bpm/1.0}completionDate", modelEntry.get("qualifiedName"));
@@ -2267,15 +2395,6 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals("{http://www.alfresco.org/model/content/1.0}owner", modelEntry.get("qualifiedName"));
             assertEquals("d:text", modelEntry.get("dataType"));
             assertFalse((Boolean)modelEntry.get("required"));
-            
-            // Validate bpm:priority
-            modelEntry = modelFieldsByName.get("bpm_priority");
-            assertNotNull(modelEntry);
-            assertEquals("Priority", modelEntry.get("title"));
-            assertEquals("{http://www.alfresco.org/model/bpm/1.0}priority", modelEntry.get("qualifiedName"));
-            assertEquals("d:int", modelEntry.get("dataType"));
-            assertEquals("2", modelEntry.get("defaultValue"));
-            assertTrue((Boolean)modelEntry.get("required"));
             
             // Validate bpm:package
             modelEntry = modelFieldsByName.get("bpm_package");
@@ -2322,7 +2441,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
                 JSONObject entryJSON = (JSONObject) entryObjectJSON.get("entry");
                 if (entryJSON.get("name").equals("Test Doc1")) {
                     doc1Found = true;
-                    assertEquals(docNodeRefs[0].toString(), entryJSON.get("id"));
+                    assertEquals(docNodeRefs[0].getId(), entryJSON.get("id"));
                     assertEquals("Test Doc1", entryJSON.get("name"));
                     assertEquals("Test Doc1 Title", entryJSON.get("title"));
                     assertEquals("Test Doc1 Description", entryJSON.get("description"));
@@ -2334,7 +2453,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
                     assertNotNull(entryJSON.get("mimeType"));
                 } else {
                     doc2Found = true;
-                    assertEquals(docNodeRefs[1].toString(), entryJSON.get("id"));
+                    assertEquals(docNodeRefs[1].getId(), entryJSON.get("id"));
                     assertEquals("Test Doc2", entryJSON.get("name"));
                     assertEquals("Test Doc2 Title", entryJSON.get("title"));
                     assertEquals("Test Doc2 Description", entryJSON.get("description"));
@@ -2429,28 +2548,5 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             // Ignore error during cleanup to prevent swallowing potential assetion-exception
             log("Error while cleaning up process instance");
         }
-    }
-    
-    protected TestNetwork getOtherNetwork(String usedNetworkId) throws Exception {
-        Iterator<TestNetwork> networkIt = getTestFixture().getNetworksIt();
-        while(networkIt.hasNext()) {
-            TestNetwork network = networkIt.next();
-            if(!usedNetworkId.equals(network.getId())) {
-                return network;
-            }
-        }
-        fail("Need more than one network to test permissions");
-        return null;
-    }
-    
-    protected TestPerson getOtherPersonInNetwork(String usedPerson, String networkId) throws Exception {
-        TestNetwork usedNetwork = getTestFixture().getNetwork(networkId);
-        for(TestPerson person : usedNetwork.getPeople()) {
-            if(!person.getId().equals(usedPerson)) {
-                return person;
-            }
-        }
-        fail("Network doesn't have additonal users, cannot perform test");
-        return null;
     }
 }

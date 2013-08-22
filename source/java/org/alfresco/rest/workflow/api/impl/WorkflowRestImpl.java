@@ -1,6 +1,7 @@
 package org.alfresco.rest.workflow.api.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -9,16 +10,36 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.activiti.engine.ActivitiObjectNotFoundException;
 import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.history.HistoricTaskInstanceQuery;
+import org.activiti.engine.impl.ProcessEngineImpl;
+import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.activiti.engine.impl.context.Context;
+import org.activiti.engine.impl.interceptor.Command;
+import org.activiti.engine.impl.interceptor.CommandContext;
+import org.activiti.engine.impl.persistence.deploy.DeploymentCache;
+import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.workflow.WorkflowConstants;
+import org.alfresco.repo.workflow.activiti.ActivitiConstants;
+import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.workflow.api.model.FormModelElement;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.Constraint;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -42,6 +63,7 @@ public class WorkflowRestImpl
     protected DictionaryService dictionaryService;
     protected ProcessEngine activitiProcessEngine;
     protected boolean deployWorkflowsInTenant;
+    protected List<String> excludeModelTypes = new ArrayList<String>(Arrays.asList("bpm_priority", "bpm_description", "bpm_dueDate"));
     
     static 
     {
@@ -79,6 +101,32 @@ public class WorkflowRestImpl
     public void setDeployWorkflowsInTenant(boolean deployWorkflowsInTenant)
     {
         this.deployWorkflowsInTenant = deployWorkflowsInTenant;
+    }
+    
+    /**
+     * Get the process definition from the cache if available
+     * 
+     * @param processDefinitionId the unique id identifier of the process definition
+     */
+    public ProcessDefinitionEntity getCachedProcessDefinition(final String processDefinitionId)
+    {
+        ProcessEngineConfigurationImpl processConfig = (ProcessEngineConfigurationImpl) ((ProcessEngineImpl) activitiProcessEngine).getProcessEngineConfiguration();
+        ProcessDefinitionEntity definitionEntity = processConfig.getCommandExecutorTxRequired().execute(new Command<ProcessDefinitionEntity>() 
+        {
+
+            @Override
+            public ProcessDefinitionEntity execute(CommandContext commandContext)
+            {
+                DeploymentCache<ProcessDefinitionEntity> cache = Context
+                    .getProcessEngineConfiguration()
+                    .getDeploymentManager()
+                    .getProcessDefinitionCache();
+                
+                return cache.get(processDefinitionId);
+            }
+            
+        });
+        return definitionEntity;
     }
     
     /**
@@ -131,16 +179,33 @@ public class WorkflowRestImpl
         List<FormModelElement> page = new ArrayList<FormModelElement>();
         for (Entry<QName, PropertyDefinition> entry : taskProperties.entrySet())
         {
+        	String name = entry.getKey().toPrefixString(namespaceService).replace(':', '_');
+            
             // Only add properties which are not part of an excluded type
-            if(!typesToExclude.contains(entry.getValue().getContainerClass().getName()))
+            if(!typesToExclude.contains(entry.getValue().getContainerClass().getName()) && excludeModelTypes.contains(name) == false)
             {
                 FormModelElement element = new FormModelElement();
-                element.setName(entry.getKey().toPrefixString(namespaceService).replace(':', '_'));
+                element.setName(name);
                 element.setQualifiedName(entry.getKey().toString());
                 element.setTitle(entry.getValue().getTitle(dictionaryService));
                 element.setRequired(entry.getValue().isMandatory());
                 element.setDataType(entry.getValue().getDataType().getName().toPrefixString(namespaceService));
                 element.setDefaultValue(entry.getValue().getDefaultValue());
+                if (entry.getValue().getConstraints() != null)
+                {
+                    for (ConstraintDefinition constraintDef : entry.getValue().getConstraints())
+                    {
+                    	Constraint constraint = constraintDef.getConstraint();
+                    	if (constraint != null && constraint instanceof ListOfValuesConstraint)
+                    	{
+                    		ListOfValuesConstraint valuesConstraint = (ListOfValuesConstraint) constraint;
+                    		if (valuesConstraint.getAllowedValues() != null && valuesConstraint.getAllowedValues().size() > 0)
+                    		{
+                    			element.setAllowedValues(valuesConstraint.getAllowedValues());
+                    		}
+                    	}
+                    }
+                }
                 page.add(element);
             }
         }
@@ -174,7 +239,8 @@ public class WorkflowRestImpl
         
         ClassDefinition parentClassDefinition = taskType.getParentClassDefinition();
         boolean contentClassFound = false;
-        while(parentClassDefinition != null) {
+        while(parentClassDefinition != null) 
+        {
             if(contentClassFound)
             {
                 typesToExclude.add(parentClassDefinition.getName());
@@ -189,5 +255,73 @@ public class WorkflowRestImpl
             parentClassDefinition = parentClassDefinition.getParentClassDefinition();
         }
         return typesToExclude;
+    }
+    
+    /**
+     * Validates if the logged in user is allowed to get information about a specific process instance.
+     * If the user is not allowed an exception is thrown.
+     * 
+     * @param processId identifier of the process instance
+     */
+    protected void validateIfUserAllowedToWorkWithProcess(String processId)
+    {
+        if (tenantService.isEnabled())
+        {
+            try 
+            {
+                String tenantDomain = (String) activitiProcessEngine.getRuntimeService().getVariable(processId, ActivitiConstants.VAR_TENANT_DOMAIN);
+                if (TenantUtil.getCurrentDomain().equals(tenantDomain) == false)
+                {
+                    throw new PermissionDeniedException("Process is running in another tenant");
+                }
+            }
+            catch (ActivitiObjectNotFoundException e)
+            {
+                throw new EntityNotFoundException(processId);
+            }
+        }
+        
+        try 
+        {
+            ActivitiScriptNode initiator = (ActivitiScriptNode) activitiProcessEngine.getRuntimeService().getVariable(processId, WorkflowConstants.PROP_INITIATOR);
+            if (AuthenticationUtil.getRunAsUser().equals(initiator.getNodeRef().getId()))
+            {
+                // user is allowed
+                return;
+            }
+        }
+        catch (ActivitiObjectNotFoundException e)
+        {
+            throw new EntityNotFoundException(processId);
+        }
+        
+        HistoricTaskInstanceQuery query = activitiProcessEngine.getHistoryService()
+            .createHistoricTaskInstanceQuery()
+            .processInstanceId(processId);
+        
+        if (authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) 
+        {
+            // Admin is allowed to read all processes in the current tenant
+            if (tenantService.isEnabled()) 
+            {
+                query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+            }
+            else
+            {
+                return;
+            }
+        }
+        else
+        {
+            // If non-admin user, involvement in the task is required (either owner, assignee or externally involved).
+            query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
+        }
+        
+        List<HistoricTaskInstance> taskList = query.list();
+        
+        if(org.apache.commons.collections.CollectionUtils.isEmpty(taskList)) 
+        {
+            throw new PermissionDeniedException("user is not allowed to access information about process " + processId);
+        }
     }
 }

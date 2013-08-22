@@ -18,13 +18,16 @@
  */
 package org.alfresco.rest.workflow.api.processdefinitions;
 
+import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.WebApiParameters;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.workflow.api.ProcessDefinitions;
@@ -32,7 +35,8 @@ import org.alfresco.rest.workflow.api.model.ProcessDefinition;
 
 @EntityResource(name="process-definitions", title = "Process definitions")
 public class ProcessDefinitionsRestEntityResource implements EntityResourceAction.Read<ProcessDefinition>, 
-                                                             EntityResourceAction.ReadById<ProcessDefinition>{
+                                                             EntityResourceAction.ReadById<ProcessDefinition>,
+                                                             BinaryResourceAction.Read {
 
     ProcessDefinitions processDefinitions;
     
@@ -58,5 +62,13 @@ public class ProcessDefinitionsRestEntityResource implements EntityResourceActio
     public ProcessDefinition readById(String id, Parameters parameters) throws EntityNotFoundException
     {
         return processDefinitions.getProcessDefinition(id);
+    }
+    
+    @Override
+    @WebApiDescription(title = "Get a process definition image", description = "Get a process definition image")
+    @BinaryProperties({"image"})
+    public BinaryResource readProperty(String id, Parameters parameters) throws EntityNotFoundException
+    {
+        return processDefinitions.getProcessDefinitionImage(id);
     }
 }

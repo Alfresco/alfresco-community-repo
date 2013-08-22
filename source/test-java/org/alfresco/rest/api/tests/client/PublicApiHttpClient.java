@@ -71,7 +71,7 @@ public class PublicApiHttpClient
 
     private static final String OLD_BASE_URL = "http://{0}:{1}{2}/{3}/{4}/api/";
 	private static final String INDEX_URL = "http://{0}:{1}{2}/{3}";
-	private static final String BASE_URL = "http://{0}:{1}{2}/{3}/{4}/{5}/alfresco/versions/1";
+	private static final String BASE_URL = "http://{0}:{1}{2}/{3}/{4}/{5}/{6}/versions/1";
 	private static final String PUBLICAPI_CMIS_SERVICE_URL = "http://{0}:{1}{2}/{3}/cmis/versions/{4}/{5}";
 	private static final String PUBLICAPI_CMIS_URL = "http://{0}:{1}{2}/{3}/{4}/{5}/cmis/versions/{6}/{7}";
 	private static final String ATOM_PUB_URL = "http://{0}:{1}{2}/cmisatom";
@@ -86,6 +86,9 @@ public class PublicApiHttpClient
 	private ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
 	private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(this.resourcePatternResolver);
 
+	// can be overriden by other clients like the workflow client
+	protected String apiName = "alfresco";
+	
 	public PublicApiHttpClient(String host, int port, String contextPath, String servletName, AuthenticatedHttp authenticatedHttp)
 	{
 		super();
@@ -500,7 +503,7 @@ public class PublicApiHttpClient
     		Pair<String, String> relationshipCollectionInfo = getRelationCollectionInfo(resourceClass);
 
 			sb.append(MessageFormat.format(BASE_URL, new Object[] {host, String.valueOf(port), contextPath, servletName,
-					tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain, scope.toString()}));
+					tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain, scope.toString(), apiName}));
 
     		if(relationshipCollectionInfo != null)
     		{
@@ -578,7 +581,7 @@ public class PublicApiHttpClient
 				tenantDomain = TenantUtil.DEFAULT_TENANT;
 			}
 			sb.append(MessageFormat.format(BASE_URL, new Object[] {host, String.valueOf(port), contextPath, servletName, 
-					tenantDomain, scope}));
+					tenantDomain, scope, apiName}));
 
 			if(collectionName != null)
 			{

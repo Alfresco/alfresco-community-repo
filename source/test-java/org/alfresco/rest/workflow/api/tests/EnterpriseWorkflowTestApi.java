@@ -2,9 +2,12 @@ package org.alfresco.rest.workflow.api.tests;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.repository.DeploymentBuilder;
@@ -23,11 +26,11 @@ import org.alfresco.rest.api.tests.client.AuthenticationDetailsProvider;
 import org.alfresco.rest.api.tests.client.HttpClientProvider;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiException;
-import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.UserAuthenticationDetailsProviderImpl;
 import org.alfresco.rest.api.tests.client.UserData;
 import org.alfresco.rest.api.tests.client.UserDataService;
+import org.alfresco.rest.api.tests.client.data.MemberOfSite;
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
 import org.alfresco.rest.workflow.api.tests.WorkflowApiClient.ProcessesClient;
 import org.alfresco.service.ServiceRegistry;
@@ -85,7 +88,7 @@ public class EnterpriseWorkflowTestApi extends EnterpriseTestApi
         };
         AuthenticationDetailsProvider authenticationDetailsProvider = new UserAuthenticationDetailsProviderImpl(userDataService, "admin", "admin");
         AuthenticatedHttp authenticatedHttp = new AuthenticatedHttp(httpClientProvider, authenticationDetailsProvider);
-        this.httpClient = new PublicApiHttpClient("localhost", TestFixture.PORT, TestFixture.CONTEXT_PATH,
+        this.httpClient = new WorkflowApiHttpClient("localhost", TestFixture.PORT, TestFixture.CONTEXT_PATH,
                 TestFixture.PUBLIC_API_SERVLET_NAME, authenticatedHttp);
         this.publicApiClient = new WorkflowApiClient(httpClient, userDataService);
         activitiProcessEngine = (ProcessEngine) applicationContext.getBean("activitiProcessEngine");
@@ -114,6 +117,29 @@ public class EnterpriseWorkflowTestApi extends EnterpriseTestApi
         RequestContext requestContext = new RequestContext(currentNetwork.getId(), personId);
         publicApiClient.setRequestContext(requestContext);
         return requestContext;
+    }
+    
+    protected TestNetwork getOtherNetwork(String usedNetworkId) throws Exception {
+        Iterator<TestNetwork> networkIt = getTestFixture().getNetworksIt();
+        while(networkIt.hasNext()) {
+            TestNetwork network = networkIt.next();
+            if(!usedNetworkId.equals(network.getId())) {
+                return network;
+            }
+        }
+        fail("Need more than one network to test permissions");
+        return null;
+    }
+    
+    protected TestPerson getOtherPersonInNetwork(String usedPerson, String networkId) throws Exception {
+        TestNetwork usedNetwork = getTestFixture().getNetwork(networkId);
+        for(TestPerson person : usedNetwork.getPeople()) {
+            if(!person.getId().equals(usedPerson)) {
+                return person;
+            }
+        }
+        fail("Network doesn't have additonal users, cannot perform test");
+        return null;
     }
     
     protected Date parseDate(JSONObject entry, String fieldName) {
@@ -188,10 +214,17 @@ public class EnterpriseWorkflowTestApi extends EnterpriseTestApi
    }
    
    /**
-    * Start an adhoc-process through the public REST-API.
+    * Start an adhoc-process without business key through the public REST-API.
+    */
+   protected ProcessInfo startAdhocProcess(final RequestContext requestContext, NodeRef[] documentRefs) throws PublicApiException {
+       return startAdhocProcess(requestContext, documentRefs, null);
+   }
+   
+   /**
+    * Start an adhoc-process with possible business key through the public REST-API.
     */
    @SuppressWarnings("unchecked")
-   protected ProcessInfo startAdhocProcess(final RequestContext requestContext, NodeRef[] documentRefs) throws PublicApiException {
+   protected ProcessInfo startAdhocProcess(final RequestContext requestContext, NodeRef[] documentRefs, String businessKey) throws PublicApiException {
        org.activiti.engine.repository.ProcessDefinition processDefinition = activitiProcessEngine
                .getRepositoryService()
                .createProcessDefinitionQuery()
@@ -202,8 +235,13 @@ public class EnterpriseWorkflowTestApi extends EnterpriseTestApi
        
        final JSONObject createProcessObject = new JSONObject();
        createProcessObject.put("processDefinitionId", processDefinition.getId());
+       if (businessKey != null)
+       {
+           createProcessObject.put("businessKey", businessKey);
+       }
        final JSONObject variablesObject = new JSONObject();
        variablesObject.put("bpm_priority", 1);
+       variablesObject.put("wf_notifyMe", Boolean.FALSE);
        
        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
        {
@@ -220,10 +258,49 @@ public class EnterpriseWorkflowTestApi extends EnterpriseTestApi
            final JSONArray itemsObject = new JSONArray();
            for (NodeRef nodeRef : documentRefs)
            {
-               itemsObject.add(nodeRef.toString());
+               itemsObject.add(nodeRef.getId());
            }
            createProcessObject.put("items", itemsObject);
        }
+       
+       createProcessObject.put("variables", variablesObject);
+       
+       return processesClient.createProcess(createProcessObject.toJSONString());
+   }
+   
+   /**
+    * Start a review pooled process through the public REST-API.
+    */
+   @SuppressWarnings("unchecked")
+   protected ProcessInfo startReviewPooledProcess(final RequestContext requestContext) throws PublicApiException {
+       org.activiti.engine.repository.ProcessDefinition processDefinition = activitiProcessEngine
+               .getRepositoryService()
+               .createProcessDefinitionQuery()
+               .processDefinitionKey("@" + requestContext.getNetworkId() + "@activitiReviewPooled")
+               .singleResult();
+
+       ProcessesClient processesClient = publicApiClient.processesClient();
+       
+       final JSONObject createProcessObject = new JSONObject();
+       createProcessObject.put("processDefinitionId", processDefinition.getId());
+       
+       final JSONObject variablesObject = new JSONObject();
+       variablesObject.put("bpm_priority", 1);
+       variablesObject.put("wf_notifyMe", Boolean.FALSE);
+       
+       TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+       {
+           @Override
+           public Void doWork() throws Exception
+           {
+               List<MemberOfSite> memberships = getTestFixture().getNetwork(requestContext.getNetworkId()).getSiteMemberships(requestContext.getRunAsUser());
+               assertTrue(memberships.size() > 0);
+               MemberOfSite memberOfSite = memberships.get(0);
+               String group = "GROUP_site_" + memberOfSite.getSiteId() + "_" + memberOfSite.getRole().name();
+               variablesObject.put("bpm_groupAssignee", group);
+               return null;
+           }
+       }, requestContext.getRunAsUser(), requestContext.getNetworkId());
        
        createProcessObject.put("variables", variablesObject);
        

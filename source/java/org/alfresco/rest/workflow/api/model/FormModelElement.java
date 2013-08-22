@@ -18,6 +18,8 @@
  */
 package org.alfresco.rest.workflow.api.model;
 
+import java.util.List;
+
 public class FormModelElement
 {
     String name;
@@ -26,6 +28,7 @@ public class FormModelElement
     String dataType;
     boolean required;
     String defaultValue;
+    List<String> allowedValues;
     
     public String getName()
     {
@@ -75,4 +78,12 @@ public class FormModelElement
     {
         this.defaultValue = defaultValue;
     }
+	public List<String> getAllowedValues() 
+	{
+		return allowedValues;
+	}
+	public void setAllowedValues(List<String> allowedValues) 
+	{
+		this.allowedValues = allowedValues;
+	}
 }

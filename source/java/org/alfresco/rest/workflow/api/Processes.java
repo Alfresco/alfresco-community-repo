@@ -18,6 +18,8 @@
  */
 package org.alfresco.rest.workflow.api;
 
+import java.util.List;
+
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -47,6 +49,8 @@ public interface Processes
     CollectionWithPagingInfo<Variable> getVariables(String processId, Paging paging);
 
     Variable updateVariable(String processId, Variable entity);
+    
+    List<Variable> updateVariables(String processId, List<Variable> variables);
 
     void deleteVariable(String processId, String id);
 

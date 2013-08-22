@@ -170,7 +170,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             String localPropertyName = propertyName.replaceFirst("variables/", "");
             Object actualValue = null;
-            if (propertyValue.contains("_") && propertyValue.contains(" ")) 
+            if ((propertyValue.contains("_") || propertyValue.contains(":")) && propertyValue.contains(" ")) 
             {
                 String typeDef = propertyValue.substring(0, propertyValue.indexOf(' '));
                 try

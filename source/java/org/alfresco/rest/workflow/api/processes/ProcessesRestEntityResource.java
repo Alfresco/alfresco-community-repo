@@ -27,7 +27,6 @@ import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.WebApiParameters;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
@@ -79,16 +78,11 @@ public class ProcessesRestEntityResource implements EntityResourceAction.Read<Pr
     }
     
     @Override
-    @WebApiDescription(title = "Updates a flocket")
-    @BinaryProperties({"images"})
-    public BinaryResource readProperty(String entityId, Parameters parameters)
-                throws EntityNotFoundException
+    @WebApiDescription(title = "Get a process instance image", description = "Get a process instance image")
+    @BinaryProperties({"image"})
+    public BinaryResource readProperty(String entityId, Parameters parameters) throws EntityNotFoundException
     {
-        if(parameters.hasBinaryProperty("image"))
-        {
-            return processes.getProcessImage(entityId);
-        }
-        throw new InvalidArgumentException("Only image is supported property");
+        return processes.getProcessImage(entityId);
     }
 
     @Override

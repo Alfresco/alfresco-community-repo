@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,6 +34,8 @@ public class ProcessDefinitionParser extends ListParser<ProcessDefinition>
         processDefinition.setVersion(((Number) entry.get("version")).intValue());
         processDefinition.setName((String) entry.get("name"));
         processDefinition.setDeploymentId((String) entry.get("deploymentId"));
+        processDefinition.setTitle((String) entry.get("title"));
+        processDefinition.setDescription((String) entry.get("description"));
         processDefinition.setCategory((String) entry.get("category"));
         processDefinition.setStartFormResourceKey((String) entry.get("startFormResourceKey"));
         processDefinition.setGraphicNotationDefined((Boolean) entry.get("graphicNotationDefined"));

@@ -386,7 +386,7 @@ public class FTPServerTest extends TestCase
             
             // Update the file contents
             String FILE1_CONTENT_2="That's how it is says Pooh!";
-            ftp.appendFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_2.getBytes("UTF-8")));
+            ftp.storeFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_2.getBytes("UTF-8")));
             
             InputStream is2 = ftp.retrieveFileStream(FILE1_NAME);
             
@@ -551,7 +551,7 @@ public class FTPServerTest extends TestCase
             
             // Update the file as user two
             String FILE1_CONTENT_2="test file content updated";
-            success = ftpTwo.appendFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_2.getBytes("UTF-8")));
+            success = ftpTwo.storeFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_2.getBytes("UTF-8")));
             assertTrue("user two unable to append file", success);
             
             // User one should read user2's content
@@ -738,7 +738,7 @@ public class FTPServerTest extends TestCase
             
             // Update the file contents without setting time directly
             String FILE1_CONTENT_2="That's how it is says Pooh!";
-            ftp.appendFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_2.getBytes("UTF-8")));
+            ftp.storeFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_2.getBytes("UTF-8")));
             
             InputStream is2 = ftp.retrieveFileStream(FILE1_NAME);
             

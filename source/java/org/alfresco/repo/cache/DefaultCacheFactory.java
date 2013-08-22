@@ -61,8 +61,7 @@ public class DefaultCacheFactory<K extends Serializable, V> implements CacheFact
         return cache;
     }
 
-    @Override
-    public SimpleCache<K, V> createInvalidatingCache(String cacheName)
+    private SimpleCache<K, V> createInvalidatingCache(String cacheName)
     {
         return createLocalCache(cacheName);
     }

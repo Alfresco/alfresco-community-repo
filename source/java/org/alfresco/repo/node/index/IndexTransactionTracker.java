@@ -60,7 +60,7 @@ public class IndexTransactionTracker extends AbstractReindexComponent
     private boolean forceReindex;
     
     private long fromTxnId;
-    private String statusMsg;
+    private volatile String statusMsg;
     private static final String NO_REINDEX = "No reindex in progress";
     
     /**

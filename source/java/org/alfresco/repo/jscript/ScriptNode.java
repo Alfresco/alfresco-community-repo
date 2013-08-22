@@ -69,7 +69,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.lock.NodeLockedException;
+import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -1246,11 +1246,8 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         
         if (getAspectsSet().contains(ContentModel.ASPECT_LOCKABLE))
         {
-            try
-            {
-                this.services.getLockService().checkForLock(this.nodeRef);
-            }
-            catch (NodeLockedException ex)
+            LockStatus status = this.services.getLockService().getLockStatus(this.nodeRef);
+            if (status == LockStatus.LOCKED || status == LockStatus.LOCK_OWNER)
             {
                 locked = true;
             }

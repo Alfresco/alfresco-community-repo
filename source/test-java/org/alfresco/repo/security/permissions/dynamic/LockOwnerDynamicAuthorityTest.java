@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -254,6 +255,68 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
     }
+    
+    /**
+     * ALF-19732: Share does not render Cancel Checkout action for items being edited online
+     */
+    public void testPermissionWithEphemeralLockAspect()
+    {
+        permissionService.setPermission(rootNodeRef, "andy", PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setPermission(rootNodeRef, "lemur", PermissionService.CHECK_OUT, true);
+        permissionService.setPermission(rootNodeRef, "lemur", PermissionService.WRITE, true);
+        permissionService.setPermission(rootNodeRef, "lemur", PermissionService.READ, true);
+        permissionService.setPermission(rootNodeRef, "frog", PermissionService.CHECK_OUT, true);
+        permissionService.setPermission(rootNodeRef, "frog", PermissionService.WRITE, true);
+        permissionService.setPermission(rootNodeRef, "frog", PermissionService.READ, true);
+        authenticationService.authenticate("andy", "andy".toCharArray());
+        NodeRef testNode = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_PERSON,
+                ContentModel.TYPE_CMOBJECT, null).getChildRef();
+        lockService.lock(testNode, LockType.READ_ONLY_LOCK, 3600, Lifetime.EPHEMERAL);
+       
+     
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
+                PermissionService.LOCK));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
+                PermissionService.UNLOCK));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
+        
+        authenticationService.authenticate("lemur", "lemur".toCharArray());
+        
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
+                PermissionService.LOCK));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode,
+                PermissionService.UNLOCK));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
+        
+        authenticationService.authenticate("andy", "andy".toCharArray());
+        lockService.unlock(testNode);
+        authenticationService.authenticate("lemur", "lemur".toCharArray());
+        lockService.lock(testNode, LockType.READ_ONLY_LOCK, 3600, Lifetime.EPHEMERAL);
+        
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
+                PermissionService.LOCK));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
+                PermissionService.UNLOCK));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
+        
+        
+        authenticationService.authenticate("frog", "frog".toCharArray());
+        
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
+                PermissionService.LOCK));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode,
+                PermissionService.UNLOCK));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));        
+    }
+    
 
     /**
      * 

@@ -64,7 +64,7 @@ public class DefaultCacheFactoryTest
     @Test
     public void canCreateInvalidatingCache()
     {
-        cache = (DefaultSimpleCache<String, String>) cacheFactory.createInvalidatingCache("cache.someCache");
+        cache = (DefaultSimpleCache<String, String>) cacheFactory.createInvalidateRemovalCache("cache.someCache");
         assertEquals(4, cache.getMaxItems());
         assertEquals("cache.someCache", cache.getCacheName());
     }

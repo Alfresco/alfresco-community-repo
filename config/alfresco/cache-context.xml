@@ -54,7 +54,7 @@
 
    <!-- The cross-transaction shared cache for Property entities -->
    
-   <bean name="propertyValueSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+   <bean name="propertyValueSharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
       <constructor-arg value="cache.propertyValueCache"/>      
    </bean>
    
@@ -64,7 +64,7 @@
 
    <!-- The cross-transaction shared cache for Property Unique Contexts -->
    
-   <bean name="propertyUniqueContextSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+   <bean name="propertyUniqueContextSharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
       <constructor-arg value="cache.propertyUniqueContextSharedCache"/>
    </bean>
    

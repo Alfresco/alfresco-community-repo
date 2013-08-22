@@ -96,10 +96,21 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     @Override
     public void put(K key, V value)
     {
-        AbstractMap.SimpleImmutableEntry<K, V> kvp = new AbstractMap.SimpleImmutableEntry<K, V>(key, value);
-        map.put(key, kvp);
+        putAndCheckUpdate(key, value);
     }
 
+    /**
+     * <code>put</code> method that may be used to check for updates in a thread-safe manner.
+     * 
+     * @return <code>true</code> if the put resulted in a change in value, <code>false</code> otherwise.
+     */
+    public boolean putAndCheckUpdate(K key, V value)
+    {
+        AbstractMap.SimpleImmutableEntry<K, V> kvp = new AbstractMap.SimpleImmutableEntry<K, V>(key, value);
+        AbstractMap.SimpleImmutableEntry<K, V> priorKVP = map.put(key, kvp);
+        return priorKVP != null && (! priorKVP.equals(kvp));
+    }
+    
     @Override
     public void remove(K key)
     {

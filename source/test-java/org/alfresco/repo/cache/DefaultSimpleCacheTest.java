@@ -62,4 +62,43 @@ public class DefaultSimpleCacheTest extends SimpleCacheTestBase<DefaultSimpleCac
         assertEquals("4", cache.get(4));
         assertEquals("5", cache.get(5));
     }
+    
+    @Test
+    public void putAndCheckUpdate()
+    {
+        // Put an initial value
+        cache.put(101, "101");
+        // Update it
+        assertEquals(true, cache.putAndCheckUpdate(101, "99101"));
+        // Check the value really was updated
+        assertEquals("99101", cache.get(101));
+        
+        // Precondition: no value for key 102
+        assertFalse(cache.contains(102));
+        // Put a value - and test the return
+        assertEquals(false, cache.putAndCheckUpdate(102, "102"));
+        assertEquals("102", cache.get(102));
+        
+        cache.put(103, null);
+        assertEquals(true, cache.putAndCheckUpdate(103, "103"));
+        // Repeat the put, this should not be an update
+        assertEquals(false, cache.putAndCheckUpdate(103, "103"));
+        
+        assertFalse(cache.contains(104));
+        assertEquals(false, cache.putAndCheckUpdate(104, null));
+        // Repeat putting null - still not an update, as we had that value a moment ago.
+        assertEquals(false, cache.putAndCheckUpdate(104, null));
+        // Now an update
+        assertEquals(true, cache.putAndCheckUpdate(104, "104"));
+        // Another update
+        assertEquals(true, cache.putAndCheckUpdate(104, "99104"));
+        // Another update, back to null
+        assertEquals(true, cache.putAndCheckUpdate(104, null));
+        // Not an update - still null
+        assertEquals(false, cache.putAndCheckUpdate(104, null));
+        
+        cache.remove(104);
+        assertEquals(false, cache.putAndCheckUpdate(104, "104"));
+        assertEquals(true, cache.putAndCheckUpdate(104, null));
+    }
 }

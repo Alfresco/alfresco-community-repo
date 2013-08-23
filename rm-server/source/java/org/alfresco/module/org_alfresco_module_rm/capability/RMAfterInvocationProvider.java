@@ -744,7 +744,9 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                         continue;                       // Continue to next ConfigAttributeDefintion
                     }
 
-                    if (allowed && (testNodeRef != null) && (checkRead(testNodeRef) != AccessDecisionVoter.ACCESS_GRANTED))
+                    if (allowed && 
+                        testNodeRef != null && 
+                        checkRead(testNodeRef) != AccessDecisionVoter.ACCESS_GRANTED)
                     {
                         allowed = false;
                         break;                          // No point evaluating more ConfigAttributeDefintions

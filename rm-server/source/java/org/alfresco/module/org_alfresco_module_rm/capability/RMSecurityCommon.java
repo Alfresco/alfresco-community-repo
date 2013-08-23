@@ -24,6 +24,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -36,6 +37,9 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * Common security functions.
@@ -45,11 +49,16 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  * @since 2.0
  */
-public class RMSecurityCommon
+public class RMSecurityCommon implements ApplicationContextAware
 {    
+    /** No set value */
     protected int NOSET_VALUE = -100;
     
+    /** Logger */
     private static Log logger = LogFactory.getLog(RMSecurityCommon.class);
+    
+    /** Application Context */
+    private ApplicationContext applicationContext;
     
     /** Services */
     protected NodeService nodeService;
@@ -58,32 +67,57 @@ public class RMSecurityCommon
     protected RMCaveatConfigComponent caveatConfigComponent;
     protected FilePlanService filePlanService;
     
+    /**
+     * @param   applicationContext application context
+     */
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
+    }
+    
+    /**
+     * @param nodeService   node service
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
     
+    /**
+     * @param permissionService permission service
+     */
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
     
+    /**
+     * @param rmService records management service
+     */
     public void setRecordsManagementService(RecordsManagementService rmService)
     {
         this.rmService = rmService;
     }
     
+    /**
+     * @param caveatConfigComponent caveat config service
+     */
     public void setCaveatConfigComponent(RMCaveatConfigComponent caveatConfigComponent)
     {
         this.caveatConfigComponent = caveatConfigComponent;
     }
     
+    /**
+     * @param filePlanService   file plan service
+     */
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
     }
     
     /**
+     * Sets a value into the transaction cache
      * 
      * @param prefix
      * @param nodeRef
@@ -98,6 +132,7 @@ public class RMSecurityCommon
     }
     
     /**
+     * Gets a value from the transaction cache
      * 
      * @param prefix
      * @param nodeRef
@@ -116,6 +151,7 @@ public class RMSecurityCommon
     }
     
     /**
+     * Check for RM read
      * 
      * @param nodeRef
      * @return
@@ -133,6 +169,7 @@ public class RMSecurityCommon
     }
     
     /**
+     * Check for RM read
      * 
      * @param nodeRef
      * @param allowDMRead
@@ -142,7 +179,9 @@ public class RMSecurityCommon
     {
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
         
-        if (filePlanService.isFilePlanComponent(nodeRef) == true)
+        // use the internal node service to avoid duplication of method permission checks
+        NodeService internalNodeService = (NodeService)applicationContext.getBean("nodeService");        
+        if (internalNodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT)== true)
         {
             result = checkRmRead(nodeRef);
         }
@@ -185,14 +224,14 @@ public class RMSecurityCommon
         NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
         
         // Admin role
-        if (permissionService.hasPermission(filePlan, RMPermissionModel.ROLE_ADMINISTRATOR) == AccessStatus.ALLOWED)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("\t\tAdmin user, access granted.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
-            }
-            return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_GRANTED);            
-        }
+        //if (permissionService.hasPermission(filePlan, RMPermissionModel.ROLE_ADMINISTRATOR) == AccessStatus.ALLOWED)
+        //{
+        //    if (logger.isDebugEnabled())
+        //    {
+        //        logger.debug("\t\tAdmin user, access granted.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
+        //    }
+        //    return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_GRANTED);            
+       // }
 
         if (permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS) == AccessStatus.DENIED)
         {

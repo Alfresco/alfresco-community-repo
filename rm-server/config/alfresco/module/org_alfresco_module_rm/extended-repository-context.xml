@@ -250,5 +250,23 @@
         	</value>
         </property>
     </bean>
+    
+    <bean id="searchScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.ExtendedSearch">
+        <property name="extensionName">
+            <value>search</value>
+        </property>
+        <property name="searchSubsystemSwitchableApplicationContextFactory">
+            <ref bean="Search" />
+        </property>        
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+        <property name="repositoryHelper">
+           <ref bean="repositoryHelper"/>
+        </property>
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+    </bean>
 	
 </beans>    

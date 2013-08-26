@@ -30,6 +30,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -57,29 +58,47 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     /** Publish executor register */
     private PublishExecutorRegistry publishExecutorRegistry;
     
+    /** Dictionary service */
+    private DictionaryService dictionaryService;
+    
     /** Behaviour filter */
     private BehaviourFilter behaviourFilter;
     
+    /**
+     * @param nodeService   node service
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
     
+    /**
+     * @param searchService search service
+     */
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
     
+    /**
+     * @param publishExecutorRegistry   public executor registry
+     */
     public void setPublishExecutorRegistry(PublishExecutorRegistry publishExecutorRegistry)
     {
         this.publishExecutorRegistry = publishExecutorRegistry;
     }
     
+    /**
+     * @param behaviourFilter   behaviour filter
+     */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
     }    
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#executeImpl()
+     */
     public void executeImpl()
     {        
         if (logger.isDebugEnabled() == true)
@@ -91,44 +110,47 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
         {
             public Object doWork() throws Exception
             {
-                // Get a list of the nodes that have updates that need to be published
-                List<NodeRef> nodeRefs = getUpdatedNodes();
-
-                // Deal with each updated disposition action in turn
-                for (NodeRef nodeRef : nodeRefs)
-                {
-                    if (nodeService.exists(nodeRef) == true)
+                if (rmLoaded() == true)
+                {                
+                    // Get a list of the nodes that have updates that need to be published
+                    List<NodeRef> nodeRefs = getUpdatedNodes();
+    
+                    // Deal with each updated disposition action in turn
+                    for (NodeRef nodeRef : nodeRefs)
                     {
-                        // Mark the update node as publishing in progress
-                        markPublishInProgress(nodeRef);                        
-                        try
+                        if (nodeService.exists(nodeRef) == true)
                         {
-                            Date start = new Date();
-                            if (logger.isDebugEnabled() == true)
+                            // Mark the update node as publishing in progress
+                            markPublishInProgress(nodeRef);                        
+                            try
                             {
-                                logger.debug("Starting publish of updates ...");
-                                logger.debug("   - for " + nodeRef.toString());
-                                logger.debug("   - at " + start.toString());
-                            }
-                            
-                            // Publish updates
-                            publishUpdates(nodeRef);
-                            
-                            
-                            if (logger.isDebugEnabled() == true)
+                                Date start = new Date();
+                                if (logger.isDebugEnabled() == true)
+                                {
+                                    logger.debug("Starting publish of updates ...");
+                                    logger.debug("   - for " + nodeRef.toString());
+                                    logger.debug("   - at " + start.toString());
+                                }
+                                
+                                // Publish updates
+                                publishUpdates(nodeRef);
+                                
+                                
+                                if (logger.isDebugEnabled() == true)
+                                {
+                                    Date end = new Date();
+                                    long duration = end.getTime() - start.getTime();
+                                    logger.debug("Completed publish of updates ...");
+                                    logger.debug("   - for " + nodeRef.toString());
+                                    logger.debug("   - at " + end.toString());
+                                    logger.debug("   - duration " + Long.toString(duration));
+                                }
+                            }                   
+                            finally
                             {
-                                Date end = new Date();
-                                long duration = end.getTime() - start.getTime();
-                                logger.debug("Completed publish of updates ...");
-                                logger.debug("   - for " + nodeRef.toString());
-                                logger.debug("   - at " + end.toString());
-                                logger.debug("   - duration " + Long.toString(duration));
+                                // Ensure the update node has either completed the publish or is marked as no longer in progress
+                                unmarkPublishInProgress(nodeRef);
                             }
-                        }                   
-                        finally
-                        {
-                            // Ensure the update node has either completed the publish or is marked as no longer in progress
-                            unmarkPublishInProgress(nodeRef);
                         }
                     }
                 }
@@ -140,6 +162,24 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
         {
             logger.debug("Job Finished");
         }
+    }
+    
+    /**
+     * Helper method to determine whether the RM content model has been loaded yet.
+     *
+     * @return  boolean true if RM content model loaded, false otherwise
+     */
+    private boolean rmLoaded()
+    {
+        boolean result = false;
+        
+        // ensure that the rm content model has been loaded
+        if (dictionaryService.getAspect(ASPECT_UNPUBLISHED_UPDATE) != null)
+        {
+            result = true;
+        }
+        
+        return result;
     }
     
     /**

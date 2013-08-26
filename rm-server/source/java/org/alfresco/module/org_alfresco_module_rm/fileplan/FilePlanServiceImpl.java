@@ -178,8 +178,8 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     public boolean isFilePlanComponent(NodeRef nodeRef)
     {
         boolean result = false;
-        if (nodeService.exists(nodeRef) == true &&
-            nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
+        if (getInternalNodeService().exists(nodeRef) == true &&
+            getInternalNodeService().hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
         {
             result = true;
         }

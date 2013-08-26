@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,28 +16,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test;
+package org.alfresco.module.org_alfresco_module_rm.test.util;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
-
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Convenience test suite that runs all the tests.
- *
  * @author Roy Wetherall
  * @since 2.1
  */
-@RunWith(Suite.class)
-@SuiteClasses(
+public class TestServiceImpl implements TestService
 {
-    ActionTestSuite.class,
-    CapabilitiesTestSuite.class,
-    ServicesTestSuite.class,
-    WebScriptTestSuite.class,
-    IssueTestSuite.class
-})
-public class AllTestSuite
-{
+    @Override
+    public void testMethodOne(NodeRef nodeRef)
+    {
+    }
+
+    @Override
+    public void testMethodTwo(NodeRef nodeRef)
+    {
+    }
 }

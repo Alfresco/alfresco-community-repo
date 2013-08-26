@@ -180,5 +180,39 @@
       <property name="dictionaryService" ref="DictionaryService"/>
       <property name="namespaceService" ref="NamespaceService"/>
    </bean>
+   
+   <!--  Test service -->
+   
+   <bean id="testService" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestServiceImpl"/>
+   
+   <bean id="TestService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.test.util.TestService</value>
+        </property>
+        <property name="target">
+            <ref bean="testService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="TestService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="TestService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="TestService_transaction" parent="baseTransaction" />
+
+    <bean id="TestService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.test.util.TestService.testMethodOne=ACL_NODE.0.sys:base.Read
+                org.alfresco.module.org_alfresco_module_rm.test.util.TestService.testMethodTwo=ACL_NODE.0.sys:base.Read
+                org.alfresco.module.org_alfresco_module_rm.test.util.TestService.*=ACL_DENY
+                ]]>
+            </value>
+        </property>
+    </bean>
 
 </beans>

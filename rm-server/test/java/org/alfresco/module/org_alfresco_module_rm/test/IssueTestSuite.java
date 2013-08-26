@@ -18,13 +18,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
+import org.alfresco.module.org_alfresco_module_rm.test.issue.RM452Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-
 /**
- * Convenience test suite that runs all the tests.
+ * Issue test suite
  *
  * @author Roy Wetherall
  * @since 2.1
@@ -32,12 +32,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses(
 {
-    ActionTestSuite.class,
-    CapabilitiesTestSuite.class,
-    ServicesTestSuite.class,
-    WebScriptTestSuite.class,
-    IssueTestSuite.class
+    RM452Test.class
 })
-public class AllTestSuite
+public class IssueTestSuite
 {
 }

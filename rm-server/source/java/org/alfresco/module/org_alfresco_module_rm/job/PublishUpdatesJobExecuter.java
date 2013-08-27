@@ -97,6 +97,14 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     }    
     
     /**
+     * @param dictionaryService	dictionary service
+     */
+    public void setDictionaryService(DictionaryService dictionaryService) 
+    {
+		this.dictionaryService = dictionaryService;
+	}
+    
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#executeImpl()
      */
     public void executeImpl()
@@ -174,7 +182,8 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
         boolean result = false;
         
         // ensure that the rm content model has been loaded
-        if (dictionaryService.getAspect(ASPECT_UNPUBLISHED_UPDATE) != null)
+        if (dictionaryService != null &&
+        	dictionaryService.getAspect(ASPECT_UNPUBLISHED_UPDATE) != null)
         {
             result = true;
         }

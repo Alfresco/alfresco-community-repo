@@ -4429,6 +4429,7 @@ public class IndexInfo implements IndexMonitor
             try
             {
                 builder.append("\n");
+                builder.append(this.getRelativePath());
                 builder.append("Entry List\n");
                 for (IndexEntry entry : indexEntries.values())
                 {

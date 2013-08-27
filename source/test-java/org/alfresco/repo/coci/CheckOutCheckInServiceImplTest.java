@@ -312,10 +312,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		this.cociService.checkin(workingCopy2, new HashMap<String, Serializable>(), null, true);	
 	}
 
-    /**
-     * MNT-8789
-     */
-    public void testCheckInVersionedNode()
+    public void testCheckInVersionedNode_MNT_8789()
     {
         String versionDescription = "This is a test version";
 
@@ -362,10 +359,19 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         // Modified by admin, but as nothing changed, test user will be put into version
         assertEquals(this.userName, nodeService.getProperty(nodeA, ContentModel.PROP_MODIFIER));
         assertEquals(true, nodeService.hasAspect(nodeA, ContentModel.ASPECT_VERSIONABLE));
+        // Save the modified date
+        Serializable modifiedDate = nodeService.getProperty(nodeA, ContentModel.PROP_MODIFIED);
 
         // Now check the version
         Version version = this.versionService.getCurrentVersion(nodeA);
-        assertNull("The Version should NOT be created as nothing has changed in the working copy", version);
+        assertNotNull(version);
+        assertEquals(versionDescription, version.getDescription());
+        // Admin checked in the node, but as the working copy was not modified, the modifier should not change
+        assertEquals(this.userName, version.getFrozenModifier());
+        // The date should NOT have changed, as nothing was changed in the working copy
+        assertEquals(true, version.getFrozenModifiedDate().equals(modifiedDate));
+        NodeRef versionNodeRef = version.getFrozenStateNodeRef();
+        assertNotNull(versionNodeRef);
 
         nodeService.deleteNode(nodeA);
         AuthenticationUtil.setFullyAuthenticatedUser(this.userName);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -270,7 +270,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     /**
      * @throws UnsupportedOperationException        Always
      */
-    public boolean deleteStore(StoreRef storeRef) throws InvalidStoreRefException
+    public void deleteStore(StoreRef storeRef) throws InvalidStoreRefException
     {
         // Delete the index
         nodeIndexer.indexDeleteStore(storeRef);
@@ -292,8 +292,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             logger.debug("Marked store for deletion: " + storeRef + " --> " + deletedStoreRef);
         }
-        // if no exception was thrown the store was deleted successfully
-        return true;
     }
 
     public NodeRef getRootNode(StoreRef storeRef) throws InvalidStoreRefException
@@ -689,7 +687,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return missingProperties;
     }
     
-    public boolean setChildAssociationIndex(ChildAssociationRef childAssocRef, int index)
+    public void setChildAssociationIndex(ChildAssociationRef childAssocRef, int index)
     {
         // get nodes
         Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(childAssocRef.getParentRef());
@@ -711,7 +709,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                     "   index: " + index,
                     childAssocRef);
         }
-        return true;
     }
 
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
@@ -723,7 +720,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     /**
      * @see org.alfresco.service.cmr.repository.NodeService#setType(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
-    public boolean setType(NodeRef nodeRef, QName typeQName) throws InvalidNodeRefException
+    public void setType(NodeRef nodeRef, QName typeQName) throws InvalidNodeRefException
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(nodeRef);
@@ -757,12 +754,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // Index
             nodeIndexer.indexUpdateNode(nodeRef);
         }
-
-        return updatedNode || updatedProps;
     }
     
     @Override
-    public boolean addAspect(
+    public void addAspect(
             NodeRef nodeRef,
             QName aspectTypeQName,
             Map<QName, Serializable> aspectProperties)
@@ -811,7 +806,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // Index
             nodeIndexer.indexUpdateNode(nodeRef);
         }
-        return modified;
     }
 
     /**
@@ -825,7 +819,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
     
     @Override
-    public boolean removeAspect(NodeRef nodeRef, QName aspectTypeQName)
+    public void removeAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException
     {
         // Don't allow spoofed aspect(s) to be removed
@@ -1010,8 +1004,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
         // Index
         nodeIndexer.indexUpdateNode(nodeRef);
-
-        return updated || hadAspect;
     }
 
     /**
@@ -1073,9 +1065,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * Delete Node
      */
     @Override
-    public boolean deleteNode(NodeRef nodeRef)
+    public void deleteNode(NodeRef nodeRef)
     {
-        return deleteNode(nodeRef, true);
+        deleteNode(nodeRef, true);
     }
     
     /**
@@ -1084,9 +1076,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * @param nodeRef           the node to delete
      * @param allowArchival     <tt>true</tt> if normal archival may occur or
      *                          <tt>false</tt> if the node must be forcibly deleted
-     * @return                  <tt>true</tt> if the node was deleted/archived
      */
-    private boolean deleteNode(NodeRef nodeRef, boolean allowArchival)
+    private void deleteNode(NodeRef nodeRef, boolean allowArchival)
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(nodeRef);
@@ -1294,8 +1285,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Clear out the list of nodes pending delete
         nodesPendingDeleteTxn = TransactionalResourceHelper.getSet(KEY_PENDING_DELETE_NODES);
         nodesPendingDeleteTxn.removeAll(nodesPendingDelete);
-        // The node was deleted together with children
-        return true;
     }
     
     public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName assocQName)
@@ -1363,7 +1352,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return childAssociationRefs;
     }
 
-    public boolean removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
+    public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(parentRef);
@@ -1384,7 +1373,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
                 // Shortcut - just delete the child node
                 deleteNode(childRef);
-                return true;
+                return;
             }
         }
         
@@ -1440,14 +1429,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
 
         // Done
-        if (!assocsToDelete.isEmpty())
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
     }
     
     public boolean removeChildAssociation(ChildAssociationRef childAssocRef)
@@ -1624,7 +1605,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * 
      * @see DbNodeServiceImpl.NullPropertyValue
      */
-    public boolean setProperty(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException
+    public void setProperty(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("qname", qname);
@@ -1659,7 +1640,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // Index
             nodeIndexer.indexUpdateNode(nodeRef);
         }
-        return changed;
     }
     
     /**
@@ -1674,7 +1654,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * 
      * @see Node#getProperties(boolean)
      */
-    public boolean setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
+    public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         
@@ -1694,10 +1674,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // Index
             nodeIndexer.indexUpdateNode(nodeRef);
         }
-        return changed;
     }
     
-    public boolean addProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
+    public void addProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         
@@ -1717,10 +1696,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // Index
             nodeIndexer.indexUpdateNode(nodeRef);
         }
-        return changed;
     }
     
-    public boolean removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
+    public void removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
     {
         // Get the node
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
@@ -1741,7 +1719,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
 
         // Remove
-        boolean removed = nodeDAO.removeNodeProperties(nodeId, Collections.singleton(qname));
+        nodeDAO.removeNodeProperties(nodeId, Collections.singleton(qname));
         
         // Invoke policy behaviours
         Map<QName, Serializable> propertiesAfter = getPropertiesImpl(nodePair);
@@ -1750,8 +1728,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // Index
         nodeIndexer.indexUpdateNode(nodeRef);
-
-        return removed;
     }
 
     public Collection<NodeRef> getParents(NodeRef nodeRef) throws InvalidNodeRefException
@@ -2060,13 +2036,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }   
     
     @Override
-    public boolean setAssociations(NodeRef sourceRef, QName assocTypeQName, List<NodeRef> targetRefs)
+    public void setAssociations(NodeRef sourceRef, QName assocTypeQName, List<NodeRef> targetRefs)
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(sourceRef);
-
-        boolean updated = false;
-
+        
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
         Long sourceNodeId = sourceNodePair.getFirst();
         // First get the existing associations
@@ -2090,10 +2064,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // Remove reduncant assocs
         List<Long> toRemoveIds = new ArrayList<Long>(toRemoveMap.values());
-        if (nodeDAO.removeNodeAssocs(toRemoveIds) > 0)
-        {
-            updated = true;
-        }
+        nodeDAO.removeNodeAssocs(toRemoveIds);
         
         // Work out which associations need to be added
         Set<NodeRef> toAdd = new HashSet<NodeRef>(targetRefs);
@@ -2120,21 +2091,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             }
             assocIndex++;
         }
-        if (assocIndex > 1)
-        {
-            updated = true;
-        }
+        
         // Invoke policy behaviours
         for (NodeRef targetNodeRef : toAdd)
         {
             AssociationRef assocRef = new AssociationRef(sourceRef, assocTypeQName, targetNodeRef);
             invokeOnCreateAssociation(assocRef);
         }
-        if (!toAdd.isEmpty())
-        {
-            updated = true;
-        }
-        return updated;
     }
 
     public Collection<ChildAssociationRef> getChildAssocsWithoutParentAssocsOfType(NodeRef parent, QName assocTypeQName)
@@ -2243,7 +2206,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return results;
     }
 
-    public boolean removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
+    public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException
     {
         // The node(s) involved may not be pending deletion
@@ -2266,9 +2229,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             // Invoke policy behaviours
             invokeOnDeleteAssociation(assocRef);
-            return true;
         }
-        return false;
     }
     
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -142,7 +142,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public boolean deleteStore(StoreRef storeRef)
+    public void deleteStore(StoreRef storeRef)
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -229,7 +229,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public boolean deleteNode(NodeRef nodeRef) throws InvalidNodeRefException
+    public void deleteNode(NodeRef nodeRef) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -262,7 +262,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public boolean removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
+    public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -305,7 +305,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public boolean setChildAssociationIndex(ChildAssociationRef childAssocRef, int index) throws InvalidChildAssociationRefException
+    public void setChildAssociationIndex(ChildAssociationRef childAssocRef, int index) throws InvalidChildAssociationRefException
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
@@ -322,7 +322,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @see org.alfresco.service.cmr.repository.NodeService#setType(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
-    public boolean setType(NodeRef nodeRef, QName typeQName) throws InvalidNodeRefException
+    public void setType(NodeRef nodeRef, QName typeQName) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -331,7 +331,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public boolean addAspect(NodeRef nodeRef, QName aspectRef, Map<QName, Serializable> aspectProperties) throws InvalidNodeRefException, InvalidAspectException
+    public void addAspect(NodeRef nodeRef, QName aspectRef, Map<QName, Serializable> aspectProperties) throws InvalidNodeRefException, InvalidAspectException
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -348,7 +348,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public boolean removeAspect(NodeRef nodeRef, QName aspectRef) throws InvalidNodeRefException, InvalidAspectException
+    public void removeAspect(NodeRef nodeRef, QName aspectRef) throws InvalidNodeRefException, InvalidAspectException
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -442,7 +442,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public boolean setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
+    public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -451,7 +451,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public boolean addProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
+    public void addProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -460,7 +460,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public boolean setProperty(NodeRef nodeRef, QName qame, Serializable value) throws InvalidNodeRefException
+    public void setProperty(NodeRef nodeRef, QName qame, Serializable value) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -469,7 +469,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public boolean removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
+    public void removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -632,7 +632,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException always
      */
     @Override
-    public boolean setAssociations(NodeRef sourceRef, QName assocTypeQName, List<NodeRef> targetRefs)
+    public void setAssociations(NodeRef sourceRef, QName assocTypeQName, List<NodeRef> targetRefs)
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
@@ -641,7 +641,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public boolean removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
+    public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);

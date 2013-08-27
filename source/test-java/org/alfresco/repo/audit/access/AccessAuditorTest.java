@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -518,9 +518,6 @@ public class AccessAuditorTest
     @Test
     public final void test13OnCheckIn() throws Exception
     {
-        // Edit working copy to create a version, ALF-19217
-        nodeService.setProperty(workingCopyNodeRef, ContentModel.PROP_DESCRIPTION, "TestDescription");
-
         Map<String, Serializable> checkinProperties = new HashMap<String, Serializable>();
         checkinProperties.put(Version.PROP_DESCRIPTION, null);
         checkinProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);

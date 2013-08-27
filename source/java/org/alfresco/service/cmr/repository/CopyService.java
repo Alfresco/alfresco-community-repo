@@ -156,10 +156,9 @@ public interface CopyService
      * 
      * @param sourceNodeRef         the source node reference
      * @param destinationNodeRef    the destination node reference
-     * @return                      <tt>true</tt> if the copying was made
      */
     @Auditable(parameters = {"sourceNodeRef", "destinationNodeRef"})
-    public boolean copy(NodeRef sourceNodeRef, NodeRef destinationNodeRef);
+    public void copy(NodeRef sourceNodeRef, NodeRef destinationNodeRef);   
     
     /**
      * Get the original for a given copied node

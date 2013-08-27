@@ -176,7 +176,8 @@ public class LockableAspectInterceptor implements MethodInterceptor
                 {
                     Map<QName, Serializable> convertedProperties = filterLockProperties(newProperties);
                     // Now complete the call by passing the converted properties
-                    return nodeService.setProperties(nodeRef, convertedProperties);
+                    nodeService.setProperties(nodeRef, convertedProperties);
+                    return null;
                 }
                 else
                 {

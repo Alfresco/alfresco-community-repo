@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -46,8 +46,6 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.springframework.extensions.webscripts.GUID;
-
-import javax.faces.model.DataModel;
 
 public class CMISPropertyServiceTest extends BaseCMISTest
 {
@@ -615,9 +613,6 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
-        // Edit working copy to create a version, ALF-19217
-        nodeService.setProperty(pwc, ContentModel.PROP_DESCRIPTION, "TestDescription");
-
         Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(Version.PROP_DESCRIPTION, "Meep");
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
@@ -693,13 +688,9 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
-        // Edit working copy to create a version, ALF-19217
-        nodeService.setProperty(pwc, ContentModel.PROP_DESCRIPTION, "TestDescription1");
-
         versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(Version.PROP_DESCRIPTION, "Woof");
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
-
         serviceRegistry.getCheckOutCheckInService().checkin(pwc, versionProperties);
 
         properties = cmisService.getProperties(content);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -466,10 +466,7 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         {
             Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
             versionProperties.put(Version.PROP_DESCRIPTION, "This is a test checkin - " + i);
-
-            // Edit working copy to create a version, ALF-19217
-            nodeService.setProperty(workingCopyNodeRef, ContentModel.PROP_DESCRIPTION, "TestDescription" + i);
-
+            
             cociService.checkin(workingCopyNodeRef, versionProperties);
             
             vh1 = version1Service.getVersionHistory(nodeRef);
@@ -506,10 +503,7 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         {
             versionProperties = new HashMap<String, Serializable>();
             versionProperties.put(Version.PROP_DESCRIPTION, "This is a test checkin - " + (v1count + i));
-
-            // Edit working copy to create a version, ALF-19217
-            nodeService.setProperty(workingCopyNodeRef, ContentModel.PROP_DESCRIPTION, "TestDescription" + i);
-
+            
             cociService.checkin(workingCopyNodeRef, versionProperties);
             
             vh2 = version2Service.getVersionHistory(nodeRef);

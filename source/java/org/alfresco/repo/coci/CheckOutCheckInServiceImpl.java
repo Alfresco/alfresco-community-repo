@@ -581,7 +581,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         }
             
         // Copy the contents of the working copy onto the original
-        boolean copied = this.copyService.copy(workingCopyNodeRef, nodeRef);
+        this.copyService.copy(workingCopyNodeRef, nodeRef);
         
         // Handle name change on working copy (only for folders/files)
         if (fileFolderService.getFileInfo(workingCopyNodeRef) != null)
@@ -628,10 +628,8 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
                 }
             }
         }
-
-        // Create a version if something was modified and copied to th node from working copy
-        // See MNT-8789
-        if (versionProperties != null && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) && copied)
+            
+        if (versionProperties != null && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
         {
             // Create the new version
             this.versionService.createVersion(nodeRef, versionProperties);

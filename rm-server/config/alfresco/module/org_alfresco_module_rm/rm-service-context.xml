@@ -734,7 +734,7 @@
 
     <bean id="recordsManagementActionService" class="org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionServiceImpl" init-method="init">
         <property name="policyComponent" ref="policyComponent"/>
-        <property name="nodeService" ref="NodeService"/>
+        <property name="nodeService" ref="nodeService"/>
     </bean>
 
     <bean id="RecordsManagementActionService" class="org.springframework.aop.framework.ProxyFactoryBean">

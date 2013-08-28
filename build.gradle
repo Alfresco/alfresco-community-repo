@@ -14,7 +14,7 @@ buildscript {
 }
  
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.0-milestone-8'
+    gradleVersion = '1.7'
 }
 
 task deleteDist(type: Delete) {

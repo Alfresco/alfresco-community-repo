@@ -338,8 +338,14 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
         String ticket1 = pubAuthenticationService.getCurrentTicket();
         pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
-        assertFalse(ticket1.equals(pubAuthenticationService.getCurrentTicket()));
-        
+        if(ticketComponent.getUseSingleTicketPerUser())
+        {
+            assertTrue(ticket1.equals(pubAuthenticationService.getCurrentTicket()));
+        }
+        else
+        {
+            assertFalse(ticket1.equals(pubAuthenticationService.getCurrentTicket()));
+        }
     }
     
     public void testGuest()
@@ -736,7 +742,9 @@ public class AuthenticationTest extends TestCase
     }
 
     public void testTicketExpiryMode()
-    {
+    {   
+        ticketsCache.clear();
+        
         InMemoryTicketComponentImpl tc = new InMemoryTicketComponentImpl();
         tc.setOneOff(false);
         tc.setTicketsExpire(true);
@@ -878,6 +886,7 @@ public class AuthenticationTest extends TestCase
 
     public void testTicketExpires()
     {
+        ticketsCache.clear();
         InMemoryTicketComponentImpl tc = new InMemoryTicketComponentImpl();
         tc.setOneOff(false);
         tc.setTicketsExpire(true);
@@ -1036,7 +1045,14 @@ public class AuthenticationTest extends TestCase
 
         String ticket2 = authenticationService.getCurrentTicket();
 
-        assertFalse(ticket1.equals(ticket2));
+        if(ticketComponent.getUseSingleTicketPerUser())
+        {
+            assertTrue(ticket1.equals(ticket2));
+        }
+        else
+        {
+            assertFalse(ticket1.equals(ticket2));
+        }
     }
 
     public void testAuthenticationService1()

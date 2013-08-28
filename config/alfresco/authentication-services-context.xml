@@ -604,9 +604,12 @@
 				</property>
 				<!-- If ticketsEpire is true then how they should expire -->
 				<!-- AFTER_INACTIVITY, AFTER_FIXED_TIME, DO_NOT_EXPIRE -->
-				<!-- The default is AFTER_FIXED_TIME -->
+				<!-- The default is AFTER_INACTIVITY -->
 				<property name="expiryMode">
 					<value>${authentication.ticket.expiryMode}</value>
+				</property>
+				<property name="useSingleTicketPerUser">
+					<value>${authentication.ticket.useSingleTicketPerUser}</value>
 				</property>
 			</bean>
 		</property>

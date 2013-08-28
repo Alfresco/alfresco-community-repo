@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.capability;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.springframework.aop.framework.ProxyFactoryBean;
@@ -31,6 +32,8 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
     protected RuntimeActionService runtimeActionService;
 
     private RecordsManagementActionService recordsManagementActionService;
+
+    private RecordsManagementAuditService recordsManagementAuditService;
 
     /**
      * Set action service
@@ -52,6 +55,16 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
         this.recordsManagementActionService = recordsManagementActionService;
     }
 
+    /**
+     * Set records management service
+     * 
+     * @param recordsManagementAuditService
+     */
+    public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
+    {
+        this.recordsManagementAuditService = recordsManagementAuditService;
+    }
+
     public void registerAction()
     {
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
@@ -63,6 +76,7 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
               //      runtimeActionService.registerActionExecuter((ActionExecuter) getObject());
               //  }
                 recordsManagementActionService.register((RecordsManagementAction) getObject());
+                recordsManagementAuditService.register((RecordsManagementAction) getObject());
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());

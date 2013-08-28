@@ -178,6 +178,12 @@ public class Params implements Parameters
     }
 
     @Override
+    public List<SortColumn> getSorting()
+    {
+        return recognizedParams.sorting;
+    }
+
+    @Override
     public String getBinaryProperty()
     {
         return addressedProperty;
@@ -207,6 +213,7 @@ public class Params implements Parameters
         private final List<String> select;
         private final List<SortColumn> sorting;
         
+        @SuppressWarnings("unchecked")
         public RecognizedParams(Map<String, String[]> requestParameters, Paging paging, BeanPropertiesFilter filter, Map<String, BeanPropertiesFilter> relationshipFilter, List<String> select,
                     Query query, List<SortColumn> sorting)
         {

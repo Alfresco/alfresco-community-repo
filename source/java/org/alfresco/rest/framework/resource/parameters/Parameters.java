@@ -45,6 +45,13 @@ public interface Parameters
     public Paging getPaging();
     
     /**
+     * Returns a List of {@link SortColumn} for sorting properties.
+     * Specified by the "orderBy" request parameter.
+     * @return List of {@link SortColumn}
+     */
+    public List<SortColumn> getSorting();
+    
+    /**
      * Returns a {@link BeanPropertiesFilter} for filtering out properties.
      * Specified by the "properties" request parameter.
      * @return BeanPropertiesFilter {@link BeanPropertiesFilter}

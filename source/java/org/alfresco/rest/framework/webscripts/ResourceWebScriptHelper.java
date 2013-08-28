@@ -70,10 +70,10 @@ public class ResourceWebScriptHelper
     public static final String PARAM_FILTER_PROPS = "properties";
     public static final String PARAM_PAGING_SKIP = "skipCount";
     public static final String PARAM_PAGING_MAX = "maxItems";
-    public static final String PARAM_SORT = "sort";
+    public static final String PARAM_ORDERBY = "orderBy";
     public static final String PARAM_WHERE = "where";
     public static final String PARAM_SELECT = "select";
-    public static final List<String> KNOWN_PARAMS = Arrays.asList(PARAM_RELATIONS,PARAM_FILTER_PROPS,PARAM_PAGING_SKIP,PARAM_PAGING_MAX, PARAM_SORT, PARAM_WHERE, PARAM_SELECT);
+    public static final List<String> KNOWN_PARAMS = Arrays.asList(PARAM_RELATIONS,PARAM_FILTER_PROPS,PARAM_PAGING_SKIP,PARAM_PAGING_MAX, PARAM_ORDERBY, PARAM_WHERE, PARAM_SELECT);
     
     private ResourceLocator locator;
 
@@ -605,7 +605,7 @@ public class ResourceWebScriptHelper
     public static RecognizedParams getRecognizedParams(WebScriptRequest req)
     {
         Paging paging = findPaging(req);
-        List<SortColumn> sorting = getSort(req.getParameter(ResourceWebScriptHelper.PARAM_SORT));
+        List<SortColumn> sorting = getSort(req.getParameter(ResourceWebScriptHelper.PARAM_ORDERBY));
         Map<String, BeanPropertiesFilter> relationFilter = getRelationFilter(req.getParameter(ResourceWebScriptHelper.PARAM_RELATIONS));
         BeanPropertiesFilter filter = getFilter(req.getParameter(ResourceWebScriptHelper.PARAM_FILTER_PROPS));
         Query whereQuery = getWhereClause(req.getParameter(ResourceWebScriptHelper.PARAM_WHERE));

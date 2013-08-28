@@ -42,8 +42,11 @@ function main()
 
       if (filter == "recent")
       {
-         var recentSites = preferenceService.getPreferences(userName, "org.alfresco.share.sites.recent")
-         filterObj = recentSites.org.alfresco.share.sites.recent;
+         var recentSites = preferenceService.getPreferences(userName, "org.alfresco.share.sites.recent");
+         if (recentSites['org'] != null)
+         {
+            filterObj = recentSites.org.alfresco.share.sites.recent;
+         }
       }
       else if (filter == "favourites")
       {

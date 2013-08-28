@@ -90,9 +90,13 @@ public class Task
         this.assignee = taskInstance.getAssignee();
         if (taskInstance.getDelegationState() == DelegationState.PENDING)
         {
-        	
+            this.state = TaskStateTransition.DELEGATED.name().toLowerCase();
         }
-        if (taskInstance.getAssignee() != null)
+        else if (taskInstance.getDelegationState() == DelegationState.RESOLVED)
+        {
+            this.state = TaskStateTransition.RESOLVED.name().toLowerCase();
+        }
+        else if (taskInstance.getAssignee() != null)
         {
         	this.state = TaskStateTransition.CLAIMED.name().toLowerCase();
         }

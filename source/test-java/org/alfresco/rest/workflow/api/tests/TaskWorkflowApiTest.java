@@ -227,7 +227,13 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             List<String> selectedFields = new ArrayList<String>();
             selectedFields.addAll(Arrays.asList(new String[] { "name", "description", "dueAt", "priority", "assignee", "owner"}));
             
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            JSONObject result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("Updated name", result.get("name"));
+            assertEquals("Updated description", result.get("description"));
+            assertEquals(1234, Integer.valueOf(result.get("priority").toString()).intValue());
+            assertEquals("john", result.get("assignee"));
+            assertEquals("james", result.get("owner"));
+            assertEquals(dueDate, parseDate(result, "dueAt"));
             
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertNotNull(task);
@@ -277,7 +283,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             activitiProcessEngine.getTaskService().setAssignee(task.getId(), requestContext.getRunAsUser());
             taskBody.put("name", "Updated name by assignee");
             
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            JSONObject result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("Updated name by assignee", result.get("name"));
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertNotNull(task);
             assertEquals("Updated name by assignee", task.getName());
@@ -287,7 +294,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             activitiProcessEngine.getTaskService().setOwner(task.getId(), requestContext.getRunAsUser());
             taskBody.put("name", "Updated name by owner");
             
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("Updated name by owner", result.get("name"));
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertNotNull(task);
             assertEquals("Updated name by owner", task.getName());
@@ -295,7 +303,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             // Update as process initiator
             taskBody.put("name", "Updated name by initiator");
             requestContext.setRunAsUser(initiator);
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("Updated name by initiator", result.get("name"));
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertNotNull(task);
             assertEquals("Updated name by initiator", task.getName());
@@ -305,7 +314,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             publicApiClient.setRequestContext(new RequestContext(TenantUtil.DEFAULT_TENANT, tenantAdmin));
             
             taskBody.put("name", "Updated name by admin");
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("Updated name by admin", result.get("name"));
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertNotNull(task);
             assertEquals("Updated name by admin", task.getName());
@@ -441,11 +451,13 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             taskBody.put("state", "claimed");
             JSONObject result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
             assertNotNull(result);
+            assertEquals(requestContext.getRunAsUser(), result.get("assignee"));
             assertEquals(requestContext.getRunAsUser(), activitiProcessEngine.getTaskService().createTaskQuery().taskId(task.getId()).singleResult().getAssignee());
             
             // Re-claiming the same task with the current assignee shouldn't be a problem
             result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
             assertNotNull(result);
+            assertEquals(requestContext.getRunAsUser(), result.get("assignee"));
             assertEquals(requestContext.getRunAsUser(), activitiProcessEngine.getTaskService().createTaskQuery().taskId(task.getId()).singleResult().getAssignee());
             
             // Claiming as a candidateUser should also work
@@ -454,6 +466,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             activitiProcessEngine.getTaskService().addCandidateUser(task.getId(), requestContext.getRunAsUser());
             result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
             assertNotNull(result);
+            assertEquals(requestContext.getRunAsUser(), result.get("assignee"));
             assertEquals(requestContext.getRunAsUser(), activitiProcessEngine.getTaskService().createTaskQuery().taskId(task.getId()).singleResult().getAssignee());
             
             // Claiming as a task owner should also work
@@ -462,6 +475,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             activitiProcessEngine.getTaskService().deleteUserIdentityLink(task.getId(), requestContext.getRunAsUser(), IdentityLinkType.CANDIDATE);
             result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
             assertNotNull(result);
+            assertEquals(requestContext.getRunAsUser(), result.get("assignee"));
             assertEquals(requestContext.getRunAsUser(), activitiProcessEngine.getTaskService().createTaskQuery().taskId(task.getId()).singleResult().getAssignee());
             
             // Claiming as admin should work
@@ -472,6 +486,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             activitiProcessEngine.getTaskService().deleteUserIdentityLink(task.getId(), requestContext.getRunAsUser(), IdentityLinkType.CANDIDATE);
             result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
             assertNotNull(result);
+            assertEquals(tenantAdmin, result.get("assignee"));
             assertEquals(tenantAdmin, activitiProcessEngine.getTaskService().createTaskQuery().taskId(task.getId()).singleResult().getAssignee());
             
         }
@@ -514,21 +529,24 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             // Unclaiming as process initiator
             requestContext.setRunAsUser(initiator);
             activitiProcessEngine.getTaskService().setAssignee(task.getId(), null);
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            JSONObject result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertNull(result.get("assignee"));
             assertNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(task.getId()).singleResult().getAssignee());
             
             // Unclaiming as assignee
             activitiProcessEngine.getTaskService().setAssignee(task.getId(), user);
             requestContext.setRunAsUser(user);
             assertNotNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(task.getId()).singleResult().getAssignee());
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertNull(result.get("assignee"));
             assertNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(task.getId()).singleResult().getAssignee());
             
             // Unclaim as owner
             activitiProcessEngine.getTaskService().setOwner(task.getId(), user);
             activitiProcessEngine.getTaskService().setAssignee(task.getId(), initiator);
             assertNotNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(task.getId()).singleResult().getAssignee());
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertNull(result.get("assignee"));
             assertNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(task.getId()).singleResult().getAssignee());
             
             // Unclaim as admin
@@ -538,7 +556,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             activitiProcessEngine.getTaskService().setAssignee(task.getId(), initiator);
             activitiProcessEngine.getTaskService().deleteUserIdentityLink(task.getId(), requestContext.getRunAsUser(), IdentityLinkType.CANDIDATE);
             assertNotNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(task.getId()).singleResult().getAssignee());
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertNull(result.get("assignee"));
             assertNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(task.getId()).singleResult().getAssignee());
         }
         finally
@@ -585,20 +604,26 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             
             // Completing as assignee initiator
             activitiProcessEngine.getTaskService().setAssignee(asAssigneeTask.getId(), user);
-            tasksClient.updateTask(asAssigneeTask.getId(), taskBody, selectedFields);
+            JSONObject result = tasksClient.updateTask(asAssigneeTask.getId(), taskBody, selectedFields);
+            assertEquals("completed", result.get("state"));
+            assertNotNull(result.get("endedAt"));
             assertNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(asAssigneeTask.getId()).singleResult());
             
             // Completing as process initiator
             requestContext.setRunAsUser(initiator);
             activitiProcessEngine.getTaskService().setAssignee(asInitiatorTask.getId(), null);
-            tasksClient.updateTask(asInitiatorTask.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(asInitiatorTask.getId(), taskBody, selectedFields);
+            assertEquals("completed", result.get("state"));
+            assertNotNull(result.get("endedAt"));
             assertNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(asInitiatorTask.getId()).singleResult());
             
             // Completing as owner
             requestContext.setRunAsUser(user);
             asOwnerTask.setOwner(user);
             activitiProcessEngine.getTaskService().saveTask(asOwnerTask);
-            tasksClient.updateTask(asOwnerTask.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(asOwnerTask.getId(), taskBody, selectedFields);
+            assertEquals("completed", result.get("state"));
+            assertNotNull(result.get("endedAt"));
             assertNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(asOwnerTask.getId()).singleResult());
             
             // Complete as admin
@@ -606,7 +631,9 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             publicApiClient.setRequestContext(new RequestContext(TenantUtil.DEFAULT_TENANT, tenantAdmin));
             asAdminTask.setOwner(null);
             activitiProcessEngine.getTaskService().saveTask(asAdminTask);
-            tasksClient.updateTask(asAdminTask.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(asAdminTask.getId(), taskBody, selectedFields);
+            assertEquals("completed", result.get("state"));
+            assertNotNull(result.get("endedAt"));
             assertNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(asAdminTask.getId()).singleResult());
         }
         finally
@@ -669,7 +696,10 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             selectedFields = new ArrayList<String>();
             selectedFields.addAll(Arrays.asList(new String[] { "state", "assignee" }));
             assertNull(task.getDelegationState());
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            JSONObject result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("delegated", result.get("state"));
+            assertEquals(initiator, result.get("assignee"));
+            assertEquals(requestContext.getRunAsUser(), result.get("owner"));
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertEquals(DelegationState.PENDING, task.getDelegationState());
             assertEquals(initiator, task.getAssignee());
@@ -680,7 +710,10 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             task.setOwner(requestContext.getRunAsUser());
             task.setAssignee(null);
             activitiProcessEngine.getTaskService().saveTask(task);
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("delegated", result.get("state"));
+            assertEquals(initiator, result.get("assignee"));
+            assertEquals(requestContext.getRunAsUser(), result.get("owner"));
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertEquals(DelegationState.PENDING, task.getDelegationState());
             assertEquals(initiator, task.getAssignee());
@@ -693,7 +726,10 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             activitiProcessEngine.getTaskService().saveTask(task);
             requestContext.setRunAsUser(initiator);
             taskBody.put("assignee", user);
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("delegated", result.get("state"));
+            assertEquals(user, result.get("assignee"));
+            assertEquals(initiator, result.get("owner"));
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertEquals(DelegationState.PENDING, task.getDelegationState());
             assertEquals(user, task.getAssignee());
@@ -708,7 +744,10 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             requestContext.setRunAsUser(tenantAdmin);
             taskBody.put("assignee", user);
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("delegated", result.get("state"));
+            assertEquals(user, result.get("assignee"));
+            assertEquals(tenantAdmin, result.get("owner"));
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertEquals(DelegationState.PENDING, task.getDelegationState());
             assertEquals(user, task.getAssignee());
@@ -758,7 +797,9 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             taskBody.put("assignee", initiator);
             selectedFields = new ArrayList<String>();
             selectedFields.addAll(Arrays.asList(new String[] { "state", "assignee" }));
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            JSONObject result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("resolved", result.get("state"));
+            assertEquals(initiator, result.get("assignee"));
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertEquals(DelegationState.RESOLVED, task.getDelegationState());
             assertEquals(initiator, task.getAssignee());
@@ -768,7 +809,9 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             task.setOwner(requestContext.getRunAsUser());
             task.setAssignee(null);
             activitiProcessEngine.getTaskService().saveTask(task);
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("resolved", result.get("state"));
+            assertEquals(user, result.get("assignee"));
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertEquals(DelegationState.RESOLVED, task.getDelegationState());
             assertEquals(user, task.getAssignee());
@@ -780,7 +823,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             activitiProcessEngine.getTaskService().saveTask(task);
             requestContext.setRunAsUser(initiator);
             taskBody.put("assignee", user);
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("resolved", result.get("state"));
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertEquals(DelegationState.RESOLVED, task.getDelegationState());
             
@@ -793,7 +837,9 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             requestContext.setRunAsUser(tenantAdmin);
             taskBody.put("assignee", user);
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("resolved", result.get("state"));
+            assertEquals(initiator, result.get("assignee"));
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertEquals(DelegationState.RESOLVED, task.getDelegationState());
             assertEquals(initiator, task.getAssignee());
@@ -825,14 +871,16 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             JSONObject taskBody = new JSONObject();
             String dueAt = formatDate(new Date());
             taskBody.put("dueAt", dueAt);
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            JSONObject result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertNotNull(result.get("dueAt"));
             
             taskObject = tasksClient.findTaskById(task.getId());
             assertNotNull(taskObject.get("dueAt"));
             
             taskBody = new JSONObject();
             taskBody.put("dueAt", taskObject.get("dueAt"));
-            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertNotNull(result.get("dueAt"));
             
             taskObject = tasksClient.findTaskById(task.getId());
             assertNotNull(taskObject.get("dueAt"));

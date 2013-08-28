@@ -4,16 +4,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.activiti.engine.ActivitiObjectNotFoundException;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
+import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.impl.ProcessEngineImpl;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
@@ -43,6 +44,8 @@ import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -101,6 +104,23 @@ public class WorkflowRestImpl
     public void setDeployWorkflowsInTenant(boolean deployWorkflowsInTenant)
     {
         this.deployWorkflowsInTenant = deployWorkflowsInTenant;
+    }
+    
+    /**
+     * Create NodeRef from item id String
+     */
+    public NodeRef getNodeRef(String itemId)
+    {
+        NodeRef nodeRef = null;
+        if (NodeRef.isNodeRef(itemId) == false)
+        {
+            nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, itemId);
+        }
+        else
+        {
+            nodeRef = new NodeRef(itemId);
+        }
+        return nodeRef;
     }
     
     /**
@@ -263,65 +283,63 @@ public class WorkflowRestImpl
      * 
      * @param processId identifier of the process instance
      */
-    protected void validateIfUserAllowedToWorkWithProcess(String processId)
+    protected List<HistoricVariableInstance> validateIfUserAllowedToWorkWithProcess(String processId)
     {
-        if (tenantService.isEnabled())
-        {
-            try 
-            {
-                String tenantDomain = (String) activitiProcessEngine.getRuntimeService().getVariable(processId, ActivitiConstants.VAR_TENANT_DOMAIN);
-                if (TenantUtil.getCurrentDomain().equals(tenantDomain) == false)
-                {
-                    throw new PermissionDeniedException("Process is running in another tenant");
-                }
-            }
-            catch (ActivitiObjectNotFoundException e)
-            {
-                throw new EntityNotFoundException(processId);
-            }
-        }
+        List<HistoricVariableInstance> variableInstances = activitiProcessEngine.getHistoryService()
+                .createHistoricVariableInstanceQuery()
+                .processInstanceId(processId)
+                .list();
         
-        try 
+        Map<String, Object> variableMap = new HashMap<String, Object>();
+        if (variableInstances != null && variableInstances.size() > 0) 
         {
-            ActivitiScriptNode initiator = (ActivitiScriptNode) activitiProcessEngine.getRuntimeService().getVariable(processId, WorkflowConstants.PROP_INITIATOR);
-            if (AuthenticationUtil.getRunAsUser().equals(initiator.getNodeRef().getId()))
+            for (HistoricVariableInstance variableInstance : variableInstances)
             {
-                // user is allowed
-                return;
-            }
-        }
-        catch (ActivitiObjectNotFoundException e)
-        {
-            throw new EntityNotFoundException(processId);
-        }
-        
-        HistoricTaskInstanceQuery query = activitiProcessEngine.getHistoryService()
-            .createHistoricTaskInstanceQuery()
-            .processInstanceId(processId);
-        
-        if (authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) 
-        {
-            // Admin is allowed to read all processes in the current tenant
-            if (tenantService.isEnabled()) 
-            {
-                query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
-            }
-            else
-            {
-                return;
+                variableMap.put(variableInstance.getVariableName(), variableInstance.getValue());
             }
         }
         else
         {
-            // If non-admin user, involvement in the task is required (either owner, assignee or externally involved).
-            query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
+            throw new EntityNotFoundException(processId);
         }
         
-        List<HistoricTaskInstance> taskList = query.list();
-        
-        if(org.apache.commons.collections.CollectionUtils.isEmpty(taskList)) 
+        if (tenantService.isEnabled())
         {
-            throw new PermissionDeniedException("user is not allowed to access information about process " + processId);
+            String tenantDomain = (String) variableMap.get(ActivitiConstants.VAR_TENANT_DOMAIN);
+            if (TenantUtil.getCurrentDomain().equals(tenantDomain) == false)
+            {
+                throw new PermissionDeniedException("Process is running in another tenant");
+            }
         }
+        
+        ActivitiScriptNode initiator = (ActivitiScriptNode) variableMap.get(WorkflowConstants.PROP_INITIATOR);
+        if (initiator != null && AuthenticationUtil.getRunAsUser().equals(initiator.getNodeRef().getId()))
+        {
+            // user is allowed
+            return variableInstances;
+        }
+        
+        if (authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) 
+        {
+            // Admin is allowed to read all processes in the current tenant
+            return variableInstances;
+        }
+        else
+        {
+            // If non-admin user, involvement in the task is required (either owner, assignee or externally involved).
+            HistoricTaskInstanceQuery query = activitiProcessEngine.getHistoryService()
+                    .createHistoricTaskInstanceQuery()
+                    .processInstanceId(processId)
+                    .taskInvolvedUser(AuthenticationUtil.getRunAsUser());
+            
+            List<HistoricTaskInstance> taskList = query.list();
+            
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(taskList)) 
+            {
+                throw new PermissionDeniedException("user is not allowed to access information about process " + processId);
+            }
+        }
+        
+        return variableInstances;
     }
 }

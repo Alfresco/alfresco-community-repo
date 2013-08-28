@@ -223,6 +223,17 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
     {
         final RequestContext requestContext = initApiClientWithTestUser();
         final ProcessInfo processInfo = startReviewPooledProcess(requestContext);
+        assertNotNull(processInfo);
+        assertNotNull(processInfo.getId());
+    }
+    
+    @Test
+    public void testCreateProcessInstanceForParallelReview() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        final ProcessInfo processInfo = startParallelReviewProcess(requestContext);
+        assertNotNull(processInfo);
+        assertNotNull(processInfo.getId());
     }
     
     @Test
@@ -458,7 +469,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
                 .createHistoricProcessInstanceQuery().processInstanceId(process.getId()).singleResult();
             assertNotNull(deletedInstance);
             assertNotNull(deletedInstance.getEndTime());
-            assertNull(deletedInstance.getDeleteReason());
+            assertEquals("deleted through REST API call", deletedInstance.getDeleteReason());
         }
         finally
         {
@@ -480,7 +491,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
                 .createHistoricProcessInstanceQuery().processInstanceId(process.getId()).singleResult();
             assertNotNull(deletedInstance);
             assertNotNull(deletedInstance.getEndTime());
-            assertNull(deletedInstance.getDeleteReason());
+            assertEquals("deleted through REST API call", deletedInstance.getDeleteReason());
         }
         finally
         {

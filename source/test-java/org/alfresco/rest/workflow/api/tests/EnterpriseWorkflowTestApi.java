@@ -306,4 +306,43 @@ public class EnterpriseWorkflowTestApi extends EnterpriseTestApi
        
        return processesClient.createProcess(createProcessObject.toJSONString());
    }
+   
+   /**
+    * Start a review pooled process through the public REST-API.
+    */
+   @SuppressWarnings("unchecked")
+   protected ProcessInfo startParallelReviewProcess(final RequestContext requestContext) throws PublicApiException {
+       org.activiti.engine.repository.ProcessDefinition processDefinition = activitiProcessEngine
+               .getRepositoryService()
+               .createProcessDefinitionQuery()
+               .processDefinitionKey("@" + requestContext.getNetworkId() + "@activitiParallelReview")
+               .singleResult();
+
+       ProcessesClient processesClient = publicApiClient.processesClient();
+       
+       final JSONObject createProcessObject = new JSONObject();
+       createProcessObject.put("processDefinitionId", processDefinition.getId());
+       
+       final JSONObject variablesObject = new JSONObject();
+       variablesObject.put("bpm_priority", 1);
+       variablesObject.put("wf_notifyMe", Boolean.FALSE);
+       
+       TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+       {
+           @Override
+           public Void doWork() throws Exception
+           {
+               JSONArray assigneeArray = new JSONArray();
+               assigneeArray.add(requestContext.getRunAsUser());
+               TestPerson otherPerson = getOtherPersonInNetwork(requestContext.getRunAsUser(), requestContext.getNetworkId());
+               assigneeArray.add(otherPerson.getId());
+               variablesObject.put("bpm_assignees", assigneeArray);
+               return null;
+           }
+       }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+       
+       createProcessObject.put("variables", variablesObject);
+       
+       return processesClient.createProcess(createProcessObject.toJSONString());
+   }
 }

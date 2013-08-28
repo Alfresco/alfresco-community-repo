@@ -85,12 +85,12 @@ public class RestVariableHelper
         List<TaskVariable> result = new ArrayList<TaskVariable>();
         TypeDefinitionContext context = new TypeDefinitionContext(typeDefinition);
         
-        if(localVariables != null) 
+        if (localVariables != null) 
         {
             addTaskVariables(result, localVariables, context, VariableScope.LOCAL);
         }
         
-        if(globalVariables != null) 
+        if (globalVariables != null) 
         {
             addTaskVariables(result, globalVariables, context, VariableScope.GLOBAL);
         }

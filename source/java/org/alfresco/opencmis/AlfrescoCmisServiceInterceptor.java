@@ -83,7 +83,10 @@ public class AlfrescoCmisServiceInterceptor implements MethodInterceptor
                             "      Effective auth:      " + AuthenticationUtil.getRunAsUser() + "\n");
                 }
 
-                service.beforeCall();
+                if(!methodName.equalsIgnoreCase("close"))
+                {
+                    service.beforeCall();
+                }
 
                 if(debug || trace)
                 {
@@ -101,7 +104,10 @@ public class AlfrescoCmisServiceInterceptor implements MethodInterceptor
             {
             	FileFilterMode.clearClient();
 
-                service.afterCall();
+                if(!methodName.equalsIgnoreCase("close"))
+                {
+                    service.afterCall();
+                }
 
                 if(debug || trace)
                 {

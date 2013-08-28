@@ -37,7 +37,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import net.sf.acegisecurity.Authentication;
 
-import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
@@ -168,11 +167,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     @Override
     public void open(CallContext context)
     {
-    	CallContext ctx = getContext();
-    	if(ctx == null)
-    	{
-    		AlfrescoCmisServiceCall.set(context);
-    	}
+        AlfrescoCmisServiceCall.set(context);
     }
     
     protected CallContext getContext()
@@ -184,7 +179,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     @Override
     public void close()
     {
-    	AlfrescoCmisServiceCall.clear();
+        AlfrescoCmisServiceCall.clear();
 
         // Put these resources on the transactions
         nodeInfoMap.clear();
@@ -492,7 +487,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                     // create a child CMIS object
                     CMISNodeInfo ni = createNodeInfo(child.getNodeRef());
 
-                    if (getObjectInfo(repositoryId, ni.getObjectId())==null)
+                    if (getObjectInfo(repositoryId, ni.getObjectId(), includeRelationships)==null)
                     {
                         // ignore invalid children
                         continue;
@@ -1061,7 +1056,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         
         connector.getActivityPoster().postFileFolderAdded(nodeRef);
 
-        return nodeRef.getId();
+        String objectId = connector.createObjectId(nodeRef);
+        return objectId;
     }
 
     private String parseMimeType(ContentStream contentStream)

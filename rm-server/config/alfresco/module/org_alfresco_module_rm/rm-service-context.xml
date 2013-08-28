@@ -1114,7 +1114,7 @@
     <!--  Record Service -->
 
     <bean id="recordService" class="org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl" init-method="init">
-        <property name="nodeService" ref="nodeService"/>
+        <property name="nodeService" ref="NodeService"/>
         <property name="dictionaryService" ref="DictionaryService"/>
         <property name="identifierService" ref="recordsManagementIdentifierService"/>
         <property name="permissionService" ref="ExtendedPermissionService"/>

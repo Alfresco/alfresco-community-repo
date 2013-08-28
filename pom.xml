@@ -785,13 +785,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-core</artifactId>
-            <version>${project.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>9.1-901.jdbc4</version>

@@ -33,6 +33,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -50,6 +51,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -57,6 +60,8 @@ import org.springframework.context.ApplicationContext;
  */
 public class UserUsageTest extends TestCase
 {
+    private static Log logger = LogFactory.getLog(UserUsageTest.class);
+    
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
     
     protected NodeService nodeService;
@@ -85,6 +90,11 @@ public class UserUsageTest extends TestCase
     
     protected void setUp() throws Exception
     {
+        if (AlfrescoTransactionSupport.isActualTransactionActive())
+        {
+            fail("Test started with transaction in progress");
+        }
+        
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
         
@@ -163,21 +173,35 @@ public class UserUsageTest extends TestCase
     
     protected void tearDown() throws Exception
     {
+        boolean deltasDeleted = false;
         try
         {
             usageService.deleteDeltas(personNodeRef);
             usageService.deleteDeltas(personNodeRef2);
-            
-            testTX.commit();
-        }
-        catch (Throwable t)
-        {
-            t.printStackTrace();
+            deltasDeleted = true;
         }
         finally
         {
-            AuthenticationUtil.clearCurrentSecurityContext();
-            super.tearDown();
+            try
+            {
+                testTX.commit();
+            }
+            catch (Throwable e)
+            {
+                AuthenticationUtil.clearCurrentSecurityContext();
+                try { testTX.rollback(); } catch (Throwable ee) {}
+                if (deltasDeleted)
+                {
+                    // The deltas did not cause this issue.  So it's something else during commit;
+                    throw new Exception("Failed to commit transaction after test", e);
+                }
+                else
+                {
+                    // One of the deleteDelats calls failed and an exception is passing through.
+                    // Do not rethrow so that we don't mask it.
+                    logger.error("Transaction commit failed", e);
+                }
+            }
         }
     }
     

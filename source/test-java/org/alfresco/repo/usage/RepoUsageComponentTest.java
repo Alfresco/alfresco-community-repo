@@ -24,6 +24,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
@@ -59,6 +60,11 @@ public class RepoUsageComponentTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
+        if (AlfrescoTransactionSupport.isActualTransactionActive())
+        {
+            fail("Test started with transaction in progress");
+        }
+        
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         repoUsageComponent = (RepoUsageComponent) ctx.getBean("repoUsageComponent");
         jobLockService = (JobLockService) ctx.getBean("jobLockService");
@@ -87,7 +93,15 @@ public class RepoUsageComponentTest extends TestCase
         AuthenticationUtil.clearCurrentSecurityContext();
         if (txn != null)
         {
-            try { txn.commit(); } catch (Throwable e) {}
+            try
+            {
+                txn.commit();
+            }
+            catch (Throwable e)
+            {
+                try { txn.rollback(); } catch (Throwable ee) {}
+                throw new RuntimeException("Failed to commit test transaction", e);
+            }
         }
     }
     
@@ -130,6 +144,7 @@ public class RepoUsageComponentTest extends TestCase
     public void test2NoTxn() throws Throwable
     {
         txn.commit();
+        txn = null;
         try
         {
             repoUsageComponent.getUsage();

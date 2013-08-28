@@ -30,6 +30,7 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -79,6 +80,11 @@ public class UserUsageTrackingComponentTest extends TestCase
     
     protected void setUp() throws Exception
     {
+        if (AlfrescoTransactionSupport.isActualTransactionActive())
+        {
+            fail("Test started with transaction in progress");
+        }
+        
         nodeService = (NodeService)applicationContext.getBean("NodeService");
         authenticationService = (MutableAuthenticationService)applicationContext.getBean("authenticationService");   
         transactionService = (TransactionService)applicationContext.getBean("transactionComponent");

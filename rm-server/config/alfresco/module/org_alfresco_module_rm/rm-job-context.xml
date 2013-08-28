@@ -123,6 +123,7 @@
       <property name="searchService" ref="searchService" />
       <property name="publishExecutorRegistry" ref="publishExecutorRegistry" />
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
+      <property name="dictionaryService" ref="dictionaryService" />
    </bean>
    
    <bean id="publishExecutorRegistry" class="org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutorRegistry"/>

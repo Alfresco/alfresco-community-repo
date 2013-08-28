@@ -51,6 +51,7 @@ task resetDatabase << {
 	ant.property(name: "db.master.url", value: "jdbc:postgresql:template1")
 	ant.property(name: "db.username", value: "alfresco")
 	ant.property(name: "db.password", value: "alfresco")
+	ant.property(name: "db.driver", value: "org.postgresql.Driver")
 	
 	// Loading the properties in all possible locations
 	ant.property(file: System.properties.getProperty('DB_PROPERTIES') )

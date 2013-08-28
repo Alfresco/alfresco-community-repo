@@ -3538,7 +3538,7 @@
         </property>
     </bean>
     
-    <bean id="patch.redeployActivitiWorkflowsForCategory" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+    <bean id="patch.redeployActivitiWorkflowsForCategory" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
         <property name="id"><value>patch.redeployActivitiWorkflowsForCategory</value></property>
         <property name="description"><value>patch.redeployActivitiWorkflowsForCategory.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>

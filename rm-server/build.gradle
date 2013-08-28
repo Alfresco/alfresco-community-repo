@@ -45,6 +45,12 @@ eclipse {
 }
 
 task resetDatabase << {
+	// Set default values if nothing was found (remember Ant props are 'first set wins')
+	ant.property(name: "db.name", value: "alfresco")
+	ant.property(name: "db.url", value: "jdbc:postgresql:alfresco")
+	ant.property(name: "db.master.url", value: "jdbc:postgresql:template1")
+	ant.property(name: "db.username", value: "alfresco")
+	ant.property(name: "db.password", value: "alfresco")
 	
 	// Loading the properties in all possible locations
 	ant.property(file: System.properties.getProperty('DB_PROPERTIES') )
@@ -52,13 +58,6 @@ task resetDatabase << {
 	ant.property(resource: 'alfresco/domain/transaction.properties', classpath: configurations.compile.asPath )
 	ant.property(resource: 'alfresco/version.properties', classpath: configurations.compile.asPath )
 	ant.property(resource: 'alfresco/repository.properties', classpath: configurations.compile.asPath )
-
-	// Set default values if nothing was found (remember Ant props are 'first set wins')
-	ant.property(name: "db.name", value: "alfresco")
-	ant.property(name: "db.url", value: "jdbc:postgresql:alfresco")
-	ant.property(name: "db.master.url", value: "jdbc:postgresql:template1")
-	ant.property(name: "db.username", value: "alfresco")
-	ant.property(name: "db.password", value: "alfresco")
 
 	println "Recreating database " + ant.getProperty("db.name") + " as user " + ant.getProperty("db.username")
 	ant.sql(driver: 'org.postgresql.Driver',

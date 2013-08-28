@@ -47,8 +47,11 @@ function main()
       }
       else if (filter == "favourites")
       {
-         favouriteSites = preferenceService.getPreferences(userName, "org.alfresco.share.sites.favourites");
-         filterObj = favouriteSites.org.alfresco.share.sites.favourites
+         var favouriteSites = preferenceService.getPreferences(userName, "org.alfresco.share.sites.favourites");
+         if(favouriteSites['org'] != null)
+         {
+            filterObj = favouriteSites.org.alfresco.share.sites.favourites;
+         }
       }
 
       for (var i = 0; i < sites.length; i++)

@@ -145,6 +145,7 @@
          abstract="true">
       <property name="runtimeActionService" ref="actionService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
+      <property name="recordsManagementAuditService" ref="recordsManagementAuditService"/>
       <property name="proxyInterfaces">
          <list>
             <value>org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction</value>
@@ -852,7 +853,7 @@
          </list>
       </property>
    </bean>
-   <bean id="executeScript" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction">
+   <bean id="executeScript" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction" parent="rmAction">
       <property name="publicAction" value="true"/>
       <property name="delegateAction" ref="rmscript" />
    </bean>
@@ -888,7 +889,7 @@
          </list>
       </property>
    </bean>
-   <bean id="sendEmail" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction">
+   <bean id="sendEmail" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction" parent="rmAction">
       <property name="publicAction" value="true"/>
       <property name="delegateAction" ref="mail" />
    </bean>
@@ -905,7 +906,7 @@
          </list>
       </property>
    </bean>
-   <bean id="setPropertyValue" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction">
+   <bean id="setPropertyValue" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction" parent="rmAction">
       <property name="publicAction" value="true"/>
       <property name="delegateAction" ref="set-property-value" />
       <property name="adhocPropertiesAllowed" value="true" />

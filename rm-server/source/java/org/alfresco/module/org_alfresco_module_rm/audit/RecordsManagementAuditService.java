@@ -208,4 +208,11 @@ public interface RecordsManagementAuditService
      * @return List of audit events
      */
     List<AuditEvent> getAuditEvents();
+
+    /**
+     * Register records management action
+     * 
+     * @param rmAction records management action
+     */
+    void register(RecordsManagementAction rmAction);
 }

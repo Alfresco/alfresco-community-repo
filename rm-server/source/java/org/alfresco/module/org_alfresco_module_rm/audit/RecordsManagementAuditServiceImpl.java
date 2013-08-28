@@ -50,9 +50,9 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
@@ -103,36 +103,8 @@ public class RecordsManagementAuditServiceImpl
     private static final String MSG_DELETE_OBJECT = "rm.audit.delte-object";
     private static final String MSG_LOGIN_SUCCEEDED = "rm.audit.login-succeeded";
     private static final String MSG_LOGIN_FAILED = "rm.audit.login-failed";
-    private static final String MSG_REVIEWED = "rm.audit.reviewed";
-    private static final String MSG_CUT_OFF = "rm.audit.cut-off";
-    private static final String MSG_REVERSED_CUT_OFF = "rm.audit.reversed-cut-off";
-    private static final String MSG_DESTROYED_ITEM = "rm.audit.destroyed-item";
-    private static final String MSG_OPENED_RECORD_FOLDER = "rm.audit.opened-record-folder";
-    private static final String MSG_CLOSED_RECORD_FOLDER = "rm.audit.closed-record-folder";
-    private static final String MSG_DECLARED_RECORD = "rm.audit.declared-record";
-    private static final String MSG_UNDECLARED_RECORD = "rm.audit.undeclared-record";
-    private static final String MSG_FROZE_ITEM = "rm.audit.froze-item";
-    private static final String MSG_RELINQUISED_HOLD = "rm.audit.relinquised-hold";
-    private static final String MSG_UPDATED_HOLD_REASON = "rm.audit.updated-hold-reason";
-    private static final String MSG_UPDATED_REVIEW_AS_OF_DATE = "rm.audit.updated-review-as-of-date";
-    private static final String MSG_UPDATED_DISPOSITION_AS_OF_DATE = "rm.audit.updated-disposition-as-of-date";
-    private static final String MSG_UPDATED_VITAL_RECORD_DEFINITION = "rm.audit.updated-vital-record-definition";
-    private static final String MSG_UPDATED_DISPOSITOIN_ACTION_DEFINITION = "rm.audit.updated-disposition-action-definition";
-    private static final String MSG_COMPELTED_EVENT = "rm.audit.completed-event";
-    private static final String MSG_REVERSED_COMPLETE_EVENT = "rm.audit.revered-complete-event";
-    private static final String MSG_TRANSFERRED_ITEM = "rm.audit.transferred-item";
-    private static final String MSG_COMPLETED_TRANSFER = "rm.audit.completed-transfer";
-    private static final String MSG_ACCESSION = "rm.audit.accession";
-    private static final String MSG_COMPLETED_ACCESSION = "rm.audit.copmleted-accession";
-    private static final String MSG_SCANNED_RECORD = "rm.audit.scanned-record";
-    private static final String MSG_PDF_RECORD = "rm.audit.pdf-record";
-    private static final String MSG_PHOTO_RECORD = "rm.audit.photo-record";
-    private static final String MSG_WEB_RECORD = "rm.audit.web-record";
     private static final String MSG_TRAIL_FILE_FAIL = "rm.audit.trail-file-fail";
     private static final String MSG_AUDIT_REPORT = "rm.audit.audit-report";
-    private static final String MSG_CREATE_DISPOSITION_SCHEDULE = "rm.audit.create-disposition-schedule";
-    private static final String MSG_UNFREEZE = "rm.audit.unfreeze";
-    private static final String MSG_REJECT_RECORD = "rm.audit.reject-record";
 
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordsManagementAuditServiceImpl.class);
@@ -157,7 +129,9 @@ public class RecordsManagementAuditServiceImpl
     private boolean shutdown = false;
 
     private RMAuditTxnListener txnListener;
-    private Map<String, AuditEvent> auditEvents;
+
+    /** Registered and initialised records management auditEvents */
+    private Map<String, AuditEvent> auditEvents = new HashMap<String, AuditEvent>();
 
     /**
      * Set the component used to bind to behaviour callbacks
@@ -240,6 +214,17 @@ public class RecordsManagementAuditServiceImpl
 	}
 
     /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAuditService#register(org.alfresco.module.org_alfresco_module_rm.RecordsManagementAction)
+     */
+    public void register(RecordsManagementAction rmAction)
+    {
+        if (this.auditEvents.containsKey(rmAction.getName()) == false)
+        {
+            this.auditEvents.put(rmAction.getName(), new AuditEvent(rmAction.getName(), rmAction.getLabel()));
+        }
+    }
+
+    /**
      * Checks that all necessary properties have been set.
      */
     public void init()
@@ -261,8 +246,6 @@ public class RecordsManagementAuditServiceImpl
 
     protected void initAuditEvents()
     {
-        // TODO: make this map configurable and localisable.
-        this.auditEvents = new HashMap<String, AuditEvent>(32);
 
         this.auditEvents.put(RM_AUDIT_EVENT_UPDATE_RM_OBJECT,
                     new AuditEvent(RM_AUDIT_EVENT_UPDATE_RM_OBJECT, MSG_UPDATED_METADATA));
@@ -274,63 +257,6 @@ public class RecordsManagementAuditServiceImpl
                     new AuditEvent(RM_AUDIT_EVENT_LOGIN_SUCCESS, MSG_LOGIN_SUCCEEDED));
         this.auditEvents.put(RM_AUDIT_EVENT_LOGIN_FAILURE,
                 new AuditEvent(RM_AUDIT_EVENT_LOGIN_FAILURE, MSG_LOGIN_FAILED));
-
-        this.auditEvents.put("reviewed",
-                    new AuditEvent("reviewed", MSG_REVIEWED));
-        this.auditEvents.put("cutoff",
-                    new AuditEvent("cutoff", MSG_CUT_OFF));
-        this.auditEvents.put("unCutoff",
-                    new AuditEvent("unCutoff", MSG_REVERSED_CUT_OFF));
-        this.auditEvents.put("destroy",
-                    new AuditEvent("destroy", MSG_DESTROYED_ITEM));
-        this.auditEvents.put("openRecordFolder",
-                    new AuditEvent("openRecordFolder", MSG_OPENED_RECORD_FOLDER));
-        this.auditEvents.put("closeRecordFolder",
-                    new AuditEvent("closeRecordFolder", MSG_CLOSED_RECORD_FOLDER));
-        this.auditEvents.put("declareRecord",
-                    new AuditEvent("declareRecord", MSG_DECLARED_RECORD));
-        this.auditEvents.put("undeclareRecord",
-                    new AuditEvent("undeclareRecord", MSG_UNDECLARED_RECORD));
-        this.auditEvents.put("freeze",
-                    new AuditEvent("freeze", MSG_FROZE_ITEM));
-        this.auditEvents.put("relinquishHold",
-                    new AuditEvent("relinquishHold", MSG_RELINQUISED_HOLD));
-        this.auditEvents.put("editHoldReason",
-                    new AuditEvent("editHoldReason", MSG_UPDATED_HOLD_REASON));
-        this.auditEvents.put("editReviewAsOfDate",
-                    new AuditEvent("editReviewAsOfDate", MSG_UPDATED_REVIEW_AS_OF_DATE));
-        this.auditEvents.put("editDispositionActionAsOfDate",
-                    new AuditEvent("editDispositionActionAsOfDate", MSG_UPDATED_DISPOSITION_AS_OF_DATE));
-        this.auditEvents.put("broadcastVitalRecordDefinition",
-                    new AuditEvent("broadcastVitalRecordDefinition", MSG_UPDATED_VITAL_RECORD_DEFINITION));
-        this.auditEvents.put("broadcastDispositionActionDefinitionUpdate",
-                    new AuditEvent("broadcastDispositionActionDefinitionUpdate", MSG_UPDATED_DISPOSITOIN_ACTION_DEFINITION));
-        this.auditEvents.put("completeEvent",
-                    new AuditEvent("completeEvent", MSG_COMPELTED_EVENT));
-        this.auditEvents.put("undoEvent",
-                    new AuditEvent("undoEvent", MSG_REVERSED_COMPLETE_EVENT));
-        this.auditEvents.put("transfer",
-                    new AuditEvent("transfer", MSG_TRANSFERRED_ITEM));
-        this.auditEvents.put("transferComplete",
-                    new AuditEvent("transferComplete", MSG_COMPLETED_TRANSFER));
-        this.auditEvents.put("accession",
-                    new AuditEvent("accession", MSG_ACCESSION));
-        this.auditEvents.put("accessionComplete",
-                    new AuditEvent("accessionComplete", MSG_COMPLETED_ACCESSION));
-        this.auditEvents.put("applyScannedRecord",
-                    new AuditEvent("applyScannedRecord", MSG_SCANNED_RECORD));
-        this.auditEvents.put("applyPdfRecord",
-                    new AuditEvent("applyPdfRecord", MSG_PDF_RECORD));
-        this.auditEvents.put("applyDigitalPhotographRecord",
-                    new AuditEvent("applyDigitalPhotographRecord", MSG_PHOTO_RECORD));
-        this.auditEvents.put("applyWebRecord",
-                    new AuditEvent("applyWebRecord", MSG_WEB_RECORD));
-        this.auditEvents.put("createDispositionSchedule",
-                    new AuditEvent("createDispositionSchedule", MSG_CREATE_DISPOSITION_SCHEDULE));
-        this.auditEvents.put("unfreeze",
-                    new AuditEvent("unfreeze", MSG_UNFREEZE));
-        this.auditEvents.put("reject",
-                new AuditEvent("reject", MSG_REJECT_RECORD));
 
         // Added for DOD compliance
         this.auditEvents.put("createPerson",

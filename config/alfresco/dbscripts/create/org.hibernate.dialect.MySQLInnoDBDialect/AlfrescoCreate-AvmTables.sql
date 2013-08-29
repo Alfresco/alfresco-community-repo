@@ -119,7 +119,7 @@
         tag varchar(255),
         description text,
         primary key (id),
-        unique (version_id, avm_store_id)
+        constraint unique index idx_avm_vr_uq (avm_store_id, version_id)
     ) ENGINE=InnoDB;
 
     alter table avm_aspects
@@ -232,8 +232,6 @@ CREATE INDEX fk_avm_sprop_qname ON avm_store_properties (qname_id);
 ALTER TABLE avm_store_properties ADD CONSTRAINT fk_avm_sprop_qname FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
 
 CREATE INDEX idx_avm_hl_revpk ON avm_history_links (descendent, ancestor);
-
-CREATE INDEX idx_avm_vr_revuq ON avm_version_roots (avm_store_id, version_id);
 
 CREATE INDEX idx_avm_ce_lc_name ON avm_child_entries (lc_name, parent_id);
 

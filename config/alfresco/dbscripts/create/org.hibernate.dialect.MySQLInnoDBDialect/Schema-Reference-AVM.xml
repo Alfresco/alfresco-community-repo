@@ -715,12 +715,6 @@
         </foreignkey>
       </foreignkeys>
       <indexes>
-        <index name="version_id" unique="true">
-          <columnnames>
-            <columnname>version_id</columnname>
-            <columnname>avm_store_id</columnname>
-          </columnnames>
-        </index>
         <index name="idx_avm_vr_version" unique="false">
           <columnnames>
             <columnname>version_id</columnname>
@@ -736,7 +730,7 @@
             <columnname>root_id</columnname>
           </columnnames>
         </index>
-        <index name="idx_avm_vr_revuq" unique="false">
+        <index name="idx_avm_vr_uq" unique="true">
           <columnnames>
             <columnname>avm_store_id</columnname>
             <columnname>version_id</columnname>

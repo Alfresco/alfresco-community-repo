@@ -3619,4 +3619,15 @@
             <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/fix-AVM-seqs-order.sql</value>
         </property>
     </bean>
+    
+    <bean id="patch.db-V4.2-drop-AVM-index" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.2-drop-AVM-index" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6031</value></property>
+        <property name="targetSchema"><value>6032</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/drop-AVM-index.sql</value>
+        </property>
+    </bean>
 </beans>

@@ -106,6 +106,7 @@
                 <ref bean="patch.db-V3.4-AVM-rename-dupes" />
                 <ref bean="patch.db-V3.4-AVM-index-child-entries-lower" />
                 <ref bean="patch.db-V4.1-fix-AVM-seqs-order" />
+                <ref bean="patch.db-V4.2-drop-AVM-index" />
             </list>
         </property>
     </bean>

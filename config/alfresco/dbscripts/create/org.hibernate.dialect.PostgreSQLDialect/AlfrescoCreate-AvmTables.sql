@@ -122,10 +122,14 @@
         root_id INT8 not null,
         tag varchar(255),
         description VARCHAR(1024),
-        primary key (id),
-        unique (version_id, avm_store_id)
+        primary key (id)
     );
-	
+
+    create unique index idx_avm_vr_uq on avm_version_roots (avm_store_id, version_id);
+    alter table avm_version_roots
+        add constraint idx_avm_vr_uq
+        unique using index idx_avm_vr_uq;
+
     alter table avm_aspects        
         add constraint fk_avm_nasp_n
         foreign key (node_id)
@@ -236,8 +240,6 @@ CREATE INDEX fk_avm_sprop_qname ON avm_store_properties (qname_id);
 ALTER TABLE avm_store_properties ADD CONSTRAINT fk_avm_sprop_qname FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
 
 CREATE INDEX idx_avm_hl_revpk ON avm_history_links (descendent, ancestor);
-
-CREATE INDEX idx_avm_vr_revuq ON avm_version_roots (avm_store_id, version_id);
 
 CREATE INDEX idx_avm_ce_lc_name ON avm_child_entries (lc_name, parent_id);
 

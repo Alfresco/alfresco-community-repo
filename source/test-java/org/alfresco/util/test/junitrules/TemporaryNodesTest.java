@@ -44,6 +44,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -88,6 +90,7 @@ public class TemporaryNodesTest
     private static NodeService                 NODE_SERVICE;
     private static SiteService                 SITE_SERVICE;
     private static RetryingTransactionHelper   TRANSACTION_HELPER;
+    private static VersionService              VERSION_SERVICE;
     
     private static NodeRef COMPANY_HOME;
     
@@ -97,10 +100,11 @@ public class TemporaryNodesTest
     @BeforeClass public static void initStaticData() throws Exception
     {
         COCI_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("checkOutCheckInService", CheckOutCheckInService.class);
-        CONTENT_SERVICE    = APP_CONTEXT_INIT.getApplicationContext().getBean("contentService", ContentService.class);
-        NODE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("nodeService", NodeService.class);
-        SITE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("siteService", SiteService.class);
+        CONTENT_SERVICE    = APP_CONTEXT_INIT.getApplicationContext().getBean("ContentService", ContentService.class);
+        NODE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("NodeService", NodeService.class);
+        SITE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("SiteService", SiteService.class);
         TRANSACTION_HELPER = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+        VERSION_SERVICE    = APP_CONTEXT_INIT.getApplicationContext().getBean("VersionService", VersionService.class);
         
         Repository repositoryHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper", Repository.class);
         COMPANY_HOME = repositoryHelper.getCompanyHome();
@@ -174,6 +178,75 @@ public class TemporaryNodesTest
                 
                 // Ensure that the working copy is cleaned up too.
                 nodesThatShouldBeDeletedByRule.add(workingCopy);
+                return null;
+            }
+        });
+        
+        // Now trigger the Rule's cleanup behaviour.
+        myTemporaryNodes.after();
+        
+        // and ensure that the nodes are all gone.
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                for (NodeRef node : nodesThatShouldBeDeletedByRule)
+                {
+                    if (NODE_SERVICE.exists(node))
+                    {
+                        fail("Node '" + NODE_SERVICE.getProperty(node, ContentModel.PROP_NAME) + "' still exists.");
+                    }
+                }
+                return null;
+            }
+        });
+    }
+    
+    /**
+     * This test ensures that any temporary nodes which are versioned, have all their various versions cleaned up too.
+     * @since 4.1.7
+     */
+    @Test public void ensureVersionedNodesAreFullyCleanedUp() throws Throwable
+    {
+        // Note that because we need to test that the Rule's 'after' behaviour has worked correctly, we cannot
+        // use the Rule that has been declared in the normal way - otherwise nothing would be cleaned up until
+        // after our test method.
+        // Therefore we have to manually poke the Rule to get it to cleanup during test execution.
+        // NOTE! This is *not* how a JUnit Rule would normally be used.
+        final TemporaryNodes myTemporaryNodes = new TemporaryNodes(APP_CONTEXT_INIT);
+        
+        // Currently this is a no-op, but just in case that changes.
+        myTemporaryNodes.before();
+        
+        
+        final List<NodeRef> nodesThatShouldBeDeletedByRule = new ArrayList<NodeRef>();
+        
+        // Create a versioned, temporary node
+        final NodeRef versionedTempNode = myTemporaryNodes.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN,
+                                                                           COMPANY_HOME,
+                                                                           "versionableNode",
+                                                                           TEST_USER1.getUsername(),
+                                                                           true);
+        
+        nodesThatShouldBeDeletedByRule.add(versionedTempNode);
+        
+        // Create various versions
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertTrue("The test node was not versioned as it should be.", VERSION_SERVICE.isVersioned(versionedTempNode));
+                
+                Version v1 = VERSION_SERVICE.createVersion(versionedTempNode, null);
+                Version v2 = VERSION_SERVICE.createVersion(versionedTempNode, null);
+                Version v3 = VERSION_SERVICE.createVersion(versionedTempNode, null);
+                
+                // Ensure that these version nodes are all cleaned up too.
+                for (Version v : new Version[] {v1, v2, v3})
+                {
+                    nodesThatShouldBeDeletedByRule.add(v.getFrozenStateNodeRef());
+                }
+                
                 return null;
             }
         });

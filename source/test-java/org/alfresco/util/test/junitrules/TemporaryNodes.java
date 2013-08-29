@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -90,6 +91,7 @@ public class TemporaryNodes extends ExternalResource
         final DictionaryService dictionaryService         = springContext.getBean("DictionaryService", DictionaryService.class);
         final NodeService nodeService                     = springContext.getBean("NodeService", NodeService.class);
         final SiteService siteService                     = springContext.getBean("SiteService", SiteService.class);
+        final VersionService versionService               = springContext.getBean("VersionService", VersionService.class);
         
         // Run as system to ensure all non-system nodes can be deleted irrespective of which user created them.
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -113,6 +115,14 @@ public class TemporaryNodes extends ExternalResource
                                     NodeRef workingCopy = cociService.getWorkingCopy(node);
                                     cociService.cancelCheckout(workingCopy);
                                 }
+                                
+                                // If it's been versioned, then we need to clean out the version history too.
+                                if (versionService.isVersioned(node))
+                                {
+                                    log.debug("Deleting version history of temporary node " + nodeService.getProperty(node, ContentModel.PROP_NAME));
+                                    versionService.deleteVersionHistory(node);
+                                }
+                                
                                 log.debug("Deleting temporary node " + nodeService.getProperty(node, ContentModel.PROP_NAME));
                                 
                                 // Site nodes are a special case which must be deleted through the SiteService.
@@ -277,8 +287,27 @@ public class TemporaryNodes extends ExternalResource
      * @param nodeCmName the cm:name of the new node
      * @param nodeCreator the username of the person who will create the node
      * @return the newly created NodeRef.
+     * @since 4.1.7
      */
     public NodeRef createQuickFile(final String mimetype, final NodeRef parentNode, final String nodeCmName, final String nodeCreator)
+    {
+        return createQuickFile(mimetype, parentNode, nodeCmName, nodeCreator, false);
+    }
+    
+    /**
+     * This method creates a cm:content NodeRef whose content is taken from an Alfresco 'quick' file and adds it to the internal
+     * list of NodeRefs to be tidied up by the rule.
+     * This method will be run in its own transaction and will be run with the specified user as the fully authenticated user,
+     * thus ensuring the named user is the cm:creator of the new node.
+     * 
+     * @param mimetype the MimeType of the content to put in the new node.
+     * @param parentNode the parent node
+     * @param nodeCmName the cm:name of the new node
+     * @param nodeCreator the username of the person who will create the node
+     * @param isVersionable should the new node be {@link ContentModel#ASPECT_VERSIONABLE versionable}?
+     * @return the newly created NodeRef.
+     */
+    public NodeRef createQuickFile(final String mimetype, final NodeRef parentNode, final String nodeCmName, final String nodeCreator, final boolean isVersionable)
     {
         final RetryingTransactionHelper transactionHelper = (RetryingTransactionHelper) appContextRule.getApplicationContext().getBean("retryingTransactionHelper");
         
@@ -290,6 +319,12 @@ public class TemporaryNodes extends ExternalResource
             public NodeRef execute() throws Throwable
             {
                 final NodeRef result = createNode(nodeCmName, parentNode, ContentModel.TYPE_CONTENT);
+                
+                if (isVersionable)
+                {
+                    NodeService nodeService = appContextRule.getApplicationContext().getBean("nodeService", NodeService.class);
+                    nodeService.addAspect(result, ContentModel.ASPECT_VERSIONABLE, null);
+                }
                 
                 File quickFile = loadQuickFile(getQuickResource(mimetype));
                 

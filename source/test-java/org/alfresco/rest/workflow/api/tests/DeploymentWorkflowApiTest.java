@@ -25,10 +25,14 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.rest.api.tests.AbstractTestFixture;
+import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
@@ -118,40 +122,53 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals(activitiDeployment.getDeploymentTime(), adhocDeployment.getDeployedAt());
     }
     
-//    @Test
-//    public void testGetDeploymentsEmpty() throws Exception
-//    {
-//        // Create a new test-network, not added to the test-fixture to prevent being used
-//        // in other tests
-//        String networkName = AbstractTestFixture.TEST_DOMAIN_PREFIX + UUID.randomUUID();
-//        TestNetwork testNetwork = repoService.createNetworkWithAlias(networkName, true);
-//        testNetwork.create();
-//        
-//        // Delete all deployments in the network
-//        List<org.activiti.engine.repository.Deployment> deployments = activitiProcessEngine.getRepositoryService()
-//            .createDeploymentQuery()
-//            .processDefinitionKeyLike("@" + networkName + "@")
-//            .list();
-//        
-//        for(org.activiti.engine.repository.Deployment deployment : deployments) {
-//            activitiProcessEngine.getRepositoryService().deleteDeployment(deployment.getId(), true);
-//        }
-//        
-//        // Fetch deployments using tenant-admin
-//        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + networkName;
-//        publicApiClient.setRequestContext(new RequestContext(TenantUtil.DEFAULT_TENANT, tenantAdmin));
-//
-//        DeploymentsClient deploymentsClient = publicApiClient.deploymentsClient();
-//
-//        ListResponse<Deployment> deploymentResponse = deploymentsClient.getDeployments();
-//        assertEquals(0, deploymentResponse.getList().size());
-//    }
+    @Test
+    public void testGetDeploymentsEmpty() throws Exception
+    {
+        // Create a new test-network, not added to the test-fixture to prevent being used
+        // in other tests
+        String networkName = AbstractTestFixture.TEST_DOMAIN_PREFIX + "999";
+        final TestNetwork testNetwork = repoService.createNetworkWithAlias(networkName, true);
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @SuppressWarnings("synthetic-access")
+            public Void execute() throws Throwable
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+                testNetwork.create();
+
+                return null;
+            }
+        }, false, true);
+        
+        // Delete all deployments in the network
+        List<org.activiti.engine.repository.Deployment> deployments = activitiProcessEngine.getRepositoryService()
+            .createDeploymentQuery()
+            .processDefinitionKeyLike("@" + testNetwork.getId() + "@%")
+            .list();
+        
+        for(org.activiti.engine.repository.Deployment deployment : deployments) 
+        {
+            activitiProcessEngine.getRepositoryService().deleteDeployment(deployment.getId(), true);
+        }
+        
+        // Fetch deployments using tenant-admin
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + testNetwork.getId();
+        publicApiClient.setRequestContext(new RequestContext(testNetwork.getId(), tenantAdmin));
+
+        DeploymentsClient deploymentsClient = publicApiClient.deploymentsClient();
+
+        ListResponse<Deployment> deploymentResponse = deploymentsClient.getDeployments();
+        assertEquals(0, deploymentResponse.getList().size());
+    }
     
     @Test
     public void testGetDeploymentById() throws Exception
     {
         // Use admin-user for tenant
         RequestContext requestContext = initApiClientWithTestUser();
+        
         String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
         publicApiClient.setRequestContext(new RequestContext(TenantUtil.DEFAULT_TENANT, tenantAdmin));
         
@@ -174,6 +191,28 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals(activitiDeployment.getCategory(), deployment.getCategory());
         assertEquals(activitiDeployment.getName(), deployment.getName());
         assertEquals(activitiDeployment.getDeploymentTime(), deployment.getDeployedAt());
+        
+        try
+        {
+            deploymentsClient.findDeploymentById("fakeid");
+            fail("Expected exception");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(404, e.getHttpResponse().getStatusCode());
+        }
+        
+        // get deployment with default user
+        try
+        {
+            publicApiClient.setRequestContext(requestContext);
+            deploymentsClient.findDeploymentById(activitiDeployment.getId());
+            fail("Expected exception");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(403, e.getHttpResponse().getStatusCode());
+        }
     }
 
     protected String createProcessDefinitionKey(String key, RequestContext requestContext) {

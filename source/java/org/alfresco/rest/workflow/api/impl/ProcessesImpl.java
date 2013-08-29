@@ -61,7 +61,6 @@ import org.alfresco.repo.workflow.WorkflowPropertyHandlerRegistry;
 import org.alfresco.repo.workflow.WorkflowQNameConverter;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiNodeConverter;
-import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.repo.workflow.activiti.ActivitiTypeConverter;
 import org.alfresco.repo.workflow.activiti.ActivitiUtil;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
@@ -85,11 +84,7 @@ import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.InvalidQNameException;
@@ -101,8 +96,6 @@ import org.apache.commons.io.IOUtils;
 
 public class ProcessesImpl extends WorkflowRestImpl implements Processes
 {
-    protected static final String BPM_PACKAGE = "bpm_package";
-    
     protected static String PROCESS_STATUS_ANY = "any";
     protected static String PROCESS_STATUS_ACTIVE = "active";
     protected static String PROCESS_STATUS_COMPLETED = "completed";
@@ -130,7 +123,6 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     protected WorkflowPackageImpl workflowPackageComponent;
     protected ServiceRegistry serviceRegistry;
     protected AuthorityDAO authorityDAO;
-    protected NodeService nodeService;
     protected PersonService personService;
     protected MessageService messageService;
     protected String engineId;
@@ -161,11 +153,6 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     public void setWorkflowPackageComponent(WorkflowPackageImpl workflowPackageComponent)
     {
         this.workflowPackageComponent = workflowPackageComponent;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 
     public void setPersonService(PersonService personService)
@@ -754,42 +741,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         
         validateIfUserAllowedToWorkWithProcess(processId);
-        
-        ActivitiScriptNode packageScriptNode = null;
-        try 
-        {
-            HistoricVariableInstance variableInstance = activitiProcessEngine.getHistoryService()
-                    .createHistoricVariableInstanceQuery()
-                    .processInstanceId(processId)
-                    .variableName(BPM_PACKAGE)
-                    .singleResult();
-            
-            if (variableInstance != null)
-            {
-                packageScriptNode = (ActivitiScriptNode) variableInstance.getValue();
-            }
-            else
-            {
-                throw new EntityNotFoundException(processId);
-            }
-        } 
-        catch (ActivitiObjectNotFoundException e)
-        {
-            throw new EntityNotFoundException(processId);
-        }
-        
-        List<Item> page = new ArrayList<Item>();
-        if (packageScriptNode != null)
-        {
-            List<ChildAssociationRef> documentList = nodeService.getChildAssocs(packageScriptNode.getNodeRef());
-            for (ChildAssociationRef childAssociationRef : documentList)
-            {
-                Item item = createItemForNodeRef(childAssociationRef.getChildRef());
-                page.add(item);
-            }
-        }
-        
-        return CollectionWithPagingInfo.asPaged(paging, page, false, page.size());
+        return getItemsFromProcess(processId, paging);
     }
     
     @Override
@@ -805,52 +757,8 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             throw new InvalidArgumentException("itemId is required to get an attached item");
         }
         
-        NodeRef nodeRef = getNodeRef(itemId);
-        
         validateIfUserAllowedToWorkWithProcess(processId);
-        
-        ActivitiScriptNode packageScriptNode = null;
-        try 
-        {
-            HistoricVariableInstance variableInstance = activitiProcessEngine.getHistoryService()
-                    .createHistoricVariableInstanceQuery()
-                    .processInstanceId(processId)
-                    .variableName(BPM_PACKAGE)
-                    .singleResult();
-            
-            if (variableInstance != null)
-            {
-                packageScriptNode = (ActivitiScriptNode) variableInstance.getValue();
-            }
-            else
-            {
-                throw new EntityNotFoundException(processId);
-            }
-        } 
-        catch (ActivitiObjectNotFoundException e)
-        {
-            throw new EntityNotFoundException(processId);
-        }
-        
-        Item item = null;
-        if (packageScriptNode != null)
-        {
-            List<ChildAssociationRef> documentList = nodeService.getChildAssocs(packageScriptNode.getNodeRef());
-            for (ChildAssociationRef childAssociationRef : documentList)
-            {
-                if (childAssociationRef.getChildRef().equals(nodeRef)) 
-                {
-                    item = createItemForNodeRef(childAssociationRef.getChildRef());
-                    break;
-                }
-            }
-        }
-        
-        if (item == null) {
-            throw new EntityNotFoundException(itemId);
-        }
-        
-        return item;
+        return getItemFromProcess(itemId, processId);
     }
 
     @Override
@@ -867,46 +775,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         
         validateIfUserAllowedToWorkWithProcess(processId);
-        
-        NodeRef nodeRef = getNodeRef(item.getId());
-        
-        ActivitiScriptNode packageScriptNode = null;
-        try 
-        {
-            packageScriptNode = (ActivitiScriptNode) activitiProcessEngine.getRuntimeService().getVariable(processId, BPM_PACKAGE);
-        } 
-        catch (ActivitiObjectNotFoundException e)
-        {
-            throw new EntityNotFoundException(processId);
-        }
-        
-        if (packageScriptNode == null)
-        {
-            throw new InvalidArgumentException("process doesn't contain a workflow package variable");
-        }
-        
-        // check if noderef exists
-        try 
-        {
-            nodeService.getProperties(nodeRef);
-        }
-        catch (Exception e)
-        {
-            throw new EntityNotFoundException("item with id " + nodeRef.toString() + " not found");
-        }
-        
-        try 
-        {
-            QName workflowPackageItemId = QName.createQName("wpi", nodeRef.toString());
-            nodeService.addChild(packageScriptNode.getNodeRef(), nodeRef, 
-                    WorkflowModel.ASSOC_PACKAGE_CONTAINS, workflowPackageItemId);
-        }
-        catch (Exception e)
-        {
-            throw new ApiException("could not add item to process " + e.getMessage(), e);
-        }
-        
-        return item;
+        return createItemInProcess(item.getId(), processId);
     }
 
     @Override
@@ -922,49 +791,8 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             throw new InvalidArgumentException("itemId is required to delete an attached item");
         }
         
-        NodeRef nodeRef = getNodeRef(itemId);
-        
         validateIfUserAllowedToWorkWithProcess(processId);
-        
-        ActivitiScriptNode packageScriptNode = null;
-        try 
-        {
-            packageScriptNode = (ActivitiScriptNode) activitiProcessEngine.getRuntimeService().getVariable(processId, BPM_PACKAGE);
-        } 
-        catch (ActivitiObjectNotFoundException e)
-        {
-            throw new EntityNotFoundException(processId);
-        }
-        
-        if (packageScriptNode == null)
-        {
-            throw new InvalidArgumentException("process doesn't contain a workflow package variable");
-        }
-        
-        boolean itemIdFoundInPackage = false;
-        List<ChildAssociationRef> documentList = nodeService.getChildAssocs(packageScriptNode.getNodeRef());
-        for (ChildAssociationRef childAssociationRef : documentList)
-        {
-            if (childAssociationRef.getChildRef().equals(nodeRef)) 
-            {
-                itemIdFoundInPackage = true;
-                break;
-            }
-        }
-        
-        if (itemIdFoundInPackage == false)
-        {
-            throw new EntityNotFoundException("Item " + itemId + " not found in the process package variable");
-        }
-        
-        try 
-        {
-            nodeService.removeChild(packageScriptNode.getNodeRef(), nodeRef);
-        }
-        catch (InvalidNodeRefException e)
-        {
-            throw new EntityNotFoundException("Item " + itemId + " not found");
-        }
+        deleteItemFromProcess(itemId, processId);
     }
     
     @Override
@@ -1232,34 +1060,5 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         processInfo.setProcessDefinitionKey(getLocalProcessDefinitionKey(definitionEntity.getKey()));
         return processInfo;
-    }
-    
-    protected Item createItemForNodeRef(NodeRef nodeRef) {
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-        Item item = new Item();
-        String name = (String) properties.get(ContentModel.PROP_NAME);
-        String title = (String) properties.get(ContentModel.PROP_TITLE);
-        String description = (String) properties.get(ContentModel.PROP_DESCRIPTION);
-        Date createdAt = (Date) properties.get(ContentModel.PROP_CREATED);
-        String createdBy = (String) properties.get(ContentModel.PROP_CREATOR);
-        Date modifiedAt = (Date) properties.get(ContentModel.PROP_MODIFIED);
-        String modifiedBy = (String) properties.get(ContentModel.PROP_MODIFIER);
-        
-        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-        
-        item.setId(nodeRef.getId());
-        item.setName(name);
-        item.setTitle(title);
-        item.setDescription(description);
-        item.setCreatedAt(createdAt);
-        item.setCreatedBy(createdBy);
-        item.setModifiedAt(modifiedAt);
-        item.setModifiedBy(modifiedBy);
-        if (contentData != null) 
-        {
-            item.setMimeType(contentData.getMimetype());
-            item.setSize(contentData.getSize());
-        }
-        return item;
     }
 }

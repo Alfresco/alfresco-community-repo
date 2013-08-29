@@ -175,12 +175,30 @@ public class ProcessDefinitionWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertTrue(processDefinitionMap.containsKey("activitiAdhoc"));
         assertEquals(1, processDefinitionMap.size());
         
+        // Use AND operator
+        processDefinitionMap = getProcessDefinitions(processDefinitionsClient, "(category = 'http://alfresco.org' AND name = 'Adhoc Activiti Process')");
+        assertTrue(processDefinitionMap.containsKey("activitiAdhoc"));
+        assertEquals(1, processDefinitionMap.size());
+        
+        // Use OR operator
+        try
+        {
+            processDefinitionMap = getProcessDefinitions(processDefinitionsClient, "(category = 'http://alfresco.org' OR name = 'Adhoc Activiti Process')");
+            fail("Expected exception");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(400, e.getHttpResponse().getStatusCode());
+        }
     }
     
     @Test
     public void testGetProcessDefinitionById() throws Exception
     {
         RequestContext requestContext = initApiClientWithTestUser();
+        
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
 
         String adhocKey = createProcessDefinitionKey("activitiAdhoc", requestContext);
         org.activiti.engine.repository.ProcessDefinition activitiDefinition = activitiProcessEngine.getRepositoryService()
@@ -204,6 +222,15 @@ public class ProcessDefinitionWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals(activitiDefinition.getVersion(), adhocDefinition.getVersion());
         assertEquals(((ProcessDefinitionEntity) activitiDefinition).isGraphicalNotationDefined(), adhocDefinition.isGraphicNotationDefined());
         assertEquals("wf:submitAdhocTask", adhocDefinition.getStartFormResourceKey());
+        
+        // get process definition with admin
+        publicApiClient.setRequestContext(adminContext);
+        adhocDefinition = processDefinitionsClient.findProcessDefinitionById(activitiDefinition.getId());
+        assertNotNull(adhocDefinition);
+        
+        // Check fields of a resulting process-definition
+        assertEquals(activitiDefinition.getId(), adhocDefinition.getId());
+        assertEquals("activitiAdhoc", adhocDefinition.getKey());
     }
     
     @Test
@@ -227,6 +254,10 @@ public class ProcessDefinitionWorkflowApiTest extends EnterpriseWorkflowTestApi
     public void testGetProcessDefinitionStartModel() throws Exception
     {
         RequestContext requestContext = initApiClientWithTestUser();
+        
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
+        
         ProcessDefinitionsClient processDefinitionsClient = publicApiClient.processDefinitionsClient();
         
         String adhocKey = createProcessDefinitionKey("activitiAdhoc", requestContext);
@@ -322,6 +353,43 @@ public class ProcessDefinitionWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertTrue(allowedValues.contains("On Hold"));
         assertTrue(allowedValues.contains("Cancelled"));
         assertTrue(allowedValues.contains("Completed"));
+        
+        // get start form model with admin
+        publicApiClient.setRequestContext(adminContext);
+        model = processDefinitionsClient.findStartFormModel(activitiDefinition.getId());
+        assertNotNull(model);
+        
+        entries = (JSONArray) model.get("entries");
+        assertNotNull(entries);
+        
+        // Add all entries to a map, to make lookup easier
+        modelFieldsByName = new HashMap<String, JSONObject>();
+        for(int i=0; i<entries.size(); i++) 
+        {
+            entry = (JSONObject) entries.get(i);
+            assertNotNull(entry);
+            entry = (JSONObject) entry.get("entry");
+            assertNotNull(entry);
+            modelFieldsByName.put((String) entry.get("name"), entry);
+        }
+        
+        // Check well-known properties and their types
+        
+        // Validate bpm:description
+        modelEntry = modelFieldsByName.get("bpm_workflowDescription");
+        assertNotNull(modelEntry);
+        assertEquals("Description", modelEntry.get("title"));
+        assertEquals("{http://www.alfresco.org/model/bpm/1.0}workflowDescription", modelEntry.get("qualifiedName"));
+        assertEquals("d:text", modelEntry.get("dataType"));
+        assertFalse((Boolean)modelEntry.get("required"));
+        
+        // Validate bpm:description
+        modelEntry = modelFieldsByName.get("bpm_completionDate");
+        assertNotNull(modelEntry);
+        assertEquals("Completion Date", modelEntry.get("title"));
+        assertEquals("{http://www.alfresco.org/model/bpm/1.0}completionDate", modelEntry.get("qualifiedName"));
+        assertEquals("d:date", modelEntry.get("dataType"));
+        assertFalse((Boolean)modelEntry.get("required"));
     }
     
     @Test

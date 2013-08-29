@@ -830,7 +830,7 @@
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="namespaceService" ref="NamespaceService" />
       <property name="tenantService" ref="tenantService" />
-      
+      <property name="nodeService" ref="nodeService"/>
     </bean>
    
 	<bean id="deployments" class="org.alfresco.rest.workflow.api.impl.DeploymentsImpl" parent="baseWorkflowRest">
@@ -874,7 +874,6 @@
         <property name="workflowPackageComponent" ref="workflowPackageImpl"/>
         <property name="serviceRegistry" ref="ServiceRegistry" />
         <property name="authorityDAO" ref="authorityDAO" />
-        <property name="nodeService" ref="nodeService"/>
         <property name="personService" ref="PersonService" />
         <property name="messageService" ref="messageService" />
         <property name="engineId" value="activiti" />
@@ -899,7 +898,6 @@
     <bean id="tasks" class="org.alfresco.rest.workflow.api.impl.TasksImpl" parent="baseWorkflowRest">
         <property name="restVariableHelper" ref="restVariableHelper" />
         <property name="messageService" ref="messageService" />
-        <property name="processes" ref="processes"/>
     </bean>
 
     <bean id="Tasks" class="org.springframework.aop.framework.ProxyFactoryBean">

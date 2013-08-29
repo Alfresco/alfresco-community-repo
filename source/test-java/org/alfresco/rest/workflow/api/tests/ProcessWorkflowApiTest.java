@@ -37,6 +37,7 @@ import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
+import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
@@ -219,12 +220,76 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
     }
     
     @Test
+    public void testCreateProcessInstanceWithNoParams() throws Exception
+    {
+        initApiClientWithTestUser();
+        
+        ProcessesClient processesClient = publicApiClient.processesClient();
+        
+        JSONObject createProcessObject = new JSONObject();
+        try
+        {
+            processesClient.createProcess(createProcessObject.toJSONString());
+            fail("Exception excpected");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(400, e.getHttpResponse().getStatusCode());
+        }
+    }
+    
+    @Test
+    public void testMethodNotAllowedURIs() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+        HttpResponse response = publicApiClient.get("public", "processes", null, null, null, null);
+        assertEquals(200, response.getStatusCode());
+        response = publicApiClient.put("public", "processes", null, null, null, null, null);
+        assertEquals(405, response.getStatusCode());
+  
+        final ProcessInfo processInfo = startAdhocProcess(requestContext, null);
+        
+        try
+        {
+            response = publicApiClient.get("public", "processes", processInfo.getId(), null, null, null);
+            assertEquals(200, response.getStatusCode());
+            response = publicApiClient.post("public", "processes", processInfo.getId(), null, null, null);
+            assertEquals(405, response.getStatusCode());
+            response = publicApiClient.put("public", "processes", processInfo.getId(), null, null, null, null);
+            assertEquals(405, response.getStatusCode());
+            
+            response = publicApiClient.get("public", "processes", processInfo.getId(), "activities", null, null);
+            assertEquals(200, response.getStatusCode());
+            response = publicApiClient.post("public", "processes", processInfo.getId(), "activities", null, null);
+            assertEquals(405, response.getStatusCode());
+            response = publicApiClient.delete("public", "processes", processInfo.getId(), "activities", null);
+            assertEquals(405, response.getStatusCode());
+            response = publicApiClient.put("public", "processes", processInfo.getId(), "activities", null, null, null);
+            assertEquals(405, response.getStatusCode());
+            
+            response = publicApiClient.get("public", "processes", processInfo.getId(), "tasks", null, null);
+            assertEquals(200, response.getStatusCode());
+            response = publicApiClient.post("public", "processes", processInfo.getId(), "tasks", null, null);
+            assertEquals(405, response.getStatusCode());
+            response = publicApiClient.delete("public", "processes", processInfo.getId(), "tasks", null);
+            assertEquals(405, response.getStatusCode());
+            response = publicApiClient.put("public", "processes", processInfo.getId(), "tasks", null, null, null);
+            assertEquals(405, response.getStatusCode());
+        }
+        finally
+        {
+            cleanupProcessInstance(processInfo.getId());
+        }
+    }
+    
+    @Test
     public void testCreateProcessInstanceForPooledReview() throws Exception
     {
         final RequestContext requestContext = initApiClientWithTestUser();
         final ProcessInfo processInfo = startReviewPooledProcess(requestContext);
         assertNotNull(processInfo);
         assertNotNull(processInfo.getId());
+        cleanupProcessInstance(processInfo.getId());
     }
     
     @Test
@@ -234,11 +299,12 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         final ProcessInfo processInfo = startParallelReviewProcess(requestContext);
         assertNotNull(processInfo);
         assertNotNull(processInfo.getId());
+        cleanupProcessInstance(processInfo.getId());
     }
     
     @Test
     @SuppressWarnings("unchecked")
-    public void testCreateProcessInstanceFormOtherNetwork() throws Exception
+    public void testCreateProcessInstanceFromOtherNetwork() throws Exception
     {
         final RequestContext requestContext = initApiClientWithTestUser();
         
@@ -432,10 +498,13 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         initApiClientWithTestUser();
         ProcessesClient processesClient = publicApiClient.processesClient();
         
-        try {
+        try 
+        {
             processesClient.findProcessById("unexisting");
             fail("Exception expected");
-        } catch(PublicApiException expected) {
+        } 
+        catch(PublicApiException expected) 
+        {
             assertEquals(HttpStatus.NOT_FOUND.value(), expected.getHttpResponse().getStatusCode());
             assertErrorSummary("The entity with id: unexisting was not found", expected.getHttpResponse());
         }
@@ -923,6 +992,25 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
     }
     
     @Test
+    public void getProcessImage() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        final ProcessInfo processRest = startAdhocProcess(requestContext, null);
+        HttpResponse response = publicApiClient.processesClient().getImage(processRest.getId());
+        assertEquals(200, response.getStatusCode());
+        cleanupProcessInstance(processRest.getId());
+        try
+        {
+            response = publicApiClient.processesClient().getImage("fakeId");
+            fail("Exception expected");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(404, e.getHttpResponse().getStatusCode());
+        }
+    }
+    
+    @Test
     public void testGetProcessItems() throws Exception
     {
         final RequestContext requestContext = initApiClientWithTestUser();
@@ -974,6 +1062,16 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertTrue(doc2Found);
         
         cleanupProcessInstance(processRest.getId());
+        
+        try
+        {
+            processesClient.findProcessItems("fakeid");
+            fail("Exception expected");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(404, e.getHttpResponse().getStatusCode());
+        }
     }
     
     @Test
@@ -987,7 +1085,6 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         
         final String newProcessInstanceId = processRest.getId();
         ProcessesClient processesClient = publicApiClient.processesClient();
-        System.out.println("node ref " + docNodeRefs[0].toString());
         JSONObject itemJSON = processesClient.findProcessItem(newProcessInstanceId, docNodeRefs[0].getId());
         assertNotNull(itemJSON);
         
@@ -1104,6 +1201,80 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         finally
         {
             cleanupProcessInstance(processRest.getId());
+        }
+    }
+    
+    @Test
+    public void testDeleteProcessItemWithAdmin() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        final RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
+        publicApiClient.setRequestContext(adminContext);
+        
+        // start process with admin user
+        NodeRef[] docNodeRefs = createTestDocuments(adminContext);
+        final ProcessInfo processRest = startAdhocProcess(adminContext, docNodeRefs);
+        try
+        {
+            assertNotNull(processRest);
+            
+            final String newProcessInstanceId = processRest.getId();
+            ProcessesClient processesClient = publicApiClient.processesClient();
+            
+            // Delete the item
+            processesClient.deleteProcessItem(newProcessInstanceId, docNodeRefs[0].getId());
+            
+            // Fetching the item should result in 404
+            try 
+            {
+                publicApiClient.processesClient().findProcessItem(newProcessInstanceId, docNodeRefs[0].getId());
+                fail("Exception expected");
+            } 
+            catch(PublicApiException expected) 
+            {
+                assertEquals(HttpStatus.NOT_FOUND.value(), expected.getHttpResponse().getStatusCode());
+                assertErrorSummary("The entity with id: " + docNodeRefs[0].getId() + " was not found", expected.getHttpResponse());
+            }
+            
+        }
+        finally
+        {
+            cleanupProcessInstance(processRest.getId());
+        }
+        
+        // start process with default user and delete item with admin
+        publicApiClient.setRequestContext(requestContext);
+        docNodeRefs = createTestDocuments(requestContext);
+        final ProcessInfo processRestDefaultUser = startAdhocProcess(requestContext, docNodeRefs);
+        try
+        {
+            assertNotNull(processRestDefaultUser);
+            
+            publicApiClient.setRequestContext(adminContext);
+            final String newProcessInstanceId = processRestDefaultUser.getId();
+            ProcessesClient processesClient = publicApiClient.processesClient();
+            
+            // Delete the item
+            processesClient.deleteProcessItem(newProcessInstanceId, docNodeRefs[0].getId());
+            
+            // Fetching the item should result in 404
+            try 
+            {
+                publicApiClient.processesClient().findProcessItem(newProcessInstanceId, docNodeRefs[0].getId());
+                fail("Exception expected");
+            } 
+            catch(PublicApiException expected) 
+            {
+                assertEquals(HttpStatus.NOT_FOUND.value(), expected.getHttpResponse().getStatusCode());
+                assertErrorSummary("The entity with id: " + docNodeRefs[0].getId() + " was not found", expected.getHttpResponse());
+            }
+            
+        }
+        finally
+        {
+            cleanupProcessInstance(processRestDefaultUser.getId());
         }
     }
     
@@ -1458,16 +1629,20 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
     {
         initApiClientWithTestUser();
         
-        try {
+        try 
+        {
             publicApiClient.processesClient().deleteVariable("unexisting", "deleteMe");
             fail("Exception expected");
-        } catch(PublicApiException expected) {
+        } 
+        catch(PublicApiException expected) 
+        {
             assertEquals(HttpStatus.NOT_FOUND.value(), expected.getHttpResponse().getStatusCode());
             assertErrorSummary("The entity with id: unexisting was not found", expected.getHttpResponse());
         }
     }
     
-    protected void completeAdhocTasks(String instanceId, RequestContext requestContext) {
+    protected void completeAdhocTasks(String instanceId, RequestContext requestContext) 
+    {
         final Task task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(instanceId).singleResult();
         assertEquals(requestContext.getRunAsUser(), task.getAssignee());
         

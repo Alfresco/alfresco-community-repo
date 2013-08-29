@@ -158,6 +158,12 @@ public class WorkflowApiClient extends PublicApiClient
             return list;
         }
         
+        public HttpResponse getImage(String processInstanceId) throws PublicApiException
+        {
+            HttpResponse response = getSingle("processes", processInstanceId, "image", null, "Failed to get image of processInstanceId " + processInstanceId);
+            return response;
+        }
+        
         public JSONObject findProcessItems(String processInstanceId) throws PublicApiException
         {
             HttpResponse response = getAll("processes", processInstanceId, "items", null, null,
@@ -282,6 +288,34 @@ public class WorkflowApiClient extends PublicApiClient
             HttpResponse response = getAll("tasks", taskId, "task-form-model", null, null, "Failed to get task form model");
             JSONObject list = (JSONObject) response.getJsonResponse().get("list");
             return list;
+        }
+        
+        public JSONObject findTaskItems(String taskId) throws PublicApiException
+        {
+            HttpResponse response = getAll("tasks", taskId, "items", null, null,
+                    "Failed to get the items of the task");
+            JSONObject list = (JSONObject) response.getJsonResponse().get("list");
+            return list;
+        }
+        
+        public JSONObject addTaskItem(String taskId, String body) throws PublicApiException
+        {
+            HttpResponse response = create("tasks", taskId, "items", null, body, "Failed to add item");
+            JSONObject entry = (JSONObject) response.getJsonResponse().get("entry");
+            return entry;
+        }
+        
+        public void deleteTaskItem(String taskId, String itemId) throws PublicApiException
+        {
+            remove("tasks", taskId, "items", itemId, "Failed to delete item");
+        }
+        
+        public JSONObject findTaskItem(String taskId, String itemId) throws PublicApiException
+        {
+            HttpResponse response = getAll("tasks", taskId, "items", itemId, null,
+                    "Failed to get the item of the task");
+            JSONObject entry = (JSONObject) response.getJsonResponse().get("entry");
+            return entry;
         }
     }
     

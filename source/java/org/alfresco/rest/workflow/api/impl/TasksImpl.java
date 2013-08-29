@@ -54,7 +54,6 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
-import org.alfresco.rest.workflow.api.Processes;
 import org.alfresco.rest.workflow.api.Tasks;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker.QueryVariableHolder;
 import org.alfresco.rest.workflow.api.model.FormModelElement;
@@ -123,7 +122,6 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     private WorkflowObjectFactory workflowFactory;
     private WorkflowQNameConverter qNameConverter;
     private MessageService messageService;
-    private Processes processes;
     
     public void setRestVariableHelper(RestVariableHelper restVariableHelper)
     {
@@ -133,11 +131,6 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     public void setMessageService(MessageService messageService)
     {
         this.messageService = messageService;
-    }
-    
-    public void setProcesses(Processes processes)
-    {
-        this.processes = processes;
     }
     
     @Override
@@ -634,7 +627,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             throw new InvalidArgumentException("Task id is required"); 
         }
 
-        HistoricTaskInstance taskInstance = getValidHistoricTask(taskId, true);
+        HistoricTaskInstance taskInstance = getValidHistoricTask(taskId);
 
         return new Task(taskInstance);
     }
@@ -818,7 +811,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     public CollectionWithPagingInfo<FormModelElement> getTaskFormModel(String taskId, Paging paging)
     {
         // Check if task can be accessed by the current user
-        HistoricTaskInstance task = getValidHistoricTask(taskId, true);
+        HistoricTaskInstance task = getValidHistoricTask(taskId);
         String formKey = task.getFormKey();
         
         // Lookup type definition for the task
@@ -830,7 +823,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     public CollectionWithPagingInfo<TaskVariable> getTaskVariables(String taskId, Paging paging, VariableScope scope) 
     {
         // Ensure the user is allowed to get variables for the task involved. 
-        HistoricTaskInstance taskInstance = getValidHistoricTask(taskId, true);
+        HistoricTaskInstance taskInstance = getValidHistoricTask(taskId);
         String formKey = taskInstance.getFormKey();
 
         // Based on the scope, right variables are queried
@@ -878,13 +871,13 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     @Override
     public TaskVariable updateTaskVariable(String taskId, TaskVariable taskVariable) 
     {
-        org.activiti.engine.task.Task taskInstance = getValidTask(taskId, true);
+        org.activiti.engine.task.Task taskInstance = getValidTask(taskId);
         return updateVariableInTask(taskId, taskInstance, taskVariable);
     }
     
     public List<TaskVariable> updateTaskVariables(String taskId, List<TaskVariable> variables)
     {
-        org.activiti.engine.task.Task taskInstance = getValidTask(taskId, true);
+        org.activiti.engine.task.Task taskInstance = getValidTask(taskId);
         List<TaskVariable> updatedVariables = new ArrayList<TaskVariable>();
         if (variables != null)
         {
@@ -1003,7 +996,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         
         // Fetch task to check if user is authorized to perform the delete
-        getValidTask(taskId, true);
+        getValidTask(taskId);
         
         // Check if variable is present on the scope
         if (activitiProcessEngine.getTaskService().hasVariableLocal(taskId, variableName) == false)
@@ -1017,7 +1010,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     public CollectionWithPagingInfo<TaskCandidate> getTaskCandidates(String taskId, Paging paging) 
     {
         // Fetch task to check if user is authorized to perform the delete
-        getValidTask(taskId, true);
+        getValidTask(taskId);
         
         List<IdentityLink> links = activitiProcessEngine.getTaskService().getIdentityLinksForTask(taskId);
         List<TaskCandidate> page = new ArrayList<TaskCandidate>();
@@ -1038,49 +1031,49 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     @Override
     public Item createItem(String taskId, Item item)
     {
-        org.activiti.engine.task.Task task = getValidTask(taskId, false);
+        org.activiti.engine.task.Task task = getValidTask(taskId);
       
         if (task.getProcessInstanceId() == null)
         {
             throw new UnsupportedResourceOperationException("Task is not part of process, no items available.");
         }
-        return processes.createItem(task.getProcessInstanceId(), item);
+        return createItemInProcess(item.getId(), task.getProcessInstanceId());
     }
     
     @Override
     public void deleteItem(String taskId, String itemId)
     {
-        org.activiti.engine.task.Task task = getValidTask(taskId, false);
-        
-        if(task.getProcessInstanceId() == null)
-        {
-            throw new UnsupportedResourceOperationException("Task is not part of process, no items available.");
-        }
-        processes.deleteItem(task.getProcessInstanceId(), itemId);
-    }
-    
-    @Override
-    public Item getItem(String taskId, String itemId)
-    {
-        HistoricTaskInstance task = getValidHistoricTask(taskId, true);
+        org.activiti.engine.task.Task task = getValidTask(taskId);
         
         if (task.getProcessInstanceId() == null)
         {
             throw new UnsupportedResourceOperationException("Task is not part of process, no items available.");
         }
-        return processes.getItem(task.getProcessInstanceId(), itemId);
+        deleteItemFromProcess(itemId, task.getProcessInstanceId());
+    }
+    
+    @Override
+    public Item getItem(String taskId, String itemId)
+    {
+        HistoricTaskInstance task = getValidHistoricTask(taskId);
+        
+        if (task.getProcessInstanceId() == null)
+        {
+            throw new UnsupportedResourceOperationException("Task is not part of process, no items available.");
+        }
+        return getItemFromProcess(itemId, task.getProcessInstanceId());
     }
     
     @Override
     public CollectionWithPagingInfo<Item> getItems(String taskId, Paging paging)
     {
-        HistoricTaskInstance task = getValidHistoricTask(taskId, true);
+        HistoricTaskInstance task = getValidHistoricTask(taskId);
         
-        if(task.getProcessInstanceId() == null)
+        if (task.getProcessInstanceId() == null)
         {
             throw new UnsupportedResourceOperationException("Task is not part of process, no items available.");
         }
-        return processes.getItems(task.getProcessInstanceId(), paging);
+        return getItemsFromProcess(task.getProcessInstanceId(), paging);
     }
 
     protected String getFormResourceKey(final org.activiti.engine.task.Task task) 
@@ -1175,7 +1168,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
      * @throws EntityNotFoundException when the task was not found
      * @throws PermissionDeniedException when the current logged in user isn't allowed to access task.
      */
-    protected HistoricTaskInstance getValidHistoricTask(String taskId, boolean validIfClaimable)
+    protected HistoricTaskInstance getValidHistoricTask(String taskId)
     {
         HistoricTaskInstanceQuery query = activitiProcessEngine.getHistoryService()
             .createHistoricTaskInstanceQuery()
@@ -1214,19 +1207,15 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             else
             {
                 boolean isTaskClaimable = false;
-                
-                if (validIfClaimable)
+                if (taskInstance.getEndTime() == null) 
                 {
-                    if (taskInstance.getEndTime() == null) 
-                    {
-                        // Task is not yet finished, so potentially claimable. If user is part of a "candidateGroup", the task is accessible to the
-                        // user regardless of not being involved/owner/assignee
-                        isTaskClaimable = activitiProcessEngine.getTaskService()
-                                .createTaskQuery()
-                                .taskCandidateGroupIn(new ArrayList<String>(authorityService.getAuthoritiesForUser(AuthenticationUtil.getRunAsUser())))
-                                .taskId(taskId)
-                                .count() == 1;
-                    }
+                    // Task is not yet finished, so potentially claimable. If user is part of a "candidateGroup", the task is accessible to the
+                    // user regardless of not being involved/owner/assignee
+                    isTaskClaimable = activitiProcessEngine.getTaskService()
+                            .createTaskQuery()
+                            .taskCandidateGroupIn(new ArrayList<String>(authorityService.getAuthoritiesForUser(AuthenticationUtil.getRunAsUser())))
+                            .taskId(taskId)
+                            .count() == 1;
                 }
                 
                 if (isTaskClaimable == false)
@@ -1246,7 +1235,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
      * @throws EntityNotFoundException when the task was not found
      * @throws PermissionDeniedException when the current logged in user isn't allowed to access task.
      */
-    protected org.activiti.engine.task.Task getValidTask(String taskId, boolean validIfClaimable)
+    protected org.activiti.engine.task.Task getValidTask(String taskId)
     {
         if (taskId == null)
         {
@@ -1289,18 +1278,13 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
             else
             {
-                boolean isTaskClaimable = false;
-                
-                if (validIfClaimable) 
-                {
-                    // Task is not yet finished, so potentially claimable. If user is part of a "candidateGroup", the task is accessible to the
-                    // user regardless of not being involved/owner/assignee
-                    isTaskClaimable = activitiProcessEngine.getTaskService()
-                            .createTaskQuery()
-                            .taskCandidateGroupIn(new ArrayList<String>(authorityService.getAuthoritiesForUser(AuthenticationUtil.getRunAsUser())))
-                            .taskId(taskId)
-                            .count() == 1;
-                }
+                // Task is not yet finished, so potentially claimable. If user is part of a "candidateGroup", the task is accessible to the
+                // user regardless of not being involved/owner/assignee
+                boolean isTaskClaimable = activitiProcessEngine.getTaskService()
+                        .createTaskQuery()
+                        .taskCandidateGroupIn(new ArrayList<String>(authorityService.getAuthoritiesForUser(AuthenticationUtil.getRunAsUser())))
+                        .taskId(taskId)
+                        .count() == 1;
                 
                 if (isTaskClaimable == false)
                 {

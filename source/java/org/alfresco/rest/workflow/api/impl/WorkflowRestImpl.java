@@ -1,5 +1,6 @@
 package org.alfresco.rest.workflow.api.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.activiti.engine.ActivitiObjectNotFoundException;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
@@ -28,8 +30,10 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.workflow.WorkflowConstants;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
+import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
@@ -37,6 +41,7 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.workflow.api.model.FormModelElement;
+import org.alfresco.rest.workflow.api.model.Item;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
@@ -44,7 +49,11 @@ import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -60,10 +69,13 @@ import org.apache.commons.beanutils.ConvertUtils;
  */
 public class WorkflowRestImpl
 {
+    protected static final String BPM_PACKAGE = "bpm_package";
+    
     protected TenantService tenantService;
     protected AuthorityService authorityService;
     protected NamespaceService namespaceService;
     protected DictionaryService dictionaryService;
+    protected NodeService nodeService;
     protected ProcessEngine activitiProcessEngine;
     protected boolean deployWorkflowsInTenant;
     protected List<String> excludeModelTypes = new ArrayList<String>(Arrays.asList("bpm_priority", "bpm_description", "bpm_dueDate"));
@@ -96,6 +108,11 @@ public class WorkflowRestImpl
         this.dictionaryService = dictionaryService;
     }
     
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
     public void setActivitiProcessEngine(ProcessEngine activitiProcessEngine)
     {
         this.activitiProcessEngine = activitiProcessEngine;
@@ -121,6 +138,192 @@ public class WorkflowRestImpl
             nodeRef = new NodeRef(itemId);
         }
         return nodeRef;
+    }
+    
+    /**
+     * Get all items from the process package variable
+     */
+    public CollectionWithPagingInfo<Item> getItemsFromProcess(String processId, Paging paging)
+    {
+        ActivitiScriptNode packageScriptNode = null;
+        try 
+        {
+            HistoricVariableInstance variableInstance = activitiProcessEngine.getHistoryService()
+                    .createHistoricVariableInstanceQuery()
+                    .processInstanceId(processId)
+                    .variableName(BPM_PACKAGE)
+                    .singleResult();
+            
+            if (variableInstance != null)
+            {
+                packageScriptNode = (ActivitiScriptNode) variableInstance.getValue();
+            }
+            else
+            {
+                throw new EntityNotFoundException(processId);
+            }
+        } 
+        catch (ActivitiObjectNotFoundException e)
+        {
+            throw new EntityNotFoundException(processId);
+        }
+        
+        List<Item> page = new ArrayList<Item>();
+        if (packageScriptNode != null)
+        {
+            List<ChildAssociationRef> documentList = nodeService.getChildAssocs(packageScriptNode.getNodeRef());
+            for (ChildAssociationRef childAssociationRef : documentList)
+            {
+                Item item = createItemForNodeRef(childAssociationRef.getChildRef());
+                page.add(item);
+            }
+        }
+        
+        return CollectionWithPagingInfo.asPaged(paging, page, false, page.size());
+    }
+    
+    /**
+     * Get an item from the process package variable
+     */
+    public Item getItemFromProcess(String itemId, String processId)
+    {
+        NodeRef nodeRef = getNodeRef(itemId);
+        ActivitiScriptNode packageScriptNode = null;
+        try 
+        {
+            HistoricVariableInstance variableInstance = activitiProcessEngine.getHistoryService()
+                    .createHistoricVariableInstanceQuery()
+                    .processInstanceId(processId)
+                    .variableName(BPM_PACKAGE)
+                    .singleResult();
+            
+            if (variableInstance != null)
+            {
+                packageScriptNode = (ActivitiScriptNode) variableInstance.getValue();
+            }
+            else
+            {
+                throw new EntityNotFoundException(processId);
+            }
+        } 
+        catch (ActivitiObjectNotFoundException e)
+        {
+            throw new EntityNotFoundException(processId);
+        }
+        
+        Item item = null;
+        if (packageScriptNode != null)
+        {
+            List<ChildAssociationRef> documentList = nodeService.getChildAssocs(packageScriptNode.getNodeRef());
+            for (ChildAssociationRef childAssociationRef : documentList)
+            {
+                if (childAssociationRef.getChildRef().equals(nodeRef)) 
+                {
+                    item = createItemForNodeRef(childAssociationRef.getChildRef());
+                    break;
+                }
+            }
+        }
+        
+        if (item == null) {
+            throw new EntityNotFoundException(itemId);
+        }
+        
+        return item;
+    }
+    
+    /**
+     *  Create a new item in the process package variable
+     */
+    public Item createItemInProcess(String itemId, String processId)
+    {
+        NodeRef nodeRef = getNodeRef(itemId);
+        
+        ActivitiScriptNode packageScriptNode = null;
+        try 
+        {
+            packageScriptNode = (ActivitiScriptNode) activitiProcessEngine.getRuntimeService().getVariable(processId, BPM_PACKAGE);
+        } 
+        catch (ActivitiObjectNotFoundException e)
+        {
+            throw new EntityNotFoundException(processId);
+        }
+        
+        if (packageScriptNode == null)
+        {
+            throw new InvalidArgumentException("process doesn't contain a workflow package variable");
+        }
+        
+        // check if noderef exists
+        try 
+        {
+            nodeService.getProperties(nodeRef);
+        }
+        catch (Exception e)
+        {
+            throw new EntityNotFoundException("item with id " + nodeRef.toString() + " not found");
+        }
+        
+        try 
+        {
+            QName workflowPackageItemId = QName.createQName("wpi", nodeRef.toString());
+            nodeService.addChild(packageScriptNode.getNodeRef(), nodeRef, 
+                    WorkflowModel.ASSOC_PACKAGE_CONTAINS, workflowPackageItemId);
+        }
+        catch (Exception e)
+        {
+            throw new ApiException("could not add item to process " + e.getMessage(), e);
+        }
+        
+        Item responseItem = createItemForNodeRef(nodeRef);
+        return responseItem;
+    }
+    
+    /**
+     *  Delete an item from the process package variable
+     */
+    public void deleteItemFromProcess(String itemId, String processId)
+    {
+        NodeRef nodeRef = getNodeRef(itemId);
+        ActivitiScriptNode packageScriptNode = null;
+        try 
+        {
+            packageScriptNode = (ActivitiScriptNode) activitiProcessEngine.getRuntimeService().getVariable(processId, BPM_PACKAGE);
+        } 
+        catch (ActivitiObjectNotFoundException e)
+        {
+            throw new EntityNotFoundException(processId);
+        }
+        
+        if (packageScriptNode == null)
+        {
+            throw new InvalidArgumentException("process doesn't contain a workflow package variable");
+        }
+        
+        boolean itemIdFoundInPackage = false;
+        List<ChildAssociationRef> documentList = nodeService.getChildAssocs(packageScriptNode.getNodeRef());
+        for (ChildAssociationRef childAssociationRef : documentList)
+        {
+            if (childAssociationRef.getChildRef().equals(nodeRef)) 
+            {
+                itemIdFoundInPackage = true;
+                break;
+            }
+        }
+        
+        if (itemIdFoundInPackage == false)
+        {
+            throw new EntityNotFoundException("Item " + itemId + " not found in the process package variable");
+        }
+        
+        try 
+        {
+            nodeService.removeChild(packageScriptNode.getNodeRef(), nodeRef);
+        }
+        catch (InvalidNodeRefException e)
+        {
+            throw new EntityNotFoundException("Item " + itemId + " not found");
+        }
     }
     
     /**
@@ -341,5 +544,34 @@ public class WorkflowRestImpl
         }
         
         return variableInstances;
+    }
+    
+    protected Item createItemForNodeRef(NodeRef nodeRef) {
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        Item item = new Item();
+        String name = (String) properties.get(ContentModel.PROP_NAME);
+        String title = (String) properties.get(ContentModel.PROP_TITLE);
+        String description = (String) properties.get(ContentModel.PROP_DESCRIPTION);
+        Date createdAt = (Date) properties.get(ContentModel.PROP_CREATED);
+        String createdBy = (String) properties.get(ContentModel.PROP_CREATOR);
+        Date modifiedAt = (Date) properties.get(ContentModel.PROP_MODIFIED);
+        String modifiedBy = (String) properties.get(ContentModel.PROP_MODIFIER);
+        
+        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        
+        item.setId(nodeRef.getId());
+        item.setName(name);
+        item.setTitle(title);
+        item.setDescription(description);
+        item.setCreatedAt(createdAt);
+        item.setCreatedBy(createdBy);
+        item.setModifiedAt(modifiedAt);
+        item.setModifiedBy(modifiedBy);
+        if (contentData != null) 
+        {
+            item.setMimeType(contentData.getMimetype());
+            item.setSize(contentData.getSize());
+        }
+        return item;
     }
 }

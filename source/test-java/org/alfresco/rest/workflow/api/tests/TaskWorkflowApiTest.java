@@ -53,7 +53,6 @@ import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.MemberOfSite;
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
-import org.alfresco.rest.workflow.api.tests.WorkflowApiClient.ProcessesClient;
 import org.alfresco.rest.workflow.api.tests.WorkflowApiClient.TasksClient;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ISO8601DateFormat;
@@ -342,7 +341,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             tasksClient.updateTask("unexisting", taskBody, selectedFields);
             fail("Exception expected");
         }
-        catch(PublicApiException expected)
+        catch (PublicApiException expected)
         {
             assertEquals(HttpStatus.NOT_FOUND.value(), expected.getHttpResponse().getStatusCode());
             assertErrorSummary("The entity with id: unexisting was not found", expected.getHttpResponse());
@@ -968,331 +967,338 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         String businessKey = UUID.randomUUID().toString();
         ProcessInstance processInstance = startAdhocProcess(requestContext.getRunAsUser(), requestContext.getNetworkId(), businessKey);
         
-        // Complete the adhoc task
-        final Task completedTask = activitiProcessEngine.getTaskService().createTaskQuery()
-            .processInstanceId(processInstance.getId()).singleResult();
-        
-        assertNotNull(completedTask);
-        
-        String anotherUserId = UUID.randomUUID().toString();
-        
-        Calendar completedTaskDue = Calendar.getInstance();
-        completedTaskDue.add(Calendar.HOUR, 1);
-        completedTaskDue.set(Calendar.MILLISECOND, 0);
-        completedTask.setOwner(requestContext.getRunAsUser());
-        completedTask.setPriority(3);
-        completedTask.setDueDate(completedTaskDue.getTime());
-        completedTask.setAssignee(anotherUserId);
-        completedTask.setName("Another task name");
-        completedTask.setDescription("This is another test description");
-        activitiProcessEngine.getTaskService().saveTask(completedTask);
-        
-        // Complete task in correct tenant
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+        try
         {
-            @Override
-            public Void doWork() throws Exception
+            // Complete the adhoc task
+            final Task completedTask = activitiProcessEngine.getTaskService().createTaskQuery()
+                .processInstanceId(processInstance.getId()).singleResult();
+            
+            assertNotNull(completedTask);
+            
+            String anotherUserId = UUID.randomUUID().toString();
+            
+            Calendar completedTaskDue = Calendar.getInstance();
+            completedTaskDue.add(Calendar.HOUR, 1);
+            completedTaskDue.set(Calendar.MILLISECOND, 0);
+            completedTask.setOwner(requestContext.getRunAsUser());
+            completedTask.setPriority(3);
+            completedTask.setDueDate(completedTaskDue.getTime());
+            completedTask.setAssignee(anotherUserId);
+            completedTask.setName("Another task name");
+            completedTask.setDescription("This is another test description");
+            activitiProcessEngine.getTaskService().saveTask(completedTask);
+            
+            // Complete task in correct tenant
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
             {
-                activitiProcessEngine.getTaskService().complete(completedTask.getId());
-                return null;
+                @Override
+                public Void doWork() throws Exception
+                {
+                    activitiProcessEngine.getTaskService().complete(completedTask.getId());
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            
+            // Active task is the second task in the adhoc-process (Verify task completed)
+            Task activeTask = activitiProcessEngine.getTaskService().createTaskQuery()
+                .processInstanceId(processInstance.getId()).singleResult();
+            assertNotNull(activeTask);
+        
+            Calendar activeTaskDue = Calendar.getInstance();
+            
+            activeTaskDue.set(Calendar.MILLISECOND, 0);
+            activeTask.setDueDate(activeTaskDue.getTime());
+            activeTask.setName("Task name");
+            activeTask.setDescription("This is a test description");
+            activeTask.setOwner(requestContext.getRunAsUser());
+            activeTask.setPriority(2);
+            activeTask.setAssignee(requestContext.getRunAsUser());
+            activitiProcessEngine.getTaskService().saveTask(activeTask);
+            activitiProcessEngine.getTaskService().addCandidateUser(activeTask.getId(), anotherUserId);
+            activitiProcessEngine.getTaskService().addCandidateGroup(activeTask.getId(), "sales");
+            activitiProcessEngine.getTaskService().setVariableLocal(activeTask.getId(), "numberVar", 10);
+           
+            TasksClient tasksClient = publicApiClient.tasksClient();
+            
+            // Test status filtering - active
+            Map<String, String> params = new HashMap<String, String>();
+            params.put("where", "(status = 'active' AND processId = '" + processInstance.getId() + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, false, activeTask.getId());
+            
+            // Test status filtering - completed
+            params.clear();
+            params.put("where", "(status = 'completed' AND processId = '" + processInstance.getId() + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, false, completedTask.getId());
+            
+            // Test status filtering - any
+            params.clear();
+            params.put("where", "(status = 'any' AND processId = '" + processInstance.getId() + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, false, activeTask.getId(), completedTask.getId());
+            
+            // Test status filtering - no value should default to 'active'
+            params.clear();
+            params.put("where", "(processId = '" + processInstance.getId() + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, false, activeTask.getId());
+            
+            // Test status filtering - illegal status
+            params.clear();
+            params.put("where", "(status = 'alfrescorocks')");
+            try
+            {
+                tasksClient.findTasks(params);
+                fail("Exception expected");
             }
-        }, requestContext.getRunAsUser(), requestContext.getNetworkId());
-        
-        // Active task is the second task in the adhoc-process (Verify task completed)
-        Task activeTask = activitiProcessEngine.getTaskService().createTaskQuery()
-            .processInstanceId(processInstance.getId()).singleResult();
-        assertNotNull(activeTask);
-    
-        Calendar activeTaskDue = Calendar.getInstance();
-        
-        activeTaskDue.set(Calendar.MILLISECOND, 0);
-        activeTask.setDueDate(activeTaskDue.getTime());
-        activeTask.setName("Task name");
-        activeTask.setDescription("This is a test description");
-        activeTask.setOwner(requestContext.getRunAsUser());
-        activeTask.setPriority(2);
-        activeTask.setAssignee(requestContext.getRunAsUser());
-        activitiProcessEngine.getTaskService().saveTask(activeTask);
-        activitiProcessEngine.getTaskService().addCandidateUser(activeTask.getId(), anotherUserId);
-        activitiProcessEngine.getTaskService().addCandidateGroup(activeTask.getId(), "sales");
-        activitiProcessEngine.getTaskService().setVariableLocal(activeTask.getId(), "numberVar", 10);
-       
-        TasksClient tasksClient = publicApiClient.tasksClient();
-        
-        // Test status filtering - active
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("where", "(status = 'active' AND processId = '" + processInstance.getId() + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, false, activeTask.getId());
-        
-        // Test status filtering - completed
-        params.clear();
-        params.put("where", "(status = 'completed' AND processId = '" + processInstance.getId() + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, false, completedTask.getId());
-        
-        // Test status filtering - any
-        params.clear();
-        params.put("where", "(status = 'any' AND processId = '" + processInstance.getId() + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, false, activeTask.getId(), completedTask.getId());
-        
-        // Test status filtering - no value should default to 'active'
-        params.clear();
-        params.put("where", "(processId = '" + processInstance.getId() + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, false, activeTask.getId());
-        
-        // Test status filtering - illegal status
-        params.clear();
-        params.put("where", "(status = 'alfrescorocks')");
-        try
-        {
-            tasksClient.findTasks(params);
-            fail("Exception expected");
+            catch(PublicApiException expected)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), expected.getHttpResponse().getStatusCode());
+                assertErrorSummary("Invalid status parameter: alfrescorocks", expected.getHttpResponse());
+            }
+            
+            // Next, we test all filtering for active, complete and any tasks
+            
+            // Assignee filtering
+            params.clear();
+            params.put("where", "(status = 'active' AND assignee = '" + requestContext.getRunAsUser() + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.put("where", "(status = 'completed' AND assignee = '" + anotherUserId + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            params.put("where", "(status = 'any' AND assignee = '" + anotherUserId + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            // Owner filtering
+            params.clear();
+            params.put("where", "(status = 'active' AND owner = '" + requestContext.getRunAsUser() + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.put("where", "(status = 'completed' AND owner = '" + requestContext.getRunAsUser() + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            params.put("where", "(status = 'any' AND owner = '" + requestContext.getRunAsUser() + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId(), completedTask.getId());
+            
+            // Candidate user filtering, only available for active tasks. When used with completed/any 400 is returned
+            params.clear();
+            params.put("where", "(status = 'active' AND candidateUser = '" + anotherUserId + "')");
+            // No tasks expected since assignee is set
+            assertEquals(0L, getResultSizeForTaskQuery(params, tasksClient));
+            
+            // Clear assignee
+            activitiProcessEngine.getTaskService().setAssignee(activeTask.getId(), null);
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'completed' AND candidateUser = '" + anotherUserId + "')");
+            try
+            {
+                tasksClient.findTasks(params);
+                fail("Exception expected");
+            }
+            catch(PublicApiException expected)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), expected.getHttpResponse().getStatusCode());
+                assertErrorSummary("Filtering on candidateUser is only allowed in combination with status-parameter 'active'", expected.getHttpResponse());
+            }
+            
+            params.clear();
+            params.put("where", "(status = 'any' AND candidateUser = '" + anotherUserId + "')");
+            try
+            {
+                tasksClient.findTasks(params);
+                fail("Exception expected");
+            }
+            catch(PublicApiException expected)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), expected.getHttpResponse().getStatusCode());
+                assertErrorSummary("Filtering on candidateUser is only allowed in combination with status-parameter 'active'", expected.getHttpResponse());
+            }
+            
+            // Candidate group filtering, only available for active tasks. When used with completed/any 400 is returned
+            params.clear();
+            params.put("where", "(status = 'active' AND candidateGroup = 'sales' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'completed' AND candidateGroup = 'sales' AND processId='" + processInstance.getId() +"')");
+            try
+            {
+                tasksClient.findTasks(params);
+                fail("Exception expected");
+            }
+            catch (PublicApiException expected)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), expected.getHttpResponse().getStatusCode());
+                assertErrorSummary("Filtering on candidateGroup is only allowed in combination with status-parameter 'active'", expected.getHttpResponse());
+            }
+            
+            params.clear();
+            params.put("where", "(status = 'any' AND candidateGroup = 'sales' AND processId='" + processInstance.getId() +"')");
+            try
+            {
+                tasksClient.findTasks(params);
+                fail("Exception expected");
+            }
+            catch (PublicApiException expected)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), expected.getHttpResponse().getStatusCode());
+                assertErrorSummary("Filtering on candidateGroup is only allowed in combination with status-parameter 'active'", expected.getHttpResponse());
+            }
+            
+            // Name filtering
+            params.clear();
+            params.put("where", "(status = 'active' AND name = 'Task name' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'completed' AND name = 'Another task name' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'any' AND name = 'Another task name' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            // Description filtering
+            params.clear();
+            params.put("where", "(status = 'active' AND description = 'This is a test description' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'completed' AND description = 'This is another test description' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'any' AND description = 'This is another test description' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            // Priority filtering
+            params.clear();
+            params.put("where", "(status = 'active' AND priority = 2 AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.put("where", "(status = 'completed' AND priority = 3 AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            params.put("where", "(status = 'any' AND priority = 3 AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            // Process instance business-key filtering
+            params.clear();
+            params.put("where", "(status = 'active' AND processBusinessKey = '" + businessKey + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'completed' AND processBusinessKey = '" + businessKey + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+             
+            params.clear();
+            params.put("where", "(status = 'any' AND processBusinessKey = '" + businessKey + "')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId(), activeTask.getId());
+            
+            // Activity definition id filtering
+            params.clear();
+            params.put("where", "(status = 'active' AND activityDefinitionId = 'verifyTaskDone' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'completed' AND activityDefinitionId = 'adhocTask' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'any' AND activityDefinitionId = 'adhocTask' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            // Process definition id filtering
+            params.clear();
+            params.put("where", "(status = 'active' AND processDefinitionId = '" + processInstance.getProcessDefinitionId() + 
+                        "' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'completed' AND processDefinitionId = '" + processInstance.getProcessDefinitionId() + 
+                        "' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'any' AND processDefinitionId = '" + processInstance.getProcessDefinitionId() + 
+                        "' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId(), completedTask.getId());
+            
+            // Process definition name filerting 
+            params.clear();
+            params.put("where", "(status = 'active' AND processDefinitionName = 'Adhoc Activiti Process' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'completed' AND processDefinitionName = 'Adhoc Activiti Process' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'any' AND processDefinitionName = 'Adhoc Activiti Process' AND processId='" + processInstance.getId() +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId(), completedTask.getId());
+            
+            // Due date filtering
+            params.clear();
+            params.put("where", "(status = 'active' AND dueAt = '" + ISO8601DateFormat.format(activeTaskDue.getTime()) +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'completed' AND dueAt = '" + ISO8601DateFormat.format(completedTaskDue.getTime()) +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'any' AND dueAt = '" + ISO8601DateFormat.format(completedTaskDue.getTime()) +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            // Started filtering
+            params.clear();
+            params.put("where", "(status = 'active' AND startedAt = '" + ISO8601DateFormat.format(taskCreated.getTime()) +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'completed' AND startedAt = '" + ISO8601DateFormat.format(taskCreated.getTime()) +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'any' AND startedAt = '" + ISO8601DateFormat.format(taskCreated.getTime()) +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId(), activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(variables/numberVar > 'd:int 5')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(variables/numberVar > 'd:int 10')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
+            params.put("where", "(variables/numberVar >= 'd_int 10')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(variables/numberVar >= 'd:int 11')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
+            params.put("where", "(variables/numberVar <= 'd:int 10')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(variables/numberVar <= 'd:int 9')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
+            params.put("where", "(variables/numberVar < 'd_int 15')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(variables/numberVar < 'd:int 10')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
         }
-        catch(PublicApiException expected)
+        finally
         {
-            assertEquals(HttpStatus.BAD_REQUEST.value(), expected.getHttpResponse().getStatusCode());
-            assertErrorSummary("Invalid status parameter: alfrescorocks", expected.getHttpResponse());
+            cleanupProcessInstance(processInstance);
         }
-        
-        // Next, we test all filtering for active, complete and any tasks
-        
-        // Assignee filtering
-        params.clear();
-        params.put("where", "(status = 'active' AND assignee = '" + requestContext.getRunAsUser() + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.put("where", "(status = 'completed' AND assignee = '" + anotherUserId + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        params.put("where", "(status = 'any' AND assignee = '" + anotherUserId + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        // Owner filtering
-        params.clear();
-        params.put("where", "(status = 'active' AND owner = '" + requestContext.getRunAsUser() + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.put("where", "(status = 'completed' AND owner = '" + requestContext.getRunAsUser() + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        params.put("where", "(status = 'any' AND owner = '" + requestContext.getRunAsUser() + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId(), completedTask.getId());
-        
-        // Candidate user filtering, only available for active tasks. When used with completed/any 400 is returned
-        params.clear();
-        params.put("where", "(status = 'active' AND candidateUser = '" + anotherUserId + "')");
-        // No tasks expected since assignee is set
-        assertEquals(0L, getResultSizeForTaskQuery(params, tasksClient));
-        
-        // Clear assignee
-        activitiProcessEngine.getTaskService().setAssignee(activeTask.getId(), null);
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'completed' AND candidateUser = '" + anotherUserId + "')");
-        try
-        {
-            tasksClient.findTasks(params);
-            fail("Exception expected");
-        }
-        catch(PublicApiException expected)
-        {
-            assertEquals(HttpStatus.BAD_REQUEST.value(), expected.getHttpResponse().getStatusCode());
-            assertErrorSummary("Filtering on candidateUser is only allowed in combination with status-parameter 'active'", expected.getHttpResponse());
-        }
-        
-        params.clear();
-        params.put("where", "(status = 'any' AND candidateUser = '" + anotherUserId + "')");
-        try
-        {
-            tasksClient.findTasks(params);
-            fail("Exception expected");
-        }
-        catch(PublicApiException expected)
-        {
-            assertEquals(HttpStatus.BAD_REQUEST.value(), expected.getHttpResponse().getStatusCode());
-            assertErrorSummary("Filtering on candidateUser is only allowed in combination with status-parameter 'active'", expected.getHttpResponse());
-        }
-        
-        // Candidate group filtering, only available for active tasks. When used with completed/any 400 is returned
-        params.clear();
-        params.put("where", "(status = 'active' AND candidateGroup = 'sales' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'completed' AND candidateGroup = 'sales' AND processId='" + processInstance.getId() +"')");
-        try
-        {
-            tasksClient.findTasks(params);
-            fail("Exception expected");
-        }
-        catch(PublicApiException expected)
-        {
-            assertEquals(HttpStatus.BAD_REQUEST.value(), expected.getHttpResponse().getStatusCode());
-            assertErrorSummary("Filtering on candidateGroup is only allowed in combination with status-parameter 'active'", expected.getHttpResponse());
-        }
-        
-        params.clear();
-        params.put("where", "(status = 'any' AND candidateGroup = 'sales' AND processId='" + processInstance.getId() +"')");
-        try
-        {
-            tasksClient.findTasks(params);
-            fail("Exception expected");
-        }
-        catch(PublicApiException expected)
-        {
-            assertEquals(HttpStatus.BAD_REQUEST.value(), expected.getHttpResponse().getStatusCode());
-            assertErrorSummary("Filtering on candidateGroup is only allowed in combination with status-parameter 'active'", expected.getHttpResponse());
-        }
-        
-        // Name filtering
-        params.clear();
-        params.put("where", "(status = 'active' AND name = 'Task name' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'completed' AND name = 'Another task name' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'any' AND name = 'Another task name' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        // Description filtering
-        params.clear();
-        params.put("where", "(status = 'active' AND description = 'This is a test description' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'completed' AND description = 'This is another test description' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'any' AND description = 'This is another test description' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        // Priority filtering
-        params.clear();
-        params.put("where", "(status = 'active' AND priority = 2 AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.put("where", "(status = 'completed' AND priority = 3 AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        params.put("where", "(status = 'any' AND priority = 3 AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        // Process instance business-key filtering
-        params.clear();
-        params.put("where", "(status = 'active' AND processBusinessKey = '" + businessKey + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'completed' AND processBusinessKey = '" + businessKey + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-         
-        params.clear();
-        params.put("where", "(status = 'any' AND processBusinessKey = '" + businessKey + "')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId(), activeTask.getId());
-        
-        // Activity definition id filtering
-        params.clear();
-        params.put("where", "(status = 'active' AND activityDefinitionId = 'verifyTaskDone' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'completed' AND activityDefinitionId = 'adhocTask' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'any' AND activityDefinitionId = 'adhocTask' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        // Process definition id filtering
-        params.clear();
-        params.put("where", "(status = 'active' AND processDefinitionId = '" + processInstance.getProcessDefinitionId() + 
-                    "' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'completed' AND processDefinitionId = '" + processInstance.getProcessDefinitionId() + 
-                    "' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'any' AND processDefinitionId = '" + processInstance.getProcessDefinitionId() + 
-                    "' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId(), completedTask.getId());
-        
-        // Process definition name filerting 
-        params.clear();
-        params.put("where", "(status = 'active' AND processDefinitionName = 'Adhoc Activiti Process' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'completed' AND processDefinitionName = 'Adhoc Activiti Process' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'any' AND processDefinitionName = 'Adhoc Activiti Process' AND processId='" + processInstance.getId() +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId(), completedTask.getId());
-        
-        // Due date filtering
-        params.clear();
-        params.put("where", "(status = 'active' AND dueAt = '" + ISO8601DateFormat.format(activeTaskDue.getTime()) +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'completed' AND dueAt = '" + ISO8601DateFormat.format(completedTaskDue.getTime()) +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'any' AND dueAt = '" + ISO8601DateFormat.format(completedTaskDue.getTime()) +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        // Started filtering
-        params.clear();
-        params.put("where", "(status = 'active' AND startedAt = '" + ISO8601DateFormat.format(taskCreated.getTime()) +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'completed' AND startedAt = '" + ISO8601DateFormat.format(taskCreated.getTime()) +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
-        
-        params.clear();
-        params.put("where", "(status = 'any' AND startedAt = '" + ISO8601DateFormat.format(taskCreated.getTime()) +"')");
-        assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId(), activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(variables/numberVar > 'd:int 5')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(variables/numberVar > 'd:int 10')");
-        assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
-        
-        params.clear();
-        params.put("where", "(variables/numberVar >= 'd_int 10')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(variables/numberVar >= 'd:int 11')");
-        assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
-        
-        params.clear();
-        params.put("where", "(variables/numberVar <= 'd:int 10')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(variables/numberVar <= 'd:int 9')");
-        assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
-        
-        params.clear();
-        params.put("where", "(variables/numberVar < 'd_int 15')");
-        assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-        
-        params.clear();
-        params.put("where", "(variables/numberVar < 'd:int 10')");
-        assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
     }
     
     @Test
@@ -2463,20 +2469,26 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
     {
         final RequestContext requestContext = initApiClientWithTestUser();
         
+        String otherPerson = getOtherPersonInNetwork(requestContext.getRunAsUser(), requestContext.getNetworkId()).getId();
+        RequestContext otherContext = new RequestContext(requestContext.getNetworkId(), otherPerson);
+        
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
+        
         // Create test-document and add to package
         NodeRef[] docNodeRefs = createTestDocuments(requestContext);
         ProcessInfo processInfo = startAdhocProcess(requestContext, docNodeRefs);
         
-        ProcessInstance processInstance = activitiProcessEngine.getRuntimeService().createProcessInstanceQuery()
+        Task task = activitiProcessEngine.getTaskService().createTaskQuery()
             .processInstanceId(processInfo.getId()).singleResult();
         
-        assertNotNull(processInstance);
+        assertNotNull(task);
+        activitiProcessEngine.getTaskService().setAssignee(task.getId(), null);
         
         try
         {
-            final String newProcessInstanceId = processInstance.getId();
-            ProcessesClient processesClient = publicApiClient.processesClient();
-            JSONObject itemsJSON = processesClient.findProcessItems(newProcessInstanceId);
+            TasksClient tasksClient = publicApiClient.tasksClient();
+            JSONObject itemsJSON = tasksClient.findTaskItems(task.getId());
             assertNotNull(itemsJSON);
             JSONArray entriesJSON = (JSONArray) itemsJSON.get("entries");
             assertNotNull(entriesJSON);
@@ -2515,10 +2527,398 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             }
             assertTrue(doc1Found);
             assertTrue(doc2Found);
+            
+            // get with admin
+            publicApiClient.setRequestContext(adminContext);
+            itemsJSON = tasksClient.findTaskItems(task.getId());
+            assertNotNull(itemsJSON);
+            entriesJSON = (JSONArray) itemsJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 2);
+            
+            // get with non involved user
+            publicApiClient.setRequestContext(otherContext);
+            try
+            {
+                tasksClient.findTaskItems(task.getId());
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(403, e.getHttpResponse().getStatusCode());
+            }
+            
+            // get with candidate user
+            activitiProcessEngine.getTaskService().addCandidateUser(task.getId(), otherContext.getRunAsUser());
+            publicApiClient.setRequestContext(otherContext);
+            itemsJSON = tasksClient.findTaskItems(task.getId());
+            assertNotNull(itemsJSON);
+            entriesJSON = (JSONArray) itemsJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 2);
+            
+            // get with user from candidate group
+            List<MemberOfSite> memberships = getTestFixture().getNetwork(otherContext.getNetworkId()).getSiteMemberships(otherContext.getRunAsUser());
+            assertTrue(memberships.size() > 0);
+            MemberOfSite memberOfSite = memberships.get(0);
+            String group = "GROUP_site_" + memberOfSite.getSiteId() + "_" + memberOfSite.getRole().name();
+            
+            activitiProcessEngine.getTaskService().deleteCandidateUser(task.getId(), otherContext.getRunAsUser());
+            activitiProcessEngine.getTaskService().addCandidateGroup(task.getId(), group);
+            publicApiClient.setRequestContext(otherContext);
+            itemsJSON = tasksClient.findTaskItems(task.getId());
+            assertNotNull(itemsJSON);
+            entriesJSON = (JSONArray) itemsJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 2);
+            
+            // invalid task id
+            publicApiClient.setRequestContext(requestContext);
+            try
+            {
+                tasksClient.findTaskItems("fakeid");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
         }
         finally
         {
-            cleanupProcessInstance(processInstance);
+            cleanupProcessInstance(processInfo.getId());
+        }
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testAddTaskItem() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        
+        String otherPerson = getOtherPersonInNetwork(requestContext.getRunAsUser(), requestContext.getNetworkId()).getId();
+        RequestContext otherContext = new RequestContext(requestContext.getNetworkId(), otherPerson);
+        
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
+        
+        // Create test-document and add to package
+        NodeRef[] docNodeRefs = createTestDocuments(requestContext);
+        ProcessInfo processInfo = startAdhocProcess(requestContext, null);
+        
+        final Task task = activitiProcessEngine.getTaskService()
+                .createTaskQuery()
+                .processInstanceId(processInfo.getId())
+                .singleResult();
+        
+        assertNotNull(task);
+        
+        try
+        {
+            TasksClient tasksClient = publicApiClient.tasksClient();
+            JSONObject createItemObject = new JSONObject();
+            createItemObject.put("id", docNodeRefs[0].getId());
+            JSONObject result = tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+            
+            assertNotNull(result);
+            assertEquals(docNodeRefs[0].getId(), result.get("id"));
+            assertEquals("Test Doc1", result.get("name"));
+            assertEquals("Test Doc1 Title", result.get("title"));
+            assertEquals("Test Doc1 Description", result.get("description"));
+            assertNotNull(result.get("createdAt"));
+            assertEquals(requestContext.getRunAsUser(), result.get("createdBy"));
+            assertNotNull(result.get("modifiedAt"));
+            assertEquals(requestContext.getRunAsUser(), result.get("modifiedBy"));
+            assertNotNull(result.get("size"));
+            assertNotNull(result.get("mimeType"));
+            
+            JSONObject itemJSON = tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+            assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
+            
+            tasksClient.deleteTaskItem(task.getId(), docNodeRefs[0].getId());
+            try
+            {
+                tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // add item as admin
+            publicApiClient.setRequestContext(adminContext);
+            result = tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+            assertNotNull(result);
+            assertEquals(docNodeRefs[0].getId(), result.get("id"));
+            assertEquals("Test Doc1", result.get("name"));
+            
+            itemJSON = tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+            assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
+            
+            tasksClient.deleteTaskItem(task.getId(), docNodeRefs[0].getId());
+            try
+            {
+                tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // add item with candidate user
+            activitiProcessEngine.getTaskService().addCandidateUser(task.getId(), otherPerson);
+            publicApiClient.setRequestContext(otherContext);
+            result = tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+            assertNotNull(result);
+            assertEquals(docNodeRefs[0].getId(), result.get("id"));
+            assertEquals("Test Doc1", result.get("name"));
+            
+            itemJSON = tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+            assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
+            
+            tasksClient.deleteTaskItem(task.getId(), docNodeRefs[0].getId());
+            try
+            {
+                tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // add item with not involved user
+            activitiProcessEngine.getTaskService().deleteCandidateUser(task.getId(), otherPerson);
+            publicApiClient.setRequestContext(otherContext);
+            try
+            {
+                tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(403, e.getHttpResponse().getStatusCode());
+            }
+            
+            // invalid task id
+            publicApiClient.setRequestContext(requestContext);
+            try
+            {
+                tasksClient.addTaskItem("fakeid", createItemObject.toJSONString());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // invalid item id
+            createItemObject = new JSONObject();
+            createItemObject.put("id", "fakeid");
+            try
+            {
+                tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // add item to completed task
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    activitiProcessEngine.getTaskService().complete(task.getId());
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            
+            createItemObject = new JSONObject();
+            createItemObject.put("id", docNodeRefs[0].getId());
+            try
+            {
+                tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+        }
+        finally
+        {
+            cleanupProcessInstance(processInfo.getId());
+        }
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testDeleteTaskItem() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        
+        String otherPerson = getOtherPersonInNetwork(requestContext.getRunAsUser(), requestContext.getNetworkId()).getId();
+        RequestContext otherContext = new RequestContext(requestContext.getNetworkId(), otherPerson);
+        
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
+        
+        // Create test-document and add to package
+        NodeRef[] docNodeRefs = createTestDocuments(requestContext);
+        ProcessInfo processInfo = startAdhocProcess(requestContext, docNodeRefs);
+        
+        final Task task = activitiProcessEngine.getTaskService()
+                .createTaskQuery()
+                .processInstanceId(processInfo.getId())
+                .singleResult();
+        
+        assertNotNull(task);
+        
+        try
+        {
+            TasksClient tasksClient = publicApiClient.tasksClient();
+            tasksClient.deleteTaskItem(task.getId(), docNodeRefs[0].getId());
+            
+            try
+            {
+                tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // delete item as admin
+            JSONObject createItemObject = new JSONObject();
+            createItemObject.put("id", docNodeRefs[0].getId());
+            JSONObject result = tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+            
+            assertNotNull(result);
+            assertEquals(docNodeRefs[0].getId(), result.get("id"));
+            
+            JSONObject itemJSON = tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+            assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
+            
+            publicApiClient.setRequestContext(adminContext);
+            tasksClient.deleteTaskItem(task.getId(), docNodeRefs[0].getId());
+            try
+            {
+                tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // delete item with candidate user
+            createItemObject = new JSONObject();
+            createItemObject.put("id", docNodeRefs[0].getId());
+            result = tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+            
+            assertNotNull(result);
+            assertEquals(docNodeRefs[0].getId(), result.get("id"));
+            
+            itemJSON = tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+            assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
+            
+            activitiProcessEngine.getTaskService().addCandidateUser(task.getId(), otherPerson);
+            publicApiClient.setRequestContext(otherContext);
+            tasksClient.deleteTaskItem(task.getId(), docNodeRefs[0].getId());
+            try
+            {
+                tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // delete item with not involved user
+            createItemObject = new JSONObject();
+            createItemObject.put("id", docNodeRefs[0].getId());
+            result = tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+            
+            assertNotNull(result);
+            assertEquals(docNodeRefs[0].getId(), result.get("id"));
+            
+            itemJSON = tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+            assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
+            
+            activitiProcessEngine.getTaskService().deleteCandidateUser(task.getId(), otherPerson);
+            publicApiClient.setRequestContext(otherContext);
+            try
+            {
+                tasksClient.deleteTaskItem(task.getId(), docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(403, e.getHttpResponse().getStatusCode());
+            }
+            
+            // invalid task id
+            publicApiClient.setRequestContext(requestContext);
+            try
+            {
+                tasksClient.deleteTaskItem("fakeid", docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // invalid item id
+            try
+            {
+                tasksClient.deleteTaskItem(task.getId(), "fakeid");
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // delete item from completed task
+            createItemObject = new JSONObject();
+            createItemObject.put("id", docNodeRefs[0].getId());
+            result = tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+            
+            assertNotNull(result);
+            assertEquals(docNodeRefs[0].getId(), result.get("id"));
+            
+            itemJSON = tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+            assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
+            
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    activitiProcessEngine.getTaskService().complete(task.getId());
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            
+            try
+            {
+                tasksClient.deleteTaskItem(task.getId(), docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+        }
+        finally
+        {
+            cleanupProcessInstance(processInfo.getId());
         }
     }
     
@@ -2589,6 +2989,24 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
                     activitiProcessEngine.getRuntimeService().deleteProcessInstance(processInstance.getId(), null);
                     activitiProcessEngine.getHistoryService().deleteHistoricProcessInstance(processInstance.getId());
                 }
+            }
+        }
+        catch(Throwable t)
+        {
+            // Ignore error during cleanup to prevent swallowing potential assetion-exception
+            log("Error while cleaning up process instance");
+        }
+    }
+    
+    protected void cleanupProcessInstance(String... processInstances)
+    {
+        // Clean up process-instance regardless of test success/failure
+        try 
+        {
+            for (String instanceId : processInstances)
+            {
+                activitiProcessEngine.getRuntimeService().deleteProcessInstance(instanceId, null);
+                activitiProcessEngine.getHistoryService().deleteHistoricProcessInstance(instanceId);
             }
         }
         catch(Throwable t)

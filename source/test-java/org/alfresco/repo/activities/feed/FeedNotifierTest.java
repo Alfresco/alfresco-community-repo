@@ -18,11 +18,13 @@
  */
 package org.alfresco.repo.activities.feed;
 
+import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.post.lookup.PostLookup;
+import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -52,6 +54,9 @@ import org.quartz.Scheduler;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.JobDetailBean;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Feed notifier tests.
@@ -85,6 +90,7 @@ public class FeedNotifierTest
 	private NodeRef personNodeRef;
 	private String userName1 = "user1." + GUID.generate();
 	private String userName2 = "user2." + GUID.generate();
+    private String userName3 = "user3." + GUID.generate();
 
 	@BeforeClass
 	public static void init()
@@ -156,6 +162,13 @@ public class FeedNotifierTest
                 personProps.put(ContentModel.PROP_LASTNAME, userName2);
                 personProps.put(ContentModel.PROP_EMAIL, userName2+"@email.com");
                 failingPersonNodeRef = personService.createPerson(personProps);
+
+                personProps = new PropertyMap();
+                personProps.put(ContentModel.PROP_USERNAME, userName3);
+                personProps.put(ContentModel.PROP_FIRSTNAME, userName3);
+                personProps.put(ContentModel.PROP_LASTNAME, userName3);
+                personProps.put(ContentModel.PROP_EMAIL, userName3+"@email.com");
+                personService.createPerson(personProps);
 
         		AuthenticationUtil.popAuthentication();
 
@@ -262,7 +275,60 @@ public class FeedNotifierTest
 		// there should not be any more because they have been processed already
 		assertEquals(numSuccessfulNotifications, errorProneActionExecutor.getNumSuccess());
 	}
-	
+
+    /**
+     * Oracle DB specific test, see ALF-15547
+     */
+    @Test
+    public void testNullSiteNetworkStatus() throws Exception
+    {
+        final String activityType = "org.alfresco.profile.status-changed";
+        // Intentionally null, required for ALF-15547
+        final String siteId = null;
+        final String appTool = "profile";
+        // Status update
+        final String jsonActivityData = "{\"status\":\"test\"}";
+
+        // and activity for userName3
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @SuppressWarnings("synthetic-access")
+            public Void execute() throws Throwable
+            {
+                AuthenticationUtil.pushAuthentication();
+                AuthenticationUtil.setFullyAuthenticatedUser(userName3);
+
+                activityService.postActivity(activityType, siteId, appTool, jsonActivityData);
+
+                AuthenticationUtil.popAuthentication();
+
+                return null;
+            }
+        }, false, true);
+
+        generateActivities();
+
+        List<ActivityFeedEntity> feeds = Collections.emptyList();
+        try
+        {
+            feeds = activityService.getUserFeedEntries(userName3, null, false, false, null, null, -1);
+        }
+        catch (Exception e)
+        {
+            fail("Failed to get user's posts.");
+        }
+
+        boolean found = false;
+        for (ActivityFeedEntity feed : feeds)
+        {
+            if (feed.getActivityType().equals(activityType) &&  feed.getSiteNetwork() == null)
+            {
+                found = true;
+            }
+        }
+        assertTrue("The post should be found.", found);
+    }
+
 	@Test
 	public void testSetup()
 	{

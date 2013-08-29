@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -430,11 +430,11 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                     }
                     continue;
                 }
-                
+                String siteNetwork = activityFeed.getSiteNetwork();
                 if (siteId == null)
                 {
                     // note: pending requirements for THOR-224, for now assume all activities are within context of site and filter by current tenant
-                    if (! currentTenantDomain.equals(tenantService.getDomain(activityFeed.getSiteNetwork())))
+                    if (siteNetwork != null && !currentTenantDomain.equals(tenantService.getDomain(siteNetwork)))
                     {
                         continue;
                     }
@@ -478,7 +478,7 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                 
                 activityFeed.setPostUserAvatarNodeRef(avatarNodeRef);
                 
-                activityFeed.setSiteNetwork(tenantService.getBaseName(activityFeed.getSiteNetwork()));
+                activityFeed.setSiteNetwork(tenantService.getBaseName(siteNetwork));
                 result.add(activityFeed);
                 if (logger.isTraceEnabled())
                 {

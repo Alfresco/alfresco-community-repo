@@ -273,4 +273,24 @@ public class VersionHistoryImpl implements VersionHistory
             this.versionComparatorDesc = (Comparator<Version>) fields.get("versionComparatorDesc", null); 
         }
     }
+    
+    /**
+     * @since 4.1.7
+     */
+    @Override public String toString()
+    {
+        // The toString result looks something like: "VersionHistoryImpl [1] , { '0.1', tail... }"
+        final Collection<Version> allVersions = getAllVersions();
+        
+        final StringBuilder msg = new StringBuilder();
+        
+        msg.append(VersionHistoryImpl.class.getSimpleName())
+           .append(" [") .append(allVersions.size()) .append("] ");
+        if ( !allVersions.isEmpty())
+        {
+            msg.append(", { '") .append(getHeadVersion().getVersionLabel()) .append("', tail... }");
+        }
+        
+        return msg.toString();
+    }
 }

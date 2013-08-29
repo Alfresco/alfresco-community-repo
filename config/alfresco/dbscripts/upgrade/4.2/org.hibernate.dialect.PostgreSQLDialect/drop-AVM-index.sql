@@ -10,8 +10,7 @@
 
 DROP INDEX idx_avm_vr_revuq;
 ALTER TABLE avm_version_roots DROP CONSTRAINT avm_version_roots_version_id_avm_store_id_key;
-CREATE UNIQUE INDEX idx_avm_vr_uq ON avm_version_roots (avm_store_id, version_id);
-ALTER TABLE avm_version_roots ADD CONSTRAINT idx_avm_vr_uq UNIQUE USING INDEX idx_avm_vr_uq;
+ALTER TABLE avm_version_roots ADD CONSTRAINT idx_avm_vr_uq UNIQUE (avm_store_id, version_id);
 
 --
 -- Record script finish

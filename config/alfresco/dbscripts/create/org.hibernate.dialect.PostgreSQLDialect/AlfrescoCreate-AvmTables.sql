@@ -125,10 +125,9 @@
         primary key (id)
     );
 
-    create unique index idx_avm_vr_uq on avm_version_roots (avm_store_id, version_id);
     alter table avm_version_roots
         add constraint idx_avm_vr_uq
-        unique using index idx_avm_vr_uq;
+        unique (avm_store_id, version_id);
 
     alter table avm_aspects        
         add constraint fk_avm_nasp_n

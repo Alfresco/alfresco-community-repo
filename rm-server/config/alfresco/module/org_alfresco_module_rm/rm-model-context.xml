@@ -78,6 +78,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordCopyBehaviours"
       init-method="init">
       <property name="policyComponent" ref="policyComponent"/>
+      <property name="behaviourFilter" ref="policyBehaviourFilter"/>
       <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
    </bean>
 

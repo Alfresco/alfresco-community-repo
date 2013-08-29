@@ -18,7 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,11 +25,12 @@ import java.util.Map;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.repo.copy.AbstractCopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -51,6 +51,9 @@ public class RecordCopyBehaviours implements RecordsManagementModel
     /** The policy component */
     private PolicyComponent policyComponent;
     
+    /** The Behaviour Filter */
+    private BehaviourFilter behaviourFilter;
+    
     /** The rm service registry */
     private RecordsManagementServiceRegistry rmServiceRegistry;
     
@@ -65,6 +68,16 @@ public class RecordCopyBehaviours implements RecordsManagementModel
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
+    }
+    
+    /**
+     * Set the behaviour Filter
+     * 
+     * @param behaviourFilter
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
     
     /**
@@ -98,7 +111,19 @@ public class RecordCopyBehaviours implements RecordsManagementModel
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ASPECT_RECORD_COMPONENT_ID,
-                new JavaBehaviour(this, "getIdCallback"));
+                new JavaBehaviour(this, "getDoNothingCopyCallback"));
+        
+        //On Copy we need a new ID
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
+                ASPECT_RECORD_COMPONENT_ID,
+                new JavaBehaviour(this, "generateId", NotificationFrequency.TRANSACTION_COMMIT));
+        
+        //Don't copy the Aspect Record -- it should be regenerated
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                ASPECT_RECORD, 
+                new JavaBehaviour(this, "getDoNothingCopyCallback"));
         
         // Move behaviour 
         this.policyComponent.bindClassBehaviour(
@@ -108,7 +133,7 @@ public class RecordCopyBehaviours implements RecordsManagementModel
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"),
                 RecordsManagementModel.TYPE_RECORD_FOLDER, 
-                new JavaBehaviour(this, "onMoveRecordFolderNode", NotificationFrequency.FIRST_EVENT));        
+                new JavaBehaviour(this, "onMoveRecordFolderNode", NotificationFrequency.FIRST_EVENT));
     }
     
     /**
@@ -219,33 +244,28 @@ public class RecordCopyBehaviours implements RecordsManagementModel
         return new DoNothingCopyBehaviourCallback();
     }
     
-    public CopyBehaviourCallback getIdCallback(QName classRef, CopyDetails copyDetails)
+    /**
+     * Generate and set a new ID for copy of a record
+     * 
+     * @param classRef
+     * @param sourceNodeRef
+     * @param targetNodeRef
+     * @param copyToNewNode
+     * @param copyMap
+     */
+    @SuppressWarnings("rawtypes")
+    public void generateId(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef, boolean copyToNewNode, Map copyMap)
     {
-        return new AbstractCopyBehaviourCallback()
-        {
-            public ChildAssocCopyAction getChildAssociationCopyAction(
-                    QName classQName,
-                    CopyDetails copyDetails,
-                    CopyChildAssociationDetails childAssocCopyDetails)
-            {
-                return null;
-            }
-
-            public Map<QName, Serializable> getCopyProperties(
-                    QName classQName,
-                    CopyDetails copyDetails,
-                    Map<QName, Serializable> properties)
-            {
-                properties.put(PROP_IDENTIFIER, properties.get(PROP_IDENTIFIER) + "1");
-                return properties;
-            }
-
-            public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
-            {
-                return true;
-            }
-            
-        };
+        final IdentifierService rmIdentifierService = rmServiceRegistry.getIdentifierService();
+        final NodeService nodeService = rmServiceRegistry.getNodeService();
+        
+        //Generate the id for the copy
+        String id = rmIdentifierService.generateIdentifier(nodeService.getType(nodeService.getPrimaryParent(targetNodeRef).getParentRef()), (nodeService.getPrimaryParent(targetNodeRef).getParentRef()));
+        
+        //We need to allow the id to be overwritten disable the policy protecting changes to the id
+        behaviourFilter.disableBehaviour(targetNodeRef, ASPECT_RECORD_COMPONENT_ID);
+        nodeService.setProperty(targetNodeRef, PROP_IDENTIFIER, id);
+        behaviourFilter.enableBehaviour(targetNodeRef, ASPECT_RECORD_COMPONENT_ID);
     }
     
     /**

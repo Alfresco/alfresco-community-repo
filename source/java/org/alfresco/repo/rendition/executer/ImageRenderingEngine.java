@@ -240,6 +240,30 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
             throw new IllegalArgumentException(msg.toString());
         }
     }
+    
+    /**
+     * Check mimeType of target.
+     * @param context
+     */
+    private void checkTargetMimeType(RenderingContext context)
+    {
+        String targetMimeType = getTargetMimeType(context);
+        // Target mime type should only be an image MIME type
+        if (targetMimeType == null || !targetMimeType.startsWith("image"))
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Target has illegal non-image MIME type: ").append(targetMimeType).append(". ")
+                .append("Use image as a source or configure target parameter \"").append(PARAM_MIME_TYPE).append("\"");
+            throw new IllegalArgumentException(msg.toString());
+        }
+    }
+    
+    @Override
+    protected void render(RenderingContext context)
+    {
+        checkTargetMimeType(context);
+        super.render(context);
+    }
 
 
     /*

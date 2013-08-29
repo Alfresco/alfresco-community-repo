@@ -284,6 +284,32 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- CLOUD-1967 Put core log4j config in WEB-INF/classes, so that it's first in classloader -->
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>fetch-log4j-config</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>alfresco-core</artifactId>
+                                    <version>${project.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                            <includes>log*.properties</includes>
+                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
@@ -312,6 +338,7 @@
             </plugin>
         </plugins>
     </build>
+
     <!-- NOTE: Profiles' order is IMPORTANT as defines the order plugins are executed -->
     <profiles>
 		<profile>

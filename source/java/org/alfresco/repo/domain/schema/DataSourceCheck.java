@@ -38,7 +38,7 @@ public class DataSourceCheck
     
     private static final String MSG_DB_CONNECTION = "Using database URL '%s' with user '%s'.";
     private static final String MSG_DB_VERSION = "Connected to database %s version %s";
-    private static final String ERR_DB_CONNECTION = "Database connection failed:";
+    private static final String ERR_DB_CONNECTION = "Database connection failed: %s";
     
     /**
      * Constructor-based check of DB connection
@@ -56,7 +56,7 @@ public class DataSourceCheck
         }
         catch (Exception e)
         {
-            throw new RuntimeException(String.format(ERR_DB_CONNECTION), e);
+            throw new RuntimeException(String.format(ERR_DB_CONNECTION, e.getMessage()), e);
         }
         finally
         {

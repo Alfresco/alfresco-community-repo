@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +28,10 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegist
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.copy.AbstractCopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -134,6 +137,12 @@ public class RecordCopyBehaviours implements RecordsManagementModel
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"),
                 RecordsManagementModel.TYPE_RECORD_FOLDER, 
                 new JavaBehaviour(this, "onMoveRecordFolderNode", NotificationFrequency.FIRST_EVENT));
+        
+        //Copy Behaviour
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"), 
+                RecordsManagementModel.TYPE_RECORD_FOLDER, 
+                new JavaBehaviour(this, "onCopyRecordFolderNode"));
     }
     
     /**
@@ -212,6 +221,27 @@ public class RecordCopyBehaviours implements RecordsManagementModel
                 }
             }, AuthenticationUtil.getAdminUserName());
         }
+    }
+    
+    public CopyBehaviourCallback onCopyRecordFolderNode(final QName classRef, final CopyDetails copyDetails)
+    {
+        return new DefaultCopyBehaviourCallback()
+        {
+            final NodeService nodeService = rmServiceRegistry.getNodeService();
+            
+            /**
+             * If the targets parent is a Record Folder -- Do Not Allow Copy
+             * 
+             * @param classQName
+             * @param copyDetails
+             * @return boolean
+             */
+            @Override
+            public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
+            {
+                return nodeService.getType(copyDetails.getTargetParentNodeRef()).equals(TYPE_RECORD_FOLDER) ? false : true;
+            }
+        };
     }
     
     /**

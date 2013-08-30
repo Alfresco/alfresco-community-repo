@@ -343,7 +343,7 @@ public class RecordServiceImpl implements RecordService,
             public Void doWork() throws Exception
             {
                 NodeRef nodeRef = childAssocRef.getChildRef();
-                if (nodeService.exists(nodeRef) == true)
+                if (nodeService.exists(nodeRef) == true  && !nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) && !nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY))
                 {
                     // create and file the content as a record
                     file(nodeRef);
@@ -694,7 +694,8 @@ public class RecordServiceImpl implements RecordService,
      *
      * @param record node reference to record (or soon to be record!)
      */
-    private void file(NodeRef record)
+    @Override
+    public void file(NodeRef record)
     {
         ParameterCheck.mandatory("item", record);
 

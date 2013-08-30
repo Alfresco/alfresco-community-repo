@@ -187,17 +187,17 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 public NodeRef doWork()
                 {
                     // Create "all" role group for root node
-                    String allRoles = authorityService.createAuthority(AuthorityType.GROUP, getAllRolesGroupShortName(rmRootNode), "All Roles", new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
+                    String allRoles = authorityService.createAuthority(
+                    						AuthorityType.GROUP, 
+                    						getAllRolesGroupShortName(rmRootNode), 
+                    						"All Roles", 
+                    						new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                     // Set the permissions
                     permissionService.setInheritParentPermissions(rmRootNode, false);
                     permissionService.setPermission(rmRootNode, allRoles, RMPermissionModel.READ_RECORDS, true);
                     permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
                     permissionService.setPermission(rmRootNode, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
-
-                    // set the capabilities
-                   // permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
-                  //  permissionService.setPermission(rmRootNode, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.EDIT_NON_RECORD_METADATA, true);
 
                     // Create the unfiled record container
                     return filePlanService.createUnfiledContainer(rmRootNode);

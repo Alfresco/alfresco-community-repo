@@ -28,7 +28,9 @@
          <ref bean="testAction"/>
       </property>
    </bean>
-   <bean id="testAction" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction" parent="rmAction"/>
+   <bean id="testAction" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction" parent="rmAction">
+      <property name="auditable" value="false" />
+   </bean>
 
    <bean id="testAction2_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
       <property name="target">
@@ -37,6 +39,7 @@
    </bean>
    <bean id="testAction2" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction2" parent="rmAction">
       <property name="publicAction" value="true"/>
+      <property name="auditable" value="false" />
    </bean>
 
    <bean id="testActionParams_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
@@ -44,7 +47,9 @@
          <ref bean="testActionParams"/>
       </property>
    </bean>
-   <bean id="testActionParams" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestActionParams" parent="rmAction"/>
+   <bean id="testActionParams" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestActionParams" parent="rmAction">
+      <property name="auditable" value="false" />
+   </bean>
 
    <bean id="testActionPropertySubs_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
       <property name="target">
@@ -53,6 +58,7 @@
    </bean>
    <bean id="testActionPropertySubs" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestActionPropertySubs" parent="rmAction">
       <property name="allowParameterSubstitutions" value="true"/>
+      <property name="auditable" value="false" />
    </bean>
 
 
@@ -64,7 +70,8 @@
       </property>
    </bean>
    <bean id="recordOnlyAction" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction2" parent="rmAction">
-      <property name="publicAction" value="true"/>
+      <property name="publicAction" value="true"/>      
+      <property name="auditable" value="false" />
       <property name="applicableKinds">
          <list>
             <value>RECORD</value>
@@ -77,7 +84,8 @@
       </property>
    </bean>
    <bean id="recordandFolderOnlyAction" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction2" parent="rmAction">
-      <property name="publicAction" value="true"/>
+      <property name="publicAction" value="true"/>      
+      <property name="auditable" value="false" />
       <property name="applicableKinds">
          <list>
             <value>RECORD</value>
@@ -97,7 +105,8 @@
    </bean>
    <bean id="rmDelegateAction" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction" parent="rmAction">
       <property name="publicAction" value="true"/>
-      <property name="delegateAction" ref="testDMAction" />
+      <property name="delegateAction" ref="testDMAction" />     
+      <property name="auditable" value="false" />
       <property name="applicableKinds">
          <list>
             <value>RECORD</value>

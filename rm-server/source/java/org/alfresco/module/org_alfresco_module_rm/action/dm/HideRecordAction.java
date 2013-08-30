@@ -20,9 +20,9 @@ package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
 import java.util.List;
 
+import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -38,7 +38,8 @@ import org.apache.commons.logging.LogFactory;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class HideRecordAction extends ActionExecuterAbstractBase implements RecordsManagementModel
+public class HideRecordAction extends AuditableActionExecuterAbstractBase 
+							  implements RecordsManagementModel
 {
 
     /** Logger */

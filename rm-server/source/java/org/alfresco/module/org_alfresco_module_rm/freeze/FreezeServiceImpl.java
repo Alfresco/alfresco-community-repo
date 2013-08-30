@@ -29,13 +29,15 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -44,6 +46,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -90,6 +93,12 @@ public class FreezeServiceImpl implements FreezeService,
     
     /** File Plan Service */
     private FilePlanService filePlanService;
+    
+    /** Permission service */
+    private PermissionService permissionService;
+    
+    /** file plan role service */
+    private FilePlanRoleService filePlanRoleService;
 
     /**
      * @param policyComponent policy component
@@ -138,14 +147,32 @@ public class FreezeServiceImpl implements FreezeService,
     {
         this.filePlanService = filePlanService;
     }
+    
+    /**
+     * @param permissionService  permission service
+     */
+    public void setPermissionService(PermissionService permissionService) 
+    {
+		this.permissionService = permissionService;
+	}
+    
+    /**
+     * @param filePlanRoleService	file plan role service
+     */
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService) 
+    {
+		this.filePlanRoleService = filePlanRoleService;
+	}
 
     /**
      * Init service
      */
     public void init()
     {
-        policyComponent.bindClassBehaviour(NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, this, new JavaBehaviour(
-                this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
+        policyComponent.bindClassBehaviour(
+        		NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
+        		this, 
+        		new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
     }
 
     /**
@@ -270,8 +297,10 @@ public class FreezeServiceImpl implements FreezeService,
         boolean isRecord = recordService.isRecord(nodeRef);
         boolean isFolder = recordsManagementService.isRecordFolder(nodeRef);
 
-        if (!(isRecord || isFolder)) { throw new AlfrescoRuntimeException(I18NUtil
-                .getMessage(MSG_FREEZE_ONLY_RECORDS_FOLDERS)); }
+        if (!(isRecord || isFolder)) 
+        { 
+        	throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_FREEZE_ONLY_RECORDS_FOLDERS)); 
+        }
 
         // Log a message about freezing the node with the reason
         if (logger.isDebugEnabled())
@@ -611,7 +640,12 @@ public class FreezeServiceImpl implements FreezeService,
                     transferQName).append("'.");
             logger.debug(msg.toString());
         }
-
+        
+        // set inherit to false
+        permissionService.setInheritParentPermissions(holdNodeRef, false);
+        String allGroup = filePlanRoleService.getAllRolesContainerGroup(root);
+        permissionService.setPermission(holdNodeRef, allGroup, RMPermissionModel.FILING, true);
+                
         // Bind the hold node reference to the transaction
         AlfrescoTransactionSupport.bindResource(KEY_HOLD_NODEREF, holdNodeRef);
 

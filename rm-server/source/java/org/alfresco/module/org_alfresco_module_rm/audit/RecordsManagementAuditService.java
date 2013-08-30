@@ -24,21 +24,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
+import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Records management audit service.
  * 
  * @author Gavin Cornwell
  */
-public interface RecordsManagementAuditService
+public interface RecordsManagementAuditService extends RecordsManagementAuditServiceDeprecated
 {
     public enum ReportFormat { HTML, JSON }
     
-    public static final String RM_AUDIT_EVENT_UPDATE_RM_OBJECT = "Update RM Object";
-    public static final String RM_AUDIT_EVENT_CREATE_RM_OBJECT = "Create RM Object";
-    public static final String RM_AUDIT_EVENT_DELETE_RM_OBJECT = "Delete RM Object";
     public static final String RM_AUDIT_EVENT_LOGIN_SUCCESS = "Login.Success";
     public static final String RM_AUDIT_EVENT_LOGIN_FAILURE = "Login.Failure";
     
@@ -68,10 +66,67 @@ public interface RecordsManagementAuditService
     public static final String RM_AUDIT_DATA_LOGIN_ERROR = "/RM/login/error/value";
     
     /**
-     * @deprecated as of 2.1, see {@link #start(NodeRef)}
+     * Retrieves a list of audit events.
+     * 
+     * @return List of audit events
      */
-    @Deprecated
-    void start();
+    List<AuditEvent> getAuditEvents();
+
+    /**
+     * Register audit event
+     * 
+     * @param name  name of audit event
+     * @param label display label of audit event
+     */
+    void registerAuditEvent(String name, String label);
+    
+    /**
+     * 
+     * @param auditEvent
+     */
+    void registerAuditEvent(AuditEvent auditEvent);
+    
+    /**
+     * 
+     * @param nodeRef
+     * @param eventName
+     */
+    void auditEvent(NodeRef nodeRef, 
+    				String eventName);
+    
+    /**
+     * 
+     * @param nodeRef
+     * @param eventName
+     * @param before
+     * @param after
+     */
+    void auditEvent(NodeRef nodeRef,
+            		String eventName,
+            		Map<QName, Serializable> before,
+            		Map<QName, Serializable> after);
+    
+    /**
+     * 
+     * @param nodeRef
+     * @param eventName
+     * @param before
+     * @param after
+     * @param immediate
+     */
+    void auditEvent(NodeRef nodeRef,
+                    String eventName,
+                    Map<QName, Serializable> before,
+                    Map<QName, Serializable> after,
+                    boolean immediate);
+        
+    /**
+     * Determines whether the RM audit log is currently enabled.
+     * 
+     * @param  filePlan	file plan
+     * @return true if RM auditing is active false otherwise
+     */
+    boolean isAuditLogEnabled(NodeRef filePlan);        
     
     /**
      * Start RM auditing.
@@ -79,13 +134,7 @@ public interface RecordsManagementAuditService
      * @param filePlan	file plan
      */
     void startAuditLog(NodeRef filePlan);
-    
-    /**
-     * @deprecated as of 2.1, see {@link #stop(NodeRef)}
-     */
-    @Deprecated
-    void stop();
-    
+        
     /**
      * Stop RM auditing.
      * 
@@ -93,11 +142,6 @@ public interface RecordsManagementAuditService
      */    
     void stopAuditLog(NodeRef filePlan);
     
-    /**
-     * @deprecated as of 2.1, see {@link #clear(NodeRef)}
-     */
-    @Deprecated
-    void clear();
     
     /**
      * Clears the RM audit.
@@ -107,53 +151,19 @@ public interface RecordsManagementAuditService
     void clearAuditLog(NodeRef filePlan);
     
     /**
-     * @deprecated as of 2.1, see {@link #isEnabled(NodeRef)}
-     */
-    @Deprecated
-    boolean isEnabled();
-    
-    /**
-     * Determines whether the RM audit log is currently enabled.
-     * 
-     * @param  filePlan	file plan
-     * @return true if RM auditing is active false otherwise
-     */
-    boolean isAuditLogEnabled(NodeRef filePlan);
-    
-    /**
-     * @deprecated as of 2.1, see {@link #getDateLastStarted(NodeRef)}
-     */
-    @Deprecated
-    Date getDateLastStarted();
-    
-    /**
      * Returns the date the RM audit was last started.
      * 
      * @param  filePlan		file plan 
      * @return Date 		the audit was last started
      */
     Date getDateAuditLogLastStarted(NodeRef filePlan);
-    
-    /**
-     * @deprecated as of 2.1, see {@link #getDateLastStopped(NodeRef)}
-     */
-    Date getDateLastStopped();
-    
+
     /**
      * Returns the date the RM audit was last stopped.
      * 
      * @return Date the audit was last stopped
      */
     Date getDateAuditLogLastStopped(NodeRef filePlan);
-    
-    /**
-     * An explicit call that RM actions can make to have the events logged.
-     * 
-     * @param action                    the action that will be performed
-     * @param nodeRef                   the component being acted on
-     * @param parameters                the action's parameters
-     */
-    void auditRMAction(RecordsManagementAction action, NodeRef nodeRef, Map<String, Serializable> parameters);
     
     /**
      * Retrieves a list of audit log entries using the provided parameters
@@ -201,18 +211,4 @@ public interface RecordsManagementAuditService
      * @return              NodeRef of the undeclared record filed
      */
     NodeRef fileAuditTrailAsRecord(RecordsManagementAuditQueryParameters params, NodeRef destination, ReportFormat format);
-    
-    /**
-     * Retrieves a list of audit events.
-     * 
-     * @return List of audit events
-     */
-    List<AuditEvent> getAuditEvents();
-
-    /**
-     * Register records management action
-     * 
-     * @param rmAction records management action
-     */
-    void register(RecordsManagementAction rmAction);
 }

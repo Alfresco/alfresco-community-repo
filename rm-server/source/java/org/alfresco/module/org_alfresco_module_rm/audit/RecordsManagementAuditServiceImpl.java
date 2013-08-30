@@ -29,24 +29,21 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
-import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
-import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
-import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -59,7 +56,6 @@ import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -90,19 +86,10 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @author Gavin Cornwell
  * @since 3.2
  */
-public class RecordsManagementAuditServiceImpl
-        	 extends AbstractLifecycleBean
-             implements RecordsManagementAuditService,
-                        NodeServicePolicies.OnCreateNodePolicy,
-                        NodeServicePolicies.BeforeDeleteNodePolicy,
-                        NodeServicePolicies.OnUpdatePropertiesPolicy
+public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
+                                               implements RecordsManagementAuditService
 {
     /** I18N */
-    private static final String MSG_UPDATED_METADATA = "rm.audit.updated-metadata";
-    private static final String MSG_CREATED_OBJECT = "rm.audit.created-object";
-    private static final String MSG_DELETE_OBJECT = "rm.audit.delte-object";
-    private static final String MSG_LOGIN_SUCCEEDED = "rm.audit.login-succeeded";
-    private static final String MSG_LOGIN_FAILED = "rm.audit.login-failed";
     private static final String MSG_TRAIL_FILE_FAIL = "rm.audit.trail-file-fail";
     private static final String MSG_AUDIT_REPORT = "rm.audit.audit-report";
 
@@ -128,7 +115,7 @@ public class RecordsManagementAuditServiceImpl
 
     private boolean shutdown = false;
 
-    private RMAuditTxnListener txnListener;
+    private RMAuditTxnListener txnListener = new RMAuditTxnListener();
 
     /** Registered and initialised records management auditEvents */
     private Map<String, AuditEvent> auditEvents = new HashMap<String, AuditEvent>();
@@ -213,15 +200,21 @@ public class RecordsManagementAuditServiceImpl
 		this.filePlanService = filePlanService;
 	}
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAuditService#register(org.alfresco.module.org_alfresco_module_rm.RecordsManagementAction)
-     */
-    public void register(RecordsManagementAction rmAction)
+    @Override
+    public void registerAuditEvent(String name, String label)
     {
-        if (this.auditEvents.containsKey(rmAction.getName()) == false)
+        registerAuditEvent(new AuditEvent(name, label));
+    }
+    
+    @Override
+    public void registerAuditEvent(AuditEvent auditEvent)
+    {
+        if (logger.isDebugEnabled() == true)
         {
-            this.auditEvents.put(rmAction.getName(), new AuditEvent(rmAction.getName(), rmAction.getLabel()));
+            logger.debug("Registering audit event " + auditEvent.getName());
         }
+        
+        this.auditEvents.put(auditEvent.getName(), auditEvent);
     }
 
     /**
@@ -239,52 +232,12 @@ public class RecordsManagementAuditServiceImpl
         PropertyCheck.mandatory(this, "rmActionService", rmActionService);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "filePlanService", filePlanService);
-
-        // setup the audit events map
-        initAuditEvents();
-    }
-
-    protected void initAuditEvents()
-    {
-
-        this.auditEvents.put(RM_AUDIT_EVENT_UPDATE_RM_OBJECT,
-                    new AuditEvent(RM_AUDIT_EVENT_UPDATE_RM_OBJECT, MSG_UPDATED_METADATA));
-        this.auditEvents.put(RM_AUDIT_EVENT_CREATE_RM_OBJECT,
-                    new AuditEvent(RM_AUDIT_EVENT_CREATE_RM_OBJECT, MSG_CREATED_OBJECT));
-        this.auditEvents.put(RM_AUDIT_EVENT_DELETE_RM_OBJECT,
-                    new AuditEvent(RM_AUDIT_EVENT_DELETE_RM_OBJECT, MSG_DELETE_OBJECT));
-        this.auditEvents.put(RM_AUDIT_EVENT_LOGIN_SUCCESS,
-                    new AuditEvent(RM_AUDIT_EVENT_LOGIN_SUCCESS, MSG_LOGIN_SUCCEEDED));
-        this.auditEvents.put(RM_AUDIT_EVENT_LOGIN_FAILURE,
-                new AuditEvent(RM_AUDIT_EVENT_LOGIN_FAILURE, MSG_LOGIN_FAILED));
-
-        // Added for DOD compliance
-        this.auditEvents.put("createPerson",
-                    new AuditEvent("createPerson", "User Created"));
     }
 
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
         shutdown = false;
-        txnListener = new RMAuditTxnListener();
-        // Register to listen for property changes to rma:record types
-        policyComponent.bindClassBehaviour(
-                OnUpdatePropertiesPolicy.QNAME,
-                RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID,
-                new JavaBehaviour(this, "onUpdateProperties"));
-        policyComponent.bindClassBehaviour(
-                OnCreateNodePolicy.QNAME,
-                RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID,
-                new JavaBehaviour(this, "onCreateNode"));
-        policyComponent.bindClassBehaviour(
-                BeforeDeleteNodePolicy.QNAME,
-                RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID,
-                new JavaBehaviour(this, "beforeDeleteNode"));
-        policyComponent.bindClassBehaviour(
-                OnCreateNodePolicy.QNAME,
-                ContentModel.TYPE_PERSON,
-                new JavaBehaviour(this, "onCreatePersonNode"));
     }
 
     @Override
@@ -293,24 +246,20 @@ public class RecordsManagementAuditServiceImpl
         shutdown = true;
     }
 
-    /*** TODO remove this when we support multiple file plans ****/
-
-    private NodeRef defaultFilePlan;
-
+    /**
+     * Helper method to get the default file plan
+     * 
+     * @return	NodRef default file plan
+     */
     private NodeRef getDefaultFilePlan()
     {
+    	NodeRef defaultFilePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
     	if (defaultFilePlan == null)
-    	{
-    		defaultFilePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-    		if (defaultFilePlan == null)
-    		{
-    			throw new AlfrescoRuntimeException("Default file plan could not be found.");
-    		}
-    	}
+		{
+			throw new AlfrescoRuntimeException("Default file plan could not be found.");
+		}
     	return defaultFilePlan;
     }
-
-    /*** TODO end ***/
 
     /**
      * {@inheritDoc}
@@ -493,54 +442,37 @@ public class RecordsManagementAuditServiceImpl
         }
     }
 
-    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
-    {
-        auditRMEvent(nodeRef, RM_AUDIT_EVENT_UPDATE_RM_OBJECT, before, after);
-    }
-
-    public void beforeDeleteNode(NodeRef nodeRef)
-    {
-        auditRMEvent(nodeRef, RM_AUDIT_EVENT_DELETE_RM_OBJECT, null, null);
-    }
-
-    public void onCreateNode(ChildAssociationRef childAssocRef)
-    {
-        auditRMEvent(childAssocRef.getChildRef(), RM_AUDIT_EVENT_CREATE_RM_OBJECT, null, null);
-    }
-
-    public void onCreatePersonNode(ChildAssociationRef childAssocRef)
-    {
-        auditRMEvent(childAssocRef.getChildRef(), "createPerson", null, null);
-    }
-
     /**
      * {@inheritDoc}
      * @since 3.2
+     * @deprecated since 2.1
      */
+    @Deprecated
     public void auditRMAction(
             RecordsManagementAction action,
             NodeRef nodeRef,
             Map<String, Serializable> parameters)
     {
-        auditRMEvent(nodeRef, action.getName(), null, null);
+        auditEvent(nodeRef, action.getName());
     }
-
-    /**
-     * Audit an event for a node
-     *
-     * @param nodeRef               the node to which the event applies
-     * @param eventName             the name of the event
-     * @param nodePropertiesBefore  properties before the event (optional)
-     * @param nodePropertiesAfter   properties after the event (optional)
-     */
-    private void auditRMEvent(
-            NodeRef nodeRef,
-            String eventName,
-            Map<QName, Serializable> nodePropertiesBefore,
-            Map<QName, Serializable> nodePropertiesAfter)
+    
+    @Override
+    public void auditEvent(NodeRef nodeRef, String eventName)
     {
-        // If we are deleting nodes, then we need to audit NOW
-        if (eventName.equals(RecordsManagementAuditService.RM_AUDIT_EVENT_DELETE_RM_OBJECT))
+        auditEvent(nodeRef, eventName, null, null, false);
+    }
+    
+    @Override
+    public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        auditEvent(nodeRef, eventName, before, after, false);
+    }
+    
+    @Override
+    public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after, boolean immediate)
+    {
+        // deal with immediate auditing if required
+        if (immediate == true)
         {
             // Deleted nodes will not be available at the end of the transaction.  The data needs to
             // be extracted now and the audit entry needs to be created now.
@@ -555,16 +487,20 @@ public class RecordsManagementAuditServiceImpl
         else
         {
             // Create an event for auditing post-commit
-            Map<NodeRef, RMAuditNode> auditedNodes = TransactionalResourceHelper.getMap(KEY_RM_AUDIT_NODE_RECORDS);
-            RMAuditNode auditedNode = auditedNodes.get(nodeRef);
-            if (auditedNode == null)
+            Map<NodeRef, Set<RMAuditNode>> auditedNodes = TransactionalResourceHelper.getMap(KEY_RM_AUDIT_NODE_RECORDS);
+            Set<RMAuditNode> auditDetails = auditedNodes.get(nodeRef);
+            if (auditDetails == null)
             {
-                auditedNode = new RMAuditNode();
-                auditedNodes.put(nodeRef, auditedNode);
+                auditDetails = new HashSet<RMAuditNode>(3);
+                auditedNodes.put(nodeRef, auditDetails);
+                
                 // Bind the listener to the txn.  We could do it anywhere in the method, this position ensures
                 // that we avoid some rebinding of the listener
                 AlfrescoTransactionSupport.bindListener(txnListener);
             }
+            
+            RMAuditNode auditedNode = new RMAuditNode();
+            
             // Only update the eventName if it has not already been done
             if (auditedNode.getEventName() == null)
             {
@@ -573,15 +509,17 @@ public class RecordsManagementAuditServiceImpl
             // Set the properties before the start if they are not already available
             if (auditedNode.getNodePropertiesBefore() == null)
             {
-                auditedNode.setNodePropertiesBefore(nodePropertiesBefore);
+                auditedNode.setNodePropertiesBefore(before);
             }
             // Set the after values if they are provided.
             // Overwrite as we assume that these represent the latest state of the node.
-            if (nodePropertiesAfter != null)
+            if (after != null)
             {
-                auditedNode.setNodePropertiesAfter(nodePropertiesAfter);
+                auditedNode.setNodePropertiesAfter(after);
             }
             // That is it.  The values are queued for the end of the transaction.
+            
+            auditDetails.add(auditedNode);
         }
     }
 
@@ -634,7 +572,7 @@ public class RecordsManagementAuditServiceImpl
         @Override
         public void afterCommit()
         {
-            final Map<NodeRef, RMAuditNode> auditedNodes = TransactionalResourceHelper.getMap(KEY_RM_AUDIT_NODE_RECORDS);
+            final Map<NodeRef, Set<RMAuditNode>> auditedNodes = TransactionalResourceHelper.getMap(KEY_RM_AUDIT_NODE_RECORDS);
 
             // Start a *new* read-write transaction to audit in
             RetryingTransactionCallback<Void> auditCallback = new RetryingTransactionCallback<Void>()
@@ -653,11 +591,11 @@ public class RecordsManagementAuditServiceImpl
          *
          * @param auditedNodes              details of the nodes that were modified
          */
-        private void auditInTxn(Map<NodeRef, RMAuditNode> auditedNodes) throws Throwable
+        private void auditInTxn(Map<NodeRef, Set<RMAuditNode>> auditedNodes) throws Throwable
         {
             // Go through all the audit information and audit it
             boolean auditedSomething = false;                       // We rollback if nothing is audited
-            for (Map.Entry<NodeRef, RMAuditNode> entry : auditedNodes.entrySet())
+            for (Map.Entry<NodeRef, Set<RMAuditNode>> entry : auditedNodes.entrySet())
             {
                 NodeRef nodeRef = entry.getKey();
 
@@ -667,63 +605,66 @@ public class RecordsManagementAuditServiceImpl
                     continue;
                 }
 
-                RMAuditNode auditedNode = entry.getValue();
-
-                // Action description
-                String eventName = auditedNode.getEventName();
-
-                Map<String, Serializable> auditMap = buildAuditMap(nodeRef, eventName);
-
-                // TODO do we care if the before and after are null??
-
-                // Property changes
-                Map<QName, Serializable> propertiesBefore = auditedNode.getNodePropertiesBefore();
-                Map<QName, Serializable> propertiesAfter = auditedNode.getNodePropertiesAfter();
-                Pair<Map<QName, Serializable>, Map<QName, Serializable>> deltaPair =
-                        PropertyMap.getBeforeAndAfterMapsForChanges(propertiesBefore, propertiesAfter);
-                auditMap.put(
-                        AuditApplication.buildPath(
-                                RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
-                                RecordsManagementAuditService.RM_AUDIT_SNIPPET_NODE,
-                                RecordsManagementAuditService.RM_AUDIT_SNIPPET_CHANGES,
-                                RecordsManagementAuditService.RM_AUDIT_SNIPPET_BEFORE),
-                        (Serializable) deltaPair.getFirst());
-                auditMap.put(
-                        AuditApplication.buildPath(
-                                RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
-                                RecordsManagementAuditService.RM_AUDIT_SNIPPET_NODE,
-                                RecordsManagementAuditService.RM_AUDIT_SNIPPET_CHANGES,
-                                RecordsManagementAuditService.RM_AUDIT_SNIPPET_AFTER),
-                        (Serializable) deltaPair.getSecond());
-
-                // Audit it
-                if (logger.isDebugEnabled())
+                Set<RMAuditNode> auditedNodeDetails = entry.getValue();
+                
+                for (RMAuditNode auditedNode : auditedNodeDetails)
                 {
-                    logger.debug("RM Audit: Auditing values: \n" + auditMap);
-                }
-                auditMap = auditComponent.recordAuditValues(RecordsManagementAuditService.RM_AUDIT_PATH_ROOT, auditMap);
-                if (auditMap.isEmpty())
-                {
+                    // Action description
+                    String eventName = auditedNode.getEventName();
+    
+                    Map<String, Serializable> auditMap = buildAuditMap(nodeRef, eventName);
+    
+                    // TODO do we care if the before and after are null??
+    
+                    // Property changes
+                    Map<QName, Serializable> propertiesBefore = auditedNode.getNodePropertiesBefore();
+                    Map<QName, Serializable> propertiesAfter = auditedNode.getNodePropertiesAfter();
+                    Pair<Map<QName, Serializable>, Map<QName, Serializable>> deltaPair =
+                            PropertyMap.getBeforeAndAfterMapsForChanges(propertiesBefore, propertiesAfter);
+                    auditMap.put(
+                            AuditApplication.buildPath(
+                                    RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
+                                    RecordsManagementAuditService.RM_AUDIT_SNIPPET_NODE,
+                                    RecordsManagementAuditService.RM_AUDIT_SNIPPET_CHANGES,
+                                    RecordsManagementAuditService.RM_AUDIT_SNIPPET_BEFORE),
+                            (Serializable) deltaPair.getFirst());
+                    auditMap.put(
+                            AuditApplication.buildPath(
+                                    RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
+                                    RecordsManagementAuditService.RM_AUDIT_SNIPPET_NODE,
+                                    RecordsManagementAuditService.RM_AUDIT_SNIPPET_CHANGES,
+                                    RecordsManagementAuditService.RM_AUDIT_SNIPPET_AFTER),
+                            (Serializable) deltaPair.getSecond());
+    
+                    // Audit it
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug("RM Audit: Nothing was audited.");
+                        logger.debug("RM Audit: Auditing values: \n" + auditMap);
                     }
-                }
-                else
-                {
-                    if (logger.isDebugEnabled())
+                    auditMap = auditComponent.recordAuditValues(RecordsManagementAuditService.RM_AUDIT_PATH_ROOT, auditMap);
+                    if (auditMap.isEmpty())
                     {
-                        logger.debug("RM Audit: Audited values: \n" + auditMap);
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("RM Audit: Nothing was audited.");
+                        }
                     }
-                    // We must commit the transaction to get the values in
-                    auditedSomething = true;
+                    else
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("RM Audit: Audited values: \n" + auditMap);
+                        }
+                        // We must commit the transaction to get the values in
+                        auditedSomething = true;
+                    }
                 }
-            }
-            // Check if anything was audited
-            if (!auditedSomething)
-            {
-                // Nothing was audited, so do nothing
-                RetryingTransactionHelper.getActiveUserTransaction().setRollbackOnly();
+                // Check if anything was audited
+                if (!auditedSomething)
+                {
+                    // Nothing was audited, so do nothing
+                    RetryingTransactionHelper.getActiveUserTransaction().setRollbackOnly();
+                }
             }
         }
     }
@@ -849,18 +790,16 @@ public class RecordsManagementAuditServiceImpl
                 if (values.containsKey(RecordsManagementAuditService.RM_AUDIT_DATA_EVENT_NAME))
                 {
                     // This data is /RM/event/...
-                    eventName = (String) values.get(RecordsManagementAuditService.RM_AUDIT_DATA_EVENT_NAME);
-                    fullName = (String) values.get(RecordsManagementAuditService.RM_AUDIT_DATA_PERSON_FULLNAME);
-                    userRoles = (String) values.get(RecordsManagementAuditService.RM_AUDIT_DATA_PERSON_ROLES);
-                    nodeRef = (NodeRef) values.get(RecordsManagementAuditService.RM_AUDIT_DATA_NODE_NODEREF);
-                    nodeName = (String) values.get(RecordsManagementAuditService.RM_AUDIT_DATA_NODE_NAME);
-                    QName nodeTypeQname = (QName) values.get(RecordsManagementAuditService.RM_AUDIT_DATA_NODE_TYPE);
-                    nodeIdentifier = (String) values.get(RecordsManagementAuditService.RM_AUDIT_DATA_NODE_IDENTIFIER);
-                    namePath = (String) values.get(RecordsManagementAuditService.RM_AUDIT_DATA_NODE_NAMEPATH);
-                    beforeProperties = (Map<QName, Serializable>) values.get(
-                            RecordsManagementAuditService.RM_AUDIT_DATA_NODE_CHANGES_BEFORE);
-                    afterProperties = (Map<QName, Serializable>) values.get(
-                            RecordsManagementAuditService.RM_AUDIT_DATA_NODE_CHANGES_AFTER);
+                    eventName = (String) values.get(RM_AUDIT_DATA_EVENT_NAME);
+                    fullName = (String) values.get(RM_AUDIT_DATA_PERSON_FULLNAME);
+                    userRoles = (String) values.get(RM_AUDIT_DATA_PERSON_ROLES);
+                    nodeRef = (NodeRef) values.get(RM_AUDIT_DATA_NODE_NODEREF);
+                    nodeName = (String) values.get(RM_AUDIT_DATA_NODE_NAME);
+                    QName nodeTypeQname = (QName) values.get(RM_AUDIT_DATA_NODE_TYPE);
+                    nodeIdentifier = (String) values.get(RM_AUDIT_DATA_NODE_IDENTIFIER);
+                    namePath = (String) values.get(RM_AUDIT_DATA_NODE_NAMEPATH);
+                    beforeProperties = (Map<QName, Serializable>) values.get(RM_AUDIT_DATA_NODE_CHANGES_BEFORE);
+                    afterProperties = (Map<QName, Serializable>) values.get(RM_AUDIT_DATA_NODE_CHANGES_AFTER);
 
                     // Convert some of the values to recognizable forms
                     nodeType = null;

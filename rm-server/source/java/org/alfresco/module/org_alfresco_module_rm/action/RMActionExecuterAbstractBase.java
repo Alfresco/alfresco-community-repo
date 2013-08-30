@@ -324,6 +324,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
         PropertyCheck.mandatory(this, "recordsManagementService", recordsManagementService);
         PropertyCheck.mandatory(this, "recordsManagementAdminService", recordsManagementAdminService);
         PropertyCheck.mandatory(this, "recordsManagementEventService", recordsManagementEventService);
+        
+        super.init();
     }
     
     /**
@@ -404,8 +406,6 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
         // Create the action
         Action action = this.actionService.createAction(name);
         action.setParameterValues(parameters);
-        
-        recordsManagementAuditService.auditRMAction(this, filePlanComponent, parameters);
         
         // Execute the action
         this.actionService.executeAction(action, filePlanComponent);          

@@ -25,15 +25,23 @@ import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.springframework.aop.framework.ProxyFactoryBean;
 
+/**
+ * RM action proxy factory bean.
+ * 
+ * @author Roy Wetherall
+ */
 public class RMActionProxyFactoryBean extends ProxyFactoryBean
 {
     private static final long serialVersionUID = 539749542853266449L;
 
+    /** Runtime action service */
     protected RuntimeActionService runtimeActionService;
 
-    private RecordsManagementActionService recordsManagementActionService;
+    /** Records management action service */
+    protected RecordsManagementActionService recordsManagementActionService;
 
-    private RecordsManagementAuditService recordsManagementAuditService;
+    /** Records management audit service */
+    protected RecordsManagementAuditService recordsManagementAuditService;
 
     /**
      * Set action service
@@ -65,18 +73,20 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
         this.recordsManagementAuditService = recordsManagementAuditService;
     }
 
+    /**
+     * Register the action
+     */
     public void registerAction()
     {
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
         {
             public Void doWork() throws Exception
             {
-              //  if (((RMActionExecuterAbstractBase)getTargetSource().getTarget()).isPublicAction() == true)             
-              //  {
-              //      runtimeActionService.registerActionExecuter((ActionExecuter) getObject());
-              //  }
-                recordsManagementActionService.register((RecordsManagementAction) getObject());
-                recordsManagementAuditService.register((RecordsManagementAction) getObject());
+                RecordsManagementAction action = (RecordsManagementAction)getObject();
+                
+                recordsManagementActionService.register(action);
+             //   recordsManagementAuditService.registerActionAuditEvent(action);
+        
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());

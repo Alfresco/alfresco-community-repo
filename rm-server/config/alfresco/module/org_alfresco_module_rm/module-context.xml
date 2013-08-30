@@ -43,34 +43,11 @@
 
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-model-context.xml"/>
    
+   <!-- Import RM Audit -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-audit-context.xml"/>
+   
    <!--  Import RM query context -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/query/rm-query-context.xml" />
-
-   <!--  Load audit config -->
-
-   <bean id="org_alfresco_module_rm_userRolesExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.AuthenticatedUserRolesDataExtractor">
-      <property name="registry" ref="auditModel.extractorRegistry" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="filePlanService" ref="filePlanService" />
-      <property name="filePlanRoleService" ref="filePlanRoleService" />
-   </bean>
-
-   <bean id="org_alfresco_module_rm_namePathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.FilePlanNamePathDataExtractor">
-      <property name="registry" ref="auditModel.extractorRegistry" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="filePlanService" ref="filePlanService" />
-   </bean>
-
-   <bean id="org_alfresco_module_rm_nodeRefPathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.FilePlanNodeRefPathDataExtractor">
-      <property name="registry" ref="auditModel.extractorRegistry" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="filePlanService" ref="filePlanService" />
-   </bean>
-
-   <bean id="org_alfresco_module_rm_identifierExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.FilePlanIdentifierDataExtractor">
-      <property name="registry" ref="auditModel.extractorRegistry" />
-      <property name="nodeService" ref="nodeService" />
-   </bean>
 
    <!-- Bootstrap the permission model -->
 

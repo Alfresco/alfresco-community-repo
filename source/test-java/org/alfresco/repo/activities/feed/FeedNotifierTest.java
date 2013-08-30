@@ -317,7 +317,7 @@ public class FeedNotifierTest
         boolean found = false;
         for (ActivityFeedEntity feed : feeds)
         {
-            if (feed.getActivityType().equals(activityType) && feed.getSiteNetwork() == null)
+            if (feed.getActivityType().equals(activityType) && (feed.getSiteNetwork() == null || feed.getSiteNetwork().isEmpty()))
             {
                 found = true;
             }

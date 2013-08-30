@@ -96,6 +96,13 @@ public interface RecordService
    boolean isFiled(NodeRef record);
 
    /**
+    * 'File' a new document that arrived in the file plan structure.
+    * 
+    * @param nodeRef    record
+    */
+   void file(NodeRef record);
+   
+   /**
     * Hides a record within a collaboration site
     *
     * @param nodeRef   The record which should be hidden

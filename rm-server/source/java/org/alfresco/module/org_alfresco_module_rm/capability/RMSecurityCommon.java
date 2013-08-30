@@ -37,9 +37,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+
 
 /**
  * Common security functions.
@@ -49,7 +47,7 @@ import org.springframework.context.ApplicationContextAware;
  * @author Roy Wetherall
  * @since 2.0
  */
-public class RMSecurityCommon implements ApplicationContextAware
+public class RMSecurityCommon
 {    
     /** No set value */
     protected int NOSET_VALUE = -100;
@@ -57,24 +55,12 @@ public class RMSecurityCommon implements ApplicationContextAware
     /** Logger */
     private static Log logger = LogFactory.getLog(RMSecurityCommon.class);
     
-    /** Application Context */
-    private ApplicationContext applicationContext;
-    
     /** Services */
-    protected NodeService nodeService;
+    protected NodeService nodeService; //This is the internal NodeService -- no permission checks
     protected PermissionService permissionService;
     protected RecordsManagementService rmService;
     protected RMCaveatConfigComponent caveatConfigComponent;
     protected FilePlanService filePlanService;
-    
-    /**
-     * @param   applicationContext application context
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
     
     /**
      * @param nodeService   node service
@@ -179,9 +165,7 @@ public class RMSecurityCommon implements ApplicationContextAware
     {
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
         
-        // use the internal node service to avoid duplication of method permission checks
-        NodeService internalNodeService = (NodeService)applicationContext.getBean("nodeService");        
-        if (internalNodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT)== true)
+        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT)== true)
         {
             result = checkRmRead(nodeRef);
         }

@@ -174,8 +174,7 @@ public class RecordsManagementActionServiceImplTest extends TestCase
 	    // get some specific actions and check the label
 	    RecordsManagementAction cutoff = this.rmActionService.getDispositionAction("cutoff");
 	    assertNotNull(cutoff);
-	    assertEquals("Cutoff", cutoff.getLabel());
-	    assertEquals("Cutoff", cutoff.getDescription());
+	    assertEquals("Cut off", cutoff.getLabel());
 	    
 	    RecordsManagementAction freeze = this.rmActionService.getRecordsManagementAction("freeze");
         assertNotNull(freeze);

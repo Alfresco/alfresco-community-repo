@@ -312,6 +312,25 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!-- We still use committed generated sources -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>source/generated</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
             <!-- Use Axis to generate Java code from wsdl files
                  TODO: complete ast this not used at the moment, we still use the committed source/generated

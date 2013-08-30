@@ -114,7 +114,6 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         assertNotNull(action1.get("url"));
         assertEquals(0, action1.getInt("index"));
         assertEquals("cutoff", action1.getString("name"));
-        assertEquals("Cutoff", action1.getString("label"));
         assertTrue(action1.getBoolean("eligibleOnFirstCompleteEvent"));
         
         JSONObject action2 = (JSONObject)actions.get(1);
@@ -250,7 +249,6 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         JSONObject actionDef = json.getJSONObject("data").getJSONArray("actions").getJSONObject(0);
         String actionDefId = actionDef.getString("id");
         assertEquals("cutoff", actionDef.getString("name"));
-        assertEquals("Cutoff", actionDef.getString("label"));
         assertEquals("none|0", actionDef.getString("period"));
         assertFalse(actionDef.has("description"));
         assertFalse(actionDef.has("events"));
@@ -361,7 +359,6 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         JSONObject dataObj = jsonParsedObject.getJSONObject("data");
         assertEquals(SERVICE_URL_PREFIX + requestUrl, dataObj.getString("url"));
         assertEquals("cutoff", dataObj.getString("name"));
-        assertEquals("Cutoff", dataObj.getString("label"));
         assertFalse(dataObj.getBoolean("eventsEligible"));
         assertTrue(dataObj.has("events"));
         JSONArray events = dataObj.getJSONArray("events");

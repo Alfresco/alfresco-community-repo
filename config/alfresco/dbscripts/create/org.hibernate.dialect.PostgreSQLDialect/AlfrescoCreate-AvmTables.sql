@@ -76,7 +76,7 @@
         length INT8,
         primary key (id)
     );
-	
+    
     create sequence avm_store_properties_seq start with 1 increment by 1;
     create table avm_store_properties (
         id INT8 not null,
@@ -93,7 +93,7 @@
         serializable_value BYTEA,
         primary key (id)
     );
-		
+        
     create sequence avm_stores_seq start with 1 increment by 1;
     create table avm_stores (
         id INT8 not null,
@@ -104,7 +104,7 @@
         acl_id INT8,
         primary key (id)
     );
-	
+    
     create table avm_version_layered_node_entry (
         version_root_id INT8 not null,
         md5sum varchar(32) not null,
@@ -133,49 +133,49 @@
         add constraint fk_avm_nasp_n
         foreign key (node_id)
         references avm_nodes (id);
-	create index fk_avm_nasp_n on avm_aspects(node_id);
+    create index fk_avm_nasp_n on avm_aspects(node_id);
 
     alter table avm_child_entries        
         add constraint fk_avm_ce_child
         foreign key (child_id)
         references avm_nodes (id);
-	create index fk_avm_ce_child on avm_child_entries(child_id);
+    create index fk_avm_ce_child on avm_child_entries(child_id);
 
     alter table avm_child_entries        
         add constraint fk_avm_ce_parent
         foreign key (parent_id)
         references avm_nodes (id);
-	create index fk_avm_ce_parent on avm_child_entries(parent_id);
+    create index fk_avm_ce_parent on avm_child_entries(parent_id);
 
     alter table avm_history_links        
         add constraint fk_avm_hl_desc
         foreign key (descendent)
         references avm_nodes (id);
-	create index fk_avm_hl_desc on avm_history_links(descendent);
+    create index fk_avm_hl_desc on avm_history_links(descendent);
 
     alter table avm_history_links        
         add constraint fk_avm_hl_ancestor
         foreign key (ancestor)
         references avm_nodes (id);
-	create index fk_avm_hl_ancestor on avm_history_links(ancestor);
+    create index fk_avm_hl_ancestor on avm_history_links(ancestor);
 
     alter table avm_merge_links        
         add constraint fk_avm_ml_from
         foreign key (mfrom)
         references avm_nodes (id);
-	create index fk_avm_ml_from on avm_merge_links(mfrom);
+    create index fk_avm_ml_from on avm_merge_links(mfrom);
 
     alter table avm_merge_links        
         add constraint fk_avm_ml_to
         foreign key (mto)
         references avm_nodes (id);
-	create index fk_avm_ml_to on avm_merge_links(mto);
+    create index fk_avm_ml_to on avm_merge_links(mto);
 
     alter table avm_node_properties        
         add constraint fk_avm_nprop_n
         foreign key (node_id)
         references avm_nodes (id);
-	create index fk_avm_nprop_n on avm_node_properties(node_id);
+    create index fk_avm_nprop_n on avm_node_properties(node_id);
 
     create index idx_avm_n_pi on avm_nodes (primary_indirection);
 
@@ -183,37 +183,37 @@
         add constraint fk_avm_n_acl
         foreign key (acl_id)
         references alf_access_control_list (id);
-	create index fk_avm_n_acl on avm_nodes(acl_id);
+    create index fk_avm_n_acl on avm_nodes(acl_id);
 
     alter table avm_nodes        
         add constraint fk_avm_n_store
         foreign key (store_new_id)
         references avm_stores (id);
-	create index fk_avm_n_store on avm_nodes(store_new_id);
+    create index fk_avm_n_store on avm_nodes(store_new_id);
 
     alter table avm_store_properties        
         add constraint fk_avm_sprop_store
         foreign key (avm_store_id)
         references avm_stores (id);
-	create index fk_avm_sprop_store on avm_store_properties(avm_store_id);
+    create index fk_avm_sprop_store on avm_store_properties(avm_store_id);
 
     alter table avm_stores        
         add constraint fk_avm_s_root
         foreign key (current_root_id)
         references avm_nodes (id);
-	create index fk_avm_s_root on avm_stores(current_root_id);
+    create index fk_avm_s_root on avm_stores(current_root_id);
 
-	alter table avm_stores        
+    alter table avm_stores        
         add constraint fk_avm_s_acl
         foreign key (acl_id)
         references alf_access_control_list (id);
-	create index fk_avm_s_acl on avm_stores(acl_id);
+    create index fk_avm_s_acl on avm_stores(acl_id);
 
-	alter table avm_version_layered_node_entry        
+    alter table avm_version_layered_node_entry        
         add constraint fk_avm_vlne_vr
         foreign key (version_root_id)
         references avm_version_roots (id);
-	create index fk_avm_vlne_vr on avm_version_layered_node_entry(version_root_id);
+    create index fk_avm_vlne_vr on avm_version_layered_node_entry(version_root_id);
 
     create index idx_avm_vr_version on avm_version_roots (version_id);
 
@@ -221,13 +221,13 @@
         add constraint fk_avm_vr_store
         foreign key (avm_store_id)
         references avm_stores (id);
-	create index fk_avm_vr_store on avm_version_roots(avm_store_id);
+    create index fk_avm_vr_store on avm_version_roots(avm_store_id);
 
     alter table avm_version_roots        
         add constraint fk_avm_vr_root
         foreign key (root_id)
         references avm_nodes (id);
-	create index fk_avm_vr_root on avm_version_roots(root_id);
+    create index fk_avm_vr_root on avm_version_roots(root_id);
         
 CREATE INDEX fk_avm_nasp_qn ON avm_aspects (qname_id);
 ALTER TABLE avm_aspects ADD CONSTRAINT fk_avm_nasp_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);

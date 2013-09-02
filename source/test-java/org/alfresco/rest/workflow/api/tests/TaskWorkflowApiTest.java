@@ -1541,33 +1541,151 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             // Test with existing processDefinitionId
             Map<String, String> params = new HashMap<String, String>();
             params.put("processDefinitionId", processDefinitionId);
-            assertEquals(6, getResultSizeForTaskQuery(params, tasksClient));
+            JSONObject taskListJSONObject = tasksClient.findTasks(params);
+            assertNotNull(taskListJSONObject);
+            JSONObject paginationJSON = (JSONObject) taskListJSONObject.get("pagination");
+            assertEquals(6l, paginationJSON.get("count"));
+            assertEquals(6l, paginationJSON.get("totalItems"));
+            assertEquals(0l, paginationJSON.get("skipCount"));
+            assertEquals(false, paginationJSON.get("hasMoreItems"));
+            JSONArray jsonEntries = (JSONArray) taskListJSONObject.get("entries");
+            assertEquals(6, jsonEntries.size());
             
             // Test with existing processDefinitionId and max items
             params.clear();
             params.put("maxItems", "3");
             params.put("processDefinitionId", processDefinitionId);
-            assertEquals(3, getResultSizeForTaskQuery(params, tasksClient));
+            taskListJSONObject = tasksClient.findTasks(params);
+            assertNotNull(taskListJSONObject);
+            paginationJSON = (JSONObject) taskListJSONObject.get("pagination");
+            assertEquals(3l, paginationJSON.get("count"));
+            assertEquals(6l, paginationJSON.get("totalItems"));
+            assertEquals(0l, paginationJSON.get("skipCount"));
+            assertEquals(true, paginationJSON.get("hasMoreItems"));
+            jsonEntries = (JSONArray) taskListJSONObject.get("entries");
+            assertEquals(3, jsonEntries.size());
             
             // Test with existing processDefinitionId and skip count
             params.clear();
             params.put("skipCount", "2");
             params.put("processDefinitionId", processDefinitionId);
-            assertEquals(4, getResultSizeForTaskQuery(params, tasksClient));
+            taskListJSONObject = tasksClient.findTasks(params);
+            assertNotNull(taskListJSONObject);
+            paginationJSON = (JSONObject) taskListJSONObject.get("pagination");
+            assertEquals(4l, paginationJSON.get("count"));
+            assertEquals(6l, paginationJSON.get("totalItems"));
+            assertEquals(2l, paginationJSON.get("skipCount"));
+            assertEquals(true, paginationJSON.get("hasMoreItems"));
+            jsonEntries = (JSONArray) taskListJSONObject.get("entries");
+            assertEquals(4, jsonEntries.size());
             
             // Test with existing processDefinitionId and max items and skip count
             params.clear();
             params.put("maxItems", "3");
             params.put("skipCount", "2");
             params.put("processDefinitionId", processDefinitionId);
-            assertEquals(3, getResultSizeForTaskQuery(params, tasksClient));
+            taskListJSONObject = tasksClient.findTasks(params);
+            assertNotNull(taskListJSONObject);
+            paginationJSON = (JSONObject) taskListJSONObject.get("pagination");
+            assertEquals(3l, paginationJSON.get("count"));
+            assertEquals(6l, paginationJSON.get("totalItems"));
+            assertEquals(2l, paginationJSON.get("skipCount"));
+            assertEquals(true, paginationJSON.get("hasMoreItems"));
+            jsonEntries = (JSONArray) taskListJSONObject.get("entries");
+            assertEquals(3, jsonEntries.size());
             
             // Test with existing processDefinitionId and max items and skip count
             params.clear();
             params.put("maxItems", "3");
             params.put("skipCount", "4");
             params.put("processDefinitionId", processDefinitionId);
-            assertEquals(2, getResultSizeForTaskQuery(params, tasksClient));
+            taskListJSONObject = tasksClient.findTasks(params);
+            assertNotNull(taskListJSONObject);
+            paginationJSON = (JSONObject) taskListJSONObject.get("pagination");
+            assertEquals(2l, paginationJSON.get("count"));
+            assertEquals(6l, paginationJSON.get("totalItems"));
+            assertEquals(4l, paginationJSON.get("skipCount"));
+            assertEquals(true, paginationJSON.get("hasMoreItems"));
+            jsonEntries = (JSONArray) taskListJSONObject.get("entries");
+            assertEquals(2, jsonEntries.size());
+        }
+        finally
+        {
+            cleanupProcessInstance(startedProcesses.toArray(new ProcessInstance[] {}));
+        }
+    }
+    
+    @Test
+    public void testGetTasksWithSorting() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+        // Start 6 processes
+        List<ProcessInstance> startedProcesses = new ArrayList<ProcessInstance>();
+        try
+        {
+            int numberOfTasks = 6;
+            for (int i = 0; i < numberOfTasks; i++) 
+            {
+                startedProcesses.add(startAdhocProcess(requestContext.getRunAsUser(), requestContext.getNetworkId(), null));
+            }
+            
+            List<Task> taskList = new ArrayList<Task>();
+            for (int i = 0; i < numberOfTasks; i++) 
+            {
+                Task task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(startedProcesses.get(i).getProcessInstanceId()).singleResult();
+                activitiProcessEngine.getTaskService().setPriority(task.getId(), (i + 1) * 10);
+                taskList.add(task);
+            }
+            
+            // set last task priority to 1
+            activitiProcessEngine.getTaskService().setPriority(taskList.get(numberOfTasks - 1).getId(), 1);
+            
+            TasksClient tasksClient = publicApiClient.tasksClient();
+            
+            // Test with existing processDefinitionId
+            Map<String, String> params = new HashMap<String, String>();
+            params.put("where", "(processDefinitionId = '" + startedProcesses.get(0).getProcessDefinitionId() + "')");
+            params.put("orderBy", "priority ASC");
+            JSONObject tasksResponseJSON = tasksClient.findTasks(params);
+            
+            JSONObject paginationJSON = (JSONObject) tasksResponseJSON.get("pagination");
+            assertEquals(6l, paginationJSON.get("count"));
+            assertEquals(6l, paginationJSON.get("totalItems"));
+            JSONArray tasksListJSON = (JSONArray) tasksResponseJSON.get("entries");
+            assertEquals(6, tasksListJSON.size());
+            JSONObject taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(0)).get("entry");
+            assertEquals(taskList.get(numberOfTasks - 1).getId(), taskJSON.get("id"));
+            taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(1)).get("entry");
+            assertEquals(taskList.get(0).getId(), taskJSON.get("id"));
+            taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(2)).get("entry");
+            assertEquals(taskList.get(1).getId(), taskJSON.get("id"));
+            taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(3)).get("entry");
+            assertEquals(taskList.get(2).getId(), taskJSON.get("id"));
+            taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(4)).get("entry");
+            assertEquals(taskList.get(3).getId(), taskJSON.get("id"));
+            taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(5)).get("entry");
+            assertEquals(taskList.get(4).getId(), taskJSON.get("id"));
+            
+            params.put("orderBy", "priority DESC");
+            tasksResponseJSON = tasksClient.findTasks(params);
+            
+            paginationJSON = (JSONObject) tasksResponseJSON.get("pagination");
+            assertEquals(6l, paginationJSON.get("count"));
+            assertEquals(6l, paginationJSON.get("totalItems"));
+            tasksListJSON = (JSONArray) tasksResponseJSON.get("entries");
+            assertEquals(6, tasksListJSON.size());
+            taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(0)).get("entry");
+            assertEquals(taskList.get(4).getId(), taskJSON.get("id"));
+            taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(1)).get("entry");
+            assertEquals(taskList.get(3).getId(), taskJSON.get("id"));
+            taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(2)).get("entry");
+            assertEquals(taskList.get(2).getId(), taskJSON.get("id"));
+            taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(3)).get("entry");
+            assertEquals(taskList.get(1).getId(), taskJSON.get("id"));
+            taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(4)).get("entry");
+            assertEquals(taskList.get(0).getId(), taskJSON.get("id"));
+            taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(5)).get("entry");
+            assertEquals(taskList.get(numberOfTasks - 1).getId(), taskJSON.get("id"));
         }
         finally
         {

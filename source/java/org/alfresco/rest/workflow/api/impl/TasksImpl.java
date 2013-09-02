@@ -53,6 +53,7 @@ import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationE
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.Tasks;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker.QueryVariableHolder;
@@ -183,7 +184,19 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         Date dueAtGreaterThan = propertyWalker.getProperty("dueAt", WhereClauseParser.GREATERTHAN, Date.class);
         Date dueAtLessThan = propertyWalker.getProperty("dueAt", WhereClauseParser.LESSTHAN, Date.class);
 
+        List<SortColumn> sortList = parameters.getSorting();
+        SortColumn sortColumn = null;
+        if (sortList != null && sortList.size() > 0)
+        {
+            if (sortList.size() != 1)
+            {
+                throw new InvalidArgumentException("Only one order by parameter is supported");
+            }
+            sortColumn = sortList.get(0);
+        }
+        
         List<Task> page = null;
+        int totalCount = 0;
         if (status == null || STATUS_ACTIVE.equals(status))
         {
             TaskQuery query = activitiProcessEngine
@@ -296,10 +309,11 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
             }
             
-            query.orderByDueDate().asc();
+            setSorting(query, sortColumn);
             
             List<org.activiti.engine.task.Task> tasks = query.listPage(paging.getSkipCount(), paging.getMaxItems());
-
+            totalCount = (int) query.count();
+            
             page = new ArrayList<Task>(tasks.size());
             for (org.activiti.engine.task.Task taskInstance: tasks) 
             {
@@ -411,9 +425,10 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
             }
             
-            query.orderByTaskDueDate().asc();
+            setSorting(query, sortColumn);
             
             List<HistoricTaskInstance> tasks = query.listPage(paging.getSkipCount(), paging.getMaxItems());
+            totalCount = (int) query.count();
 
             page = new ArrayList<Task>(tasks.size());
             for (HistoricTaskInstance taskInstance: tasks) 
@@ -427,7 +442,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             throw new InvalidArgumentException("Invalid status parameter: " + status);
         }
         
-        return CollectionWithPagingInfo.asPaged(paging, page, false, page.size());
+        return CollectionWithPagingInfo.asPaged(paging, page, page.size() != totalCount, totalCount);
     }
     
     @Override
@@ -436,9 +451,21 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         Paging paging = parameters.getPaging();
         String status = parameters.getParameter("status");
         
+        List<SortColumn> sortList = parameters.getSorting();
+        SortColumn sortColumn = null;
+        if (sortList != null && sortList.size() > 0)
+        {
+            if (sortList.size() != 1)
+            {
+                throw new InvalidArgumentException("Only one order by parameter is supported");
+            }
+            sortColumn = sortList.get(0);
+        }
+        
         validateIfUserAllowedToWorkWithProcess(processId);
 
         List<Task> page = null;
+        int totalCount = 0;
         if (status == null || STATUS_ACTIVE.equals(status))
         {
             TaskQuery query = activitiProcessEngine
@@ -446,75 +473,10 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                     .createTaskQuery();
             
             query.processInstanceId(processId);
-            
-            String sortParam = parameters.getParameter("sort");
-            if (sortParam != null)
-            {
-                if (TASK_COLLECTION_RUNNING_SORT_PROPERTIES.contains(sortParam))
-                {
-                    if ("id".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskId();
-                    }
-                    else if ("name".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskName();
-                    }
-                    else if ("description".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskDescription();
-                    }
-                    else if ("priority".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskPriority();
-                    }
-                    else if ("processId".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByProcessInstanceId();
-                    }
-                    else if ("assignee".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskAssignee();
-                    }
-                    else if ("startedAt".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskCreateTime();
-                    }
-                    else if ("dueAt".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByDueDate();
-                    }
-                }
-                else
-                {
-                    throw new InvalidArgumentException("sort " + sortParam + 
-                            " is not supported, supported items are " + TASK_COLLECTION_RUNNING_SORT_PROPERTIES.toArray());
-                }
-                
-                String sortOrderParam = parameters.getParameter("sortOrder");
-                if (sortOrderParam != null)
-                {
-                    if ("asc".equalsIgnoreCase(sortOrderParam))
-                    {
-                        query.asc();
-                    }
-                    else if ("desc".equalsIgnoreCase(sortOrderParam))
-                    {
-                        query.desc();
-                    }
-                    else
-                    {
-                        throw new InvalidArgumentException("sort order " + sortOrderParam + 
-                                " is not supported, supported items are asc and desc");
-                    }
-                }
-            }
-            else
-            {
-                query.orderByDueDate().asc();
-            }
+            setSorting(query, sortColumn);
             
             List<org.activiti.engine.task.Task> tasks = query.listPage(paging.getSkipCount(), paging.getMaxItems());
+            totalCount = (int) query.count();
 
             page = new ArrayList<Task>(tasks.size());
             for (org.activiti.engine.task.Task taskInstance: tasks) 
@@ -544,90 +506,10 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
             }
             
-            String sortParam = parameters.getParameter("sort");
-            if (sortParam != null)
-            {
-                if (TASK_COLLECTION_HISTORY_SORT_PROPERTIES.contains(sortParam))
-                {
-                    if ("id".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskId();
-                    }
-                    else if ("name".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskName();
-                    }
-                    else if ("description".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskDescription();
-                    }
-                    else if ("priority".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskPriority();
-                    }
-                    else if ("processId".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByProcessInstanceId();
-                    }
-                    else if ("processDefinitionId".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByProcessDefinitionId();
-                    }
-                    else if ("assignee".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskAssignee();
-                    }
-                    else if ("owner".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskOwner();
-                    }
-                    else if ("startedAt".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByHistoricTaskInstanceStartTime();
-                    }
-                    else if ("endedAt".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByHistoricTaskInstanceEndTime();
-                    }
-                    else if ("durationInMs".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByHistoricTaskInstanceDuration();
-                    }
-                    else if ("dueAt".equalsIgnoreCase(sortParam))
-                    {
-                        query.orderByTaskDueDate();
-                    }
-                }
-                else
-                {
-                    throw new InvalidArgumentException("sort " + sortParam + 
-                            " is not supported, supported items are " + TASK_COLLECTION_HISTORY_SORT_PROPERTIES.toArray());
-                }
-                
-                String sortOrderParam = parameters.getParameter("sortOrder");
-                if (sortOrderParam != null)
-                {
-                    if ("asc".equalsIgnoreCase(sortOrderParam))
-                    {
-                        query.asc();
-                    }
-                    else if ("desc".equalsIgnoreCase(sortOrderParam))
-                    {
-                        query.desc();
-                    }
-                    else
-                    {
-                        throw new InvalidArgumentException("sort order " + sortOrderParam + 
-                                " is not supported, supported items are asc and desc");
-                    }
-                }
-            }
-            else
-            {
-                query.orderByTaskDueDate().asc();
-            }
+            setSorting(query, sortColumn);
             
             List<HistoricTaskInstance> tasks = query.listPage(paging.getSkipCount(), paging.getMaxItems());
+            totalCount = (int) query.count();
 
             page = new ArrayList<Task>(tasks.size());
             for (HistoricTaskInstance taskInstance: tasks) 
@@ -641,7 +523,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             throw new InvalidArgumentException("Invalid status parameter: " + status);
         }
         
-        return CollectionWithPagingInfo.asPaged(paging, page, false, page.size());
+        return CollectionWithPagingInfo.asPaged(paging, page, page.size() != totalCount, totalCount);
     }
 
     @Override
@@ -1318,6 +1200,142 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
         }
         return taskInstance;
+    }
+    
+    protected void setSorting(TaskQuery query, SortColumn sortColumn)
+    {
+        if (sortColumn != null)
+        {
+            if (TASK_COLLECTION_RUNNING_SORT_PROPERTIES.contains(sortColumn.column))
+            {
+                if ("id".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskId();
+                }
+                else if ("name".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskName();
+                }
+                else if ("description".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskDescription();
+                }
+                else if ("priority".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskPriority();
+                }
+                else if ("processId".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByProcessInstanceId();
+                }
+                else if ("assignee".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskAssignee();
+                }
+                else if ("startedAt".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskCreateTime();
+                }
+                else if ("dueAt".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByDueDate();
+                }
+            }
+            else
+            {
+                throw new InvalidArgumentException("sort " + sortColumn.column + 
+                        " is not supported, supported items are " + TASK_COLLECTION_RUNNING_SORT_PROPERTIES.toArray());
+            }
+            
+            if (sortColumn.asc)
+            {
+                query.asc();
+            }
+            else
+            {
+                query.desc();
+            }
+        }
+        else
+        {
+            query.orderByDueDate().asc();
+        }
+    }
+    
+    protected void setSorting(HistoricTaskInstanceQuery query, SortColumn sortColumn)
+    {
+        if (sortColumn != null)
+        {
+            if (TASK_COLLECTION_HISTORY_SORT_PROPERTIES.contains(sortColumn.column))
+            {
+                if ("id".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskId();
+                }
+                else if ("name".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskName();
+                }
+                else if ("description".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskDescription();
+                }
+                else if ("priority".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskPriority();
+                }
+                else if ("processId".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByProcessInstanceId();
+                }
+                else if ("processDefinitionId".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByProcessDefinitionId();
+                }
+                else if ("assignee".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskAssignee();
+                }
+                else if ("owner".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskOwner();
+                }
+                else if ("startedAt".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByHistoricTaskInstanceStartTime();
+                }
+                else if ("endedAt".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByHistoricTaskInstanceEndTime();
+                }
+                else if ("durationInMs".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByHistoricTaskInstanceDuration();
+                }
+                else if ("dueAt".equalsIgnoreCase(sortColumn.column))
+                {
+                    query.orderByTaskDueDate();
+                }
+            }
+            else
+            {
+                throw new InvalidArgumentException("sort " + sortColumn.column + 
+                        " is not supported, supported items are " + TASK_COLLECTION_HISTORY_SORT_PROPERTIES.toArray());
+            }
+            
+            if (sortColumn.asc)
+            {
+                query.asc();
+            }
+            else
+            {
+                query.desc();
+            }
+        }
+        else
+        {
+            query.orderByTaskDueDate().asc();
+        }
     }
     
     protected WorkflowQNameConverter getQNameConverter()

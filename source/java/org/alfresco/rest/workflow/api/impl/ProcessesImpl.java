@@ -73,6 +73,7 @@ import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.Processes;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker.QueryVariableHolder;
@@ -294,6 +295,17 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             throw new InvalidArgumentException("Invalid status parameter: " + status);
         }
         
+        List<SortColumn> sortList = parameters.getSorting();
+        SortColumn sortColumn = null;
+        if (sortList != null && sortList.size() > 0)
+        {
+            if (sortList.size() != 1)
+            {
+                throw new InvalidArgumentException("Only one order by parameter is supported");
+            }
+            sortColumn = sortList.get(0);
+        }
+        
         final HistoricProcessInstanceQuery query = activitiProcessEngine
                 .getHistoryService()
                 .createHistoricProcessInstanceQuery();
@@ -392,58 +404,48 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             query.involvedUser(AuthenticationUtil.getRunAsUser());
         }
         
-        String sortParam = parameters.getParameter("sort");
-        if (sortParam != null)
+        if (sortColumn != null)
         {
-            if (PROCESS_COLLECTION_SORT_PROPERTIES.contains(sortParam))
+            if (PROCESS_COLLECTION_SORT_PROPERTIES.contains(sortColumn.column))
             {
-                if ("processDefinitionId".equalsIgnoreCase(sortParam))
+                if ("processDefinitionId".equalsIgnoreCase(sortColumn.column))
                 {
                     query.orderByProcessDefinitionId();
                 }
-                else if ("id".equalsIgnoreCase(sortParam))
+                else if ("id".equalsIgnoreCase(sortColumn.column))
                 {
                     query.orderByProcessInstanceId();
                 }
-                else if ("businessKey".equalsIgnoreCase(sortParam))
+                else if ("businessKey".equalsIgnoreCase(sortColumn.column))
                 {
                     query.orderByProcessInstanceBusinessKey();
                 }
-                else if ("startedAt".equalsIgnoreCase(sortParam))
+                else if ("startedAt".equalsIgnoreCase(sortColumn.column))
                 {
                     query.orderByProcessInstanceStartTime();
                 }
-                else if ("endedAt".equalsIgnoreCase(sortParam))
+                else if ("endedAt".equalsIgnoreCase(sortColumn.column))
                 {
                     query.orderByProcessInstanceEndTime();
                 }
-                else if ("durationInMillis".equalsIgnoreCase(sortParam))
+                else if ("durationInMillis".equalsIgnoreCase(sortColumn.column))
                 {
                     query.orderByProcessInstanceDuration();
                 }
             }
             else
             {
-                throw new InvalidArgumentException("sort " + sortParam + 
+                throw new InvalidArgumentException("sort " + sortColumn.column + 
                         " is not supported, supported items are " + PROCESS_COLLECTION_SORT_PROPERTIES.toArray());
             }
             
-            String sortOrderParam = parameters.getParameter("sortOrder");
-            if (sortOrderParam != null)
+            if (sortColumn.asc)
             {
-                if ("asc".equalsIgnoreCase(sortOrderParam))
-                {
-                    query.asc();
-                }
-                else if ("desc".equalsIgnoreCase(sortOrderParam))
-                {
-                    query.desc();
-                }
-                else
-                {
-                    throw new InvalidArgumentException("sort order " + sortOrderParam + 
-                            " is not supported, supported items are asc and desc");
-                }
+                query.asc();
+            }
+            else
+            {
+                query.desc();
             }
         }
         else
@@ -452,6 +454,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         
         List<HistoricProcessInstance> processInstances = query.listPage(paging.getSkipCount(), paging.getMaxItems());
+        int totalCount = (int) query.count();
 
         List<ProcessInfo> page = new ArrayList<ProcessInfo>(processInstances.size());
         for (HistoricProcessInstance processInstance: processInstances) 
@@ -459,7 +462,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             page.add(createProcessInfo(processInstance));
         }
         
-        return CollectionWithPagingInfo.asPaged(paging, page, false, page.size());
+        return CollectionWithPagingInfo.asPaged(paging, page, page.size() != totalCount, totalCount);
     }
 
     @Override

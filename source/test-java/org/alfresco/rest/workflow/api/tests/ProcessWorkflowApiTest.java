@@ -609,131 +609,210 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         final ProcessInfo process2 = startAdhocProcess(requestContext, null);
         final ProcessInfo process3 = startAdhocProcess(requestContext, null);
         
-        ProcessesClient processesClient = publicApiClient.processesClient();
-        Map<String, String> paramMap = new HashMap<String, String>();
-        ListResponse<ProcessInfo> processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(3, processList.getList().size());
-        
-        Map<String, ProcessInfo> processMap = new HashMap<String, ProcessInfo>();
-        for (ProcessInfo processRest : processList.getList())
+        try
         {
-            processMap.put(processRest.getId(), processRest);
-        }
-        
-        assertTrue(processMap.containsKey(process1.getId()));
-        assertTrue(processMap.containsKey(process2.getId()));
-        assertTrue(processMap.containsKey(process3.getId()));
-        
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc')");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(3, processList.getList().size());
-        
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc2')");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(0, processList.getList().size());
-        
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc')");
-        paramMap.put("maxItems", "2");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(2, processList.getList().size());
-        
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc')");
-        paramMap.put("maxItems", "3");
-        paramMap.put("skipCount", "1");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(2, processList.getList().size());
-        
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc')");
-        paramMap.put("maxItems", "5");
-        paramMap.put("skipCount", "2");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(1, processList.getList().size());
-        
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc')");
-        paramMap.put("maxItems", "5");
-        paramMap.put("skipCount", "5");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(0, processList.getList().size());
-        
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(status = 'completed')");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(0, processList.getList().size());
-        
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(status = 'any')");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(3, processList.getList().size());
-        
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(status = 'active')");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(3, processList.getList().size());
-        
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(status = 'active2')");
-        try 
-        {
+            ProcessesClient processesClient = publicApiClient.processesClient();
+            Map<String, String> paramMap = new HashMap<String, String>();
+            ListResponse<ProcessInfo> processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+            
+            Map<String, ProcessInfo> processMap = new HashMap<String, ProcessInfo>();
+            for (ProcessInfo processRest : processList.getList())
+            {
+                processMap.put(processRest.getId(), processRest);
+            }
+            
+            assertTrue(processMap.containsKey(process1.getId()));
+            assertTrue(processMap.containsKey(process2.getId()));
+            assertTrue(processMap.containsKey(process3.getId()));
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc')");
             processList = processesClient.getProcesses(paramMap);
-            fail();
-        }
-        catch (PublicApiException e)
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc2')");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(0, processList.getList().size());
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc')");
+            paramMap.put("maxItems", "2");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(2, processList.getList().size());
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc')");
+            paramMap.put("maxItems", "3");
+            paramMap.put("skipCount", "1");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(2, processList.getList().size());
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc')");
+            paramMap.put("maxItems", "5");
+            paramMap.put("skipCount", "2");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(1, processList.getList().size());
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc')");
+            paramMap.put("maxItems", "5");
+            paramMap.put("skipCount", "5");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(0, processList.getList().size());
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(status = 'completed')");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(0, processList.getList().size());
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(status = 'any')");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(status = 'active')");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(status = 'active2')");
+            try 
+            {
+                processList = processesClient.getProcesses(paramMap);
+                fail();
+            }
+            catch (PublicApiException e)
+            {
+                // expected exception
+            }
+            
+            // Test the variable where-clause
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(variables/bpm_priority = 'd_int 1')");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(variables/bpm_priority = 'd:int 1')");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+            
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(variables/bpm_priority = 'd_int 5')");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(0, processList.getList().size());
+            
+            // test with date variable
+            Calendar dateCal = Calendar.getInstance();
+            Map<String, Object> variablesToSet = new HashMap<String, Object>();
+            variablesToSet.put("testVarDate", dateCal.getTime());
+            
+            activitiProcessEngine.getRuntimeService().setVariables(process1.getId(), variablesToSet);
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(variables/testVarDate = 'd_datetime " + ISO8601DateFormat.format(dateCal.getTime())+ "')");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(1, processList.getList().size());
+        } 
+        finally
         {
-            // expected exception
+            cleanupProcessInstance(process1.getId(), process2.getId(), process3.getId());
         }
-        
-        // Test the variable where-clause
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(variables/bpm_priority = 'd_int 1')");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(3, processList.getList().size());
-        
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(variables/bpm_priority = 'd:int 1')");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(3, processList.getList().size());
-        
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(variables/bpm_priority = 'd_int 5')");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(0, processList.getList().size());
-        
-        // test with date variable
-        Calendar dateCal = Calendar.getInstance();
-        Map<String, Object> variablesToSet = new HashMap<String, Object>();
-        variablesToSet.put("testVarDate", dateCal.getTime());
-        
-        activitiProcessEngine.getRuntimeService().setVariables(process1.getId(), variablesToSet);
-        paramMap = new HashMap<String, String>();
-        paramMap.put("where", "(variables/testVarDate = 'd_datetime " + ISO8601DateFormat.format(dateCal.getTime())+ "')");
-        processList = processesClient.getProcesses(paramMap);
-        assertNotNull(processList);
-        assertEquals(1, processList.getList().size());
-        
-        cleanupProcessInstance(process1.getId(), process2.getId(), process3.getId());
     }
     
-    // No sorting support yet
-    /*@Test
+    @Test
+    public void testGetProcessInstancesWithPaging() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        
+        final ProcessInfo process1 = startAdhocProcess(requestContext, null);
+        final ProcessInfo process2 = startAdhocProcess(requestContext, null);
+        final ProcessInfo process3 = startAdhocProcess(requestContext, null);
+        
+        try
+        {
+            ProcessesClient processesClient = publicApiClient.processesClient();
+            
+            // Test with existing processDefinitionId
+            Map<String, String> params = new HashMap<String, String>();
+            params.put("processDefinitionId", process1.getProcessDefinitionId());
+            JSONObject processListJSONObject = processesClient.getProcessesJSON(params);
+            assertNotNull(processListJSONObject);
+            JSONObject paginationJSON = (JSONObject) processListJSONObject.get("pagination");
+            assertEquals(3l, paginationJSON.get("count"));
+            assertEquals(3l, paginationJSON.get("totalItems"));
+            assertEquals(0l, paginationJSON.get("skipCount"));
+            assertEquals(false, paginationJSON.get("hasMoreItems"));
+            JSONArray jsonEntries = (JSONArray) processListJSONObject.get("entries");
+            assertEquals(3, jsonEntries.size());
+            
+            // Test with existing processDefinitionId and max items
+            params.clear();
+            params.put("maxItems", "2");
+            params.put("processDefinitionId",  process1.getProcessDefinitionId());
+            processListJSONObject = processesClient.getProcessesJSON(params);
+            assertNotNull(processListJSONObject);
+            paginationJSON = (JSONObject) processListJSONObject.get("pagination");
+            assertEquals(2l, paginationJSON.get("count"));
+            assertEquals(3l, paginationJSON.get("totalItems"));
+            assertEquals(0l, paginationJSON.get("skipCount"));
+            assertEquals(true, paginationJSON.get("hasMoreItems"));
+            jsonEntries = (JSONArray) processListJSONObject.get("entries");
+            assertEquals(2, jsonEntries.size());
+            
+            // Test with existing processDefinitionId and skip count
+            params.clear();
+            params.put("skipCount", "1");
+            params.put("processDefinitionId", process1.getProcessDefinitionId());
+            processListJSONObject = processesClient.getProcessesJSON(params);
+            assertNotNull(processListJSONObject);
+            paginationJSON = (JSONObject) processListJSONObject.get("pagination");
+            assertEquals(2l, paginationJSON.get("count"));
+            assertEquals(3l, paginationJSON.get("totalItems"));
+            assertEquals(1l, paginationJSON.get("skipCount"));
+            assertEquals(true, paginationJSON.get("hasMoreItems"));
+            jsonEntries = (JSONArray) processListJSONObject.get("entries");
+            assertEquals(2, jsonEntries.size());
+            
+            // Test with existing processDefinitionId and max items and skip count
+            params.clear();
+            params.put("maxItems", "3");
+            params.put("skipCount", "2");
+            params.put("processDefinitionId", process1.getProcessDefinitionId());
+            processListJSONObject = processesClient.getProcessesJSON(params);
+            assertNotNull(processListJSONObject);
+            paginationJSON = (JSONObject) processListJSONObject.get("pagination");
+            assertEquals(1l, paginationJSON.get("count"));
+            assertEquals(3l, paginationJSON.get("totalItems"));
+            assertEquals(2l, paginationJSON.get("skipCount"));
+            assertEquals(true, paginationJSON.get("hasMoreItems"));
+            jsonEntries = (JSONArray) processListJSONObject.get("entries");
+            assertEquals(1, jsonEntries.size());
+        } 
+        finally
+        {
+            cleanupProcessInstance(process1.getId(), process2.getId(), process3.getId());
+        }
+    }
+    
+    @Test
     public void testGetProcessInstancesWithSorting() throws Exception
     {
         final RequestContext requestContext = initApiClientWithTestUser();
@@ -747,8 +826,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             // sort on business key ascending
             ProcessesClient processesClient = publicApiClient.processesClient();
             Map<String, String> paramMap = new HashMap<String, String>();
-            paramMap.put("sort", "businessKey");
-            paramMap.put("sortOrder", "asc");
+            paramMap.put("orderBy", "businessKey ASC");
             ListResponse<ProcessInfo> processList = processesClient.getProcesses(paramMap);
             assertNotNull(processList);
             assertEquals(3, processList.getList().size());
@@ -758,8 +836,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals(process2.getId(), processList.getList().get(2).getId());
             
             // sort on business key descending
-            paramMap.put("sort", "businessKey");
-            paramMap.put("sortOrder", "desc");
+            paramMap.put("orderBy", "businessKey DESC");
             processList = processesClient.getProcesses(paramMap);
             assertNotNull(processList);
             assertEquals(3, processList.getList().size());
@@ -769,7 +846,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals(process3.getId(), processList.getList().get(2).getId());
             
             // sort on non existing key
-            paramMap.put("sort", "businessKey2");
+            paramMap.put("orderBy", "businessKey2 ASC");
             try 
             {
                 processList = processesClient.getProcesses(paramMap);
@@ -780,24 +857,21 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
                 assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
             }
             
-            // sort on non existing sort order
-            paramMap.put("sort", "businessKey");
-            paramMap.put("sortOrder", "asc2");
-            try 
-            {
-                processList = processesClient.getProcesses(paramMap);
-                fail();
-            }
-            catch (PublicApiException e)
-            {
-                assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
-            }
+            // sort on non existing sort order (default ASC is taken)
+            paramMap.put("orderBy", "businessKey ASC2");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+            
+            assertEquals(process3.getId(), processList.getList().get(0).getId());
+            assertEquals(process1.getId(), processList.getList().get(1).getId());
+            assertEquals(process2.getId(), processList.getList().get(2).getId());
         }
         finally
         {
             cleanupProcessInstance(process1.getId(), process2.getId(), process3.getId());
         }
-    }*/
+    }
     
     @Test
     public void testGetProcessTasks() throws Exception

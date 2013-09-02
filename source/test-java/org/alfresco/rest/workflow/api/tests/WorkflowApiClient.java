@@ -136,6 +136,13 @@ public class WorkflowApiClient extends PublicApiClient
             HttpResponse response = getAll("processes", null, null, null, params, "Failed to get process instances");
             return ProcessesParser.INSTANCE.parseList(response.getJsonResponse());
         }
+        
+        public JSONObject getProcessesJSON(Map<String, String> params) throws PublicApiException
+        {
+            HttpResponse response = getAll("processes", null, null, null, params, "Failed to get process instances");
+            JSONObject list = (JSONObject) response.getJsonResponse().get("list");
+            return list;
+        }
 
         public ProcessInfo findProcessById(String processInstanceId) throws PublicApiException
         {

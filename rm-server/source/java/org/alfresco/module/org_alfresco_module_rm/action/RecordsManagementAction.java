@@ -76,6 +76,7 @@ public interface RecordsManagementAction
     public NodeRef getImplicitTargetNodeRef();
     
     /**
+     * Get the records management action definition.
      * 
      * @return
      * @since 2.1
@@ -83,6 +84,7 @@ public interface RecordsManagementAction
     public RecordsManagementActionDefinition getRecordsManagementActionDefinition();
     
     /**
+     * Indicates whether the action is public or not
      * 
      * @return
      * @since 2.1

@@ -102,7 +102,7 @@ public class ScriptNodeTest
     public TemporaryNodes testNodes = new TemporaryNodes(APP_CONTEXT_INIT);
     
     // A rule to allow individual test methods all to be run as "UserOne".
-    @Rule public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(TEST_USER1);
+    public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(TEST_USER1);
     
     // Tie them together in a non-static rule chain.
     @Rule public RuleChain ruleChain = RuleChain.outerRule(runAsRule)

@@ -75,6 +75,9 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
     public void testGetTaskById() throws Exception
     {
         RequestContext requestContext = initApiClientWithTestUser();
+        
+        String otherPerson = getOtherPersonInNetwork(requestContext.getRunAsUser(), requestContext.getNetworkId()).getId();
+        RequestContext otherContext = new RequestContext(requestContext.getNetworkId(), otherPerson);
 
         // Alter current engine date
         Calendar createdCal = Calendar.getInstance();
@@ -82,9 +85,10 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         ClockUtil.setCurrentTime(createdCal.getTime());
         
         ProcessInstance processInstance = startAdhocProcess(requestContext.getRunAsUser(), requestContext.getNetworkId(), null);
+        
         try
         {
-            Task task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
+            final Task task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertNotNull(task);
             
             // Set some task-properties not set by process-definition
@@ -118,6 +122,48 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals("wf:adhocTask", taskJSONObject.get("formResourceKey"));
             assertNull(taskJSONObject.get("endedAt"));
             assertNull(taskJSONObject.get("durationInMs"));
+            
+            // get unclaimed task
+            activitiProcessEngine.getTaskService().setAssignee(task.getId(), null);
+            taskJSONObject = tasksClient.findTaskById(task.getId());
+            assertNotNull(taskJSONObject);
+            assertEquals(task.getId(), taskJSONObject.get("id"));
+            
+            // get delegated task
+            activitiProcessEngine.getTaskService().setAssignee(task.getId(), requestContext.getRunAsUser());
+            activitiProcessEngine.getTaskService().setOwner(task.getId(), requestContext.getRunAsUser());
+            activitiProcessEngine.getTaskService().delegateTask(task.getId(), otherContext.getRunAsUser());
+            taskJSONObject = tasksClient.findTaskById(task.getId());
+            assertNotNull(taskJSONObject);
+            assertEquals(task.getId(), taskJSONObject.get("id"));
+            assertEquals(otherContext.getRunAsUser(), taskJSONObject.get("assignee"));
+            assertEquals(requestContext.getRunAsUser(), taskJSONObject.get("owner"));
+            
+            // get resolved task
+            activitiProcessEngine.getTaskService().resolveTask(task.getId());
+            taskJSONObject = tasksClient.findTaskById(task.getId());
+            assertNotNull(taskJSONObject);
+            assertEquals(task.getId(), taskJSONObject.get("id"));
+            assertEquals(requestContext.getRunAsUser(), taskJSONObject.get("assignee"));
+            assertEquals(requestContext.getRunAsUser(), taskJSONObject.get("owner"));
+            
+            // get completed task
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    activitiProcessEngine.getTaskService().complete(task.getId());
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            taskJSONObject = tasksClient.findTaskById(task.getId());
+            assertNotNull(taskJSONObject);
+            assertEquals(task.getId(), taskJSONObject.get("id"));
+            assertEquals(requestContext.getRunAsUser(), taskJSONObject.get("assignee"));
+            assertEquals(requestContext.getRunAsUser(), taskJSONObject.get("owner"));
+            assertNotNull(taskJSONObject.get("endedAt"));
+            
         }
         finally
         {
@@ -202,6 +248,13 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
     public void testUpdateTask() throws Exception
     {
         RequestContext requestContext = initApiClientWithTestUser();
+        
+        String otherPerson = getOtherPersonInNetwork(requestContext.getRunAsUser(), requestContext.getNetworkId()).getId();
+        RequestContext otherContext = new RequestContext(requestContext.getNetworkId(), otherPerson);
+        
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
+        
         ProcessInstance processInstance = startAdhocProcess(requestContext.getRunAsUser(), requestContext.getNetworkId(), null);
         
         try 
@@ -242,6 +295,74 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals("john", task.getAssignee());
             assertEquals("james", task.getOwner());
             assertEquals(dueDate, task.getDueDate());
+            
+            // update owner with admin user id
+            taskBody = new JSONObject();
+            taskBody.put("owner", adminContext.getRunAsUser());
+            selectedFields = new ArrayList<String>();
+            selectedFields.addAll(Arrays.asList(new String[] { "owner"}));
+            
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals(adminContext.getRunAsUser(), result.get("owner"));
+            
+            // update owner with initiator user id
+            taskBody = new JSONObject();
+            taskBody.put("owner", requestContext.getRunAsUser());
+            selectedFields = new ArrayList<String>();
+            selectedFields.addAll(Arrays.asList(new String[] { "owner"}));
+            
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals(requestContext.getRunAsUser(), result.get("owner"));
+            
+            // update owner with other user id
+            taskBody = new JSONObject();
+            taskBody.put("owner", otherContext.getRunAsUser());
+            selectedFields = new ArrayList<String>();
+            selectedFields.addAll(Arrays.asList(new String[] { "owner"}));
+            
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals(otherContext.getRunAsUser(), result.get("owner"));
+            
+            // update due date to date more in the future
+            dueDateCal.add(Calendar.DAY_OF_YEAR, 1);
+            dueDate = dueDateCal.getTime();
+            
+            taskBody = new JSONObject();
+            taskBody.put("dueAt", formatDate(dueDate));
+            
+            selectedFields = new ArrayList<String>();
+            selectedFields.addAll(Arrays.asList(new String[] { "dueAt" }));
+            
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals(dueDate, parseDate(result, "dueAt"));
+            
+            // update due date to date a day less in the future
+            dueDateCal.add(Calendar.DAY_OF_YEAR, -1);
+            dueDate = dueDateCal.getTime();
+            
+            taskBody = new JSONObject();
+            taskBody.put("dueAt", formatDate(dueDate));
+            
+            selectedFields = new ArrayList<String>();
+            selectedFields.addAll(Arrays.asList(new String[] { "dueAt" }));
+            
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals(dueDate, parseDate(result, "dueAt"));
+            
+            // update due date to current time
+            dueDateCal = Calendar.getInstance();
+            dueDateCal.set(Calendar.MILLISECOND, 0);
+            dueDate = dueDateCal.getTime();
+            
+            taskBody = new JSONObject();
+            taskBody.put("dueAt", formatDate(dueDate));
+            
+            selectedFields = new ArrayList<String>();
+            selectedFields.addAll(Arrays.asList(new String[] { "dueAt" }));
+            
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals(dueDate, parseDate(result, "dueAt"));
+            
         }
         finally
         {
@@ -851,6 +972,42 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
     
     @Test
     @SuppressWarnings("unchecked")
+    public void testTaskStateTransitions() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+        
+        ProcessInfo processInstance = startAdhocProcess(requestContext, null);
+        try 
+        {
+            Task task = activitiProcessEngine.getTaskService()
+                    .createTaskQuery()
+                    .processInstanceId(processInstance.getId())
+                    .singleResult();
+            
+            TasksClient tasksClient = publicApiClient.tasksClient();
+            
+            // Unclaimed to claimed
+            JSONObject taskBody = new JSONObject();
+            taskBody.put("state", "claimed");
+            List<String> selectedFields = new ArrayList<String>();
+            selectedFields.addAll(Arrays.asList(new String[] { "state", "assignee" }));
+            JSONObject result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("claimed", result.get("state"));
+            
+            // claimed to unclaimed
+            taskBody = new JSONObject();
+            taskBody.put("state", "unclaimed");
+            result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("unclaimed", result.get("state"));
+        }
+        finally
+        {
+            cleanupProcessInstance(processInstance.getId());
+        }
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
     public void testChangeDueDate() throws Exception
     {
         RequestContext requestContext = initApiClientWithTestUser();
@@ -899,6 +1056,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
     }
     
     @Test
+    @SuppressWarnings("unchecked")
     public void testGetTasks() throws Exception
     {
         // Alter current engine date
@@ -907,6 +1065,10 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         ClockUtil.setCurrentTime(createdCal.getTime());
         
         RequestContext requestContext = initApiClientWithTestUser();
+        
+        String otherPerson = getOtherPersonInNetwork(requestContext.getRunAsUser(), requestContext.getNetworkId()).getId();
+        RequestContext otherContext = new RequestContext(requestContext.getNetworkId(), otherPerson);
+        
         ProcessInstance processInstance = startAdhocProcess(requestContext.getRunAsUser(), requestContext.getNetworkId(), null);
         try
         {
@@ -949,6 +1111,29 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals("wf:adhocTask", taskJSONObject.get("formResourceKey"));
             assertNull(taskJSONObject.get("endedAt"));
             assertNull(taskJSONObject.get("durationInMs"));
+            
+            // get tasks with user that has no assigned tasks
+            publicApiClient.setRequestContext(otherContext);
+            taskListJSONObject = tasksClient.findTasks(null);
+            assertNotNull(taskListJSONObject);
+            jsonEntries = (JSONArray) taskListJSONObject.get("entries");
+            assertEquals(0, jsonEntries.size());
+            
+            // get tasks for user which has one task assigned by somebody else
+            publicApiClient.setRequestContext(requestContext);
+            JSONObject taskBody = new JSONObject();
+            taskBody.put("assignee", otherContext.getRunAsUser());
+            
+            List<String> selectedFields = new ArrayList<String>();
+            selectedFields.addAll(Arrays.asList(new String[] { "assignee" }));
+            
+            tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            
+            publicApiClient.setRequestContext(otherContext);
+            taskListJSONObject = tasksClient.findTasks(null);
+            assertNotNull(taskListJSONObject);
+            jsonEntries = (JSONArray) taskListJSONObject.get("entries");
+            assertEquals(1, jsonEntries.size());
         }
         finally
         {
@@ -961,11 +1146,16 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
     {
         RequestContext requestContext = initApiClientWithTestUser();
         
+        String otherPerson = getOtherPersonInNetwork(requestContext.getRunAsUser(), requestContext.getNetworkId()).getId();
+        RequestContext otherContext = new RequestContext(requestContext.getNetworkId(), otherPerson);
+        
         Calendar taskCreated = Calendar.getInstance();
         taskCreated.set(Calendar.MILLISECOND, 0);
         ClockUtil.setCurrentTime(taskCreated.getTime());
         String businessKey = UUID.randomUUID().toString();
         ProcessInstance processInstance = startAdhocProcess(requestContext.getRunAsUser(), requestContext.getNetworkId(), businessKey);
+        
+        ProcessInfo otherInstance = startReviewPooledProcess(otherContext);
         
         try
         {
@@ -1017,6 +1207,9 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             activitiProcessEngine.getTaskService().addCandidateUser(activeTask.getId(), anotherUserId);
             activitiProcessEngine.getTaskService().addCandidateGroup(activeTask.getId(), "sales");
             activitiProcessEngine.getTaskService().setVariableLocal(activeTask.getId(), "numberVar", 10);
+            
+            final Task otherTask = activitiProcessEngine.getTaskService().createTaskQuery()
+                    .processInstanceId(otherInstance.getId()).singleResult();
            
             TasksClient tasksClient = publicApiClient.tasksClient();
             
@@ -1087,6 +1280,12 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             // Clear assignee
             activitiProcessEngine.getTaskService().setAssignee(activeTask.getId(), null);
             assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            // Candidate user with candidate group
+            params.clear();
+            params.put("where", "(status = 'active' AND candidateUser = '" + otherContext.getRunAsUser() + "')");
+            // No tasks expected since assignee is set
+            assertEquals(1L, getResultSizeForTaskQuery(params, tasksClient));
             
             params.clear();
             params.put("where", "(status = 'completed' AND candidateUser = '" + anotherUserId + "')");
@@ -1224,7 +1423,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
                         "' AND processId='" + processInstance.getId() +"')");
             assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId(), completedTask.getId());
             
-            // Process definition name filerting 
+            // Process definition name filtering 
             params.clear();
             params.put("where", "(status = 'active' AND processDefinitionName = 'Adhoc Activiti Process' AND processId='" + processInstance.getId() +"')");
             assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
@@ -1251,17 +1450,24 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
             
             // Started filtering
+            Calendar compareCal = Calendar.getInstance();
+            compareCal.set(Calendar.MILLISECOND, 0);
+            compareCal.add(Calendar.DAY_OF_YEAR, -1);
             params.clear();
-            params.put("where", "(status = 'active' AND startedAt = '" + ISO8601DateFormat.format(taskCreated.getTime()) +"')");
-            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            params.put("where", "(status = 'active' AND startedAt > '" + ISO8601DateFormat.format(compareCal.getTime()) +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId(), otherTask.getId());
             
             params.clear();
-            params.put("where", "(status = 'completed' AND startedAt = '" + ISO8601DateFormat.format(taskCreated.getTime()) +"')");
+            params.put("where", "(status = 'completed' AND startedAt > '" + ISO8601DateFormat.format(compareCal.getTime()) +"')");
             assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
             
             params.clear();
-            params.put("where", "(status = 'any' AND startedAt = '" + ISO8601DateFormat.format(taskCreated.getTime()) +"')");
-            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId(), activeTask.getId());
+            params.put("where", "(status = 'any' AND startedAt > '" + ISO8601DateFormat.format(compareCal.getTime()) +"')");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId(), activeTask.getId(), otherTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'any' AND startedAt < '" + ISO8601DateFormat.format(compareCal.getTime()) +"')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
             
             params.clear();
             params.put("where", "(variables/numberVar > 'd:int 5')");
@@ -1294,10 +1500,23 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             params.clear();
             params.put("where", "(variables/numberVar < 'd:int 10')");
             assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            // test with OR operator
+            params.clear();
+            params.put("where", "(status = 'any' OR candidateGroup = 'sales')");
+            try
+            {
+                tasksClient.findTasks(params);
+                fail("Exception expected");
+            }
+            catch (PublicApiException expected)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), expected.getHttpResponse().getStatusCode());
+            }
         }
         finally
         {
-            cleanupProcessInstance(processInstance);
+            cleanupProcessInstance(processInstance.getId(), otherInstance.getId());
         }
     }
     
@@ -1629,16 +1848,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals("d:noderef", var.get("type"));
             
             final String userName = requestContext.getRunAsUser();
-            String personNodeRef = TenantUtil.runAsUserTenant(new TenantRunAsWork<String>()
-                        {
-                @Override
-                public String doWork() throws Exception
-                {
-                    ActivitiScriptNode person = getPersonNodeRef(userName);
-                    return person.getNodeRef().toString();
-                }
-            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
-            assertEquals(personNodeRef, var.get("value"));
+            assertEquals(userName, var.get("value"));
             
         }
         finally
@@ -1959,10 +2169,13 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             TasksClient tasksClient = publicApiClient.tasksClient();
             
             // Try updating task variables when NOT involved in the task
-            try {
+            try 
+            {
                 tasksClient.updateTaskVariable(task.getId(), "newVariable", variableBody);
                 fail("Exception expected");
-            } catch(PublicApiException expected) {
+            } 
+            catch(PublicApiException expected) 
+            {
                 assertEquals(HttpStatus.FORBIDDEN.value(), expected.getHttpResponse().getStatusCode());
                 assertErrorSummary("Permission was denied", expected.getHttpResponse());
             }
@@ -1982,10 +2195,13 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             TestNetwork anotherNetwork = getOtherNetwork(requestContext.getNetworkId());
             tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + anotherNetwork.getId();
             publicApiClient.setRequestContext(new RequestContext(TenantUtil.DEFAULT_TENANT, tenantAdmin));
-            try {
+            try 
+            {
                 jsonObject = tasksClient.updateTaskVariable(task.getId(), "newVariable", variableBody);
                 fail("Exception expected");
-            } catch(PublicApiException expected) {
+            } 
+            catch(PublicApiException expected) 
+            {
                 assertEquals(HttpStatus.FORBIDDEN.value(), expected.getHttpResponse().getStatusCode());
                 assertErrorSummary("Permission was denied", expected.getHttpResponse());
             }
@@ -2271,6 +2487,44 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
     }
     
     @Test
+    public void testGetTaskVariablesReview() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+
+        ProcessInfo processInstance = startParallelReviewProcess(requestContext);
+        try
+        {
+            Task task = activitiProcessEngine.getTaskService().createTaskQuery()
+                    .processInstanceId(processInstance.getId())
+                    .taskAssignee(requestContext.getRunAsUser())
+                    .singleResult();
+            
+            assertNotNull(task);
+            
+            TasksClient tasksClient = publicApiClient.tasksClient();
+            
+            JSONObject variables = tasksClient.findTaskVariables(task.getId());
+            assertNotNull(variables);
+            JSONObject list = (JSONObject) variables.get("list");
+            assertNotNull(list);
+            JSONArray entries = (JSONArray) list.get("entries");
+            assertNotNull(entries);
+            
+            // Check pagination object for size
+            JSONObject pagination = (JSONObject) list.get("pagination");
+            assertNotNull(pagination);
+            assertEquals(31L, pagination.get("count"));
+            assertEquals(31L, pagination.get("totalItems"));
+            assertEquals(0L, pagination.get("skipCount"));
+            assertFalse((Boolean) pagination.get("hasMoreItems"));
+        }
+        finally
+        {
+            cleanupProcessInstance(processInstance.getId());
+        }
+    }
+    
+    @Test
     public void testDeleteTaskVariable() throws Exception
     {
         RequestContext requestContext = initApiClientWithTestUser();
@@ -2408,6 +2662,13 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
     public void testGetTaskModel() throws Exception
     {
         RequestContext requestContext = initApiClientWithTestUser();
+        
+        String otherPerson = getOtherPersonInNetwork(requestContext.getRunAsUser(), requestContext.getNetworkId()).getId();
+        RequestContext otherContext = new RequestContext(requestContext.getNetworkId(), otherPerson);
+        
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
+        
         ProcessInstance processInstance = startAdhocProcess(requestContext.getRunAsUser(), requestContext.getNetworkId(), null);
         try
         {
@@ -2421,47 +2682,90 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertNotNull(entries);
             
             // Add all entries to a map, to make lookup easier
-            Map<String, JSONObject> modelFieldsByName = new HashMap<String, JSONObject>();
-            JSONObject entry = null;
-            for(int i=0; i<entries.size(); i++) 
+            Map<String, JSONObject> modelFieldsByName = createEntryMap(entries);
+            testModelEntries(modelFieldsByName);
+            
+            // get task form model with admin
+            publicApiClient.setRequestContext(adminContext);
+            model = publicApiClient.tasksClient().findTaskFormModel(task.getId());
+            assertNotNull(model);
+            
+            entries = (JSONArray) model.get("entries");
+            assertNotNull(entries);
+            
+            modelFieldsByName = createEntryMap(entries);
+            testModelEntries(modelFieldsByName);
+            
+            // get task form model with non involved user
+            publicApiClient.setRequestContext(otherContext);
+            try
             {
-                entry = (JSONObject) entries.get(i);
-                assertNotNull(entry);
-                entry = (JSONObject) entry.get("entry");
-                assertNotNull(entry);
-                modelFieldsByName.put((String) entry.get("name"), entry);
+                publicApiClient.tasksClient().findTaskFormModel(task.getId());
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(403, e.getHttpResponse().getStatusCode());
             }
             
-            // Check well-known properties and their types
-            
-            // Validate bpm:completionDate
-            JSONObject modelEntry = modelFieldsByName.get("bpm_completionDate");
-            assertNotNull(modelEntry);
-            assertEquals("Completion Date", modelEntry.get("title"));
-            assertEquals("{http://www.alfresco.org/model/bpm/1.0}completionDate", modelEntry.get("qualifiedName"));
-            assertEquals("d:date", modelEntry.get("dataType"));
-            assertFalse((Boolean)modelEntry.get("required"));
-            
-            // Validate cm:owner
-            modelEntry = modelFieldsByName.get("cm_owner");
-            assertNotNull(modelEntry);
-            assertEquals("Owner", modelEntry.get("title"));
-            assertEquals("{http://www.alfresco.org/model/content/1.0}owner", modelEntry.get("qualifiedName"));
-            assertEquals("d:text", modelEntry.get("dataType"));
-            assertFalse((Boolean)modelEntry.get("required"));
-            
-            // Validate bpm:package
-            modelEntry = modelFieldsByName.get("bpm_package");
-            assertNotNull(modelEntry);
-            assertEquals("Content Package", modelEntry.get("title"));
-            assertEquals("{http://www.alfresco.org/model/bpm/1.0}package", modelEntry.get("qualifiedName"));
-            assertEquals("bpm:workflowPackage", modelEntry.get("dataType"));
-            assertFalse((Boolean)modelEntry.get("required"));
+            // get task form model with invalid task id
+            publicApiClient.setRequestContext(requestContext);
+            try
+            {
+                publicApiClient.tasksClient().findTaskFormModel("fakeid");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
         }
         finally
         {
             cleanupProcessInstance(processInstance);
         }
+    }
+    
+    protected Map<String, JSONObject> createEntryMap(JSONArray entries)
+    {
+        Map<String, JSONObject> modelFieldsByName = new HashMap<String, JSONObject>();
+        JSONObject entry = null;
+        for(int i=0; i<entries.size(); i++) 
+        {
+            entry = (JSONObject) entries.get(i);
+            assertNotNull(entry);
+            entry = (JSONObject) entry.get("entry");
+            assertNotNull(entry);
+            modelFieldsByName.put((String) entry.get("name"), entry);
+        }
+        return modelFieldsByName;
+    }
+    
+    protected void testModelEntries(Map<String, JSONObject> modelFieldsByName)
+    {
+        // Check well-known properties and their types
+        
+        // Validate bpm:completionDate
+        JSONObject modelEntry = modelFieldsByName.get("bpm_completionDate");
+        assertNotNull(modelEntry);
+        assertEquals("Completion Date", modelEntry.get("title"));
+        assertEquals("{http://www.alfresco.org/model/bpm/1.0}completionDate", modelEntry.get("qualifiedName"));
+        assertEquals("d:date", modelEntry.get("dataType"));
+        assertFalse((Boolean)modelEntry.get("required"));
+        
+        // Validate cm:owner
+        modelEntry = modelFieldsByName.get("cm_owner");
+        assertNotNull(modelEntry);
+        assertEquals("Owner", modelEntry.get("title"));
+        assertEquals("{http://www.alfresco.org/model/content/1.0}owner", modelEntry.get("qualifiedName"));
+        assertEquals("d:text", modelEntry.get("dataType"));
+        assertFalse((Boolean)modelEntry.get("required"));
+        
+        // Validate bpm:package
+        modelEntry = modelFieldsByName.get("bpm_package");
+        assertNotNull(modelEntry);
+        assertEquals("Content Package", modelEntry.get("title"));
+        assertEquals("{http://www.alfresco.org/model/bpm/1.0}package", modelEntry.get("qualifiedName"));
+        assertEquals("bpm:workflowPackage", modelEntry.get("dataType"));
+        assertFalse((Boolean)modelEntry.get("required"));
     }
     
     @Test
@@ -2479,7 +2783,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         NodeRef[] docNodeRefs = createTestDocuments(requestContext);
         ProcessInfo processInfo = startAdhocProcess(requestContext, docNodeRefs);
         
-        Task task = activitiProcessEngine.getTaskService().createTaskQuery()
+        final Task task = activitiProcessEngine.getTaskService().createTaskQuery()
             .processInstanceId(processInfo.getId()).singleResult();
         
         assertNotNull(task);
@@ -2541,6 +2845,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             try
             {
                 tasksClient.findTaskItems(task.getId());
+                fail("Expected exception");
             }
             catch (PublicApiException e)
             {
@@ -2556,7 +2861,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertNotNull(entriesJSON);
             assertTrue(entriesJSON.size() == 2);
             
-            // get with user from candidate group
+            // get with user from candidate group with no assignee
             List<MemberOfSite> memberships = getTestFixture().getNetwork(otherContext.getNetworkId()).getSiteMemberships(otherContext.getRunAsUser());
             assertTrue(memberships.size() > 0);
             MemberOfSite memberOfSite = memberships.get(0);
@@ -2571,15 +2876,58 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertNotNull(entriesJSON);
             assertTrue(entriesJSON.size() == 2);
             
+            // get with user from candidate group with assignee
+            activitiProcessEngine.getTaskService().setAssignee(task.getId(), requestContext.getRunAsUser());
+            try
+            {
+                tasksClient.findTaskItems(task.getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(403, e.getHttpResponse().getStatusCode());
+            }
+            
             // invalid task id
             publicApiClient.setRequestContext(requestContext);
             try
             {
                 tasksClient.findTaskItems("fakeid");
+                fail("Expected exception");
             }
             catch (PublicApiException e)
             {
                 assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // get items from completed task with initiator
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    activitiProcessEngine.getTaskService().complete(task.getId());
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            
+            publicApiClient.setRequestContext(requestContext);
+            itemsJSON = tasksClient.findTaskItems(task.getId());
+            assertNotNull(itemsJSON);
+            entriesJSON = (JSONArray) itemsJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 2);
+            
+            // get items from completed task with user from candidate group
+            publicApiClient.setRequestContext(otherContext);
+            try
+            {
+                tasksClient.findTaskItems(task.getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(403, e.getHttpResponse().getStatusCode());
             }
         }
         finally
@@ -2610,6 +2958,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
                 .singleResult();
         
         assertNotNull(task);
+        activitiProcessEngine.getTaskService().setAssignee(task.getId(), null);
         
         try
         {
@@ -2700,6 +3049,47 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
                 assertEquals(403, e.getHttpResponse().getStatusCode());
             }
             
+            // add item with user from candidate group with no assignee
+            List<MemberOfSite> memberships = getTestFixture().getNetwork(otherContext.getNetworkId()).getSiteMemberships(otherContext.getRunAsUser());
+            assertTrue(memberships.size() > 0);
+            MemberOfSite memberOfSite = memberships.get(0);
+            String group = "GROUP_site_" + memberOfSite.getSiteId() + "_" + memberOfSite.getRole().name();
+            
+            activitiProcessEngine.getTaskService().deleteCandidateUser(task.getId(), otherContext.getRunAsUser());
+            activitiProcessEngine.getTaskService().addCandidateGroup(task.getId(), group);
+            publicApiClient.setRequestContext(otherContext);
+            result = tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+            assertNotNull(result);
+            assertEquals(docNodeRefs[0].getId(), result.get("id"));
+            assertEquals("Test Doc1", result.get("name"));
+            
+            itemJSON = tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+            assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
+            
+            tasksClient.deleteTaskItem(task.getId(), docNodeRefs[0].getId());
+            try
+            {
+                tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // add item with user from candidate group with assignee
+            activitiProcessEngine.getTaskService().setAssignee(task.getId(), requestContext.getRunAsUser());
+            publicApiClient.setRequestContext(otherContext);
+            try
+            {
+                tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(403, e.getHttpResponse().getStatusCode());
+            }
+            
             // invalid task id
             publicApiClient.setRequestContext(requestContext);
             try
@@ -2776,6 +3166,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
                 .singleResult();
         
         assertNotNull(task);
+        activitiProcessEngine.getTaskService().setAssignee(task.getId(), null);
         
         try
         {
@@ -2860,6 +3251,74 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             catch (PublicApiException e)
             {
                 assertEquals(403, e.getHttpResponse().getStatusCode());
+            }
+            
+            // delete item with user from candidate group with no assignee
+            List<MemberOfSite> memberships = getTestFixture().getNetwork(otherContext.getNetworkId()).getSiteMemberships(otherContext.getRunAsUser());
+            assertTrue(memberships.size() > 0);
+            MemberOfSite memberOfSite = memberships.get(0);
+            String group = "GROUP_site_" + memberOfSite.getSiteId() + "_" + memberOfSite.getRole().name();
+            
+            activitiProcessEngine.getTaskService().deleteCandidateUser(task.getId(), otherContext.getRunAsUser());
+            activitiProcessEngine.getTaskService().addCandidateGroup(task.getId(), group);
+            publicApiClient.setRequestContext(otherContext);
+            createItemObject = new JSONObject();
+            createItemObject.put("id", docNodeRefs[0].getId());
+            result = tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+            
+            assertNotNull(result);
+            assertEquals(docNodeRefs[0].getId(), result.get("id"));
+            
+            itemJSON = tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+            assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
+            
+            tasksClient.deleteTaskItem(task.getId(), docNodeRefs[0].getId());
+            try
+            {
+                tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
+            }
+            
+            // delete item with user from candidate group with assignee
+            activitiProcessEngine.getTaskService().setAssignee(task.getId(), requestContext.getRunAsUser());
+            publicApiClient.setRequestContext(requestContext);
+            createItemObject = new JSONObject();
+            createItemObject.put("id", docNodeRefs[0].getId());
+            result = tasksClient.addTaskItem(task.getId(), createItemObject.toJSONString());
+            
+            assertNotNull(result);
+            assertEquals(docNodeRefs[0].getId(), result.get("id"));
+            
+            itemJSON = tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+            assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
+            
+            publicApiClient.setRequestContext(otherContext);
+            try
+            {
+                tasksClient.deleteTaskItem(task.getId(), docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(403, e.getHttpResponse().getStatusCode());
+            }
+            
+            publicApiClient.setRequestContext(requestContext);
+            itemJSON = tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+            assertEquals(docNodeRefs[0].getId(), itemJSON.get("id"));
+            tasksClient.deleteTaskItem(task.getId(), docNodeRefs[0].getId());
+            try
+            {
+                tasksClient.findTaskItem(task.getId(), docNodeRefs[0].getId());
+                fail("Expected exception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(404, e.getHttpResponse().getStatusCode());
             }
             
             // invalid task id

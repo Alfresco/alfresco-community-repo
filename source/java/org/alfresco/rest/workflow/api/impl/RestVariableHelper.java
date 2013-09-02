@@ -218,17 +218,52 @@ public class RestVariableHelper
     
     protected Object getSafePropertyValue(Object value)
     {
-        if(value instanceof NodeRef)
+        if (value instanceof NodeRef)
         {
             return value.toString();
         }
-        else if(value instanceof ScriptNode)
+        else if (value instanceof ScriptNode)
         {
-            return ((ScriptNode)value).getNodeRef().toString();
+            NodeRef ref = ((ScriptNode) value).getNodeRef();
+            try
+            {
+                QName nodeQName = nodeService.getType(ref);
+                if (ContentModel.TYPE_PERSON.equals(nodeQName))
+                {
+                    // Extract username from person and return
+                    return (String) nodeService.getProperty(ref, ContentModel.PROP_USERNAME);
+                }
+                else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeQName))
+                {
+                    // Extract name from group and return
+                    return (String) nodeService.getProperty(ref, ContentModel.PROP_AUTHORITY_NAME);
+                }
+                else
+                {
+                    return ((ScriptNode) value).getNodeRef().toString();
+                }
+            }
+            catch (Exception e)
+            {
+                // node ref QName could not be found, just creating a String
+                return ((ScriptNode) value).getNodeRef().toString();
+            }
         }
-        else if(value instanceof QName) 
+        else if (value instanceof QName) 
         {
             return ((QName) value).toPrefixString(namespaceService);
+        }
+        else if (value instanceof Collection<?>)
+        {
+            if (value != null)
+            {
+                List<Object> resultValues = new ArrayList<Object>();
+                for (Object itemValue : (Collection<?>) value)
+                {
+                    resultValues.add(getSafePropertyValue(itemValue));
+                }
+                value = resultValues;
+            }
         }
         
         return value;

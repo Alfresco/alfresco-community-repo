@@ -87,15 +87,15 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     
     private static final Set<String> TASK_COLLECTION_EQUALS_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
         "status", "assignee", "owner", "candidateUser", "candidateGroup", "name", "description", "priority", "processId",
-        "processBusinessKey", "activityDefinitionId", "processDefinitionId", "processDefinitionName", "startedAt", "dueAt"
+        "processBusinessKey", "activityDefinitionId", "processDefinitionId", "processDefinitionName", "startedAt", "endedAt", "dueAt"
     ));
     
     private static final Set<String> TASK_COLLECTION_MATCHES_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "name", "description", "activityDefinitionId"
+        "assignee", "owner", "name", "description", "processBusinessKey", "activityDefinitionId", "processDefinitionName"
     ));
     
     private static final Set<String> TASK_COLLECTION_GREATERTHAN_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "startedAt", "dueAt"
+        "startedAt", "endedAt", "dueAt"
     ));
     
     private static final Set<String> TASK_COLLECTION_GREATERTHANOREQUAL_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
@@ -103,7 +103,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     ));
     
     private static final Set<String> TASK_COLLECTION_LESSTHAN_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "startedAt", "dueAt"
+        "startedAt", "endedAt", "dueAt"
     ));
     
     private static final Set<String> TASK_COLLECTION_LESSTHANOREQUAL_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
@@ -146,14 +146,16 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         propertyWalker.setSupportedLessThanOrEqualParameters(TASK_COLLECTION_LESSTHANOREQUAL_QUERY_PROPERTIES);
         propertyWalker.enableVariablesSupport(namespaceService, dictionaryService);
         
-        if(parameters.getQuery() != null)
+        if (parameters.getQuery() != null)
         {
             QueryHelper.walk(parameters.getQuery(), propertyWalker);
         }
         
         String status = propertyWalker.getProperty("status", WhereClauseParser.EQUALS);
         String assignee = propertyWalker.getProperty("assignee", WhereClauseParser.EQUALS);
+        String assigneeLike = propertyWalker.getProperty("assignee", WhereClauseParser.MATCHES);
         String owner = propertyWalker.getProperty("owner", WhereClauseParser.EQUALS);
+        String ownerLike = propertyWalker.getProperty("owner", WhereClauseParser.MATCHES);
         String candidateUser = propertyWalker.getProperty("candidateUser", WhereClauseParser.EQUALS);
         String candidateGroup = propertyWalker.getProperty("candidateGroup", WhereClauseParser.EQUALS);
         String name = propertyWalker.getProperty("name", WhereClauseParser.EQUALS);
@@ -165,13 +167,18 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         Integer priorityLessThanOrEquals = propertyWalker.getProperty("priority", WhereClauseParser.LESSTHANOREQUALS, Integer.class);
         String processInstanceId = propertyWalker.getProperty("processId", WhereClauseParser.EQUALS);
         String processInstanceBusinessKey = propertyWalker.getProperty("processBusinessKey", WhereClauseParser.EQUALS);
+        String processInstanceBusinessKeyLike = propertyWalker.getProperty("processBusinessKey", WhereClauseParser.MATCHES);
         String activityDefinitionId = propertyWalker.getProperty("activityDefinitionId", WhereClauseParser.EQUALS);
         String activityDefinitionIdLike = propertyWalker.getProperty("activityDefinitionId", WhereClauseParser.MATCHES);
         String processDefinitionId = propertyWalker.getProperty("processDefinitionId", WhereClauseParser.EQUALS);
         String processDefinitionName = propertyWalker.getProperty("processDefinitionName", WhereClauseParser.EQUALS);
+        String processDefinitionNameLike = propertyWalker.getProperty("processDefinitionName", WhereClauseParser.MATCHES);
         Date startedAt = propertyWalker.getProperty("startedAt", WhereClauseParser.EQUALS, Date.class);
         Date startedAtGreaterThan = propertyWalker.getProperty("startedAt", WhereClauseParser.GREATERTHAN, Date.class);
         Date startedAtLessThan = propertyWalker.getProperty("startedAt", WhereClauseParser.LESSTHAN, Date.class);
+        Date endedAt = propertyWalker.getProperty("endedAt", WhereClauseParser.EQUALS, Date.class);
+        Date endedAtGreaterThan = propertyWalker.getProperty("endedAt", WhereClauseParser.GREATERTHAN, Date.class);
+        Date endedAtLessThan = propertyWalker.getProperty("endedAt", WhereClauseParser.LESSTHAN, Date.class);
         Date dueAt = propertyWalker.getProperty("dueAt", WhereClauseParser.EQUALS, Date.class);
         Date dueAtGreaterThan = propertyWalker.getProperty("dueAt", WhereClauseParser.GREATERTHAN, Date.class);
         Date dueAtLessThan = propertyWalker.getProperty("dueAt", WhereClauseParser.LESSTHAN, Date.class);
@@ -184,7 +191,9 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                     .createTaskQuery();
             
             if (assignee != null) query.taskAssignee(assignee);
+            if (assigneeLike != null) query.taskAssigneeLike(assigneeLike);
             if (owner != null) query.taskOwner(owner);
+            if (ownerLike != null) query.taskOwner(ownerLike);
             if (candidateUser != null)
             {
             	Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, candidateUser, false);
@@ -219,10 +228,12 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             if (priorityLessThanOrEquals != null) query.taskMaxPriority(priorityLessThanOrEquals);
             if (processInstanceId != null) query.processInstanceId(processInstanceId);
             if (processInstanceBusinessKey != null) query.processInstanceBusinessKey(processInstanceBusinessKey);
+            if (processInstanceBusinessKeyLike != null) query.processInstanceBusinessKeyLike(processInstanceBusinessKeyLike);
             if (activityDefinitionId != null) query.taskDefinitionKey(activityDefinitionId);
             if (activityDefinitionIdLike != null) query.taskDefinitionKey(activityDefinitionIdLike);
             if (processDefinitionId != null) query.processDefinitionId(processDefinitionId);
             if (processDefinitionName != null) query.processDefinitionName(processDefinitionName);
+            if (processDefinitionNameLike != null) query.processDefinitionNameLike(processDefinitionNameLike);
             if (dueAt != null) query.dueDate(dueAt);
             if (dueAtGreaterThan != null) query.dueAfter(dueAtGreaterThan);
             if (dueAtLessThan != null) query.dueBefore(dueAtLessThan);
@@ -300,11 +311,11 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         else if (STATUS_COMPLETED.equals(status) || STATUS_ANY.equals(status))
         {
             // Candidate user and group is only supported with STATUS_ACTIVE
-            if(candidateUser != null)
+            if (candidateUser != null)
             {
                 throw new InvalidArgumentException("Filtering on candidateUser is only allowed in combination with status-parameter 'active'");
             }
-            if(candidateGroup != null)
+            if (candidateGroup != null)
             {
                 throw new InvalidArgumentException("Filtering on candidateGroup is only allowed in combination with status-parameter 'active'");
             }
@@ -315,21 +326,33 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             
             if (STATUS_COMPLETED.equals(status)) query.finished();
             if (assignee != null) query.taskAssignee(assignee);
+            if (assigneeLike != null) query.taskAssigneeLike(assigneeLike);
             if (owner != null) query.taskOwner(owner);
+            if (ownerLike != null) query.taskOwnerLike(ownerLike);
             if (name != null) query.taskName(name);
             if (nameLike != null) query.taskNameLike(nameLike);
             if (description != null) query.taskDescription(description);
             if (descriptionLike != null) query.taskDescriptionLike(descriptionLike);
             if (priority != null) query.taskPriority(priority);
+            if (priorityGreaterThanOrEquals != null) query.taskMinPriority(priorityGreaterThanOrEquals);
+            if (priorityLessThanOrEquals != null) query.taskMaxPriority(priorityLessThanOrEquals);
             if (processInstanceId != null) query.processInstanceId(processInstanceId);
-            
             if (processInstanceBusinessKey != null) query.processInstanceBusinessKey(processInstanceBusinessKey);
-            
+            if (processInstanceBusinessKeyLike != null) query.processInstanceBusinessKeyLike(processInstanceBusinessKeyLike);
             if (activityDefinitionId != null) query.taskDefinitionKey(activityDefinitionId);
+            if (activityDefinitionIdLike != null) query.taskDefinitionKey(activityDefinitionIdLike);
             if (processDefinitionId != null) query.processDefinitionId(processDefinitionId);
             if (processDefinitionName != null) query.processDefinitionName(processDefinitionName);
+            if (processDefinitionNameLike != null) query.processDefinitionNameLike(processDefinitionNameLike);
             if (dueAt != null) query.taskDueDate(dueAt);
+            if (dueAtGreaterThan != null) query.taskDueAfter(dueAtGreaterThan);
+            if (dueAtLessThan != null) query.taskDueBefore(dueAtLessThan);
             if (startedAt != null) query.taskCreatedOn(startedAt);
+            if (startedAtGreaterThan != null) query.taskCreatedAfter(startedAtGreaterThan);
+            if (startedAtLessThan != null) query.taskCreatedBefore(startedAtLessThan);
+            if (endedAt != null) query.taskCompletedOn(endedAt);
+            if (endedAtGreaterThan != null) query.taskCompletedAfter(endedAtGreaterThan);
+            if (endedAtLessThan != null) query.taskCompletedBefore(endedAtLessThan);
             
             List<QueryVariableHolder> variableProperties = propertyWalker.getVariableProperties();
             if (variableProperties != null)
@@ -377,12 +400,14 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
             
             // Add tenant filtering
-            if(tenantService.isEnabled()) {
+            if (tenantService.isEnabled()) 
+            {
                 query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
             }
             
             // Add involvment filtering if user is not admin
-            if(!authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) {
+            if(!authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) 
+            {
                 query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
             }
             

@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.alfresco.util.LockHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -91,42 +92,40 @@ import org.apache.commons.logging.LogFactory;
             return super.create(binding);
         }
         
-        lock.readLock().lock();
-
+        LockHelper.tryLock(lock.readLock(), 100);
         try
         {
             P policyInterface = singleCache.get(binding);
-            if (policyInterface == null)
+            if (policyInterface != null)
             {
-                // Upgrade read lock to write lock
-                lock.readLock().unlock();
-                lock.writeLock().lock();
-
-                try
-                {
-                    // Check again
-                    policyInterface = singleCache.get(binding);
-                    if (policyInterface == null)
-                    {
-                        policyInterface = super.create(binding);
-                        singleCache.put(binding, policyInterface);
-                        
-                        if (logger.isDebugEnabled())
-                            logger.debug("Cached delegate interface " + policyInterface + " for " + binding + " and policy " + getPolicyClass());
-                    }
-                }
-                finally
-                {
-                    // Downgrade lock to read
-                    lock.readLock().lock();
-                    lock.writeLock().unlock();
-                }
+                return policyInterface;
             }
-            return policyInterface;
         }
         finally
         {
             lock.readLock().unlock();
+        }
+        
+        // There wasn't one
+        LockHelper.tryLock(lock.writeLock(), 100);
+        try
+        {
+            P policyInterface = singleCache.get(binding);
+            if (policyInterface != null)
+            {
+                return policyInterface;
+            }
+            policyInterface = super.create(binding);
+            singleCache.put(binding, policyInterface);
+            
+            if (logger.isDebugEnabled())
+                logger.debug("Cached delegate interface " + policyInterface + " for " + binding + " and policy " + getPolicyClass());
+            
+            return policyInterface;
+        }
+        finally
+        {
+            lock.writeLock().unlock();
         }
     }
     
@@ -140,45 +139,42 @@ import org.apache.commons.logging.LogFactory;
             return super.createList(binding);
         }
         
-        lock.readLock().lock();
-
+        LockHelper.tryLock(lock.readLock(), 100);
         try
         {
             Collection<P> policyInterfaces = listCache.get(binding);
-            if (policyInterfaces == null)
+            if (policyInterfaces != null)
             {
-                // Upgrade read lock to write lock
-                lock.readLock().unlock();
-                lock.writeLock().lock();
-
-                try
-                {
-                    // Check again
-                    policyInterfaces = listCache.get(binding);
-                    if (policyInterfaces == null)
-                    {                
-                        policyInterfaces = super.createList(binding);
-                        listCache.put(binding, policyInterfaces);
-                
-                        if (logger.isDebugEnabled())
-                            logger.debug("Cached delegate interface collection " + policyInterfaces + " for " + binding + " and policy " + getPolicyClass());
-                    }
-                }
-                finally
-                {
-                    // Downgrade lock to read
-                    lock.readLock().lock();
-                    lock.writeLock().unlock();
-                }
+                return policyInterfaces;
             }
-            return policyInterfaces;
-        }                
+        }
         finally
         {
             lock.readLock().unlock();
         }
-    }
+        
+        // There wasn't one
+        LockHelper.tryLock(lock.writeLock(), 100);
+        try
+        {
+            Collection<P> policyInterfaces = listCache.get(binding);
+            if (policyInterfaces != null)
+            {
+                return policyInterfaces;
+            }
+            policyInterfaces = super.createList(binding);
+            listCache.put(binding, policyInterfaces);
     
+            if (logger.isDebugEnabled())
+                logger.debug("Cached delegate interface collection " + policyInterfaces + " for " + binding + " and policy " + getPolicyClass());
+            
+            return policyInterfaces;
+        }
+        finally
+        {
+            lock.writeLock().unlock();
+        }
+    }
     
     /**
      * Clear entries in the cache based on binding changes.
@@ -191,8 +187,7 @@ import org.apache.commons.logging.LogFactory;
     {
         if (binding == null)
         {
-            lock.writeLock().lock();
-
+            LockHelper.tryLock(lock.writeLock(), 100);
             try
             {
                 // A specific binding has not been provided, so clear all entries
@@ -230,8 +225,7 @@ import org.apache.commons.logging.LogFactory;
             // Remove all invalid bindings
             if (invalidBindings.size() > 0)
             {
-                lock.writeLock().lock();
-                
+                LockHelper.tryLock(lock.writeLock(), 100);
                 try
                 {
                     for (B invalidBinding : invalidBindings)
@@ -249,5 +243,4 @@ import org.apache.commons.logging.LogFactory;
             }
         }
     }
-    
 }

@@ -25,6 +25,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.LockHelper;
 
 
 /**
@@ -88,13 +89,10 @@ import org.alfresco.service.namespace.QName;
     }
 
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourIndex#getAll()
-     */
-    @SuppressWarnings("unchecked")
+    @Override
     public Collection<BehaviourDefinition> getAll()
     {
-        lock.readLock().lock();
+        LockHelper.tryLock(lock.readLock(), 100);
         
         try
         {
@@ -110,13 +108,11 @@ import org.alfresco.service.namespace.QName;
     }
     
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourIndex#find()
-     */
+    @Override
     @SuppressWarnings("unchecked")
     public Collection<BehaviourDefinition> find(B binding)
     {
-        lock.readLock().lock();
+        LockHelper.tryLock(lock.readLock(), 100);
         
         try
         {
@@ -158,18 +154,14 @@ import org.alfresco.service.namespace.QName;
     }
 
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourIndex#find()
-     */
+    @Override
     public void addChangeObserver(BehaviourChangeObserver<B> observer)
     {
         observers.add(observer);
     }
 
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourIndex#getFilter()
-     */
+    @Override
     public BehaviourFilter getFilter()
     {
         return filter;
@@ -183,7 +175,7 @@ import org.alfresco.service.namespace.QName;
      */
     public void putClassBehaviour(BehaviourDefinition<B> behaviour)
     {
-        lock.writeLock().lock();
+        LockHelper.tryLock(lock.writeLock(), 100);
         try
         {
             classMap.put(behaviour);
@@ -202,7 +194,7 @@ import org.alfresco.service.namespace.QName;
      */
     public void putServiceBehaviour(BehaviourDefinition<ServiceBehaviourBinding> behaviour)
     {
-        lock.writeLock().lock();
+        LockHelper.tryLock(lock.writeLock(), 100);
         try
         {
             serviceMap.put(behaviour);
@@ -220,7 +212,7 @@ import org.alfresco.service.namespace.QName;
      */
     public void removeClassBehaviour(BehaviourDefinition<B> behaviour)
     {
-        lock.writeLock().lock();
+        LockHelper.tryLock(lock.writeLock(), 100);
         try
         {
             classMap.remove(behaviour);

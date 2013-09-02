@@ -9,7 +9,8 @@
 -- ALF-19487 : ORACLE: AVM: Schema difference is present after upgrade from 3.4.13/4.0.2/4.1.5
 
 DROP INDEX idx_avm_vr_revuq;
-ALTER TABLE avm_version_roots DROP CONSTRAINT avm_version_roots_version_id_avm_store_id_key;
+ALTER TABLE avm_version_roots DROP CONSTRAINT avm_version_roots_version_id_avm_store_id_key;    --(optional)
+ALTER TABLE avm_version_roots DROP CONSTRAINT avm_version_roots_version_id_key;                 --(optional)
 ALTER TABLE avm_version_roots ADD CONSTRAINT idx_avm_vr_uq UNIQUE (avm_store_id, version_id);
 
 --

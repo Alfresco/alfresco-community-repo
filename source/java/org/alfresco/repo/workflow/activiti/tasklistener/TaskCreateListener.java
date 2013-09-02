@@ -128,9 +128,19 @@ public class TaskCreateListener implements TaskListener
                 authorities = new String[]{task.getAssignee()};
             }
             
+            String title;
+            if (taskFormKey != null)
+            {
+                title = taskFormKey.replace(":", "_");
+            }
+            else
+            {
+                title = task.getName().replaceAll(" ", "_");
+            }
+
             // Send email notification
             String workflowDefId = task.getProcessDefinitionId().split(":")[0];
-            String taskType = workflowDefId + ".task." + taskFormKey.replace(":", "_") + ".title";
+            String taskType = workflowDefId + ".task." + title + ".title";
             
             workflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
                     ActivitiConstants.ENGINE_ID + "$" + task.getId(),

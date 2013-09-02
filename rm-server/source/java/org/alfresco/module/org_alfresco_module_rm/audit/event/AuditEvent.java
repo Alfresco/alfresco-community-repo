@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -29,7 +30,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Gavin Cornwell
  * @author Roy Wetherall
  */
-public class AuditEvent
+public class AuditEvent implements RecordsManagementModel
 {
 	/** Name */
     protected String name;
@@ -37,29 +38,49 @@ public class AuditEvent
     /** Label */
     protected String label;
     
+    /** Records management audit service */
     protected RecordsManagementAuditService recordsManagementAuditService;    
     
+    /** Policy component */
     protected PolicyComponent policyComponent;
     
+    /**
+     * @param recordsManagementAuditService     records management audit service
+     */
     public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
     {
         this.recordsManagementAuditService = recordsManagementAuditService;
     }
     
+    /**
+     * @param policyComponent   policy component
+     */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
  
+    /**
+     * Init method
+     */
     public void init()
     {
         recordsManagementAuditService.registerAuditEvent(this);
     }
 
+    /**
+     * Default constructor
+     */
     public AuditEvent()
     {     
     }
     
+    /**
+     * Default constructor.
+     * 
+     * @param name  audit event name
+     * @param label audit event label (can be actual label or I18N lookup key)
+     */
     public AuditEvent(String name, String label)
     {
         this.name = name;

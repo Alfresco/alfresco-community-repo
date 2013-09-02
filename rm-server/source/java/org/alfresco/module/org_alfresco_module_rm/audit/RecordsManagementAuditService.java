@@ -73,7 +73,10 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
     List<AuditEvent> getAuditEvents();
 
     /**
-     * Register audit event
+     * Register audit event.
+     * <p>
+     * Creates an instance of a simple audit event and registers it with
+     * the service.
      * 
      * @param name  name of audit event
      * @param label display label of audit event
@@ -81,25 +84,29 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
     void registerAuditEvent(String name, String label);
     
     /**
+     * Register audit event.
      * 
-     * @param auditEvent
+     * @param auditEvent    audit event
      */
     void registerAuditEvent(AuditEvent auditEvent);
     
     /**
-     * 
-     * @param nodeRef
-     * @param eventName
+     * Audits an event, assumes no properties where modified and that the event should not be audited
+     * immediately. 
+     *  
+     * @param nodeRef   node reference
+     * @param eventName event name
      */
     void auditEvent(NodeRef nodeRef, 
     				String eventName);
     
     /**
+     * Audits an event, assumes that the event should not be audited immediately.
      * 
-     * @param nodeRef
-     * @param eventName
-     * @param before
-     * @param after
+     * @param nodeRef   node reference
+     * @param eventName event name
+     * @param before    property values before event
+     * @param after     property values after event
      */
     void auditEvent(NodeRef nodeRef,
             		String eventName,
@@ -107,12 +114,13 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
             		Map<QName, Serializable> after);
     
     /**
+     * Audit event.
      * 
-     * @param nodeRef
-     * @param eventName
-     * @param before
-     * @param after
-     * @param immediate
+     * @param nodeRef       node reference
+     * @param eventName     event name
+     * @param before        property values before event
+     * @param after         property values after event
+     * @param immediate     true if event is to be audited immediately, false otherwise
      */
     void auditEvent(NodeRef nodeRef,
                     String eventName,

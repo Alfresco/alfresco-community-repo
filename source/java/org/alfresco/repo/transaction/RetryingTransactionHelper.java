@@ -39,6 +39,7 @@ import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.LockHelper.LockTryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.exceptions.TooManyResultsException;
@@ -105,7 +106,8 @@ public class RetryingTransactionHelper
                     TooManyResultsException.class,              // Expected one result but found multiple (bad key alert)
                     ObjectNotFoundException.class,
                     CacheException.class,                       // Usually a cache replication issue
-                    SQLGrammarException.class // Actually specific to MS SQL Server 2005 - we check for this
+                    SQLGrammarException.class, // Actually specific to MS SQL Server 2005 - we check for this
+                    LockTryException.class
                     };
      
         List<Class<?>> retryExceptions = new ArrayList<Class<?>>();

@@ -21,6 +21,7 @@ package org.alfresco.repo.lock.mem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -29,6 +30,7 @@ import java.util.TreeSet;
 
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.LockHelper.LockTryException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -155,5 +157,47 @@ public abstract class AbstractLockStoreTestBase<T extends LockStore>
         assertEquals(nodeRef2, it.next());
         assertEquals(nodeRef3, it.next());
         assertEquals(nodeRef4, it.next());
+    }
+    
+    @Test()
+    public void whenTryLockFailsTransactionWillRetry() throws InterruptedException
+    {
+        final NodeRef nodeRef = new NodeRef("workspace://SpacesStore/whenTryLockFailsTransactionWillRetry");
+        
+        // The "other" thread, that got there first and took the lock.
+        Thread thread = new Thread(getClass().getSimpleName()+"-testTryLock")
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    // Deliberately NOT releasing this lock, so we can check for tryLock failure.
+                    lockStore.acquireConcurrencyLock(nodeRef);
+                }
+                catch (Throwable e)
+                {
+                    // This shouldn't happen the first time.
+                    fail("Failed to a acquire lock");
+                }
+            }
+        };
+        thread.start();
+        
+        
+        // Wait for the other thread to perform the lock.
+        thread.join();
+        
+        // Second attempt will fail (already locked above), expected exception
+        // must be thrown for retrying behaviour to work correctly.
+        try
+        {
+            lockStore.acquireConcurrencyLock(nodeRef);
+            fail("Exception was not thrown when unable to acquire lock.");
+        }
+        catch (LockTryException e)
+        {
+            // Good, we got the correct exception.
+        }
     }
 }

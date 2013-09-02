@@ -18,10 +18,8 @@
  */
 package org.alfresco.repo.lock.mem;
 
-import java.util.Date;
 import java.util.Set;
 
-import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -58,5 +56,6 @@ public interface LockStore
     void clear();
     void acquireConcurrencyLock(NodeRef nodeRef);
     void releaseConcurrencyLock(NodeRef nodeRef);
+    void setMaxTryLockMillis(long maxTryLockMillis);
     public Set<NodeRef> getNodes();
 }

@@ -25,6 +25,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.lock.LockServiceImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.LockHelper;
 
 import com.google.common.collect.MapMaker;
 
@@ -80,8 +81,9 @@ public class LockStoreImpl extends AbstractLockStore<ConcurrentMap<NodeRef, Lock
     public void acquireConcurrencyLock(NodeRef nodeRef)
     {
         WriteLock writeLock = getWriteLock(nodeRef);
-        // Block until available
-        writeLock.lock();
+        // Block for a short time, if we can't acquire the lock, then throw
+        // an exception that the will allow transaction retry behaviour.
+        LockHelper.tryLock(writeLock, maxTryLockMillis);
     }
 
     @Override

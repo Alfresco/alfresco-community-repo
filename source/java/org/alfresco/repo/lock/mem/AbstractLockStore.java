@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockState>> implements LockStore
 {
+    protected long maxTryLockMillis = 100;
     protected T map;
     
     public AbstractLockStore(T map)
@@ -37,6 +38,20 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
         this.map = map;
     }
     
+    /**
+     * Set the maximum time a lock store should wait while trying to acquire a concurrency lock.
+     * 
+     * @see #acquireConcurrencyLock(NodeRef)
+     * @param maxTryLockMillis
+     */
+    @Override
+    public void setMaxTryLockMillis(long maxTryLockMillis)
+    {
+        this.maxTryLockMillis = maxTryLockMillis;
+    }
+
+
+
     @Override
     public LockState get(NodeRef nodeRef)
     {

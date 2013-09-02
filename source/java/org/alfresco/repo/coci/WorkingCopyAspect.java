@@ -21,6 +21,7 @@ package org.alfresco.repo.coci;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -34,12 +35,13 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 
-public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
+public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, NodeServicePolicies.OnRemoveAspectPolicy
 {    
     private PolicyComponent policyComponent;
     private NodeService nodeService;
@@ -117,7 +119,12 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
                 NodeServicePolicies.BeforeDeleteNodePolicy.QNAME,
                 ContentModel.ASPECT_WORKING_COPY,
                 new JavaBehaviour(this, "beforeDeleteWorkingCopy"));
-        // register onBeforeDelete class behaviour for the checked-out aspect
+        
+        // Watch for removal of the aspect and ensure that the cm:workingcopylink assoc is removed
+        this.policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnRemoveAspectPolicy.QNAME,
+                ContentModel.ASPECT_WORKING_COPY,
+                new JavaBehaviour(this, "onRemoveAspect"));
     }
     
     /**
@@ -143,6 +150,13 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
         }
     }
     
+    @Override
+    public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
+    {
+        // This is simply not allowed.
+        throw new UnsupportedOperationException("Use CheckOutCheckInservice to manipulate working copies.");
+    }
+
     /**
      * @return              Returns {@link WorkingCopyAspectCopyBehaviourCallback}
      */

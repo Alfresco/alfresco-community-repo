@@ -162,30 +162,14 @@
 
    <!-- ensures model-compliance of node structures -->
    <bean id="integrityChecker" class="org.alfresco.repo.node.integrity.IntegrityChecker" init-method="init">
-      <property name="policyComponent">
-         <ref bean="policyComponent"/>
-      </property>
-      <property name="dictionaryService">
-         <ref bean="dictionaryService" />
-      </property>
-      <property name="nodeService">
-         <ref bean="nodeService" />
-      </property>
-      <property name="tenantService">
-         <ref bean="tenantService" />
-      </property>
-      <property name="enabled">
-         <value>true</value>  <!-- on/off switch -->
-      </property>
-      <property name="traceOn">
-         <value>false</value>  <!-- use only to trace problems -->
-      </property>
-      <property name="failOnViolation" >
-         <value>true</value>
-      </property>
-      <property name="maxErrorsPerTransaction" >
-         <value>5</value>  <!-- limit output (exception and log) to the first N violation messages -->
-      </property>
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="dictionaryService" ref="dictionaryService" />
+      <property name="nodeService" ref="nodeService" />
+      <property name="tenantService" ref="tenantService" />
+      <property name="enabled" value="${system.integrity.enabled}" />
+      <property name="traceOn" value="${system.integrity.trace}" />
+      <property name="failOnViolation" value="${system.integrity.failOnViolation}" />
+      <property name="maxErrorsPerTransaction" value="5" />
       <property name="storesToIgnore">
          <list>
             <value>${version.store.version2Store}</value>

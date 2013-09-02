@@ -80,6 +80,7 @@ public class IntegrityTest extends TestCase
     
     public static final QName TEST_ASPECT_WITH_PROPERTIES = QName.createQName(NAMESPACE, "aspectWithProperties");
     public static final QName TEST_ASPECT_WITH_ASSOC = QName.createQName(NAMESPACE, "aspectWithAssoc");
+    public static final QName TEST_ASPECT_WITH_ASPECT = QName.createQName(NAMESPACE, "aspectWithAspect");
     
     public static final QName TEST_PROP_TEXT_A = QName.createQName(NAMESPACE, "prop-text-a");
     public static final QName TEST_PROP_TEXT_B = QName.createQName(NAMESPACE, "prop-text-b");
@@ -289,6 +290,19 @@ public class IntegrityTest extends TestCase
         checkIntegrityExpectFailure("Failed to removal of mandatory aspect", 1);
     }
 
+    public void testCreateWithAspectForAspect() throws Exception
+    {
+        NodeRef nodeRef = createNode("abc", TEST_TYPE_WITHOUT_ANYTHING, null);
+        // Add the aspect
+        nodeService.addAspect(nodeRef, TEST_ASPECT_WITH_ASPECT, allProperties);
+        assertTrue("Mandatory aspect missing", nodeService.hasAspect(nodeRef, TEST_ASPECT_WITH_PROPERTIES));
+        checkIntegrityNoFailure();
+        
+        // Remove the implied mandatory aspect
+        nodeService.removeAspect(nodeRef, TEST_ASPECT_WITH_PROPERTIES);
+        checkIntegrityExpectFailure("Failed to detect missing aspect for aspect", 1);
+    }
+
     public void testCreateTargetOfAssocsWithMandatorySourcesPresent() throws Exception
     {
         // this is the target of 3 assoc types where the source cardinality is 1..1
@@ -383,35 +397,29 @@ public class IntegrityTest extends TestCase
         checkIntegrityExpectFailure("Failed to detect missing assoc targets", 3);
     }
 
-    /**
-     * TODO: Reactivate once cascade delete notifications are back on
-     * <p>
-     * <b>Does nothing</b>.
-     */
     public void testRemoveTargetsOfMandatoryAssocs() throws Exception
     {
-//        NodeRef source = createNode("abc", TEST_TYPE_WITH_ASSOCS, null);
-//        NodeRef target = createNode("target", TEST_TYPE_WITHOUT_ANYTHING, null);
-//        nodeService.createAssociation(source, target, TEST_ASSOC_NODE_ONE_ONE);
-//        
-//        NodeRef parent = createNode("parent", TEST_TYPE_WITH_CHILD_ASSOCS, null);
-//        NodeRef child = createNode("child", TEST_TYPE_WITHOUT_ANYTHING, null);
-//        nodeService.addChild(parent, child, TEST_ASSOC_CHILD_ONE_ONE, QName.createQName(NAMESPACE, "one-to-one"));
-//        
-//        NodeRef aspectSource = createNode("aspectSource", TEST_TYPE_WITHOUT_ANYTHING, null);
-//        nodeService.addAspect(aspectSource, TEST_ASPECT_WITH_ASSOC, null);
-//        NodeRef aspectTarget = createNode("aspectTarget", TEST_TYPE_WITHOUT_ANYTHING, null);
-//        nodeService.createAssociation(aspectSource, aspectTarget, TEST_ASSOC_ASPECT_ONE_ONE);
-//        
-//        checkIntegrityNoFailure();
-//        
-//        // remove target nodes
-//        nodeService.deleteNode(target);
-//        nodeService.deleteNode(child);
-//        nodeService.deleteNode(aspectTarget);
-//        
-//        checkIntegrityExpectFailure("Failed to detect removal of mandatory assoc targets", 3);
-        logger.error("Method commented out: testRemoveTargetsOfMandatoryAssocs");
+        NodeRef source = createNode("abc", TEST_TYPE_WITH_ASSOCS, null);
+        NodeRef target = createNode("target", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.createAssociation(source, target, TEST_ASSOC_NODE_ONE_ONE);
+        
+        NodeRef parent = createNode("parent", TEST_TYPE_WITH_CHILD_ASSOCS, null);
+        NodeRef child = createNode("child", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.addChild(parent, child, TEST_ASSOC_CHILD_ONE_ONE, QName.createQName(NAMESPACE, "one-to-one"));
+        
+        NodeRef aspectSource = createNode("aspectSource", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.addAspect(aspectSource, TEST_ASPECT_WITH_ASSOC, null);
+        NodeRef aspectTarget = createNode("aspectTarget", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.createAssociation(aspectSource, aspectTarget, TEST_ASSOC_ASPECT_ONE_ONE);
+        
+        checkIntegrityNoFailure();
+        
+        // remove target nodes
+        nodeService.deleteNode(target);
+        nodeService.deleteNode(child);
+        nodeService.deleteNode(aspectTarget);
+        
+        checkIntegrityExpectFailure("Failed to detect removal of mandatory assoc targets", 3);
     }
 
     public void testExcessTargetsOfOneToOneAssocs() throws Exception

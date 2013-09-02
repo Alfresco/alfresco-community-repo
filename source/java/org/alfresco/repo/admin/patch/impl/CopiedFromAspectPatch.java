@@ -229,6 +229,7 @@ public class CopiedFromAspectPatch extends AbstractPatch
         }
         finally
         {
+            try { outputFile.close(); } catch (IOException e) {}
             try { file.close(); } catch (IOException e) {}
         }
     }

@@ -191,6 +191,13 @@
              </association>
          </associations>
       </aspect>
+      <!-- aspect with aspects -->
+      <aspect name="test:aspectWithAspect">
+         <title>Aspect with aspects</title>
+         <mandatory-aspects>
+            <aspect>test:aspectWithProperties</aspect>
+         </mandatory-aspects>
+      </aspect>
    </aspects>
 
 </model>

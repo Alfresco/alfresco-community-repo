@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.node.integrity;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -77,7 +78,9 @@ public class AspectsIntegrityEvent extends AbstractIntegrityEvent
         QName nodeTypeQName = nodeService.getType(nodeRef);
         // get the aspects that should exist
         TypeDefinition typeDef = dictionaryService.getType(nodeTypeQName);
-        List<AspectDefinition> mandatoryAspectDefs = typeDef.getDefaultAspects();
+        List<AspectDefinition> mandatoryAspectDefs = (typeDef == null)
+                ? Collections.<AspectDefinition>emptyList()
+                : typeDef.getDefaultAspects();
         
         // check
         for (AspectDefinition aspect : mandatoryAspectDefs)
@@ -96,6 +99,32 @@ public class AspectsIntegrityEvent extends AbstractIntegrityEvent
             // next one
             continue;
         }
+        
+        // Now, each aspect's mandatory aspects have to be checked
+        for (QName aspectQName : aspects)
+        {
+            AspectDefinition aspectDef = dictionaryService.getAspect(aspectQName);
+            mandatoryAspectDefs = (aspectDef == null)
+                    ? Collections.<AspectDefinition>emptyList()
+                    : aspectDef.getDefaultAspects();
+            for (AspectDefinition aspect : mandatoryAspectDefs)
+            {
+                if (aspects.contains(aspect.getName()))
+                {
+                    // it's fine
+                    continue;
+                }
+                IntegrityRecord result = new IntegrityRecord(
+                        "Mandatory aspect (aspect-declared) not set: \n" +
+                        "   Node:    " + nodeRef + "\n" +
+                        "   Aspect:  " + aspectQName + "\n" +
+                        "   Missing: " + aspect.getName());
+                eventResults.add(result);
+                // next one
+                continue;
+            }
+        }
+        
         // done
     }
 }

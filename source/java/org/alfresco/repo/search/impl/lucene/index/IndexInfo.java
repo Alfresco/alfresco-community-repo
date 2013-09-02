@@ -1604,20 +1604,18 @@ public class IndexInfo implements IndexMonitor
                         {
                             synchronized (mergerTargetLock)
                             {
-                                if(shouldBlock())
+                                if (s_logger.isDebugEnabled())
                                 {
-                                    if (s_logger.isDebugEnabled())
-                                    {
-                                        s_logger.debug("THROTTLING: " + Thread.currentThread().getName() + " " + indexEntries.size());
-                                    }
-                                    releaseWriteLock();
-                                    try
-                                    {
-                                        mergerTargetLock.wait(60000);
-                                    }
-                                    catch (InterruptedException e)
-                                    {
-                                    }
+                                    s_logger.debug("THROTTLING: " + Thread.currentThread().getName() + " " + indexEntries.size());
+                                }
+                                merger.schedule();
+                                releaseWriteLock();
+                                try
+                                {
+                                    mergerTargetLock.wait(60000);
+                                }
+                                catch (InterruptedException e)
+                                {
                                 }
                             }
                             getWriteLock();
@@ -2576,10 +2574,7 @@ public class IndexInfo implements IndexMonitor
         {
             synchronized (mergerTargetLock)
             {
-                if (!shouldBlock())
-                {
-                    mergerTargetLock.notifyAll();
-                }
+                mergerTargetLock.notifyAll();   
             }            
         }
     }

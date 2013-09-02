@@ -82,10 +82,8 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
         {
             public Void doWork() throws Exception
             {
-                RecordsManagementAction action = (RecordsManagementAction)getObject();
-                
+                RecordsManagementAction action = (RecordsManagementAction)getObject();                
                 recordsManagementActionService.register(action);
-             //   recordsManagementAuditService.registerActionAuditEvent(action);
         
                 return null;
             }

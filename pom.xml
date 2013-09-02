@@ -500,8 +500,8 @@
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
-            <version>1.7.5</version>
+            <artifactId>groovy-all</artifactId>
+            <version>2.1.6</version>
         </dependency>
         <!-- OpenOffice -->
         <dependency>

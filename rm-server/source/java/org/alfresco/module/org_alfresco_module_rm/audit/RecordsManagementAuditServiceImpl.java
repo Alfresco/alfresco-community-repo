@@ -200,12 +200,18 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 		this.filePlanService = filePlanService;
 	}
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#registerAuditEvent(java.lang.String, java.lang.String)
+     */
     @Override
     public void registerAuditEvent(String name, String label)
     {
         registerAuditEvent(new AuditEvent(name, label));
     }
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#registerAuditEvent(org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent)
+     */
     @Override
     public void registerAuditEvent(AuditEvent auditEvent)
     {
@@ -234,41 +240,22 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         PropertyCheck.mandatory(this, "filePlanService", filePlanService);
     }
 
+    /**
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
         shutdown = false;
     }
 
+    /**
+     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     */
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
         shutdown = true;
-    }
-
-    /**
-     * Helper method to get the default file plan
-     * 
-     * @return	NodRef default file plan
-     */
-    private NodeRef getDefaultFilePlan()
-    {
-    	NodeRef defaultFilePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-    	if (defaultFilePlan == null)
-		{
-			throw new AlfrescoRuntimeException("Default file plan could not be found.");
-		}
-    	return defaultFilePlan;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Deprecated
-    public boolean isEnabled()
-    {
-    	return isAuditLogEnabled(getDefaultFilePlan());
     }
 
     /**
@@ -282,15 +269,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         return auditService.isAuditEnabled(
                 RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME,
                 RecordsManagementAuditService.RM_AUDIT_PATH_ROOT);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Deprecated
-    public void start()
-    {
-    	startAuditLog(getDefaultFilePlan());
     }
 
     /**
@@ -314,15 +292,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * {@inheritDoc}
      */
-    @Deprecated
-    public void stop()
-    {
-    	stopAuditLog(getDefaultFilePlan());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public void stopAuditLog(NodeRef filePlan)
     {
     	ParameterCheck.mandatory("filePlan", filePlan);
@@ -338,15 +307,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * {@inheritDoc}
      */
-    @Deprecated
-    public void clear()
-    {
-    	clearAuditLog(getDefaultFilePlan());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public void clearAuditLog(NodeRef filePlan)
     {
     	ParameterCheck.mandatory("filePlan", filePlan);
@@ -355,16 +315,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         auditService.clearAudit(RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME, null, null);
         if (logger.isInfoEnabled())
             logger.debug("Records Management audit log has been cleared");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Deprecated
-    public Date getDateLastStarted()
-    {
-    	return getDateAuditLogLastStarted(getDefaultFilePlan());
-    }
+    }    
 
     /**
      * {@inheritDoc}
@@ -376,15 +327,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
         // TODO: return proper date, for now it's today's date
         return getStartOfDay(new Date());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Deprecated
-    public Date getDateLastStopped()
-    {
-        return getDateAuditLogLastStopped(getDefaultFilePlan());
     }
 
     /**
@@ -444,17 +386,12 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
     /**
      * {@inheritDoc}
-     * @since 3.2
-     * @deprecated since 2.1
      */
     @Deprecated
-    public void auditRMAction(
-            RecordsManagementAction action,
-            NodeRef nodeRef,
-            Map<String, Serializable> parameters)
+    public void clear()
     {
-        auditEvent(nodeRef, action.getName());
-    }
+        clearAuditLog(getDefaultFilePlan());
+    }    
     
     @Override
     public void auditEvent(NodeRef nodeRef, String eventName)
@@ -1444,5 +1381,82 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         }
 
         return label;
+    }
+    
+    /** Deprecated Method Implementations **/
+    
+    /**
+     * Helper method to get the default file plan
+     * 
+     * @return  NodRef default file plan
+     */
+    private NodeRef getDefaultFilePlan()
+    {
+        NodeRef defaultFilePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+        if (defaultFilePlan == null)
+        {
+            throw new AlfrescoRuntimeException("Default file plan could not be found.");
+        }
+        return defaultFilePlan;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Deprecated
+    public boolean isEnabled()
+    {
+        return isAuditLogEnabled(getDefaultFilePlan());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
+    public void start()
+    {
+        startAuditLog(getDefaultFilePlan());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
+    public void stop()
+    {
+        stopAuditLog(getDefaultFilePlan());
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
+    public Date getDateLastStarted()
+    {
+        return getDateAuditLogLastStarted(getDefaultFilePlan());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated
+    public Date getDateLastStopped()
+    {
+        return getDateAuditLogLastStopped(getDefaultFilePlan());
+    }
+    
+    /**
+     * {@inheritDoc}
+     * @since 3.2
+     * @deprecated since 2.1
+     */
+    @Deprecated
+    public void auditRMAction(
+            RecordsManagementAction action,
+            NodeRef nodeRef,
+            Map<String, Serializable> parameters)
+    {
+        auditEvent(nodeRef, action.getName());
     }
 }

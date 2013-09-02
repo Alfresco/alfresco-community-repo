@@ -65,5 +65,25 @@
       <property name="name" value="Login.Failure"/>
       <property name="label" value="rm.audit.login-failed"/>
    </bean>
+   
+   <bean id="audit-event.link" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.LinkAuditEvent">
+      <property name="name" value="link"/>
+      <property name="label" value="rm.audit.link"/>
+   </bean>
+   
+   <bean id="audit-event.move" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.MoveAuditEvent">
+      <property name="name" value="move"/>
+      <property name="label" value="rm.audit.move"/>
+   </bean>
+   
+   <bean id="audit-event.copy" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.CopyAuditEvent">
+      <property name="name" value="copy"/>
+      <property name="label" value="rm.audit.copy"/>
+   </bean>
+   
+   <bean id="audit-event.file" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.FileAuditEvent">
+      <property name="name" value="file"/>
+      <property name="label" value="rm.audit.file"/>
+   </bean>
 
 </beans>

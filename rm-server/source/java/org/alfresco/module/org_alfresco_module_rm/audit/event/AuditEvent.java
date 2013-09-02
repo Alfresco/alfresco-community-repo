@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import java.util.Comparator;
+
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -30,7 +32,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Gavin Cornwell
  * @author Roy Wetherall
  */
-public class AuditEvent implements RecordsManagementModel
+public class AuditEvent implements RecordsManagementModel, Comparator<AuditEvent>
 {
 	/** Name */
     protected String name;
@@ -123,4 +125,13 @@ public class AuditEvent implements RecordsManagementModel
     {
 		this.label = label;
 	}
+
+    /**
+     * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+     */
+    @Override
+    public int compare(AuditEvent first, AuditEvent second)
+    {
+        return first.getLabel().compareTo(second.getLabel());
+    }
 }

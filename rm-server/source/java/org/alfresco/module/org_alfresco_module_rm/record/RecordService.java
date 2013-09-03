@@ -36,6 +36,16 @@ import org.alfresco.service.namespace.QName;
 public interface RecordService
 {
     /**
+     * Disables the property editable check.
+     */
+    void disablePropertyEditableCheck();
+    
+    /**
+     * Enables the property editable check.  By default this is always enabled.
+     */
+    void enablePropertyEditableCheck();
+    
+    /**
     * Gets a list of all the record meta-data aspects
     *
     * @return {@link Set}<{@link QName}>   list of record meta-data aspects

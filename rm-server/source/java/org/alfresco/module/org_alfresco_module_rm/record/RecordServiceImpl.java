@@ -416,6 +416,24 @@ public class RecordServiceImpl implements RecordService,
             onUpdateProperties.enable();
         }
     }    
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#disablePropertyEditableCheck()
+     */
+    @Override
+    public void disablePropertyEditableCheck()
+    {
+        onUpdateProperties.disable();
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#enablePropertyEditableCheck()
+     */
+    @Override
+    public void enablePropertyEditableCheck()
+    {
+        onUpdateProperties.enable();
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetaDataAspects()
@@ -1031,6 +1049,12 @@ public class RecordServiceImpl implements RecordService,
         return result;
     }
     
+    /**
+     * Helper method that indicates whether a property is considered record metadata or not.
+     * 
+     * @param property  property 
+     * @return boolea   true if record metadata, false otherwise
+     */
     private boolean isRecordMetadata(QName property)
     {
         boolean result = ArrayUtils.contains(RECORD_MODEL_URIS, property.getNamespaceURI());

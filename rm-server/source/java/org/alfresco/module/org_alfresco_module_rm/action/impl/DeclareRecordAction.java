@@ -69,22 +69,30 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
             // Aspect not already defined - check mandatory properties then add
             if (mandatoryPropertiesSet(actionedUponNodeRef, missingProperties) == true)
             {
-               // Add the declared aspect
-               Map<QName, Serializable> declaredProps = new HashMap<QName, Serializable>(2);
-               declaredProps.put(PROP_DECLARED_AT, new Date());
-               declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
-               this.nodeService.addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
-
-               AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-               {
-                  @Override
-                  public Void doWork() throws Exception
-                  {
-                      // remove all owner related rights 
-                      ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
-                      return null;
-                   }
-                });
+                recordService.disablePropertyEditableCheck();
+                try
+                {                
+                    // Add the declared aspect
+                    Map<QName, Serializable> declaredProps = new HashMap<QName, Serializable>(2);
+                    declaredProps.put(PROP_DECLARED_AT, new Date());
+                    declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
+                    this.nodeService.addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
+                   
+                    AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                    {
+                        @Override
+                        public Void doWork() throws Exception
+                        {
+                            // remove all owner related rights 
+                            ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
+                            return null;
+                        }
+                    });
+                }
+                finally
+                {
+                    recordService.enablePropertyEditableCheck();
+                }
             }
             else
             {

@@ -25,9 +25,10 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
@@ -184,45 +185,50 @@ public class RecordCopyBehaviours implements RecordsManagementModel
      * @param oldChildAssocRef
      * @param newChildAssocRef
      */
-    @SuppressWarnings("unused")
     public void onMoveRecordFolderNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
-        if (oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()) == false)
+        final NodeService nodeService = rmServiceRegistry.getNodeService();
+        
+        if (!nodeService.getType(newChildAssocRef.getParentRef()).equals(TYPE_RECORD_FOLDER))
         {        
-            final NodeRef newNodeRef = newChildAssocRef.getChildRef();
-            final NodeService nodeService = rmServiceRegistry.getNodeService();
-            final RecordsManagementService rmService = rmServiceRegistry.getRecordsManagementService();        
-            final RecordsManagementActionService rmActionService = rmServiceRegistry.getRecordsManagementActionService();
-            
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()))
             {
-                public Object doWork() throws Exception
+                final NodeRef oldNodeRef = oldChildAssocRef.getChildRef();
+                final NodeRef newNodeRef = newChildAssocRef.getChildRef();
+            
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                 {
-                    if (nodeService.exists(newNodeRef) == true)
+                    public Object doWork() throws Exception
                     {
-                        // Remove unwanted aspects
-                        removeUnwantedAspects(nodeService, newNodeRef);
+                        final RecordsManagementService rmService = rmServiceRegistry.getRecordsManagementService();
+                        final DispositionService rmDispositionService = rmServiceRegistry.getDispositionService();
+                        final RecordService rmRecordService = rmServiceRegistry.getRecordService();
                         
-                        // TODO .. this isn't right!!
-                        //      .. what if the folder is in motion .. do we really want to lose all the disposition information?
-                        //      .. how do we merge from one disposition schedule to another
-                        //      .. for now throw unsupportedOperationException and refactor when considered
-                        throw new UnsupportedOperationException("Moving a record folder is currently not supported.");
+                        if (rmDispositionService.getDispositionSchedule(oldNodeRef) != null || rmService.isCutoff(oldNodeRef))
+                        {
+                            throw new UnsupportedOperationException("Moving a record folder that has a disposition schedule or is cutoff is not suported.");
+                        }
+                        else
+                        {
+                            // Remove unwanted aspects
+                            removeUnwantedAspects(nodeService, newNodeRef);
+
+                            // Sort out the child records
+                            for (NodeRef record : rmService.getRecords(newNodeRef))
+                            {
+                                // Re-initiate the records in the new folder.
+                                rmRecordService.file(record);
+                            }
+                        }
                         
-    //                    // Trigger folder setup
-    //                    rmActionService.executeRecordsManagementAction(newNodeRef, "setupRecordFolder");
-    //                    
-    //                    // Sort out the child records
-    //                    for (NodeRef record : rmService.getRecords(newNodeRef))
-    //                    {
-    //                        removeUnwantedAspects(nodeService, record);
-    //                        rmActionService.executeRecordsManagementAction(record, "file");
-    //                    }
+                        return null;
                     }
-                    
-                    return null;
-                }
-            }, AuthenticationUtil.getAdminUserName());
+                }, AuthenticationUtil.getSystemUserName());
+            }
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Cannot move record folder into another record folder.");
         }
     }
     

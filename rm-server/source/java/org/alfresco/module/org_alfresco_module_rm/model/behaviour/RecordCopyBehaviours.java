@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -124,7 +125,7 @@ public class RecordCopyBehaviours implements RecordsManagementModel
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ASPECT_RECORD, 
-                new JavaBehaviour(this, "getDoNothingCopyCallback"));
+                new JavaBehaviour(this, "onCopyRecord"));
         
         // Move behaviour 
         this.policyComponent.bindClassBehaviour(
@@ -223,6 +224,38 @@ public class RecordCopyBehaviours implements RecordsManagementModel
                 }
             }, AuthenticationUtil.getAdminUserName());
         }
+    }
+    
+    /**
+     * Handle the copying of the record aspect.
+     * Excludes the Date Filed property.  The Date Filed will be generated on copy.
+     * 
+     * @param classRef
+     * @param copyDetails
+     * @return
+     */
+    public CopyBehaviourCallback onCopyRecord(final QName classRef, final CopyDetails copyDetails)
+    {
+        return new DefaultCopyBehaviourCallback()
+        {
+
+            @Override
+            public Map<QName, Serializable> getCopyProperties(QName classRef, CopyDetails copyDetails,
+                    Map<QName, Serializable> properties)
+            {
+                Map<QName, Serializable> sourceProperties = super.getCopyProperties(classRef, copyDetails, properties);
+                
+                // Remove the Date Filed property from record properties on copy.
+                // It will be generated for the copy
+                if (sourceProperties.containsKey(PROP_DATE_FILED))
+                {
+                    sourceProperties.remove(PROP_DATE_FILED);
+                }
+
+                return sourceProperties;
+            }
+            
+        };
     }
     
     /**

@@ -97,6 +97,34 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private static Log logger = LogFactory.getLog(RecordsManagementAuditServiceImpl.class);
 
     private static final String KEY_RM_AUDIT_NODE_RECORDS = "RMAUditNodeRecords";
+    
+    protected static final String RM_AUDIT_EVENT_LOGIN_SUCCESS = "Login.Success";
+    protected static final String RM_AUDIT_EVENT_LOGIN_FAILURE = "Login.Failure";
+    
+    protected static final String RM_AUDIT_APPLICATION_NAME = "RM";
+    protected static final String RM_AUDIT_PATH_ROOT = "/RM";
+    protected static final String RM_AUDIT_SNIPPET_EVENT = "/event";
+    protected static final String RM_AUDIT_SNIPPET_PERSON = "/person";
+    protected static final String RM_AUDIT_SNIPPET_NAME = "/name";
+    protected static final String RM_AUDIT_SNIPPET_NODE = "/node";
+    protected static final String RM_AUDIT_SNIPPET_CHANGES = "/changes";
+    protected static final String RM_AUDIT_SNIPPET_BEFORE = "/before";
+    protected static final String RM_AUDIT_SNIPPET_AFTER = "/after";
+
+    protected static final String RM_AUDIT_DATA_PERSON_FULLNAME = "/RM/event/person/fullName";
+    protected static final String RM_AUDIT_DATA_PERSON_ROLES = "/RM/event/person/roles";
+    protected static final String RM_AUDIT_DATA_EVENT_NAME = "/RM/event/name/value";
+    protected static final String RM_AUDIT_DATA_NODE_NODEREF = "/RM/event/node/noderef";
+    protected static final String RM_AUDIT_DATA_NODE_NAME = "/RM/event/node/name";
+    protected static final String RM_AUDIT_DATA_NODE_TYPE = "/RM/event/node/type";
+    protected static final String RM_AUDIT_DATA_NODE_IDENTIFIER = "/RM/event/node/identifier";
+    protected static final String RM_AUDIT_DATA_NODE_NAMEPATH = "/RM/event/node/namePath";
+    protected static final String RM_AUDIT_DATA_NODE_CHANGES_BEFORE = "/RM/event/node/changes/before/value";
+    protected static final String RM_AUDIT_DATA_NODE_CHANGES_AFTER = "/RM/event/node/changes/after/value";
+
+    protected static final String RM_AUDIT_DATA_LOGIN_USERNAME = "/RM/login/args/userName/value";
+    protected static final String RM_AUDIT_DATA_LOGIN_FULLNAME = "/RM/login/no-error/fullName";
+    protected static final String RM_AUDIT_DATA_LOGIN_ERROR = "/RM/login/error/value";
 
     protected static final String AUDIT_TRAIL_FILE_PREFIX = "audit_";
     protected static final String AUDIT_TRAIL_JSON_FILE_SUFFIX = ".json";
@@ -283,8 +311,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     	// TODO use file plan to scope audit log
 
         return auditService.isAuditEnabled(
-                RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME,
-                RecordsManagementAuditService.RM_AUDIT_PATH_ROOT);
+                RM_AUDIT_APPLICATION_NAME,
+                RM_AUDIT_PATH_ROOT);
     }
 
     /**
@@ -296,8 +324,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     	// TODO use file plan to scope audit log
 
         auditService.enableAudit(
-                RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME,
-                RecordsManagementAuditService.RM_AUDIT_PATH_ROOT);
+                RM_AUDIT_APPLICATION_NAME,
+                RM_AUDIT_PATH_ROOT);
 
         if (logger.isInfoEnabled())
         {
@@ -318,8 +346,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     	auditEvent(filePlan, AUDIT_EVENT_STOP, null, null, true);
 
         auditService.disableAudit(
-                RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME,
-                RecordsManagementAuditService.RM_AUDIT_PATH_ROOT);
+                RM_AUDIT_APPLICATION_NAME,
+                RM_AUDIT_PATH_ROOT);
         
         if (logger.isInfoEnabled())
         {
@@ -336,7 +364,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     	ParameterCheck.mandatory("filePlan", filePlan);
     	// TODO use file plan to scope audit log
 
-        auditService.clearAudit(RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME, null, null);
+        auditService.clearAudit(RM_AUDIT_APPLICATION_NAME, null, null);
         if (logger.isInfoEnabled())
         {
             logger.debug("Records Management audit log has been cleared");
@@ -398,7 +426,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         if (immediate == true)
         {
             Map<String, Serializable> auditMap = buildAuditMap(nodeRef, eventName, before, after);
-            auditComponent.recordAuditValues(RecordsManagementAuditService.RM_AUDIT_PATH_ROOT, auditMap);
+            auditComponent.recordAuditValues(RM_AUDIT_PATH_ROOT, auditMap);
         }
         else
         {
@@ -428,16 +456,16 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         Map<String, Serializable> auditMap = new HashMap<String, Serializable>(13);
         auditMap.put(
                 AuditApplication.buildPath(
-                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
-                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_NAME),
+                        RM_AUDIT_SNIPPET_EVENT,
+                        RM_AUDIT_SNIPPET_NAME),
                         eventName);
         
         if (nodeRef != null)
         {
             auditMap.put(
                     AuditApplication.buildPath(
-                            RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
-                            RecordsManagementAuditService.RM_AUDIT_SNIPPET_NODE),
+                            RM_AUDIT_SNIPPET_EVENT,
+                            RM_AUDIT_SNIPPET_NODE),
                             nodeRef);            
         }
         
@@ -445,17 +473,17 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         Pair<Map<QName, Serializable>, Map<QName, Serializable>> deltaPair = PropertyMap.getBeforeAndAfterMapsForChanges(propertiesBefore, propertiesAfter);
         auditMap.put(
                 AuditApplication.buildPath(
-                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
-                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_NODE,
-                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_CHANGES,
-                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_BEFORE),
+                        RM_AUDIT_SNIPPET_EVENT,
+                        RM_AUDIT_SNIPPET_NODE,
+                        RM_AUDIT_SNIPPET_CHANGES,
+                        RM_AUDIT_SNIPPET_BEFORE),
                 (Serializable) deltaPair.getFirst());
         auditMap.put(
                 AuditApplication.buildPath(
-                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_EVENT,
-                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_NODE,
-                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_CHANGES,
-                        RecordsManagementAuditService.RM_AUDIT_SNIPPET_AFTER),
+                        RM_AUDIT_SNIPPET_EVENT,
+                        RM_AUDIT_SNIPPET_NODE,
+                        RM_AUDIT_SNIPPET_CHANGES,
+                        RM_AUDIT_SNIPPET_AFTER),
                 (Serializable) deltaPair.getSecond());
         
         return auditMap;
@@ -529,7 +557,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 {
                     logger.debug("RM Audit: Auditing values: \n" + auditMap);
                 }
-                auditMap = auditComponent.recordAuditValues(RecordsManagementAuditService.RM_AUDIT_PATH_ROOT, auditMap);
+                auditMap = auditComponent.recordAuditValues(RM_AUDIT_PATH_ROOT, auditMap);
                 if (auditMap.isEmpty())
                 {
                     if (logger.isDebugEnabled())
@@ -676,7 +704,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 Map<QName, Serializable> beforeProperties = null;
                 Map<QName, Serializable> afterProperties = null;
 
-                if (values.containsKey(RecordsManagementAuditService.RM_AUDIT_DATA_EVENT_NAME))
+                if (values.containsKey(RM_AUDIT_DATA_EVENT_NAME))
                 {
                     // This data is /RM/event/...
                     eventName = (String) values.get(RM_AUDIT_DATA_EVENT_NAME);
@@ -698,18 +726,18 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                         nodeType = (typeDef != null) ? typeDef.getTitle(dictionaryService) : null;
                     }
                 }
-                else if (values.containsKey(RecordsManagementAuditService.RM_AUDIT_DATA_LOGIN_USERNAME))
+                else if (values.containsKey(RM_AUDIT_DATA_LOGIN_USERNAME))
                 {
-                    user = (String) values.get(RecordsManagementAuditService.RM_AUDIT_DATA_LOGIN_USERNAME);
-                    if (values.containsKey(RecordsManagementAuditService.RM_AUDIT_DATA_LOGIN_ERROR))
+                    user = (String) values.get(RM_AUDIT_DATA_LOGIN_USERNAME);
+                    if (values.containsKey(RM_AUDIT_DATA_LOGIN_ERROR))
                     {
-                        eventName = RecordsManagementAuditService.RM_AUDIT_EVENT_LOGIN_FAILURE;
+                        eventName = RM_AUDIT_EVENT_LOGIN_FAILURE;
                         fullName = user;            // The user didn't log in
                     }
                     else
                     {
-                        eventName = RecordsManagementAuditService.RM_AUDIT_EVENT_LOGIN_SUCCESS;
-                        fullName = (String) values.get(RecordsManagementAuditService.RM_AUDIT_DATA_LOGIN_FULLNAME);
+                        eventName = RM_AUDIT_EVENT_LOGIN_SUCCESS;
+                        fullName = (String) values.get(RM_AUDIT_DATA_LOGIN_FULLNAME);
                     }
                 }
                 else
@@ -723,21 +751,21 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     return true;
                 }
 
-                // filter out events if set
-                if (params.getEvent() != null &&
-                    params.getEvent().endsWith(eventName) == false)
-                {
-                    // skip it
-                    return true;
-                }
-
-
-                if (params.getProperty() != null &&
-                    getChangedProperties(beforeProperties, afterProperties).contains(params.getProperty()) == false)
-                {
-                    // skip it
-                    return false;
-                }
+//                // filter out events if set
+//                if (params.getEvent() != null &&
+//                    params.getEvent().endsWith(eventName) == false)
+//                {
+//                    // skip it
+//                    return true;
+//                }
+//
+//
+//                if (params.getProperty() != null &&
+//                    getChangedProperties(beforeProperties, afterProperties).contains(params.getProperty()) == false)
+//                {
+//                    // skip it
+//                    return false;
+//                }
 
                 // TODO: Refactor this to use the builder pattern
                 RecordsManagementAuditEntry entry = new RecordsManagementAuditEntry(
@@ -771,31 +799,31 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 return true;
             }
 
-            private List<QName> getChangedProperties(Map<QName, Serializable> beforeProperties, Map<QName, Serializable> afterProperties)
-            {
-                List<QName> changedProperties = new ArrayList<QName>(21);
-
-                if (beforeProperties != null && afterProperties != null)
-                {
-                    // add all the properties present before the audited action
-                    for (QName valuePropName : beforeProperties.keySet())
-                    {
-                        changedProperties.add(valuePropName);
-                    }
-
-                    // add all the properties present after the audited action that
-                    // have not already been added
-                    for (QName valuePropName : afterProperties.keySet())
-                    {
-                        if (!beforeProperties.containsKey(valuePropName))
-                        {
-                            changedProperties.add(valuePropName);
-                        }
-                    }
-                }
-
-                return changedProperties;
-            }
+//            private List<QName> getChangedProperties(Map<QName, Serializable> beforeProperties, Map<QName, Serializable> afterProperties)
+//            {
+//                List<QName> changedProperties = new ArrayList<QName>(21);
+//
+//                if (beforeProperties != null && afterProperties != null)
+//                {
+//                    // add all the properties present before the audited action
+//                    for (QName valuePropName : beforeProperties.keySet())
+//                    {
+//                        changedProperties.add(valuePropName);
+//                    }
+//
+//                    // add all the properties present after the audited action that
+//                    // have not already been added
+//                    for (QName valuePropName : afterProperties.keySet())
+//                    {
+//                        if (!beforeProperties.containsKey(valuePropName))
+//                        {
+//                            changedProperties.add(valuePropName);
+//                        }
+//                    }
+//                }
+//
+//                return changedProperties;
+//            }
 
             private void writeEntryToFile(RecordsManagementAuditEntry entry)
             {
@@ -854,13 +882,17 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         // Build audit query parameters
         AuditQueryParameters auditQueryParams = new AuditQueryParameters();
         auditQueryParams.setForward(forward);
-        auditQueryParams.setApplicationName(RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME);
+        auditQueryParams.setApplicationName(RM_AUDIT_APPLICATION_NAME);
         auditQueryParams.setUser(user);
         auditQueryParams.setFromTime(fromTime);
         auditQueryParams.setToTime(toTime);
         if (nodeRef != null)
         {
-            auditQueryParams.addSearchKey(RecordsManagementAuditService.RM_AUDIT_DATA_NODE_NODEREF, nodeRef);
+            auditQueryParams.addSearchKey(RM_AUDIT_DATA_NODE_NODEREF, nodeRef);
+        }
+        else if (params.getEvent() != null)
+        {
+            auditQueryParams.addSearchKey(RM_AUDIT_DATA_EVENT_NAME, params.getEvent());
         }
         // Get audit entries
         auditService.auditQuery(callback, auditQueryParams, maxEntries);

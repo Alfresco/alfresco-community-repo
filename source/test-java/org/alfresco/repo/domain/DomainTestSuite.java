@@ -42,9 +42,10 @@ import org.junit.runners.Suite;
  * @author Derek Hulley
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({
-	NodeDAOTest.class,
-	ContentDataDAOTest.class,
+@Suite.SuiteClasses(
+{
+    NodeDAOTest.class,
+    ContentDataDAOTest.class,
     EncodingDAOTest.class,
     LockDAOTest.class,
     MimetypeDAOTest.class,
@@ -59,8 +60,8 @@ import org.junit.runners.Suite;
     SOLRDAOTest.class,
     TenantAdminDAOTest.class,
     CannedQueryDAOTest.class
-
 })
-public class DomainTestSuite {
+public class DomainTestSuite
+{
     // Intentionally empty
 }

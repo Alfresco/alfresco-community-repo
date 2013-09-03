@@ -216,7 +216,7 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
         String oldAlias = (String)before.get(EmailServerModel.PROP_ALIAS);
         String newAlias = (String)after.get(EmailServerModel.PROP_ALIAS);
         
-        if(oldAlias != null && newAlias != null && (oldAlias).equals(newAlias))
+        if(oldAlias != null && newAlias != null && (normaliseAlias(oldAlias)).equals(normaliseAlias(newAlias)))
         {
             // alias has not changed
             return;

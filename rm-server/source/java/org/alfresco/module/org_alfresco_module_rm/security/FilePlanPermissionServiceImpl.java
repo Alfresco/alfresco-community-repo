@@ -422,11 +422,26 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
     private void setReadPermissionUp(NodeRef nodeRef, String authority)
     {
         NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-        if (parent != null &&
-            filePlanService.isFilePlan(parent) == false)
+        if (parent != null && filePlanService.isFilePlanComponent(parent) == true)
         {
-            setPermissionImpl(parent, authority, RMPermissionModel.READ_RECORDS);
-            setReadPermissionUp(parent, authority);
+            setReadPermissionUpImpl(parent, authority);
+        }
+    }
+    
+    /**
+     * Helper method used to set the read permission up the hierarchy
+     * 
+     * @param nodeRef   node reference
+     * @param authority authority
+     */
+    private void setReadPermissionUpImpl(NodeRef nodeRef, String authority)
+    {
+        setPermissionImpl(nodeRef, authority, RMPermissionModel.READ_RECORDS);
+        
+        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        if (parent != null && filePlanService.isFilePlanComponent(parent) == true)
+        {
+            setReadPermissionUpImpl(parent, authority);
         }
     }
 

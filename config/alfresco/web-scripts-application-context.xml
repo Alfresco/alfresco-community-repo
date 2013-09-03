@@ -1982,4 +1982,19 @@
         <property name="nodeService" ref="NodeService"/>   
     </bean>
     <!-- END: Download -->
+    
+    <!-- IE Specific set of API Formats -->
+    <bean id="webscripts.formats.IE" parent="webscripts.formatmap">
+       <property name="agent"><value>MSIE</value></property>
+       <property name="formats">
+          <props>
+             <prop key="atom">text/xml</prop>
+             <prop key="atomentry">text/xml</prop>
+             <prop key="atomfeed">text/xml</prop>
+             <prop key="rss">application/rss+xml</prop>
+             <prop key="opensearchdescription">text/xml</prop>
+          </props>
+       </property>
+    </bean>
+    
 </beans>

@@ -37,33 +37,7 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
 {
     public enum ReportFormat { HTML, JSON }
     
-    public static final String RM_AUDIT_EVENT_LOGIN_SUCCESS = "Login.Success";
-    public static final String RM_AUDIT_EVENT_LOGIN_FAILURE = "Login.Failure";
-    
-    public static final String RM_AUDIT_APPLICATION_NAME = "RM";
-    public static final String RM_AUDIT_PATH_ROOT = "/RM";
-    public static final String RM_AUDIT_SNIPPET_EVENT = "/event";
-    public static final String RM_AUDIT_SNIPPET_PERSON = "/person";
-    public static final String RM_AUDIT_SNIPPET_NAME = "/name";
-    public static final String RM_AUDIT_SNIPPET_NODE = "/node";
-    public static final String RM_AUDIT_SNIPPET_CHANGES = "/changes";
-    public static final String RM_AUDIT_SNIPPET_BEFORE = "/before";
-    public static final String RM_AUDIT_SNIPPET_AFTER = "/after";
-
-    public static final String RM_AUDIT_DATA_PERSON_FULLNAME = "/RM/event/person/fullName";
-    public static final String RM_AUDIT_DATA_PERSON_ROLES = "/RM/event/person/roles";
-    public static final String RM_AUDIT_DATA_EVENT_NAME = "/RM/event/name/value";
-    public static final String RM_AUDIT_DATA_NODE_NODEREF = "/RM/event/node/noderef";
-    public static final String RM_AUDIT_DATA_NODE_NAME = "/RM/event/node/name";
-    public static final String RM_AUDIT_DATA_NODE_TYPE = "/RM/event/node/type";
-    public static final String RM_AUDIT_DATA_NODE_IDENTIFIER = "/RM/event/node/identifier";
-    public static final String RM_AUDIT_DATA_NODE_NAMEPATH = "/RM/event/node/namePath";
-    public static final String RM_AUDIT_DATA_NODE_CHANGES_BEFORE = "/RM/event/node/changes/before/value";
-    public static final String RM_AUDIT_DATA_NODE_CHANGES_AFTER = "/RM/event/node/changes/after/value";
-
-    public static final String RM_AUDIT_DATA_LOGIN_USERNAME = "/RM/login/args/userName/value";
-    public static final String RM_AUDIT_DATA_LOGIN_FULLNAME = "/RM/login/no-error/fullName";
-    public static final String RM_AUDIT_DATA_LOGIN_ERROR = "/RM/login/error/value";
+   
     
     /**
      * Retrieves a list of audit events.

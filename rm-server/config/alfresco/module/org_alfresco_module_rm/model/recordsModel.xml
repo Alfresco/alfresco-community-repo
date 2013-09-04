@@ -714,7 +714,7 @@
             </property>
 
             <property name="rma:origionalName">
-               <title>Origional Name</title>
+               <title>Original Name</title>
                <type>d:text</type>
                <protected>true</protected>
             </property>

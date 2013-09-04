@@ -247,7 +247,7 @@ CREATE TABLE alf_child_assoc
     assoc_index INTEGER,
     PRIMARY KEY (id),
     UNIQUE KEY parent_node_id (parent_node_id, type_qname_id, child_node_name_crc, child_node_name),
-    KEY fk_alf_cass_pnode (parent_node_id),
+    KEY idx_alf_cass_pnode (parent_node_id, assoc_index, id),
     KEY fk_alf_cass_cnode (child_node_id),
     KEY fk_alf_cass_tqn (type_qname_id),
     KEY fk_alf_cass_qnns (qname_ns_id),

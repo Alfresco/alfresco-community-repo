@@ -3424,7 +3424,7 @@
             <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/rename-constraint-activiti.sql</value>
         </property>
     </bean>
-    
+
     <bean id="patch.db-V4.2-add-activti-index-historic-activity" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id" value="patch.db-V4.2-add-activti-index-historic-activity" />
         <property name="description" value="patch.addActivtiIndexHistoricActivity.description" />
@@ -3630,4 +3630,15 @@
             <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/drop-AVM-index.sql</value>
         </property>
     </bean>
+    <bean id="patch.db-V4.1-ChildAssoc-OrderBy" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.1-ChildAssoc-OrderBy</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6032</value></property>
+        <property name="targetSchema"><value>6033</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/ChildAssoc-OrderBy.sql</value>
+        </property>
+    </bean>
+
 </beans>

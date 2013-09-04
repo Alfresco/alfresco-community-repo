@@ -269,7 +269,7 @@ CREATE TABLE alf_child_assoc
     CONSTRAINT fk_alf_cass_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id)
 );
 CREATE UNIQUE INDEX parent_node_id ON alf_child_assoc (parent_node_id, type_qname_id, child_node_name_crc, child_node_name);
-CREATE INDEX fk_alf_cass_pnode ON alf_child_assoc (parent_node_id);
+CREATE INDEX idx_alf_cass_pnode ON alf_child_assoc (parent_node_id, assoc_index, id);
 CREATE INDEX fk_alf_cass_cnode ON alf_child_assoc (child_node_id);
 CREATE INDEX fk_alf_cass_tqn ON alf_child_assoc (type_qname_id);
 CREATE INDEX fk_alf_cass_qnns ON alf_child_assoc (qname_ns_id);

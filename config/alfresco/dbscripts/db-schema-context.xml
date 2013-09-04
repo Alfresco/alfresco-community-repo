@@ -90,7 +90,8 @@
                 <ref bean="patch.db-V4.2-remove-index-acl_id" />
                 <ref bean="patch.db-V4.1-drop-activiti-feed-format" />
                 <ref bean="patch.db-V4.2-metadata-query-indexes" />
-				<ref bean="patch.db-V4.1-fix-Repo-seqs-order" />
+                <ref bean="patch.db-V4.1-fix-Repo-seqs-order" />
+                <ref bean="patch.db-V4.1-ChildAssoc-OrderBy" />
             </list>
         </property>
     </bean>

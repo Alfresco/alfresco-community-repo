@@ -1008,9 +1008,11 @@
             <columnname>child_node_id</columnname>
           </columnnames>
         </index>
-        <index name="fk_alf_cass_pnode" unique="false">
+        <index name="idx_alf_cass_pnode" unique="false">
           <columnnames>
             <columnname>parent_node_id</columnname>
+            <columnname>assoc_index</columnname>
+            <columnname>id</columnname>
           </columnnames>
         </index>
         <index name="fk_alf_cass_qnns" unique="false">

@@ -36,7 +36,7 @@ public class FreezeAction extends RMActionExecuterAbstractBase
 {
    /** Parameter names */
    public static final String PARAM_REASON = "reason";
-
+   
    /**
     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
     */
@@ -52,6 +52,11 @@ public class FreezeAction extends RMActionExecuterAbstractBase
    @Override
    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
    {
-      freezeService.freeze((String) action.getParameterValue(PARAM_REASON), actionedUponNodeRef);
+       // NOTE: we can only freeze records and record folders so ignore everything else
+       if (recordService.isRecord(actionedUponNodeRef) == true ||
+           recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
+       {
+           freezeService.freeze((String) action.getParameterValue(PARAM_REASON), actionedUponNodeRef);
+       }
    }
 }

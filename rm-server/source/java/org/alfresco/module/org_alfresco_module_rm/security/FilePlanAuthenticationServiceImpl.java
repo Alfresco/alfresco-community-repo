@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.security;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantService;
 
 /**
  * @author Roy Wetherall
@@ -36,6 +37,18 @@ public class FilePlanAuthenticationServiceImpl implements FilePlanAuthentication
     private String rmAdminUserName = DEFAULT_RM_ADMIN_USER;
     private String rmAdminFirstName = DEFAULT_RM_ADMIN_FIRST_NAME;
     private String rmAdminLastName = DEFAULT_RM_ADMIN_LAST_NAME;
+    
+    private TenantService tenantService;
+    
+    /**
+     * The Tenant Service
+     * 
+     * @param tenantService
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
 
     /**
      * @param rmAdminUserName   rm admin user name
@@ -51,7 +64,11 @@ public class FilePlanAuthenticationServiceImpl implements FilePlanAuthentication
     @Override
     public String getRmAdminUserName()
     {
-        return rmAdminUserName;
+        // Build the tenant domain string
+        String tenantDomain = tenantService.isEnabled() ? "@" + tenantService.getCurrentUserDomain() : "";
+        
+        // if MT is enabled and we are in the non-tenant domain we need use the base rm admin user name
+        return tenantDomain.length() > 1 ? rmAdminUserName + tenantDomain : rmAdminUserName;
     }
 
     /**

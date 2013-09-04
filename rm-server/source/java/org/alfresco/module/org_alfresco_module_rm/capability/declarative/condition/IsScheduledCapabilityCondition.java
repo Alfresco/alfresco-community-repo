@@ -58,6 +58,18 @@ public class IsScheduledCapabilityCondition extends AbstractCapabilityCondition
     @Override
     public boolean evaluate(NodeRef nodeRef)
     {
+        boolean result = evaluateImpl(nodeRef);
+        
+        if (result == false && recordService.isRecord(nodeRef) == true)
+        {
+            result = evaluateImpl(nodeService.getPrimaryParent(nodeRef).getParentRef());
+        }
+
+        return result;
+    }
+    
+    public boolean evaluateImpl(NodeRef nodeRef)
+    {
         boolean result = false;        
         
         DispositionAction nextDispositionAction = dispositionService.getNextDispositionAction(nodeRef);

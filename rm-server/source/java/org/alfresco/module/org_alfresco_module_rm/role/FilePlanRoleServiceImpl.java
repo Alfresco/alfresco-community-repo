@@ -106,6 +106,11 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
     /** Records management role zone */
     public static final String RM_ROLE_ZONE_PREFIX = "rmRoleZone";
+    
+    /**
+     * Records Management Config Node
+     */
+    private static final String CONFIG_NODEID = "rm_config_folder";
 
     /** Logger */
     private static Log logger = LogFactory.getLog(FilePlanRoleServiceImpl.class);
@@ -229,7 +234,11 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 public NodeRef doWork()
                 {
                     //In a multi tenant store we need to initialize the rm config if it has been done yet
-                    bootstrapImporterModule.execute();
+                    NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID); 
+                    if (nodeService.exists(nodeRef) == false)
+                    {
+                        bootstrapImporterModule.execute();
+                    }
                     
                     // Create "all" role group for root node
                     String allRoles = authorityService.createAuthority(

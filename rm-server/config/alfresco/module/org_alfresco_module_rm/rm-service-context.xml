@@ -567,6 +567,11 @@
         <property name="policyComponent" ref="policyComponent"/>
         <property name="filePlanService" ref="FilePlanService" />
         <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
+        <property name="authenticationService" ref="AuthenticationService" />
+        <property name="personService" ref="PersonService" />
+        
+        <!-- init repo for when a tenant is created -->
+        <property name="bootstrapImporterModuleComponent" ref="org_alfresco_module_rm_bootstrapData"/>
 
     </bean>
 
@@ -1188,6 +1193,9 @@
      	<property name="rmAdminUserName" value="${bootstrap.rmadmin.name}" />
      	<property name="rmAdminFirstName" value="${bootstrap.rmadmin.firstName}" />
      	<property name="rmAdminLastName" value="${bootstrap.rmadmin.lastName}" />
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
     </bean>
 
     <bean id="FilePlanAuthenticationService" class="org.springframework.aop.framework.ProxyFactoryBean">

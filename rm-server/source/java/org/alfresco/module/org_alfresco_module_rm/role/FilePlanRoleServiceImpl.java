@@ -22,11 +22,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.bootstrap.BootstrapImporterModuleComponent;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -35,6 +40,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -48,7 +54,10 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -86,6 +95,14 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
     /** File plan authentication service */
     private FilePlanAuthenticationService filePlanAuthenticationService;
+    
+    /** mutable authenticaiton service */
+    private MutableAuthenticationService authenticationService;
+    
+    /** person service */
+    private PersonService personService;
+    
+    private BootstrapImporterModuleComponent bootstrapImporterModule;
 
     /** Records management role zone */
     public static final String RM_ROLE_ZONE_PREFIX = "rmRoleZone";
@@ -148,6 +165,31 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
+    
+    /**     
+     * @param personService person service
+     */
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+    
+    /**
+     * @param authenticationService mutable authentication service
+     */
+    public void setAuthenticationService(MutableAuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
+    
+    /**
+     * 
+     * @param bootstrapImporterModuleComponent
+     */
+    public void setBootstrapImporterModuleComponent(BootstrapImporterModuleComponent bootstrapImporterModuleComponent)
+    {
+        this.bootstrapImporterModule = bootstrapImporterModuleComponent;
+    }
 
     /**
      * Initialisation method
@@ -179,13 +221,16 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
             // This is not the spaces store - probably the archive store
             return;
         }
-
+        
         if (nodeService.exists(rmRootNode) == true)
         {
             NodeRef unfiledContainer = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
             {
                 public NodeRef doWork()
                 {
+                    //In a multi tenant store we need to initialize the rm config if it has been done yet
+                    bootstrapImporterModule.execute();
+                    
                     // Create "all" role group for root node
                     String allRoles = authorityService.createAuthority(
                     						AuthorityType.GROUP, 
@@ -351,6 +396,9 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                             if (filePlanAuthenticationService.getRmAdminUserName().equals(user) == false)
                             {
+                                // Create the RM Admin User if it does not already exist
+                                createRMAdminUser();
+                                
                                 // add the dynamic admin authority
                                 authorityService.addAuthority(role.getRoleGroupName(), filePlanAuthenticationService.getRmAdminUserName());
                             }
@@ -847,5 +895,33 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     public String getAllRolesContainerGroup(NodeRef filePlan)
     {
         return authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(filePlan));
+    }
+    
+    /**
+     * Create the RMAdmin user if it does not already exist
+     */
+    private void createRMAdminUser()
+    {
+        /** default rm admin password */
+        String password = FilePlanAuthenticationServiceImpl.DEFAULT_RM_ADMIN_PWD;
+        
+        String user = filePlanAuthenticationService.getRmAdminUserName();
+        String firstName = filePlanAuthenticationService.getRmAdminFirstName();
+        String lastName = filePlanAuthenticationService.getRmAdminLastName();
+        
+        if (authenticationService.authenticationExists(user) == false)
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("   ... creating RM Admin user");
+            }
+            
+            authenticationService.createAuthentication(user, password.toCharArray());
+            Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+            properties.put(ContentModel.PROP_USERNAME, user);
+            properties.put(ContentModel.PROP_FIRSTNAME, firstName);
+            properties.put(ContentModel.PROP_LASTNAME, lastName);
+            personService.createPerson(properties);
+        }
     }
 }

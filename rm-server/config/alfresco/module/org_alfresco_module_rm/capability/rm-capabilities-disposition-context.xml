@@ -3,7 +3,7 @@
 
 <beans>
    <!--  Assignable Capabilities -->
-
+   
    <!--  Cut off -->
    <bean id="rmApproveRecordsScheduledForCutoffCapability"
       parent="declarativeCapability">
@@ -271,6 +271,26 @@
             <ref bean="rmDestroyRecordsScheduledForDestructionCapability"/>
             <ref bean="rmDestroyRecordsCapability"/>
          </list>
+      </property>
+   </bean>
+   
+   <!--  End Rentention -->
+   <bean id="rmEndRetentionCapability"
+      parent="declarativeCapability">
+      <property name="name" value="EndRetention"/>
+      <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD_FOLDER</value>
+            <value>RECORD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
+            <entry key="capabilityCondition.retentionIsScheduled" value="true" />
+         </map>
       </property>
    </bean>
 

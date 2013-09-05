@@ -758,5 +758,17 @@
          </set>
       </property>
    </bean>
+   
+   <bean id="jsonConversionComponent.endRetention"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="endRetention"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD</value>
+            <value>RECORD_FOLDER</value>
+         </set>
+      </property>
+      <property name="capability" value="EndRetention" />
+   </bean>
 
 </beans>

@@ -267,7 +267,7 @@
 
    <bean id="retain_proxy" parent="rmProxyAction" >
       <property name="target">
-         <bean id="retain" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RetainAction" parent="rmAction" depends-on="rmFileRecordsCapability"/>
+       	<ref bean="retain"/>  
       </property>
       <property name="interceptorNames">
          <list>
@@ -275,6 +275,8 @@
          </list>
       </property>
    </bean>
+   
+   <bean id="retain" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RetainAction" parent="rmAction"/>
 
    <!-- open record folder -->
 

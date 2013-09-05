@@ -128,6 +128,13 @@
     	<property name="dispositionService" ref="DispositionService"/>
     	<property name="dispositionAction" value="cutoff"/>
     </bean>
+    
+    <bean id="capabilityCondition.retentionIsScheduled"
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsScheduledCapabilityCondition">
+    	<property name="dispositionService" ref="DispositionService"/>
+    	<property name="dispositionAction" value="retain"/>
+    </bean>
 
     <bean id="capabilityCondition.isTransferAccession"
           parent="capabilityCondition.base"

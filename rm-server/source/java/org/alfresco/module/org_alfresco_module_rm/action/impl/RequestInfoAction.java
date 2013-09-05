@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -78,7 +79,8 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (recordService.isRecord(actionedUponNodeRef) == true)
+        if (recordService.isRecord(actionedUponNodeRef) == true && 
+            nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) == false)
         {
             String workflowDefinitionId = workflowService.getDefinitionByName(REQUEST_INFO_WORKFLOW_DEFINITION_NAME).getId();
             Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();

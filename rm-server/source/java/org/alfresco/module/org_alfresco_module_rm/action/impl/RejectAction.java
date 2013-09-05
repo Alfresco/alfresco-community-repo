@@ -47,7 +47,11 @@ public class RejectAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        recordService.rejectRecord(actionedUponNodeRef, (String) action.getParameterValue(PARAM_REASON));
+        if (nodeService.exists(actionedUponNodeRef) == true && 
+            nodeService.getProperty(actionedUponNodeRef, PROP_RECORD_ORIGINATING_LOCATION) != null)
+        {
+            recordService.rejectRecord(actionedUponNodeRef, (String) action.getParameterValue(PARAM_REASON));
+        }
     }
 
     /**

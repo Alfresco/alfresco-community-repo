@@ -91,8 +91,6 @@ public class FileToAction extends RMActionExecuterAbstractBase
                  
                 if (recordsManagementService.isRecordFolder(recordFolder) == true)
                 {
-                    // TODO .. what if a record of the same name already exists in the destination record folder??
-                    
                     final NodeRef finalRecordFolder = recordFolder;                 
                     try
                     {
@@ -107,10 +105,6 @@ public class FileToAction extends RMActionExecuterAbstractBase
                 {
                     throw new AlfrescoRuntimeException("Unable to execute file to action, becuase the destination was not a record folder.");
                 }
-            }
-            else
-            {
-                throw new AlfrescoRuntimeException("Unable to execute file to action, because the actioned upon node is not an unfiled record.");
             }
         }
     }

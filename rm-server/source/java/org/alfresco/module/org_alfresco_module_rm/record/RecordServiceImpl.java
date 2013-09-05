@@ -48,6 +48,7 @@ import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -180,6 +181,10 @@ public class RecordServiceImpl implements RecordService,
     
     /** File folder service */
     private FileFolderService fileFolderService;
+    
+    /** Behaviour filter */
+    @SuppressWarnings("unused")
+    private BehaviourFilter behaviourFilter;
 
     /** List of available record meta-data aspects */
     private Set<QName> recordMetaDataAspects;    
@@ -310,6 +315,14 @@ public class RecordServiceImpl implements RecordService,
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
+    }
+    
+    /**
+     * @param behaviourFilter   behaviour filter
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
 
     /**
@@ -522,60 +535,69 @@ public class RecordServiceImpl implements RecordService,
                 @Override
                 public Void doWork() throws Exception
                 {
-                    // get the new record container for the file plan
-                    NodeRef newRecordContainer = filePlanService.getUnfiledContainer(filePlan);
-                    if (newRecordContainer == null)
+                    // disable delete rules
+                    ruleService.disableRuleType("outbound");
+                    try
                     {
-                        throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
-                    }
-
-                    // get the documents readers
-                    Long aclId = nodeService.getNodeAclId(nodeRef);
-                    Set<String> readers = permissionService.getReaders(aclId);
-                    Set<String> writers = permissionService.getWriters(aclId);
-
-                    // add the current owner to the list of extended writers
-                    String owner = ownableService.getOwner(nodeRef);
-
-                    // remove the owner
-                    ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);
-
-                    // get the documents primary parent assoc
-                    ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
-
-                    // move the document into the file plan
-                    nodeService.moveNode(nodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
-
-                    // save the information about the originating details
-                    Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
-                    aspectProperties.put(PROP_RECORD_ORIGINATING_LOCATION, (Serializable) parentAssoc.getParentRef());
-                    aspectProperties.put(PROP_RECORD_ORIGINATING_USER_ID, userId);
-                    aspectProperties.put(PROP_RECORD_ORIGINATING_CREATION_DATE, new Date());
-                    nodeService.addAspect(nodeRef, ASPECT_RECORD_ORIGINATING_DETAILS, aspectProperties);
-
-                    // make the document a record
-                    makeRecord(nodeRef);
-
-                    if (isLinked == true)
-                    {
-                        // turn off rules
-                        ruleService.disableRules();
-                        try
+                        // get the new record container for the file plan
+                        NodeRef newRecordContainer = filePlanService.getUnfiledContainer(filePlan);
+                        if (newRecordContainer == null)
                         {
-                            // maintain the original primary location
-                            nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
+                            throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
+                        }
     
-                            // set the extended security
-                            Set<String> combinedWriters = new HashSet<String>(writers);
-                            combinedWriters.add(owner);
-                            combinedWriters.add(AuthenticationUtil.getFullyAuthenticatedUser());
-                            
-                            extendedSecurityService.addExtendedSecurity(nodeRef, readers, combinedWriters);
-                        }
-                        finally
+                        // get the documents readers
+                        Long aclId = nodeService.getNodeAclId(nodeRef);
+                        Set<String> readers = permissionService.getReaders(aclId);
+                        Set<String> writers = permissionService.getWriters(aclId);
+    
+                        // add the current owner to the list of extended writers
+                        String owner = ownableService.getOwner(nodeRef);
+    
+                        // remove the owner
+                        ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);
+    
+                        // get the documents primary parent assoc
+                        ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
+    
+                        // move the document into the file plan
+                        nodeService.moveNode(nodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
+    
+                        // save the information about the originating details
+                        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
+                        aspectProperties.put(PROP_RECORD_ORIGINATING_LOCATION, (Serializable) parentAssoc.getParentRef());
+                        aspectProperties.put(PROP_RECORD_ORIGINATING_USER_ID, userId);
+                        aspectProperties.put(PROP_RECORD_ORIGINATING_CREATION_DATE, new Date());
+                        nodeService.addAspect(nodeRef, ASPECT_RECORD_ORIGINATING_DETAILS, aspectProperties);
+    
+                        // make the document a record
+                        makeRecord(nodeRef);
+    
+                        if (isLinked == true)
                         {
-                            ruleService.enableRules();
+                            // turn off rules
+                            ruleService.disableRules();
+                            try
+                            {
+                                // maintain the original primary location
+                                nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
+        
+                                // set the extended security
+                                Set<String> combinedWriters = new HashSet<String>(writers);
+                                combinedWriters.add(owner);
+                                combinedWriters.add(AuthenticationUtil.getFullyAuthenticatedUser());
+                                
+                                extendedSecurityService.addExtendedSecurity(nodeRef, readers, combinedWriters);
+                            }
+                            finally
+                            {
+                                ruleService.enableRules();
+                            }
                         }
+                    }
+                    finally
+                    {
+                        ruleService.enableRuleType("outbound");
                     }
 
                     return null;
@@ -638,6 +660,7 @@ public class RecordServiceImpl implements RecordService,
      */
     private void makeRecord(NodeRef document)
     {
+        ruleService.disableRules();
         try
         {
             // get the record id
@@ -673,6 +696,10 @@ public class RecordServiceImpl implements RecordService,
         catch (FileNotFoundException e)
         {
             throw new AlfrescoRuntimeException("Unable to make record, because rename failed.", e);
+        }
+        finally
+        {
+            ruleService.enableRules();
         }
         
     }

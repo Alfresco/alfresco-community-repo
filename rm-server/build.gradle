@@ -7,8 +7,9 @@ dependencies {
 	compile 'javax.servlet:servlet-api:2.5'
 
 	testCompile 'org.springframework:spring-test:2.5'
-	testCompile group: alfrescoGroupId, name: 'alfresco-repository', version: alfrescoTestDepsVersion, type: 'jar', classifier: 'tests'
-	testCompile group: alfrescoGroupId, name: 'alfresco-remote-api', version: alfrescoTestDepsVersion, type: 'jar', classifier: 'tests'
+    testCompile "${alfrescoGroupId}:alfresco-repository:${alfrescoTestDepsVersion}:tests@jar"
+    testCompile "${alfrescoGroupId}:alfresco-remote-api:${alfrescoTestDepsVersion}:tests@jar"
+
 
 	testRuntime files(explodedConfigDir)
 	testRuntime files(configDir)

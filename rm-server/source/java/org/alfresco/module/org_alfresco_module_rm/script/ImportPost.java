@@ -56,54 +56,55 @@ import org.springframework.util.FileCopyUtils;
 
 /**
  * Imports an ACP file into a records management container.
- * 
+ *
  * @author Gavin Cornwell
  */
 public class ImportPost extends DeclarativeWebScript
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(ImportPost.class);
-    
+
     protected static final String MULTIPART_FORMDATA = "multipart/form-data";
     protected static final String PARAM_DESTINATION = "destination";
     protected static final String PARAM_ARCHIVE = "archive";
+    protected static final String PARAM_FILEDATA = "filedata";
     protected static final String TEMP_FILE_PREFIX = "import_";
-    
+
     protected NodeService nodeService;
     protected DictionaryService dictionaryService;
     protected ImporterService importerService;
     protected RecordsManagementService rmService;
     protected FilePlanRoleService filePlanRoleService;
     protected FilePlanService filePlanService;
-    
+
     /**
      * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
     {
-        this.nodeService = nodeService; 
+        this.nodeService = nodeService;
     }
 
     /**
      * Sets the data dictionary service
-     * 
+     *
      * @param dictionaryService The DictionaryService instance
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Sets the ImporterService to use
-     * 
+     *
      * @param importerService The ImporterService
      */
-    public void setImporterService(ImporterService importerService) 
+    public void setImporterService(ImporterService importerService)
     {
         this.importerService = importerService;
     }
-    
+
     /**
      * @param filePlanRoleService   file plan role service
      */
@@ -111,17 +112,17 @@ public class ImportPost extends DeclarativeWebScript
     {
         this.filePlanRoleService = filePlanRoleService;
     }
-    
+
     /**
      * Sets the RecordsManagementService instance
-     * 
+     *
      * @param rmService The RecordsManagementService instance
      */
     public void setRecordsManagementService(RecordsManagementService rmService)
     {
         this.rmService = rmService;
     }
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -129,7 +130,7 @@ public class ImportPost extends DeclarativeWebScript
     {
         this.filePlanService = filePlanService;
     }
-    
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -159,13 +160,13 @@ public class ImportPost extends DeclarativeWebScript
         if (MULTIPART_FORMDATA.equals(contentType) && webScriptServletRequest != null)
         {
             String nodeRef = req.getParameter(PARAM_DESTINATION);
-            
+
             if (nodeRef == null || nodeRef.length() == 0)
             {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, 
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                             "Mandatory 'destination' parameter was not provided in form data");
             }
-            
+
             // create and check noderef
             final NodeRef destination = new NodeRef(nodeRef);
             if (nodeService.exists(destination))
@@ -174,50 +175,54 @@ public class ImportPost extends DeclarativeWebScript
                 if (!nodeService.hasAspect(destination, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) ||
                     !dictionaryService.isSubClass(nodeService.getType(destination), ContentModel.TYPE_FOLDER))
                 {
-                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, 
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                                 "NodeRef '" + destination + "' does not represent an Records Management container node.");
                 }
             }
             else
             {
-                status.setCode(HttpServletResponse.SC_NOT_FOUND, 
+                status.setCode(HttpServletResponse.SC_NOT_FOUND,
                             "NodeRef '" + destination + "' does not exist.");
             }
-            
+
             // as there is no 'import capability' and the RM admin user is different from
             // the DM admin user (meaning the webscript 'admin' authentication can't be used)
             // perform a manual check here to ensure the current user has the RM admin role.
             boolean isAdmin = filePlanRoleService.hasRMAdminRole(
-                        filePlanService.getFilePlan(destination), 
+                        filePlanService.getFilePlan(destination),
                         AuthenticationUtil.getRunAsUser());
             if (!isAdmin)
             {
                 throw new WebScriptException(Status.STATUS_FORBIDDEN, "Access Denied");
             }
-            
+
             File acpFile = null;
             try
             {
-                // create a temporary file representing uploaded ACP file 
+                // create a temporary file representing uploaded ACP file
                 FormField acpContent = webScriptServletRequest.getFileField(PARAM_ARCHIVE);
                 if (acpContent == null)
                 {
-                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, 
+                    acpContent = webScriptServletRequest.getFileField(PARAM_FILEDATA);
+                    if (acpContent == null)
+                    {
+                        throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                                 "Mandatory 'archive' file content was not provided in form data");
+                    }
                 }
-                
+
                 acpFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, "." + ACPExportPackageHandler.ACP_EXTENSION);
-                
+
                 // copy contents of uploaded file to temp ACP file
                 FileOutputStream fos = new FileOutputStream(acpFile);
                 FileCopyUtils.copy(acpContent.getInputStream(), fos);   // NOTE: this method closes both streams
-                        
+
                 if (logger.isDebugEnabled())
                     logger.debug("Importing uploaded ACP (" + acpFile.getAbsolutePath() + ") into " + nodeRef);
-                
+
                 // setup the import handler
                 final ACPImportPackageHandler importHandler = new ACPImportPackageHandler(acpFile, "UTF-8");
-                
+
                 // import the ACP file as the system user
                 AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
                 {
@@ -227,7 +232,7 @@ public class ImportPost extends DeclarativeWebScript
                          return null;
                      }
                 }, AuthenticationUtil.getSystemUserName());
-                
+
                 // create and return model
                 Map<String, Object> model = new HashMap<String, Object>(1);
                 model.put("success", true);
@@ -235,12 +240,12 @@ public class ImportPost extends DeclarativeWebScript
             }
             catch (FileNotFoundException fnfe)
             {
-                throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, 
+                throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
                             "Failed to import ACP file", fnfe);
             }
             catch (IOException ioe)
             {
-                throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, 
+                throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
                             "Failed to import ACP file", ioe);
             }
             finally

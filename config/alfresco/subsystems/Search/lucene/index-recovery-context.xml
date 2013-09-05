@@ -125,7 +125,7 @@
 
     <bean id="search.baseAdmIndexJobDetail" abstract="true" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
-            <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+            <value>org.alfresco.repo.node.index.NoOpIndexRecoveryJob</value>
         </property>
         <property name="jobDataAsMap">
             <map>
@@ -166,7 +166,7 @@
 
     <bean id="search.baseAvmIndexJobDetail" abstract="true" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
-            <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+            <value>org.alfresco.repo.node.index.NoOpIndexRecoveryJob</value>
         </property>
         <property name="jobDataAsMap">
             <map>
@@ -205,7 +205,7 @@
    
    <bean id="search.baseMissingFullTextReindexJobDetail" abstract="true" class="org.springframework.scheduling.quartz.JobDetailBean">
        <property name="jobClass">
-           <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+           <value>org.alfresco.repo.node.index.NoOpIndexRecoveryJob</value>
        </property>
        <property name="jobDataAsMap">
             <map>

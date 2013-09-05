@@ -198,6 +198,10 @@ public class RecordServiceImpl implements RecordService,
                                                             this,
                                                             "onUpdateProperties",
                                                             NotificationFrequency.EVERY_EVENT);
+    private JavaBehaviour onDeleteDeclaredRecordLink = new JavaBehaviour(
+                                                            this,
+                                                            "onDeleteDeclaredRecordLink",
+                                                            NotificationFrequency.FIRST_EVENT);
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
@@ -339,6 +343,11 @@ public class RecordServiceImpl implements RecordService,
                 NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME, 
                 ASPECT_RECORD, 
                 onUpdateProperties);
+        policyComponent.bindAssociationBehaviour(
+                NodeServicePolicies.BeforeDeleteChildAssociationPolicy.QNAME,
+                ContentModel.TYPE_FOLDER,
+                ContentModel.ASSOC_CONTAINS, 
+                onDeleteDeclaredRecordLink);
     }
 
     /**
@@ -428,7 +437,28 @@ public class RecordServiceImpl implements RecordService,
         {
             onUpdateProperties.enable();
         }
-    }    
+    }
+    
+    /**
+     * Looking specifically at linked content that was declared a record from a non-rm site.
+     * When the site or the folder that the link was declared in is deleted we need to remove 
+     * the extended security property accounts in the tree
+     * 
+     * @param childAssocRef
+     */
+    public void onDeleteDeclaredRecordLink(ChildAssociationRef childAssocRef)
+    {
+        // Is the deleted child association not a primary association?
+        // Does the deleted child association have the rma:recordOriginatingDetails aspect?
+        // Is the parent of the deleted child association a folder (cm:folder)?
+        if (!childAssocRef.isPrimary() && 
+            nodeService.hasAspect(childAssocRef.getChildRef(), ASPECT_RECORD_ORIGINATING_DETAILS) && 
+            nodeService.getType(childAssocRef.getParentRef()).equals(ContentModel.TYPE_FOLDER))
+        {
+            // ..then remove the extended readers and writers up the tree for this remaining node
+            extendedSecurityService.removeExtendedSecurity(childAssocRef.getChildRef(), extendedSecurityService.getExtendedReaders(childAssocRef.getChildRef()), extendedSecurityService.getExtendedWriters(childAssocRef.getChildRef()), true);
+        }
+    }
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#disablePropertyEditableCheck()

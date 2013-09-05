@@ -268,5 +268,11 @@
             <value>${spaces.store}</value>
         </property>
     </bean>
+    
+    <bean id="on-delete-child-association-trigger" class="org.alfresco.repo.rule.ruletrigger.ExtendedBeforeDeleteChildAssociationRuleTrigger" parent="rule-trigger-base">
+      <property name="executeRuleImmediately">
+          <value>true</value>
+      </property>
+   </bean>
 	
 </beans>    

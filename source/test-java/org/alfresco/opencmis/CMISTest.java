@@ -33,14 +33,18 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
+import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
 import org.apache.chemistry.opencmis.commons.data.ObjectData;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderData;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
+import org.apache.chemistry.opencmis.commons.data.Properties;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.Action;
@@ -48,6 +52,7 @@ import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.CmisExtensionElementImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertiesImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIdImpl;
@@ -888,4 +893,86 @@ public class CMISTest
         }
     }
 
+    @Test
+    public void testMNT9090() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        CmisService cmisService = factory.getService(context);
+
+        try
+        {
+	    	FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
+	        {
+	            @Override
+	            public FileInfo execute() throws Throwable
+	            {
+	                NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+	
+	                String folderName = GUID.generate();
+	                FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+	                nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+	                assertNotNull(folderInfo);
+	
+	                String docName = GUID.generate();
+	                FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+	                assertNotNull(fileInfo);
+	                nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
+	                
+	                QName ASPECT_AUDIO = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "audio");
+	                Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
+	                nodeService.addAspect(fileInfo.getNodeRef(), ASPECT_AUDIO, aspectProperties);
+
+	                return fileInfo;
+	            }
+	        });
+
+            // get repository id
+            List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+            assertTrue(repositories.size() > 0);
+            RepositoryInfo repo = repositories.get(0);
+            String repositoryId = repo.getId();
+
+            String objectIdStr = fileInfo.getNodeRef().toString();
+            Holder<String> objectId = new Holder<String>(objectIdStr);
+
+            // try to overflow the value
+            Object value = BigInteger.valueOf(Integer.MAX_VALUE + 1l);
+
+            Properties properties = new PropertiesImpl();
+            List<CmisExtensionElement> extensions = new ArrayList<CmisExtensionElement>();
+
+            CmisExtensionElement valueElem = new CmisExtensionElementImpl(CMISConnector.ALFRESCO_EXTENSION_NAMESPACE, "value", null, value.toString());
+            List<CmisExtensionElement> valueElems = new ArrayList<CmisExtensionElement>();
+            valueElems.add(valueElem);
+
+            List<CmisExtensionElement> children = new ArrayList<CmisExtensionElement>();
+            Map<String, String> attributes = new HashMap<String, String>();
+            attributes.put("propertyDefinitionId", "audio:trackNumber");
+            children.add(new CmisExtensionElementImpl(CMISConnector.ALFRESCO_EXTENSION_NAMESPACE, "propertyInteger", attributes, valueElems));
+
+            List<CmisExtensionElement> propertyValuesExtension = new ArrayList<CmisExtensionElement>();
+            propertyValuesExtension.add(new CmisExtensionElementImpl(CMISConnector.ALFRESCO_EXTENSION_NAMESPACE, CMISConnector.PROPERTIES, null, children));
+
+            CmisExtensionElement setAspectsExtension = new CmisExtensionElementImpl(CMISConnector.ALFRESCO_EXTENSION_NAMESPACE, CMISConnector.SET_ASPECTS, null, propertyValuesExtension);
+            extensions.add(setAspectsExtension);
+            properties.setExtensions(extensions);
+
+            // should throw a CMISConstraintException
+            cmisService.updateProperties(repositoryId, objectId, null, properties, null);
+            fail();
+        }
+        catch(CmisConstraintException e)
+        {
+        	assertTrue(e.getMessage().startsWith("Value is out of range for property"));
+        	// ok
+        }
+        finally
+        {
+            cmisService.close();
+
+            AuthenticationUtil.popAuthentication();
+        }
+    }
 }

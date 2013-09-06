@@ -38,4 +38,6 @@
          resources on the classpath.
      -->
     <bean id="clusteringBootstrap" class="java.lang.String"/>
+    
+    <bean id="ClusterService" class="java.lang.String"/>
 </beans>

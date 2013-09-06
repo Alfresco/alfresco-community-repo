@@ -267,7 +267,7 @@
 
    <bean id="retain_proxy" parent="rmProxyAction" >
       <property name="target">
-       	<ref bean="retain"/>  
+       	<ref bean="retain"/>
       </property>
       <property name="interceptorNames">
          <list>
@@ -275,7 +275,7 @@
          </list>
       </property>
    </bean>
-   
+
    <bean id="retain" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RetainAction" parent="rmAction"/>
 
    <!-- open record folder -->
@@ -914,6 +914,33 @@
       <property name="publicAction" value="true"/>
       <property name="delegateAction" ref="set-property-value" />
       <property name="adhocPropertiesAllowed" value="true" />
+   </bean>
+
+   <!-- add record types -->
+
+   <bean id="addRecordTypes_proxy" parent="rmProxyAction" >
+      <property name="target">
+         <ref bean="addRecordTypes"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="addRecordTypes_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="addRecordTypes_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
+   </bean>
+
+   <bean id="addRecordTypes" class="org.alfresco.module.org_alfresco_module_rm.action.impl.AddRecordTypeAction" parent="rmAction">
+      <property name="publicAction" value="true"/>
    </bean>
 
 </beans>

@@ -138,6 +138,7 @@
    </bean>
 
    <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.TenantRepositoryContainer" parent="webscripts.abstractcontainer" init-method="setup">
+      <property name="configService" ref="webscripts.config" />
       <property name="name"><value>Repository</value></property>
       <property name="scriptObjects">
          <map merge="true">

@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.service;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService;
 import org.alfresco.module.org_alfresco_module_rm.email.CustomMapping;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -63,31 +64,68 @@ public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
                 // Check the initial custom mapping size
                 assertTrue(checkCustomMappingsSize(20));
 
+                String firstKey = eMailMappingService.getEmailMappingKeys().get(0);
+                
                 // Add a custom mapping
-                eMailMappingService.addCustomMapping("monkey", "cm:monkeyFace");
+                eMailMappingService.addCustomMapping(firstKey, "cm:monkeyFace");
 
                 // Check the new size
                 assertTrue(checkCustomMappingsSize(21));
 
                 // Check the new added custom mapping
-                CustomMapping monkeyMapping = getCustomMapping("monkey", "cm:monkeyFace");
+                CustomMapping monkeyMapping = getCustomMapping(firstKey, "cm:monkeyFace");
                 assertNotNull(monkeyMapping);
-                assertEquals("monkey", monkeyMapping.getFrom());
+                assertEquals(firstKey, monkeyMapping.getFrom());
                 assertEquals("cm:monkeyFace", monkeyMapping.getTo());
 
                 // Delete the new added custom mapping
-                eMailMappingService.deleteCustomMapping("monkey", "cm:monkeyFace");
+                eMailMappingService.deleteCustomMapping(firstKey, "cm:monkeyFace");
 
                 // Check the size after deletion
                 assertTrue(checkCustomMappingsSize(20));
 
                 // Check the custom mapping after deletion if it exists
-                assertNull(getCustomMapping("monkey", "cm:monkeyFace"));
+                assertNull(getCustomMapping(firstKey, "cm:monkeyFace"));
 
                 // Check the email mapping keys size
                 // There are 6 "standard" EmailMappingKeys + 2 CustomEmailMappingKeys are added on setUp
                 assertTrue(checkEmailMappingKeysSize(8));
+                
+                try
+                {
+                    eMailMappingService.addCustomMapping(" ", "cm:monkeyFace");
+                    fail("Should not get here. Invalid data.");
+                }
+                catch (AlfrescoRuntimeException are)
+                {
+                    assertNotNull(are);  //Must throw this exception
+                    assertTrue(are.getMessage().contains("Invalid values for"));
+                }
 
+                try
+                {
+                    eMailMappingService.addCustomMapping("monkey", " ");
+                    fail("Should not get here. Invalid data.");
+                }
+                catch (AlfrescoRuntimeException are)
+                {
+                    assertNotNull(are);  //Must throw this exception
+                    assertTrue(are.getMessage().contains("Invalid values for"));
+                }
+
+                eMailMappingService.addCustomMapping(firstKey, "cm:monkeyFace"); //valid key
+                
+                try
+                {
+
+                    eMailMappingService.addCustomMapping(firstKey+"invalid", "cm:monkeyFace");//invalid key
+                    fail("Should not get here. Invalid data.");
+                }
+                catch (AlfrescoRuntimeException are)
+                {
+                    assertNotNull(are);  //Must throw this exception
+                    assertTrue(are.getMessage().contains("Invalid values for"));
+                }
                 return null;
             }
         }, rmAdminName);

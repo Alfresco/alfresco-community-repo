@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
@@ -53,8 +54,10 @@ public class FreezeAction extends RMActionExecuterAbstractBase
    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
    {
        // NOTE: we can only freeze records and record folders so ignore everything else
-       if (recordService.isRecord(actionedUponNodeRef) == true ||
-           recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
+       if (nodeService.exists(actionedUponNodeRef) == true &&
+           nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) == false &&
+           (recordService.isRecord(actionedUponNodeRef) == true ||
+            recordsManagementService.isRecordFolder(actionedUponNodeRef) == true))
        {
            freezeService.freeze((String) action.getParameterValue(PARAM_REASON), actionedUponNodeRef);
        }

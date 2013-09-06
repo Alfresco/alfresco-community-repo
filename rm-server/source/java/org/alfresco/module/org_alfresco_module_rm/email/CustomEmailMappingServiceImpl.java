@@ -45,6 +45,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -213,6 +214,11 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
      */
     public void addCustomMapping(String from, String to)
     {
+        if (StringUtils.isBlank(from) || StringUtils.isBlank(to) || !getEmailMappingKeys().contains(from))
+        {
+            throw new AlfrescoRuntimeException("Invalid values for from/to.");  
+        }
+        
         // create custom mapping
         CustomMapping customMapping = new CustomMapping(from, to);
 

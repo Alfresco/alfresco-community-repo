@@ -182,9 +182,6 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
          break;
 
       case "unfiledRecords":
-    	  filterParams.variablePath = false;
-          filterQuery = "+PATH:\"" + parsedArgs.pathNode.qnamePath + "/*\"";
-          filterParams.query = filterQuery + filterQueryDefaults;
 
     	  break;
 

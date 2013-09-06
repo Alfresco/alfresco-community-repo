@@ -31,6 +31,7 @@ import org.alfresco.repo.admin.patch.PatchExecuter;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -66,6 +67,8 @@ public class FixBpmPackagesPatch extends AbstractPatch
     private int batchSize = 1000;
 
     private ImporterBootstrap importerBootstrap;
+    
+    private BehaviourFilter policyFilter;
 
     /**
      * @param batchThreads              the number of threads that will write child association changes
@@ -88,13 +91,20 @@ public class FixBpmPackagesPatch extends AbstractPatch
         this.importerBootstrap = importerBootstrap;
     }
 
-    @Override
+    public void setPolicyFilter(BehaviourFilter policyFilter) {
+        this.policyFilter = policyFilter;
+    }
+
+	@Override
     protected String applyInternal() throws Exception
     {
 
         FixBpmPackagesPatchHelper helper = new FixBpmPackagesPatchHelper();
         try
         {
+            // disable auditable behavior. MNT-9538 fix
+            policyFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+            
             StoreRef store = importerBootstrap.getStoreRef();
             if (store == null)
             {
@@ -151,6 +161,9 @@ public class FixBpmPackagesPatch extends AbstractPatch
         }
         finally
         {
+            // enable auditable behavior. MNT-9538 fix
+            policyFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+            
             helper.closeWriter();
         }
     }

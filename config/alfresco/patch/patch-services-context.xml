@@ -3044,6 +3044,9 @@
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>     
+        <property name="policyFilter">
+            <ref bean="policyBehaviourFilter" />
+        </property>
     </bean>
 
     <bean id="patch.db-V3.4-Upgrade-JBPM" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">

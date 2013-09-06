@@ -91,7 +91,8 @@ public class FixBpmPackagesPatch extends AbstractPatch
         this.importerBootstrap = importerBootstrap;
     }
 
-    public void setPolicyFilter(BehaviourFilter policyFilter) {
+    public void setPolicyFilter(BehaviourFilter policyFilter) 
+    {
         this.policyFilter = policyFilter;
     }
 

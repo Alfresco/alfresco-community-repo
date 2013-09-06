@@ -2376,6 +2376,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 
         // Create a ClusterConfigSection and attach it to 'this'.
         ClusterConfigSection clusterConf = new ClusterConfigSection(this);
+        clusterConf.setConfigFile(clusterConfigBean.getConfigFile());
     }
     
     

@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +48,7 @@ import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
 import org.apache.chemistry.opencmis.commons.data.Properties;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
+import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
@@ -56,6 +58,8 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.CmisExtensionEleme
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertiesImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIdImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerDefinitionImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyStringImpl;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
@@ -74,7 +78,7 @@ import org.springframework.extensions.webscripts.GUID;
  */
 public class CMISTest
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[]{ApplicationContextHelper.CONFIG_LOCATIONS[0],"classpath:test-cmisinteger_modell-context.xml"});
 
     private FileFolderService fileFolderService;
     private TransactionService transactionService;
@@ -893,6 +897,151 @@ public class CMISTest
         }
     }
 
+    /**
+     * Test for MNT-9089
+     */
+    @Test
+    public void testIntegerBoudaries() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        CmisService cmisService = factory.getService(context);
+
+        try
+        {
+	    	FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
+	        {
+	            @Override
+	            public FileInfo execute() throws Throwable
+	            {
+	                NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+	                
+	                QName testIntTypeQName = QName.createQName("http://testCMISIntegersModel/1.0/", "testintegerstype");
+	
+	                String folderName = GUID.generate();
+	                FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+	                nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+	                assertNotNull(folderInfo);
+	
+	                String docName = GUID.generate();
+	                FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, testIntTypeQName);
+	                assertNotNull(fileInfo);
+	                nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
+
+	                return fileInfo;
+	            }
+	        });
+
+            // get repository id
+            List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+            assertTrue(repositories.size() > 0);
+            RepositoryInfo repo = repositories.get(0);
+            String repositoryId = repo.getId();
+
+            String objectIdStr = fileInfo.getNodeRef().toString();
+            
+            TypeDefinition typeDef = cmisService.getTypeDefinition(repositoryId, "D:tcim:testintegerstype", null);
+            
+            PropertyIntegerDefinitionImpl intNoBoundsTypeDef = 
+            		(PropertyIntegerDefinitionImpl)typeDef.getPropertyDefinitions().get("tcim:int");
+            PropertyIntegerDefinitionImpl longNoBoundsTypeDef = 
+            		(PropertyIntegerDefinitionImpl)typeDef.getPropertyDefinitions().get("tcim:long");
+            
+            PropertyIntegerDefinitionImpl intWithBoundsTypeDef = 
+            		(PropertyIntegerDefinitionImpl)typeDef.getPropertyDefinitions().get("tcim:intwithbounds");
+            PropertyIntegerDefinitionImpl longWithBoundsTypeDef = 
+            		(PropertyIntegerDefinitionImpl)typeDef.getPropertyDefinitions().get("tcim:longwithbounds");
+            
+            BigInteger minInteger = BigInteger.valueOf(Integer.MIN_VALUE);
+            BigInteger maxInteger = BigInteger.valueOf(Integer.MAX_VALUE);
+            
+            BigInteger minLong = BigInteger.valueOf(Long.MIN_VALUE);
+            BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
+            
+            // test for default boundaries
+            assertTrue(intNoBoundsTypeDef.getMinValue().equals(minInteger));
+            assertTrue(intNoBoundsTypeDef.getMaxValue().equals(maxInteger));
+            
+            assertTrue(longNoBoundsTypeDef.getMinValue().equals(minLong));
+            assertTrue(longNoBoundsTypeDef.getMaxValue().equals(maxLong));
+            
+            // test for pre-defined boundaries
+            assertTrue(intWithBoundsTypeDef.getMinValue().equals(BigInteger.valueOf(-10L)));
+            assertTrue(intWithBoundsTypeDef.getMaxValue().equals(BigInteger.valueOf(10L)));
+            
+            assertTrue(longWithBoundsTypeDef.getMinValue().equals(BigInteger.valueOf(-10L)));
+            assertTrue(longWithBoundsTypeDef.getMaxValue().equals(BigInteger.valueOf(10L)));
+            
+            try // try to overfloat long without boundaries
+            {
+                BigInteger aValue = BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.valueOf(1L));
+                setProperiesToObject(cmisService, repositoryId, objectIdStr, "tcim:long", aValue);
+                fail();
+            }
+            catch(Exception e)
+            {
+                assertTrue(e instanceof CmisConstraintException);
+            }
+            
+            try // try to overfloat int without boundaries
+            {
+                BigInteger aValue = BigInteger.valueOf(Integer.MAX_VALUE).add(BigInteger.valueOf(1L));
+                setProperiesToObject(cmisService, repositoryId, objectIdStr, "tcim:int", aValue);
+                fail();
+            }
+            catch(Exception e)
+            {
+                assertTrue(e instanceof CmisConstraintException);
+            }
+            
+            try // try to overfloat int with boundaries
+            {
+                BigInteger aValue = BigInteger.valueOf( 11l );
+                setProperiesToObject(cmisService, repositoryId, objectIdStr, "tcim:intwithbounds", aValue);
+                fail();
+            }
+            catch(Exception e)
+            {
+                assertTrue(e instanceof CmisConstraintException);
+            }
+            
+            try // try to overfloat long with boundaries
+            {
+                BigInteger aValue = BigInteger.valueOf( 11l );
+                setProperiesToObject(cmisService, repositoryId, objectIdStr, "tcim:longwithbounds", aValue);
+                fail();
+            }
+            catch(Exception e)
+            {
+                assertTrue(e instanceof CmisConstraintException);
+            }
+        }
+        catch(Exception e)
+        {
+            fail(e.getMessage());
+        }
+        finally
+        {
+            cmisService.close();
+
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+    
+    private void setProperiesToObject(CmisService cmisService, String repositoryId, String objectIdStr, String propertyStr, BigInteger bigIntValue) throws CmisConstraintException{
+        Properties properties = cmisService.getProperties(repositoryId, objectIdStr, null, null);
+        PropertyIntegerImpl pd = (PropertyIntegerImpl)properties.getProperties().get(propertyStr);
+        pd.setValue(bigIntValue);
+        
+        Collection<PropertyData<?>> propsList = new ArrayList<PropertyData<?>>();
+        propsList.add(pd);
+        
+        Properties newProps = new PropertiesImpl(propsList);
+        
+        cmisService.updateProperties(repositoryId, new Holder<String>(objectIdStr), null, newProps, null);
+    }
+    
     @Test
     public void testMNT9090() throws Exception
     {

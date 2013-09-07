@@ -214,11 +214,11 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
      */
     public void addCustomMapping(String from, String to)
     {
-        if (StringUtils.isBlank(from) || StringUtils.isBlank(to) || !getEmailMappingKeys().contains(from))
+        if (StringUtils.isBlank(from) || StringUtils.isBlank(to))
         {
-            throw new AlfrescoRuntimeException("Invalid values for from/to.");  
+            throw new AlfrescoRuntimeException("Invalid values for from/to.");
         }
-        
+
         // create custom mapping
         CustomMapping customMapping = new CustomMapping(from, to);
 
@@ -245,6 +245,11 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
      */
     public void deleteCustomMapping(String from, String to)
     {
+        if (StringUtils.isBlank(from) || StringUtils.isBlank(to))
+        {
+            throw new AlfrescoRuntimeException("Invalid values for from/to.");
+        }
+
         // create custom mapping
         CustomMapping customMapping = new CustomMapping(from, to);
 

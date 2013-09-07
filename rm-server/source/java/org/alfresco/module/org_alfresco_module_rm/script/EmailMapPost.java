@@ -34,7 +34,7 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Implementation for Java backed webscript to return 
+ * Implementation for Java backed webscript to return
  * custom email field mappings
  */
 public class EmailMapPost extends DeclarativeWebScript
@@ -44,7 +44,7 @@ public class EmailMapPost extends DeclarativeWebScript
 
     /**
      * Custom email mapping service
-     * 
+     *
      * @param customEmailMappingService the custom email mapping service
      */
     public void setCustomEmailMappingService(CustomEmailMappingService customEmailMappingService)
@@ -64,12 +64,11 @@ public class EmailMapPost extends DeclarativeWebScript
             // Get the data from the content
             JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
 
-            // Add custom mapping 
+            // Add custom mapping
             customEmailMappingService.addCustomMapping(json.getString("from"), json.getString("to"));
 
             // Add the lists of custom mappings to the model
             model.put("emailmap", customEmailMappingService.getCustomMappings());
-            model.put("success", true);
         }
         catch (IOException iox)
         {
@@ -83,8 +82,8 @@ public class EmailMapPost extends DeclarativeWebScript
         }
         catch (AlfrescoRuntimeException are)
         {
-            model.put("message", are.getMessage());
-            model.put("success", false);
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
+                    are.getMessage());
         }
 
         return model;

@@ -65,7 +65,7 @@ public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
                 assertTrue(checkCustomMappingsSize(20));
 
                 String firstKey = eMailMappingService.getEmailMappingKeys().get(0);
-                
+
                 // Add a custom mapping
                 eMailMappingService.addCustomMapping(firstKey, "cm:monkeyFace");
 
@@ -90,7 +90,7 @@ public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
                 // Check the email mapping keys size
                 // There are 6 "standard" EmailMappingKeys + 2 CustomEmailMappingKeys are added on setUp
                 assertTrue(checkEmailMappingKeysSize(8));
-                
+
                 try
                 {
                     eMailMappingService.addCustomMapping(" ", "cm:monkeyFace");
@@ -114,18 +114,7 @@ public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
                 }
 
                 eMailMappingService.addCustomMapping(firstKey, "cm:monkeyFace"); //valid key
-                
-                try
-                {
 
-                    eMailMappingService.addCustomMapping(firstKey+"invalid", "cm:monkeyFace");//invalid key
-                    fail("Should not get here. Invalid data.");
-                }
-                catch (AlfrescoRuntimeException are)
-                {
-                    assertNotNull(are);  //Must throw this exception
-                    assertTrue(are.getMessage().contains("Invalid values for"));
-                }
                 return null;
             }
         }, rmAdminName);

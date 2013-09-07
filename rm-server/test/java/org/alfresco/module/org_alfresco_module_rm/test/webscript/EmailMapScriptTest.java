@@ -57,7 +57,7 @@ public class EmailMapScriptTest extends BaseRMWebScriptTestCase
 
         /** Test POST */
         JSONObject newMapping = new JSONObject();
-        newMapping.put("from", "whatever");
+        newMapping.put("from", "messageTo");
         newMapping.put("to", "rmc:Wibble");
 
         Response postResponse = sendRequest(new PostRequest(URL_RM_EMAILMAP, newMapping.toString(), APPLICATION_JSON), Status.STATUS_OK);
@@ -77,7 +77,7 @@ public class EmailMapScriptTest extends BaseRMWebScriptTestCase
         assertFalse(postResponseContent.getString("message").isEmpty());
 
         /** Test DELETE */
-        Response deleteResponse = sendRequest(new DeleteRequest(String.format(URL_RM_EMAILMAP_DELETE, "whatever", "rmc:Wibble")), Status.STATUS_OK);
+        Response deleteResponse = sendRequest(new DeleteRequest(String.format(URL_RM_EMAILMAP_DELETE, "messageTo", "rmc:Wibble")), Status.STATUS_OK);
         JSONObject deleteResponseContent = new JSONObject(deleteResponse.getContentAsString());
         JSONObject deleteData = deleteResponseContent.getJSONObject("data");
         JSONArray deleteMappings = deleteData.getJSONArray("mappings");
@@ -100,7 +100,7 @@ public class EmailMapScriptTest extends BaseRMWebScriptTestCase
         {
             String from = mappings.getJSONObject(i).getString("from");
             String to = mappings.getJSONObject(i).getString("to");
-            if (from.equalsIgnoreCase("whatever") && to.equalsIgnoreCase("rmc:Wibble"))
+            if (from.equalsIgnoreCase("messageTo") && to.equalsIgnoreCase("rmc:Wibble"))
             {
                 result = true;
                 break;

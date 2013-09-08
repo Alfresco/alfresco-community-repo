@@ -140,7 +140,7 @@ public class WebDAVHelper
     /**
      * @return          Return the service registry
      */
-    public final ServiceRegistry getServiceRegistry()
+    public ServiceRegistry getServiceRegistry()
     {
         // TODO: eliminate this - not dependency injection!
         return m_serviceRegistry;

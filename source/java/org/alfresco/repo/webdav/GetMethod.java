@@ -36,7 +36,6 @@ import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -269,7 +268,7 @@ public class GetMethod extends WebDAVMethod
         {
             attemptReadContent(realNodeInfo, reader);                
         }
-        catch (ContentIOException e)
+        catch (final Throwable e)
         {
             boolean logAsError = true;
             Throwable t = e;

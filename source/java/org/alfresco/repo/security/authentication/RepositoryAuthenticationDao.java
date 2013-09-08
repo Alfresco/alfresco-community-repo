@@ -167,7 +167,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             throw new UsernameNotFoundException("Could not find user by userName: " + incomingUserName);
         }
         UserDetails userDetails = userEntry.userDetails;
-        if (userEntry.credentialExpiryDate == null || userEntry.credentialExpiryDate.compareTo(new Date()) >= 0)
+        if (userEntry.credentialExpiryDate == null || userEntry.credentialExpiryDate.getTime() >= System.currentTimeMillis())
         {
             return userDetails;
         }
@@ -213,7 +213,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                     boolean isAdminAuthority = authorityService.isAdminAuthority(userName);
                     
                     Date credentialsExpiryDate = getCredentialsExpiryDate(userName, properties, isAdminAuthority);
-                    boolean credentialsHaveNotExpired = (credentialsExpiryDate == null || credentialsExpiryDate.compareTo(new Date()) >= 0);
+                    boolean credentialsHaveNotExpired = (credentialsExpiryDate == null || credentialsExpiryDate.getTime() >= System.currentTimeMillis());
                     
                     UserDetails ud = new User(
                             userName,
@@ -456,7 +456,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             }
             else
             {
-                return (date.compareTo(new Date()) < 1);
+                return (date.getTime() < System.currentTimeMillis());
             }
         }
         else
@@ -578,7 +578,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     protected boolean getCredentialsHaveExpired(String userName, Map<QName, Serializable> properties, Boolean isAdminAuthority)
     {
         Date credentialsExpiryDate = getCredentialsExpiryDate(userName, properties, isAdminAuthority);
-        boolean credentialsHaveNotExpired = (credentialsExpiryDate == null || credentialsExpiryDate.compareTo(new Date()) >= 0);
+        boolean credentialsHaveNotExpired = (credentialsExpiryDate == null || credentialsExpiryDate.getTime() >= System.currentTimeMillis());
         return (! credentialsHaveNotExpired);
     }
     

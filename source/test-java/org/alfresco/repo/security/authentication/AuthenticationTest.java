@@ -45,6 +45,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.ExpiryMode;
@@ -103,6 +104,7 @@ public class AuthenticationTest extends TestCase
     private Dialect dialect;
 
     private PolicyComponent policyComponent;
+    private BehaviourFilter behaviourFilter;
 
     private SimpleCache<String, CacheEntry> authenticationCache;    
     private SimpleCache<String, NodeRef> immutableSingletonCache;
@@ -141,6 +143,7 @@ public class AuthenticationTest extends TestCase
         pubPersonService =  (PersonService) ctx.getBean("PersonService");
         personService =  (PersonService) ctx.getBean("personService");
         policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
+        behaviourFilter = (BehaviourFilter) ctx.getBean("policyBehaviourFilter");
         authenticationCache = (SimpleCache<String, CacheEntry>) ctx.getBean("authenticationCache");
         immutableSingletonCache = (SimpleCache<String, NodeRef>) ctx.getBean("immutableSingletonCache");
         // permissionServiceSPI = (PermissionServiceSPI)
@@ -155,6 +158,26 @@ public class AuthenticationTest extends TestCase
         authenticationManager = (AuthenticationManager) subsystem.getBean("authenticationManager");
 
         transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
+        
+        // Clean up before we start trying to create the test user
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                try
+                {
+                    deleteAndy();
+                    return null;
+                }
+                finally
+                {
+                    authenticationComponent.clearCurrentSecurityContext();
+                }
+            }
+        }, false, true);
+        
         userTransaction = transactionService.getUserTransaction();
         userTransaction.begin();
 
@@ -174,13 +197,13 @@ public class AuthenticationTest extends TestCase
         
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
-        deleteAndy();
         authenticationComponent.clearCurrentSecurityContext();
     }
 
     private void deleteAndy()
     {
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
+        dao.setTransactionService(transactionService);
         dao.setAuthorityService(authorityService);
         dao.setTenantService(tenantService);
         dao.setNodeService(nodeService);
@@ -191,16 +214,23 @@ public class AuthenticationTest extends TestCase
         dao.setAuthenticationCache(authenticationCache);
         dao.setSingletonCache(immutableSingletonCache);
         
-        if (dao.getUserOrNull("andy") != null)
+        if (dao.userExists("andy"))
         {
             dao.deleteUser("andy");
         }
+        if (dao.userExists("Andy"))
+        {
+            dao.deleteUser("Andy");
+        }
         
-        if(personService.personExists("andy"))
+        if (personService.personExists("andy"))
         {
             personService.deletePerson("andy");
         }
-        
+        if (personService.personExists("Andy"))
+        {
+            personService.deletePerson("Andy");
+        }
     }
 
     @Override
@@ -316,18 +346,6 @@ public class AuthenticationTest extends TestCase
         authenticationComponent.clearCurrentSecurityContext();
     }
 
-    public void c()
-    {
-        try
-        {
-            authenticationService.authenticate("", "".toCharArray());
-        }
-        catch (AuthenticationException e)
-        {
-            // Expected
-        }
-    }
-
     public void testNewTicketOnLogin()
     {
         authenticationComponent.setSystemUserAsCurrentUser();
@@ -402,10 +420,11 @@ public class AuthenticationTest extends TestCase
             // tenant domain ~,./<>?\\| is not valid format"
         }
     }
-
-    public void testCreateAndyUserAndOtherCRUD() throws NoSuchAlgorithmException, UnsupportedEncodingException
+    
+    private RepositoryAuthenticationDao createRepositoryAuthenticationDao()
     {
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
+        dao.setTransactionService(transactionService);
         dao.setTenantService(tenantService);
         dao.setNodeService(nodeService);
         dao.setAuthorityService(authorityService);
@@ -415,6 +434,12 @@ public class AuthenticationTest extends TestCase
         dao.setPolicyComponent(policyComponent);
         dao.setAuthenticationCache(authenticationCache);
         dao.setSingletonCache(immutableSingletonCache);
+        return dao;
+    }
+
+    public void testCreateAndyUserAndOtherCRUD() throws NoSuchAlgorithmException, UnsupportedEncodingException
+    {
+        RepositoryAuthenticationDao dao = createRepositoryAuthenticationDao();
         
         dao.createUser("Andy", "cabbage".toCharArray());
         assertNotNull(dao.getUserOrNull("Andy"));
@@ -452,7 +477,8 @@ public class AuthenticationTest extends TestCase
         // assertNotSame(oldSalt, dao.getSalt(newDetails));
 
         dao.deleteUser("Andy");
-        assertNull(dao.getUserOrNull("Andy"));
+        assertFalse("Should not be a cache entry for 'Andy'.", authenticationCache.contains("Andy"));
+        assertNull("DAO should report that 'Andy' does not exist.", dao.getUserOrNull("Andy"));
 
         MessageDigest digester;
         try
@@ -466,7 +492,47 @@ public class AuthenticationTest extends TestCase
             e.printStackTrace();
             System.out.println("No digester");
         }
+    }
+    
+    /** 
+     * <a href="https://issues.alfresco.com/jira/browse/ALF-19301">ALF-19301: Unsafe usage of transactions around authenticationCache</a>
+     */
+    public void testStaleAuthenticationCacheRecovery()
+    {
+        RepositoryAuthenticationDao dao = createRepositoryAuthenticationDao();
+        
+        assertFalse("Must start with no cache entry for 'Andy'.", authenticationCache.contains("Andy"));
 
+        dao.createUser("Andy", "cabbage".toCharArray());
+        NodeRef andyNodeRef = dao.getUserOrNull("Andy");
+        assertNotNull(andyNodeRef);
+        assertTrue("Andy's node should exist. ", nodeService.exists(andyNodeRef));
+
+        // So the cache should be populated.  Now, remove Andy's node but without having policies fire.
+        behaviourFilter.disableBehaviour(andyNodeRef);
+        nodeService.deleteNode(andyNodeRef);
+        
+        assertTrue("Should still have an entry for 'Andy'.", authenticationCache.contains("Andy"));
+        
+        assertNull("Invalid node should be detected for 'Andy'.", dao.getUserOrNull("Andy"));
+        assertFalse("Cache entry should have been removed for 'Andy'.", authenticationCache.contains("Andy"));
+    }
+    
+    /**
+     * Test for use without txn.
+     */
+    public void testRepositoryAuthenticationDaoWithoutTxn() throws Exception
+    {
+        RepositoryAuthenticationDao dao = createRepositoryAuthenticationDao();
+        
+        dao.createUser("Andy", "cabbage".toCharArray());
+        authenticationCache.remove("Andy");                 // Make sure we query
+        
+        this.userTransaction.commit();
+        
+        // Now get the user out of a transaction
+        dao.userExists("Andy");
+        assertTrue("Should now have an entry for 'Andy'.", authenticationCache.contains("Andy"));
     }
 
     public void testAuthentication()

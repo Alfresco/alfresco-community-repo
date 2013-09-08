@@ -40,7 +40,6 @@ import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -67,8 +66,8 @@ import org.springframework.dao.DataAccessException;
 public class RepositoryAuthenticationDao implements MutableAuthenticationDao, InitializingBean, OnUpdatePropertiesPolicy, BeforeDeleteNodePolicy
 {
     private static final StoreRef STOREREF_USERS = new StoreRef("user", "alfrescoUserStore");
-
-    private static final Log logger = LogFactory.getLog(RepositoryAuthenticationDao.class);
+    
+    private static Log logger = LogFactory.getLog(RepositoryAuthenticationDao.class);
 
     protected AuthorityService authorityService;
     protected NodeService nodeService;
@@ -187,17 +186,50 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         return userEntry == null ? null: userEntry.nodeRef;
     }
     
+    /**
+     * Get the cache entry (or cache it) if the user exists
+     * 
+     * @param caseSensitiveSearchUserName           the username to search for
+     * @return                                      the user's data
+     */
     private CacheEntry getUserEntryOrNull(final String caseSensitiveSearchUserName)
     {
+        if (caseSensitiveSearchUserName == null || caseSensitiveSearchUserName.length() == 0)
+        {
+            return null;
+        }
+        
         class SearchUserNameCallback implements RetryingTransactionCallback<CacheEntry>
         {
             @Override
             public CacheEntry execute() throws Throwable
             {
-                List<ChildAssociationRef> results = nodeService.getChildAssocs(getUserFolderLocation(caseSensitiveSearchUserName),
-                        ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI, caseSensitiveSearchUserName));
+                CacheEntry cacheEntry = authenticationCache.get(caseSensitiveSearchUserName);
+                
+                // Check the cache entry if it exists
+                if (cacheEntry != null && !nodeService.exists(cacheEntry.nodeRef))
+                {
+                    logger.warn("Detected state cache entry for '" + caseSensitiveSearchUserName + "'. Node does not exist: " + cacheEntry);
+                    // We were about to give out a stale node.  Something went wrong with the cache.
+                    // The removal is guaranteed whether we commit or rollback.
+                    removeAuthenticationFromCache(caseSensitiveSearchUserName);
+                    cacheEntry = null;
+                }
+                // Check again
+                if (cacheEntry != null)
+                {
+                    // We found what we wanted
+                    return cacheEntry;
+                }
+                
+                // Not found, so query
+                List<ChildAssociationRef> results = nodeService.getChildAssocs(
+                        getUserFolderLocation(caseSensitiveSearchUserName),
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName(ContentModel.USER_MODEL_URI, caseSensitiveSearchUserName));
                 if (!results.isEmpty())
                 {
+                    // Extract values from the query results
                     NodeRef userRef = tenantService.getName(results.get(0).getChildRef());
                     Map<QName, Serializable> properties = nodeService.getProperties(userRef);
                     String password = DefaultTypeConverter.INSTANCE.convert(String.class,
@@ -224,41 +256,16 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                             !getLocked(userName, properties, isAdminAuthority),
                             gas);
                     
-                    return new CacheEntry(userRef, ud, credentialsExpiryDate);
+                    cacheEntry = new CacheEntry(userRef, ud, credentialsExpiryDate);
+                    // Only cache positive results
+                    authenticationCache.put(caseSensitiveSearchUserName, cacheEntry);
                 }
-                return null;
+                return cacheEntry;
             }
         }
         
-        if (caseSensitiveSearchUserName == null || caseSensitiveSearchUserName.length() == 0)
-        {
-            return null;
-        }
-        
-        CacheEntry result = authenticationCache.get(caseSensitiveSearchUserName);
-        if (result == null)
-        {
-            if (AlfrescoTransactionSupport.getTransactionId() == null)
-            {
-                result = transactionService.getRetryingTransactionHelper().doInTransaction(new SearchUserNameCallback());
-            }
-            else
-            {
-                try
-                {
-                    result = new SearchUserNameCallback().execute();
-                }
-                catch (Throwable e)
-                {
-                    logger.error(e);
-                }
-            }
-            if (result != null)
-            {
-                authenticationCache.put(caseSensitiveSearchUserName, result);
-            }
-        }
-        return result;
+        // Always use a transaction
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new SearchUserNameCallback(), true);
     }
 
     @Override

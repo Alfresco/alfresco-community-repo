@@ -327,12 +327,7 @@
    </filter-mapping>
 
    <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/cmisatom/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
+      <filter-name>WebDAV Authentication Filter</filter-name>
       <url-pattern>/cmisatom/*</url-pattern>
    </filter-mapping>
 

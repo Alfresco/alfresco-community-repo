@@ -102,6 +102,9 @@
       <property name="mapUnknownUserToGuest">
          <value>${ntlm.authentication.mapUnknownUserToGuest}</value>
       </property>
+      <property name="remoteUserMapper">
+         <ref bean="RemoteUserMapper" />
+      </property>
    </bean>
 
    <bean id="sharepointAuthenticationHandler" class="org.alfresco.web.sharepoint.auth.ntlm.NtlmAuthenticationHandler">

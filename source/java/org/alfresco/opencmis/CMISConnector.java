@@ -93,6 +93,7 @@ import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.lock.LockService;
@@ -271,6 +272,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private static final String QUERY_NAME_BASE_TYPE_ID = "cmis:baseTypeId";
 
     private static final String CMIS_USER = "cmis:user";
+
+	private static final BigInteger maxInt = BigInteger.valueOf(Integer.MAX_VALUE);
+	private static final BigInteger minInt = BigInteger.valueOf(Integer.MIN_VALUE);
+	private static final BigInteger maxLong  = BigInteger.valueOf(Long.MAX_VALUE);
+	private static final BigInteger minLong  = BigInteger.valueOf(Long.MIN_VALUE);
 
     // lifecycle
     private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
@@ -2948,8 +2954,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     ArrayList<Serializable> values = new ArrayList<Serializable>();
                     if (property.getChildren() != null)
                     {
-                        try
-                        {
+//                        try
+//                        {
                             for (CmisExtensionElement valueElement : property.getChildren())
                             {
                                 if ("value".equals(valueElement.getName()))
@@ -2957,28 +2963,80 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                                     switch (propertyType)
                                     {
                                     case BOOLEAN:
-                                        values.add(Boolean.parseBoolean(valueElement.getValue()));
+                                    	try
+                                    	{
+                                    		values.add(Boolean.parseBoolean(valueElement.getValue()));
+	                                	}
+	                                	catch (Exception e)
+	                                	{
+	                                		throw new CmisInvalidArgumentException("Invalid property aspect value: " + propertyId, e);
+	                                	}
                                         break;
                                     case DATETIME:
-                                        values.add(df.newXMLGregorianCalendar(valueElement.getValue())
-                                                .toGregorianCalendar());
+                                    	try
+                                    	{
+	                                        values.add(df.newXMLGregorianCalendar(valueElement.getValue())
+	                                                .toGregorianCalendar());
+                                    	}
+                                    	catch (Exception e)
+                                    	{
+                                    		throw new CmisInvalidArgumentException("Invalid property aspect value: " + propertyId, e);
+                                    	}
                                         break;
                                     case INTEGER:
-                                        values.add(new BigInteger(valueElement.getValue()));
+                                    	BigInteger value = null;
+                                    	try
+                                    	{
+                                    		value = new BigInteger(valueElement.getValue());
+                                    	}
+                                    	catch (Exception e)
+                                    	{
+                                    		throw new CmisInvalidArgumentException("Invalid property aspect value: " + propertyId, e);
+                                    	}
+
+                                    	// overflow check
+                                    	PropertyDefinitionWrapper propDef = cmisDictionaryService.findProperty(propertyId);
+                                        if(propDef == null)
+                                        {
+                                            throw new CmisInvalidArgumentException("Property " + propertyId + " is unknown!");
+                                        }
+                                        
+                                        QName propertyQName = propDef.getPropertyAccessor().getMappedProperty();
+                                        if (propertyQName == null)
+                                        {
+                                            throw new CmisConstraintException("Unable to set property " + propertyId + "!");
+                                        }
+
+                                		org.alfresco.service.cmr.dictionary.PropertyDefinition def = dictionaryService.getProperty(propertyQName);
+                                		QName dataDef = def.getDataType().getName();
+
+                                		if (dataDef.equals(DataTypeDefinition.INT) && (value.compareTo(maxInt) > 0 || value.compareTo(minInt) < 0))
+                                		{
+                                			throw new CmisConstraintException("Value is out of range for property " + propertyId);
+                                		}
+
+                                		if (dataDef.equals(DataTypeDefinition.LONG) && (value.compareTo(maxLong) > 0 || value.compareTo(minLong) < 0 ))
+                                		{
+                                			throw new CmisConstraintException("Value is out of range for property " + propertyId);
+                                		}
+                                    	
+                                        values.add(value);
                                         break;
                                     case DECIMAL:
-                                        values.add(new BigDecimal(valueElement.getValue()));
+                                    	try
+                                    	{
+                                    		values.add(new BigDecimal(valueElement.getValue()));
+                                    	}
+                                    	catch (Exception e)
+                                    	{
+                                    		throw new CmisInvalidArgumentException("Invalid property aspect value: " + propertyId, e);
+                                    	}
                                         break;
                                     default:
                                         values.add(valueElement.getValue());
                                     }
                                 }
                             }
-                        }
-                        catch (Exception e)
-                        {
-                            throw new CmisInvalidArgumentException("Invalid property aspect value: " + propertyId, e);
-                        }
                     }
 
                     aspectProperties.put(QName.createQName(propertyId, namespaceService), values);
@@ -3069,6 +3127,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         // set property
         for (Map.Entry<QName, List<Serializable>> property : aspectProperties.entrySet())
         {
+        	QName propertyQName = property.getKey();
+
             if (property.getValue().isEmpty())
             {
                 if(HiddenAspect.HIDDEN_PROPERTIES.contains(property.getKey()))
@@ -3076,7 +3136,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 	if(hiddenAspect.isClientControlled(nodeRef) || aspectProperties.containsKey(ContentModel.PROP_CLIENT_CONTROLLED))
                 	{
                 		// manipulate hidden aspect property only if client controlled
-                		nodeService.removeProperty(nodeRef, property.getKey());
+                        nodeService.removeProperty(nodeRef, propertyQName);
                 	}
                 }
                 else
@@ -3097,8 +3157,9 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 }
                 else
                 {
+            	Serializable value = (Serializable)property.getValue();
                 	nodeService.setProperty(nodeRef, property.getKey(), property.getValue().size() == 1 ? property
-                			.getValue().get(0) : (Serializable) property.getValue());
+                        .getValue().get(0) : value);
                 }
             }
         }
@@ -3161,6 +3222,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         		throw new CmisConstraintException("Unable to set property " + property.getId() + "!");
         	}
 
+        
         	if (property.getId().equals(PropertyIds.NAME))
         	{
         		if (!(value instanceof String))
@@ -3189,6 +3251,24 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         		}
         		else
         		{
+            	// overflow check
+            	if(propDef.getPropertyDefinition().getPropertyType() == PropertyType.INTEGER && value instanceof BigInteger) 
+            	{
+            		org.alfresco.service.cmr.dictionary.PropertyDefinition def = dictionaryService.getProperty(propertyQName);
+            		QName dataDef = def.getDataType().getName();
+            		BigInteger bigValue = (BigInteger)value;
+
+            		if ((bigValue.compareTo(maxInt) > 0 || bigValue.compareTo(minInt) < 0 ) && dataDef.equals(DataTypeDefinition.INT))
+            		{
+            			throw new CmisConstraintException("Value is out of range for property " + propertyQName.getLocalName());
+            		}
+
+            		if ((bigValue.compareTo(maxLong) > 0 || bigValue.compareTo(minLong) < 0 ) && dataDef.equals(DataTypeDefinition.LONG))
+            		{
+            			throw new CmisConstraintException("Value is out of range for property " + propertyQName.getLocalName());
+            		}
+            	}
+
         			nodeService.setProperty(nodeRef, propertyQName, value);
         		}
         	}

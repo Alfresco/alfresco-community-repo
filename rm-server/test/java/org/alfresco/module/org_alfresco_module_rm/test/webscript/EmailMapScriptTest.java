@@ -61,20 +61,12 @@ public class EmailMapScriptTest extends BaseRMWebScriptTestCase
         newMapping.put("to", "rmc:Wibble");
 
         Response postResponse = sendRequest(new PostRequest(URL_RM_EMAILMAP, newMapping.toString(), APPLICATION_JSON), Status.STATUS_OK);
-
         JSONObject postResponseContent = new JSONObject(postResponse.getContentAsString());
-        assertTrue(Boolean.parseBoolean(postResponseContent.getString("success")));
-
         JSONObject postData = postResponseContent.getJSONObject("data");
         JSONArray postMappings = postData.getJSONArray("mappings");
 
         assertTrue(postMappings.length() == 21);
         assertTrue(existsMapping(postMappings));
-
-        postResponse = sendRequest(new PostRequest(URL_RM_EMAILMAP, newMapping.toString(), APPLICATION_JSON), Status.STATUS_OK);
-        postResponseContent = new JSONObject(postResponse.getContentAsString());
-        assertFalse(Boolean.parseBoolean(postResponseContent.getString("success")));
-        assertFalse(postResponseContent.getString("message").isEmpty());
 
         /** Test DELETE */
         Response deleteResponse = sendRequest(new DeleteRequest(String.format(URL_RM_EMAILMAP_DELETE, "messageTo", "rmc:Wibble")), Status.STATUS_OK);

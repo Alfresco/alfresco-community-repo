@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+    <!-- Definition of web site model -->
+
+<model name="tcim:myIntAscpectModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <!-- Meta-data about the model -->
+    <description>Test CMIS Integers for Boundaries Model</description>
+    <author>SSergey</author>
+    <version>1.0</version>
+
+    <!--
+        Imports are required to allow references to definitions in other
+        models
+    -->
+    <imports>
+        <!-- Import Alfresco Dictionary Definitions -->
+        <import uri="http://www.alfresco.org/model/dictionary/1.0"
+            prefix="d" />
+        <!-- Import Alfresco Content Domain Model Definitions -->
+        <import uri="http://www.alfresco.org/model/content/1.0"
+            prefix="cm" />
+    </imports>
+
+    <!-- Sites Namespace -->
+    <namespaces>
+        <namespace uri="http://testCMISIntegersModel/1.0/"
+            prefix="tcim" />
+    </namespaces>
+	
+	<types>
+		<type name="tcim:testintegerstype">
+			<title>Test Integers Type</title>
+			<parent>cm:content</parent>
+			<properties>
+	        	<property name="tcim:int">
+	        		<title>Integer</title>
+	        		<description>Integer</description>
+	        		<type>d:int</type>
+	        	</property>
+	        	<property name="tcim:long">
+	        		<title>Long</title>
+	        		<description>Long</description>
+	        		<type>d:long</type>
+	        	</property>
+	        	<property name="tcim:intwithbounds">
+	        		<title>Integer With Boundaries</title>
+	        		<description>Integer With Boundaries</description>
+	        		<type>d:int</type>
+					<constraints>
+						<constraint type="MINMAX">
+							<parameter name="minValue"><value>-10</value></parameter>
+							<parameter name="maxValue"><value>10</value></parameter>
+						</constraint>
+					</constraints>
+	        	</property>
+	        	<property name="tcim:longwithbounds">
+	        		<title>Long With Boundaries</title>
+	        		<description>Long With Boundaries</description>
+	        		<type>d:long</type>
+					<constraints>
+						<constraint type="MINMAX">
+							<parameter name="minValue"><value>-10</value></parameter>
+							<parameter name="maxValue"><value>10</value></parameter>
+						</constraint>
+					</constraints>
+	        	</property>
+			</properties>
+		</type>
+	</types>
+</model>

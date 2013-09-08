@@ -175,6 +175,8 @@ public interface JobLockService
      * 
      * @param lockToken             the lock token returned when the lock was acquired
      * @param lockQName             the name of the previously-acquired lock
+     * @return                      <tt>true</tt> if the lock was valid and released otherwise
+     *                              <tt>false</tt> if the lock was no longer valid in any case
      */
     boolean releaseLock(String lockToken, QName lockQName);
     

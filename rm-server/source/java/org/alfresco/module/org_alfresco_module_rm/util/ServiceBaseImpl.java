@@ -18,11 +18,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.PropertyMap;
 
 /**
  * Helper base class for service implementations.
@@ -30,7 +32,7 @@ import org.alfresco.util.ParameterCheck;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class ServiceBaseImpl
+public class ServiceBaseImpl implements RecordsManagementModel
 {
     /** Node service */
     protected NodeService nodeService;
@@ -72,6 +74,41 @@ public class ServiceBaseImpl
             result = true;
         }    
         return result;
+    }
+    
+    /**
+     * Utility method to get the next counter for a node.  
+     * <p>
+     * If the node is not already countable, then rma:countable is added and 0 returned.
+     * 
+     * @param nodeRef   node reference
+     * @return int      next counter value
+     */
+    protected int getNextCount(NodeRef nodeRef)
+    {
+        int counter = 0;
+        if (nodeService.hasAspect(nodeRef, ASPECT_COUNTABLE) == false)
+        {
+            PropertyMap props = new PropertyMap(1);
+            props.put(PROP_COUNT, 1);
+            nodeService.addAspect(nodeRef, ASPECT_COUNTABLE, props);
+            counter = 1;
+        }
+        else
+        {
+            Integer value = (Integer)this.nodeService.getProperty(nodeRef, PROP_COUNT);
+            if (value != null)
+            {
+                counter = value.intValue() + 1;
+            }
+            else 
+            {
+                counter = 1;
+            }
+            nodeService.setProperty(nodeRef, PROP_COUNT, counter);
+            
+        }
+        return counter;
     }
 
 }

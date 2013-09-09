@@ -140,6 +140,34 @@ public interface FilePlanService
     NodeRef createUnfiledContainer(NodeRef filePlan);
     
     /**
+     * 
+     * @param filePlan
+     * @return
+     */
+    NodeRef getHoldContainer(NodeRef filePlan);
+    
+    /**
+     * 
+     * @param filePlan
+     * @return
+     */
+    NodeRef createHoldContainer(NodeRef filePlan);
+    
+    /**
+     * 
+     * @param filePlan
+     * @return
+     */
+    NodeRef getTransferContainer(NodeRef filePlan);
+    
+    /**
+     * 
+     * @param filePlan
+     * @return
+     */
+    NodeRef createTransferContainer(NodeRef filePlan);
+    
+    /**
      * Creates a file plan as a child of the given parent node, with the name
      * provided.
      * 

@@ -31,7 +31,7 @@ public class DataSetRestApiTest extends BaseRMWebScriptTestCase
         /** Test GET */
 
         // Format url and send request
-        String getUrl = String.format(GET_DATASETS_URL, SITE_ID);
+        String getUrl = String.format(GET_DATASETS_URL, siteId);
         Response getResponse = sendRequest(new GetRequest(getUrl), Status.STATUS_OK);
 
         // Check the content from the response

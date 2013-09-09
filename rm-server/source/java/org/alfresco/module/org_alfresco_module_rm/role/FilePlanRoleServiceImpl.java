@@ -253,6 +253,11 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
                     permissionService.setPermission(rmRootNode, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
 
+                    // Create the transfer and hold containers
+                    // NOTE:  don't need to worry about the admin permissions as for now we just inherit all
+                    filePlanService.createHoldContainer(rmRootNode);
+                    filePlanService.createTransferContainer(rmRootNode);
+                    
                     // Create the unfiled record container
                     return filePlanService.createUnfiledContainer(rmRootNode);
                 }
@@ -310,7 +315,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
      * @param rmRootNode
      * @param unfiledContainer
      */
-    private void bootstrapDefaultRoles(final NodeRef rmRootNode, final NodeRef unfiledContainer)
+    private void bootstrapDefaultRoles(final NodeRef filePlan, final NodeRef unfiledContainer)
     {
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -344,9 +349,9 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                         if (object.has("name") == true)
                         {
                             name = object.getString("name");
-                            if (existsRole(rmRootNode, name) == true)
+                            if (existsRole(filePlan, name) == true)
                             {
-                                throw new AlfrescoRuntimeException("The bootstrap role " + name + " already exists on the rm root node " + rmRootNode.toString());
+                                throw new AlfrescoRuntimeException("The bootstrap role " + name + " already exists on the rm root node " + filePlan.toString());
                             }
                         }
                         else
@@ -387,13 +392,13 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                         }
 
                         // Create the role
-                        Role role = createRole(rmRootNode, name, displayLabel, capabilities);
+                        Role role = createRole(filePlan, name, displayLabel, capabilities);
 
                         // Add any additional admin permissions
                         if (isAdmin == true)
                         {
                             // Admin has filing
-                            permissionService.setPermission(rmRootNode, role.getRoleGroupName(), RMPermissionModel.FILING, true);
+                            permissionService.setPermission(filePlan, role.getRoleGroupName(), RMPermissionModel.FILING, true);
                             if (unfiledContainer != null)
                             {
                                 permissionService.setPermission(unfiledContainer, role.getRoleGroupName(), RMPermissionModel.FILING, true);

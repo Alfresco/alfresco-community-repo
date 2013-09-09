@@ -96,7 +96,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected QName ASPECT_RECORD_META_DATA = QName.createQName(URI, "recordMetaData");
 
     /** site id's */
-    protected static final String SITE_ID = "mySite";
     protected static final String COLLABORATION_SITE_ID = "collab-site-id";
 
     /** Common test utils */
@@ -140,6 +139,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected FilePlanAuthenticationService filePlanAuthenticationService;
 
     /** test data */
+    protected String siteId;
     protected StoreRef storeRef;
     protected NodeRef rootNodeRef;
     protected SiteInfo siteInfo;
@@ -404,7 +404,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         nodeService.deleteNode(folder);
 
         // Delete the site
-        siteService.deleteSite(SITE_ID);
+        siteService.deleteSite(siteId);
 
         // delete the collaboration site (if required)
         if (isCollaborationSiteTest() == true)
@@ -488,15 +488,16 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         permissionService.setPermission(folder, "rmadmin", PermissionService.WRITE, true);
         permissionService.setPermission(folder, "rmadmin", PermissionService.ADD_CHILDREN, true);
 
+        siteId = GUID.generate();
         siteInfo = siteService.createSite(
                         "rm-site-dashboard",
-                        SITE_ID,
+                        siteId,
                         "title",
                         "descrition",
                         SiteVisibility.PUBLIC,
                         RecordsManagementModel.TYPE_RM_SITE);
 
-        filePlan = siteService.getContainer(SITE_ID, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
+        filePlan = siteService.getContainer(siteId, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
         assertNotNull("Site document library container was not created successfully.", filePlan);
 
         // Create RM container

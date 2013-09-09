@@ -84,6 +84,7 @@
 
          <title>File Plan</title>
          <parent>rma:recordsManagementContainer</parent>
+
          <mandatory-aspects>
             <aspect>rma:recordsManagementRoot</aspect>
          </mandatory-aspects>
@@ -93,6 +94,22 @@
       <type name="rma:unfiledRecordContainer">
       	 <title>Unfiled Record Container</title>
          <parent>rma:recordsManagementContainer</parent>
+      </type>
+      
+      <type name="rma:holdContainer">
+      	 <title>Hold Container</title>
+         <parent>rma:recordsManagementContainer</parent>
+         <mandatory-aspects>
+            <aspect>rma:countable</aspect>
+         </mandatory-aspects>
+      </type>
+      
+      <type name="rma:transferContainer">
+      	 <title>Transfer Container</title>
+         <parent>rma:recordsManagementContainer</parent>
+         <mandatory-aspects>
+            <aspect>rma:countable</aspect>
+         </mandatory-aspects>
       </type>
 
 	  <!--  Disposition Schedule -->
@@ -597,6 +614,7 @@
         <title>Records Management Root</title>
          <associations>
 
+			<!-- @deprecated as of 2.1 -->
             <child-association name="rma:holds">
                 <title>Holds</title>
                 <source>
@@ -610,7 +628,7 @@
                 </target>
             </child-association>
 
-
+			<!-- @deprecated as of 2.1 -->
             <child-association name="rma:transfers">
                 <title>Transfers</title>
                 <source>
@@ -625,9 +643,6 @@
             </child-association>
 
          </associations>
-         <mandatory-aspects>
-            <aspect>rma:filePlanComponent</aspect>
-         </mandatory-aspects>
       </aspect>
 
       <aspect name="rma:declaredRecord">
@@ -1194,6 +1209,19 @@
             <property name="rma:recordRejectionReason">
                	<type>d:text</type>
       			<protected>true</protected>
+            </property>
+         </properties>
+      </aspect>
+      
+      <!--  Helper aspect that can be used to keep a count -->
+      <aspect name="rma:countable">
+         <title>Countable aspect</title>
+         <properties>
+            <property name="rma:count">
+               	<type>d:int</type>
+      			<protected>true</protected>
+      			<mandatory>true</mandatory>
+      			<default>0</default>
             </property>
          </properties>
       </aspect>

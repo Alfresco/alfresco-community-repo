@@ -232,6 +232,7 @@
       <property name="permissionService" ref="PermissionService" />
       <property name="mimetypeService" ref="mimetypeService" />
       <property name="exporterService" ref="ExporterService" />
+      <property name="filePlanService" ref="FilePlanService" />
    </bean>
 
    <!-- REST impl for GET transfer -->

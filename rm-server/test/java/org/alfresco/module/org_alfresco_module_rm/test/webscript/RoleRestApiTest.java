@@ -52,7 +52,7 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
 
     private String getRolesUrlBySite()
     {
-        return MessageFormat.format(GET_ROLES_URL_BY_SITE, SITE_ID);
+        return MessageFormat.format(GET_ROLES_URL_BY_SITE, siteId);
     }
 
     private String getRoleUrlByFilePlan()

@@ -30,6 +30,18 @@
           parent="baseRecordsManagementIdentifierGenerator" 
     	  class="org.alfresco.module.org_alfresco_module_rm.identifier.BasicIdentifierGenerator">
       <property name="typeAsString" value="{http://www.alfresco.org/model/recordsmanagement/1.0}record"/>
+    </bean> 
+
+    <bean id="holdIdentifierGenerator" 
+          parent="baseRecordsManagementIdentifierGenerator" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.identifier.BasicIdentifierGenerator">
+      <property name="typeAsString" value="{http://www.alfresco.org/model/recordsmanagement/1.0}hold"/>
+    </bean> 
+
+    <bean id="transferIdentifierGenerator" 
+          parent="baseRecordsManagementIdentifierGenerator" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.identifier.BasicIdentifierGenerator">
+      <property name="typeAsString" value="{http://www.alfresco.org/model/recordsmanagement/1.0}transfer"/>
     </bean>
     
 </beans>    

@@ -142,8 +142,9 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
                 }
             }
             
-            transferNodeRef = this.nodeService.createNode(root, 
-                                                      ASSOC_TRANSFERS, 
+            NodeRef transferContainer = filePlanService.getTransferContainer(root);
+            transferNodeRef = this.nodeService.createNode(transferContainer, 
+                                                      ContentModel.ASSOC_CONTAINS, 
                                                       QName.createQName(RM_URI, transferName), 
                                                       TYPE_TRANSFER,
                                                       transferProps).getChildRef();

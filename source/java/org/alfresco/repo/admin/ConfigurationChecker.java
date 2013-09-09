@@ -30,6 +30,8 @@ import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptorImpl;
 import org.alfresco.repo.search.IndexMode;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -174,10 +176,16 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     {
         RetryingTransactionCallback<Object> checkWork = new RetryingTransactionCallback<Object>()
         {
-            public Object execute() throws Exception
-            {
-                check();
-                return null;
+            public Object execute() throws Throwable {
+                // run as System on bootstrap
+                return AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork()
+                    {
+                        check();
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(checkWork, true);

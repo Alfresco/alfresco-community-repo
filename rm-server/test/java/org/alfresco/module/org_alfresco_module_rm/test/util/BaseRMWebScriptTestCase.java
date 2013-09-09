@@ -62,6 +62,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
 
@@ -70,8 +71,6 @@ import org.springframework.context.ApplicationContext;
  */
 public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 {
-	/** Site id */
-    protected static final String SITE_ID = "mySite";
     /** Collab site id */
     protected static final String COLLAB_SITE_ID = "myCollabSite";
 
@@ -111,6 +110,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected FilePlanService filePlanService;
 
     /** test data */
+    protected String siteId;
     protected StoreRef storeRef;
     protected NodeRef rootNodeRef;
     protected SiteInfo siteInfo;
@@ -214,7 +214,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         nodeService.deleteNode(folder);
 
         // Delete the site
-        siteService.deleteSite(SITE_ID);
+        siteService.deleteSite(siteId);
 
         // Delete the collaboration site (if required)
         if (isCollaborationSiteTest() == true)
@@ -275,8 +275,9 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         assertNotNull("Could not create base folder", folder);
 
         // Create the site
-        siteInfo = siteService.createSite("rm-site-dashboard", SITE_ID, "title", "descrition", SiteVisibility.PUBLIC, RecordsManagementModel.TYPE_RM_SITE);
-        filePlan = siteService.getContainer(SITE_ID, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
+        siteId = GUID.generate();
+        siteInfo = siteService.createSite("rm-site-dashboard", siteId, "title", "descrition", SiteVisibility.PUBLIC, RecordsManagementModel.TYPE_RM_SITE);
+        filePlan = siteService.getContainer(siteId, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
         assertNotNull("Site document library container was not created successfully.", filePlan);
 
         recordSeries = filePlanService.createRecordCategory(filePlan, "recordSeries");

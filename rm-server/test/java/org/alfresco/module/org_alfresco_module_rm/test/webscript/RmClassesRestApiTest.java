@@ -59,7 +59,7 @@ public class RmClassesRestApiTest extends BaseRMWebScriptTestCase
     public void testRmGetAspectDefinitions() throws IOException, JSONException
     {
         // Format url and send request
-        String url = String.format(RM_ASPECTS_URL, "aspect", SITE_ID);
+        String url = String.format(RM_ASPECTS_URL, "aspect", siteId);
         Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
 
         // Check the content from the response

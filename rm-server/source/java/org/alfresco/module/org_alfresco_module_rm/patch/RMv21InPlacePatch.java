@@ -148,8 +148,16 @@ public class RMv21InPlacePatch extends ModulePatchComponent
                     filePlanPermissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS);
                     filePlanPermissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING);
                                 
-                    // create unfiled container
+                    // create fileplan containers
+                    filePlanService.createHoldContainer(filePlan);
+                    filePlanService.createTransferContainer(filePlan);
                     filePlanService.createUnfiledContainer(filePlan);            
+                    
+                    // move any existing holds to new container
+                    // TODO
+                    
+                    // move any existing transfers to new container
+                    // TODO
                     
                     // add the inplace roles
                     filePlanRoleService.createRole(filePlan, ROLE_READERS, ROLE_READERS_LABEL, getCapabilities(ROLE_READERS_CAPABILITIES));

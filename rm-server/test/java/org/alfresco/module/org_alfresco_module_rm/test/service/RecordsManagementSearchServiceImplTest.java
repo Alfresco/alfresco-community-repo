@@ -84,7 +84,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 TestWithUserUtils.createUser(USER2, USER2, rootNodeRef, nodeService, authenticationService);
                 
                 // Count the number of pre-defined reports
-                List<SavedSearchDetails> searches = rmSearchService.getSavedSearches(SITE_ID);
+                List<SavedSearchDetails> searches = rmSearchService.getSavedSearches(siteId);
                 assertNotNull(searches);
                 numberOfReports = searches.size();
                 
@@ -151,7 +151,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 String query = "keywords:\"elephant\"";                
                 RecordsManagementSearchParameters params = new RecordsManagementSearchParameters();
                 params.setIncludeUndeclaredRecords(true);
-                List<NodeRef> results = rmSearchService.search(SITE_ID, query, params);
+                List<NodeRef> results = rmSearchService.search(siteId, query, params);
                 assertNotNull(results);
                 assertEquals(2, results.size());
                 
@@ -172,10 +172,10 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
-                SavedSearchDetails details1 = rmSearchService.saveSearch(SITE_ID, SEARCH1, "description1", "query1", new RecordsManagementSearchParameters(), true);
-                checkSearchDetails(details1, "mySite", "search1", "description1", "query1", new RecordsManagementSearchParameters(), true);
-                SavedSearchDetails details2 = rmSearchService.saveSearch(SITE_ID, SEARCH2, "description2", "query2", new RecordsManagementSearchParameters(), false);
-                checkSearchDetails(details2, "mySite", "search2", "description2", "query2", new RecordsManagementSearchParameters(), false);
+                SavedSearchDetails details1 = rmSearchService.saveSearch(siteId, SEARCH1, "description1", "query1", new RecordsManagementSearchParameters(), true);
+                checkSearchDetails(details1, siteId, "search1", "description1", "query1", new RecordsManagementSearchParameters(), true);
+                SavedSearchDetails details2 = rmSearchService.saveSearch(siteId, SEARCH2, "description2", "query2", new RecordsManagementSearchParameters(), false);
+                checkSearchDetails(details2, siteId, "search2", "description2", "query2", new RecordsManagementSearchParameters(), false);
                 
                 return null;
             }
@@ -188,10 +188,10 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
-                SavedSearchDetails details1 = rmSearchService.saveSearch(SITE_ID, SEARCH3, "description3", "query3", new RecordsManagementSearchParameters(), false);
-                checkSearchDetails(details1, "mySite", SEARCH3, "description3", "query3", new RecordsManagementSearchParameters(), false);
-                SavedSearchDetails details2 = rmSearchService.saveSearch(SITE_ID, SEARCH4, "description4", "query4", new RecordsManagementSearchParameters(), false);
-                checkSearchDetails(details2, "mySite", SEARCH4, "description4", "query4", new RecordsManagementSearchParameters(), false);
+                SavedSearchDetails details1 = rmSearchService.saveSearch(siteId, SEARCH3, "description3", "query3", new RecordsManagementSearchParameters(), false);
+                checkSearchDetails(details1, siteId, SEARCH3, "description3", "query3", new RecordsManagementSearchParameters(), false);
+                SavedSearchDetails details2 = rmSearchService.saveSearch(siteId, SEARCH4, "description4", "query4", new RecordsManagementSearchParameters(), false);
+                checkSearchDetails(details2, siteId, SEARCH4, "description4", "query4", new RecordsManagementSearchParameters(), false);
                 
                 return null;
             }
@@ -204,22 +204,22 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
-                List<SavedSearchDetails> searches = rmSearchService.getSavedSearches(SITE_ID);
+                List<SavedSearchDetails> searches = rmSearchService.getSavedSearches(siteId);
                 assertNotNull(searches);
                 assertEquals(numberOfReports + 2, searches.size());
                 
-                SavedSearchDetails search1 = rmSearchService.getSavedSearch(SITE_ID, SEARCH1);
+                SavedSearchDetails search1 = rmSearchService.getSavedSearch(siteId, SEARCH1);
                 assertNotNull(search1);
-                checkSearchDetails(search1, "mySite", "search1", "description1", "query1", new RecordsManagementSearchParameters(), true);
+                checkSearchDetails(search1, siteId, "search1", "description1", "query1", new RecordsManagementSearchParameters(), true);
                 
-                SavedSearchDetails search2 = rmSearchService.getSavedSearch(SITE_ID, SEARCH2);
+                SavedSearchDetails search2 = rmSearchService.getSavedSearch(siteId, SEARCH2);
                 assertNotNull(search2);
-                checkSearchDetails(search2, "mySite", "search2", "description2", "query2", new RecordsManagementSearchParameters(), false);
+                checkSearchDetails(search2, siteId, "search2", "description2", "query2", new RecordsManagementSearchParameters(), false);
                 
-                SavedSearchDetails search3 = rmSearchService.getSavedSearch(SITE_ID, SEARCH3);
+                SavedSearchDetails search3 = rmSearchService.getSavedSearch(siteId, SEARCH3);
                 assertNull(search3);
                 
-                SavedSearchDetails search4 = rmSearchService.getSavedSearch(SITE_ID, SEARCH4);
+                SavedSearchDetails search4 = rmSearchService.getSavedSearch(siteId, SEARCH4);
                 assertNull(search4);
                 
                 return null;
@@ -233,24 +233,24 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
-                List<SavedSearchDetails> searches = rmSearchService.getSavedSearches(SITE_ID);
+                List<SavedSearchDetails> searches = rmSearchService.getSavedSearches(siteId);
                 assertNotNull(searches);
                 assertEquals(numberOfReports + 3, searches.size());
                 
-                SavedSearchDetails search1 = rmSearchService.getSavedSearch(SITE_ID, SEARCH1);
+                SavedSearchDetails search1 = rmSearchService.getSavedSearch(siteId, SEARCH1);
                 assertNotNull(search1);
-                checkSearchDetails(search1, "mySite", "search1", "description1", "query1", new RecordsManagementSearchParameters(), true);
+                checkSearchDetails(search1, siteId, "search1", "description1", "query1", new RecordsManagementSearchParameters(), true);
                 
-                SavedSearchDetails search2 = rmSearchService.getSavedSearch(SITE_ID, SEARCH2);
+                SavedSearchDetails search2 = rmSearchService.getSavedSearch(siteId, SEARCH2);
                 assertNull(search2);
                 
-                SavedSearchDetails search3 = rmSearchService.getSavedSearch(SITE_ID, SEARCH3);
+                SavedSearchDetails search3 = rmSearchService.getSavedSearch(siteId, SEARCH3);
                 assertNotNull(search3);
-                checkSearchDetails(search3, "mySite", SEARCH3, "description3", "query3", new RecordsManagementSearchParameters(), false);
+                checkSearchDetails(search3, siteId, SEARCH3, "description3", "query3", new RecordsManagementSearchParameters(), false);
                 
-                SavedSearchDetails search4 = rmSearchService.getSavedSearch(SITE_ID, SEARCH4);
+                SavedSearchDetails search4 = rmSearchService.getSavedSearch(siteId, SEARCH4);
                 assertNotNull(search4);
-                checkSearchDetails(search4, "mySite", "search4", "description4", "query4", new RecordsManagementSearchParameters(), false);
+                checkSearchDetails(search4, siteId, "search4", "description4", "query4", new RecordsManagementSearchParameters(), false);
                 
                 return null;
             }
@@ -263,15 +263,15 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
-                SavedSearchDetails search1 = rmSearchService.getSavedSearch(SITE_ID, SEARCH1);
+                SavedSearchDetails search1 = rmSearchService.getSavedSearch(siteId, SEARCH1);
                 assertNotNull(search1);
-                checkSearchDetails(search1, SITE_ID, SEARCH1, "description1", "query1", new RecordsManagementSearchParameters(), true);
+                checkSearchDetails(search1, siteId, SEARCH1, "description1", "query1", new RecordsManagementSearchParameters(), true);
                 
-                rmSearchService.saveSearch(SITE_ID, SEARCH1, "change", "change", new RecordsManagementSearchParameters(), true);
+                rmSearchService.saveSearch(siteId, SEARCH1, "change", "change", new RecordsManagementSearchParameters(), true);
                 
-                search1 = rmSearchService.getSavedSearch(SITE_ID, SEARCH1);
+                search1 = rmSearchService.getSavedSearch(siteId, SEARCH1);
                 assertNotNull(search1);
-                checkSearchDetails(search1, SITE_ID, SEARCH1, "change", "change", new RecordsManagementSearchParameters(), true);
+                checkSearchDetails(search1, siteId, SEARCH1, "change", "change", new RecordsManagementSearchParameters(), true);
                 
                 return null;                
             }

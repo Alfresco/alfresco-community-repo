@@ -87,7 +87,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
         {
             public void runImpl() throws Exception
             {             
-                assertEquals(filePlan, filePlanService.getFilePlanBySiteId(SITE_ID));
+                assertEquals(filePlan, filePlanService.getFilePlanBySiteId(siteId));
                 assertNull(filePlanService.getFilePlanBySiteId("rubbish"));
                 
                 String siteId = GUID.generate();

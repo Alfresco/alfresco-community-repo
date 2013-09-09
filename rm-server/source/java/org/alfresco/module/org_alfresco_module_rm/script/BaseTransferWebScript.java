@@ -26,6 +26,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.web.scripts.content.StreamACP;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -49,6 +51,13 @@ public abstract class BaseTransferWebScript extends StreamACP
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(BaseTransferWebScript.class);
+    
+    protected FilePlanService filePlanService;
+    
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
     
     /**
      * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
@@ -167,8 +176,10 @@ public abstract class BaseTransferWebScript extends StreamACP
         NodeRef transferNode = null;
         
         // get all the transfer nodes and find the one we need
-        List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(filePlan, 
-                    RecordsManagementModel.ASSOC_TRANSFERS, RegexQNamePattern.MATCH_ALL);
+        NodeRef transferContainer = filePlanService.getTransferContainer(filePlan);
+        List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(transferContainer, 
+                                                                           ContentModel.ASSOC_CONTAINS, 
+                                                                           RegexQNamePattern.MATCH_ALL);
         for (ChildAssociationRef child : assocs)
         {
             if (child.getChildRef().getId().equals(transferId))

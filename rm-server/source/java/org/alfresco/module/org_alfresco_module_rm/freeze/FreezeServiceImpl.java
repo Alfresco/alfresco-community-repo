@@ -34,6 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -42,12 +43,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
@@ -63,7 +61,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class FreezeServiceImpl implements FreezeService,
+public class FreezeServiceImpl extends    ServiceBaseImpl
+                               implements FreezeService,
                                           RecordsManagementModel,
                                           NodeServicePolicies.BeforeDeleteNodePolicy
 {
@@ -72,33 +71,28 @@ public class FreezeServiceImpl implements FreezeService,
 
     /** I18N */
     private static final String MSG_FREEZE_ONLY_RECORDS_FOLDERS = "rm.action.freeze-only-records-folders";
+    private static final String MSG_HOLD_NAME = "rm.hold.name";
 
     /** Hold node reference key */
     private static final String KEY_HOLD_NODEREF = "holdNodeRef";
 
     /** Policy Component */
-    private PolicyComponent policyComponent;
-
-    /** Node Service */
-    private NodeService nodeService;
+    protected PolicyComponent policyComponent;
 
     /** Records Management Service */
-    private RecordsManagementService recordsManagementService;
-
-    /** Dictionary Service */
-    private DictionaryService dictionaryService;
+    protected RecordsManagementService recordsManagementService;
 
     /** Record service */
-    private RecordService recordService;
+    protected RecordService recordService;
     
     /** File Plan Service */
-    private FilePlanService filePlanService;
+    protected FilePlanService filePlanService;
     
     /** Permission service */
-    private PermissionService permissionService;
+    protected PermissionService permissionService;
     
     /** file plan role service */
-    private FilePlanRoleService filePlanRoleService;
+    protected FilePlanRoleService filePlanRoleService;
 
     /**
      * @param policyComponent policy component
@@ -109,27 +103,11 @@ public class FreezeServiceImpl implements FreezeService,
     }
 
     /**
-     * @param nodeService node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    /**
      * @param recordsManagementService records management service
      */
     public void setRecordsManagementService(RecordsManagementService recordsManagementService)
     {
         this.recordsManagementService = recordsManagementService;
-    }
-
-    /**
-     * @param dictionaryService dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
     }
 
     /**
@@ -534,9 +512,8 @@ public class FreezeServiceImpl implements FreezeService,
         ParameterCheck.mandatory("filePlan", filePlan);
 
         Set<NodeRef> holds = new HashSet<NodeRef>();
-
-        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(filePlan, ASSOC_HOLDS,
-                RegexQNamePattern.MATCH_ALL);
+        NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(holdContainer, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
         if (childAssocs != null && !childAssocs.isEmpty())
         {
             for (ChildAssociationRef childAssoc : childAssocs)
@@ -617,27 +594,28 @@ public class FreezeServiceImpl implements FreezeService,
     private NodeRef createHold(NodeRef nodeRef, String reason)
     {
         NodeRef holdNodeRef = null;
+        
+        // get the hold container
+        NodeRef root = filePlanService.getFilePlan(nodeRef);
+        NodeRef holdContainer = filePlanService.getHoldContainer(root);
 
-        // Calculate a transfer name
-        QName nodeDbid = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "node-dbid");
-        Long dbId = (Long) nodeService.getProperty(nodeRef, nodeDbid);
-        String transferName = StringUtils.leftPad(dbId.toString(), 10, "0");
+        // calculate the hold name
+        int nextCount = getNextCount(holdContainer);
+        String holdName = I18NUtil.getMessage(MSG_HOLD_NAME) + " " + StringUtils.leftPad(Integer.toString(nextCount), 10, "0");
 
         // Create the properties for the hold object
         Map<QName, Serializable> holdProps = new HashMap<QName, Serializable>(2);
-        holdProps.put(ContentModel.PROP_NAME, transferName);
+        holdProps.put(ContentModel.PROP_NAME, holdName);
         holdProps.put(PROP_HOLD_REASON, reason);
 
-        // Get the root rm node and create the hold object
-        NodeRef root = filePlanService.getFilePlan(nodeRef);
-        QName transferQName = QName.createQName(RM_URI, transferName);
-        holdNodeRef = nodeService.createNode(root, ASSOC_HOLDS, transferQName, TYPE_HOLD, holdProps).getChildRef();
+        // create the hold object        
+        QName holdQName = QName.createQName(RM_URI, holdName);
+        holdNodeRef = nodeService.createNode(holdContainer, ContentModel.ASSOC_CONTAINS, holdQName, TYPE_HOLD, holdProps).getChildRef();
 
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
-            msg.append("Created hold object '").append(holdNodeRef).append("' with transfer name '").append(
-                    transferQName).append("'.");
+            msg.append("Created hold object '").append(holdNodeRef).append("' with name '").append(holdQName).append("'.");
             logger.debug(msg.toString());
         }
         

@@ -480,6 +480,10 @@
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.existsUnfiledContainer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getUnfiledContainer=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createUnfiledContainer=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getHoldContainer=RM.Read.0,AFTER_RM.FilterNode
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createHoldContainer=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getTransferContainer=RM.Read.0,AFTER_RM.FilterNode
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createTransferContainer=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createFilePlan=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getNodeRefPath=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.isFilePlanContainer=RM_ALLOW

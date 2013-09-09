@@ -28,8 +28,12 @@ function doclist_getAllNodes(parsedArgs, filterParams, query, totalItemCount)
       requestTotalCountMax = 0,
       paged = false,
       allNodes = [];
-   if ((filter || "path") == "path" || 
-       (filter || "unfiledRecords") == "unfiledRecords")
+   if (query == "" &&
+       (
+       (filter || "path") == "path" || 
+       (filter || "unfiledRecords") == "unfiledRecords" || 
+       (filter || "holds") == "holds" || 
+       (filter || "transfers") == "transfers"))
    {
       // TODO also add DB filter by "node" (in addition to "path")
       var parentNode = parsedArgs.pathNode;

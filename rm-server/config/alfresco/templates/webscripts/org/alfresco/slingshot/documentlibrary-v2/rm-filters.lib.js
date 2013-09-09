@@ -37,8 +37,8 @@ Filters.IGNORED_TYPES =
    "rma:dispositionSchedule",
    "rma:dispositionActionDefinition",
    "rma:dispositionAction",
-   "rma:hold",
-   "rma:transfer",
+   "rma:holdContainer",
+   "rma:transferContainer",
    "rma:unfiledRecordContainer"
 ];
 
@@ -154,11 +154,7 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
       case "transfers":
          if (filterData == null)
          {
-            filterParams.variablePath = false;
-            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
-            filterQuery += " +TYPE:\"rma:transfer\"";
-            filterParams.query = filterQuery;
-            filterParams.ignoreTypes = "";
+            filterParams.query = "";
          }
          else
          {
@@ -169,11 +165,7 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
       case "holds":
          if (filterData == null)
          {
-            filterParams.variablePath = false;
-            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
-            filterQuery += " +TYPE:\"rma:hold\"";
-            filterParams.query = filterQuery;
-            filterParams.ignoreTypes = "";
+            filterParams.query = "";
          }
          else
          {

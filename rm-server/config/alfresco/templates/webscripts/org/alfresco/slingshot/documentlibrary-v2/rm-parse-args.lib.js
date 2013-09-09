@@ -91,6 +91,16 @@ ParseArgs.getParsedArgs = function RecordsManagementFilter_getParsedArgs(contain
       var unfiledRecordContainer = rootNode.childrenByXPath("rma:Unfiled_x0020_Records");
       pathNode = unfiledRecordContainer.length > 0 ? unfiledRecordContainer[0] : rootNode;
    }
+   else if (args.filter == "holds")
+   {
+      var container = rootNode.childrenByXPath("rma:Holds");
+      pathNode = container.length > 0 ? container[0] : rootNode;
+   }
+   else if (args.filter == "transfers")
+   {
+      var container = rootNode.childrenByXPath("rma:Transfers");
+      pathNode = container.length > 0 ? container[0] : rootNode;
+   }
    else
    {
       // Path input?

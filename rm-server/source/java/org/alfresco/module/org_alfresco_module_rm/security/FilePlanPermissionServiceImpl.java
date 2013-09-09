@@ -454,19 +454,25 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
      */
     private void setPermissionDown(NodeRef nodeRef, String authority, String permission)
     {
-        setPermissionImpl(nodeRef, authority, permission);
-        if (filePlanService.isFilePlanContainer(nodeRef) == true ||
-            recordsManagementService.isRecordFolder(nodeRef) == true)
+        // skip out node's that inherit (for example hold and transfer)
+        if (permissionService.getInheritParentPermissions(nodeRef) == false)
         {
-            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef assoc : assocs)
-            {
-                NodeRef child = assoc.getChildRef();
-                if (filePlanService.isFilePlanContainer(child) == true ||
-                    recordsManagementService.isRecordFolder(child) == true ||
-                    recordService.isRecord(child) == true)
+            // set permissions
+            setPermissionImpl(nodeRef, authority, permission);
+            
+            if (filePlanService.isFilePlanContainer(nodeRef) == true ||
+                recordsManagementService.isRecordFolder(nodeRef) == true)
+            {                            
+                List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+                for (ChildAssociationRef assoc : assocs)
                 {
-                    setPermissionDown(child, authority, permission);
+                    NodeRef child = assoc.getChildRef();
+                    if (filePlanService.isFilePlanContainer(child) == true ||
+                        recordsManagementService.isRecordFolder(child) == true ||
+                        recordService.isRecord(child) == true)
+                    {
+                        setPermissionDown(child, authority, permission);
+                    }
                 }
             }
         }
@@ -499,21 +505,25 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
         {
             public Boolean doWork() throws Exception
             {
-                // Delete permission on this node
-                permissionService.deletePermission(nodeRef, authority, permission);
-
-                if (filePlanService.isFilePlanContainer(nodeRef) == true ||
-                    recordsManagementService.isRecordFolder(nodeRef) == true)
+                // can't delete permissions if inherited (eg hold and transfer containers)
+                if (permissionService.getInheritParentPermissions(nodeRef) == false)
                 {
-                    List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-                    for (ChildAssociationRef assoc : assocs)
+                    // Delete permission on this node
+                    permissionService.deletePermission(nodeRef, authority, permission);
+    
+                    if (filePlanService.isFilePlanContainer(nodeRef) == true ||
+                        recordsManagementService.isRecordFolder(nodeRef) == true)
                     {
-                        NodeRef child = assoc.getChildRef();
-                        if (filePlanService.isFilePlanContainer(child) == true ||
-                            recordsManagementService.isRecordFolder(child) == true ||
-                            recordService.isRecord(child) == true)
+                        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+                        for (ChildAssociationRef assoc : assocs)
                         {
-                            deletePermission(child, authority, permission);
+                            NodeRef child = assoc.getChildRef();
+                            if (filePlanService.isFilePlanContainer(child) == true ||
+                                recordsManagementService.isRecordFolder(child) == true ||
+                                recordService.isRecord(child) == true)
+                            {
+                                deletePermission(child, authority, permission);
+                            }
                         }
                     }
                 }

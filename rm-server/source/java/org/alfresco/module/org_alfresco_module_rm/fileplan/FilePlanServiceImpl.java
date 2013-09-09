@@ -78,9 +78,10 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     private final static String MSG_CONTAINER_TYPE = "rm.service.container-type";
     private final static String MSG_CONTAINER_EXPECTED = "rm.service.container-expected";
 	
-    /** Unfiled record container name */
+    /** File plan containers */
     private static final String NAME_UNFILED_CONTAINER = "Unfiled Records";
-    private static final QName QNAME_UNFILED_CONTAINER = QName.createQName(RM_URI, NAME_UNFILED_CONTAINER);
+    private static final String NAME_HOLD_CONTAINER = "Holds";
+    private static final String NAME_TRANSFER_CONTAINER = "Transfers";
     
     /** RM site file plan container */
     private static final String FILE_PLAN_CONTAINER = "documentLibrary";
@@ -393,19 +394,48 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     @Override
     public NodeRef getUnfiledContainer(NodeRef filePlan)
     {
+        return getFilePlanRootContainer(filePlan, NAME_UNFILED_CONTAINER);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getHoldContainer(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public NodeRef getHoldContainer(NodeRef filePlan)
+    {
+        return getFilePlanRootContainer(filePlan, NAME_HOLD_CONTAINER);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getTransferContainer(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public NodeRef getTransferContainer(NodeRef filePlan)
+    {
+        return getFilePlanRootContainer(filePlan, NAME_TRANSFER_CONTAINER);
+    }
+    
+    /**
+     * 
+     * @param filePlan
+     * @param containerName
+     * @return
+     */
+    private NodeRef getFilePlanRootContainer(NodeRef filePlan, String containerName)
+    {
         ParameterCheck.mandatory("filePlan", filePlan);
         if (isFilePlan(filePlan) == false)
         {
-            throw new AlfrescoRuntimeException("Unable to get the unfiled container, because passed node is not a file plan.");
+            throw new AlfrescoRuntimeException("Unable to get the container " + containerName  + ", because passed node is not a file plan.");
         }
 
         NodeRef result = null;
              
         // try and get the unfiled record container
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ContentModel.ASSOC_CONTAINS, QNAME_UNFILED_CONTAINER);
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, containerName));
         if (assocs.size() > 1)
         {
-            throw new AlfrescoRuntimeException("Unable to get unfiled conatiner.");
+            throw new AlfrescoRuntimeException("Unable to get unfiled conatiner " + containerName  + ".");
         }
         else if (assocs.size() == 1)
         {
@@ -419,35 +449,76 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#createUnfiledContainer(org.alfresco.service.cmr.repository.NodeRef)
      */
     public NodeRef createUnfiledContainer(NodeRef filePlan)
+    {       
+        return createFilePlanRootContainer(filePlan, TYPE_UNFILED_RECORD_CONTAINER, NAME_UNFILED_CONTAINER, false);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#createHoldContainer(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public NodeRef createHoldContainer(NodeRef filePlan)
+    {
+        return createFilePlanRootContainer(filePlan, TYPE_HOLD_CONTAINER, NAME_HOLD_CONTAINER, true);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#createTransferContainer(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public NodeRef createTransferContainer(NodeRef filePlan)
+    {
+        return createFilePlanRootContainer(filePlan, TYPE_TRANSFER_CONTAINER, NAME_TRANSFER_CONTAINER, true);
+    }
+    
+    /**
+     * 
+     * @param filePlan
+     * @param containerType
+     * @param containerName
+     * @param inheritPermissions
+     * @return
+     */
+    private NodeRef createFilePlanRootContainer(NodeRef filePlan, QName containerType, String containerName, boolean inheritPermissions)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
         if (isFilePlan(filePlan) == false)
         {
-            throw new AlfrescoRuntimeException("Unable to create unfiled container, because passed node is not a file plan.");
+            throw new AlfrescoRuntimeException("Unable to create file plan root container, because passed node is not a file plan.");
         }
         
         String allRoles = getFilePlanRoleService().getAllRolesContainerGroup(filePlan);
         
         // create the properties map
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
-        properties.put(ContentModel.PROP_NAME, NAME_UNFILED_CONTAINER);
+        properties.put(ContentModel.PROP_NAME, containerName);
 
         // create the unfiled container
         NodeRef container = nodeService.createNode(
                         filePlan,
                         ContentModel.ASSOC_CONTAINS,
-                        QNAME_UNFILED_CONTAINER,
-                        TYPE_UNFILED_RECORD_CONTAINER,
+                        QName.createQName(RM_URI, containerName),
+                        containerType,
                         properties).getChildRef();
 
-        // set inheritance to false
-        getPermissionService().setInheritParentPermissions(container, false);
-        getPermissionService().setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
-        getPermissionService().setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-        getPermissionService().setPermission(container, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
         
-        // TODO set the admin users to have filing permissions on the unfiled container!!!
-        // TODO we will need to be able to get a list of the admin roles from the service
+        if (inheritPermissions == false)
+        {
+            // set inheritance to false
+            getPermissionService().setInheritParentPermissions(container, false);
+            getPermissionService().setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
+            getPermissionService().setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+            getPermissionService().setPermission(container, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+            
+            // TODO set the admin users to have filing permissions on the unfiled container!!!
+            // TODO we will need to be able to get a list of the admin roles from the service
+        }
+        else
+        {
+            // just inherit eveything
+            // TODO will change this when we are able to set permissions on holds and transfers!
+            getPermissionService().setInheritParentPermissions(container, true);
+        }
 
         return container;
     }

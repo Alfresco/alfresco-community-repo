@@ -59,7 +59,7 @@ public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
     public void testRmGetTypeDefinitions() throws IOException, JSONException
     {
         // Format url and send request
-        String url = String.format(RM_TYPES_URL, "type", SITE_ID);
+        String url = String.format(RM_TYPES_URL, "type", siteId);
         Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
 
         // Check the content from the response

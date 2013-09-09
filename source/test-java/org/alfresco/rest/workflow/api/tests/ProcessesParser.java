@@ -18,10 +18,14 @@
  */
 package org.alfresco.rest.workflow.api.tests;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
+import org.alfresco.rest.workflow.api.model.Variable;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 public class ProcessesParser extends ListParser<ProcessInfo>
@@ -48,6 +52,22 @@ public class ProcessesParser extends ListParser<ProcessInfo>
         processesRest.setCompleted((Boolean) entry.get("completed"));
         processesRest.setVariables((Map<String,Object>) entry.get("variables"));
         processesRest.setItems((Set<String>) entry.get("item"));
+        
+        if (entry.get("processVariables") != null) {
+            List<Variable> processVariables = new ArrayList<Variable>();
+            JSONArray variables = (JSONArray) entry.get("processVariables");
+            for (int i = 0; i < variables.size(); i++) 
+            {
+                JSONObject variableJSON = (JSONObject) variables.get(i);
+                Variable variable = new Variable();
+                variable.setName((String) variableJSON.get("name"));
+                variable.setType((String) variableJSON.get("type"));
+                variable.setValue(variableJSON.get("value"));
+                processVariables.add(variable);
+            }
+            processesRest.setProcessVariables(processVariables);
+        }
+        
         return processesRest;
     }
 }

@@ -43,6 +43,7 @@ import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
+import org.alfresco.rest.workflow.api.model.Variable;
 import org.alfresco.rest.workflow.api.tests.WorkflowApiClient.ProcessesClient;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -539,6 +540,16 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertNotNull(deletedInstance);
             assertNotNull(deletedInstance.getEndTime());
             assertEquals("deleted through REST API call", deletedInstance.getDeleteReason());
+            
+            try
+            {
+                processesClient.deleteProcessById(process.getId());
+                fail("expected exeception");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.NOT_FOUND.value(), e.getHttpResponse().getStatusCode());
+            }
         }
         finally
         {
@@ -632,6 +643,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             processList = processesClient.getProcesses(paramMap);
             assertNotNull(processList);
             assertEquals(3, processList.getList().size());
+            assertNull(processList.getList().get(0).getProcessVariables());
             
             paramMap = new HashMap<String, String>();
             paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc2')");
@@ -730,6 +742,85 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             processList = processesClient.getProcesses(paramMap);
             assertNotNull(processList);
             assertEquals(1, processList.getList().size());
+            
+            // include process variables as well
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc' AND includeVariables = true)");
+            paramMap.put("maxItems", "1");
+            paramMap.put("skipCount", "0");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            
+            assertEquals(1, processList.getList().size());
+            
+            ProcessInfo processInfo = processList.getList().get(0);
+            assertNotNull(processInfo.getProcessVariables());
+            
+            boolean foundDescription = false;
+            boolean foundAssignee = false;
+            for (Variable variable : processInfo.getProcessVariables()) 
+            {
+                if ("bpm_description".equals(variable.getName())) 
+                {
+                    assertEquals("d:text", variable.getType());
+                    assertNull(variable.getValue());
+                    foundDescription = true;
+                }
+                else if ("bpm_assignee".equals(variable.getName())) 
+                {
+                    assertEquals("cm:person", variable.getType());
+                    assertEquals(requestContext.getRunAsUser(), variable.getValue());
+                    foundAssignee = true;
+                }
+            }
+            
+            assertTrue(foundDescription);
+            assertTrue(foundAssignee);
+            
+            // include process variables with paging
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc' AND includeVariables = true)");
+            paramMap.put("maxItems", "3");
+            paramMap.put("skipCount", "1");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            
+            assertEquals(2, processList.getList().size());
+            
+            processInfo = processList.getList().get(0);
+            assertNotNull(processInfo.getProcessVariables());
+            
+            foundDescription = false;
+            foundAssignee = false;
+            for (Variable variable : processInfo.getProcessVariables()) 
+            {
+                if ("bpm_description".equals(variable.getName())) 
+                {
+                    assertEquals("d:text", variable.getType());
+                    assertNull(variable.getValue());
+                    foundDescription = true;
+                }
+                else if ("bpm_assignee".equals(variable.getName())) 
+                {
+                    assertEquals("cm:person", variable.getType());
+                    assertEquals(requestContext.getRunAsUser(), variable.getValue());
+                    foundAssignee = true;
+                }
+            }
+            
+            assertTrue(foundDescription);
+            assertTrue(foundAssignee);
+            
+            // include process variables with paging outside boundaries
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc' AND includeVariables = true)");
+            paramMap.put("maxItems", "4");
+            paramMap.put("skipCount", "5");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            
+            assertEquals(0, processList.getList().size());
+            
         } 
         finally
         {
@@ -885,6 +976,9 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + anotherNetwork.getId();
         final RequestContext otherContext = new RequestContext(anotherNetwork.getId(), tenantAdmin);
         
+        String otherPerson = getOtherPersonInNetwork(requestContext.getRunAsUser(), requestContext.getNetworkId()).getId();
+        RequestContext otherPersonContext = new RequestContext(requestContext.getNetworkId(), otherPerson);
+        
         final ProcessInfo process1 = startAdhocProcess(requestContext, null);
         
         try
@@ -954,6 +1048,64 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             {
                 assertEquals(HttpStatus.FORBIDDEN.value(), e.getHttpResponse().getStatusCode());
             }
+            
+            // get task with other not-involved person
+            publicApiClient.setRequestContext(otherPersonContext);
+            paramMap = new HashMap<String, String>();
+            try
+            {
+                tasksJSON = processesClient.getTasks(process1.getId(), paramMap);
+                fail("forbidden expected");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.FORBIDDEN.value(), e.getHttpResponse().getStatusCode());
+            }
+            
+            // involve other person and get task
+            final Task task = activitiProcessEngine.getTaskService().createTaskQuery().
+                    processInstanceId(process1.getId())
+                    .singleResult();
+            
+            activitiProcessEngine.getTaskService().addCandidateUser(task.getId(), otherPersonContext.getRunAsUser());
+            
+            publicApiClient.setRequestContext(otherPersonContext);
+            paramMap = new HashMap<String, String>();
+            tasksJSON = processesClient.getTasks(process1.getId(), paramMap);
+            assertNotNull(tasksJSON);
+            entriesJSON = (JSONArray) tasksJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 1);
+            
+            // complete task and get tasks
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    activitiProcessEngine.getTaskService().complete(task.getId());
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            
+            publicApiClient.setRequestContext(requestContext);
+            paramMap = new HashMap<String, String>();
+            paramMap.put("status", "any");
+            tasksJSON = processesClient.getTasks(process1.getId(), paramMap);
+            assertNotNull(tasksJSON);
+            entriesJSON = (JSONArray) tasksJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 2);
+            
+            publicApiClient.setRequestContext(otherPersonContext);
+            paramMap = new HashMap<String, String>();
+            paramMap.put("status", "any");
+            tasksJSON = processesClient.getTasks(process1.getId(), paramMap);
+            assertNotNull(tasksJSON);
+            entriesJSON = (JSONArray) tasksJSON.get("entries");
+            assertNotNull(entriesJSON);
+            assertTrue(entriesJSON.size() == 2);
+            
         }
         finally
         {

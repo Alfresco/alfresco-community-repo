@@ -19,6 +19,7 @@
 package org.alfresco.rest.workflow.api.model;
 
 import java.util.Date;
+import java.util.List;
 
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.DelegationState;
@@ -40,6 +41,7 @@ public class Task
     String assignee;
     String formResourceKey;
     String state;
+    List<TaskVariable> variables;
     
     public Task()
     {
@@ -254,5 +256,15 @@ public class Task
     public void setState(String state)
     {
         this.state = state;
+    }
+
+    public List<TaskVariable> getVariables()
+    {
+        return variables;
+    }
+
+    public void setVariables(List<TaskVariable> variables)
+    {
+        this.variables = variables;
     }
 }

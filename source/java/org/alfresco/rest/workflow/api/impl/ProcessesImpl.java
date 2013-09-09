@@ -100,13 +100,14 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     protected static String PROCESS_STATUS_ANY = "any";
     protected static String PROCESS_STATUS_ACTIVE = "active";
     protected static String PROCESS_STATUS_COMPLETED = "completed";
+    protected static String PROCESS_STATUS_DELETED = "deleted";
     
     protected static final Set<String> PROCESS_STATUS_LIST = new HashSet<String>(Arrays.asList(
-            PROCESS_STATUS_ANY, PROCESS_STATUS_ACTIVE, PROCESS_STATUS_COMPLETED
+            PROCESS_STATUS_ANY, PROCESS_STATUS_ACTIVE, PROCESS_STATUS_COMPLETED, PROCESS_STATUS_DELETED
     ));
     
     protected static final Set<String> PROCESS_COLLECTION_EQUALS_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "processDefinitionId", "businessKey", "processDefinitionKey", "startUserId", "status"
+        "processDefinitionId", "businessKey", "processDefinitionKey", "startUserId", "status", "includeVariables"
     ));
     
     protected static final Set<String> PROCESS_COLLECTION_GREATERTHAN_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
@@ -289,6 +290,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         Date startedAtLessThan = propertyWalker.getProperty("startedAt", WhereClauseParser.LESSTHAN, Date.class);
         Date endedAtGreaterThan = propertyWalker.getProperty("endedAt", WhereClauseParser.GREATERTHAN, Date.class);
         Date endedAtLessThan = propertyWalker.getProperty("endedAt", WhereClauseParser.LESSTHAN, Date.class);
+        Boolean includeVariables = propertyWalker.getProperty("includeVariables", WhereClauseParser.EQUALS, Boolean.class);
         
         if (status != null && PROCESS_STATUS_LIST.contains(status) == false)
         {
@@ -343,6 +345,15 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         else if (PROCESS_STATUS_COMPLETED.equals(status))
         {
             query.finished();
+            query.notDeleted();
+        }
+        else if (PROCESS_STATUS_DELETED.equals(status))
+        {
+            query.deleted();
+        }
+        
+        if (includeVariables != null && includeVariables) {
+            query.includeProcessVariables();
         }
         
         List<QueryVariableHolder> variableProperties = propertyWalker.getVariableProperties();
@@ -457,9 +468,31 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         int totalCount = (int) query.count();
 
         List<ProcessInfo> page = new ArrayList<ProcessInfo>(processInstances.size());
+        Map<String, TypeDefinition> definitionTypeMap = new HashMap<String, TypeDefinition>();
         for (HistoricProcessInstance processInstance: processInstances) 
         {
-            page.add(createProcessInfo(processInstance));
+            ProcessInfo processInfo = createProcessInfo(processInstance);
+            if (includeVariables != null && includeVariables) 
+            {
+                if (definitionTypeMap.containsKey(processInfo.getProcessDefinitionId()) == false)
+                {
+                    StartFormData startFormData = activitiProcessEngine.getFormService().getStartFormData(processInfo.getProcessDefinitionId());
+                    if (startFormData != null)
+                    {
+                        String formKey = startFormData.getFormKey();
+                        definitionTypeMap.put(processInfo.getProcessDefinitionId(), workflowFactory.getTaskFullTypeDefinition(formKey, true));
+                    }
+                }
+                
+                if (definitionTypeMap.containsKey(processInfo.getProcessDefinitionId()))
+                {
+                    // Convert raw variables to Variable objects
+                    List<Variable> resultingVariables = restVariableHelper.getVariables(
+                            processInstance.getProcessVariables(), definitionTypeMap.get(processInfo.getProcessDefinitionId()));
+                    processInfo.setProcessVariables(resultingVariables);
+                }
+            }
+            page.add(processInfo);
         }
         
         return CollectionWithPagingInfo.asPaged(paging, page, page.size() != totalCount, totalCount);
@@ -732,6 +765,17 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     public void deleteProcess(String id)
     {
         validateIfUserAllowedToWorkWithProcess(id);
+        
+        ProcessInstance processInstance = activitiProcessEngine.getRuntimeService()
+                .createProcessInstanceQuery()
+                .processInstanceId(id)
+                .singleResult();
+        
+        if (processInstance == null)
+        {
+            throw new EntityNotFoundException(id);
+        }
+        
         activitiProcessEngine.getRuntimeService().deleteProcessInstance(id, "deleted through REST API call");
     }
     
@@ -1056,11 +1100,8 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     protected ProcessInfo createProcessInfo(HistoricProcessInstance processInstance)
     {
         ProcessInfo processInfo = new ProcessInfo(processInstance);
-        ProcessDefinition definitionEntity = getCachedProcessDefinition(processInstance.getProcessDefinitionId());
-        if (definitionEntity == null)
-        {
-            definitionEntity = activitiProcessEngine.getRepositoryService().getProcessDefinition(processInstance.getProcessDefinitionId());
-        }
+        ProcessDefinition definitionEntity = activitiProcessEngine.getRepositoryService()
+                .getProcessDefinition(processInstance.getProcessDefinitionId());
         processInfo.setProcessDefinitionKey(getLocalProcessDefinitionKey(definitionEntity.getKey()));
         return processInfo;
     }

@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.util.ClockUtil;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.DelegationState;
@@ -698,12 +699,14 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         ProcessInstance processCompleteAsOwner = startAdhocProcess(initiator, requestContext.getNetworkId(), null);
         ProcessInstance processCompleteAsInitiator = startAdhocProcess(initiator, requestContext.getNetworkId(), null);
         ProcessInstance processCompleteAsAdmin = startAdhocProcess(initiator, requestContext.getNetworkId(), null);
+        ProcessInstance processCompleteWithVariables = startAdhocProcess(initiator, requestContext.getNetworkId(), null);
         try 
         {
             Task asAssigneeTask = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processCompleteAsAssignee.getId()).singleResult();
             Task asOwnerTask = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processCompleteAsOwner.getId()).singleResult();
             Task asInitiatorTask = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processCompleteAsInitiator.getId()).singleResult();
             Task asAdminTask = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processCompleteAsAdmin.getId()).singleResult();
+            Task withVariablesTask = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processCompleteWithVariables.getId()).singleResult();
             TasksClient tasksClient = publicApiClient.tasksClient();
             
             // Unclaiming the task when NOT assignee, owner, initiator or admin results in error
@@ -755,10 +758,69 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals("completed", result.get("state"));
             assertNotNull(result.get("endedAt"));
             assertNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(asAdminTask.getId()).singleResult());
+            
+            // Complete with variables
+            requestContext.setRunAsUser(initiator);
+            activitiProcessEngine.getTaskService().setAssignee(withVariablesTask.getId(), null);
+            
+            JSONArray variablesArray = new JSONArray();
+            JSONObject variableBody = new JSONObject();
+            variableBody.put("name", "newGlobalVariable");
+            variableBody.put("value", 1234);
+            variableBody.put("scope", "global");
+            variablesArray.add(variableBody);
+            variableBody = new JSONObject();
+            variableBody.put("name", "newLocalVariable");
+            variableBody.put("value", 5678);
+            variableBody.put("scope", "local");
+            variablesArray.add(variableBody);
+            
+            taskBody.put("variables", variablesArray);
+            selectedFields.add("variables");
+            result = tasksClient.updateTask(withVariablesTask.getId(), taskBody, selectedFields);
+            assertEquals("completed", result.get("state"));
+            assertNotNull(result.get("endedAt"));
+            assertNull(activitiProcessEngine.getTaskService().createTaskQuery().taskId(withVariablesTask.getId()).singleResult());
+            HistoricTaskInstance historyTask = activitiProcessEngine.getHistoryService().createHistoricTaskInstanceQuery()
+                    .taskId(withVariablesTask.getId())
+                    .includeProcessVariables()
+                    .includeTaskLocalVariables()
+                    .singleResult();
+            
+            assertEquals(1234, historyTask.getProcessVariables().get("newGlobalVariable"));
+            assertEquals(5678, historyTask.getTaskLocalVariables().get("newLocalVariable"));
+            
+            JSONObject variables = tasksClient.findTaskVariables(withVariablesTask.getId());
+            assertNotNull(variables);
+            JSONObject list = (JSONObject) variables.get("list");
+            assertNotNull(list);
+            JSONArray entries = (JSONArray) list.get("entries");
+            assertNotNull(entries);
+            
+            boolean foundGlobal = false;
+            boolean foundLocal = false;
+            for (Object entry : entries)
+            {
+                JSONObject variableObject = (JSONObject) ((JSONObject) entry).get("entry");
+                if ("newGlobalVariable".equals(variableObject.get("name")))
+                {
+                    assertEquals(1234L, variableObject.get("value"));
+                    foundGlobal = true;
+                }
+                else if ("newLocalVariable".equals(variableObject.get("name")))
+                {
+                    assertEquals(5678L, variableObject.get("value"));
+                    foundLocal = true;
+                }
+            }
+            
+            assertTrue(foundGlobal);
+            assertTrue(foundLocal);
         }
         finally
         {
-            cleanupProcessInstance(processCompleteAsAssignee, processCompleteAsAdmin, processCompleteAsInitiator, processCompleteAsOwner);
+            cleanupProcessInstance(processCompleteAsAssignee, processCompleteAsAdmin, processCompleteAsInitiator, 
+                    processCompleteAsOwner, processCompleteWithVariables);
         }
     }
     
@@ -1540,7 +1602,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             
             // Test with existing processDefinitionId
             Map<String, String> params = new HashMap<String, String>();
-            params.put("processDefinitionId", processDefinitionId);
+            params.put("where", "(processDefinitionId = '" + processDefinitionId + "' AND includeProcessVariables = true AND includeTaskVariables = true)");
             JSONObject taskListJSONObject = tasksClient.findTasks(params);
             assertNotNull(taskListJSONObject);
             JSONObject paginationJSON = (JSONObject) taskListJSONObject.get("pagination");
@@ -1550,11 +1612,12 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals(false, paginationJSON.get("hasMoreItems"));
             JSONArray jsonEntries = (JSONArray) taskListJSONObject.get("entries");
             assertEquals(6, jsonEntries.size());
+            validateVariables((JSONObject) jsonEntries.get(0), requestContext);
             
             // Test with existing processDefinitionId and max items
             params.clear();
             params.put("maxItems", "3");
-            params.put("processDefinitionId", processDefinitionId);
+            params.put("where", "(processDefinitionId = '" + processDefinitionId + "' AND includeProcessVariables = true AND includeTaskVariables = true)");
             taskListJSONObject = tasksClient.findTasks(params);
             assertNotNull(taskListJSONObject);
             paginationJSON = (JSONObject) taskListJSONObject.get("pagination");
@@ -1564,11 +1627,12 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals(true, paginationJSON.get("hasMoreItems"));
             jsonEntries = (JSONArray) taskListJSONObject.get("entries");
             assertEquals(3, jsonEntries.size());
+            validateVariables((JSONObject) jsonEntries.get(0), requestContext);
             
             // Test with existing processDefinitionId and skip count
             params.clear();
             params.put("skipCount", "2");
-            params.put("processDefinitionId", processDefinitionId);
+            params.put("where", "(processDefinitionId = '" + processDefinitionId + "' AND includeProcessVariables = true AND includeTaskVariables = true)");
             taskListJSONObject = tasksClient.findTasks(params);
             assertNotNull(taskListJSONObject);
             paginationJSON = (JSONObject) taskListJSONObject.get("pagination");
@@ -1583,7 +1647,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             params.clear();
             params.put("maxItems", "3");
             params.put("skipCount", "2");
-            params.put("processDefinitionId", processDefinitionId);
+            params.put("where", "(processDefinitionId = '" + processDefinitionId + "' AND includeProcessVariables = true AND includeTaskVariables = true)");
             taskListJSONObject = tasksClient.findTasks(params);
             assertNotNull(taskListJSONObject);
             paginationJSON = (JSONObject) taskListJSONObject.get("pagination");
@@ -1598,7 +1662,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             params.clear();
             params.put("maxItems", "3");
             params.put("skipCount", "4");
-            params.put("processDefinitionId", processDefinitionId);
+            params.put("where", "(processDefinitionId = '" + processDefinitionId + "' AND includeProcessVariables = true AND includeTaskVariables = true)");
             taskListJSONObject = tasksClient.findTasks(params);
             assertNotNull(taskListJSONObject);
             paginationJSON = (JSONObject) taskListJSONObject.get("pagination");
@@ -1613,6 +1677,48 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         {
             cleanupProcessInstance(startedProcesses.toArray(new ProcessInstance[] {}));
         }
+    }
+    
+    protected void validateVariables(JSONObject entry, RequestContext requestContext) {
+        JSONObject taskObject = (JSONObject) entry.get("entry");
+        JSONArray variables = (JSONArray) taskObject.get("variables");
+        boolean foundInitiator = false;
+        boolean foundAssignee = false;
+        boolean foundPercentageComplete = false;
+        boolean foundReassignable = false;
+        for (int i = 0; i < variables.size(); i++) 
+        {
+            JSONObject variableJSON = (JSONObject) variables.get(i);
+            if ("initiator".equals(variableJSON.get("name"))) 
+            {
+                assertEquals("d:noderef", variableJSON.get("type"));
+                assertEquals(requestContext.getRunAsUser(), variableJSON.get("value"));
+                foundInitiator = true;
+            }
+            else if ("bpm_assignee".equals(variableJSON.get("name"))) 
+            {
+                assertEquals("cm:person", variableJSON.get("type"));
+                assertEquals(requestContext.getRunAsUser(), variableJSON.get("value"));
+                foundAssignee = true;
+            }
+            else if ("bpm_percentComplete".equals(variableJSON.get("name"))) 
+            {
+                assertEquals("d:int", variableJSON.get("type"));
+                assertEquals(0L, variableJSON.get("value"));
+                foundPercentageComplete = true;
+            }
+            else if ("bpm_reassignable".equals(variableJSON.get("name"))) 
+            {
+                assertEquals("d:boolean", variableJSON.get("type"));
+                assertEquals(Boolean.TRUE, variableJSON.get("value"));
+                foundReassignable = true;
+            }
+        }
+        
+        assertTrue(foundInitiator);
+        assertTrue(foundAssignee); 
+        assertTrue(foundPercentageComplete);
+        assertTrue(foundReassignable);
     }
     
     @Test
@@ -1956,14 +2062,9 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals("d:text", var.get("type"));
             assertEquals("Not Yet Started", var.get("value"));
             
-            var = entriesByName.get("bpm_status");
-            assertNotNull(var);
-            assertEquals("d:text", var.get("type"));
-            assertEquals("Not Yet Started", var.get("value"));
-            
             var = entriesByName.get("bpm_assignee");
             assertNotNull(var);
-            assertEquals("d:noderef", var.get("type"));
+            assertEquals("cm:person", var.get("type"));
             
             final String userName = requestContext.getRunAsUser();
             assertEquals(userName, var.get("value"));

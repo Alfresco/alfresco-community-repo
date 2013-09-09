@@ -17,13 +17,6 @@ import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.history.HistoricVariableInstance;
-import org.activiti.engine.impl.ProcessEngineImpl;
-import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.activiti.engine.impl.context.Context;
-import org.activiti.engine.impl.interceptor.Command;
-import org.activiti.engine.impl.interceptor.CommandContext;
-import org.activiti.engine.impl.persistence.deploy.DeploymentCache;
-import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -324,32 +317,6 @@ public class WorkflowRestImpl
         {
             throw new EntityNotFoundException("Item " + itemId + " not found");
         }
-    }
-    
-    /**
-     * Get the process definition from the cache if available
-     * 
-     * @param processDefinitionId the unique id identifier of the process definition
-     */
-    public ProcessDefinitionEntity getCachedProcessDefinition(final String processDefinitionId)
-    {
-        ProcessEngineConfigurationImpl processConfig = (ProcessEngineConfigurationImpl) ((ProcessEngineImpl) activitiProcessEngine).getProcessEngineConfiguration();
-        ProcessDefinitionEntity definitionEntity = processConfig.getCommandExecutorTxRequired().execute(new Command<ProcessDefinitionEntity>() 
-        {
-
-            @Override
-            public ProcessDefinitionEntity execute(CommandContext commandContext)
-            {
-                DeploymentCache<ProcessDefinitionEntity> cache = Context
-                    .getProcessEngineConfiguration()
-                    .getDeploymentManager()
-                    .getProcessDefinitionCache();
-                
-                return cache.get(processDefinitionId);
-            }
-            
-        });
-        return definitionEntity;
     }
     
     /**

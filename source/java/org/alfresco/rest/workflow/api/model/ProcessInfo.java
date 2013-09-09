@@ -19,6 +19,7 @@
 package org.alfresco.rest.workflow.api.model;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,6 +43,7 @@ public class ProcessInfo
     boolean completed;
     
     Map<String, Object> variables;
+    List<Variable> processVariables;
     Set<String> items;
 
     public ProcessInfo()
@@ -202,6 +204,16 @@ public class ProcessInfo
     public void setVariables(Map<String, Object> variables)
     {
         this.variables = variables;
+    }
+
+    public List<Variable> getProcessVariables()
+    {
+        return processVariables;
+    }
+
+    public void setProcessVariables(List<Variable> processVariables)
+    {
+        this.processVariables = processVariables;
     }
 
     public Set<String> getItems()

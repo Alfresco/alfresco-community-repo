@@ -28,11 +28,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.activiti.engine.ActivitiTaskAlreadyClaimedException;
+import org.activiti.engine.form.StartFormData;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.history.HistoricVariableInstance;
-import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.IdentityLink;
 import org.activiti.engine.task.IdentityLinkType;
@@ -88,7 +87,8 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     
     private static final Set<String> TASK_COLLECTION_EQUALS_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
         "status", "assignee", "owner", "candidateUser", "candidateGroup", "name", "description", "priority", "processId",
-        "processBusinessKey", "activityDefinitionId", "processDefinitionId", "processDefinitionName", "startedAt", "endedAt", "dueAt"
+        "processBusinessKey", "activityDefinitionId", "processDefinitionId", "processDefinitionName", "startedAt", "endedAt", "dueAt",
+        "includeTaskVariables", "includeProcessVariables"
     ));
     
     private static final Set<String> TASK_COLLECTION_MATCHES_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
@@ -183,6 +183,8 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         Date dueAt = propertyWalker.getProperty("dueAt", WhereClauseParser.EQUALS, Date.class);
         Date dueAtGreaterThan = propertyWalker.getProperty("dueAt", WhereClauseParser.GREATERTHAN, Date.class);
         Date dueAtLessThan = propertyWalker.getProperty("dueAt", WhereClauseParser.LESSTHAN, Date.class);
+        Boolean includeProcessVariables = propertyWalker.getProperty("includeProcessVariables", WhereClauseParser.EQUALS, Boolean.class);
+        Boolean includeTaskVariables = propertyWalker.getProperty("includeTaskVariables", WhereClauseParser.EQUALS, Boolean.class);
 
         List<SortColumn> sortList = parameters.getSorting();
         SortColumn sortColumn = null;
@@ -254,6 +256,14 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             if (startedAtGreaterThan != null) query.taskCreatedAfter(startedAtGreaterThan);
             if (startedAtLessThan != null) query.taskCreatedBefore(startedAtLessThan);
             
+            if (includeProcessVariables != null && includeProcessVariables) {
+                query.includeProcessVariables();
+            }
+            
+            if (includeTaskVariables != null && includeTaskVariables) {
+                query.includeTaskLocalVariables();
+            }
+            
             List<QueryVariableHolder> variableProperties = propertyWalker.getVariableProperties();
             if (variableProperties != null)
             {
@@ -305,7 +315,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
             
             // Add involvment filtering if user is not admin
-            if(!authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) {
+            if(processInstanceId == null && !authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) {
                 query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
             }
             
@@ -315,10 +325,16 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             totalCount = (int) query.count();
             
             page = new ArrayList<Task>(tasks.size());
+            Map<String, TypeDefinition> definitionTypeMap = new HashMap<String, TypeDefinition>();
             for (org.activiti.engine.task.Task taskInstance: tasks) 
             {
                 Task task = new Task(taskInstance);
                 task.setFormResourceKey(getFormResourceKey(taskInstance));
+                if ((includeProcessVariables != null && includeProcessVariables) || (includeTaskVariables != null && includeTaskVariables))
+                {
+                    addVariables(task, includeProcessVariables, includeTaskVariables, taskInstance.getProcessVariables(), 
+                            taskInstance.getTaskLocalVariables(), definitionTypeMap);
+                }
                 page.add(task);
             }
         }
@@ -367,6 +383,14 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             if (endedAt != null) query.taskCompletedOn(endedAt);
             if (endedAtGreaterThan != null) query.taskCompletedAfter(endedAtGreaterThan);
             if (endedAtLessThan != null) query.taskCompletedBefore(endedAtLessThan);
+            
+            if (includeProcessVariables != null && includeProcessVariables) {
+                query.includeProcessVariables();
+            }
+            
+            if (includeTaskVariables != null && includeTaskVariables) {
+                query.includeTaskLocalVariables();
+            }
             
             List<QueryVariableHolder> variableProperties = propertyWalker.getVariableProperties();
             if (variableProperties != null)
@@ -420,7 +444,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
             
             // Add involvment filtering if user is not admin
-            if(!authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) 
+            if(processInstanceId == null && !authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) 
             {
                 query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
             }
@@ -431,9 +455,15 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             totalCount = (int) query.count();
 
             page = new ArrayList<Task>(tasks.size());
+            Map<String, TypeDefinition> definitionTypeMap = new HashMap<String, TypeDefinition>();
             for (HistoricTaskInstance taskInstance: tasks) 
             {
                 Task task = new Task(taskInstance);
+                if ((includeProcessVariables != null && includeProcessVariables) || (includeTaskVariables != null && includeTaskVariables))
+                {
+                    addVariables(task, includeProcessVariables, includeTaskVariables, taskInstance.getProcessVariables(), 
+                            taskInstance.getTaskLocalVariables(), definitionTypeMap);
+                }
                 page.add(task);
             }
         } 
@@ -443,6 +473,39 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         
         return CollectionWithPagingInfo.asPaged(paging, page, page.size() != totalCount, totalCount);
+    }
+    
+    protected void addVariables(Task task, Boolean includeProcessVariables, Boolean includeTaskVariables, 
+            Map<String, Object> processVariables, Map<String, Object> taskVariables, Map<String, TypeDefinition> definitionTypeMap)
+    {
+        TypeDefinition startFormTypeDefinition = null;
+        if (includeProcessVariables != null && includeProcessVariables) 
+        {
+            if (definitionTypeMap.containsKey(task.getProcessDefinitionId()) == false)
+            {
+                StartFormData startFormData = activitiProcessEngine.getFormService().getStartFormData(task.getProcessDefinitionId());
+                if (startFormData != null)
+                {
+                    String formKey = startFormData.getFormKey();
+                    definitionTypeMap.put(task.getProcessDefinitionId(), workflowFactory.getTaskFullTypeDefinition(formKey, true));
+                }
+            }
+            
+            if (definitionTypeMap.containsKey(task.getProcessDefinitionId()))
+            {
+                startFormTypeDefinition = definitionTypeMap.get(task.getProcessDefinitionId());
+            }
+        }
+        
+        TypeDefinition taskTypeDefinition = null;
+        if (includeTaskVariables != null && includeTaskVariables) 
+        {
+            taskTypeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(task.getFormResourceKey(), false);
+        }
+        
+        List<TaskVariable> variables = restVariableHelper.getTaskVariables(taskVariables, processVariables, 
+                startFormTypeDefinition, taskTypeDefinition);
+        task.setVariables(variables);
     }
     
     @Override
@@ -499,11 +562,6 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             // Add tenant filtering
             if(tenantService.isEnabled()) {
                 query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
-            }
-            
-            // Add involvment filtering if user is not admin
-            if(!authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) {
-                query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
             }
             
             setSorting(query, sortColumn);
@@ -642,8 +700,29 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         else
         {
             // Perform actions associated to state transition 
-            if (taskAction != null) {
-                switch (taskAction) {
+            if (taskAction != null) 
+            {
+                // look for variables submitted with task action
+                Map<String, Object> globalVariables = new HashMap<String, Object>();
+                Map<String, Object> localVariables = new HashMap<String, Object>();
+                if (selectedProperties.contains("variables") && task.getVariables() != null && task.getVariables().size() > 0) 
+                {
+                    for (TaskVariable taskVariable : task.getVariables())
+                    {
+                        taskVariable = convertToTypedVariable(taskVariable, taskInstance);
+                        if (taskVariable.getVariableScope() == VariableScope.GLOBAL)
+                        {
+                            globalVariables.put(taskVariable.getName(), taskVariable.getValue());
+                        }
+                        else
+                        {
+                            localVariables.put(taskVariable.getName(), taskVariable.getValue());
+                        }
+                    }
+                }
+                
+                switch (taskAction) 
+                {
                     case CLAIMED:
                         try
                         {
@@ -655,7 +734,19 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         }
                         break;
                     case COMPLETED:
-                        activitiProcessEngine.getTaskService().complete(taskId);
+                        if (localVariables.size() > 0)
+                        {
+                            activitiProcessEngine.getTaskService().setVariablesLocal(taskId, localVariables);
+                        }
+                        if (globalVariables.size() > 0)
+                        {
+                            activitiProcessEngine.getTaskService().complete(taskId, globalVariables);
+                        }
+                        else
+                        {    
+                            activitiProcessEngine.getTaskService().complete(taskId);
+                        }
+                        
                         break;
                     case DELEGATED:
                         if(selectedProperties.contains("assignee") && task.getAssignee() != null)
@@ -673,7 +764,18 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         }
                         break;
                     case RESOLVED:
-                        activitiProcessEngine.getTaskService().resolveTask(taskId);
+                        if (localVariables.size() > 0)
+                        {
+                            activitiProcessEngine.getTaskService().setVariablesLocal(taskId, localVariables);
+                        }
+                        if (globalVariables.size() > 0)
+                        {
+                            activitiProcessEngine.getTaskService().resolveTask(taskId, globalVariables);
+                        }
+                        else
+                        {    
+                            activitiProcessEngine.getTaskService().resolveTask(taskId);
+                        }
                         break;
                         
                     case UNCLAIMED:
@@ -771,7 +873,20 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         
         // Convert raw variables to TaskVariables
-        List<TaskVariable> page = restVariableHelper.getTaskVariables(taskvariables, processVariables, getWorkflowFactory().getTaskFullTypeDefinition(formKey, false));
+        TypeDefinition taskTypeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(formKey, false);
+        TypeDefinition startFormTypeDefinition = null;
+        StartFormData startFormData = activitiProcessEngine.getFormService().getStartFormData(taskInstance.getProcessDefinitionId());
+        if (startFormData != null)
+        {
+            startFormTypeDefinition = workflowFactory.getTaskFullTypeDefinition(startFormData.getFormKey(), true);
+        }
+        else
+        {
+            // fall back
+            startFormTypeDefinition = taskTypeDefinition;
+        }
+        List<TaskVariable> page = restVariableHelper.getTaskVariables(taskvariables, processVariables, 
+                startFormTypeDefinition, taskTypeDefinition);
         return CollectionWithPagingInfo.asPaged(paging, page, false, page.size());
     }
     
@@ -779,7 +894,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     public TaskVariable updateTaskVariable(String taskId, TaskVariable taskVariable) 
     {
         org.activiti.engine.task.Task taskInstance = getValidTask(taskId);
-        return updateVariableInTask(taskId, taskInstance, taskVariable);
+        return updateVariableInTask(taskInstance, taskVariable);
     }
     
     public List<TaskVariable> updateTaskVariables(String taskId, List<TaskVariable> variables)
@@ -790,20 +905,44 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         {
             for (TaskVariable variable : variables)
             {
-                updatedVariables.add(updateVariableInTask(taskId, taskInstance, variable));
+                updatedVariables.add(updateVariableInTask(taskInstance, variable));
             }
         }
         return updatedVariables;
     }
     
-    protected TaskVariable updateVariableInTask(String taskId, org.activiti.engine.task.Task taskInstance, TaskVariable taskVariable)
+    protected TaskVariable updateVariableInTask(org.activiti.engine.task.Task taskInstance, TaskVariable taskVariable)
+    {
+        taskVariable = convertToTypedVariable(taskVariable, taskInstance);
+        
+        if (VariableScope.LOCAL.equals(taskVariable.getVariableScope()))
+        {
+            activitiProcessEngine.getTaskService().setVariableLocal(taskInstance.getId(), taskVariable.getName(), taskVariable.getValue());
+        }
+        else if(VariableScope.GLOBAL.equals(taskVariable.getVariableScope()))
+        {
+            if(taskInstance.getExecutionId() != null)
+            {
+                activitiProcessEngine.getRuntimeService().setVariable(taskInstance.getExecutionId(), taskVariable.getName(), taskVariable.getValue());
+            }
+            else
+            {
+                throw new InvalidArgumentException("Cannot set global variables on a task that is not part of a process.");
+            }
+        }
+        
+        return taskVariable;
+    }
+    
+    protected TaskVariable convertToTypedVariable(TaskVariable taskVariable, org.activiti.engine.task.Task taskInstance)
     {
         if (taskVariable.getName() == null)
         {
             throw new InvalidArgumentException("Variable name is required.");
         }
         
-        if (taskVariable.getVariableScope() == null || taskVariable.getVariableScope() == VariableScope.ANY)
+        if (taskVariable.getVariableScope() == null || (taskVariable.getVariableScope() != VariableScope.GLOBAL && 
+                taskVariable.getVariableScope() != VariableScope.LOCAL))
         {
             throw new InvalidArgumentException("Variable scope is required and can only be 'local' or 'global'.");
         }
@@ -872,26 +1011,12 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         {
             actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, taskVariable.getValue());
         }
-        taskVariable.setValue(actualValue);
         
-        if (VariableScope.LOCAL.equals(taskVariable.getVariableScope()))
-        {
-            activitiProcessEngine.getTaskService().setVariableLocal(taskId, taskVariable.getName(), actualValue);
-        }
-        else if(VariableScope.GLOBAL.equals(taskVariable.getVariableScope()))
-        {
-            if(taskInstance.getExecutionId() != null)
-            {
-                activitiProcessEngine.getRuntimeService().setVariable(taskInstance.getExecutionId(), taskVariable.getName(), actualValue);
-            }
-            else
-            {
-                throw new InvalidArgumentException("Cannot set global variables on a task that is not part of a process.");
-            }
-        }
+        taskVariable.setValue(actualValue);
         
         // Set type so it's returned in case it was left empty
         taskVariable.setType(dataTypeDefinition.getName().toPrefixString(namespaceService));
+        
         return taskVariable;
     }
     
@@ -987,22 +1112,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     {
         if (task.getProcessDefinitionId() != null)
         {
-            ProcessDefinitionEntity definitionEntity = getCachedProcessDefinition(task.getProcessDefinitionId());
-            
-            String formKey = null;
-            if (definitionEntity != null)
-            {
-                TaskDefinition taskDefinition = definitionEntity.getTaskDefinitions().get(task.getTaskDefinitionKey());
-                if (taskDefinition != null)
-                {
-                    formKey = taskDefinition.getTaskFormHandler().getFormKey().getExpressionText();
-                }
-            }
-            else
-            {
-                formKey = activitiProcessEngine.getFormService().getTaskFormKey(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
-            }
-            
+            String formKey = activitiProcessEngine.getFormService().getTaskFormKey(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
             return formKey;
         } 
         else 

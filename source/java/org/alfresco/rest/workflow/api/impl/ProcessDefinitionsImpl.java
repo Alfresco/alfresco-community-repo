@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.activiti.engine.form.StartFormData;
-import org.activiti.engine.impl.form.StartFormHandler;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.alfresco.repo.i18n.MessageService;
@@ -385,30 +384,11 @@ public class ProcessDefinitionsImpl extends WorkflowRestImpl implements ProcessD
         {
             try 
             {
-                StartFormData startFormData = null;
-                ProcessDefinitionEntity definitionEntity = getCachedProcessDefinition(processDefinition.getId());
-                if (definitionEntity != null)
-                {
-                    StartFormHandler startFormHandler = definitionEntity.getStartFormHandler();
-                    if (startFormHandler == null) {
-                      throw new ApiException("No start form defined for " + processDefinition.getId());
-                    }
-                    
-                    startFormData = startFormHandler.createStartFormData(definitionEntity);
-                }
-                else
-                {
-                    startFormData = activitiProcessEngine.getFormService().getStartFormData(processDefinition.getId());
-                }
-                
+                StartFormData startFormData = activitiProcessEngine.getFormService().getStartFormData(processDefinition.getId());
                 if (startFormData != null) 
                 {
                     processDefinitionRest.setStartFormResourceKey(startFormData.getFormKey());
                 }
-            }
-            catch (ApiException e)
-            {
-                throw e;
             }
             catch (Exception e) 
             {

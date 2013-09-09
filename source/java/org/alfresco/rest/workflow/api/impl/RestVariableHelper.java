@@ -80,18 +80,19 @@ public class RestVariableHelper
      * @param typeDefinition the typê definition for this task, used to extract types.
      * @return list of {@link TaskVariable}, representing the given raw variables
      */
-    public List<TaskVariable> getTaskVariables(Map<String, Object> localVariables, Map<String, Object> globalVariables, TypeDefinition typeDefinition)
+    public List<TaskVariable> getTaskVariables(Map<String, Object> localVariables, Map<String, Object> globalVariables, 
+            TypeDefinition startFormTypeDefinition, TypeDefinition taskTypeDefinition)
     {
         List<TaskVariable> result = new ArrayList<TaskVariable>();
-        TypeDefinitionContext context = new TypeDefinitionContext(typeDefinition);
-        
         if (localVariables != null) 
         {
+            TypeDefinitionContext context = new TypeDefinitionContext(taskTypeDefinition);
             addTaskVariables(result, localVariables, context, VariableScope.LOCAL);
         }
         
         if (globalVariables != null) 
         {
+            TypeDefinitionContext context = new TypeDefinitionContext(startFormTypeDefinition);
             addTaskVariables(result, globalVariables, context, VariableScope.GLOBAL);
         }
         
@@ -129,7 +130,7 @@ public class RestVariableHelper
     /**
      * Converts the raw variables to {@link TaskVariable}s and adds them to the given result-list.
      */
-    protected void addTaskVariables(List<TaskVariable> result, Map<String, Object> variables,
+    public void addTaskVariables(List<TaskVariable> result, Map<String, Object> variables,
                 TypeDefinitionContext context, VariableScope scope)
     {
         TaskVariable variable = null;

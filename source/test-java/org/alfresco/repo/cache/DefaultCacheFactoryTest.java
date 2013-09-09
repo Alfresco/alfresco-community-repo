@@ -52,28 +52,4 @@ public class DefaultCacheFactoryTest
         assertEquals(4, cache.getMaxItems());
         assertEquals("cache.someCache", cache.getCacheName());
     }
-    
-    @Test
-    public void canCreateLocalCache()
-    {
-        cache = (DefaultSimpleCache<String, String>) cacheFactory.createLocalCache("cache.someCache");
-        assertEquals(4, cache.getMaxItems());
-        assertEquals("cache.someCache", cache.getCacheName());
-    }
-
-    @Test
-    public void canCreateInvalidatingCache()
-    {
-        cache = (DefaultSimpleCache<String, String>) cacheFactory.createInvalidateRemovalCache("cache.someCache");
-        assertEquals(4, cache.getMaxItems());
-        assertEquals("cache.someCache", cache.getCacheName());
-    }
-    
-    @Test
-    public void canCreateInvalidateRemovalCache()
-    {
-        cache = (DefaultSimpleCache<String, String>) cacheFactory.createInvalidateRemovalCache("cache.someCache");
-        assertEquals(4, cache.getMaxItems());
-        assertEquals("cache.someCache", cache.getCacheName());
-    }
 }

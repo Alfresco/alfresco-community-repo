@@ -32,10 +32,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Matt Ward
  */
-public class DefaultCacheFactory<K extends Serializable, V> implements CacheFactory<K, V>
+public class DefaultCacheFactory<K extends Serializable, V> extends AbstractCacheFactory<K, V>
 {
     private static final Log log = LogFactory.getLog(DefaultCacheFactory.class);
-    private Properties properties;
+    
     
     @Override
     public SimpleCache<K, V> createCache(String cacheName)
@@ -43,8 +43,7 @@ public class DefaultCacheFactory<K extends Serializable, V> implements CacheFact
         return createLocalCache(cacheName);
     }
     
-    @Override
-    public SimpleCache<K, V> createLocalCache(String cacheName)
+    private SimpleCache<K, V> createLocalCache(String cacheName)
     {
         DefaultSimpleCache<K, V> cache = new DefaultSimpleCache<K, V>();
         cache.setCacheName(cacheName);
@@ -61,34 +60,10 @@ public class DefaultCacheFactory<K extends Serializable, V> implements CacheFact
         return cache;
     }
 
-    private SimpleCache<K, V> createInvalidatingCache(String cacheName)
-    {
-        return createLocalCache(cacheName);
-    }
-
-    @Override
-    public SimpleCache<K, V> createInvalidateRemovalCache(String cacheName)
-    {
-        return createLocalCache(cacheName);
-    }
-
     private int maxItems(String cacheName)
     {
-        String maxItemsStr = properties.getProperty(cacheName + ".maxItems");
-        Integer maxItems = maxItemsStr != null ? Integer.parseInt(maxItemsStr) : 0; 
+        String maxItemsStr = getProperty(cacheName, "maxItems", "0");
+        Integer maxItems = Integer.parseInt(maxItemsStr); 
         return maxItems.intValue();
-    }
-
-    /**
-     * Provide properties to parameterize cache creation. Cache properties are prefixed
-     * with the cacheName supplied when invoking {@link DefaultCacheFactory#createCache(String)}.
-     * For example, for a cache named cache.ticketsCache the property cache.ticketsCache.maxItems
-     * will determine the capacity of the cache.
-     * 
-     * @param properties
-     */
-    public void setProperties(Properties properties)
-    {
-        this.properties = properties;
     }
 }

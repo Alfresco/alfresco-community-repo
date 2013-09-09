@@ -54,7 +54,7 @@
 
    <!-- The cross-transaction shared cache for Property entities -->
    
-   <bean name="propertyValueSharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="propertyValueSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.propertyValueCache"/>      
    </bean>
    
@@ -64,7 +64,7 @@
 
    <!-- The cross-transaction shared cache for Property Unique Contexts -->
    
-   <bean name="propertyUniqueContextSharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="propertyUniqueContextSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.propertyUniqueContextSharedCache"/>
    </bean>
    
@@ -84,7 +84,7 @@
 
    <!-- The cross-transaction shared cache for immutable entities -->
    
-   <bean name="immutableEntitySharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="immutableEntitySharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.immutableEntitySharedCache"/>
    </bean>
    
@@ -94,13 +94,13 @@
 
    <!-- The cross-transaction shared cache for Root Nodes -->
 
-   <bean name="node.rootNodesSharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="node.rootNodesSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.node.rootNodesSharedCache"/>
    </bean>
    
    <!-- The cross-transaction shared cache for Root Nodes -->
 
-   <bean name="node.allRootNodesSharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="node.allRootNodesSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.node.allRootNodesSharedCache"/>
    </bean>
 
@@ -110,7 +110,7 @@
 
    <!-- The cross-transaction shared cache for Nodes -->
 
-   <bean name="node.nodesSharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="node.nodesSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.node.nodesSharedCache"/>
    </bean>
    
@@ -120,7 +120,7 @@
 
    <!-- The cross-transaction shared cache for Node Aspects -->
 
-   <bean name="node.aspectsSharedCache" factory-bean="cacheFactory" factory-method="createLocalCache">
+   <bean name="node.aspectsSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.node.aspectsSharedCache"/>
    </bean>
    
@@ -130,7 +130,7 @@
 
    <!-- The cross-transaction shared cache for Node Properties -->
 
-   <bean name="node.propertiesSharedCache" factory-bean="cacheFactory" factory-method="createLocalCache">
+   <bean name="node.propertiesSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.node.propertiesSharedCache"/>
    </bean>
 
@@ -141,7 +141,7 @@
 
    <!-- The cross-transaction shared cache for Child-by-name -->
    
-   <bean name="node.childByNameSharedCache" factory-bean="cacheFactory" factory-method="createLocalCache">
+   <bean name="node.childByNameSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.node.childByNameSharedCache"/>
    </bean>
    
@@ -159,7 +159,7 @@
 
    <!-- The cross-transaction shared cache for User Authorities -->
    
-   <bean name="userToAuthoritySharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="userToAuthoritySharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.userToAuthoritySharedCache"/>
    </bean>
    
@@ -175,7 +175,7 @@
 
    <!-- The cross-transaction shared cache for authority containers -->
    
-   <bean name="authoritySharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="authoritySharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.authoritySharedCache"/>
    </bean>
 
@@ -185,7 +185,7 @@
 
    <!-- The cross-transaction shared cache for authority containers -->
    
-   <bean name="authorityToChildAuthoritySharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="authorityToChildAuthoritySharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.authorityToChildAuthoritySharedCache"/>
    </bean>
    
@@ -195,7 +195,7 @@
 
    <!-- The cross-transaction shared cache for authority containers -->
    
-   <bean name="zoneToAuthoritySharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="zoneToAuthoritySharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.zoneToAuthoritySharedCache"/>
    </bean>
 
@@ -371,7 +371,7 @@
 
    <!-- The cross-transaction shared cache for Dictionary Models -->
    
-   <bean name="compiledModelsCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="compiledModelsCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.compiledModelsSharedCache"/>
    </bean>
 
@@ -384,11 +384,11 @@
 
    <!-- The cross-transaction shared cache for In-Memory WebScripts Registry -->
    
-   <bean name="webScriptsRegistryCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="webScriptsRegistryCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.webScriptsRegistrySharedCache"/>
    </bean>
    
-   <bean name="publicapi.webScriptsRegistryCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="publicapi.webScriptsRegistryCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.publicapi.webScriptsRegistryCache"/>
    </bean>
    
@@ -403,7 +403,7 @@
       AbstractRoutingContentStore.selectReadStore(String) will correct incorrect/missing cache entries
       and it doesn't really make sense to try to replicate or Serialize a ContentStore implementation. 
    -->
-   <bean name="routingContentStoreSharedCache" factory-bean="cacheFactory" factory-method="createLocalCache">
+   <bean name="routingContentStoreSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.routingContentStoreSharedCache"/>
    </bean>
    
@@ -433,7 +433,7 @@
 
    <!-- The cross-transaction shared cache for IMAP messages -->
    
-   <bean name="imapMessageSharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="imapMessageSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.imapMessageSharedCache"/>
    </bean>
    
@@ -453,7 +453,7 @@
    
    <!-- The cross-transaction shared cache for immutable (tenant-aware) singletons -->
    
-   <bean name="immutableSingletonSharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="immutableSingletonSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.immutableSingletonSharedCache"/>
    </bean>
 
@@ -463,11 +463,11 @@
    </bean>
    
    
-   <bean name="contentDiskDriver.fileInfoCache" factory-bean="cacheFactory" factory-method="createLocalCache">
+   <bean name="contentDiskDriver.fileInfoCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.contentDiskDriver.fileInfoCache"/>
    </bean>
 
-   <bean name="globalConfigSharedCache" factory-bean="cacheFactory" factory-method="createInvalidateRemovalCache">
+   <bean name="globalConfigSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.globalConfigSharedCache"/>
    </bean>
    

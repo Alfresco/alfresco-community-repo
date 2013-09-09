@@ -30,33 +30,11 @@ import java.io.Serializable;
 public interface CacheFactory<K extends Serializable, V>
 {
     /**
-     * Creates a fully distributed cache (when clustering is enabled and active).
+     * Creates a cache. The type of cache (e.g. localised, clustered etc.) produced is
+     * dependant on the factory implementation, and will vary at runtime.
      * 
      * @param cacheName
      * @return SimpleCache
      */
     SimpleCache<K, V> createCache(String cacheName);
-    
-    /**
-     * Creates a "local" cache, i.e. one that exists only on the JVM that created it. It does not
-     * attempt to replicate any data, send invalidation messages etc. and is intended for use
-     * only where the data does not need to be shared and where remote operations should be avoided for
-     * performance reasons.
-     *  
-     * @param cacheName
-     * @return SimpleCache
-     */
-    SimpleCache<K, V> createLocalCache(String cacheName);
-    
-    /**
-     * <p>Creates a local (as opposed to fully-distributed) cache that broadcasts invalidation messages
-     * to its peers on other cluster members upon cache item removal. Its peers then remove the
-     * corresponding cache item.</p>
-     * 
-     * <p>This cache does <strong>not</strong> replicate put(k,v) invocations.</p> 
-     * 
-     * @param cacheName
-     * @return SimpleCache
-     */
-    SimpleCache<K, V> createInvalidateRemovalCache(String cacheName);
 }

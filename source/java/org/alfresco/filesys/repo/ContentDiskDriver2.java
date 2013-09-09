@@ -1337,7 +1337,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * @param newName path/name of new file
      * @exception java.io.IOException The exception description.
      */
-    public void renameFile(NodeRef rootNode, final String oldName, final String newName, boolean soft)
+    public void renameFile(NodeRef rootNode, final String oldName, final String newName, boolean soft, boolean moveAsSystem)
             throws IOException
     {
  
@@ -1390,7 +1390,25 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 }
                 else
                 {
-                    fileFolderService.moveFrom(nodeToMoveRef,  sourceFolderRef, targetFolderRef, name);
+                    if (moveAsSystem)
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Run move as System for: " + oldName);
+                        }
+                        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                        {
+                            public Object doWork() throws Exception
+                            {
+                                return fileFolderService.moveFrom(nodeToMoveRef, sourceFolderRef, targetFolderRef, name);
+                            }
+                        }, AuthenticationUtil.getSystemUserName());
+                    }
+                    else
+                    {
+                        fileFolderService.moveFrom(nodeToMoveRef, sourceFolderRef, targetFolderRef, name);
+                    }
+
                     logger.debug(
                             "Moved between different folders: \n" +
                             "   Old name:      " + oldName + "\n" +

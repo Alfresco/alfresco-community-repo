@@ -30,7 +30,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.FileFilterMode;
-import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -159,27 +158,6 @@ public class CommandExecutorImpl implements CommandExecutor
         return ret;
     }
     
-    private Client getClient(SrvSession srvSession)
-    {
-        String clientStr = srvSession.getServer().getProtocolName().toLowerCase();
-        if(clientStr.equals("cifs"))
-        {
-            return Client.cifs;
-        }
-        else if(clientStr.equals("nfs"))
-        {
-            return Client.nfs;
-        }
-        else if(clientStr.equals("ftp"))
-        {
-            return Client.ftp;
-        }
-        else
-        {
-            return null;
-        }
-    }
-    
     /**
      * @param sess
      * @param tree
@@ -190,7 +168,7 @@ public class CommandExecutorImpl implements CommandExecutor
      */
     private Object executeInternal(SrvSession sess, TreeConnection tree, Command command, Object result) throws IOException
     {
-        FileFilterMode.setClient(getClient(sess));
+        FileFilterMode.setClient(ClientHelper.getClient(sess));
         try
         {
             if(command instanceof CompoundCommand)
@@ -255,13 +233,13 @@ public class CommandExecutorImpl implements CommandExecutor
                 logger.debug("rename command");
                 RenameFileCommand rename = (RenameFileCommand)command;
                 
-                repositoryDiskInterface.renameFile(rename.getRootNode(), rename.getFromPath(), rename.getToPath(), rename.isSoft());    
+                repositoryDiskInterface.renameFile(rename.getRootNode(), rename.getFromPath(), rename.getToPath(), rename.isSoft(), false);
             }
             else if(command instanceof MoveFileCommand)
             {
                 logger.debug("move command");
                 MoveFileCommand move = (MoveFileCommand)command;
-                repositoryDiskInterface.renameFile(move.getRootNode(), move.getFromPath(), move.getToPath(), false);    
+                repositoryDiskInterface.renameFile(move.getRootNode(), move.getFromPath(), move.getToPath(), false, move.isMoveAsSystem());
             }
             else if(command instanceof CopyContentCommand)
             {

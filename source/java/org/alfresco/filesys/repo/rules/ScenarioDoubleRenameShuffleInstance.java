@@ -22,16 +22,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.alfresco.filesys.repo.OpenFileMode;
 import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
 import org.alfresco.filesys.repo.rules.commands.CopyContentCommand;
 import org.alfresco.filesys.repo.rules.commands.DeleteFileCommand;
 import org.alfresco.filesys.repo.rules.commands.MoveFileCommand;
 import org.alfresco.filesys.repo.rules.commands.RenameFileCommand;
-import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
-import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
-import org.alfresco.filesys.repo.rules.operations.OpenFileOperation;
 import org.alfresco.filesys.repo.rules.operations.MoveFileOperation;
 import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.jlan.server.filesys.FileName;
@@ -72,6 +70,8 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
     
     private Ranking ranking;
     private boolean deleteBackup;
+    private boolean moveAsSystem;
+    private Pattern interimPattern;
     
     /**
      * Timeout in ms.  Default 30 seconds.
@@ -85,7 +85,7 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
     /**
      * Keep track of re-names
      */
-    private Map<String, String>renames = new HashMap<String, String>();
+    private Map<String, String> renames = new HashMap<String, String>();
     
     /**
      * Evaluate the next operation
@@ -201,7 +201,7 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
                     }
                     else
                     {
-                        RenameFileCommand r2 = new RenameFileCommand(fileFrom, fileEnd, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, oldFolder + "\\" + fileEnd);                     
+                        RenameFileCommand r2 = new RenameFileCommand(fileFrom, fileEnd, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, oldFolder + "\\" + fileEnd);
                         commands.add(r2);
                     }   
                     
@@ -263,8 +263,8 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
                     }
                     else
                     {
-                       MoveFileCommand m1 = new MoveFileCommand(fileFrom, fileEnd, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, folderEnd + "\\" + fileEnd);                     
-                        commands.add(m1);
+                       MoveFileCommand m1 = new MoveFileCommand(fileFrom, fileEnd, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, folderEnd + "\\" + fileEnd, isMoveAsSystem());
+                       commands.add(m1);
                     }
                     /**
                      * TODO - we may need to copy a new node for the backup and delete the temp node.
@@ -274,6 +274,22 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
                     isComplete = true;
                     return new CompoundCommand(commands);
                 }
+                else
+                {
+                    if ((interimPattern != null))
+                    {
+                        // ALF-16257: temporary Word file moved from .TemporaryItems
+                        Matcher m = interimPattern.matcher(r.getFromPath());
+                        if(m.matches() && r.getFrom().equals(r.getTo()))
+                        {
+                            if(logger.isDebugEnabled())
+                            {
+                                logger.debug("Got system move from temporary folder: " + r.getFrom() + " to " + r.getToPath());
+                            }
+                            return  new MoveFileCommand(r.getFrom(), r.getTo(), r.getRootNodeRef(), r.getFromPath(), r.getToPath(), true);
+                        }
+                    }
+                }
             }
                 
             break;
@@ -282,6 +298,16 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
         return null;
     }
     
+    public boolean isMoveAsSystem()
+    {
+        return moveAsSystem;
+    }
+
+    public void setMoveAsSystem(boolean moveAsSystem)
+    {
+        this.moveAsSystem = moveAsSystem;
+    }
+
     @Override
     public boolean isComplete()
     {
@@ -322,5 +348,10 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
     public boolean isDeleteBackup()
     {
         return deleteBackup;
+    }
+
+    public void setInterimPattern(Pattern interimPattern)
+    {
+        this.interimPattern = interimPattern;
     }
 }

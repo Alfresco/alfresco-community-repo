@@ -25,11 +25,11 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Date;
 
 import javax.transaction.UserTransaction;
 import javax.xml.ws.Holder;
@@ -41,26 +41,21 @@ import org.alfresco.jlan.server.NetworkServer;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.config.ServerConfiguration;
-import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.jlan.server.filesys.AccessMode;
-import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FileAction;
 import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.FileExistsException;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
-import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.server.filesys.NetworkFileServer;
+import org.alfresco.jlan.server.filesys.PermissionDeniedException;
 import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.TreeConnection;
-import org.alfresco.filesys.config.ServerConfigurationBean;
-
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
@@ -97,12 +92,9 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.FileFilterMode;
-import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.type.VersionType;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
@@ -7271,6 +7263,415 @@ public class ContentDiskDriverTest extends TestCase
           
       } // testNFS
 
+    private void doTransactionWorkAsEditor(final RunAsWork<Void> work, RetryingTransactionHelper tran)
+    {
+        RetryingTransactionCallback<Void> transactionCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                try
+                {
+                    AuthenticationUtil.runAs(work, ContentDiskDriverTest.TEST_USER_AUTHORITY);
+                }
+                catch (Exception e)
+                {
+                    // Informing about test failure. Expected exception is 'AccessDeniedException' or 'PermissionDeniedException'
+                    if (e.getCause() instanceof AccessDeniedException || e.getCause() instanceof PermissionDeniedException)
+                    {
+                        fail("For user='" + TEST_USER_AUTHORITY + "' " + e.getCause().toString());
+                    }
+                    else
+                    {
+                        fail("Unexpected exception was caught: " + e.toString());
+                    }
+                }
+                return null;
+            }
+        };
+        tran.doInTransaction(transactionCallback, false, true);
+    }
+
+    /**
+     * 0. test.txt exist in folder where user has Editor permissions
+     * 1. as Editor create temporary file in temporary directory
+     * 2. as Editor rename test.txt to test.txt.sb-1eefba7a-rkC6XE
+     * 3. as Editor move temporary file to working directory
+     */
+    public void testScenarioMacLionTextEditByEditor_ALF_16257() throws Exception
+    {
+        logger.debug("test Collaborator/editor edit txt file on Mac Os Mountain Lion : Alf16257");
+        final String FILE_NAME = "test.txt";
+        final String FILE_BACKUP = "test.txt.sb-1eefba7a-rkC6XE";
+        final String FILE_NEW_TEMP = FILE_NAME; // the same but in temp dir
+
+        class TestContext
+        {
+            NetworkFile firstFileHandle;
+            NetworkFile newFileHandle;
+            NodeRef testNodeRef; // node ref of FILE_NAME
+        };
+        final TestContext testContext = new TestContext();
+
+        final String TEST_ROOT_DIR = "\\ContentDiskDriverTest";
+        final String TEST_DIR = TEST_ROOT_DIR + "\\testALF16257txt";
+        final String TEST_TEMP_DIR = TEST_DIR + "\\.TemporaryItems";
+        final String UPDATED_TEXT = "This is new content";
+
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "cifs", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+        try
+        {
+            tran.doInTransaction(deleteGarbageFileCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+
+        logger.debug("Step 0 - initialise");
+        /**
+         * Create a file in the test directory
+         */
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                /**
+                 * Create the test directory we are going to use
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createTempDirParams = new FileOpenParams(TEST_TEMP_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+                driver.createDirectory(testSession, testConnection, createTempDirParams);
+
+                /**
+                 * Create the file we are going to use
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.firstFileHandle);
+
+                // no need to test lots of different properties, that's already been tested above
+                testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                nodeService.setProperty(testContext.testNodeRef, TransferModel.PROP_ENABLED, true);
+                nodeService.addAspect(testContext.testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+
+                String testContent = "CIFS: Collaborator/editor could not edit file on Mac Os Mountain Lion";
+                byte[] testContentBytes = testContent.getBytes();
+                testContext.firstFileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
+                testContext.firstFileHandle.close();
+
+                // Apply 'Editor' role for test user to test folder
+                permissionService.setPermission(getNodeForPath(testConnection, TEST_DIR), ContentDiskDriverTest.TEST_USER_AUTHORITY, PermissionService.EDITOR, true);
+                // Apply full control on temporary directory
+                permissionService.setPermission(getNodeForPath(testConnection, TEST_TEMP_DIR), PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
+
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+
+        /**
+         * a) Save the temp file in the temp dir
+         */
+        logger.debug("Step a - create a temp file in the temp dir");
+        RunAsWork<Void> saveNewFileCB = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                FileOpenParams createFileParams = new FileOpenParams(TEST_TEMP_DIR + "\\" + FILE_NEW_TEMP, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.newFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.newFileHandle);
+
+                byte[] testContentBytes = UPDATED_TEXT.getBytes();
+                driver.writeFile(testSession, testConnection, testContext.newFileHandle, testContentBytes, 0, testContentBytes.length, 0);
+                driver.closeFile(testSession, testConnection, testContext.newFileHandle);
+
+                NodeRef tempNodeRef = getNodeForPath(testConnection, TEST_TEMP_DIR + "\\" + FILE_NEW_TEMP);
+                ContentReader reader = contentService.getReader(tempNodeRef, ContentModel.PROP_CONTENT);
+                assertNotNull(reader);
+                String actualContent = reader.getContentString();
+                assertEquals("new contents were not written to temporary file", UPDATED_TEXT, actualContent);
+                return null;
+            }
+        };
+        doTransactionWorkAsEditor(saveNewFileCB, tran);
+
+        /**
+         * b) rename the target file to a backup file
+         */
+        logger.debug("Step b - rename the target file as Editor");
+        RunAsWork<Void> renameOldFileCB = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME, TEST_DIR + "\\" + FILE_BACKUP);
+                return null;
+            }
+        };
+        doTransactionWorkAsEditor(renameOldFileCB, tran);
+
+        /**
+         * c) Move the new file into target dir, stuff should get shuffled
+         */
+        logger.debug("Step c - move new file into target dir as Editor");
+        RunAsWork<Void> moveNewFileCB = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                driver.renameFile(testSession, testConnection, TEST_TEMP_DIR + "\\" + FILE_NEW_TEMP, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+        doTransactionWorkAsEditor(moveNewFileCB, tran);
+
+        /**
+         * Validate
+         */
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+
+                Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
+                assertTrue("node does not contain shuffled ENABLED property", props.containsKey(TransferModel.PROP_ENABLED));
+                assertEquals("name wrong", FILE_NAME, nodeService.getProperty(shuffledNodeRef, ContentModel.PROP_NAME));
+                ContentReader reader = contentService.getReader(testContext.testNodeRef, ContentModel.PROP_CONTENT);
+                assertNotNull(reader);
+                String actualContent = reader.getContentString();
+                assertEquals("contents were not updated", UPDATED_TEXT, actualContent);
+                return null;
+            }
+        };
+        tran.doInTransaction(validateCB, false, true);
+
+        logger.debug("end testScenarioMacLionTextEditByEditor For ALF-16257");
+    } // testScenarioMacLionTextEditByEditorForAlf16257
+
+    /**
+     * 0. MacWord1.docx exist in folder where user has Editor permissions
+     * 1. as Editor rename MacWord1.docx to backup Word Work File L_5.tmp
+     * 2. as Editor create temporary file in temporary directory and move it to working dir
+     * 3. as Editor rename Word Work File D_2.tmp to MacWord1.docx
+     */
+    public void testScenarioMountainLionWord2011EditByEditor_ALF_16257() throws Exception
+    {
+        logger.debug("testScenarioMountainLionWord2011 Edit By Editor ALF-16257");
+
+        final String FILE_NAME = "MacWord1.docx";
+        final String FILE_OLD_TEMP = "Word Work File L_5.tmp";
+        final String FILE_NEW_TEMP = "Word Work File D_2.tmp";
+
+        class TestContext
+        {
+            NetworkFile firstFileHandle;
+            String mimetype;
+        };
+        final TestContext testContext = new TestContext();
+
+        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testALF16257Word";
+        final String TEST_TEMP_DIR = TEST_DIR + "\\.TemporaryItems"; // need to match with interimPattern
+
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+        try
+        {
+            tran.doInTransaction(deleteGarbageFileCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+        
+        logger.debug("a) create new file");
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                /**
+                 * Create the test directory we are going to use 
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createTempDirParams = new FileOpenParams(TEST_TEMP_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+                driver.createDirectory(testSession, testConnection, createTempDirParams);
+
+                /**
+                 * Create the file we are going to test
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.firstFileHandle);
+                
+                ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTest3.doc");
+                assertNotNull("unable to find test resource filesys/ContentDiskDriverTest3.doc", fileResource);
+                writeResourceToNetworkFile(fileResource, testContext.firstFileHandle);
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle); 
+                NodeRef file1NodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                nodeService.addAspect(file1NodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                
+                // Apply 'Editor' role for test user to test folder
+                permissionService.setPermission(getNodeForPath(testConnection, TEST_DIR), ContentDiskDriverTest.TEST_USER_AUTHORITY, PermissionService.EDITOR, true);
+                // Apply full control on temporary directory
+                permissionService.setPermission(getNodeForPath(testConnection, TEST_TEMP_DIR), PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
+
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+        
+        /**
+         * b) rename the old file, should fire doubleRenameShuffle scenario
+         */
+        logger.debug("b) rename old file");
+        RunAsWork<Void> renameOldFileCB = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                NodeRef file1NodeRef = getNodeForPath(testConnection,  TEST_DIR + "\\" + FILE_NAME);
+                Map<QName, Serializable> props = nodeService.getProperties(file1NodeRef);
+                ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+                testContext.mimetype = data.getMimetype();
+                
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME, TEST_DIR + "\\" + FILE_OLD_TEMP);
+                return null;
+            }
+        };
+        doTransactionWorkAsEditor(renameOldFileCB, tran);
+        
+        /**
+         * c) as Editor Save the new file in .TemporaryItems
+         * and move it to working directory (should be detected by scenario)
+         * Write ContentDiskDriverTest3.doc,
+         */
+        logger.debug("c) create temp file in temp dir");
+        RunAsWork<Void> writeFileCB = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                FileOpenParams createFileParams = new FileOpenParams(TEST_TEMP_DIR + "\\" + FILE_NEW_TEMP, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+
+                ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTest3.doc");
+                assertNotNull("unable to find test resource filesys/ContentDiskDriverTest3.doc", fileResource);
+                writeResourceToNetworkFile(fileResource, testContext.firstFileHandle);
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle);
+
+                driver.renameFile(testSession, testConnection, TEST_TEMP_DIR + "\\" + FILE_NEW_TEMP, TEST_DIR + "\\" + FILE_NEW_TEMP);
+                return null;
+            }
+        };
+        doTransactionWorkAsEditor(writeFileCB, tran);
+
+        /**
+         * d) Move the new file into place, stuff should get shuffled
+         */
+        logger.debug("d) move new file into place");
+        RunAsWork<Void> moveNewFileCB = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NEW_TEMP, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+        doTransactionWorkAsEditor(moveNewFileCB, tran);
+
+        /**
+         * e) Delete the old file
+         */
+        logger.debug("e) delete the old file");
+        RetryingTransactionCallback<Void> deleteOldFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_OLD_TEMP);
+                return null;
+            }
+        };
+        
+        tran.doInTransaction(deleteOldFileCB, false, true);
+        
+        logger.debug("e) validate results");
+
+        logger.debug("f) validate results");
+        /**
+         * Now validate everything is correct
+         */
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
+            {
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               
+               Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
+               
+               ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+               //assertNotNull("data is null", data);
+               //assertEquals("size is wrong", 123904, data.getSize());
+               
+               NodeRef file1NodeRef = getNodeForPath(testConnection,  TEST_DIR + "\\" + FILE_NAME); 
+               assertTrue("file has lost versionable aspect", nodeService.hasAspect(file1NodeRef, ContentModel.ASPECT_VERSIONABLE));
+
+               assertEquals("mimeType is wrong", testContext.mimetype, data.getMimetype());
+               
+           
+               return null;
+            }
+        };
+        tran.doInTransaction(validateCB, true, true);
+        logger.debug("end testScenarioMountainLionWord2011 Edit By Editor ALF-16257");
+    } // testScenarioMountainLionWord2011EditByEditor_ALF_16257
     
     /**
      * Test server

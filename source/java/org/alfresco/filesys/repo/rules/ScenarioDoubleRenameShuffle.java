@@ -18,12 +18,10 @@
  */
 package org.alfresco.filesys.repo.rules;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
-import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
 import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,8 +44,10 @@ public class ScenarioDoubleRenameShuffle implements Scenario
      */
     private Pattern pattern;
     private String strPattern;
+    private Pattern interimPattern;
+    private String strInterimPattern;
     private boolean deleteBackup;
-    
+    private boolean moveAsSystem;
     
     private long timeout = 30000;
     
@@ -69,12 +69,17 @@ public class ScenarioDoubleRenameShuffle implements Scenario
             {
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("New Scenario Double Rename Shuffle Instance strPattern:" + pattern + " matches" + r.getTo() );
+                    logger.debug("New Scenario Double Rename Shuffle Instance strPattern:" + pattern + " matches" + r.getTo());
                 }
                 ScenarioDoubleRenameShuffleInstance instance = new ScenarioDoubleRenameShuffleInstance();
                 instance.setTimeout(timeout);
                 instance.setRanking(ranking);
                 instance.setDeleteBackup(deleteBackup);
+                instance.setMoveAsSystem(moveAsSystem);
+                if (interimPattern != null)
+                {
+                    instance.setInterimPattern(interimPattern);
+                }
                 return instance;
             }
         }
@@ -123,5 +128,29 @@ public class ScenarioDoubleRenameShuffle implements Scenario
     public boolean isDeleteBackup()
     {
         return deleteBackup;
+    }
+    
+    public boolean isMoveAsSystem()
+    {
+        return moveAsSystem;
+    }
+
+    public void setMoveAsSystem(boolean retryAsSystem)
+    {
+        this.moveAsSystem = retryAsSystem;
+    }
+
+    public void setInterimPattern(String intermediateMovePattern)
+    {
+        if (null != intermediateMovePattern)
+        {
+            this.interimPattern = Pattern.compile(intermediateMovePattern, Pattern.CASE_INSENSITIVE);
+            this.strInterimPattern = intermediateMovePattern;
+        }
+    }
+
+    public String getInterimPattern()
+    {
+        return this.strInterimPattern;
     }
 }

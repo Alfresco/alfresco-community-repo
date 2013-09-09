@@ -134,7 +134,7 @@ public interface RepositoryDiskInterface
      * @param newName     java.lang.String
      * @exception java.io.IOException The exception description.
      */
-    public void renameFile(NodeRef rootNode, String oldName, String newName, boolean soft)
+    public void renameFile(NodeRef rootNode, String oldName, String newName, boolean soft, boolean moveAsSystem)
       throws java.io.IOException;
 
 

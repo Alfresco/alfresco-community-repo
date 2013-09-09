@@ -269,6 +269,7 @@
                     <property name="timeout"><value>20000</value></property>
                     <property name="ranking"><value>MEDIUM</value></property>
                     <property name="deleteBackup"><value>true</value></property>
+                    <property name="interimPattern"><value>.*\\.TemporaryItems.*\\Word Work File.*\.tmp</value></property>
                 </bean> 
                 
                 <!--  Mac word 2011 on Mountain Lion | Windows 7 Explorer -->
@@ -277,6 +278,7 @@
                     <property name="timeout"><value>20000</value></property>
                     <property name="ranking"><value>MEDIUM</value></property>
                     <property name="deleteBackup"><value>false</value></property>
+                    <property name="interimPattern"><value>.*\\.TemporaryItems.*\\Word Work File.*\.tmp</value></property>
                 </bean> 
                 
                 <bean id="preview2011MountainLion" class="org.alfresco.filesys.repo.rules.ScenarioDoubleRenameShuffle">
@@ -284,6 +286,7 @@
                     <property name="timeout"><value>20000</value></property>
                     <property name="ranking"><value>MEDIUM</value></property>
                     <property name="deleteBackup"><value>false</value></property>
+                    <property name="moveAsSystem"><value>true</value></property>
                 </bean> 
                 
                 <bean id="preview2011MountainLion2" class="org.alfresco.filesys.repo.rules.ScenarioRenameDeleteMove">

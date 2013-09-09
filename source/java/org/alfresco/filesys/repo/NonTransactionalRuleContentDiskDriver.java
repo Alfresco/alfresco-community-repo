@@ -50,6 +50,7 @@ import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.smb.SharingMode;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -170,8 +171,15 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     public void createDirectory(SrvSession sess, TreeConnection tree,
             FileOpenParams params) throws IOException
     {
-        diskInterface.createDirectory(sess, tree, params);
-        
+        FileFilterMode.setClient(ClientHelper.getClient(sess));
+        try
+        {
+            diskInterface.createDirectory(sess, tree, params);
+        }
+        finally
+        {
+            FileFilterMode.clearClient();
+        }
     }
 
     @Override

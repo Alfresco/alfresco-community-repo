@@ -37,6 +37,8 @@ public class TypeSupport implements DBQueryBuilderComponent
     
     DBQueryBuilderPredicatePartCommandType commandType;
 
+    private boolean leftOuter;
+
     /**
      * @param qnameIds
      *            the qnameIds to set
@@ -117,4 +119,12 @@ public class TypeSupport implements DBQueryBuilderComponent
 
     }
 
+    /**
+     * @param leftOuter
+     */
+    public void setLeftOuter(boolean leftOuter)
+    {
+        this.leftOuter = leftOuter;
+    }
+    
 }

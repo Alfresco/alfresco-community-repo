@@ -58,6 +58,8 @@ public class PropertySupport implements DBQueryBuilderComponent
     DBQueryBuilderPredicatePartCommandType commandType;
 
     LuceneFunction luceneFunction;
+
+    private boolean leftOuter;
     
     /**
      * @param pair
@@ -171,7 +173,7 @@ public class PropertySupport implements DBQueryBuilderComponent
                 join = new DBQueryBuilderJoinCommand();
                 alias = "PROP_" + singleJoins.size();
                 join.setAlias(alias);
-                join.setOuter(false);
+                join.setOuter(leftOuter);
                 join.setType(joinCommandType);
                 join.setQnameId(pair.getFirst());
                 singleJoins.put(propertyQName, join);
@@ -185,6 +187,10 @@ public class PropertySupport implements DBQueryBuilderComponent
         if(join != null)
         {
             alias = join.getAlias();
+            if(leftOuter)
+            {
+                join.setOuter(true);
+            }
         }
     }
     
@@ -301,14 +307,25 @@ public class PropertySupport implements DBQueryBuilderComponent
             case CONTENT_MIMETYPE:
                 command.setAlias(alias);
                 command.setType(commandType);
+                
+                // Good for order and predicates
                 command.setValue(value);
                 command.setValues(values);
+                
                 break;
             case CONTENT_URL:
                 command.setAlias(alias);
                 command.setType(commandType);
-                command.setValue(DefaultTypeConverter.INSTANCE.convert(Integer.class, value));
-                command.setValues(values == null ? null : DefaultTypeConverter.INSTANCE.convert(Integer.class,  Arrays.asList(values)).toArray(new Integer[]{}));
+                if(commandType == DBQueryBuilderPredicatePartCommandType.ORDER)
+                {
+                    command.setValue(value);
+                    command.setValues(values);
+                }
+                else
+                {
+                    command.setValue(DefaultTypeConverter.INSTANCE.convert(Long.class, value));
+                    command.setValues(values == null ? null : DefaultTypeConverter.INSTANCE.convert(Integer.class,  Arrays.asList(values)).toArray(new Integer[]{}));
+                }
                 break;
             default:                
                 command.setType(commandType.propertyNotFound());
@@ -331,6 +348,14 @@ public class PropertySupport implements DBQueryBuilderComponent
     public void setLuceneFunction(LuceneFunction luceneFunction)
     {
         this.luceneFunction = luceneFunction;
+    }
+    
+    /**
+     * @param leftOuter
+     */
+    public void setLeftOuter(boolean leftOuter)
+    {
+        this.leftOuter = leftOuter;
     }
 
 }

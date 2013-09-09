@@ -51,6 +51,8 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -182,6 +184,8 @@ public class DBQueryTest  implements DictionaryListener
 
     private String midOrderDate;
 
+    private ContentService contentService;
+
     protected static void startContext()
     {
         ctx = ApplicationContextHelper.getApplicationContext();
@@ -234,6 +238,7 @@ public class DBQueryTest  implements DictionaryListener
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         namespaceDao = (NamespaceDAOImpl) ctx.getBean("namespaceDAO");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        contentService = (ContentService) ctx.getBean("contentService");
 
         loadTestModel();
         createTestData();
@@ -401,6 +406,9 @@ public class DBQueryTest  implements DictionaryListener
         properties.put(ContentModel.PROP_CREATED, explicitCreatedDate);
         n14 = nodeService.createNode(n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}fourteen"), ContentModel.TYPE_CONTENT, properties).getChildRef();
         nodeService.setProperty(n14,  ContentModel.PROP_NAME, "Content 14");
+        ContentWriter writer = contentService.getWriter(n14, ContentModel.PROP_CONTENT, true);
+        writer.setEncoding("UTF-8");
+        writer.putContent("12345678");
         
         n15 = nodeService.createNode(n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}fifteen"), ContentModel.TYPE_THUMBNAIL, getOrderProperties()).getChildRef();
         nodeService.setProperty(n15,  ContentModel.PROP_NAME, "Content 15");
@@ -580,7 +588,7 @@ public class DBQueryTest  implements DictionaryListener
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderLong >=  "+longValue, 7);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderLong IN ( "+longValue+")", 1);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderLong NOT IN  ("+longValue+")", 12);
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderLong is null", 0);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderLong is null", 1);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderLong is not null", 13);
         
         long intValue = -45764576 + (8576457 * 6);
@@ -594,7 +602,7 @@ public class DBQueryTest  implements DictionaryListener
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderInt >=  "+intValue, 7);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderInt IN ( "+intValue+")", 1);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderInt NOT IN  ("+intValue+")", 12);
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderInt is null", 0);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderInt is null", 1);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderInt is not null", 13);
         
         String stringValue = new String(new char[] { (char) ('a' + 6) }) + " cabbage";
@@ -608,7 +616,7 @@ public class DBQueryTest  implements DictionaryListener
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderText >=  '"+stringValue+"'", 7);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderText IN ( '"+stringValue+"')", 1);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderText NOT IN  ('"+stringValue+"')", 12);
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderText is null", 0);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderText is null", 1);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderText is not null", 13);
         
         // ML text is essentially multi-valued and gives unuusla results as ther is no locale constraint 
@@ -624,7 +632,7 @@ public class DBQueryTest  implements DictionaryListener
 //        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText >=  '"+stringValue+"'", 7);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText IN ( '"+stringValue+"')", 1);
 //        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText NOT IN  ('"+stringValue+"')", 12);
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText is null", 0);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText is null", 1);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText is not null", 13);
         
         stringValue = new String(new char[] { (char) ('Z' - 6) }) + " banane";
@@ -638,7 +646,7 @@ public class DBQueryTest  implements DictionaryListener
 //        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText >=  '"+stringValue+"'", 7);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText IN ( '"+stringValue+"')", 1);
 //        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText NOT IN  ('"+stringValue+"')", 12);
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText is null", 0);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText is null", 1);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText is not null", 13);
         
         stringValue = new String(new char[] { (char) ('香' + 6) }) + " 香蕉";
@@ -652,7 +660,7 @@ public class DBQueryTest  implements DictionaryListener
 //        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText >=  '"+stringValue+"'", 7);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText IN ( '"+stringValue+"')", 1);
 //        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText NOT IN  ('"+stringValue+"')", 12);
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText is null", 0);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText is null", 1);
         sqlQueryWithCount("SELECT * FROM test:testSuperAspect a where a.test:orderMLText is not null", 13);
         
     }
@@ -685,24 +693,23 @@ public class DBQueryTest  implements DictionaryListener
         sqlQueryWithCount("SELECT * FROM cmis:document order by cmis:lastModifiedBy desc", 8, ContentModel.PROP_MODIFIER, false);
         sqlQueryWithCount("SELECT * FROM cmis:folder order by cmis:lastModifiedBy desc", 6, ContentModel.PROP_MODIFIER, false);
        
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:createdDate asc", 13, CREATED_DATE, true);
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:createdDate desc", 13, CREATED_DATE, false);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:createdDate asc", 14, CREATED_DATE, true);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:createdDate desc", 14, CREATED_DATE, false);
         
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:orderLong asc", 13, ORDER_LONG, true);
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:orderLong desc", 13, ORDER_LONG, false);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:orderLong asc", 14, ORDER_LONG, true);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:orderLong desc", 14, ORDER_LONG, false);
         
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:orderInt asc", 13, ORDER_INT, true);
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:orderInt desc", 13, ORDER_INT, false);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:orderInt asc", 14, ORDER_INT, true);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:orderInt desc", 14, ORDER_INT, false);
         
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:orderText asc", 13, ORDER_TEXT, true);
-        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:orderText desc", 13, ORDER_TEXT, false);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:orderText asc", 14, ORDER_TEXT, true);
+        sqlQueryWithCount("SELECT * FROM test:testSuperAspect a order by a.test:orderText desc", 14, ORDER_TEXT, false);
         
-        // Note nulls not found as we use inner join
-        sqlQueryWithCount("SELECT * FROM cmis:document order by cmis:contentStreamMimeType asc", 1);
-        sqlQueryWithCount("SELECT * FROM cmis:document order by cmis:contentStreamMimeType desc", 1);
+        sqlQueryWithCount("SELECT * FROM cmis:document order by cmis:contentStreamMimeType asc", 8);
+        sqlQueryWithCount("SELECT * FROM cmis:document order by cmis:contentStreamMimeType desc", 8);
         
-        //sqlQueryWithCount("SELECT * FROM cmis:document order by cmis:contentStreamLength asc", 1);
-        //sqlQueryWithCount("SELECT * FROM cmis:document order by cmis:contentStreamLength desc", 1);
+        sqlQueryWithCount("SELECT * FROM cmis:document order by cmis:contentStreamLength asc", 8);
+        sqlQueryWithCount("SELECT * FROM cmis:document order by cmis:contentStreamLength desc", 8);
     }
     
     
@@ -713,10 +720,9 @@ public class DBQueryTest  implements DictionaryListener
         sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:parentId IN ('"+ n2 + "')", 1);
         sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:parentId <> '"+ n2 + "'", 6);
         sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:parentId NOT IN ('"+ n2 + "')", 6);
-        // IS not null is OK but null requires an outer join
-        //sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:parentId IS NULL", 0);
-        //sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:parentId IS NOT NULL", 7);
-        //sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamLength = 0", 1);
+        sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:parentId IS NULL", 0);
+        sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:parentId IS NOT NULL", 6);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamLength = 8", 1);
         sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamFileName = 'Content 3'", 1);
         sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamFileName < 'Content 3'", 3);
         sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamFileName <= 'Content 3'", 4);
@@ -735,9 +741,8 @@ public class DBQueryTest  implements DictionaryListener
         sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamMimeType <> 'text/plain'", 0);
         sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamMimeType IN ('text/plain')", 1);
         sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamMimeType NOT IN ('text/plain')", 0);
-        //Would need LOJ for exists - should porbably exclude from DB support for now
-        //sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamMimeType IS NULL", 0);
-        //sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamMimeType IS NOT NULL", 1);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamMimeType IS NULL", 7);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamMimeType IS NOT NULL", 1);
         sqlQueryWithCount("SELECT * FROM cmis:document where cmis:contentStreamMimeType like 'text%'", 1);
         sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:objectId = '"+ n2 + "'", 1);
         sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:objectId IN ('"+ n2 + "')", 1);

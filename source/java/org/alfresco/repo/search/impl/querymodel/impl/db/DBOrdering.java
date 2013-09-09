@@ -114,6 +114,7 @@ public class DBOrdering extends BaseOrdering implements DBQueryBuilderComponent
                 propertySupport.setJoinCommandType(DBQueryBuilderJoinCommandType.CONTENT_MIMETYPE);
                 propertySupport.setFieldName("mimetype_str");
                 propertySupport.setCommandType(DBQueryBuilderPredicatePartCommandType.ORDER);
+                propertySupport.setLeftOuter(true);
                 builderSupport = propertySupport;
             }
             else if (property.getPropertyName().equals(PropertyIds.CONTENT_STREAM_LENGTH))
@@ -134,6 +135,7 @@ public class DBOrdering extends BaseOrdering implements DBQueryBuilderComponent
                 propertySupport.setJoinCommandType(DBQueryBuilderJoinCommandType.CONTENT_URL);
                 propertySupport.setFieldName("content_size");
                 propertySupport.setCommandType(DBQueryBuilderPredicatePartCommandType.ORDER);
+                propertySupport.setLeftOuter(true);
                 builderSupport = propertySupport;
             }
             else
@@ -153,6 +155,7 @@ public class DBOrdering extends BaseOrdering implements DBQueryBuilderComponent
                 propertySupport.setJoinCommandType(DBQuery.getJoinCommandType(propertyQName));
                 propertySupport.setFieldName(DBQuery.getFieldName(dictionaryService, propertyQName));
                 propertySupport.setCommandType(DBQueryBuilderPredicatePartCommandType.ORDER);
+                propertySupport.setLeftOuter(true);
                 builderSupport = propertySupport;
             }
         }

@@ -40,6 +40,8 @@ public class ParentSupport implements DBQueryBuilderComponent
     
     DBQueryBuilderPredicatePartCommandType commandType;
 
+    private boolean leftOuter;
+
     /**
      * @param dbid
      *            the dbid to set
@@ -103,7 +105,7 @@ public class ParentSupport implements DBQueryBuilderComponent
         DBQueryBuilderJoinCommand join = new DBQueryBuilderJoinCommand();
         alias = "PARENT_" + multiJoins.size();
         join.setAlias(alias);
-        join.setOuter(false);
+        join.setOuter(leftOuter);
         join.setType(DBQueryBuilderJoinCommandType.PARENT);
         multiJoins.add(join);
 
@@ -126,6 +128,14 @@ public class ParentSupport implements DBQueryBuilderComponent
         command.setFieldName("parent_node_id");
         predicatePartCommands.add(command);
 
+    }
+
+    /**
+     * @param leftOuter
+     */
+    public void setLeftOuter(boolean leftOuter)
+    {
+        this.leftOuter = leftOuter;
     }
 
 }

@@ -84,6 +84,7 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
             if ((not != null) && (not.equals(Boolean.TRUE)))
             {
                 parentSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTEXISTS);
+                parentSupport.setLeftOuter(true);
             }
             else
             {
@@ -97,6 +98,7 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
             if ((not != null) && (not.equals(Boolean.TRUE)))
             {
                 uuidSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTEXISTS);
+                uuidSupport.setLeftOuter(true);
             }
             else
             {
@@ -110,6 +112,7 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
             if ((not != null) && (not.equals(Boolean.TRUE)))
             {
                 typeSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTEXISTS);
+                typeSupport.setLeftOuter(true);
             }
             else
             {
@@ -123,6 +126,7 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
             if ((not != null) && (not.equals(Boolean.TRUE)))
             {
                 typeSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTEXISTS);
+                typeSupport.setLeftOuter(true);
             }
             else
             {
@@ -143,6 +147,7 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
             if ((not != null) && (not.equals(Boolean.TRUE)))
             {
                 propertySupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTEXISTS);
+                propertySupport.setLeftOuter(true);
             }
             else
             {
@@ -163,6 +168,7 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
             if ((not != null) && (not.equals(Boolean.TRUE)))
             {
                 propertySupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTEXISTS);
+                propertySupport.setLeftOuter(true);
             }
             else
             {
@@ -183,6 +189,7 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
             if ((not != null) && (not.equals(Boolean.TRUE)))
             {
                 propertySupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTEXISTS);
+                propertySupport.setLeftOuter(true);
             }
             else
             {

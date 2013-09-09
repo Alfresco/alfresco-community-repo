@@ -16,23 +16,23 @@
             <foreach item="item" index="index" collection="joins">
                 <choose>
                     <when test="item.type == 'PARENT'">
-                        join alf_child_assoc ${item.alias} on (${item.alias}.child_node_id = node.id)
+                        <if test="item.outer">left outer </if>join alf_child_assoc ${item.alias} on (${item.alias}.child_node_id = node.id)
                     </when>
                     <when test="item.type == 'PROPERTY'">
-                        join alf_node_properties ${item.alias} on ((${item.alias}.node_id = node.id) AND (#{item.qnameId} = ${item.alias}.qname_id))
+                        <if test="item.outer">left outer </if>join alf_node_properties ${item.alias} on ((${item.alias}.node_id = node.id) AND (#{item.qnameId} = ${item.alias}.qname_id))
                     </when>
                     <when test="item.type == 'CONTENT_MIMETYPE'">
-                        join alf_node_properties ${item.alias}_p on ((${item.alias}_p.node_id = node.id) AND (#{item.qnameId} = ${item.alias}_p.qname_id))
-                        join alf_content_data ${item.alias}_cd on (${item.alias}_cd.id = ${item.alias}_p.long_value)
-                        join alf_mimetype  ${item.alias} on (${item.alias}_cd.content_mimetype_id = ${item.alias}.id)
+                        <if test="item.outer">left outer </if>join alf_node_properties ${item.alias}_p on ((${item.alias}_p.node_id = node.id) AND (#{item.qnameId} = ${item.alias}_p.qname_id))
+                        <if test="item.outer">left outer </if>join alf_content_data ${item.alias}_cd on (${item.alias}_cd.id = ${item.alias}_p.long_value)
+                        <if test="item.outer">left outer </if>join alf_mimetype  ${item.alias} on (${item.alias}_cd.content_mimetype_id = ${item.alias}.id)
                     </when>
                     <when test="item.type == 'CONTENT_URL'">
-                        join alf_node_properties ${item.alias}_p on ((${item.alias}_p.node_id = node.id) AND (#{item.qnameId} = ${item.alias}_p.qname_id))
-                        join alf_content_data ${item.alias}_cd on (${item.alias}_cd.id = ${item.alias}_p.long_value)
-                        join alf_content_url ${item.alias} on (${item.alias}.id = ${item.alias}_cd.content_url_id)
+                        <if test="item.outer">left outer </if>join alf_node_properties ${item.alias}_p on ((${item.alias}_p.node_id = node.id) AND (#{item.qnameId} = ${item.alias}_p.qname_id))
+                        <if test="item.outer">left outer </if>join alf_content_data ${item.alias}_cd on (${item.alias}_cd.id = ${item.alias}_p.long_value)
+                        <if test="item.outer">left outer </if>join alf_content_url ${item.alias} on (${item.alias}.id = ${item.alias}_cd.content_url_id)
                     </when>
                     <when test="item.type == 'ASPECT'">
-                        join alf_node_aspects ${item.alias} on (${item.alias}.node_id = node.id)
+                        <if test="item.outer">left outer </if>join alf_node_aspects ${item.alias} on (${item.alias}.node_id = node.id)
                     </when>
                 </choose>
             </foreach>

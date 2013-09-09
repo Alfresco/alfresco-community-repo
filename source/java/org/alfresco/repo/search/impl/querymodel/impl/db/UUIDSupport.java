@@ -43,6 +43,8 @@ public class UUIDSupport implements DBQueryBuilderComponent
     
     DBQueryBuilderPredicatePartCommandType commandType;
 
+    private boolean leftOuter;
+
     /**
      * @param uud the uud to set
      */
@@ -128,6 +130,14 @@ public class UUIDSupport implements DBQueryBuilderComponent
         command.setValue(uuid);
         command.setValues(uuids);
         predicatePartCommands.add(command);
+    }
+    
+    /**
+     * @param leftOuter
+     */
+    public void setLeftOuter(boolean leftOuter)
+    {
+        this.leftOuter = leftOuter;
     }
 
 }

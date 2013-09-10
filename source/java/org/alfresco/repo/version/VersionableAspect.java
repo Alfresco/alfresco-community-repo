@@ -532,8 +532,20 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
      */
     private void createVersionImpl(NodeRef nodeRef, Map<String, Serializable> versionProperties)
     {
-        recordCreateVersion(nodeRef, null);
-        this.versionService.createVersion(nodeRef, versionProperties);
+    	final VersionService vs = this.versionService;
+    	final NodeRef nf = nodeRef;
+    	final Map<String, Serializable> vp = versionProperties;
+        
+    	AuthenticationUtil.runAs(new RunAsWork<Void>() {
+			
+    		@Override
+			public Void doWork() throws Exception {
+				recordCreateVersion(nf, null);
+		        vs.createVersion(nf, vp);
+				return null;
+			}
+		},AuthenticationUtil.getRunAsUser());
+    	
     }
     
     /**

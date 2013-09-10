@@ -433,13 +433,33 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             Set<RMAuditNode> auditDetails = TransactionalResourceHelper.getSet(KEY_RM_AUDIT_NODE_RECORDS);
             AlfrescoTransactionSupport.bindListener(txnListener);
             
-            RMAuditNode auditedNode = new RMAuditNode();
-            auditedNode.setNodeRef(nodeRef);
-            auditedNode.setEventName(eventName);
-            auditedNode.setNodePropertiesBefore(before);
-            auditedNode.setNodePropertiesAfter(after);
-            
-            auditDetails.add(auditedNode);
+            // RM-936: Eliminate multiple audit maps from being generated when events with the same name are required to be fired multiple times in the same transaction.
+            // Check if auditDetails already contains an auditedNode with the same combination of nodeRef and eventName.
+            boolean auditNodeAlreadyExists = false;
+            for (RMAuditNode existingRMAuditNode : auditDetails)
+            {
+                if (existingRMAuditNode.getNodeRef().equals(nodeRef) && existingRMAuditNode.getEventName().equals(eventName))
+                {
+                    // If there exists such an auditNode, update its 'after' properties with the latest set of properties and leave its 'before' properties unchanged so that it
+                    // retains the original set of properties. The first 'before' and last 'after' will be diff'ed when comes to building the auditMap later when the transaction
+                    // commits.
+                    existingRMAuditNode.setNodePropertiesAfter(after);
+                    auditNodeAlreadyExists = true;
+                    break;
+                }
+            }
+
+            if (auditNodeAlreadyExists == false)
+            {
+                // Create a new auditNode if it doesn't already exist
+                RMAuditNode auditedNode = new RMAuditNode();
+                auditedNode.setNodeRef(nodeRef);
+                auditedNode.setEventName(eventName);
+                auditedNode.setNodePropertiesBefore(before);
+                auditedNode.setNodePropertiesAfter(after);
+
+                auditDetails.add(auditedNode);
+            }
         }
     }
 

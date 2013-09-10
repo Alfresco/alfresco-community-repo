@@ -45,6 +45,7 @@ import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
 import org.apache.chemistry.opencmis.commons.data.ObjectData;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderData;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
+import org.apache.chemistry.opencmis.commons.data.ObjectList;
 import org.apache.chemistry.opencmis.commons.data.Properties;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
@@ -92,6 +93,8 @@ public class CMISTest
 
 	private ActionService actionService;
 	private RuleService ruleService;
+	
+    private CMISConnector cmisConnector;
 	
     /**
      * Test class to provide the service factory
@@ -222,6 +225,7 @@ public class CMISTest
         this.lockService = (LockService) ctx.getBean("lockService");
         this.repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
     	this.factory = (AlfrescoCmisServiceFactory)ctx.getBean("CMISServiceFactory");
+    	this.cmisConnector = (CMISConnector) ctx.getBean("CMISConnector");
         this.context = new SimpleCallContext("admin", "admin");
     }
     
@@ -1123,5 +1127,20 @@ public class CMISTest
 
             AuthenticationUtil.popAuthentication();
         }
+    }
+
+    public void testGetContentChanges()
+    {
+        // create folder with file
+        String folderName = "testfolder" + GUID.generate();
+        String docName = "testdoc.txt" + GUID.generate();
+        createContent(folderName, docName, false);
+        folderName = "testfolder" + GUID.generate();
+        docName = "testdoc.txt" + GUID.generate();
+        createContent(folderName, docName, false);
+        Holder<String> changeLogToken = new Holder<String>();
+        ObjectList ol = this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("2"));
+        assertEquals(2, ol.getNumItems());
+        assertEquals("3", changeLogToken.getValue());
     }
 }

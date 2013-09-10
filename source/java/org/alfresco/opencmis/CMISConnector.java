@@ -3336,7 +3336,9 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             if (result.getObjects().size() >= maxResults)
             {
-                newChangeLogToken = result.getObjects().remove(result.getObjects().size() - 1).getId();
+            	StringBuilder clt = new StringBuilder();
+                newChangeLogToken = (from == null ? clt.append(maxItems.intValue() + 1).toString() : clt.append(from.longValue() + maxItems.intValue()).toString());
+                result.getObjects().remove(result.getObjects().size() - 1).getId();
                 result.setHasMoreItems(true);
             }
             else

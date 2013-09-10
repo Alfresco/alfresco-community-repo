@@ -57,8 +57,11 @@ public class FreezeAction extends RMActionExecuterAbstractBase
        if (nodeService.exists(actionedUponNodeRef) == true &&
            nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) == false &&
            (recordService.isRecord(actionedUponNodeRef) == true ||
-            recordsManagementService.isRecordFolder(actionedUponNodeRef) == true))
+            recordsManagementService.isRecordFolder(actionedUponNodeRef) == true) &&
+           freezeService.isFrozen(actionedUponNodeRef) == false)
        {
+           System.out.println("I am trying to freeze " + actionedUponNodeRef.toString());
+           
            freezeService.freeze((String) action.getParameterValue(PARAM_REASON), actionedUponNodeRef);
        }
    }

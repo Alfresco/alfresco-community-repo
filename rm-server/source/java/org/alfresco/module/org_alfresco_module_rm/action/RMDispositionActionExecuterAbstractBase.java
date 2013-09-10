@@ -46,6 +46,9 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     private static final String MSG_NEXT_DISP_NOT_SET = "rm.action.next-disp-not-set";
     private static final String MSG_NOT_NEXT_DISP = "rm.action.not-next-disp";
     private static final String MSG_NOT_RECORD_FOLDER = "rm.action.not-record-folder";
+    
+    /** Parameter value indicating whether we should be doing non-error raising state checks */
+    public static final String PARAM_NO_ERROR_CHECK = "rm.no-error-check";
 
     /**
      * All children of this implementation are disposition actions.
@@ -97,91 +100,100 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-    	//
-        NodeRef nextDispositionActionNodeRef = getNextDispostionAction(actionedUponNodeRef);
+    	NodeRef nextDispositionActionNodeRef = getNextDispostionAction(actionedUponNodeRef);
+        
+        // determine whether we should be raising errors during state checking or not
+    	boolean checkError = true;
+    	Boolean checkErrorValue = (Boolean)action.getParameterValue(PARAM_NO_ERROR_CHECK);
+    	if (checkErrorValue != null)
+    	{
+    	    checkError = checkErrorValue.booleanValue();
+    	}
         
         // Check the validity of the action (is it the next action, are we dealing with the correct type of object for
         // the disposition level?
-        DispositionSchedule di = checkDispositionActionExecutionValidity(actionedUponNodeRef, nextDispositionActionNodeRef, true);
-
-        // Check the eligibility of the action
-        if (checkEligibility(actionedUponNodeRef) == false || 
-            dispositionService.isNextDispositionActionEligible(actionedUponNodeRef) == true)
+        DispositionSchedule di = checkDispositionActionExecutionValidity(actionedUponNodeRef, nextDispositionActionNodeRef, checkError);
+        if (di != null)
         {
-            if (di.isRecordLevelDisposition() == true)
+            // Check the eligibility of the action
+            if (checkEligibility(actionedUponNodeRef) == false || 
+                dispositionService.isNextDispositionActionEligible(actionedUponNodeRef) == true)
             {
-                // Check that we do indeed have a record
-                if (recordService.isRecord(actionedUponNodeRef) == true)
+                if (di.isRecordLevelDisposition() == true)
                 {
-                    // Can only execute disposition action on record if declared
-                    if (recordService.isDeclared(actionedUponNodeRef) == true)
+                    // Check that we do indeed have a record
+                    if (recordService.isRecord(actionedUponNodeRef) == true)
                     {
-                        // Indicate that the disposition action is underway
-                        this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
-                        this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY, AuthenticationUtil.getRunAsUser());
-
-                        // Execute record level disposition
-                        executeRecordLevelDisposition(action, actionedUponNodeRef);
-
-                        if (this.nodeService.exists(nextDispositionActionNodeRef) == true &&
-                            getSetDispositionActionComplete() == true)
+                        // Can only execute disposition action on record if declared
+                        if (recordService.isDeclared(actionedUponNodeRef) == true)
                         {
-                            this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
-                            this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
+                            // Indicate that the disposition action is underway
+                            this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
+                            this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY, AuthenticationUtil.getRunAsUser());
+    
+                            // Execute record level disposition
+                            executeRecordLevelDisposition(action, actionedUponNodeRef);
+    
+                            if (this.nodeService.exists(nextDispositionActionNodeRef) == true &&
+                                getSetDispositionActionComplete() == true)
+                            {
+                                this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
+                                this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
+                            }
+                        }
+                        else
+                        {
+                            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_NOT_DECLARED, getName(), actionedUponNodeRef.toString()));
                         }
                     }
                     else
                     {
-                        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_NOT_DECLARED, getName(), actionedUponNodeRef.toString()));
+                        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EXPECTED_RECORD_LEVEL, getName(), actionedUponNodeRef.toString()));
                     }
                 }
                 else
                 {
-                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EXPECTED_RECORD_LEVEL, getName(), actionedUponNodeRef.toString()));
+                    if (this.recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
+                    {
+                        if (this.recordsManagementService.isRecordFolderDeclared(actionedUponNodeRef) == true)
+                        {
+                            // Indicate that the disposition action is underway
+                            this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
+                            this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY, AuthenticationUtil.getRunAsUser());
+    
+                            executeRecordFolderLevelDisposition(action, actionedUponNodeRef);
+                            
+                            // Indicate that the disposition action is compelte
+                            if (this.nodeService.exists(nextDispositionActionNodeRef) == true &&
+                                getSetDispositionActionComplete() == true)
+                            {
+                                this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
+                                this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
+                            }
+    
+                        }
+                        else
+                        {
+                            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_ALL_RECORDS_DECLARED, getName(), actionedUponNodeRef.toString()));
+                        }
+                    }
+                    else
+                    {
+                        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_RECORD_FOLDER, getName(), actionedUponNodeRef.toString()));
+                    }
+    
+                }
+    
+                if (this.nodeService.exists(actionedUponNodeRef) == true && getSetDispositionActionComplete() == true)
+                {
+                    // Update the disposition schedule
+                    updateNextDispositionAction(actionedUponNodeRef);
                 }
             }
             else
             {
-                if (this.recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
-                {
-                    if (this.recordsManagementService.isRecordFolderDeclared(actionedUponNodeRef) == true)
-                    {
-                        // Indicate that the disposition action is underway
-                        this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
-                        this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY, AuthenticationUtil.getRunAsUser());
-
-                        executeRecordFolderLevelDisposition(action, actionedUponNodeRef);
-                        
-                        // Indicate that the disposition action is compelte
-                        if (this.nodeService.exists(nextDispositionActionNodeRef) == true &&
-                            getSetDispositionActionComplete() == true)
-                        {
-                            this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
-                            this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
-                        }
-
-                    }
-                    else
-                    {
-                        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_ALL_RECORDS_DECLARED, getName(), actionedUponNodeRef.toString()));
-                    }
-                }
-                else
-                {
-                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_RECORD_FOLDER, getName(), actionedUponNodeRef.toString()));
-                }
-
+                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_ELIGIBLE, getName(), actionedUponNodeRef.toString()));
             }
-
-            if (this.nodeService.exists(actionedUponNodeRef) == true && getSetDispositionActionComplete() == true)
-            {
-                // Update the disposition schedule
-                updateNextDispositionAction(actionedUponNodeRef);
-            }
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_ELIGIBLE, getName(), actionedUponNodeRef.toString()));
         }
     }
 

@@ -224,6 +224,7 @@ Inbound settings from iBatis
         <mapper resource="alfresco/ibatis/#resource.dialect#/subscriptions-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/tenants-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/metadata-query-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/metadata-query-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-usages-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-auditable-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-authorities-common-SqlMap.xml"/>

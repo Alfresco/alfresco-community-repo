@@ -41,7 +41,9 @@ import org.alfresco.service.cmr.search.SearchParameters;
  */
 public class DBResultSet extends AbstractResultSet
 {
-    private List<NodeRef> nodeRefs;
+    private List<Long> dbids;
+    
+    private NodeRef[] nodeRefs;
     
     private NodeDAO nodeDao;
     
@@ -51,12 +53,13 @@ public class DBResultSet extends AbstractResultSet
     
     private BitSet prefetch;
     
-    public DBResultSet(SearchParameters searchParameters, List<NodeRef> nodeRefs, NodeDAO nodeDao,  NodeService nodeService, int maximumResultsFromUnlimitedQuery)
+    public DBResultSet(SearchParameters searchParameters, List<Long> dbids, NodeDAO nodeDao,  NodeService nodeService, int maximumResultsFromUnlimitedQuery)
     {
         this.nodeDao = nodeDao;
-        this.nodeRefs = nodeRefs;
+        this.dbids = dbids;
         this.nodeService = nodeService;
-        this.prefetch = new BitSet(nodeRefs.size());
+        this.prefetch = new BitSet(dbids.size());
+        nodeRefs= new NodeRef[(dbids.size())];
         
         final LimitBy limitBy;
         int maxResults = -1;
@@ -81,7 +84,7 @@ public class DBResultSet extends AbstractResultSet
         }
         
         this.resultSetMetaData = new SimpleResultSetMetaData(
-                maxResults > 0 && nodeRefs.size() < maxResults ? LimitBy.UNLIMITED : limitBy,
+                maxResults > 0 && dbids.size() < maxResults ? LimitBy.UNLIMITED : limitBy,
                 PermissionEvaluationMode.EAGER, searchParameters);
     }
 
@@ -91,7 +94,7 @@ public class DBResultSet extends AbstractResultSet
     @Override
     public int length()
     {
-        return nodeRefs.size();
+        return dbids.size();
     }
 
     /* (non-Javadoc)
@@ -100,7 +103,7 @@ public class DBResultSet extends AbstractResultSet
     @Override
     public long getNumberFound()
     {
-        return nodeRefs.size();
+        return dbids.size();
     }
 
     /* (non-Javadoc)
@@ -110,7 +113,7 @@ public class DBResultSet extends AbstractResultSet
     public NodeRef getNodeRef(int n)
     {
         prefetch(n);
-        return nodeRefs.get(n);
+        return nodeRefs[n];
     }
 
     /* (non-Javadoc)
@@ -185,8 +188,16 @@ public class DBResultSet extends AbstractResultSet
         }
         // Start at 'n' and process the the next bulk set
         int bulkFetchSize = getBulkFetchSize();
-        List<NodeRef> fetchList = new ArrayList<NodeRef>(bulkFetchSize);
-        int totalHits = nodeRefs.size();
+        if(bulkFetchSize < 1)
+        {
+            nodeRefs[n] = nodeDao.getNodePair(dbids.get(n)).getSecond();
+            return;
+        }
+        
+        
+        List<Long> fetchList = new ArrayList<Long>(bulkFetchSize);
+        BitSet done = new BitSet(bulkFetchSize);
+        int totalHits = dbids.size();
         for (int i = 0; i < bulkFetchSize; i++)
         {
             int next = n + i;
@@ -203,12 +214,17 @@ public class DBResultSet extends AbstractResultSet
             // We store the node and mark it as prefetched
             prefetch.set(next);
             
-            fetchList.add(nodeRefs.get(next));
+            fetchList.add(dbids.get(next));
+            done.set(next);
         }
         // Now bulk fetch
         if (fetchList.size() > 1)
         {
-            nodeDao.cacheNodes(fetchList);
+            nodeDao.cacheNodesById(fetchList);
+            for (int i = done.nextSetBit(0); i >= 0; i = done.nextSetBit(i+1)) 
+            {
+                nodeRefs[n+i] = nodeDao.getNodePair(fetchList.get(i)).getSecond();
+            }
         }
     }
 

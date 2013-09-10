@@ -160,13 +160,13 @@ public class DBQueryEngine implements QueryEngine
         }
         dbQuery.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, selectorGroup, null, functionContext);
         List<Node> nodes = (List<Node>)template.selectList(SELECT_BY_DYNAMIC_QUERY, dbQuery);
-        LinkedHashSet<NodeRef> set = new LinkedHashSet<NodeRef>(nodes.size());
+        LinkedHashSet<Long> set = new LinkedHashSet<Long>(nodes.size());
         for(Node node : nodes)
         {
-            set.add(node.getNodeRef());
+            set.add(node.getId());
         }
-        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(set);
-        ResultSet rs =  new DBResultSet(options.getAsSearchParmeters(), nodeRefs, nodeDAO, nodeService, Integer.MAX_VALUE);
+        List<Long> nodeIds = new ArrayList<Long>(set);
+        ResultSet rs =  new DBResultSet(options.getAsSearchParmeters(), nodeIds, nodeDAO, nodeService, Integer.MAX_VALUE);
         ResultSet paged = new PagingLuceneResultSet(rs, options.getAsSearchParmeters(), nodeService);
         
         answer.put(key, paged);

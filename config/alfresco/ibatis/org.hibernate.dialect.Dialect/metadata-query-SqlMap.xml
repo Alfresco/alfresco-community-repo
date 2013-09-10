@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.metadata.query">
+
+  <select id="select_byDynamicQuery" fetchSize="200" parameterType="org.alfresco.repo.search.impl.querymodel.impl.db.DBQuery" resultMap="alfresco.node.result_NodeRef">
+      <include refid="sql_select_byDynamicQuery"/>   
+  </select>
+
+</mapper>

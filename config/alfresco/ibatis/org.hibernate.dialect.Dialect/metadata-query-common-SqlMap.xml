@@ -4,15 +4,11 @@
 
 <mapper namespace="alfresco.metadata.query">
 
-  <select id="select_byDynamicQuery" fetchSize="200" parameterType="org.alfresco.repo.search.impl.querymodel.impl.db.DBQuery" resultMap="alfresco.node.result_NodeRef">
-       select 
-            node.id             as id,
-            store.protocol      as protocol,
-            store.identifier    as identifier,
-            node.uuid           as uuid
+   <sql id="sql_select_byDynamicQuery">
+        select 
+            node.id             as id
         from
             alf_node node
-            join alf_store store on (store.id = node.store_id)
             <foreach item="item" index="index" collection="joins">
                 <choose>
                     <when test="item.type == 'PARENT'">
@@ -38,7 +34,7 @@
             </foreach>
         where 
             node.type_qname_id &lt;&gt; #{sysDeletedType}
-            AND store.id = #{storeId}
+            AND node.store_id = #{storeId}
             <if test="hasPredicate">
                 AND
                 <foreach item="item" index="index" collection="predicateParts">
@@ -118,6 +114,6 @@
                  </choose>
             </foreach>
         </if>    
-    </select>
+    </sql>
 
 </mapper>

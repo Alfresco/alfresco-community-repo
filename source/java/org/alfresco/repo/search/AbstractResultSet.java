@@ -27,7 +27,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.util.Pair;
-import org.apache.lucene.search.HitCollector;
 
 /**
  * Common result set implementation.

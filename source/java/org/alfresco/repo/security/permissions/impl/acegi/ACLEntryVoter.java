@@ -477,7 +477,8 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                     else if (QName.class.isAssignableFrom(params[1]) && params[2] != null)
                     {
                         testNodeRef = getArgument(invocation, cad.parameter[0]);
-                        boolean isChanged = !getArgument(invocation, 2).toString().equals(ownableService.getOwner(testNodeRef));
+                        Object arg2 = getArgument(invocation, 2);
+                        boolean isChanged = (arg2 != null && !arg2.toString().equals(ownableService.getOwner(testNodeRef)));
 
                         if (!isChanged)
                         {

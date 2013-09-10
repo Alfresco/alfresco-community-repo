@@ -19,8 +19,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.job;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -73,65 +78,77 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
      */
     public void executeImpl()
     {
-        logger.debug("Job Starting");
-       
-        StringBuilder sb = new StringBuilder();
-        sb.append("+TYPE:\"rma:dispositionAction\" ");
-        sb.append("+(@rma\\:dispositionAction:(\"cutoff\" OR \"retain\"))");
-        sb.append("+ISNULL:\"rma:dispositionActionCompletedAt\" ");
-        sb.append("+( ");
-        sb.append("@rma\\:dispositionEventsEligible:true "); 
-        sb.append("OR @rma\\:dispositionAsOf:[MIN TO NOW] ");
-        sb.append(") ");
-
-        String query = sb.toString();
-
-        ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                    SearchService.LANGUAGE_LUCENE, query);
-        List<NodeRef> resultNodes = results.getNodeRefs();
-        results.close();
-
-
-        for (NodeRef node : resultNodes)
+        try
         {
-            final NodeRef currentNode = node;
-
-            RetryingTransactionCallback<Boolean> processTranCB = new RetryingTransactionCallback<Boolean>()
+            logger.debug("Job Starting");
+           
+            StringBuilder sb = new StringBuilder();
+            sb.append("+TYPE:\"rma:dispositionAction\" ");
+            sb.append("+(@rma\\:dispositionAction:(\"cutoff\" OR \"retain\"))");
+            sb.append("+ISNULL:\"rma:dispositionActionCompletedAt\" ");
+            sb.append("+( ");
+            sb.append("@rma\\:dispositionEventsEligible:true "); 
+            sb.append("OR @rma\\:dispositionAsOf:[MIN TO NOW] ");
+            sb.append(") ");
+    
+            String query = sb.toString();
+    
+            ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+                        SearchService.LANGUAGE_LUCENE, query);
+            List<NodeRef> resultNodes = results.getNodeRefs();
+            results.close();
+    
+    
+            for (NodeRef node : resultNodes)
             {
-                public Boolean execute() throws Throwable
+                final NodeRef currentNode = node;
+    
+                RetryingTransactionCallback<Boolean> processTranCB = new RetryingTransactionCallback<Boolean>()
                 {
-                    final String dispAction = (String) nodeService.getProperty(currentNode,
-                                RecordsManagementModel.PROP_DISPOSITION_ACTION);
-
-                    // Run "retain" and "cutoff" actions.
-
-                    if (dispAction != null)
+                    public Boolean execute() throws Throwable
                     {
-                        if (dispAction.equalsIgnoreCase("cutoff") ||
-                            dispAction.equalsIgnoreCase("retain"))
+                        final String dispAction = (String) nodeService.getProperty(currentNode,
+                                    RecordsManagementModel.PROP_DISPOSITION_ACTION);
+    
+                        // Run "retain" and "cutoff" actions.
+    
+                        if (dispAction != null)
                         {
-                            ChildAssociationRef parent = nodeService.getPrimaryParent(currentNode);
-                            if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
+                            if (dispAction.equalsIgnoreCase("cutoff") ||
+                                dispAction.equalsIgnoreCase("retain"))
                             {
-                                recordsManagementActionService.executeRecordsManagementAction(parent.getParentRef(), dispAction);
-                                if (logger.isDebugEnabled())
+                                ChildAssociationRef parent = nodeService.getPrimaryParent(currentNode);
+                                if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
                                 {
-                                    logger.debug("Processed action: " + dispAction + "on" + parent);
+                                    Map<String, Serializable> props = new HashMap<String, Serializable>(1);
+                                    props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK, Boolean.FALSE);
+                                    recordsManagementActionService.executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        logger.debug("Processed action: " + dispAction + "on" + parent);
+                                    }
                                 }
+                                return null;
                             }
-                            return null;
                         }
+                        return Boolean.TRUE;
                     }
-                    return Boolean.TRUE;
-                }
-            };
-            
-            /**
-             * Now do the work, one action in each transaction
-             */
-            retryingTransactionHelper.doInTransaction(processTranCB);
+                };
+                
+                /**
+                 * Now do the work, one action in each transaction
+                 */
+                retryingTransactionHelper.doInTransaction(processTranCB);
+            }
+     
+            logger.debug("Job Finished");
         }
- 
-        logger.debug("Job Finished");
+        catch (AlfrescoRuntimeException exception)
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug(exception);
+            }
+        }
     }
 }

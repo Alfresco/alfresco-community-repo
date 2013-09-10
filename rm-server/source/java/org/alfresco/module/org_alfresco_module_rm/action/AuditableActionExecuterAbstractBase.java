@@ -37,21 +37,32 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
     /** Indicates whether the action is auditable or not */
     protected boolean auditable = true;
     
+    /** Application context */
     protected ApplicationContext applicationContext;
     
+    /** Records management audit service */
     private RecordsManagementAuditService auditService;
 
+    /**
+     * @param auditable true if auditable, false otherwise
+     */
     public void setAuditable(boolean auditable)
     {
         this.auditable = auditable;
     }
     
+    /**
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;
     }
     
+    /**
+     * @return  records management audit service
+     */
     private RecordsManagementAuditService getAuditService()
     {
         if (auditService == null)
@@ -61,6 +72,9 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
         return auditService;
     }
     
+    /**
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#init()
+     */
     @Override
     public void init()
     {

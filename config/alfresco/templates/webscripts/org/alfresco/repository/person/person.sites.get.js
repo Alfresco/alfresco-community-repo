@@ -33,10 +33,10 @@ function main()
    {
       size = parseInt(sizeString);
    }
-   var sites = siteService.listUserSites(userName, size);
 
    if (filter)
    {
+      var sites = siteService.listUserSites(userName);
       var filterObj = {},
          filteredSites = [];
 
@@ -57,11 +57,12 @@ function main()
          }
       }
 
-      for (var i = 0; i < sites.length; i++)
+      var i = 0;
+      while (filteredSites.length < size && i < sites.length)
       {
          for (var key in filterObj)
          {
-            if (filterObj[key] == sites[i].shortName || key == sites[i].shortName) 
+            if (filterObj[key] == sites[i].shortName || key == sites[i].shortName)
             {
                if (filter != "favourites" ||
                    filterObj[key] == true)
@@ -70,12 +71,15 @@ function main()
                }
             }
          }
+         i++;
       }
 
       model.sites = filteredSites;
    }
    else
    {
+      var sites = siteService.listUserSites(userName, size);
+
       // Sort sites alphabetically by title, ignoring case.
       sites.sort(function(a,b)
       {

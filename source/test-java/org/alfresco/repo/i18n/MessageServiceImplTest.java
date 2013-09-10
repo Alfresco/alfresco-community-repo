@@ -62,12 +62,12 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
 {
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
     
-	private MessageService messageService;
-	private NodeService nodeService;
-	private MutableAuthenticationService authenticationService;
-	private ContentService contentService;
+    private MessageService messageService;
+    private NodeService nodeService;
+    private MutableAuthenticationService authenticationService;
+    private ContentService contentService;
 
-	private static final String BASE_BUNDLE_NAME = "testMessages";
+    private static final String BASE_BUNDLE_NAME = "testMessages";
     private static final String BASE_RESOURCE_CLASSPATH = "org/alfresco/repo/i18n/";
     
     
@@ -107,8 +107,8 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
             fail("Detected a leaked transaction from a previous test.");
         }
         
-    	// Get the services by name from the application context
-    	messageService = (MessageService)applicationContext.getBean("messageService");
+        // Get the services by name from the application context
+        messageService = (MessageService)applicationContext.getBean("messageService");
         nodeService = (NodeService)applicationContext.getBean("NodeService");
         authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
         contentService = (ContentService) applicationContext.getBean("ContentService");
@@ -220,8 +220,8 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
      */
     public void test2GetMessagesLoadedFromRepo() throws Exception
     {
-    	setupRepo();
-    	
+        setupRepo();
+        
         // Check with no bundles loaded
         assertNull(messageService.getMessage(MSG_NO));        
         
@@ -238,17 +238,17 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
      */
     public void test3GetMessagesWithParamsLoadedFromRepo() throws Exception
     {
-    	setupRepo();
-    	
+        setupRepo();
+        
         // Check with no bundles loaded
         assertNull(messageService.getMessage(MSG_PARAMS, new Object[]{PARAM_VALUE}));
         
         // Register the bundle
-    	messageService.registerResourceBundle(testStoreRef + "/cm:" + BASE_BUNDLE_NAME);
-    	
-    	getMessagesWithParams();
-    	
-    	messageService.unregisterResourceBundle(testStoreRef + "/cm:" + BASE_BUNDLE_NAME);
+        messageService.registerResourceBundle(testStoreRef + "/cm:" + BASE_BUNDLE_NAME);
+        
+        getMessagesWithParams();
+        
+        messageService.unregisterResourceBundle(testStoreRef + "/cm:" + BASE_BUNDLE_NAME);
     }
  
     
@@ -272,15 +272,15 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
      * Test getting a parameterised message from classpath
      */
     public void test5GetMessagesWithParamsLoadedFromClasspath() throws Exception
-    {   	
+    {       
         // Check with no bundles loaded
         assertNull(messageService.getMessage(MSG_PARAMS, new Object[]{PARAM_VALUE}));
         
         // Register the bundle
-    	messageService.registerResourceBundle(BASE_RESOURCE_CLASSPATH + BASE_BUNDLE_NAME);
+        messageService.registerResourceBundle(BASE_RESOURCE_CLASSPATH + BASE_BUNDLE_NAME);
         
-    	getMessagesWithParams();
-    	
+        getMessagesWithParams();
+        
         messageService.unregisterResourceBundle(BASE_RESOURCE_CLASSPATH + BASE_BUNDLE_NAME);
     }
     
@@ -289,8 +289,8 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
      */
     public void test6RegisterBundleFromRepo() throws Exception
     {  
-    	setupRepo();
-    	
+        setupRepo();
+        
         // Register the bundle
         messageService.registerResourceBundle(testStoreRef + "/cm:" + BASE_BUNDLE_NAME);
        

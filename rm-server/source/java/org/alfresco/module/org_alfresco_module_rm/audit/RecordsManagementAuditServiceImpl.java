@@ -150,8 +150,13 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private RecordsManagementService rmService;
     private RecordsManagementActionService rmActionService;
     private FilePlanService filePlanService;
+    private NamespaceService namespaceService;
 
     private boolean shutdown = false;
+
+    private List<String> ignoredAuditProperties;
+
+    private List<QName> propertiesToBeRemoved = new ArrayList<QName>();
 
     private RMAuditTxnListener txnListener = new RMAuditTxnListener();
 
@@ -239,6 +244,22 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 	}
 
     /**
+     * @param namespaceService namespace service
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    /**
+     * @param ignoredAuditProperties
+     */
+    public void setIgnoredAuditProperties(List<String> ignoredAuditProperties)
+    {
+        this.ignoredAuditProperties = ignoredAuditProperties;
+    }
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#registerAuditEvent(java.lang.String, java.lang.String)
      */
     @Override
@@ -282,6 +303,12 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         registerAuditEvent(AUDIT_EVENT_START, MSG_AUDIT_START);
         registerAuditEvent(AUDIT_EVENT_STOP, MSG_AUDIT_STOP);
         registerAuditEvent(AUDIT_EVENT_VIEW, MSG_AUDIT_VIEW);
+
+        // properties to be ignored by audit
+        for (String qname : ignoredAuditProperties)
+        {
+            this.propertiesToBeRemoved.add(QName.createQName(qname, this.namespaceService));
+        }
     }
 
     /**
@@ -332,7 +359,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             logger.info("Started Records Management auditing");
         }
         
-        auditEvent(filePlan, AUDIT_EVENT_START, null, null, true);
+        auditEvent(filePlan, AUDIT_EVENT_START, null, null, true, false);
     }
 
     /**
@@ -343,7 +370,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     	ParameterCheck.mandatory("filePlan", filePlan);
     	// TODO use file plan to scope audit log
     	
-    	auditEvent(filePlan, AUDIT_EVENT_STOP, null, null, true);
+        auditEvent(filePlan, AUDIT_EVENT_STOP, null, null, true, false);
 
         auditService.disableAudit(
                 RM_AUDIT_APPLICATION_NAME,
@@ -370,7 +397,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             logger.debug("Records Management audit log has been cleared");
         }
         
-        auditEvent(filePlan, AUDIT_EVENT_CLEAR, null, null, true);
+        auditEvent(filePlan, AUDIT_EVENT_CLEAR, null, null, true, false);
     }    
 
     /**
@@ -404,7 +431,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void auditEvent(NodeRef nodeRef, String eventName)
     {
-        auditEvent(nodeRef, eventName, null, null, false);
+        auditEvent(nodeRef, eventName, null, null, false, false);
     }
     
     /**
@@ -413,19 +440,19 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        auditEvent(nodeRef, eventName, before, after, false);
+        auditEvent(nodeRef, eventName, before, after, false, false);
     }
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#auditEvent(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map, java.util.Map, boolean)
      */
     @Override
-    public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after, boolean immediate)
+    public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after, boolean immediate, boolean removeIfNoPropertyChanged)
     {
         // deal with immediate auditing if required
         if (immediate == true)
         {
-            Map<String, Serializable> auditMap = buildAuditMap(nodeRef, eventName, before, after);
+            Map<String, Serializable> auditMap = buildAuditMap(nodeRef, eventName, before, after, removeIfNoPropertyChanged);
             auditComponent.recordAuditValues(RM_AUDIT_PATH_ROOT, auditMap);
         }
         else
@@ -457,6 +484,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 auditedNode.setEventName(eventName);
                 auditedNode.setNodePropertiesBefore(before);
                 auditedNode.setNodePropertiesAfter(after);
+                auditedNode.setRemoveIfNoPropertyChanged(removeIfNoPropertyChanged);
 
                 auditDetails.add(auditedNode);
             }
@@ -471,7 +499,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      * @return
      * @since 2.0.3
      */
-    private Map<String, Serializable> buildAuditMap(NodeRef nodeRef, String eventName, Map<QName, Serializable> propertiesBefore, Map<QName, Serializable> propertiesAfter)    
+    private Map<String, Serializable> buildAuditMap(NodeRef nodeRef, String eventName, Map<QName, Serializable> propertiesBefore, Map<QName, Serializable> propertiesAfter, boolean removeOnNoPropertyChange)
     {
         Map<String, Serializable> auditMap = new HashMap<String, Serializable>(13);
         auditMap.put(
@@ -488,33 +516,63 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                             RM_AUDIT_SNIPPET_NODE),
                             nodeRef);            
         }
-        
+
+        // Filter out any properties to be audited if specified in the Spring configuration.
+        if (ignoredAuditProperties.isEmpty() == false)
+        {
+            removeAuditProperties(ignoredAuditProperties, propertiesBefore, propertiesAfter);
+        }
+            
         // Property changes
         Pair<Map<QName, Serializable>, Map<QName, Serializable>> deltaPair = PropertyMap.getBeforeAndAfterMapsForChanges(propertiesBefore, propertiesAfter);
-        auditMap.put(
-                AuditApplication.buildPath(
-                        RM_AUDIT_SNIPPET_EVENT,
-                        RM_AUDIT_SNIPPET_NODE,
-                        RM_AUDIT_SNIPPET_CHANGES,
-                        RM_AUDIT_SNIPPET_BEFORE),
-                (Serializable) deltaPair.getFirst());
-        auditMap.put(
-                AuditApplication.buildPath(
-                        RM_AUDIT_SNIPPET_EVENT,
-                        RM_AUDIT_SNIPPET_NODE,
-                        RM_AUDIT_SNIPPET_CHANGES,
-                        RM_AUDIT_SNIPPET_AFTER),
-                (Serializable) deltaPair.getSecond());
-        
+
+        // If both the first and second Map in the deltaPair are empty and removeOnNoPropertyChange is true, the entire auditMap is discarded so it won't be audited.
+        if (deltaPair.getFirst().isEmpty() && deltaPair.getSecond().isEmpty() && removeOnNoPropertyChange == true)
+        {
+            auditMap.clear();
+        } 
+        else 
+        {
+            auditMap.put(
+                    AuditApplication.buildPath(
+                            RM_AUDIT_SNIPPET_EVENT,
+                            RM_AUDIT_SNIPPET_NODE,
+                            RM_AUDIT_SNIPPET_CHANGES,
+                            RM_AUDIT_SNIPPET_BEFORE),
+                    (Serializable) deltaPair.getFirst());
+            auditMap.put(
+                    AuditApplication.buildPath(
+                            RM_AUDIT_SNIPPET_EVENT,
+                            RM_AUDIT_SNIPPET_NODE,
+                            RM_AUDIT_SNIPPET_CHANGES,
+                            RM_AUDIT_SNIPPET_AFTER),
+                    (Serializable) deltaPair.getSecond());
+        }           
         return auditMap;
     }
 
     /**
-     * A <b>stateless</b> transaction listener for RM auditing.  This component picks up the data of
-     * modified nodes and generates the audit information.
+     * Helper method to remove system properties from maps
+     * 
+     * @param properties
+     */
+    private void removeAuditProperties(List<String> ignoredAuditProperties, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        if (before != null)
+        {
+            before.keySet().removeAll(this.propertiesToBeRemoved);
+        }
+        if (after != null)
+        {
+            after.keySet().removeAll(this.propertiesToBeRemoved);
+        }
+    }
+
+    /**
+     * A <b>stateless</b> transaction listener for RM auditing. This component picks up the data of modified nodes and generates the audit information.
      * <p/>
      * This class is not static so that the instances will have access to the action's implementation.
-     *
+     * 
      * @author Derek Hulley
      * @since 3.2
      */
@@ -570,8 +628,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 Map<String, Serializable> auditMap = buildAuditMap(nodeRef, 
                                                                    auditedNode.getEventName(), 
                                                                    auditedNode.getNodePropertiesBefore(), 
-                                                                   auditedNode.getNodePropertiesAfter());
-
+                                                                   auditedNode.getNodePropertiesAfter(),
+                                                                   auditedNode.getRemoveIfNoPropertyChanged());
                 // Audit it
                 if (logger.isDebugEnabled())
                 {
@@ -926,7 +984,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             // grab the default file plan, but don't fail if it can't be found!
             nodeRef = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
         }
-        auditEvent(nodeRef, AUDIT_EVENT_VIEW, null, null, true);
+        auditEvent(nodeRef, AUDIT_EVENT_VIEW, null, null, true, false);
     }
 
     /**
@@ -1408,6 +1466,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         private String eventName;
         private Map<QName, Serializable> nodePropertiesBefore;
         private Map<QName, Serializable> nodePropertiesAfter;
+        private boolean removeIfNoPropertyChanged = false;
 
         public NodeRef getNodeRef()
         {
@@ -1447,6 +1506,16 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         public void setNodePropertiesAfter(Map<QName, Serializable> nodePropertiesAfter)
         {
             this.nodePropertiesAfter = nodePropertiesAfter;
+        }
+
+        public boolean getRemoveIfNoPropertyChanged()
+        {
+            return removeIfNoPropertyChanged;
+        }
+
+        public void setRemoveIfNoPropertyChanged(boolean removeIfNoPropertyChanged)
+        {
+            this.removeIfNoPropertyChanged = removeIfNoPropertyChanged;
         }
     } 
     

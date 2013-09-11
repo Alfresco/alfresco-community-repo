@@ -1050,6 +1050,15 @@
         <property name="recordsManagementService" ref="RecordsManagementService" />
         <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
         <property name="filePlanService" ref="FilePlanService" />
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="ignoredAuditProperties">
+            <list>
+                <value>cm:lastThumbnailModification</value>
+                <value>cm:autoVersion</value>
+                <value>cm:autoVersionOnUpdateProps</value>
+                <value>cm:initialVersion</value>
+            </list>
+        </property>
     </bean>
 
     <bean id="RecordsManagementAuditService" class="org.springframework.aop.framework.ProxyFactoryBean">

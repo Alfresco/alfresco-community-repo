@@ -75,7 +75,7 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
     				String eventName);
     
     /**
-     * Audits an event, assumes that the event should not be audited immediately.
+     * Audits an event, assumes that the event should not be audited immediately and not be removed if no property is changed.
      * 
      * @param nodeRef   node reference
      * @param eventName event name
@@ -90,17 +90,19 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
     /**
      * Audit event.
      * 
-     * @param nodeRef       node reference
-     * @param eventName     event name
-     * @param before        property values before event
-     * @param after         property values after event
-     * @param immediate     true if event is to be audited immediately, false otherwise
+     * @param nodeRef                      node reference
+     * @param eventName                    event name
+     * @param before                       property values before event
+     * @param after                        property values after event
+     * @param immediate                    true if event is to be audited immediately, false otherwise
+     * @param removeIfNoPropertyChanged    true if event is not audited when there are no properties changed, false otherwise
      */
     void auditEvent(NodeRef nodeRef,
                     String eventName,
                     Map<QName, Serializable> before,
                     Map<QName, Serializable> after,
-                    boolean immediate);
+                    boolean immediate,
+                    boolean removeIfNoPropertyChanged);
         
     /**
      * Determines whether the RM audit log is currently enabled.

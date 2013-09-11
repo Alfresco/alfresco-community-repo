@@ -18,13 +18,11 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -33,7 +31,6 @@ import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -43,7 +40,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
@@ -61,9 +57,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     private static Log log = LogFactory.getLog(ACLEntryVoter.class);
 
     private static final String ACL_NODE = "ACL_NODE";
-
-    private static final String ACL_ITEM = "ACL_ITEM";
-
+    
     private static final String ACL_PRI_CHILD_ASSOC_ON_CHILD = "ACL_PRI_CHILD_ASSOC_ON_CHILD";
 
     private static final String ACL_PARENT = "ACL_PARENT";
@@ -79,8 +73,6 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     private NamespacePrefixResolver nspr;
 
     private NodeService nodeService;
-
-    private OwnableService ownableService;
 
     private AuthorityService authorityService;
     
@@ -146,30 +138,12 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     }
 
     /**
-     * Get the ownable service
-     * @return the ownable service
-     */
-    public OwnableService getOwnableService()
-    {
-        return ownableService;
-    }
-
-    /**
      * Set the node service
      * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
-    }
-
-    /**
-     * Set the ownable service
-     * @param nodeService
-     */
-    public void setOwnableService(OwnableService ownableService)
-    {
-        this.ownableService = ownableService;
     }
 
     /**
@@ -233,7 +207,6 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     {
         if ((attribute.getAttribute() != null)
                 && (attribute.getAttribute().startsWith(ACL_NODE)
-                        || attribute.getAttribute().startsWith(ACL_ITEM)
                         || attribute.getAttribute().startsWith(ACL_PRI_CHILD_ASSOC_ON_CHILD)
                         || attribute.getAttribute().startsWith(ACL_PARENT)
                         || attribute.getAttribute().equals(ACL_ALLOW)
@@ -443,66 +416,6 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                     throw new ACLEntryVoterException("The specified parameter is not a NodeRef or ChildAssociationRef");
                 }
             }
-            else if (cad.typeString.equals(ACL_ITEM))
-            {
-                if (NodeRef.class.isAssignableFrom(params[cad.parameter[0]]))
-                {
-                    if (Map.class.isAssignableFrom(params[1]) || Map.class.isAssignableFrom(params[2]))
-                    {
-                        Map<QName, Serializable> properties = (Map<QName, Serializable>) (Map.class.isAssignableFrom(params[1]) ? getArgument(invocation, 1) : getArgument(invocation, 2));
-                        if (properties != null && properties.containsKey(ContentModel.PROP_OWNER))
-                        {
-                            testNodeRef = getArgument(invocation, cad.parameter[0]);
-
-                            boolean isChanged = !properties.get(ContentModel.PROP_OWNER).toString().equals(ownableService.getOwner(testNodeRef));
-
-                            if (!isChanged)
-                            {
-                                testNodeRef = null;
-                            }
-
-                            if (log.isDebugEnabled())
-                            {
-                                if (nodeService.exists(testNodeRef))
-                                {
-                                    log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
-                                }
-                                else
-                                {
-                                    log.debug("\tPermission test on non-existing node " + testNodeRef);
-                                }
-                            }
-                        }
-                    }
-                    else if (QName.class.isAssignableFrom(params[1]) && params[2] != null)
-                    {
-                        testNodeRef = getArgument(invocation, cad.parameter[0]);
-                        Object arg2 = getArgument(invocation, 2);
-                        boolean isChanged = (arg2 != null && !arg2.toString().equals(ownableService.getOwner(testNodeRef)));
-
-                        if (!isChanged)
-                        {
-                            testNodeRef = null;
-                        }
-
-                        if (log.isDebugEnabled())
-                        {
-                            if (nodeService.exists(testNodeRef))
-                            {
-                                log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
-                            }
-                            else
-                            {
-                                log.debug("\tPermission test on non-existing node " + testNodeRef);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    throw new ACLEntryVoterException("The specified parameter is not a Item");
-                }
-            }
             else if (cad.typeString.equals(ACL_PARENT))
             {
                 // There is no point having parent permissions for store
@@ -660,14 +573,14 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
             }
             typeString = st.nextToken();
 
-            if (!(typeString.equals(ACL_NODE) || typeString.equals(ACL_ITEM) || typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)
+            if (!(typeString.equals(ACL_NODE) || typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)
                     || typeString.equals(ACL_PARENT) || typeString.equals(ACL_ALLOW) || typeString.equals(ACL_METHOD) || typeString
                     .equals(ACL_DENY)))
             {
-                throw new ACLEntryVoterException("Invalid type: must be ACL_NODE, ACL_ITEM, ACL_PARENT or ACL_ALLOW");
+                throw new ACLEntryVoterException("Invalid type: must be ACL_NODE, ACL_PARENT or ACL_ALLOW");
             }
 
-            if (typeString.equals(ACL_NODE) || typeString.equals(ACL_ITEM) || typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)
+            if (typeString.equals(ACL_NODE) || typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)
                     || typeString.equals(ACL_PARENT))
             {
                 int count = st.countTokens();

@@ -29,21 +29,14 @@ import java.util.Set;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.TransactionalCache;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.GUID;
-import org.alfresco.util.TestWithUserUtils;
 import org.alfresco.util.debug.NodeStoreInspector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,11 +58,6 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
      */
     private final static String MSG_ERR = 
         "This operation is not supported by a version store implementation of the node service.";
-    
-    /**
-     * User password
-     */
-    private static final String PWD = "password";
     
     /**
      * Dummy data used in failure tests
@@ -726,110 +714,5 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         this.dbNodeService.addAspect(newNode, ContentModel.ASPECT_VERSIONABLE, null);
         Version version = createVersion(newNode, this.versionProperties);
         assertNotNull(version);
-    }
-    
-    public void testTakeOwnershipPermission()
-    {
-        NodeService proxyNodeService = (NodeService) applicationContext.getBean("NodeService");
-
-        // Authenticate as system user because the current user should not be node owner
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent) this.applicationContext.getBean("authenticationComponent");
-        authenticationComponent.setSystemUserAsCurrentUser();
-
-        // Create folder
-        Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
-        String folderName = "testFolder" + GUID.generate();
-        folderProps.put(ContentModel.PROP_NAME, folderName);
-        NodeRef folderRef = this.nodeService.createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, folderName),
-                ContentModel.TYPE_FOLDER, folderProps).getChildRef();
-
-        // Create document
-        Map<QName, Serializable> docProps = new HashMap<QName, Serializable>(1);
-        String docName = "testDoc" + GUID.generate() + ".txt";
-        docProps.put(ContentModel.PROP_NAME, docName);
-        NodeRef docRef = this.nodeService.createNode(folderRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, docName),
-                ContentModel.TYPE_CONTENT, docProps).getChildRef();
-
-        // Create user
-        String userName = "testUser" + GUID.generate();
-        TestWithUserUtils.createUser(userName, PWD, this.rootNodeRef, this.nodeService, this.authenticationService);
-
-        // Apply editor permission to document
-        permissionService.deletePermissions(docRef);
-        permissionService.setInheritParentPermissions(docRef, false);
-        permissionService.setPermission(docRef, userName, PermissionService.EDITOR, true);
-
-        // Authenticate test user
-        TestWithUserUtils.authenticateUser(userName, PWD, this.rootNodeRef, this.authenticationService);
-
-        // Check if a user has not the "take ownership" permission directly through permissionService
-        boolean isAble = AccessStatus.ALLOWED == permissionService.hasPermission(docRef, PermissionService.TAKE_OWNERSHIP);
-        assertEquals("Incorrect TakeOwnership permission.", false, isAble);
-
-        // Add ownable aspect to the document
-        this.nodeService.addAspect(docRef, ContentModel.ASPECT_OWNABLE, null);
-
-        // Take ownership through addAspect method
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(4, 1.0f);
-        properties.put(ContentModel.PROP_OWNER, (Serializable) userName);
-
-        try
-        {
-            proxyNodeService.addAspect(docRef, ContentModel.ASPECT_OWNABLE, properties);
-        }
-        catch (AccessDeniedException e)
-        {
-        }
-
-        // Retrieve the data directly from the node service to ensure its not been changed
-        String updatedOwner = (String) this.nodeService.getProperty(docRef, ContentModel.PROP_OWNER);
-
-        boolean isUserOwner = updatedOwner == null || !updatedOwner.equals(userName) ? false : true;
-        assertEquals("Ownership's rights to the document have been taken by the user that has Editor permissions (addAspect).", false, isUserOwner);
-
-        // Take ownership through addProperties method
-        try
-        {
-            proxyNodeService.addProperties(docRef, properties);
-        }
-        catch (AccessDeniedException e)
-        {
-        }
-
-        // Retrieve the data directly from the node service to ensure its not been changed
-        updatedOwner = (String) this.nodeService.getProperty(docRef, ContentModel.PROP_OWNER);
-
-        isUserOwner = updatedOwner == null || !updatedOwner.equals(userName) ? false : true;
-        assertEquals("Ownership's rights to the document have been taken by the user that has Editor permissions (addProperties).", false, isUserOwner);
-
-        // Take ownership through setProperties method
-        try
-        {
-            proxyNodeService.setProperties(docRef, properties);
-        }
-        catch (AccessDeniedException e)
-        {
-        }
-
-        // Retrieve the data directly from the node service to ensure its not been changed
-        updatedOwner = (String) this.nodeService.getProperty(docRef, ContentModel.PROP_OWNER);
-
-        isUserOwner = updatedOwner == null || !updatedOwner.equals(userName) ? false : true;
-        assertEquals("Ownership's rights to the document have been taken by the user that has Editor permissions (setProperties).", false, isUserOwner);
-
-        // Take ownership through setProperty method
-        try
-        {
-            proxyNodeService.setProperty(docRef, ContentModel.ASPECT_OWNABLE, (Serializable) userName);
-        }
-        catch (AccessDeniedException e)
-        {
-        }
-
-        // Retrieve the data directly from the node service to ensure its not been changed
-        updatedOwner = (String) this.nodeService.getProperty(docRef, ContentModel.PROP_OWNER);
-
-        isUserOwner = updatedOwner == null || !updatedOwner.equals(userName) ? false : true;
-        assertEquals("Ownership's rights to the document have been taken by the user that has Editor permissions (setProperty).", false, isUserOwner);
     }
 }

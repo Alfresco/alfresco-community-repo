@@ -93,6 +93,7 @@
        <property name="filePlanService" ref="FilePlanService"/>
        <property name="capabilityService" ref="CapabilityService"/>
        <property name="ruleService" ref="RuleService" />
+       <property name="nodeService" ref="NodeService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21CapabilityPatch"

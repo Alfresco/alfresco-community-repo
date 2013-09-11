@@ -54,11 +54,12 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
         if (this.dictionaryService.isSubClass(className, TYPE_TRANSFER) == true)
         {
             boolean accessionIndicator = ((Boolean)nodeService.getProperty(actionedUponNodeRef, PROP_TRANSFER_ACCESSION_INDICATOR)).booleanValue();
+            String transferLocation = nodeService.getProperty(actionedUponNodeRef, PROP_TRANSFER_LOCATION).toString();
             
             List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(actionedUponNodeRef, ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)
             {
-                markComplete(assoc.getChildRef(), accessionIndicator);
+                markComplete(assoc.getChildRef(), accessionIndicator, transferLocation);
             }
 
             // Delete the transfer object
@@ -85,7 +86,7 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
      * @param nodeRef
      *            disposition lifecycle node reference
      */
-    private void markComplete(NodeRef nodeRef, boolean accessionIndicator)
+    private void markComplete(NodeRef nodeRef, boolean accessionIndicator, String transferLocation)
     {
         // Set the completed date
         DispositionAction da = dispositionService.getNextDispositionAction(nodeRef);
@@ -97,6 +98,7 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
         
         // Remove the transferring indicator aspect
         nodeService.removeAspect(nodeRef, ASPECT_TRANSFERRING);
+        nodeService.setProperty(nodeRef, PROP_LOCATION, transferLocation);
         
         // Determine which marker aspect to use
         QName markerAspectQName = null;
@@ -117,6 +119,7 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
             for (NodeRef record : records)
             {
                 nodeService.addAspect(record, markerAspectQName, null);
+                nodeService.setProperty(record, PROP_LOCATION, transferLocation);
             }
         }
 

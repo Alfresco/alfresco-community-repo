@@ -43,6 +43,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.PagingRequest;
@@ -371,10 +372,12 @@ public class ADMRemoteStore extends BaseRemoteStore
         catch (AccessDeniedException ae)
         {
             res.setStatus(Status.STATUS_UNAUTHORIZED);
+            throw ae;
         }
         catch (FileExistsException feeErr)
         {
             res.setStatus(Status.STATUS_CONFLICT);
+            throw feeErr;
         }
     }
     
@@ -422,10 +425,12 @@ public class ADMRemoteStore extends BaseRemoteStore
         catch (AccessDeniedException ae)
         {
             res.setStatus(Status.STATUS_UNAUTHORIZED);
+            throw ae;
         }
         catch (FileExistsException feeErr)
         {
             res.setStatus(Status.STATUS_CONFLICT);
+            throw feeErr;
         }
         catch (Exception e)
         {
@@ -433,6 +438,7 @@ public class ADMRemoteStore extends BaseRemoteStore
             // none of them should occur if the XML document is well formed
             logger.error(e);
             res.setStatus(Status.STATUS_INTERNAL_SERVER_ERROR);
+            throw new AlfrescoRuntimeException(e.getMessage(), e);
         }
     }
     
@@ -541,6 +547,7 @@ public class ADMRemoteStore extends BaseRemoteStore
         catch (AccessDeniedException ae)
         {
             res.setStatus(Status.STATUS_UNAUTHORIZED);
+            throw ae;
         }
     }
     
@@ -587,6 +594,7 @@ public class ADMRemoteStore extends BaseRemoteStore
         catch (AccessDeniedException ae)
         {
             res.setStatus(Status.STATUS_UNAUTHORIZED);
+            throw ae;
         }
     }
 
@@ -781,23 +789,23 @@ public class ADMRemoteStore extends BaseRemoteStore
                 NodeRef surfConfigRef = aquireSurfConfigRef(path + (pattern != null ? ("/" + pattern) : ""), create);
                 try
                 {
-                    if (create)
+                    if (surfConfigRef != null)
                     {
-                        // ensure folders exist down to the specified parent
-                        // ALF-17729 / ALF-17796 - disable auditable on parent folders
-                        result = FileFolderUtil.makeFolders(
-                                this.fileFolderService,
-                                surfConfigRef,
-                                isFolder ? pathElements : pathElements.subList(0, pathElements.size() - 1),
-                                ContentModel.TYPE_FOLDER,
-                                behaviourFilter,
-                                new HashSet<QName>(Arrays.asList(new QName[]{ContentModel.ASPECT_AUDITABLE})));
-                    }
-                    else
-                    {
-                        // perform the cm:name path lookup against our config root node
-                        if (surfConfigRef != null)
+                        if (create)
                         {
+                            // ensure folders exist down to the specified parent
+                            // ALF-17729 / ALF-17796 - disable auditable on parent folders
+                            result = FileFolderUtil.makeFolders(
+                                    this.fileFolderService,
+                                    surfConfigRef,
+                                    isFolder ? pathElements : pathElements.subList(0, pathElements.size() - 1),
+                                    ContentModel.TYPE_FOLDER,
+                                    behaviourFilter,
+                                    new HashSet<QName>(Arrays.asList(new QName[]{ContentModel.ASPECT_AUDITABLE})));
+                        }
+                        else
+                        {
+                            // perform the cm:name path lookup against our config root node
                             result = this.fileFolderService.resolveNamePath(surfConfigRef, pathElements);
                         }
                     }
@@ -1012,38 +1020,41 @@ public class ADMRemoteStore extends BaseRemoteStore
      */
     private void outputFileNodes(Writer out, FileInfo fileInfo, NodeRef surfConfigRef, String pattern, boolean recurse) throws IOException
     {
-        final boolean debug = logger.isDebugEnabled();
-        PagingResults<FileInfo> files = getFileNodes(fileInfo, surfConfigRef, pattern, recurse);
-        
-        final Map<NodeRef, String> nameCache = new HashMap<NodeRef, String>();
-        for (final FileInfo file : files.getPage())
+        if (surfConfigRef != null)
         {
-            // walking up the parent tree manually until the "surf-config" parent is hit
-            // and manually appending the rest of the cm:name path down to the node.
-            final StringBuilder displayPath = new StringBuilder(64);
-            NodeRef ref = unprotNodeService.getPrimaryParent(file.getNodeRef()).getParentRef();
-            while (!ref.equals(surfConfigRef))
-            {
-                String name = nameCache.get(ref);
-                if (name == null)
-                {
-                    name = (String) unprotNodeService.getProperty(ref, ContentModel.PROP_NAME);
-                    nameCache.put(ref, name);
-                }
-                displayPath.insert(0, '/');
-                displayPath.insert(0, name);
-                ref = unprotNodeService.getPrimaryParent(ref).getParentRef();
-            }
+            final boolean debug = logger.isDebugEnabled();
+            PagingResults<FileInfo> files = getFileNodes(fileInfo, pattern, recurse);
             
-            out.write("/alfresco/site-data/");
-            out.write(URLDecoder.decode(displayPath.toString()));
-            out.write(URLDecoder.decode(file.getName()));
-            out.write('\n');
-            if (debug) logger.debug("   /alfresco/site-data/" + displayPath.toString() + file.getName());
+            final Map<NodeRef, String> nameCache = new HashMap<NodeRef, String>();
+            for (final FileInfo file : files.getPage())
+            {
+                // walking up the parent tree manually until the "surf-config" parent is hit
+                // and manually appending the rest of the cm:name path down to the node.
+                final StringBuilder displayPath = new StringBuilder(64);
+                NodeRef ref = unprotNodeService.getPrimaryParent(file.getNodeRef()).getParentRef();
+                while (!ref.equals(surfConfigRef))
+                {
+                    String name = nameCache.get(ref);
+                    if (name == null)
+                    {
+                        name = (String) unprotNodeService.getProperty(ref, ContentModel.PROP_NAME);
+                        nameCache.put(ref, name);
+                    }
+                    displayPath.insert(0, '/');
+                    displayPath.insert(0, name);
+                    ref = unprotNodeService.getPrimaryParent(ref).getParentRef();
+                }
+                
+                out.write("/alfresco/site-data/");
+                out.write(URLDecoder.decode(displayPath.toString()));
+                out.write(URLDecoder.decode(file.getName()));
+                out.write('\n');
+                if (debug) logger.debug("   /alfresco/site-data/" + displayPath.toString() + file.getName());
+            }
         }
     }
     
-    protected PagingResults<FileInfo> getFileNodes(FileInfo fileInfo, NodeRef surfConfigRef, String pattern, boolean recurse)
+    protected PagingResults<FileInfo> getFileNodes(FileInfo fileInfo, String pattern, boolean recurse)
     {
         return fileFolderService.list(
                 fileInfo.getNodeRef(), true, false,

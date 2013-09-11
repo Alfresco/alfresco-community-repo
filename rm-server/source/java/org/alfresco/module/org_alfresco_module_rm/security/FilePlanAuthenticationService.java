@@ -32,16 +32,6 @@ public interface FilePlanAuthenticationService
      * @return  rm admin user name
      */
     String getRmAdminUserName();
-    
-    /**
-     * @return rm admin first name
-     */
-    String getRmAdminFirstName();
-
-    /**
-     * @return rm admin last name
-     */
-    String getRmAdminLastName();
 
     /**
      * Run provided work as the global rm admin user.

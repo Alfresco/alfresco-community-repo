@@ -122,7 +122,6 @@
        <property name="authenticationService" ref="AuthenticationService" />
        <property name="personService" ref="PersonService" />
        <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
-       <property name="password" value="${bootstrap.rmadmin.pwd}" />
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21RecordInheritancePatch"

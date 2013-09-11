@@ -37,6 +37,7 @@
             <value>alfresco.module.org_alfresco_module_rm.messages.audit-service</value>
             <value>alfresco.module.org_alfresco_module_rm.messages.capability-service</value>
             <value>alfresco.module.org_alfresco_module_rm.messages.dataset-service</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.rm-system</value>
          </list>
       </property>
    </bean>

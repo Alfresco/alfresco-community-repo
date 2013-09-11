@@ -19,8 +19,10 @@
 package org.alfresco.module.org_alfresco_module_rm.patch;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -31,8 +33,12 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
@@ -79,6 +85,9 @@ public class RMv21InPlacePatch extends ModulePatchComponent
     /** rule service */
     private RuleService ruleService;
     
+    /** node service */
+    private NodeService nodeService;
+    
     /**
      * @param filePlanRoleService   file plan role service
      */
@@ -120,6 +129,14 @@ public class RMv21InPlacePatch extends ModulePatchComponent
     }
     
     /**
+     * @param nodeService   node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
@@ -154,10 +171,10 @@ public class RMv21InPlacePatch extends ModulePatchComponent
                     filePlanService.createUnfiledContainer(filePlan);            
                     
                     // move any existing holds to new container
-                    // TODO
+                    moveExistingHolds(filePlan);
                     
                     // move any existing transfers to new container
-                    // TODO
+                    moveExistingTransfers(filePlan);
                     
                     // add the inplace roles
                     filePlanRoleService.createRole(filePlan, ROLE_READERS, ROLE_READERS_LABEL, getCapabilities(ROLE_READERS_CAPABILITIES));
@@ -179,5 +196,44 @@ public class RMv21InPlacePatch extends ModulePatchComponent
             capabilities.add(capabilityService.getCapability(capabilityName));
         }
         return capabilities;
+    }
+    
+    private void moveExistingHolds(NodeRef filePlan)
+    {
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("  ... moving existing holds for file plan " + filePlan.toString());
+        }
+                
+        NodeRef container = filePlanService.getHoldContainer(filePlan);
+        
+        @SuppressWarnings("deprecation")
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_HOLDS, RegexQNamePattern.MATCH_ALL);
+        for (ChildAssociationRef assoc : assocs)
+        {
+            NodeRef hold = assoc.getChildRef();
+            String name = (String)nodeService.getProperty(hold, ContentModel.PROP_NAME);
+            nodeService.moveNode(hold, container, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, name));
+        }
+    }
+    
+    private void moveExistingTransfers(NodeRef filePlan)
+    {
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("  ... moving existing transfers for file plan " + filePlan.toString());
+        }
+        
+        NodeRef container = filePlanService.getTransferContainer(filePlan);
+        
+        @SuppressWarnings("deprecation")
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_TRANSFERS, RegexQNamePattern.MATCH_ALL);
+        for (ChildAssociationRef assoc : assocs)
+        {
+            NodeRef transfer = assoc.getChildRef();
+            String name = (String)nodeService.getProperty(transfer, ContentModel.PROP_NAME);
+            nodeService.moveNode(transfer, container, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, name));
+        }
+        
     }
 }

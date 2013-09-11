@@ -938,6 +938,23 @@
     </profiles>
 
     <build>
+        <resources>
+            <!-- Allow replacing variables inside version.properties -->
+            <resource>
+                <directory>config</directory>
+                <excludes>
+                    <exclude>alfresco/version.properties</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>config</directory>
+                <includes>
+                    <include>alfresco/version.properties</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
     	<pluginManagement>
     		<plugins>
     			<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->

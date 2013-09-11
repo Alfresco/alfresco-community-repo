@@ -214,6 +214,11 @@ public class RepoService
      */
 	protected Map<String, TestPerson> allPeople = new HashMap<String, TestPerson>();
 
+	// Needed for CGLIB to create proxy, see CloudRepoService
+	public RepoService()
+	{
+	}
+
     @SuppressWarnings("unchecked")
 	public RepoService(ApplicationContext applicationContext) throws Exception
     {

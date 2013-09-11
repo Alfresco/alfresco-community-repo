@@ -40,7 +40,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -58,6 +57,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -65,6 +65,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Role service implementation
@@ -75,6 +76,10 @@ import org.json.JSONObject;
 public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                                         RecordsManagementModel
 {
+    /** I18N */
+    private static final String MSG_FIRST_NAME = "bootstrap.rmadmin.firstName";
+    private static final String MSG_LAST_NAME = "bootstrap.rmadmin.lastName";
+    
     /** Capability service */
     private CapabilityService capabilityService;
 
@@ -916,12 +921,12 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
      */
     private void createRMAdminUser()
     {
-        /** default rm admin password */
-        String password = FilePlanAuthenticationServiceImpl.DEFAULT_RM_ADMIN_PWD;
+        /** generate rm admin password */
+        String password = GUID.generate();
         
         String user = filePlanAuthenticationService.getRmAdminUserName();
-        String firstName = filePlanAuthenticationService.getRmAdminFirstName();
-        String lastName = filePlanAuthenticationService.getRmAdminLastName();
+        String firstName = I18NUtil.getMessage(MSG_FIRST_NAME);
+        String lastName = I18NUtil.getMessage(MSG_LAST_NAME);
         
         if (authenticationService.authenticationExists(user) == false)
         {

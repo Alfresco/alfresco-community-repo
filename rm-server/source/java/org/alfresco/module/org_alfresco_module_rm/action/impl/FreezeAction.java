@@ -60,8 +60,6 @@ public class FreezeAction extends RMActionExecuterAbstractBase
             recordsManagementService.isRecordFolder(actionedUponNodeRef) == true) &&
            freezeService.isFrozen(actionedUponNodeRef) == false)
        {
-           System.out.println("I am trying to freeze " + actionedUponNodeRef.toString());
-           
            freezeService.freeze((String) action.getParameterValue(PARAM_REASON), actionedUponNodeRef);
        }
    }

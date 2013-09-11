@@ -30,14 +30,11 @@ public class FilePlanAuthenticationServiceImpl implements FilePlanAuthentication
 {
     /** Default rm admin user values */
     public static final String DEFAULT_RM_ADMIN_USER = "rmadmin";
-    public static final String DEFAULT_RM_ADMIN_PWD = "rmadmin";
-    public static final String DEFAULT_RM_ADMIN_FIRST_NAME = "Records Management";
-    public static final String DEFAULT_RM_ADMIN_LAST_NAME = "Administrator";
     
+    /** RM admin user name */
     private String rmAdminUserName = DEFAULT_RM_ADMIN_USER;
-    private String rmAdminFirstName = DEFAULT_RM_ADMIN_FIRST_NAME;
-    private String rmAdminLastName = DEFAULT_RM_ADMIN_LAST_NAME;
     
+    /** tennant service */
     private TenantService tenantService;
     
     /**
@@ -69,40 +66,6 @@ public class FilePlanAuthenticationServiceImpl implements FilePlanAuthentication
         
         // if MT is enabled and we are in the non-tenant domain we need use the base rm admin user name
         return tenantDomain.length() > 1 ? rmAdminUserName + tenantDomain : rmAdminUserName;
-    }
-
-    /**
-     * @param rmAdminFirstName rm admin first name
-     */
-    public void setRmAdminFirstName(String rmAdminFirstName)
-    {
-        this.rmAdminFirstName = rmAdminFirstName;
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService#getRMAdminFirstName()
-     */
-    @Override
-    public String getRmAdminFirstName()
-    {
-        return rmAdminFirstName;
-    }
-
-    /**
-     * @param rmAdminLastName rm admin last name
-     */
-    public void setRmAdminLastName(String rmAdminLastName)
-    {
-        this.rmAdminLastName = rmAdminLastName;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService#getRMAdminLastName()
-     */
-    @Override
-    public String getRmAdminLastName()
-    {
-        return rmAdminLastName;
     }
 
     /**

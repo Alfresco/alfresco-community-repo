@@ -27,14 +27,15 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * RM v2.1: RM admin user patch
@@ -43,11 +44,15 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 public class RMv2RMAdminUserPatch extends ModulePatchComponent implements BeanNameAware
 {
+    /** I18N */
+    private static final String MSG_FIRST_NAME = "bootstrap.rmadmin.firstName";
+    private static final String MSG_LAST_NAME = "bootstrap.rmadmin.lastName";
+    
     /** Logger */
     private static Log logger = LogFactory.getLog(RMv2RMAdminUserPatch.class);
 
-    /** default rm admin password */
-    private String password = FilePlanAuthenticationServiceImpl.DEFAULT_RM_ADMIN_PWD;
+    /** generate rm admin password */
+    private String password = GUID.generate();
     
     /** mutable authenticaiton service */
     private MutableAuthenticationService authenticationService;
@@ -63,14 +68,6 @@ public class RMv2RMAdminUserPatch extends ModulePatchComponent implements BeanNa
     
     /** file plan authentication service */
     private FilePlanAuthenticationService filePlanAuthenticationService;
-    
-    /**
-     * @param password  rm admin password
-     */
-    public void setPassword(String password)
-    {
-        this.password = password;
-    }
     
     /**     
      * @param personService person service
@@ -124,8 +121,8 @@ public class RMv2RMAdminUserPatch extends ModulePatchComponent implements BeanNa
         }                
         
         String user = filePlanAuthenticationService.getRmAdminUserName();
-        String firstName = filePlanAuthenticationService.getRmAdminFirstName();
-        String lastName = filePlanAuthenticationService.getRmAdminLastName();
+        String firstName = I18NUtil.getMessage(MSG_FIRST_NAME);
+        String lastName = I18NUtil.getMessage(MSG_LAST_NAME);
 
         if (authenticationService.authenticationExists(user) == false)
         {

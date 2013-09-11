@@ -38,7 +38,7 @@ public class DeleteObjectAuditEvent extends AuditEvent implements BeforeDeleteNo
     
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        recordsManagementAuditService.auditEvent(nodeRef, name, null, null, true);
+        recordsManagementAuditService.auditEvent(nodeRef, name, null, null, true, false);
     }
 
 }

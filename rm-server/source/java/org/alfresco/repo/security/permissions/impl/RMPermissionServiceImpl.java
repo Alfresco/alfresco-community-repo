@@ -27,6 +27,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
@@ -42,8 +43,12 @@ import org.springframework.context.ApplicationEvent;
 public class RMPermissionServiceImpl extends PermissionServiceImpl
                                      implements ExtendedPermissionService
 {
+	/** Writers simple cache */
     protected SimpleCache<Serializable, Set<String>> writersCache;
     
+    /**
+     * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#setAnyDenyDenies(boolean)
+     */
     @Override
     public void setAnyDenyDenies(boolean anyDenyDenies)
     {
@@ -59,6 +64,9 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         this.writersCache = writersCache;
     }
     
+    /**
+     * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#onBootstrap(org.springframework.context.ApplicationEvent)
+     */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -67,11 +75,49 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     }
     
     /**
-     * Builds the set of authorities who can read the given ACL.  No caching is done here.
-     * 
-     * @return              an <b>unmodifiable</b> set of authorities
+     * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#canRead(java.lang.Long)
      */
-    protected Set<String> buildReaders(Long aclId)
+    @Override
+    protected AccessStatus canRead(Long aclId)
+    {
+        Set<String> authorities = getAuthorisations();
+
+        // test denied 
+        
+        if(anyDenyDenies)
+        {
+
+            Set<String> aclReadersDenied = getReadersDenied(aclId);
+
+            for(String auth : aclReadersDenied)
+            {
+                if(authorities.contains(auth))
+                {
+                    return AccessStatus.DENIED;
+                }
+            }
+            
+        }
+
+        // test acl readers
+        Set<String> aclReaders = getReaders(aclId);
+        
+        for(String auth : aclReaders)
+        {
+            if(authorities.contains(auth))
+            {
+                return AccessStatus.ALLOWED;
+            }
+        }
+
+        return AccessStatus.DENIED;
+    }
+    
+    /**
+     * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#getReaders(java.lang.Long)
+     */
+    @Override
+    public Set<String> getReaders(Long aclId)
     {
         AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
         if (acl == null)
@@ -79,6 +125,12 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
             return Collections.emptySet();
         }
 
+        Set<String> aclReaders = readersCache.get((Serializable)acl.getProperties());
+        if (aclReaders != null)
+        {
+            return aclReaders;
+        }
+        
         HashSet<String> assigned = new HashSet<String>();
         HashSet<String> readers = new HashSet<String>();
 
@@ -96,24 +148,33 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
                 readers.add(authority);
             }
         }
-                        
-        return Collections.unmodifiableSet(readers);
+
+        aclReaders = Collections.unmodifiableSet(readers);
+        readersCache.put((Serializable)acl.getProperties(), aclReaders);
+        return aclReaders;
     }
-    
+
     /**
+     * Override with check for RM read
+     * 
      * @param aclId
-     * @return set of authorities with read permission on the ACL
+     * @return
      */
-    protected Set<String> buildReadersDenied(Long aclId)
+    private Set<String> getReadersDenied(Long aclId)
     {
-        HashSet<String> assigned = new HashSet<String>();
-        HashSet<String> denied = new HashSet<String>();
         AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
 
         if (acl == null)
         {
+            return Collections.emptySet();
+        }
+        Set<String> denied = readersDeniedCache.get(aclId);
+        if (denied != null)
+        {
             return denied;
         }
+        denied = new HashSet<String>();
+        Set<String> assigned = new HashSet<String>();
 
         for (AccessControlEntry ace : acl.getEntries())
         {
@@ -129,9 +190,11 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
                 denied.add(authority);
             }
         }
+        
+        readersDeniedCache.put((Serializable)acl.getProperties(), denied);
 
         return denied;
-    }    
+    }
     
     /**
      * @see org.alfresco.repo.security.permissions.impl.ExtendedPermissionService#getWriters(java.lang.Long)

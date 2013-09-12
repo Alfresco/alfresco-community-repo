@@ -174,7 +174,8 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
          break;
 
       case "unfiledRecords":
-
+      
+		  filterParams.query = "";	
     	  break;
 
       default:

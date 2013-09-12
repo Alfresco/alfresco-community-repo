@@ -75,7 +75,7 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
     				String eventName);
     
     /**
-     * Audits an event, assumes that the event should not be audited immediately and not be removed if no property is changed.
+     * Audits an event, assumes that the event should be audited immediately and not be removed if no property is changed.
      * 
      * @param nodeRef   node reference
      * @param eventName event name

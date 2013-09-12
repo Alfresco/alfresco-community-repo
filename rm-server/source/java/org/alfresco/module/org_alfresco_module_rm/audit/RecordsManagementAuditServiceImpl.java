@@ -359,7 +359,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             logger.info("Started Records Management auditing");
         }
         
-        auditEvent(filePlan, AUDIT_EVENT_START, null, null, true, false);
+        auditEvent(filePlan, AUDIT_EVENT_START, null, null);
     }
 
     /**
@@ -370,7 +370,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     	ParameterCheck.mandatory("filePlan", filePlan);
     	// TODO use file plan to scope audit log
     	
-        auditEvent(filePlan, AUDIT_EVENT_STOP, null, null, true, false);
+        auditEvent(filePlan, AUDIT_EVENT_STOP, null, null);
 
         auditService.disableAudit(
                 RM_AUDIT_APPLICATION_NAME,
@@ -397,7 +397,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             logger.debug("Records Management audit log has been cleared");
         }
         
-        auditEvent(filePlan, AUDIT_EVENT_CLEAR, null, null, true, false);
+        auditEvent(filePlan, AUDIT_EVENT_CLEAR, null, null);
     }    
 
     /**
@@ -440,7 +440,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        auditEvent(nodeRef, eventName, before, after, false, false);
+        auditEvent(nodeRef, eventName, before, after, true, false);
     }
     
     /**
@@ -984,7 +984,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             // grab the default file plan, but don't fail if it can't be found!
             nodeRef = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
         }
-        auditEvent(nodeRef, AUDIT_EVENT_VIEW, null, null, true, false);
+        auditEvent(nodeRef, AUDIT_EVENT_VIEW, null, null);
     }
 
     /**

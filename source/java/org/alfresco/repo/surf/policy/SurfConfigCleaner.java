@@ -74,7 +74,6 @@ public class SurfConfigCleaner extends ADMRemoteStore implements BeforeDeleteNod
         {
             List<FileInfo> configNodes = getFileNodes(
                     fileFolderService.getFileInfo(componentsRef),
-                    getSurfConfigNodeRef(siteService.getSiteRoot(), true),
                     buildUserConfigSearchPattern(userName),
                     true).getPage();
             

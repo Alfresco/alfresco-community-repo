@@ -36,7 +36,10 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
 {
     /** Indicates whether the action is auditable or not */
     protected boolean auditable = true;
-    
+
+    /** Indicates whether the action is audited immediately or not */
+    protected boolean auditedImmediately = false;
+
     /** Application context */
     protected ApplicationContext applicationContext;
     
@@ -50,7 +53,15 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
     {
         this.auditable = auditable;
     }
-    
+
+    /**
+     * @param auditedImmediately true if to be audited immediately, false to be audited after transaction commits
+     */
+    public void setAuditedImmediately(boolean auditedImmediately)
+    {
+        this.auditedImmediately = auditedImmediately;
+    }
+
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
@@ -95,13 +106,22 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
     @Override
     public void execute(Action action, NodeRef actionedUponNodeRef)
     {
-    	// execute the action
-        super.execute(action, actionedUponNodeRef);
-        
         // audit the execution of the action
         if (auditable == true)
         {
-            getAuditService().auditEvent(actionedUponNodeRef, this.getActionDefinition().getName());
+            if (auditedImmediately == true)
+            {
+                // To be audited immediately before the action is executed, eg. to audit before actionedUponNodeRef gets deleted during the execution.
+                getAuditService().auditEvent(actionedUponNodeRef, this.getActionDefinition().getName(), null, null);
+            }
+            else
+            {
+                // To be stacked up with other audit entries and audited after the transaction commits.
+                getAuditService().auditEvent(actionedUponNodeRef, this.getActionDefinition().getName());
+            }
         }
+
+        // execute the action
+        super.execute(action, actionedUponNodeRef);
     }
 }

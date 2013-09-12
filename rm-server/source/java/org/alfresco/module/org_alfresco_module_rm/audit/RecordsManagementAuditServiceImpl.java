@@ -359,7 +359,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             logger.info("Started Records Management auditing");
         }
         
-        auditEvent(filePlan, AUDIT_EVENT_START, null, null);
+        auditEvent(filePlan, AUDIT_EVENT_START, null, null, true);
     }
 
     /**
@@ -370,7 +370,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     	ParameterCheck.mandatory("filePlan", filePlan);
     	// TODO use file plan to scope audit log
     	
-        auditEvent(filePlan, AUDIT_EVENT_STOP, null, null);
+        auditEvent(filePlan, AUDIT_EVENT_STOP, null, null, true);
 
         auditService.disableAudit(
                 RM_AUDIT_APPLICATION_NAME,
@@ -397,7 +397,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             logger.debug("Records Management audit log has been cleared");
         }
         
-        auditEvent(filePlan, AUDIT_EVENT_CLEAR, null, null);
+        auditEvent(filePlan, AUDIT_EVENT_CLEAR, null, null, true);
     }    
 
     /**
@@ -440,7 +440,16 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        auditEvent(nodeRef, eventName, before, after, true, false);
+        auditEvent(nodeRef, eventName, before, after, false, false);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#auditEvent(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map, java.util.Map, boolean)
+     */
+    @Override
+    public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after, boolean immediate) 
+    {
+    	auditEvent(nodeRef, eventName, before, after, immediate, false);
     }
     
     /**
@@ -984,7 +993,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             // grab the default file plan, but don't fail if it can't be found!
             nodeRef = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
         }
-        auditEvent(nodeRef, AUDIT_EVENT_VIEW, null, null);
+        auditEvent(nodeRef, AUDIT_EVENT_VIEW, null, null, true);
     }
 
     /**

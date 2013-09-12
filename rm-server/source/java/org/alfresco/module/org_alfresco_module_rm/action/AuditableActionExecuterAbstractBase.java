@@ -112,7 +112,7 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
             if (auditedImmediately == true)
             {
                 // To be audited immediately before the action is executed, eg. to audit before actionedUponNodeRef gets deleted during the execution.
-                getAuditService().auditEvent(actionedUponNodeRef, this.getActionDefinition().getName(), null, null);
+                getAuditService().auditEvent(actionedUponNodeRef, this.getActionDefinition().getName(), null, null, true);
             }
             else
             {

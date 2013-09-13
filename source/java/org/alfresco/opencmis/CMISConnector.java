@@ -1657,7 +1657,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             }
             else
             {
-                throw new CmisRuntimeException("Failed to retrieve content: " + e.getMessage(), e);
+                StringBuilder msg = new StringBuilder("Failed to retrieve content: " + e.getMessage());
+                Throwable cause = e.getCause();
+                if(cause != null)
+                {
+                    // add the cause to the CMIS exception
+                    msg.append(", ");
+                    msg.append(cause.getMessage());
+                }
+                throw new CmisRuntimeException(msg.toString(), e);
             }
         }
 

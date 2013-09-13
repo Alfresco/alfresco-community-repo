@@ -48,10 +48,10 @@ import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -60,11 +60,13 @@ import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -348,6 +350,59 @@ public class RecordServiceImpl implements RecordService,
                 ContentModel.TYPE_FOLDER,
                 ContentModel.ASSOC_CONTAINS, 
                 onDeleteDeclaredRecordLink);
+        
+        // Handle the special case when we are dealing with new records that are being added via a file protocol
+        policyComponent.bindClassBehaviour(
+		        NodeServicePolicies.OnAddAspectPolicy.QNAME, 
+		        ContentModel.ASPECT_NO_CONTENT, 
+		        new JavaBehaviour(this, "processNoContentAspect", NotificationFrequency.EVERY_EVENT));
+		policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnRemoveAspectPolicy.QNAME, 
+                ContentModel.ASPECT_NO_CONTENT, 
+                new JavaBehaviour(this, "processNoContentAspect", NotificationFrequency.EVERY_EVENT));
+    }
+    
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    public void processNoContentAspect(NodeRef nodeRef, QName aspectTypeQName)
+    {
+    	switchNames(nodeRef);
+    }
+    
+    /**
+     * Helper method to switch the name of the record around.  Used to support record creation via
+     * file protocols.
+     * 
+     * @param nodeRef	node reference (record)
+     */
+    private void switchNames(NodeRef nodeRef)
+    {
+    	try 
+    	{
+    		if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == true)
+    		{
+    			String origionalName =  (String)nodeService.getProperty(nodeRef, PROP_ORIGIONAL_NAME);
+    			if (origionalName != null)
+    			{
+    				String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+    				fileFolderService.rename(nodeRef, origionalName);
+    				nodeService.setProperty(nodeRef, PROP_ORIGIONAL_NAME, name);
+    			}
+    		}
+		} 
+    	catch (FileExistsException e) 
+		{
+			e.printStackTrace();
+		}
+    	catch (InvalidNodeRefException e) 
+		{
+			e.printStackTrace();
+		} 
+    	catch (FileNotFoundException e) 
+		{
+			e.printStackTrace();
+		}
     }
 
     /**
@@ -358,16 +413,18 @@ public class RecordServiceImpl implements RecordService,
     @Override
     public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, final boolean bNew)
     {
-
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override
             public Void doWork() throws Exception
             {
                 NodeRef nodeRef = childAssocRef.getChildRef();
-                if (nodeService.exists(nodeRef) == true  && !nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) && !nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY))
+                if (nodeService.exists(nodeRef) == true  && 
+                    nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false &&
+                	nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) == false && 
+                    nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY) == false)
                 {
-                    // create and file the content as a record
+                	// create and file the content as a record
                     file(nodeRef);
                 }
                 
@@ -693,7 +750,7 @@ public class RecordServiceImpl implements RecordService,
         ruleService.disableRules();
         try
         {
-            // get the record id
+        	// get the record id
             String recordId = identifierService.generateIdentifier(ASPECT_RECORD, 
                                                                    nodeService.getPrimaryParent(document).getParentRef());
             

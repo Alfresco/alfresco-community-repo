@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.rule;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -39,6 +40,8 @@ import org.alfresco.service.namespace.QName;
 public class ExtendedRuleServiceImpl extends RuleServiceImpl
 {
     private boolean runAsRmAdmin = true;
+
+    private Set<QName> ignoredTypes = new HashSet<QName>();
     
     private FilePlanService filePlanService;
 
@@ -65,6 +68,17 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     {
 		this.filePlanService = filePlanService;
 	}
+
+    @Override
+    public void init()
+    {
+        super.init();
+
+        // Specify a set of system types to be ignored by rule executions
+        ignoredTypes.add(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE);
+        ignoredTypes.add(RecordsManagementModel.TYPE_DISPOSITION_ACTION);
+        ignoredTypes.add(RecordsManagementModel.TYPE_EVENT_EXECUTION);
+    }
 
     @Override
     public void saveRule(final NodeRef nodeRef, final Rule rule)
@@ -115,20 +129,21 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     {
         QName typeQName = nodeService.getType(nodeRef);
 
-        // The dispositionSchedule node will not be executed by rules
         if (filePlanService.isFilePlanComponent(nodeRef) == true
-                && typeQName.equals(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE) == false
                 && isFilePlanComponentRule(rule) == true && runAsRmAdmin == true)
         {
-            String user = AuthenticationUtil.getFullyAuthenticatedUser();
-            try
+            if (isIgnoredType(typeQName) == false)
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(filePlanAuthenticationService.getRmAdminUserName());
-                ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
-            }
-            finally
-            {
-                AuthenticationUtil.setFullyAuthenticatedUser(user);
+                String user = AuthenticationUtil.getFullyAuthenticatedUser();
+                try
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(filePlanAuthenticationService.getRmAdminUserName());
+                    ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+                }
+                finally
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(user);
+                }
             }
         }
         else
@@ -142,5 +157,13 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     {
         NodeRef nodeRef = getOwningNodeRef(rule);
         return filePlanService.isFilePlanComponent(nodeRef);
+    }
+
+    /**
+     * @param typeQName
+     */
+    private boolean isIgnoredType(QName typeQName)
+    {
+        return ignoredTypes.contains(typeQName);
     }
 }

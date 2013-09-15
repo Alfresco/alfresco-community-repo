@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,10 @@
  */
 package org.alfresco.repo.preference;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,181 +29,217 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.BaseAlfrescoSpringTest;
-import org.alfresco.util.TestWithUserUtils;
+import org.alfresco.util.test.junitrules.AlfrescoPerson;
+import org.alfresco.util.test.junitrules.ApplicationContextInit;
+import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
+import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule.RunAsUser;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
 
 /**
- * Thumbnail service implementation unit test
+ * {@link PreferenceService} implementation unit test
  * 
  * @author Roy Wetherall
+ * @author Neil Mc Erlean (refactoring to JUnit Rules and enabling disabled tests)
  */
-public class PreferenceServiceImplTest extends BaseAlfrescoSpringTest
+public class PreferenceServiceImplTest
 {
-    private static final String USER_ONE = "userOne";
+    private static final Log log = LogFactory.getLog(PreferenceServiceImplTest.class);
 
-    private static final String USER_BAD = "userBad";
+    // JUnit rule to initialise the default Alfresco spring configuration
+    @ClassRule public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
+    
+    private static final String USERNAME2 = "userBad";
+    
+    // Rules to create test users. Note that this class is unusual in that we do *NOT* want to reuse users across test methods.
+    public AlfrescoPerson testUser1 = new AlfrescoPerson(APP_CONTEXT_INIT);
+    public AlfrescoPerson testUser2 = new AlfrescoPerson(APP_CONTEXT_INIT, USERNAME2);
+    
+    // A rule to have all test methods be run as "UserOne".
+    public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(testUser1);
+    
+    // Tie them together in a Rule Chain
+    @Rule public RuleChain ruleChain = RuleChain.outerRule(testUser1)
+                                                .around(testUser2)
+                                                .around(runAsRule);
+    
 
-    private ScriptService scriptService;
-
-    private NodeService nodeService;
-
-    private AuthenticationComponent authenticationComponent;
-
-    private PreferenceService preferenceService;
-
-    private PersonService personService;
-
-    private ContentService contentService;
-
-    /**
-     * Called during the transaction setup
-     */
-    protected void onSetUpInTransaction() throws Exception
+    // Various services
+    private static ContentService               CONTENT_SERVICE;
+    private static PersonService                PERSON_SERVICE;
+    private static PreferenceService            PREFERENCE_SERVICE;
+    private static RetryingTransactionHelper    TRANSACTION_HELPER;
+    private static ScriptService                SCRIPT_SERVICE;
+    
+    private static NodeRef COMPANY_HOME;
+    
+    @BeforeClass public static void initStaticData() throws Exception
     {
-        super.onSetUpInTransaction();
+        CONTENT_SERVICE           = APP_CONTEXT_INIT.getApplicationContext().getBean("ContentService", ContentService.class);
+        PERSON_SERVICE            = APP_CONTEXT_INIT.getApplicationContext().getBean("PersonService", PersonService.class);
+        PREFERENCE_SERVICE        = APP_CONTEXT_INIT.getApplicationContext().getBean("PreferenceService", PreferenceService.class);
+        SCRIPT_SERVICE            = APP_CONTEXT_INIT.getApplicationContext().getBean("ScriptService", ScriptService.class);
+        TRANSACTION_HELPER        = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+        
+        Repository repositoryHelper = (Repository) APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper");
+        COMPANY_HOME = repositoryHelper.getCompanyHome();
+    }
+    
+    @Test public void testPreferences() throws Exception
+    {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override public Void execute() throws Throwable
+            {
+                // Try and get preferences before they have been set
+                Map<String, Serializable> prefs = PREFERENCE_SERVICE.getPreferences(testUser1.getUsername());
+                assertNotNull(prefs);
+                assertEquals(0, prefs.size());
 
-        // Get the required services
-        this.scriptService = (ScriptService) this.applicationContext.getBean("ScriptService");
-        this.nodeService = (NodeService) this.applicationContext.getBean("NodeService");
-        this.authenticationComponent = (AuthenticationComponent) this.applicationContext
-                .getBean("authenticationComponent");
-        this.preferenceService = (PreferenceService) this.applicationContext.getBean("PreferenceService");
-        this.personService = (PersonService) this.applicationContext.getBean("PersonService");
-        this.contentService = (ContentService) this.applicationContext.getBean("ContentService");
+                // Lets set some preferences for the user
+                prefs = new HashMap<String, Serializable>(5);
+                prefs.put("alfresco.one.alpha", "string");
+                prefs.put("alfresco.one.beta", 100);
+                prefs.put("alfresco.two.alpha", 3.142);
+                prefs.put("alfresco.two.beta", COMPANY_HOME);
+                prefs.put("alfresco.two.gamma", new Date());
+                prefs.put("atTheRoot", "thisIsAtTheRoot");
+                PREFERENCE_SERVICE.setPreferences(testUser1.getUsername(), prefs);
 
-        // Do the test's as userOne
-        TestWithUserUtils.authenticateUser(USER_ONE, "PWD", this.authenticationService, this.authenticationComponent);
+                NodeRef personNodeRef = PERSON_SERVICE.getPerson(testUser1.getUsername());
+                ContentReader reader = CONTENT_SERVICE.getReader(personNodeRef, ContentModel.PROP_PREFERENCE_VALUES);
+                log.debug("JSON: \n" + prettyJson(reader.getContentString()));
+
+                // Try and get all the preferences
+                prefs = PREFERENCE_SERVICE.getPreferences(testUser1.getUsername(), null);
+                assertNotNull(prefs);
+                assertEquals(6, prefs.size());
+
+                // Try and get some of the preferences
+                prefs = PREFERENCE_SERVICE.getPreferences(testUser1.getUsername(), "alfresco.two");
+                assertNotNull(prefs);
+                assertEquals(3, prefs.size());
+
+                // Clear some of the preferences
+                PREFERENCE_SERVICE.clearPreferences(testUser1.getUsername(), "alfresco.two");
+                prefs = PREFERENCE_SERVICE.getPreferences(testUser1.getUsername(), null);
+                assertNotNull(prefs);
+                assertEquals(3, prefs.size());
+
+                // Clear all the preferences
+                PREFERENCE_SERVICE.clearPreferences(testUser1.getUsername());
+                prefs = PREFERENCE_SERVICE.getPreferences(testUser1.getUsername());
+                assertNotNull(prefs);
+                assertEquals(0, prefs.size());
+                return null;
+            }
+        });
     }
 
-    public void testPreferences() throws Exception
+    @Test(expected=AccessDeniedException.class)
+    @RunAsUser(userName=USERNAME2)
+    public void testBadUser()
     {
-        // assertEquals(USER_ONE, AuthenticationUtil.getCurrentUserName());
-
-        // Try and get preferences before they have been set
-        Map<String, Serializable> prefs = this.preferenceService.getPreferences(USER_ONE);
-        assertNotNull(prefs);
-        assertEquals(0, prefs.size());
-
-        // assertEquals(USER_ONE, AuthenticationUtil.getCurrentUserName());
-
-        // Lets set some preferences for the user
-        prefs = new HashMap<String, Serializable>(5);
-        prefs.put("alfresco.one.alpha", "string");
-        prefs.put("alfresco.one.beta", 100);
-        prefs.put("alfresco.two.alpha", 3.142);
-        prefs.put("alfresco.two.beta", this.rootNodeRef);
-        prefs.put("alfresco.two.gamma", new Date());
-        prefs.put("atTheRoot", "thisIsAtTheRoot");
-        this.preferenceService.setPreferences(USER_ONE, prefs);
-
-        // assertEquals(USER_ONE, AuthenticationUtil.getCurrentUserName());
-
-        NodeRef personNodeRef = this.personService.getPerson(USER_ONE);
-        ContentReader reader = this.contentService.getReader(personNodeRef, ContentModel.PROP_PREFERENCE_VALUES);
-        System.out.println("JSON: " + reader.getContentString());
-
-        // Try and get all the preferences
-        prefs = this.preferenceService.getPreferences(USER_ONE, null);
-        assertNotNull(prefs);
-        assertEquals(6, prefs.size());
-
-        // Try and get some of the preferences
-        prefs = this.preferenceService.getPreferences(USER_ONE, "alfresco.two");
-        assertNotNull(prefs);
-        assertEquals(3, prefs.size());
-
-        // assertEquals(USER_ONE, AuthenticationUtil.getCurrentUserName());
-
-        // Clear some of the preferences
-        this.preferenceService.clearPreferences(USER_ONE, "alfresco.two");
-        prefs = this.preferenceService.getPreferences(USER_ONE, null);
-        assertNotNull(prefs);
-        assertEquals(3, prefs.size());
-
-        // assertEquals(USER_ONE, AuthenticationUtil.getCurrentUserName());
-
-        // Clear all the preferences
-        this.preferenceService.clearPreferences(USER_ONE);
-        prefs = this.preferenceService.getPreferences(USER_ONE);
-        assertNotNull(prefs);
-        assertEquals(0, prefs.size());
-
-        // assertEquals(USER_ONE, AuthenticationUtil.getCurrentUserName());
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override public Void execute() throws Throwable
+            {
+                Map<String, Serializable> prefs = new HashMap<String, Serializable>(5);
+                prefs.put("alfresco.one.alpha", "string");
+                PREFERENCE_SERVICE.setPreferences(testUser1.getUsername(), prefs);
+                
+                return null;
+            }
+        });
     }
 
-    public void xtestBadUser()
+    @Test public void testGetOtherUserPreferences()
     {
-        assertEquals(USER_ONE, authenticationComponent.getCurrentUserName());
-
-        try
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {
-            // Lets set some preferences for the user
-            Map<String, Serializable> prefs = new HashMap<String, Serializable>(5);
-            prefs.put("alfresco.one.alpha", "string");
-            prefs.put("alfresco.one.beta", 100);
-            prefs.put("alfresco.two.alpha", 3.142);
-            prefs.put("alfresco.two.beta", this.rootNodeRef);
-            prefs.put("alfresco.two.gamma", new Date());
-            prefs.put("atTheRoot", "thisIsAtTheRoot");
-            this.preferenceService.setPreferences(USER_BAD, prefs);
-
-            fail("This should have raised an exception since we are trying to update preferences that are not our own!");
-        }
-        catch (Exception exception)
+            @Override public Void execute() throws Throwable
+            {
+                // Lets set some preferences for the user one
+                Map<String, Serializable> prefs = new HashMap<String, Serializable>(5);
+                prefs.put("alfresco.one.alpha", "string");
+                prefs.put("alfresco.one.beta", 100);
+                PREFERENCE_SERVICE.setPreferences(testUser1.getUsername(), prefs);
+        
+                Map<String, Serializable> userOnePrefs = PREFERENCE_SERVICE.getPreferences(testUser1.getUsername());
+                assertNotNull(userOnePrefs);
+                assertEquals(2, prefs.size());
+                return null;
+            }
+        });
+                
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {
-            // this is OK :)
-        }
-
-    }
-
-    public void testGetOtherUserPreferences()
-    {
-        assertEquals(USER_ONE, authenticationComponent.getCurrentUserName());
-
-        // Lets set some preferences for the user one
-        Map<String, Serializable> prefs = new HashMap<String, Serializable>(5);
-        prefs.put("alfresco.one.alpha", "string");
-        prefs.put("alfresco.one.beta", 100);
-        this.preferenceService.setPreferences(USER_ONE, prefs);
-
-        Map<String, Serializable> userOnePrefs = this.preferenceService.getPreferences(USER_ONE);
-        assertNotNull(userOnePrefs);
-        assertEquals(2, prefs.size());
-
-        // login as USER_BAD
-        TestWithUserUtils.authenticateUser(USER_BAD, "PWD", this.authenticationService, this.authenticationComponent);
-        assertEquals(USER_BAD, authenticationComponent.getCurrentUserName());
-
-        try
-        {
-            // Lets USER_BAD tries and get USER_ONE's preferences
-            @SuppressWarnings("unused")
-            Map<String, Serializable> badUserPrefs = this.preferenceService.getPreferences(USER_ONE);
-            fail("This should have raised an exception since we are trying to get preferences that are not our own!");
-        }
-        catch (Exception exception)
-        {
-            // this is OK
-        }
+            @Override public Void execute() throws Throwable
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(USERNAME2);
+                // This should not be possible
+                try
+                {
+                    PREFERENCE_SERVICE.getPreferences(testUser1.getUsername());
+                }
+                catch (AccessDeniedException expected) { return null; }
+                fail("Expected exception when trying to access another user's prefs");
+                
+                return null;
+            }
+        });
     }
 
     // == Test the JavaScript API ==
-
-    public void testJSAPI() throws Exception
+    @Test public void testJSAPI() throws Exception
     {
-        // assertEquals(USER_ONE, authenticationComponent.getCurrentUserName());
-
-        ScriptLocation location = new ClasspathScriptLocation(
-                "org/alfresco/repo/preference/script/test_preferenceService.js");
-        this.scriptService.executeScript(location, new HashMap<String, Object>(0));
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override public Void execute() throws Throwable
+            {
+                // This test is running as user1 and the JavaScript needs to know that.
+                Map<String, Object> model = new HashMap<String, Object>();
+                model.put("username", testUser1.getUsername());
+                
+                ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/preference/script/test_preferenceService.js");
+                SCRIPT_SERVICE.executeScript(location, model);
+                
+                return null;
+            }
+        });
+    }
+    
+    private String prettyJson(String jsonString)
+    {
+        String result = jsonString;
+        try
+        {
+            JSONObject json = new JSONObject(new JSONTokener(jsonString));
+            result = json.toString(2);
+        } catch (JSONException ignored)
+        {
+            // Intentionally empty
+        }
+        return result;
     }
 }

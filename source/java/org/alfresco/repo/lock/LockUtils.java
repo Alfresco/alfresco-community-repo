@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,25 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 public class LockUtils
 {
+    /**
+     * Indicates if the node is locked AND the current user is not lock owner.
+     *
+     * @param nodeRef node reference
+     * @param lockService LockService
+     */
+    public static boolean isLockedAndNotLockOwner(NodeRef nodeRef, LockService lockService)
+    {
+        LockStatus lockStatus = lockService.getLockStatus(nodeRef);
+        switch (lockStatus)
+        {
+            case NO_LOCK:
+            case LOCK_EXPIRED:
+            case LOCK_OWNER:
+                return false;
+            default:
+                return true;
+        }
+    }
 
     /**
      * Indicates if the node is locked AND it's not a WRITE_LOCK for the current user.<p>
@@ -43,7 +62,7 @@ public class LockUtils
         case LOCK_EXPIRED:
             return false;
         case LOCK_OWNER:
-            return lockService.getLockType(nodeRef) != LockType.WRITE_LOCK;
+            return lockService.getLockType(nodeRef).equals(LockType.WRITE_LOCK);
         default:
             return true;
         }

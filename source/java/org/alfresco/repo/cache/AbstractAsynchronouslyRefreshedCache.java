@@ -585,6 +585,8 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
 
     /**
      * Build the cache entry for the specific tenant.
+     * This method is called in a thread-safe manner i.e. it is only ever called by a single
+     * thread.
      */
     protected abstract T buildCache(String tenantId);
 
@@ -690,7 +692,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
 
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void flush()
     {

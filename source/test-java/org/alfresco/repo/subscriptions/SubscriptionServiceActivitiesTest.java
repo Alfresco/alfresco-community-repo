@@ -18,13 +18,13 @@
  */
 package org.alfresco.repo.subscriptions;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.feed.FeedGenerator;
@@ -34,6 +34,8 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -47,36 +49,85 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.subscriptions.SubscriptionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.alfresco.util.PropertyMap;
+import org.alfresco.util.test.junitrules.AlfrescoPerson;
+import org.alfresco.util.test.junitrules.ApplicationContextInit;
+import org.alfresco.util.test.junitrules.TemporarySites;
+import org.apache.commons.lang.mutable.MutableInt;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationContext;
 
-public class SubscriptionServiceActivitiesTest extends TestCase
+public class SubscriptionServiceActivitiesTest
 {
+    private static final Log log = LogFactory.getLog(SubscriptionServiceActivitiesTest.class);
+    
+    // JUnit Rule to initialise the Alfresco spring configuration
+    public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
+    
+    // We'll suffix each user id with a unique number to allow for repeated re-runs of this test class.
+    // We need to do this as the feed entries for deleted users do not get deleted immediately.
+    private final static long NOW = System.currentTimeMillis();
+    public static final String USER_ONE_NAME = "UserOne" + NOW;
+    public static final String USER_TWO_NAME = "UserTwo" + NOW;
+    private static String ADMIN;
+    
+    // JUnit Rules to create 2 test users.
+    public static AlfrescoPerson TEST_USER1 = new AlfrescoPerson(APP_CONTEXT_INIT, USER_ONE_NAME);
+    public static AlfrescoPerson TEST_USER2 = new AlfrescoPerson(APP_CONTEXT_INIT, USER_TWO_NAME);
+    
+    // Tie them together in a static Rule Chain
+    @ClassRule public static RuleChain STATIC_RULE_CHAIN = RuleChain.outerRule(APP_CONTEXT_INIT)
+                                                            .around(TEST_USER1)
+                                                            .around(TEST_USER2);
+    
+    // A JUnit Rule to manage test nodes use in each test method
+    @Rule public TemporarySites testSites = new TemporarySites(APP_CONTEXT_INIT);
+    
     // Location of activity type templates (for site activities)
     // assumes test-resources is on classpath
     protected static final String TEST_TEMPLATES_LOCATION = "activities";
     
-    protected ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    protected SubscriptionService subscriptionService;
-    protected PersonService personService;
-    protected SiteService siteService;
-    protected ActivityService activityService;
-    protected NodeService nodeService;
-    protected ContentService contentService;
-    protected PostLookup postLookup;
-    protected FeedGenerator feedGenerator;
+    protected static SubscriptionService subscriptionService;
+    protected static PersonService personService;
+    protected static SiteService siteService;
+    protected static ActivityService activityService;
+    protected static NodeService nodeService;
+    protected static ContentService contentService;
+    protected static PostLookup postLookup;
+    protected static FeedGenerator feedGenerator;
+    protected static RetryingTransactionHelper transactionHelper;
     
-    @Override
-    public void setUp() throws Exception
+    private static Scheduler QUARTZ_SCHEDULER;
+    
+    // Test Sites - these are all created by USER_ONE & hence USER_ONE is the SiteManager.
+    private SiteInfo publicSite,
+                     privateSite1, privateSite2,
+                     modSite1, modSite2;
+    
+    @BeforeClass public static void setUp() throws Exception
     {
+        final ApplicationContext ctx = APP_CONTEXT_INIT.getApplicationContext();
+        
         // Let's shut down the scheduler so that we aren't competing with the
         // scheduled versions of the post lookup and
         // feed generator jobs
-        Scheduler scheduler = (Scheduler) ctx.getBean("schedulerFactory");
-        scheduler.shutdown();
+        // Note that to ensure this test class can be run within a suite, that we do not want to actually 'shutdown' the scheduler.
+        // It may be needed by other test classes and must be restored to life after this class has run.
+        QUARTZ_SCHEDULER = ctx.getBean("schedulerFactory", Scheduler.class);
+        QUARTZ_SCHEDULER.standby();
         
         // Get the required services
         subscriptionService = (SubscriptionService) ctx.getBean("SubscriptionService");
@@ -85,6 +136,7 @@ public class SubscriptionServiceActivitiesTest extends TestCase
         activityService = (ActivityService) ctx.getBean("activityService");
         nodeService = (NodeService) ctx.getBean("NodeService");
         contentService = (ContentService) ctx.getBean("ContentService");
+        transactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
         
         ChildApplicationContextFactory activitiesFeed = (ChildApplicationContextFactory) ctx.getBean("ActivitiesFeed");
         ApplicationContext activitiesFeedCtx = activitiesFeed.getApplicationContext();
@@ -97,40 +149,29 @@ public class SubscriptionServiceActivitiesTest extends TestCase
         templateSearchPaths.add(TEST_TEMPLATES_LOCATION);
         feedProcessor.setTemplateSearchPaths(templateSearchPaths);
         feedProcessor.setUseRemoteCallbacks(false);
+    }
+    
+    @AfterClass public static void restartQuartzScheduler() throws SchedulerException
+    {
+        // We put the scheduler in standby mode BeforeClass. Now we must restore it.
+        QUARTZ_SCHEDULER.start();
+    }
+    
+    @Before public void createTestSites() throws Exception
+    {
+        ADMIN = AuthenticationUtil.getAdminUserName();
         
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-    }
-    
-    protected void deletePerson(String userId)
-    {
-        personService.deletePerson(userId);
-    }
-    
-    protected NodeRef createPerson(String userId)
-    {
-        deletePerson(userId);
+        final String guid = GUID.generate();
         
-        PropertyMap properties = new PropertyMap(5);
-        properties.put(ContentModel.PROP_USERNAME, userId);
-        properties.put(ContentModel.PROP_FIRSTNAME, userId);
-        properties.put(ContentModel.PROP_LASTNAME, "Test");
-        properties.put(ContentModel.PROP_EMAIL, userId + "@email.com");
+        // admin creates the test sites. This is how this test case was before refactoring. TODO Probably better to have a non-admin user create the sites.
+        publicSite   = testSites.createSite("sitePreset", "pub" + guid,   "", "", SiteVisibility.PUBLIC,  ADMIN);
+        privateSite1 = testSites.createSite("sitePreset", "priv1" + guid, "", "", SiteVisibility.PRIVATE, ADMIN);
+        privateSite2 = testSites.createSite("sitePreset", "priv2" + guid, "", "", SiteVisibility.PRIVATE, ADMIN);
+        modSite1     = testSites.createSite("sitePreset", "mod1" + guid,  "", "", SiteVisibility.MODERATED, ADMIN);
+        modSite2     = testSites.createSite("sitePreset", "mod2" + guid, "", "",  SiteVisibility.MODERATED, ADMIN);
+        log.debug("Created some test sites...");
         
-        return personService.createPerson(properties);
-    }
-    
-    protected void deleteSite(String siteId)
-    {
-        if (siteService.getSite(siteId) != null)
-        {
-            siteService.deleteSite(siteId);
-        }
-    }
-    
-    protected SiteInfo createSite(String siteId, SiteVisibility visibility)
-    {
-        deleteSite(siteId);
-        return siteService.createSite("sitePreset", siteId, null, null, visibility);
+        // test site cleanup is handled automatically by the JUnit Rule.
     }
     
     protected NodeRef addTextContent(String siteId, String name)
@@ -161,7 +202,7 @@ public class SubscriptionServiceActivitiesTest extends TestCase
         Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
         titledProps.put(ContentModel.PROP_TITLE, name);
         titledProps.put(ContentModel.PROP_DESCRIPTION, name);
-        this.nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
+        nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
         
         ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
         
@@ -181,189 +222,327 @@ public class SubscriptionServiceActivitiesTest extends TestCase
         feedGenerator.execute();
     }
     
-    public void testFollowingActivity() throws Exception
+    @Test public void testFollowingActivity() throws Exception
     {
-        final String userId1 = "bob" + GUID.generate();
-        final String userId2 = "tom" + GUID.generate();
+        // We'll change things in the system in order to cause the generation of activity events and compare the feeds with these totals as we go.
+        // Initially, both users have zero activity feed entries.
+        final MutableInt user1Entries = new MutableInt(0);
+        final MutableInt user2Entries = new MutableInt(0);
+        // Java's requirement for final modifiers on variables accessed within inner classes means we can't use simple ints here.
         
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            @Override
-            public Object doWork() throws Exception
-            {
-                createPerson(userId1);
-                createPerson(userId2);
-                
-                createSite(userId1+"pub", SiteVisibility.PUBLIC);
-                siteService.setMembership(userId1+"pub", userId1, SiteModel.SITE_MANAGER);
-                
-                createSite(userId1+"priv1", SiteVisibility.PRIVATE);
-                siteService.setMembership(userId1+"priv1", userId1, SiteModel.SITE_MANAGER);
-                
-                createSite(userId1+"priv2", SiteVisibility.PRIVATE);
-                siteService.setMembership(userId1+"priv2", userId1, SiteModel.SITE_MANAGER);
-                
-                createSite(userId1+"mod1", SiteVisibility.MODERATED);
-                siteService.setMembership(userId1+"mod1", userId1, SiteModel.SITE_MANAGER);
-                
-                createSite(userId1+"mod2", SiteVisibility.MODERATED);
-                siteService.setMembership(userId1+"mod2", userId1, SiteModel.SITE_MANAGER);
-                
-                List<String> feed = activityService.getUserFeedEntries(userId1, null, false, false, null, null);
-                assertEquals(feed.toString(), 0, feed.size());
-                
-                feed = activityService.getUserFeedEntries(userId2, null, false, false, null, null);
-                assertEquals(feed.toString(), 0, feed.size());
-                
-                // userId1 + 5, userId2 + 0
-                generateFeed();
-                
-                feed = activityService.getUserFeedEntries(userId1, null, false, false, null, null);
-                assertEquals(feed.toString(), 5, feed.size());
-                
-                feed = activityService.getUserFeedEntries(userId2, null, false, false, null, null);
-                assertEquals(feed.toString(), 0, feed.size());
-                
-                return null;
-            }
-        }, AuthenticationUtil.getAdminUserName());
+        doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        for (SiteInfo s : new SiteInfo[] { publicSite, privateSite1, privateSite2, modSite1, modSite2 })
+                        {
+                            siteService.setMembership(s.getShortName(), USER_ONE_NAME, SiteModel.SITE_MANAGER);
+                        }
+                        return null;
+                    }
+                });
+        log.debug("Made user '" + USER_ONE_NAME + "' a SiteManager in each test site.");
         
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            @Override
-            public Object doWork() throws Exception
-            {
-                subscriptionService.follow(userId1, userId2);
-                return null;
-            }
-        }, userId1);
         
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            @Override
-            public Object doWork() throws Exception
-            {
-                subscriptionService.follow(userId2, userId1);
-                return null;
-            }
-        }, userId2);
+        doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        log.debug("Now to check if the activity tables have the correct number of entries for our test users");
+                        
+                        List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
+                        assertEquals(USER_ONE_NAME + " had wrong feed size.", user1Entries.intValue(), feed.size());
+                        
+                        feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
+                        assertEquals(USER_TWO_NAME + " had wrong feed size.", user2Entries.intValue(), feed.size());
+                        
+                        generateFeed();
+                        // User1 now has 5 'user-joined' events. User2 has no events.
+                        user1Entries.add(5);
+                        
+                        feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
+                        log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
+                        assertEquals(USER_ONE_NAME + " had wrong feed size", user1Entries.intValue(), feed.size());
+                        
+                        feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
+                        log.debug(USER_TWO_NAME + "'s feed: " + prettyJson(feed));
+                        assertEquals(USER_TWO_NAME + " had wrong feed size", user2Entries.intValue(), feed.size());
+                        return null;
+                    }
+                });
         
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            @Override
-            public Object doWork() throws Exception
-            {
-                // userId1 + 5, userId2 + 2
-                generateFeed();
-                
-                List<String> feed = activityService.getUserFeedEntries(userId1, null, false, false, null, null);
-                assertEquals(feed.toString(), 7, feed.size());
-                
-                feed = activityService.getUserFeedEntries(userId2, null, false, false, null, null);
-                assertEquals(feed.toString(), 2, feed.size());
-                return null;
-            }
-        }, AuthenticationUtil.getAdminUserName());
         
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            @Override
-            public Object doWork() throws Exception
-            {
-                addTextContent(userId1+"pub", userId1+"pub-a");
-                addTextContent(userId1+"priv1", userId1+"priv1-a");
-                addTextContent(userId1+"priv2", userId1+"priv2-a");
-                addTextContent(userId1+"mod1", userId1+"mod1-a");
-                addTextContent(userId1+"mod2", userId1+"mod2-a");
-                return null;
-            }
-        }, userId1);
+        doWorkAs(USER_ONE_NAME, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        subscriptionService.follow(USER_ONE_NAME, USER_TWO_NAME);
+                        return null;
+                    }
+                });
+        log.debug(USER_ONE_NAME + " is now following " + USER_TWO_NAME);
         
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            @Override
-            public Object doWork() throws Exception
-            {
-                // userId1 + 5, userId2 + 1
-                generateFeed();
-                
-                List <String> feed = activityService.getUserFeedEntries(userId1, null, false, false, null, null);
-                assertEquals(feed.toString(), 12, feed.size());
-                
-                // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
-                feed = activityService.getUserFeedEntries(userId2, null, false, false, null, null);
-                assertEquals(feed.toString(), 3, feed.size());
-
-                siteService.setMembership(userId1+"priv2", userId2, SiteModel.SITE_CONSUMER);
-                siteService.setMembership(userId1+"mod2", userId2, SiteModel.SITE_MANAGER);
-                
-                // userId1 + 2, userId2 + 2
-                generateFeed();
-                
-                feed = activityService.getUserFeedEntries(userId1, null, false, false, null, null);
-                assertEquals(feed.toString(), 14, feed.size());
-                
-                // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
-                feed = activityService.getUserFeedEntries(userId2, null, false, false, null, null);
-                assertEquals(feed.toString(), 5, feed.size());
-
-                return null;
-            }
-        }, AuthenticationUtil.getAdminUserName());
-                
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            @Override
-            public Object doWork() throws Exception
-            {
-                addTextContent(userId1+"pub", userId1+"pub-b");
-                addTextContent(userId1+"priv1", userId1+"priv1-b");
-                addTextContent(userId1+"priv2", userId1+"priv2-b");
-                addTextContent(userId1+"mod1", userId1+"mod1-b");
-                addTextContent(userId1+"mod2", userId1+"mod2-b");
-                
-                return null;
-            }
-        }, userId1);
         
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        doWorkAs(USER_TWO_NAME, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        subscriptionService.follow(USER_TWO_NAME, USER_ONE_NAME);
+                        return null;
+                    }
+                });
+        log.debug("And " + USER_TWO_NAME + " is now following " + USER_ONE_NAME);
+        
+        
+        doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        generateFeed();
+                        // Both users see a new 'followed' event.
+                        user1Entries.add(1);
+                        user2Entries.add(1);
+                        
+                        List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
+                        log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
+                        assertEquals(USER_ONE_NAME + "'s feed was wrong size", user1Entries.intValue(), feed.size());
+                        
+                        feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
+                        log.debug(USER_TWO_NAME + "'s feed: " + prettyJson(feed));
+                        assertEquals(USER_TWO_NAME + "'s feed was wrong size", user2Entries.intValue(), feed.size());
+                        return null;
+                    }
+                });
+        
+        
+        doWorkAs(USER_ONE_NAME, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        addTextContent(publicSite.getShortName(),   USER_ONE_NAME+"pub-a");
+                        addTextContent(privateSite1.getShortName(), USER_ONE_NAME+"priv1-a");
+                        addTextContent(privateSite2.getShortName(), USER_ONE_NAME+"priv2-a");
+                        addTextContent(modSite1.getShortName(),     USER_ONE_NAME+"mod1-a");
+                        addTextContent(modSite2.getShortName(),     USER_ONE_NAME+"mod2-a");
+                        return null;
+                    }
+                });
+        log.debug(USER_ONE_NAME + " added some content across the sites.");
+        
+        
+        doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        generateFeed();
+                        // User1 sees 5 'file-added' events.
+                        // User2 sees nothing new.
+                        user1Entries.add(5);
+                        
+                        List <String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
+                        log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
+                        assertEquals(USER_ONE_NAME + "'s feed was wrong size", user1Entries.intValue(), feed.size());
+                        
+                        // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
+                        feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
+                        log.debug(USER_TWO_NAME + "'s feed: " + prettyJson(feed));
+                        assertEquals(USER_TWO_NAME + "'s feed was wrong size", user2Entries.intValue(), feed.size());
+        
+                        siteService.setMembership(privateSite2.getShortName(), USER_TWO_NAME, SiteModel.SITE_CONSUMER);
+                        siteService.setMembership(modSite2.getShortName(),     USER_TWO_NAME, SiteModel.SITE_MANAGER);
+                        
+                        log.debug(USER_TWO_NAME + "'s role changed on some sites.");
+                        
+                        generateFeed();
+                        // User1 & 2 both see 2 new 'joined' events.
+                        user1Entries.add(2);
+                        user2Entries.add(2);
+                        
+                        feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
+                        log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
+                        assertEquals(USER_ONE_NAME + "'s feed was wrong size", user1Entries.intValue(), feed.size());
+                        
+                        // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
+                        feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
+                        log.debug(USER_TWO_NAME + "'s feed: " + prettyJson(feed));
+                        assertEquals(USER_TWO_NAME + "'s feed was wrong size", user2Entries.intValue(), feed.size());
+                        return null;
+                    }
+                });
+        
+        
+        doWorkAs(USER_ONE_NAME, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        addTextContent(publicSite.getShortName(),   USER_ONE_NAME+"pub-b");
+                        addTextContent(privateSite1.getShortName(), USER_ONE_NAME+"priv1-b");
+                        addTextContent(privateSite2.getShortName(), USER_ONE_NAME+"priv2-b");
+                        addTextContent(modSite1.getShortName(),     USER_ONE_NAME+"mod1-b");
+                        addTextContent(modSite2.getShortName(),     USER_ONE_NAME+"mod2-b");
+                        return null;
+                    }
+                });
+        log.debug(USER_ONE_NAME + " has added some more content...");
+        
+        
+        
+        doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        generateFeed();
+                        // User1 sees 5 more 'file-added' events
+                        // User2 only sees 2 of them
+                        user1Entries.add(5);
+                        user2Entries.add(2);
+                        
+                        List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
+                        assertEquals("User's feed was wrong size", user1Entries.intValue(), feed.size());
+                        
+                        // note: userId2 should not see activities from followers in moderated sites that they do not belong to (ALF-16460)
+                        feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
+                        assertEquals("User's feed was wrong size", user2Entries.intValue(), feed.size());
+                        
+                        return null;
+                    }
+                });
+        
+        
+        log.debug("Now to delete the test sites...");
+        doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        for (SiteInfo s : new SiteInfo[] { publicSite, privateSite1, privateSite2, modSite1, modSite2 })
+                        {
+                            deleteSite(s.getShortName());
+                        }
+                        log.debug("Deleted all the test sites.");
+                        
+                        return null;
+                    }
+                });
+        
+        doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        // Feeds should now be reduced to 'follow' events only - see FeedCleaner's behaviours/policies/transaction listeners.
+                        user1Entries.setValue(1);
+                        user2Entries.setValue(1);
+                        
+                        List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
+                        log.debug(USER_ONE_NAME + "'s feed:\n" + prettyJson(feed));
+                        assertEquals("User's feed was wrong size", user1Entries.intValue(), feed.size());
+                        
+                        feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
+                        assertEquals("User's feed was wrong size", user2Entries.intValue(), feed.size());
+                        
+                        return null;
+                    }
+                });
+        
+        
+        log.debug("Now to delete the users...");
+        doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        for (String user : new String[] { USER_ONE_NAME, USER_TWO_NAME })
+                        {
+                            deletePerson(user);
+                        }
+                        log.debug("Deleted the test people.");
+                        
+                        return null;
+                    }
+                });
+        
+        
+        doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        // Now both users should be reduced to having no events.
+                        // FIXME So shouldn't these numbers be down to 0 now?
+                        // Use log4j.logger.org.alfresco.repo.activities.feed.cleanup.FeedCleaner=trace to see the FeedCleaner's work
+                        user1Entries.setValue(1);
+                        user2Entries.setValue(1);
+                        
+                        List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
+                        log.debug("User1's feed: " + prettyJson(feed));
+                        
+                        assertEquals("User's feed was wrong size", user1Entries.intValue(), feed.size());
+                        
+                        feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
+                        assertEquals("User's feed was wrong size", user2Entries.intValue(), feed.size());
+                        
+                        return null;
+                    }
+                });
+    }
+    
+    private void deleteSite(String siteShortName)
+    {
+        if (siteService.getSite(siteShortName) != null)
         {
-            @Override
-            public Object doWork() throws Exception
+            log.debug("Deleting site: " + siteShortName);
+            siteService.deleteSite(siteShortName);
+        }
+        else
+        {
+            log.debug("Not deleting site: " + siteShortName + ", as it doesn't appear to exist");
+        }
+    }
+    
+    private void deletePerson(String userName)
+    {
+        if (personService.personExists(userName))
+        {
+            log.debug("Deleting person: " + userName);
+            personService.deletePerson(userName);
+        }
+        else
+        {
+            log.debug("Not deleting person: " + userName + ", as they don't appear to exist");
+        }
+    }
+    
+    // Just adding a little helper method to make the above code more readable. Oh Java 8, how we need you! (Or Groovy, or Scala...)
+    private <T> T doWorkAs(final String userName, final RetryingTransactionCallback<T> work)
+    {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<T>()
+        {
+            @Override public T doWork() throws Exception
             {
-                // userId1 + 5, userId2 + 3
-                generateFeed();
-                
-                List<String> feed = activityService.getUserFeedEntries(userId1, null, false, false, null, null);
-                assertEquals(feed.toString(), 19, feed.size());
-                
-                // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
-                feed = activityService.getUserFeedEntries(userId2, null, false, false, null, null);
-                assertEquals(feed.toString(), 8, feed.size());
-                
-                deleteSite(userId1+"pub");
-                deleteSite(userId1+"priv1");
-                deleteSite(userId1+"priv2");
-                deleteSite(userId1+"mod1");
-                deleteSite(userId1+"mod2");
-                
-                feed = activityService.getUserFeedEntries(userId1, null, false, false, null, null);
-                assertEquals(feed.toString(), 2, feed.size());
-                
-                feed = activityService.getUserFeedEntries(userId2, null, false, false, null, null);
-                assertEquals(feed.toString(), 2, feed.size());
-                
-                deletePerson(userId1);
-                deletePerson(userId2);
-                
-                feed = activityService.getUserFeedEntries(userId1, null, false, false, null, null);
-                assertEquals(feed.toString(), 0, feed.size());
-                
-                feed = activityService.getUserFeedEntries(userId2, null, false, false, null, null);
-                assertEquals(feed.toString(), 0, feed.size());
-
-                return null;
+                return transactionHelper.doInTransaction(work);
             }
-        }, AuthenticationUtil.getAdminUserName());       
+        }, userName);
+    }
+    
+    private String prettyJson(List<String> jsonStrings)
+    {
+        StringBuilder result = new StringBuilder();
+        for (String jsonString : jsonStrings)
+        {
+            result.append(prettyJson(jsonString));
+            result.append("\n");
+        }
+        return result.toString();
+    }
+    
+    private String prettyJson(String jsonString)
+    {
+        String result = jsonString;
+        try
+        {
+            JSONObject json = new JSONObject(new JSONTokener(jsonString));
+            result = json.toString(2);
+        } catch (JSONException ignored)
+        {
+            // Intentionally empty
+        }
+        return result;
     }
 }

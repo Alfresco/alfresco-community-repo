@@ -42,7 +42,6 @@ public interface ActivityService extends ActivityPostService
      * Will return activities for all users across all sites, or optionally for all users for specified site.
      *
      * @param userId - required
-     * @param format - required
      * @param siteId - optional, if set then will filter by given siteId else return all sites
      * @return list of JSON feed entries
      */
@@ -61,7 +60,6 @@ public interface ActivityService extends ActivityPostService
      * note: if both excludes are true then no activities will be returned.
      * 
      * @param userId     - required
-     * @param format     - required
      * @param siteId     - optional, if set then will filter by given siteId else return all sites
      * @param excludeThisUser    - if TRUE then will exclude activities for this user   (hence returning other users only)
      * @param excludeOthersUsers - if TRUE then will exclude activities for other users (hence returning this user only)
@@ -83,7 +81,6 @@ public interface ActivityService extends ActivityPostService
      * note: if both excludes are true then no activities will be returned.
      * 
      * @param userId     - required
-     * @param format     - required
      * @param siteId     - optional, if set then will filter by given siteId else return all sites
      * @param excludeThisUser    - if TRUE then will exclude activities for this user   (hence returning other users only)
      * @param excludeOthersUsers - if TRUE then will exclude activities for other users (hence returning this user only)
@@ -106,7 +103,6 @@ public interface ActivityService extends ActivityPostService
      * note: if both excludes are true then no activities will be returned.
      * 
      * @param userId     - required
-     * @param format     - required
      * @param siteId     - optional, if set then will filter by given siteId else return all sites
      * @param excludeThisUser    - if TRUE then will exclude activities for this user   (hence returning other users only)
      * @param excludeOthersUsers - if TRUE then will exclude activities for other users (hence returning this user only)
@@ -129,7 +125,6 @@ public interface ActivityService extends ActivityPostService
      * note: if both excludes are true then no activities will be returned.
      * 
      * @param userId     - required
-     * @param format     - required
      * @param siteId     - optional, if set then will filter by given siteId else return all sites
      * @param excludeThisUser    - if TRUE then will exclude activities for this user   (hence returning other users only)
      * @param excludeOthersUsers - if TRUE then will exclude activities for other users (hence returning this user only)
@@ -149,7 +144,6 @@ public interface ActivityService extends ActivityPostService
      * Retrieve site feed
      *
      * @param activityType - required
-     * @param format - required
      * @return list of JSON feed entries
      */
     @NotAuditable

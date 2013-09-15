@@ -1454,6 +1454,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      */
     public void deleteSite(final String shortName)
     {
+        // In deleting the site node, we have to jump through a few hoops to manage the site groups.
+        // The order of execution is important here.
+        
         logger.debug("delete site :" + shortName);
         final NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
@@ -1465,11 +1468,35 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // Delete the cached reference
         siteNodeRefCache.remove(shortName);
         
-        // Collection for recording the group memberships present on the site 
-        final Map<String, Set<String>> groupsMemberships = new HashMap<String, Set<String>>();
-        
-        // Save the group memberships so we can use them later
-        this.nodeService.setProperty(siteNodeRef, QName.createQName(null, "memberships"), (Serializable)groupsMemberships);
+        // Get and retain the membership of the site we're deleting. We do this to support restoration of a site node from the trashcan.
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                final String siteGroup = getSiteGroup(shortName, true);
+                if (authorityService.authorityExists(siteGroup))
+                {
+                    // Collection for recording the group memberships present on the site 
+                    final Map<String, Set<String>> groupsMemberships = new HashMap<String, Set<String>>();
+                    
+                    // Iterate over the role related groups and delete then
+                    Set<String> permissions = permissionService.getSettablePermissions(siteType);
+                    for (String permission : permissions)
+                    {
+                        String siteRoleGroup = getSiteRoleGroup(shortName, permission, true);
+                        
+                        // Collect up the memberships so we can potentially restore them later
+                        Set<String> groupUsers = authorityService.getContainedAuthorities(null, siteRoleGroup, true);
+                        groupsMemberships.put(siteRoleGroup, groupUsers);
+                    }
+                    
+                    // Save the group memberships so we can use them later
+                    nodeService.setProperty(siteNodeRef, QName.createQName(null, "memberships"), (Serializable)groupsMemberships);
+                }
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
         
         // The default behaviour is that sites cannot be deleted. But we disable that behaviour here
         // in order to allow site deletion only via this service. Share calls this service for deletion.
@@ -1493,7 +1520,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // Delete the associated groups
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
-            public Object doWork() throws Exception
+            public Void doWork() throws Exception
             {
                 // Delete the master site group
                 final String siteGroup = getSiteGroup(shortName, true);
@@ -1506,10 +1533,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                     for (String permission : permissions)
                     {
                         String siteRoleGroup = getSiteRoleGroup(shortName, permission, true);
-                        
-                        // Collect up the memberships so we can potentially restore them later
-                        Set<String> groupUsers = authorityService.getContainedAuthorities(null, siteRoleGroup, true);
-                        groupsMemberships.put(siteRoleGroup, groupUsers);
                         
                         // Delete the site role group
                         authorityService.deleteAuthority(siteRoleGroup);

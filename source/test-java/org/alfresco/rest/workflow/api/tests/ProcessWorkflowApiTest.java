@@ -162,7 +162,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         JSONObject createProcessObject = new JSONObject();
         createProcessObject.put("processDefinitionKey", "activitiAdhoc");
         final JSONObject variablesObject = new JSONObject();
-        variablesObject.put("bpm_dueDate", ISO8601DateFormat.format(new Date()));
+        variablesObject.put("bpm_dueDate", "2013-09-30T00:00:00.000+0300");
         variablesObject.put("bpm_priority", 1);
         variablesObject.put("bpm_description", "test description");
         TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
@@ -745,6 +745,15 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             
             // include process variables as well
             paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(includeVariables=true)");
+            paramMap.put("maxItems", "1");
+            paramMap.put("skipCount", "0");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            
+            assertEquals(1, processList.getList().size());
+            
+            paramMap = new HashMap<String, String>();
             paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc' AND includeVariables = true)");
             paramMap.put("maxItems", "1");
             paramMap.put("skipCount", "0");
@@ -821,6 +830,37 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             
             assertEquals(0, processList.getList().size());
             
+        } 
+        finally
+        {
+            cleanupProcessInstance(process1.getId(), process2.getId(), process3.getId());
+        }
+    }
+    
+    @Test
+    public void testGetProcessInstancesWithDifferentProcessDefs() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        
+        final ProcessInfo process1 = startAdhocProcess(requestContext, null);
+        final ProcessInfo process2 = startParallelReviewProcess(requestContext);
+        final ProcessInfo process3 = startReviewPooledProcess(requestContext);
+        
+        try
+        {
+            ProcessesClient processesClient = publicApiClient.processesClient();
+            Map<String, String> paramMap = new HashMap<String, String>();
+            ListResponse<ProcessInfo> processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+            
+            // include process variables as well
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(includeVariables=true)");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            
+            assertEquals(3, processList.getList().size());
         } 
         finally
         {

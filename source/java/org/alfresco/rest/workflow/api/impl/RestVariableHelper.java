@@ -59,7 +59,7 @@ public class RestVariableHelper
     
     private NamespaceService namespaceService;
     
-    private WorkflowQNameConverter qnameConverter;
+    private WorkflowQNameConverter qNameConverter;
     
     public static final Set<String> INTERNAL_PROPERTIES = new HashSet<String>(Arrays.asList(ActivitiConstants.VAR_TENANT_DOMAIN));
     
@@ -71,7 +71,15 @@ public class RestVariableHelper
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
-        this.qnameConverter = new WorkflowQNameConverter(namespaceService);
+    }
+    
+    protected WorkflowQNameConverter getQNameConverter()
+    {
+        if (qNameConverter == null)
+        {
+            qNameConverter = new WorkflowQNameConverter(namespaceService);
+        }
+        return qNameConverter;
     }
     
     /**
@@ -84,13 +92,13 @@ public class RestVariableHelper
             TypeDefinition startFormTypeDefinition, TypeDefinition taskTypeDefinition)
     {
         List<TaskVariable> result = new ArrayList<TaskVariable>();
-        if (localVariables != null) 
+        if (localVariables != null && localVariables.size() > 0) 
         {
             TypeDefinitionContext context = new TypeDefinitionContext(taskTypeDefinition);
             addTaskVariables(result, localVariables, context, VariableScope.LOCAL);
         }
         
-        if (globalVariables != null) 
+        if (globalVariables != null && globalVariables.size() > 0) 
         {
             TypeDefinitionContext context = new TypeDefinitionContext(startFormTypeDefinition);
             addTaskVariables(result, globalVariables, context, VariableScope.GLOBAL);
@@ -381,12 +389,12 @@ public class RestVariableHelper
             
             for (Entry<QName, PropertyDefinition> entry : typeDefinition.getProperties().entrySet())
             {
-                propertyDefinitions.put(qnameConverter.mapQNameToName(entry.getKey()), entry.getValue());
+                propertyDefinitions.put(getQNameConverter().mapQNameToName(entry.getKey()), entry.getValue());
             }
             
             for (Entry<QName, AssociationDefinition> entry : typeDefinition.getAssociations().entrySet())
             {
-                associationDefinitions.put(qnameConverter.mapQNameToName(entry.getKey()), entry.getValue());
+                associationDefinitions.put(getQNameConverter().mapQNameToName(entry.getKey()), entry.getValue());
             }
         }
         

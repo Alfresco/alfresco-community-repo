@@ -480,7 +480,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                     if (startFormData != null)
                     {
                         String formKey = startFormData.getFormKey();
-                        definitionTypeMap.put(processInfo.getProcessDefinitionId(), workflowFactory.getTaskFullTypeDefinition(formKey, true));
+                        definitionTypeMap.put(processInfo.getProcessDefinitionId(), getWorkflowFactory().getTaskFullTypeDefinition(formKey, true));
                     }
                 }
                 
@@ -676,12 +676,22 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                                 }
                             }
                         }
+                        else if (taskProperties.containsKey(propNameMap.get(variableName)))
+                        {
+                            PropertyDefinition propDef = taskProperties.get(propNameMap.get(variableName));
+                            DataTypeDefinition propDataType = propDef.getDataType();
+                            if ("java.util.Date".equalsIgnoreCase(propDataType.getJavaClassName()))
+                            {
+                                // fix for different ISO 8601 Date format classes in Alfresco (org.alfresco.util and Spring Surf)
+                                variableValue = ISO8601DateFormat.parse((String) variableValue);
+                            }
+                        }
                         
                         if (variableValue instanceof Serializable)
                         {
                             startParams.put(propNameMap.get(variableName), (Serializable) variableValue);
                         }
-                    }
+                    } 
                 }
             }
         }
@@ -888,7 +898,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             formKey = startFormData.getFormKey();
         }
         
-        TypeDefinition startTaskTypeDefinition = workflowFactory.getTaskFullTypeDefinition(formKey, true);
+        TypeDefinition startTaskTypeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(formKey, true);
         
         // Convert raw variables to Variable objects
         List<Variable> resultingVariables = restVariableHelper.getVariables(variables, startTaskTypeDefinition);

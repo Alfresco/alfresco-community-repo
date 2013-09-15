@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,13 +19,31 @@
 package org.alfresco.repo.webdav;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import java.util.List;
 
 /**
  * Tests for the WebDAVMethod class.
@@ -39,7 +57,152 @@ public class WebDAVMethodTest
     private MockHttpServletRequest req;
     private MockHttpServletResponse resp;
     private @Mock WebDAVHelper davHelper;
-    
+
+    private NodeService nodeService;
+    private SearchService searchService;
+    private NamespaceService namespaceService;
+    private TenantService tenantService;
+    private TransactionService transactionService;
+    private WebDAVHelper webDAVHelper;
+    private TenantAdminService tenantAdminService;
+
+    private @Mock LockMethod lockMethod;
+    private @Mock PutMethod putMethod;
+
+    public static final String TEST_RUN = System.currentTimeMillis()+"";
+    public static final String TEST_TENANT_DOMAIN = TEST_RUN+".my.test";
+    public static final String DEFAULT_ADMIN_PW = "admin";
+
+    protected void setUpApplicationContext()
+    {
+        ApplicationContext appContext = ApplicationContextHelper.getApplicationContext(new String[]
+                {
+                        "classpath:alfresco/application-context.xml", "classpath:alfresco/web-scripts-application-context.xml",
+                        "classpath:alfresco/remote-api-context.xml"
+                });
+
+        this.nodeService = (NodeService) appContext.getBean("NodeService");
+        this.searchService = (SearchService) appContext.getBean("SearchService");
+        this.namespaceService = (NamespaceService) appContext.getBean("NamespaceService");
+        this.tenantService = (TenantService) appContext.getBean("tenantService");
+        this.transactionService = (TransactionService) appContext.getBean("transactionService");
+        this.webDAVHelper = (WebDAVHelper) appContext.getBean("webDAVHelper");
+        this.tenantAdminService = (TenantAdminService) appContext.getBean("tenantAdminService");
+
+        // Authenticate as system to create initial test data set
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent) appContext.getBean("authenticationComponent");
+        authenticationComponent.setSystemUserAsCurrentUser();
+    }
+
+    private void checkLockedNodeTestWork() throws WebDAVServerException
+    {
+        req = new MockHttpServletRequest();
+        resp = new MockHttpServletResponse();
+
+        String rootPath = "/app:company_home";
+        String storeName = "workspace://SpacesStore";
+        StoreRef storeRef = new StoreRef(storeName);
+        NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
+        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, rootPath, null, namespaceService, false);
+        NodeRef defaultRootNode = nodeRefs.get(0);
+
+        lockMethod = new LockMethod();
+        NodeRef rootNodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, rootPath, defaultRootNode);
+        String strPath = "/" + "testLockedNode" + GUID.generate();
+
+        lockMethod.createExclusive = true;
+        lockMethod.setDetails(req, resp, webDAVHelper, rootNodeRef);
+        lockMethod.m_strPath = strPath;
+
+        // Lock the node (will create a new one).
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable {
+                lockMethod.executeImpl();
+                return null;
+            }
+        });
+
+        // Prepare for PUT
+        req.addHeader(WebDAV.HEADER_IF, "(<" + lockMethod.lockToken + ">)");
+        putMethod = new PutMethod();
+        putMethod.setDetails(req, resp, webDAVHelper, rootNodeRef);
+        putMethod.parseRequestHeaders();
+        putMethod.m_strPath = strPath;
+        String content = "test content stream";
+        req.setContent(content.getBytes());
+
+        // Issue a put request
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable
+            {
+                putMethod.executeImpl();
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Call the org.alfresco.repo.webdav.WebDAVMethod#checkNode(org.alfresco.service.cmr.model.FileInfo, boolean, boolean)
+     * for a write locked node for tenant and non-tenant.
+     * See ALF-19915.
+     */
+    @Test
+    public void checkLockedNodeTest() throws Exception
+    {
+        setUpApplicationContext();
+
+        // Create a tenant domain
+        TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Object>() {
+            public Object doWork() throws Exception {
+                if (!tenantAdminService.existsTenant(TEST_TENANT_DOMAIN))
+                {
+                    tenantAdminService.createTenant(TEST_TENANT_DOMAIN, (DEFAULT_ADMIN_PW + " " + TEST_TENANT_DOMAIN).toCharArray(), null);
+                }
+                return null;
+            }
+        }, TenantService.DEFAULT_DOMAIN);
+
+        // run as admin
+        try
+        {
+            TenantUtil.runAsUserTenant(new TenantUtil.TenantRunAsWork<Object>()
+            {
+                @Override
+                public Object doWork() throws Exception
+                {
+                    checkLockedNodeTestWork();
+                    return null;
+                }
+            }, AuthenticationUtil.getAdminUserName(), TenantService.DEFAULT_DOMAIN);
+        }
+        catch (Exception e)
+        {
+            fail("Failed to lock and put content as admin with error: " + e.getCause());
+        }
+
+        // run as tenant admin
+        try
+        {
+            TenantUtil.runAsUserTenant(new TenantUtil.TenantRunAsWork<Object>()
+            {
+                @Override
+                public Object doWork() throws Exception
+                {
+                    checkLockedNodeTestWork();
+                    return null;
+                }
+            }, AuthenticationUtil.getAdminUserName(), TEST_TENANT_DOMAIN);
+        }
+        catch (Exception e)
+        {
+            fail("Failed to lock and put content as tenant admin with error: " + e.getCause());
+        }
+    }
+
     @Test
     public void canGetStatusForAccessDeniedException()
     {

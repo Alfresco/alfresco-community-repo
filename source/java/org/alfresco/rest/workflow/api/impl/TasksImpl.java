@@ -487,7 +487,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 if (startFormData != null)
                 {
                     String formKey = startFormData.getFormKey();
-                    definitionTypeMap.put(task.getProcessDefinitionId(), workflowFactory.getTaskFullTypeDefinition(formKey, true));
+                    definitionTypeMap.put(task.getProcessDefinitionId(), getWorkflowFactory().getTaskFullTypeDefinition(formKey, true));
                 }
             }
             
@@ -878,7 +878,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         StartFormData startFormData = activitiProcessEngine.getFormService().getStartFormData(taskInstance.getProcessDefinitionId());
         if (startFormData != null)
         {
-            startFormTypeDefinition = workflowFactory.getTaskFullTypeDefinition(startFormData.getFormKey(), true);
+            startFormTypeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(startFormData.getFormKey(), true);
         }
         else
         {

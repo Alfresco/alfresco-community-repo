@@ -152,16 +152,6 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
          break;
 
       case "transfers":
-         if (filterData == null)
-         {
-            filterParams.query = "";
-         }
-         else
-         {
-            filterParams.query = "+PARENT:\"" + filterData + "\"";
-         }
-         break;
-
       case "holds":
          if (filterData == null)
          {
@@ -174,9 +164,9 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
          break;
 
       case "unfiledRecords":
-      
-		  filterParams.query = "";	
-    	  break;
+         filterParams.variablePath = false;
+         filterParams.query = "";
+         break;
 
       default:
          filterParams.variablePath = false;

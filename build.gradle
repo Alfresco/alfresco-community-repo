@@ -178,9 +178,9 @@ subprojects {
 	/** --- Compile tasks --- */
 
 	// make sure that the dependancies have been unpacked before compiling the Java
-	compileJava.doFirst {
-		explodeDeps.execute()
-	}
+//	compileJava.doFirst {
+//		explodeDeps.execute()
+//	}
 	compileJava.options.encoding = 'UTF-8'
 	compileTestJava.options.encoding = 'UTF-8'
 	
@@ -195,7 +195,7 @@ subprojects {
         rename { String filename -> warFile }
 	}
 
-	task explodeDeps << {
+	task explodeDeps(dependsOn: fetchWarFile) << {
 	
 		explodedDir = file(explodedDepsDir)
 		explodedLibDir = file(explodedLibsDir)
@@ -250,7 +250,9 @@ subprojects {
 			throw new TaskInstantiationException("Dependant WAR file ${warFile} can not be found.  Please place it in ${warFileObj.getPath()} to continue.")
 		}		
 	}
-		
+
+    compileJava.dependsOn explodeDeps
+    
 	task cleanDeps(dependsOn: clean) << {
 		ant.delete(includeEmptyDirs: 'true', dir: explodedDepsDir)
 		ant.delete(file: warFile)

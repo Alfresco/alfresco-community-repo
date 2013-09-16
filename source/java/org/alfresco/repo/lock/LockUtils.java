@@ -62,7 +62,7 @@ public class LockUtils
         case LOCK_EXPIRED:
             return false;
         case LOCK_OWNER:
-            return lockService.getLockType(nodeRef).equals(LockType.WRITE_LOCK);
+            return !lockService.getLockType(nodeRef).equals(LockType.WRITE_LOCK);
         default:
             return true;
         }

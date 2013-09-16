@@ -207,7 +207,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
             if (logger.isInfoEnabled())
             {
                 logger.info("Cancelling of multiple concurrent action instances " +
-                		"currently unsupported, this action can't be cancelled");
+                        "currently unsupported, this action can't be cancelled");
             }
         }
         
@@ -235,7 +235,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                     if (logger.isDebugEnabled())
                     {
                         logger.debug("Transformation did not obey timeout limit, " +
-                        		"rendition action is moving on");
+                                "rendition action is moving on");
                     }
                     break;
                 }

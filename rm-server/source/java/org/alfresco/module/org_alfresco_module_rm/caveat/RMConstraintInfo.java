@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.caveat;
 
+import java.util.Arrays;
+
 public class RMConstraintInfo
 {    
     private String name;
@@ -58,6 +60,20 @@ public class RMConstraintInfo
         return allowedValues;
     }
     
-
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("RMConstraintInfo [name=");
+        builder.append(this.name);
+        builder.append(", title=");
+        builder.append(this.title);
+        builder.append(", caseSensitive=");
+        builder.append(this.caseSensitive);
+        builder.append(", allowedValues=");
+        builder.append(Arrays.toString(this.allowedValues));
+        builder.append("]");
+        return builder.toString();
+    }
     
 }

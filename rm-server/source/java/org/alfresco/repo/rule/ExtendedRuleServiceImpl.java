@@ -77,6 +77,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
         // Specify a set of system types to be ignored by rule executions
         ignoredTypes.add(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE);
         ignoredTypes.add(RecordsManagementModel.TYPE_DISPOSITION_ACTION);
+        ignoredTypes.add(RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION);
         ignoredTypes.add(RecordsManagementModel.TYPE_EVENT_EXECUTION);
     }
 

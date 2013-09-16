@@ -424,7 +424,7 @@
     </bean>
 
 
-    <bean id="metdataQueryIndexesCheck" class="org.alfresco.repo.admin.patch.OptionalPatchApplicationCheckBootstrapBean">
+    <bean id="metadataQueryIndexesCheck" class="org.alfresco.repo.admin.patch.OptionalPatchApplicationCheckBootstrapBean">
         <property name="patchService">
             <ref bean="PatchService" />
         </property>

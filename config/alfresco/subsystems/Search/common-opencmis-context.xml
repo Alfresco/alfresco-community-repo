@@ -57,7 +57,7 @@
             <ref bean="OpenCMISDictionaryService" />
         </property>
         <property name="optionalPatchApplicationCheckBootstrapBean">
-            <ref bean="metdataQueryIndexesCheck" />
+            <ref bean="metadataQueryIndexesCheck" />
         </property>
     </bean>
 </beans>

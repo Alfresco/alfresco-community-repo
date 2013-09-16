@@ -110,4 +110,9 @@ public class OptionalPatchApplicationCheckBootstrapBean extends AbstractLifecycl
     {
         return patchApplied;
     }
+    
+    public String getPatchId()
+    {
+        return patch.getId();
+    }
 }

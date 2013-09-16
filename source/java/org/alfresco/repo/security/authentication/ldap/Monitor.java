@@ -148,16 +148,18 @@ public class Monitor
         return syncMonitor.getSynchronizationStatus(getZone(component.getId()));
     }
     
-    public Date getSynchronizationLastUserUpdateTime()
-    {
-        return syncMonitor.getSynchronizationLastUserUpdateTime(getZone(component.getId()));
-    }
-    
-    public Date getSynchronizationLastGroupUpdateTime()
-    {
-        return syncMonitor.getSynchronizationLastGroupUpdateTime(getZone(component.getId()));
-    }
-    
+//    public Date getSynchronizationLastUserUpdateTime()
+//    {
+//    	// TODO This method fails due to a unable to find transaction error - Comment out for now
+//        return syncMonitor.getSynchronizationLastUserUpdateTime(getZone(component.getId()));
+//    }
+//    
+//    public Date getSynchronizationLastGroupUpdateTime()
+//    {
+//	    // TODO This method fails due to a unable to find transaction error - Comment out for now
+//        return syncMonitor.getSynchronizationLastGroupUpdateTime(getZone(component.getId()));
+//    }
+//    
     public String getSynchronizationLastError()
     {
         return syncMonitor.getSynchronizationLastError(getZone(component.getId()));
@@ -166,6 +168,21 @@ public class Monitor
     public String getSynchronizationSummary()
     {
         return syncMonitor.getSynchronizationSummary(getZone(component.getId()));
+    }
+    
+    public String getLastRunOnServer()
+    {
+        return syncMonitor.getLastRunOnServer();
+    }
+    
+    public Date getSyncStartTime()
+    {
+    	return syncMonitor.getSyncStartTime();
+    }
+    
+    public Date getSyncEndTime()
+    {
+    	return syncMonitor.getSyncEndTime();
     }
     
     /**

@@ -63,6 +63,7 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.authentication.AuthenticatorDeletedEvent;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -85,6 +86,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -119,6 +122,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         ChainingUserRegistrySynchronizerStatus,
         TestableChainingUserRegistrySynchronizer,
         ApplicationEventPublisherAware
+        
 {
     /** The logger. */
     private static final Log logger = LogFactory.getLog(ChainingUserRegistrySynchronizer.class);
@@ -2246,6 +2250,35 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                     }
         }, false, true);      
     }
+    
+    private void notifyZoneDeleted(final String zoneId)
+    {
+//        this.applicationEventPublisher.publishEvent(new SynchronizeDirectoryDeleteZoneEvent(this, zoneId, batchProcessNames));
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                        "",
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
+                        ChainingUserRegistrySynchronizer.STATUS_ATTRIBUTE, 
+                        zoneId);
+                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                        "",
+                        ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
+                        ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE, 
+                        zoneId);
+                ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
+                        null,
+                        ChainingUserRegistrySynchronizer.LAST_ERROR_ATTRIBUTE, 
+                        ChainingUserRegistrySynchronizer.SUMMARY_ATTRIBUTE, 
+                        zoneId);
+          
+                return null;
+            }
+        }, false, true);    
+    }
        
     private void notifySyncDirectoryStart(final String zoneId, final String[] batchProcessNames)
     {
@@ -2427,4 +2460,20 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     {
         return sysAdminParams;
     }
+    
+    @Override
+    public void onApplicationEvent(ApplicationEvent event)
+    {
+    	 if (event instanceof AuthenticatorDeletedEvent)
+         {
+    		 AuthenticatorDeletedEvent deleteEvent = (AuthenticatorDeletedEvent)event;
+    		 notifyZoneDeleted((String)deleteEvent.getSource());
+         }
+    	 else
+    	 {
+    		 // pass to the superclass
+    		 super.onApplicationEvent(event);
+    	 }
+    }
+      
 }

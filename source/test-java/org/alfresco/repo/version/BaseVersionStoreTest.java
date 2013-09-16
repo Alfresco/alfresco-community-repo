@@ -30,6 +30,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -201,6 +202,12 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         
         // Create a workspace that contains the 'live' nodes
         this.testStoreRef = this.dbNodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
+        
+        StoreRef archiveStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "archive" + getName() + System.currentTimeMillis());
+        
+        // Map the work store to the archive store.  This will already be wired into the NodeService.
+        StoreArchiveMap archiveMap = (StoreArchiveMap) applicationContext.getBean("storeArchiveMap");
+        archiveMap.put(testStoreRef, archiveStoreRef);        
         
         // Get a reference to the root node
         this.rootNodeRef = this.dbNodeService.getRootNode(this.testStoreRef);

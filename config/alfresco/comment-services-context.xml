@@ -89,6 +89,9 @@
         <property name="nodeService">
             <ref bean="NodeService" />
         </property>
+        <property name="dbNodeService">
+            <ref bean="dbNodeService" />
+        </property>		
         <property name="fileFolderService">
             <ref bean="fileFolderService" />
         </property>

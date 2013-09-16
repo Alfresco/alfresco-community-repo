@@ -61,6 +61,7 @@ import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
@@ -593,7 +594,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     	
         createComment(versionableNode, "my comment", "Do great work", false);
         assertTrue(nodeService.hasAspect(versionableNode, ForumModel.ASPECT_DISCUSSABLE));
-        assertTrue("fm:discussion association must exist", nodeService.getChildAssocs(versionableNode).size() > 0);
+        assertTrue("fm:discussion association must exist", nodeService.getChildAssocs(versionableNode, ForumModel.ASSOC_DISCUSSION, RegexQNamePattern.MATCH_ALL).size() > 0);
         assertEquals(1, this.dbNodeService.getProperty(versionableNode,  ForumModel.PROP_COMMENT_COUNT));
     	
     	// Create a new version
@@ -607,8 +608,48 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     	//Revert to a version that has comments.
     	this.versionService.revert(versionableNode, version3);
         assertTrue(nodeService.hasAspect(versionableNode, ForumModel.ASPECT_DISCUSSABLE));
-        assertTrue("fm:discussion association must exist", nodeService.getChildAssocs(versionableNode).size() > 0);
+        assertTrue("fm:discussion association must exist", nodeService.getChildAssocs(versionableNode, ForumModel.ASSOC_DISCUSSION, RegexQNamePattern.MATCH_ALL).size() > 0);
         assertEquals("I am version 3", this.dbNodeService.getProperty(versionableNode, PROP_1));
+        
+        //Test reverting from version without comments to version that has comments
+        
+        //Revert to a version that has no comments.
+        this.versionService.revert(versionableNode, version1);
+        assertEquals("I am before version", this.dbNodeService.getProperty(versionableNode, PROP_1));  
+        assertFalse(nodeService.hasAspect(versionableNode, ForumModel.ASPECT_DISCUSSABLE));
+       
+        //Revert to a version that has comments.
+        this.versionService.revert(versionableNode, version3);
+        assertTrue(nodeService.hasAspect(versionableNode, ForumModel.ASPECT_DISCUSSABLE));
+        assertTrue("fm:discussion association must exist", nodeService.getChildAssocs(versionableNode, ForumModel.ASSOC_DISCUSSION, RegexQNamePattern.MATCH_ALL).size() > 0);
+        assertEquals("I am version 3", this.dbNodeService.getProperty(versionableNode, PROP_1));
+
+       
+       
+        //Test reverting from version with comments to another version with comments, but with another 'forum' node
+       
+        NodeRef clearNode = createNewVersionableNode();
+       
+        //Create version without comments
+        Version clearVersion1 = createVersion(clearNode);
+       
+        //Create version with comments       
+        createComment(clearNode, "my comment", "Do great work", false);
+        assertTrue(nodeService.hasAspect(clearNode, ForumModel.ASPECT_DISCUSSABLE));
+        Version clearVersion2 = createVersion(clearNode);
+       
+        //Revert to version without comments
+        this.versionService.revert(clearNode, clearVersion1);
+        assertFalse(nodeService.hasAspect(clearNode, ForumModel.ASPECT_DISCUSSABLE));
+       
+        //Create new version with comments
+        createComment(clearNode, "my comment", "Do great work", false);
+        Version clearVersion3 = createVersion(clearNode);
+
+        //Revert from version with comments, to version with another comments
+        this.versionService.revert(clearNode, clearVersion2);
+        assertTrue(nodeService.hasAspect(versionableNode, ForumModel.ASPECT_DISCUSSABLE));
+        assertTrue("fm:discussion association must exist", nodeService.getChildAssocs(clearNode, ForumModel.ASSOC_DISCUSSION, RegexQNamePattern.MATCH_ALL).size() > 0);  
 
     }
     
@@ -788,6 +829,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         
         // Create a versionable node
         NodeRef versionableNode = createNewVersionableNode();
+        createComment(versionableNode, "my comment", "Do great work", false);
         
         // It isn't currently versionable
         assertEquals(null, versionService.getVersionHistory(versionableNode));

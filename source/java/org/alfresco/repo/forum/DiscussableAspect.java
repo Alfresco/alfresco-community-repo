@@ -39,12 +39,17 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.repo.version.VersionServicePolicies;
+import org.alfresco.repo.version.VersionServicePolicies.AfterVersionRevertPolicy;
+import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -61,7 +66,8 @@ import org.springframework.dao.ConcurrencyFailureException;
 public class DiscussableAspect implements
             NodeServicePolicies.OnAddAspectPolicy,
             CopyServicePolicies.OnCopyNodePolicy,
-            CopyServicePolicies.OnCopyCompletePolicy
+            CopyServicePolicies.OnCopyCompletePolicy,
+            VersionServicePolicies.AfterVersionRevertPolicy
 {
     private static final String KEY_WORKING_COPIES = DiscussableAspect.class.getName() + ".WorkingCopies";
     
@@ -69,6 +75,7 @@ public class DiscussableAspect implements
     
     private PolicyComponent policyComponent;
     private NodeService nodeService;
+    private NodeService dbNodeService;
     private FileFolderService fileFolderService;
     
     public void setPolicyComponent(PolicyComponent policyComponent) 
@@ -81,6 +88,11 @@ public class DiscussableAspect implements
         this.nodeService = nodeService;
     }
     
+    public void setDbNodeService(NodeService dbNodeService)
+    {
+        this.dbNodeService = dbNodeService;
+    }
+
     public final void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
@@ -104,6 +116,10 @@ public class DiscussableAspect implements
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
                 ForumModel.ASPECT_DISCUSSABLE,
                 new JavaBehaviour(this, "onCopyComplete"));
+        this.policyComponent.bindClassBehaviour(
+                AfterVersionRevertPolicy.QNAME,
+                ContentModel.ASPECT_VERSIONABLE,
+                new JavaBehaviour(this, "afterVersionRevert"));           
     }
     
     /**
@@ -370,4 +386,52 @@ public class DiscussableAspect implements
             }
         }
     }
+    
+    @Override
+    public void afterVersionRevert(NodeRef nodeRef, Version version)
+    {
+        NodeRef versionNodeRef = version.getFrozenStateNodeRef();
+        if (!this.nodeService.hasAspect(versionNodeRef, ForumModel.ASPECT_DISCUSSABLE))
+        {
+            return;
+        }
+        
+        // Get the discussion assoc references from the version store
+        List<ChildAssociationRef> childAssocRefs = this.nodeService.getChildAssocs(VersionUtil.convertNodeRef(versionNodeRef), ForumModel.ASSOC_DISCUSSION,
+                RegexQNamePattern.MATCH_ALL);
+        for (ChildAssociationRef childAssocRef : childAssocRefs)
+        {
+            // Get the child reference
+            NodeRef childRef = childAssocRef.getChildRef();
+            NodeRef referencedNode = (NodeRef) this.dbNodeService.getProperty(childRef, ContentModel.PROP_REFERENCE);
+
+            if (referencedNode != null && this.nodeService.exists(referencedNode) == false)
+            {
+                StoreRef orginalStoreRef = referencedNode.getStoreRef();
+                NodeRef archiveRootNodeRef = this.nodeService.getStoreArchiveNode(orginalStoreRef);
+                if (archiveRootNodeRef == null)
+                {
+                    // Store doesn't support archiving
+                    continue;
+                }
+                NodeRef archivedNodeRef = new NodeRef(archiveRootNodeRef.getStoreRef(), referencedNode.getId());
+
+                if (!this.nodeService.exists(archivedNodeRef) || !nodeService.hasAspect(archivedNodeRef, ContentModel.ASPECT_ARCHIVED))
+                {
+                    // Node doesn't support archiving or it was deleted within parent node.
+                    continue;
+                }
+
+                NodeRef existingChild = this.nodeService.getChildByName(nodeRef, childAssocRef.getTypeQName(), this.nodeService
+                        .getProperty(archivedNodeRef, ContentModel.PROP_NAME).toString());
+                if (existingChild != null)
+                {
+                    this.nodeService.deleteNode(existingChild);
+                }
+
+                this.nodeService.restoreNode(archivedNodeRef, null, null, null);
+            }
+        }
+    }
+    
 }

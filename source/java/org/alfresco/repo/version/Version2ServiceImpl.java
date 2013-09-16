@@ -1310,6 +1310,8 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                 // Turn auto-version policies back on
                 this.policyBehaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
             }
+            
+            invokeAfterVersionRevert(nodeRef, version);
         }
     }
 

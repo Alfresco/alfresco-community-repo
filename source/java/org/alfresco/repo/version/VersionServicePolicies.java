@@ -125,4 +125,21 @@ public interface VersionServicePolicies
 				int versionNumber,
 				Map<String, Serializable>verisonProperties);
 	}
+    
+    
+    /**
+     * After create version policy interface
+     *
+     */
+    public interface AfterVersionRevertPolicy extends ClassPolicy
+    {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "afterVersionRevert");
+        /**
+         * Called after the version has been reverted 
+         * 
+         * @param nodeRef   the node that has been reverted
+         * @param version           the reverted version
+         */
+        public void afterVersionRevert(NodeRef nodeRef, Version version);
+    }    
 }

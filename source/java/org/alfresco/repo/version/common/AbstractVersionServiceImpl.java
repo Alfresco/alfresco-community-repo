@@ -33,6 +33,7 @@ import org.alfresco.repo.version.VersionRevertCallback.RevertAssocAction;
 import org.alfresco.repo.version.VersionRevertDetails;
 import org.alfresco.repo.version.VersionServicePolicies;
 import org.alfresco.repo.version.VersionServicePolicies.AfterCreateVersionPolicy;
+import org.alfresco.repo.version.VersionServicePolicies.AfterVersionRevertPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.BeforeCreateVersionPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPolicy;
 import org.alfresco.repo.version.VersionServicePolicies.OnCreateVersionPolicy;
@@ -76,6 +77,7 @@ public abstract class AbstractVersionServiceImpl
 	private ClassPolicyDelegate<OnCreateVersionPolicy> onCreateVersionDelegate;
 	private ClassPolicyDelegate<CalculateVersionLabelPolicy> calculateVersionLabelDelegate;
 	private ClassPolicyDelegate<OnRevertVersionPolicy> onRevertVersionDelegate;
+    private ClassPolicyDelegate<AfterVersionRevertPolicy> afterVersionRevertDelegate;
     
 	/**
      * Sets the general node service
@@ -118,6 +120,24 @@ public abstract class AbstractVersionServiceImpl
 		this.onCreateVersionDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.OnCreateVersionPolicy.class);
 		this.calculateVersionLabelDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.CalculateVersionLabelPolicy.class);	
 		this.onRevertVersionDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.OnRevertVersionPolicy.class);	
+        this.afterVersionRevertDelegate = this.policyComponent.registerClassPolicy(VersionServicePolicies.AfterVersionRevertPolicy.class);
+    }   
+    
+    
+    /**
+     * Invokes after version has been reverted
+     * 
+     * @param nodeRef   the node that has been reverted
+     * @param version           the reverted version
+     */
+    protected void invokeAfterVersionRevert(NodeRef nodeRef,Version version)
+    {
+        // invoke for node type
+        QName nodeTypeQName = nodeService.getType(nodeRef);
+        this.afterVersionRevertDelegate.get(nodeTypeQName).afterVersionRevert(nodeRef, version);
+        // invoke for node aspects
+        Set<QName> nodeAspectQNames = nodeService.getAspects(nodeRef);
+        this.afterVersionRevertDelegate.get(nodeAspectQNames).afterVersionRevert(nodeRef, version);
     }	
 	
 	/**

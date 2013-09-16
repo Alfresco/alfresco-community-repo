@@ -63,7 +63,7 @@ public enum DBQueryBuilderPredicatePartCommandType
         @Override
         public DBQueryBuilderPredicatePartCommandType propertyAndValueReversed()
         {
-           return LTE;
+           return LT;
         }
     },
     GTE
@@ -77,7 +77,7 @@ public enum DBQueryBuilderPredicatePartCommandType
         @Override
         public DBQueryBuilderPredicatePartCommandType propertyAndValueReversed()
         {
-            return LT;
+            return LTE;
         }
     },
     LT
@@ -91,7 +91,7 @@ public enum DBQueryBuilderPredicatePartCommandType
         @Override
         public DBQueryBuilderPredicatePartCommandType propertyAndValueReversed()
         {
-            return GTE;
+            return GT;
         }
     },
     LTE
@@ -105,7 +105,7 @@ public enum DBQueryBuilderPredicatePartCommandType
         @Override
         public DBQueryBuilderPredicatePartCommandType propertyAndValueReversed()
         {
-            return GT;
+            return GTE;
         }
     },
     IN

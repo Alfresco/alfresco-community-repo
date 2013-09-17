@@ -413,7 +413,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             {
                 // first take a look at just the record
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(rmContainer));
-                assertEquals(AccessStatus.UNDETERMINED, capability.hasPermission(rmFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmFolder));
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(record));
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(declaredRecord));
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecordFolder));
@@ -447,7 +447,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             public Void run()
             {
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(rmContainer));
-                assertEquals(AccessStatus.UNDETERMINED, capability.hasPermission(rmFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmFolder));
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(record));
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(declaredRecord));
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecordFolder));

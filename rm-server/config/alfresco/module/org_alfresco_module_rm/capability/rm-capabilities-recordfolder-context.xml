@@ -80,10 +80,5 @@
          </list>
       </property>
       <property name="targetCapability" ref="rmCreateModifyDestroyFoldersCapability"/>
-      <property name="conditions">
-         <map>
-            <entry key="capabilityCondition.isClassified" value="false"/>
-         </map>
-      </property>
    </bean>
 </beans>

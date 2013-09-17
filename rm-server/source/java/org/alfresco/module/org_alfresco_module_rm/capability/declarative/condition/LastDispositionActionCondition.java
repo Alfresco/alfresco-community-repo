@@ -50,18 +50,6 @@ public class LastDispositionActionCondition extends AbstractCapabilityCondition
     @Override
     public boolean evaluate(NodeRef nodeRef)
     {
-        boolean result = evaluateImpl(nodeRef);
-        
-        if (result == false && recordService.isRecord(nodeRef) == true)
-        {
-            result = evaluateImpl(nodeService.getPrimaryParent(nodeRef).getParentRef());
-        }
-        
-        return result;
-    }
-    
-    private boolean evaluateImpl(NodeRef nodeRef)
-    {
         boolean result = false;
         DispositionAction dispositionAction = dispositionService.getLastCompletedDispostionAction(nodeRef);
         if (dispositionAction != null && 
@@ -69,7 +57,6 @@ public class LastDispositionActionCondition extends AbstractCapabilityCondition
         {
             result = true;
         }
-        return result;        
+        return result; 
     }
-
 }

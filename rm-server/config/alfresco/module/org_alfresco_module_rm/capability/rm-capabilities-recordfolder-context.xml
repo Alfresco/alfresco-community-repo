@@ -40,7 +40,6 @@
             <entry key="capabilityCondition.cutoff" value="false"/>
             <entry key="capabilityCondition.frozen" value="false"/>
             <entry key="capabilityCondition.closed" value="false"/>
-            <entry key="capabilityCondition.hasDispositionAsOfDate" value="false"/>
          </map>
       </property>
       <property name="group"><ref bean="folderControlGroup"/></property>
@@ -81,5 +80,10 @@
          </list>
       </property>
       <property name="targetCapability" ref="rmCreateModifyDestroyFoldersCapability"/>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.isClassified" value="false"/>
+         </map>
+      </property>
    </bean>
 </beans>

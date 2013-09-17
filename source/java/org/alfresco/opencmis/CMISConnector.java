@@ -1736,7 +1736,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
         if (!(type instanceof DocumentTypeDefinitionWrapper))
         {
-            throw new CmisStreamNotSupportedException("Object is not a docuemnt!");
+            throw new CmisStreamNotSupportedException("Object is not a document!");
         }
         if (((DocumentTypeDefinition) type.getTypeDefinition(false)).getContentStreamAllowed() == ContentStreamAllowed.NOTALLOWED)
         {

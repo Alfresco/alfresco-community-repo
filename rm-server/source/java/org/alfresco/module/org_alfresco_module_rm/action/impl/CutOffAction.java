@@ -36,6 +36,9 @@ import org.alfresco.service.namespace.QName;
  */
 public class CutOffAction extends RMDispositionActionExecuterAbstractBase
 {
+    /** Action name */
+    public static final String NAME = "cutoff";
+    
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#executeRecordFolderLevelDisposition(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */

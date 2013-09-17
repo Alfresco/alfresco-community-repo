@@ -18,14 +18,20 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.service;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.report.Report;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -120,6 +126,10 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
             @Override
             public Void run() throws Exception
             {
+                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
+                recordsManagementActionService.executeRecordsManagementAction(rmFolder, CompleteEventAction.NAME, params); 
+                recordsManagementActionService.executeRecordsManagementAction(rmFolder, CutOffAction.NAME);
                 recordsManagementActionService.executeRecordsManagementAction(rmFolder, DestroyAction.NAME);                
                 recordsManagementActionService.executeRecordsManagementAction(rmFolder, "fileDestructionReport");                
                 return null;

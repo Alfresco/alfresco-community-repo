@@ -188,7 +188,26 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
             }
             throw ie;
         }
-        // TODO what about other throwables ?
+        catch (RuntimeException re)
+        {
+        	// we could be out of memory or a NPE or some other unforseen situation.  JLAN will complain loudly ... as it should. 
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("create file exception caught", re);   
+            }    
+            if(tctx.hasStateCache() && token != null)
+            {
+                if(cache != null && fstate != null && token != null)
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("create file release lock token:" + token);
+                    }
+                    cache.releaseFileAccess(fstate, token);
+                }
+            }
+            throw re;
+        }
     }
 
     @Override

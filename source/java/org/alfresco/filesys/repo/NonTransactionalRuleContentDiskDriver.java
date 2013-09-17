@@ -40,6 +40,7 @@ import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
+import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.jlan.server.filesys.FileAction;
 import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.FileInfo;
@@ -156,14 +157,21 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         String folder = paths[0];
         String file = paths[1];
         
-        EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
+        try
+        {
+            EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
 
-        Operation o = new CloseFileOperation(file, param, rootNode, param.getFullName(), param.hasDeleteOnClose(), param.isForce());
-        Command c = ruleEvaluator.evaluate(ctx, o);
+            Operation o = new CloseFileOperation(file, param, rootNode, param.getFullName(), param.hasDeleteOnClose(), param.isForce());
+            Command c = ruleEvaluator.evaluate(ctx, o);
         
-        commandExecutor.execute(sess, tree, c);
+            commandExecutor.execute(sess, tree, c);
         
-        releaseEvaluatorContextIfEmpty(driverState, ctx, folder);
+            releaseEvaluatorContextIfEmpty(driverState, ctx, folder);
+        }
+        catch(org.alfresco.repo.security.permissions.AccessDeniedException ade)
+        {
+    	    throw new AccessDeniedException("Unable to close file " +  param.getFullName(), ade);
+        }
 
     }
 
@@ -171,14 +179,21 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     public void createDirectory(SrvSession sess, TreeConnection tree,
             FileOpenParams params) throws IOException
     {
-        FileFilterMode.setClient(ClientHelper.getClient(sess));
-        try
+    	try
+    	{
+            FileFilterMode.setClient(ClientHelper.getClient(sess));
+            try
+            {
+                diskInterface.createDirectory(sess, tree, params);
+            }
+            finally
+            {
+                FileFilterMode.clearClient();
+            }
+    	}
+        catch(org.alfresco.repo.security.permissions.AccessDeniedException ade)
         {
-            diskInterface.createDirectory(sess, tree, params);
-        }
-        finally
-        {
-            FileFilterMode.clearClient();
+    	    throw new AccessDeniedException("Unable to create directory " +  params.getPath(), ade);
         }
     }
 
@@ -186,13 +201,15 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     public NetworkFile createFile(SrvSession sess, TreeConnection tree,
             FileOpenParams params) throws IOException
     {
-    	int attr = params.getAttributes();
-        if(logger.isDebugEnabled())
-        {
-            int sharedAccess = params.getSharedAccess();
-            String strSharedAccess = SharingMode.getSharingModeAsString(sharedAccess);
+    	try
+    	{
+    	    int attr = params.getAttributes();
+            if(logger.isDebugEnabled())
+            {
+                int sharedAccess = params.getSharedAccess();
+                String strSharedAccess = SharingMode.getSharingModeAsString(sharedAccess);
     
-            logger.debug("createFile:" + params.getPath() 
+                logger.debug("createFile:" + params.getPath() 
                     + ", isDirectory: " + params.isDirectory()
                     + ", isStream: " + params.isStream()
                     + ", readOnlyAccess: " + params.isReadOnlyAccess()
@@ -207,38 +224,43 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
                     + ", allocationSize: " + params.getAllocationSize()
                     + ", isHidden:" + FileAttribute.isHidden(attr)
                     + ", isSystem:" + FileAttribute.isSystem(attr));
-        }
+            }
         
-        long creationDateTime = params.getCreationDateTime();
-        if(creationDateTime != 0)
-        {
-            logger.debug("creationDateTime is set:" + new Date(creationDateTime));
-        }
+            long creationDateTime = params.getCreationDateTime();
+            if(creationDateTime != 0)
+            {
+                logger.debug("creationDateTime is set:" + new Date(creationDateTime));
+            }
         
-        ContentContext tctx = (ContentContext) tree.getContext();
-        NodeRef rootNode = tctx.getRootNode();
+            ContentContext tctx = (ContentContext) tree.getContext();
+            NodeRef rootNode = tctx.getRootNode();
         
-        String[] paths = FileName.splitPath(params.getPath());
-        String folder = paths[0];
-        String file = paths[1];
+            String[] paths = FileName.splitPath(params.getPath());
+            String folder = paths[0];
+            String file = paths[1];
         
-        DriverState driverState = getDriverState(sess);
-        EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
+            DriverState driverState = getDriverState(sess);
+            EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
 
-        Operation o = new CreateFileOperation(file, rootNode, params.getPath(), params.getAllocationSize(), FileAttribute.isHidden(attr));
-        Command c = ruleEvaluator.evaluate(ctx, o);
+            Operation o = new CreateFileOperation(file, rootNode, params.getPath(), params.getAllocationSize(), FileAttribute.isHidden(attr));
+            Command c = ruleEvaluator.evaluate(ctx, o);
         
-        Object ret = commandExecutor.execute(sess, tree, c);
+            Object ret = commandExecutor.execute(sess, tree, c);
         
-        if(ret != null && ret instanceof NetworkFile)
-        {   
-            return (NetworkFile)ret;
+            if(ret != null && ret instanceof NetworkFile)
+            {   
+                return (NetworkFile)ret;
+            }
+            else
+            {
+                // Error - contact broken
+                logger.error("contract broken - NetworkFile not returned. " + ret == null ? "Return value is null" : ret);
+                return null;
+            }
         }
-        else
+        catch(org.alfresco.repo.security.permissions.AccessDeniedException ade)
         {
-            // Error - contact broken
-            logger.error("contract broken - NetworkFile not returned. " + ret == null ? "Return value is null" : ret);
-            return null;
+    	    throw new AccessDeniedException("Unable to create file " +  params.getPath(), ade);
         }
     }
 
@@ -246,10 +268,14 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     public void deleteDirectory(SrvSession sess, TreeConnection tree, String dir)
             throws IOException
     {
-              
-        diskInterface.deleteDirectory(sess, tree, dir);
-    
-        
+        try
+        {
+        	diskInterface.deleteDirectory(sess, tree, dir);
+        }
+        catch(org.alfresco.repo.security.permissions.AccessDeniedException ade)
+        {
+    	    throw new AccessDeniedException("Unable to delete directory " +  dir, ade);
+        }
     }
 
     @Override
@@ -260,23 +286,29 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         {
             logger.debug("deleteFile name:" + name);
         }
+        try
+        {
+            ContentContext tctx = (ContentContext) tree.getContext();
+            NodeRef rootNode = tctx.getRootNode();
         
-        ContentContext tctx = (ContentContext) tree.getContext();
-        NodeRef rootNode = tctx.getRootNode();
-        
-        DriverState driverState = getDriverState(sess);
+            DriverState driverState = getDriverState(sess);
              
-        String[] paths = FileName.splitPath(name);
-        String folder = paths[0];
-        String file = paths[1];
+            String[] paths = FileName.splitPath(name);
+            String folder = paths[0];
+            String file = paths[1];
         
-        EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
+            EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
     
-        Operation o = new DeleteFileOperation(file, rootNode, name);
-        Command c = ruleEvaluator.evaluate(ctx, o);
-        commandExecutor.execute(sess, tree, c);
+            Operation o = new DeleteFileOperation(file, rootNode, name);
+            Command c = ruleEvaluator.evaluate(ctx, o);
+            commandExecutor.execute(sess, tree, c);
         
-        releaseEvaluatorContextIfEmpty(driverState, ctx, folder);
+            releaseEvaluatorContextIfEmpty(driverState, ctx, folder);
+        }
+        catch(org.alfresco.repo.security.permissions.AccessDeniedException ade)
+        {
+    	    throw new AccessDeniedException("Unable to delete file " +  name, ade);
+        }
         
     
     } // End of deleteFile
@@ -371,25 +403,32 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             openMode = OpenFileMode.DELETE;
         }
         
-        Operation o = new OpenFileOperation(file, openMode, truncate, rootNode, path);
-        Command c = ruleEvaluator.evaluate(ctx, o);
-        Object ret = commandExecutor.execute(sess, tree, c);
+        try
+        {
+            Operation o = new OpenFileOperation(file, openMode, truncate, rootNode, path);
+            Command c = ruleEvaluator.evaluate(ctx, o);
+            Object ret = commandExecutor.execute(sess, tree, c);
 
-        if(ret != null && ret instanceof NetworkFile)
-        {
-            NetworkFile x = (NetworkFile)ret; 
-                         
-            if(logger.isDebugEnabled())
+            if(ret != null && ret instanceof NetworkFile)
             {
-                logger.debug("returning open file: for path:" + path +", ret:" + ret);
+                NetworkFile x = (NetworkFile)ret; 
+                         
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("returning open file: for path:" + path +", ret:" + ret);
+                }
+                return x;
             }
-            return x;
+            else
+            {
+                // Error - contact broken
+                logger.error("contract broken - NetworkFile not returned. " + ret == null ? "Return value is null" : ret);
+                return null;
+            }
         }
-        else
+        catch(org.alfresco.repo.security.permissions.AccessDeniedException ade)
         {
-            // Error - contact broken
-            logger.error("contract broken - NetworkFile not returned. " + ret == null ? "Return value is null" : ret);
-            return null;
+    	    throw new AccessDeniedException("Unable to open file " +  param.getPath(), ade);
         }
 
         //return diskInterface.openFile(sess, tree, params);
@@ -426,45 +465,52 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         paths = FileName.splitPath(newPath);
         String newFolder = paths[0];
         String newFile = paths[1];
-                
-        if(oldFolder.equalsIgnoreCase(newFolder))
+        
+        try
         {
-            logger.debug("renameFileCommand - is a rename within the same folder");
-            
-            EvaluatorContext ctx = getEvaluatorContext(driverState, oldFolder);
-            
-            Operation o = new RenameFileOperation(oldFile, newFile, oldPath, newPath, rootNode);
-            Command c = ruleEvaluator.evaluate(ctx, o); 
-            commandExecutor.execute(sess, tree, c);
-            
-            ruleEvaluator.notifyRename(ctx, o, c);
-            
-            releaseEvaluatorContextIfEmpty(driverState, ctx, oldFolder);
-            
+        	if(oldFolder.equalsIgnoreCase(newFolder))
+        	{
+        		logger.debug("renameFileCommand - is a rename within the same folder");
+
+        		EvaluatorContext ctx = getEvaluatorContext(driverState, oldFolder);
+
+        		Operation o = new RenameFileOperation(oldFile, newFile, oldPath, newPath, rootNode);
+        		Command c = ruleEvaluator.evaluate(ctx, o); 
+        		commandExecutor.execute(sess, tree, c);
+
+        		ruleEvaluator.notifyRename(ctx, o, c);
+
+        		releaseEvaluatorContextIfEmpty(driverState, ctx, oldFolder);
+
+        	}
+        	else    
+        	{
+        		logger.debug("moveFileCommand - move between folders");
+
+        		Operation o = new MoveFileOperation(oldFile, newFile, oldPath, newPath, rootNode);
+
+        		/*
+        		 * Note: At the moment we only have move scenarios for the destination folder - so 
+        		 * we only need to evaluate against a single (destination) context/folder.   
+        		 * This will require re-design as and when we need to have scenarios for the source/folder  
+        		 */
+
+        		//EvaluatorContext ctx1 = getEvaluatorContext(driverState, oldFolder);
+        		EvaluatorContext ctx2 = getEvaluatorContext(driverState, newFolder);
+
+        		Command c = ruleEvaluator.evaluate(ctx2, o);
+
+        		commandExecutor.execute(sess, tree, c);
+
+        		releaseEvaluatorContextIfEmpty(driverState, ctx2, newFolder);
+
+        		//  diskInterface.renameFile(sess, tree, oldPath, newPath);
+
+        	}
         }
-        else    
+        catch(org.alfresco.repo.security.permissions.AccessDeniedException ade)
         {
-            logger.debug("moveFileCommand - move between folders");
-
-            Operation o = new MoveFileOperation(oldFile, newFile, oldPath, newPath, rootNode);
-            
-            /*
-             * Note: At the moment we only have move scenarios for the destination folder - so 
-             * we only need to evaluate against a single (destination) context/folder.   
-             * This will require re-design as and when we need to have scenarios for the source/folder  
-             */
-            
-            //EvaluatorContext ctx1 = getEvaluatorContext(driverState, oldFolder);
-            EvaluatorContext ctx2 = getEvaluatorContext(driverState, newFolder);
-            
-            Command c = ruleEvaluator.evaluate(ctx2, o);
-            
-            commandExecutor.execute(sess, tree, c);
-            
-            releaseEvaluatorContextIfEmpty(driverState, ctx2, newFolder);
-            
-            //  diskInterface.renameFile(sess, tree, oldPath, newPath);
-
+        	throw new AccessDeniedException("Unable to rename file file " +  oldPath, ade);
         }
 
     }

@@ -35,13 +35,18 @@
       <property name="uriIndex" ref="publicapi.index.prototype" />
    </bean>
 
-   <bean id="publicapi.container" class="org.alfresco.rest.api.PublicApiRepositoryContainer" parent="webscripts.abstractcontainer" init-method="setup">
-      <property name="name"><value>Public Api</value></property>
+   <bean name="publicapi.webScriptsRegistryCache" class="org.alfresco.repo.web.scripts.RegistryAsynchronouslyRefreshedCache" parent="abstractAsynchronouslyRefreshedCache">
       <property name="registryFactory">
           <bean class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
              <property name="targetBeanName"><idref local="publicapi.registry.prototype"/></property>
           </bean>
       </property>
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
+   </bean>
+   
+   <bean id="publicapi.container" class="org.alfresco.rest.api.PublicApiRepositoryContainer" parent="webscripts.abstractcontainer" init-method="setup">
+      <property name="name"><value>Public Api</value></property>
+      <property name="webScriptsRegistryCache" ref="publicapi.webScriptsRegistryCache" />
       <!-- Use the time-limited transaction helper to keep request times to an acceptable duration -->
       <property name="transactionService" ref="transactionService" />
       <!-- The transaction helper used to generate error responses must be unlimited -->
@@ -53,7 +58,6 @@
       <property name="scriptProcessorRegistry" ref="webscripts.repo.registry.scriptprocessor" />
       <property name="descriptorService" ref="DescriptorService" />
       <property name="tenantAdminService" ref="tenantAdminService" />
-      <property name="webScriptsRegistryCache" ref="publicapi.webScriptsRegistryCache"/>
       <property name="encryptTempFiles" value="${webscripts.encryptTempFiles}"/>
       <property name="tempDirectoryName" value="${webscripts.tempDirectoryName}"/>
       <property name="memoryThreshold" value="${webscripts.memoryThreshold}"/>

@@ -18,16 +18,14 @@
  */
 package org.alfresco.repo.web.scripts;
 
-import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.cache.AsynchronouslyRefreshedCache;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.extensions.webscripts.Registry;
-
 
 /**
  * Tenant-aware Repository (server-tier) container for Web Scripts
@@ -39,31 +37,21 @@ public class TenantRepositoryContainer extends RepositoryContainer implements Te
     // Logger
     protected static final Log logger = LogFactory.getLog(TenantRepositoryContainer.class);
 
-    /** Component Dependencies */
+    /* Component Dependencies */
     protected TenantAdminService tenantAdminService;
     protected TransactionService transactionService;
-    protected ObjectFactory registryFactory;
-    protected SimpleCache<String, Registry> webScriptsRegistryCache;
-    protected boolean initialized;
+    private AsynchronouslyRefreshedCache<Registry> registryCache;
 
     /**
-     * @param webScriptsRegistryCache
+     * @param registryCache                 asynchronously maintained cache for script registries
      */
-    public void setWebScriptsRegistryCache(SimpleCache<String, Registry> webScriptsRegistryCache)
+    public void setWebScriptsRegistryCache(AsynchronouslyRefreshedCache<Registry> registryCache)
     {
-        this.webScriptsRegistryCache = webScriptsRegistryCache;
+        this.registryCache = registryCache;
     }
     
     /**
-     * @param registryFactory
-     */
-    public void setRegistryFactory(ObjectFactory registryFactory)
-    {
-        this.registryFactory = registryFactory;
-    }
-    
-    /**
-     * @param tenantAdminService
+     * @param tenantAdminService            service to sort out tenant context
      */
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
@@ -71,7 +59,7 @@ public class TenantRepositoryContainer extends RepositoryContainer implements Te
     }
     
     /**
-     * @param transactionService the transactionService to set
+     * @param transactionService            service to give transactions when reading from the container
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -79,69 +67,45 @@ public class TenantRepositoryContainer extends RepositoryContainer implements Te
         this.transactionService = transactionService;
     }
 
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#getRegistry()
-     */
     @Override
     public Registry getRegistry()
     {
-        String tenantDomain = tenantAdminService.getCurrentUserDomain();
-        Registry registry = webScriptsRegistryCache.get(tenantDomain);
-        if (registry == null)
+        Registry registry = registryCache.get();
+        boolean isUpToDate = registryCache.isUpToDate();
+        if (!isUpToDate && logger.isDebugEnabled())
         {
-            registry = (Registry)registryFactory.getObject();
-            // We only need to reset the registry if the superclass thinks its already initialized
-            if (initialized)
-            {
-                registry.reset();
-            }
-            webScriptsRegistryCache.put(tenantDomain, registry);
+            logger.debug("Retrieved out of date web script registry for tenant " + tenantAdminService.getCurrentUserDomain());
         }
         return registry;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#onEnableTenant()
-     */
+    @Override
     public void onEnableTenant()
     {
         init();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#onDisableTenant()
-     */
+    @Override
     public void onDisableTenant()
     {
         destroy();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#init()
-     */
+    @Override
     public void init()
     {
         tenantAdminService.register(this);
+        registryCache.refresh();
         
         super.reset();
-        
-        initialized = true;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#destroy()
-     */
+    @Override
     public void destroy()
     {
-        webScriptsRegistryCache.remove(tenantAdminService.getCurrentUserDomain());
-        
-        initialized = false;
+        registryCache.refresh();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#reset()
-     */
     @Override
     public void reset()
     {

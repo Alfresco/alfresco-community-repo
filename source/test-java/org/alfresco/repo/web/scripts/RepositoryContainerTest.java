@@ -86,24 +86,25 @@ public class RepositoryContainerTest extends BaseWebScriptTest
     /**
      * Person should be current user irrespective of runas user.
      */
-	public void testRunAsAdmin() throws Exception {
-		authenticationComponent.setCurrentUser(USER_ONE);
-		
-		// No runas specified within our webscript descriptor
-		Response response = sendRequest(new GetRequest("/test/runas"), STATUS_OK);
-		assertEquals(USER_ONE, response.getContentAsString());
+    public void testRunAsAdmin() throws Exception
+    {
+        authenticationComponent.setCurrentUser(USER_ONE);
+        
+        // No runas specified within our webscript descriptor
+        Response response = sendRequest(new GetRequest("/test/runas"), STATUS_OK);
+        assertEquals(USER_ONE, response.getContentAsString());
 
-		authenticationComponent.setCurrentUser(USER_TWO);
-		
-		// runas "Admin" specified within our webscript descriptor
-		response = sendRequest(new GetRequest("/test/runasadmin"), STATUS_OK);
-		assertEquals(USER_TWO, response.getContentAsString());
-		
-		authenticationComponent.setSystemUserAsCurrentUser();
-	}
+        authenticationComponent.setCurrentUser(USER_TWO);
+        
+        // runas "Admin" specified within our webscript descriptor
+        response = sendRequest(new GetRequest("/test/runasadmin"), STATUS_OK);
+        assertEquals(USER_TWO, response.getContentAsString());
+        
+        authenticationComponent.setSystemUserAsCurrentUser();
+    }
 
     
-	public void testReset() throws Exception
+    public void testReset() throws Exception
     {
         RepositoryContainer repoContainer = (RepositoryContainer) getServer().getApplicationContext().getBean("webscripts.container");
         repoContainer.reset();

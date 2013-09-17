@@ -40,12 +40,8 @@
    <!-- =========================== -->
 
    <bean name="authorityBridgeTableCache" class="org.alfresco.repo.security.authority.AuthorityBridgeTableAsynchronouslyRefreshedCache" parent="abstractAsynchronouslyRefreshedCache">
-      <property name="authorityBridgeDAO">
-         <ref bean="authorityBridgeDAO" />
-      </property>
-      <property name="retryingTransactionHelper">
-         <ref bean="retryingTransactionHelper" />
-      </property>
+      <property name="authorityBridgeDAO" ref="authorityBridgeDAO" />
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
    
    <!-- ===================================== -->
@@ -377,20 +373,6 @@
 
    <!-- The cross-transaction shared cache for Dictionary Namespaces [Must be non-clustered, non-txn and UNLIMITED IN SIZE]-->
    <bean name="prefixesCache" class="org.alfresco.repo.cache.MemoryCache" />
-   
-   <!-- ===================================== -->
-   <!-- Web Scripts Caches                    -->
-   <!-- ===================================== -->
-
-   <!-- The cross-transaction shared cache for In-Memory WebScripts Registry -->
-   
-   <bean name="webScriptsRegistryCache" factory-bean="cacheFactory" factory-method="createCache">
-      <constructor-arg value="cache.webScriptsRegistrySharedCache"/>
-   </bean>
-   
-   <bean name="publicapi.webScriptsRegistryCache" factory-bean="cacheFactory" factory-method="createCache">
-      <constructor-arg value="cache.publicapi.webScriptsRegistryCache"/>
-   </bean>
    
    <!-- ===================================== -->
    <!-- RoutingContentStore caches            -->

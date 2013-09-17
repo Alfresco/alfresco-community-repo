@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -54,9 +53,6 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
 
     /** node service */
     protected NodeService nodeService;
-
-    /** model security service */
-    protected ModelSecurityService modelSecurityService;
     
     /**
      * @param runAsRmAdmin	true if run rules as rmadmin, false otherwise
@@ -88,14 +84,6 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     public void setFilePlanService(FilePlanService filePlanService) 
     {
 		this.filePlanService = filePlanService;
-	}
-    
-    /**
-     * @param modelSecurityService	model security service
-     */
-    public void setModelSecurityService(ModelSecurityService modelSecurityService) 
-    {
-		this.modelSecurityService = modelSecurityService;
 	}
 
     /**
@@ -178,34 +166,24 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
         	// ignore and
             if (isIgnoredType(typeQName) == false)
 	        {
-	        	// disable model security whilst we execute the RM rule
-	        	//modelSecurityService.disable();
-	        	//try
-	        	//{
-	            	if (runAsRmAdmin == true)
+	        	if (runAsRmAdmin == true)
+	            {
+            		// run as rmadmin
+	            	filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>() 
 	            	{
-	            		// run as rmadmin
-		            	filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>() 
-		            	{
-							@Override
-							public Void doWork() throws Exception 
-							{
-								ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
-								return null;
-							}
-						});
-	            	}
-	            	else
-	            	{
-	            		// run as current user
-	            		ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
-	            	}	            
-	        	//}
-	        	//finally
-	        	//{
-	        		// enable model security
-	        	//	modelSecurityService.enable();
-	        	//}
+						@Override
+						public Void doWork() throws Exception 
+						{
+							ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+							return null;
+						}
+					});
+            	}
+            	else
+            	{
+            		// run as current user
+            		ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+            	}
 	        }
         }
         else

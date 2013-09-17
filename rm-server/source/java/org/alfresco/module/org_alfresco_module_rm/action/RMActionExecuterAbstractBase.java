@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
@@ -40,6 +40,7 @@ import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventTy
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
@@ -120,6 +121,9 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     
     /** Freeze Service */
     protected FreezeService freezeService;
+    
+    /** model security service */
+    protected ModelSecurityService modelSecurityService;
     
     /** List of kinds for which this action is applicable */
     protected Set<FilePlanComponentKind> applicableKinds = new HashSet<FilePlanComponentKind>();
@@ -265,6 +269,14 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     {
         return recordsManagementAdminService;
     }
+    
+    /**
+     * @param modelSecurityService  model security service
+     */
+    public void setModelSecurityService(ModelSecurityService modelSecurityService)
+    {
+        this.modelSecurityService = modelSecurityService;
+    }
 
     /**
      * @param applicableKinds   kinds that this action is applicable for
@@ -407,8 +419,17 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
         Action action = this.actionService.createAction(name);
         action.setParameterValues(parameters);
         
-        // Execute the action
-        this.actionService.executeAction(action, filePlanComponent);          
+        // disable model security whilst we execute the RM rule
+        modelSecurityService.disable();
+        try
+        {
+            // Execute the action
+            actionService.executeAction(action, filePlanComponent);
+        }
+        finally
+        {
+            modelSecurityService.enable();
+        }
         
         // Get the result
         Object value = action.getParameterValue(ActionExecuterAbstractBase.PARAM_RESULT);

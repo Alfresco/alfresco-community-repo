@@ -137,6 +137,7 @@
       <property name="freezeService" ref="freezeService"/>
       <property name="recordService" ref="recordService"/>
       <property name="parameterProcessorComponent" ref="parameterProcessorComponent"/>
+      <property name="modelSecurityService" ref="modelSecurityService" />
    </bean>
 
    <bean id="rmProxyAction"

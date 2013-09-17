@@ -72,7 +72,8 @@ public class FileToAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) == true)
+        if (nodeService.exists(actionedUponNodeRef) == true &&
+            freezeService.isFrozen(actionedUponNodeRef) == false)
         {
             if (recordService.isFiled(actionedUponNodeRef) == false)
             {

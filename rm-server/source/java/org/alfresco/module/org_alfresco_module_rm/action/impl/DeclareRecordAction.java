@@ -61,7 +61,9 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
    @Override
    protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
    {
-      if (recordService.isRecord(actionedUponNodeRef) == true)
+      if (nodeService.exists(actionedUponNodeRef) == true &&
+          recordService.isRecord(actionedUponNodeRef) == true &&
+          freezeService.isFrozen(actionedUponNodeRef) == false)
       {
          if (recordService.isDeclared(actionedUponNodeRef) == false)
          {

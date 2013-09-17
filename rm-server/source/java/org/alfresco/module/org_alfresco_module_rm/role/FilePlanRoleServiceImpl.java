@@ -74,7 +74,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @since 2.1
  */
 public class FilePlanRoleServiceImpl implements FilePlanRoleService,
-                                        RecordsManagementModel
+                                                RecordsManagementModel
 {
     /** I18N */
     private static final String MSG_FIRST_NAME = "bootstrap.rmadmin.firstName";

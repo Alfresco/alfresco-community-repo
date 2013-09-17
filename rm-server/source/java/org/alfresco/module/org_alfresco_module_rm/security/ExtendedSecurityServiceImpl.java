@@ -271,7 +271,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             
             for (String authority : authorities)
             {         
-                if (authority.equals(PermissionService.ALL_AUTHORITIES) == false)
+                if (authority.equals(PermissionService.ALL_AUTHORITIES) == false &&
+                    authority.equals(PermissionService.OWNER_AUTHORITY) == false)
                 {
                     if (referenceCountMap == null ||
                         referenceCountMap.containsKey(authority) == false)

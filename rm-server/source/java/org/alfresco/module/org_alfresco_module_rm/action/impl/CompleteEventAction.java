@@ -62,46 +62,50 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        String eventName = (String)action.getParameterValue(PARAM_EVENT_NAME);
-        String eventCompletedBy = (String)action.getParameterValue(PARAM_EVENT_COMPLETED_BY);
-        Date eventCompletedAt = (Date)action.getParameterValue(PARAM_EVENT_COMPLETED_AT);
-
-        if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true)
+        if (nodeService.exists(actionedUponNodeRef) == true &&
+            freezeService.isFrozen(actionedUponNodeRef) == false)
         {
-            // Get the next disposition action
-            DispositionAction da = this.dispositionService.getNextDispositionAction(actionedUponNodeRef);
-            if (da != null)
+            String eventName = (String)action.getParameterValue(PARAM_EVENT_NAME);
+            String eventCompletedBy = (String)action.getParameterValue(PARAM_EVENT_COMPLETED_BY);
+            Date eventCompletedAt = (Date)action.getParameterValue(PARAM_EVENT_COMPLETED_AT);
+    
+            if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true)
             {
-                // Get the disposition event
-                EventCompletionDetails event = getEvent(da, eventName);
-                if (event != null)
+                // Get the next disposition action
+                DispositionAction da = this.dispositionService.getNextDispositionAction(actionedUponNodeRef);
+                if (da != null)
                 {
-                    if (eventCompletedAt == null)
+                    // Get the disposition event
+                    EventCompletionDetails event = getEvent(da, eventName);
+                    if (event != null)
                     {
-                        eventCompletedAt = new Date();
+                        if (eventCompletedAt == null)
+                        {
+                            eventCompletedAt = new Date();
+                        }
+    
+                        if (eventCompletedBy == null)
+                        {
+                            eventCompletedBy = AuthenticationUtil.getRunAsUser();
+                        }
+    
+                        // Update the event so that it is complete
+                        NodeRef eventNodeRef = event.getNodeRef();
+                        Map<QName, Serializable> props = this.nodeService.getProperties(eventNodeRef);
+                        props.put(PROP_EVENT_EXECUTION_COMPLETE, true);
+                        props.put(PROP_EVENT_EXECUTION_COMPLETED_AT, eventCompletedAt);
+                        props.put(PROP_EVENT_EXECUTION_COMPLETED_BY, eventCompletedBy);
+                        this.nodeService.setProperties(eventNodeRef, props);
+                        
+                        // Check to see if the events eligible property needs to be updated
+                        updateEventEligible(da);
+                        
                     }
-
-                    if (eventCompletedBy == null)
+                    else
                     {
-                        eventCompletedBy = AuthenticationUtil.getRunAsUser();
+                        // RM-695: Commenting error handling out. If the current disposition stage does not define the event being completed nothing should happen.
+                        // throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EVENT_NO_DISP_LC, eventName));
                     }
-
-                    // Update the event so that it is complete
-                    NodeRef eventNodeRef = event.getNodeRef();
-                    Map<QName, Serializable> props = this.nodeService.getProperties(eventNodeRef);
-                    props.put(PROP_EVENT_EXECUTION_COMPLETE, true);
-                    props.put(PROP_EVENT_EXECUTION_COMPLETED_AT, eventCompletedAt);
-                    props.put(PROP_EVENT_EXECUTION_COMPLETED_BY, eventCompletedBy);
-                    this.nodeService.setProperties(eventNodeRef, props);
-                    
-                    // Check to see if the events eligible property needs to be updated
-                    updateEventEligible(da);
-                    
-                }
-                else
-                {
-                    // RM-695: Commenting error handling out. If the current disposition stage does not define the event being completed nothing should happen.
-                    // throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EVENT_NO_DISP_LC, eventName));
                 }
             }
         }

@@ -58,8 +58,10 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
-        if (recordService.isRecord(actionedUponNodeRef))
+    {        
+        if (nodeService.exists(actionedUponNodeRef) == true && 
+            freezeService.isFrozen(actionedUponNodeRef) == false &&
+            recordService.isRecord(actionedUponNodeRef) == true)
         {
             String recordTypes = (String) action.getParameterValue(PARAM_ADD_RECORD_TYPES);
             String[] types = recordTypes.split(",");

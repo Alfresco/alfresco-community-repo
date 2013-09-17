@@ -39,12 +39,23 @@ public class DelegateAction extends RMActionExecuterAbstractBase
     /** Delegate action executer*/
     private ActionExecuter delegateActionExecuter;
     
+    /** should we check whether the node is frozen */
+    private boolean checkFrozen = false;
+    
     /**
      * @param delegateActionExecuter    delegate action executer
      */
     public void setDelegateAction(ActionExecuter delegateActionExecuter)
     {
         this.delegateActionExecuter = delegateActionExecuter;
+    }
+    
+    /**
+     * @param checkFrozen   true if we check whether the actioned upon node reference is frozen, false otherwise
+     */
+    public void setCheckFrozen(boolean checkFrozen)
+    {
+        this.checkFrozen = checkFrozen;
     }
 
     /**
@@ -53,7 +64,11 @@ public class DelegateAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        delegateActionExecuter.execute(action, actionedUponNodeRef);
+        if (nodeService.exists(actionedUponNodeRef) == true &&
+            (checkFrozen == false || freezeService.isFrozen(actionedUponNodeRef) == false))
+        {
+            delegateActionExecuter.execute(action, actionedUponNodeRef);
+        }
     }
     
     /**

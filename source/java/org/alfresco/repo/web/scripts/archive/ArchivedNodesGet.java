@@ -81,7 +81,11 @@ public class ArchivedNodesGet extends AbstractArchivedNodeWebScript
         }
 
         // Now do the paging
-        model.put(DELETED_NODES, ModelUtil.page(deletedNodes, paging));
+        // ALF-19111. Note: Archived nodes CQ, supports Paging, 
+        // so no need to use the ModelUtil.page method to build the page again.        
+        model.put(DELETED_NODES, deletedNodes);
+        // Because we haven't used ModelUtil.page method, we need to set the total items manually.
+        paging.setTotalItems(deletedNodes.size());
         model.put("paging", ModelUtil.buildPaging(paging));
         
         return model;

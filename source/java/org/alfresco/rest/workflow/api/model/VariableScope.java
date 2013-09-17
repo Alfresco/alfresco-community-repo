@@ -34,7 +34,8 @@ public enum VariableScope
      * a valid scope. 
      */
     public static VariableScope getScopeForValue(String scopeValue) {
-        for(VariableScope scope : values()) {
+        for(VariableScope scope : values()) 
+        {
             if(scope.getValue().equals(scopeValue)) 
             {
                 return scope;

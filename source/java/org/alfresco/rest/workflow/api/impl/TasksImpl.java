@@ -87,12 +87,12 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     
     private static final Set<String> TASK_COLLECTION_EQUALS_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
         "status", "assignee", "owner", "candidateUser", "candidateGroup", "name", "description", "priority", "processId",
-        "processBusinessKey", "activityDefinitionId", "processDefinitionId", "processDefinitionName", "startedAt", "endedAt", "dueAt",
-        "includeTaskVariables", "includeProcessVariables"
+        "processBusinessKey", "activityDefinitionId", "processDefinitionId", "processDefinitionKey", "processDefinitionName", "startedAt", 
+        "endedAt", "dueAt", "includeTaskVariables", "includeProcessVariables"
     ));
     
     private static final Set<String> TASK_COLLECTION_MATCHES_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "assignee", "owner", "name", "description", "processBusinessKey", "activityDefinitionId", "processDefinitionName"
+        "assignee", "owner", "name", "description", "processBusinessKey", "activityDefinitionId", "processDefinitionKey", "processDefinitionName"
     ));
     
     private static final Set<String> TASK_COLLECTION_GREATERTHAN_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
@@ -172,6 +172,8 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         String activityDefinitionId = propertyWalker.getProperty("activityDefinitionId", WhereClauseParser.EQUALS);
         String activityDefinitionIdLike = propertyWalker.getProperty("activityDefinitionId", WhereClauseParser.MATCHES);
         String processDefinitionId = propertyWalker.getProperty("processDefinitionId", WhereClauseParser.EQUALS);
+        String processDefinitionKey = propertyWalker.getProperty("processDefinitionKey", WhereClauseParser.EQUALS);
+        String processDefinitionKeyLike = propertyWalker.getProperty("processDefinitionKey", WhereClauseParser.MATCHES);
         String processDefinitionName = propertyWalker.getProperty("processDefinitionName", WhereClauseParser.EQUALS);
         String processDefinitionNameLike = propertyWalker.getProperty("processDefinitionName", WhereClauseParser.MATCHES);
         Date startedAt = propertyWalker.getProperty("startedAt", WhereClauseParser.EQUALS, Date.class);
@@ -247,6 +249,8 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             if (activityDefinitionId != null) query.taskDefinitionKey(activityDefinitionId);
             if (activityDefinitionIdLike != null) query.taskDefinitionKey(activityDefinitionIdLike);
             if (processDefinitionId != null) query.processDefinitionId(processDefinitionId);
+            if (processDefinitionKey != null) query.processDefinitionKey(processDefinitionKey);
+            if (processDefinitionKeyLike != null) query.processDefinitionKeyLike(processDefinitionKeyLike);
             if (processDefinitionName != null) query.processDefinitionName(processDefinitionName);
             if (processDefinitionNameLike != null) query.processDefinitionNameLike(processDefinitionNameLike);
             if (dueAt != null) query.dueDate(dueAt);
@@ -372,6 +376,8 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             if (activityDefinitionId != null) query.taskDefinitionKey(activityDefinitionId);
             if (activityDefinitionIdLike != null) query.taskDefinitionKey(activityDefinitionIdLike);
             if (processDefinitionId != null) query.processDefinitionId(processDefinitionId);
+            if (processDefinitionKey != null) query.processDefinitionKey(processDefinitionKey);
+            if (processDefinitionKeyLike != null) query.processDefinitionKeyLike(processDefinitionKeyLike);
             if (processDefinitionName != null) query.processDefinitionName(processDefinitionName);
             if (processDefinitionNameLike != null) query.processDefinitionNameLike(processDefinitionNameLike);
             if (dueAt != null) query.taskDueDate(dueAt);
@@ -647,19 +653,21 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 
                 // In case the action is claim, we gather all candidate groups for this tasks, since we already have
                 // the identity-links, there is no reason why we should check candidate using a DB-query
-                for(IdentityLink link : linksForTask) {
-                    if(user.equals(link.getUserId()) && IdentityLinkType.STARTER.equals(link.getType()))
+                for (IdentityLink link : linksForTask) 
+                {
+                    if (user.equals(link.getUserId()) && IdentityLinkType.STARTER.equals(link.getType()))
                     {
                         authorized = true;
                         break;
                     }
-                    if(taskAction == TaskStateTransition.CLAIMED && link.getGroupId() != null && link.getType().equals(IdentityLinkType.CANDIDATE)) {
+                    if (taskAction == TaskStateTransition.CLAIMED && link.getGroupId() != null && link.getType().equals(IdentityLinkType.CANDIDATE)) 
+                    {
                         candidateGroups.add(link.getGroupId());
                     }
-                    if(taskAction == TaskStateTransition.CLAIMED && 
+                    if (taskAction == TaskStateTransition.CLAIMED && 
                             link.getUserId() != null && link.getType().equals(IdentityLinkType.CANDIDATE) &&
-                            user.equals(link.getUserId())) {
-                        
+                            user.equals(link.getUserId())) 
+                    {
                         // User is a direct candidate for the task, authorized to claim
                         authorized = true;
                         break;

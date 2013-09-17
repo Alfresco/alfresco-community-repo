@@ -1456,6 +1456,14 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             params.put("where", "(status = 'any' AND processBusinessKey = '" + businessKey + "')");
             assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId(), activeTask.getId());
             
+            params.clear();
+            params.put("where", "(status = 'any' AND processBusinessKey MATCHES('" + businessKey + "'))");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId(), activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(status = 'any' AND processBusinessKey MATCHES('" + businessKey.substring(0, businessKey.length() - 2) + "%'))");
+            assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId(), activeTask.getId());
+            
             // Activity definition id filtering
             params.clear();
             params.put("where", "(status = 'active' AND activityDefinitionId = 'verifyTaskDone' AND processId='" + processInstance.getId() +"')");
@@ -1561,6 +1569,18 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             
             params.clear();
             params.put("where", "(variables/numberVar < 'd:int 10')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
+            params.put("where", "(variables/bpm_dueDate = 'd:datetime " + ISO8601DateFormat.format(new Date()) + "')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
+            params.put("where", "(variables/bpm_dueDate = 'd:datetime 2013-09-15T12:22:31.866+0000')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
+            params.put("where", "(variables/bpm_comment MATCHES ('test%'))");
             assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
             
             // test with OR operator

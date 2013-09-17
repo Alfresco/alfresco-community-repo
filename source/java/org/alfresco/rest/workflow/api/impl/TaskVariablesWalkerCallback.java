@@ -32,15 +32,15 @@ public class TaskVariablesWalkerCallback extends WalkerCallbackAdapter
    @Override
     public void comparison(int type, String propertyName, String propertyValue)
     {
-       if(PROPERTY_SCOPE.equals(propertyName)) 
+       if (PROPERTY_SCOPE.equals(propertyName)) 
        {
-           if(type != WhereClauseParser.EQUALS)
+           if (type != WhereClauseParser.EQUALS)
            {
                throw new InvalidQueryException("Only equals is allowed for 'scope' comparison.");
            }
            
            scope = VariableScope.getScopeForValue(propertyValue);
-           if(scope == null)
+           if (scope == null)
            {
                throw new InvalidQueryException("Invalid value for 'scope' used in query: " + propertyValue + ".");
            }

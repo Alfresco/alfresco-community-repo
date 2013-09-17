@@ -29,10 +29,12 @@ import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper.WalkerCallbackAdapter;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.ConvertUtils;
 
@@ -151,7 +153,11 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             throw new InvalidArgumentException("Cannot use negated matching for property: " + property); 
         }
-        if (supportedMatchesParameters != null && supportedMatchesParameters.contains(property))
+        if (variablesEnabled && property.startsWith("variables/")) 
+        {
+            processVariable(property, value, WhereClauseParser.MATCHES);
+        }
+        else if (supportedMatchesParameters != null && supportedMatchesParameters.contains(property))
         {
             matchesProperties.put(property, value);
         }
@@ -168,27 +174,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         
         if (variablesEnabled && propertyName.startsWith("variables/")) 
         {
-            String localPropertyName = propertyName.replaceFirst("variables/", "");
-            Object actualValue = null;
-            if ((propertyValue.contains("_") || propertyValue.contains(":")) && propertyValue.contains(" ")) 
-            {
-                String typeDef = propertyValue.substring(0, propertyValue.indexOf(' '));
-                try
-                {
-                    QName dataType = QName.createQName(typeDef.replace('_', ':'), namespaceService);
-                    actualValue = DefaultTypeConverter.INSTANCE.convert(dictionaryService.getDataType(dataType), 
-                            propertyValue.substring(propertyValue.indexOf(' ') + 1));
-                }
-                catch (Exception e)
-                {
-                    throw new ApiException("Error translating propertyName " + propertyName + " with value " + propertyValue);
-                }
-            } 
-            else 
-            {
-                actualValue = propertyValue;
-            }
-            variableProperties.add(new QueryVariableHolder(localPropertyName, type, actualValue));
+            processVariable(propertyName, propertyValue, type);
         }
         else
         {
@@ -345,6 +331,40 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         // We don't need to do anything in this method. However, overriding the
         // method indicates that AND is
         // supported. OR is not supported at the same time.
+    }
+    
+    protected void processVariable(String propertyName, String propertyValue, int type)
+    {
+        String localPropertyName = propertyName.replaceFirst("variables/", "");
+        Object actualValue = null;
+        if ((propertyValue.contains("_") || propertyValue.contains(":")) && propertyValue.contains(" ")) 
+        {
+            String typeDef = propertyValue.substring(0, propertyValue.indexOf(' '));
+            try
+            {
+                QName dataType = QName.createQName(typeDef.replace('_', ':'), namespaceService);
+                DataTypeDefinition dataTypeDefinition = dictionaryService.getDataType(dataType);
+                if (dataTypeDefinition != null && "java.util.Date".equalsIgnoreCase(dataTypeDefinition.getJavaClassName()))
+                {
+                    // fix for different ISO 8601 Date format classes in Alfresco (org.alfresco.util and Spring Surf)
+                    actualValue = ISO8601DateFormat.parse(propertyValue.substring(propertyValue.indexOf(' ') + 1));
+                }
+                else
+                {
+                    actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, 
+                            propertyValue.substring(propertyValue.indexOf(' ') + 1));
+                }
+            }
+            catch (Exception e)
+            {
+                throw new ApiException("Error translating propertyName " + propertyName + " with value " + propertyValue);
+            }
+        } 
+        else 
+        {
+            actualValue = propertyValue;
+        }
+        variableProperties.add(new QueryVariableHolder(localPropertyName, type, actualValue));
     }
 
     /**

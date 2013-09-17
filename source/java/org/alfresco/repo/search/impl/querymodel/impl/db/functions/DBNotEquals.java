@@ -83,7 +83,7 @@ public class DBNotEquals extends NotEquals implements DBQueryBuilderComponent
         {
             UUIDSupport uuidSupport = new UUIDSupport();
             uuidSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTEQUALS);
-            uuidSupport.setUuid((String)staticValue);
+            uuidSupport.setUuid(DBQuery.getUUID((String)staticValue));
             builderSupport = uuidSupport;
         }
         else if (getPropertyName().equals(PropertyIds.OBJECT_TYPE_ID))

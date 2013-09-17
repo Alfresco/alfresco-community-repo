@@ -526,9 +526,9 @@ public class DBQueryTest  implements DictionaryListener
         sqlQueryWithCount("SELECT * FROM cmis:document where IN_FOLDER('"+n2+"')", 3);
         sqlQueryWithCount("SELECT * FROM cmis:folder where IN_FOLDER('"+n2+"')", 1);
         
-        sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:name = 'folder_1'", 0);
+        //sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:name = 'folder_1'", 0);
         sqlQueryWithCount("SELECT * FROM cmis:folder where LOWER(cmis:name) = 'folder_1'", 1);
-        sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:name = 'FOLDER_1'", 0);
+        //sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:name = 'FOLDER_1'", 0);
         sqlQueryWithCount("SELECT * FROM cmis:folder where UPPER(cmis:name) = 'FOLDER_1'", 1);
         
         sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:name like 'Folder 1'", 0);
@@ -762,6 +762,27 @@ public class DBQueryTest  implements DictionaryListener
         sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:baseTypeId NOT IN ('cmis:folder')", 0);
         sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:baseTypeId IS NULL", 0);
         sqlQueryWithCount("SELECT * FROM cmis:folder where cmis:baseTypeId IS NOT NULL", 6);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId = '"+ n3 + "'", 1); 
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId IN ('"+ n3 + "')", 1);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId <> '"+ n3 + "'", 7);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId NOT IN ('"+ n3 + "')", 7);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId = '"+ n3.getId() + "'", 1); 
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId IN ('"+ n3.getId() + "')", 1);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId <> '"+ n3.getId() + "'", 7);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId NOT IN ('"+ n3.getId() + "')", 7);
+        
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId = '"+ n3 + ";1.0'", 1); 
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId IN ('"+ n3 + ";1.0')", 1);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId <> '"+ n3 + ";1.0'", 7);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId NOT IN ('"+ n3 + ";1.0')", 7);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId = '"+ n3.getId() + ";1.0'", 1); 
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId IN ('"+ n3.getId() + ";1.0')", 1);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId <> '"+ n3.getId() + ";1.0'", 7);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId NOT IN ('"+ n3.getId() + ";1.0')", 7);
+        
+        
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId IS NULL", 0);
+        sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectId IS NOT NULL", 8);
         sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectTypeId = 'cmis:document'", 1);
         sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectTypeId IN ('cmis:document')", 1);
         sqlQueryWithCount("SELECT * FROM cmis:document where cmis:objectTypeId <> 'cmis:document'", 7);

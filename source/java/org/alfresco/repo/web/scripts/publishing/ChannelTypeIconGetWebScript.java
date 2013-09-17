@@ -88,7 +88,7 @@ public class ChannelTypeIconGetWebScript extends AbstractWebScript
         String ext = MimetypeMap.EXTENSION_BINARY;
         if (lastDot != -1 && lastDot < (filename.length()-1))
         {
-            ext = filename.substring(lastDot);
+            ext = filename.substring(lastDot + 1);
         }
         String mimeType = mimetypeService.getMimetype(ext);
         res.setContentType(mimeType);

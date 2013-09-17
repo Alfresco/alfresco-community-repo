@@ -44,20 +44,25 @@ public class UndeclareRecordAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (recordService.isRecord(actionedUponNodeRef) == true)
-        {
-            if (recordService.isDeclared(actionedUponNodeRef) == true)
-            {
-                // Remove the declared aspect
-                this.nodeService.removeAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD);
-            }
-        }
-        else
-        {
-            if (logger.isWarnEnabled())
-            {
-                logger.warn(I18NUtil.getMessage(MSG_RECORDS_ONLY_UNDECLARED));
-            }
-        }
+    	if (nodeService.exists(actionedUponNodeRef) == true)
+    	{
+	        if (recordService.isRecord(actionedUponNodeRef) == true)
+	        {
+	        	// repoen if already complete and not frozen
+	            if (recordService.isDeclared(actionedUponNodeRef) == true &&
+	                freezeService.isFrozen(actionedUponNodeRef) == false)
+	            {
+	                // Remove the declared aspect
+	                this.nodeService.removeAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD);
+	            }
+	        }
+	        else
+	        {
+	            if (logger.isWarnEnabled())
+	            {
+	                logger.warn(I18NUtil.getMessage(MSG_RECORDS_ONLY_UNDECLARED));
+	            }
+	        }
+    	}
     } 
 }

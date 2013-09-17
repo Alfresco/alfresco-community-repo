@@ -153,6 +153,28 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
                 this,
                 onUpdatePropertiesBehaviour);
     }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService#disable()
+     */
+    @Override
+    public void disable() 
+    {
+    	beforeAddAspectBehaviour.disable();
+    	beforeRemoveAspectBehaviour.disable();
+    	onUpdatePropertiesBehaviour.disable();
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService#enable()
+     */
+    @Override
+    public void enable() 
+    {
+    	beforeAddAspectBehaviour.enable();
+    	beforeRemoveAspectBehaviour.enable();
+    	onUpdatePropertiesBehaviour.enable();	
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService#register(org.alfresco.module.org_alfresco_module_rm.model.security.ProtectedModelArtifact)

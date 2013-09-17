@@ -38,7 +38,7 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
 
     /** I18N */
     private static final String MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER = "rm.action.close-record-folder-not-folder";
-    
+
     /** Parameter names */
     public static final String PARAM_CLOSE_PARENT = "closeParent";
 
@@ -49,29 +49,31 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        // TODO check that the user in question has the correct permissions to close a records folder
+        if (nodeService.exists(actionedUponNodeRef) == true && 
+            freezeService.isFrozen(actionedUponNodeRef) == false)
+        {
+            if (recordService.isRecord(actionedUponNodeRef))
+            {
+                ChildAssociationRef assocRef = nodeService.getPrimaryParent(actionedUponNodeRef);
+                if (assocRef != null)
+                {
+                    actionedUponNodeRef = assocRef.getParentRef();
+                }
+            }
 
-        if (recordService.isRecord(actionedUponNodeRef))
-        {
-            ChildAssociationRef assocRef = nodeService.getPrimaryParent(actionedUponNodeRef);
-            if (assocRef != null)
+            if (this.recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
             {
-                actionedUponNodeRef = assocRef.getParentRef();
+                Boolean isClosed = (Boolean) this.nodeService.getProperty(actionedUponNodeRef, PROP_IS_CLOSED);
+                if (Boolean.FALSE.equals(isClosed) == true)
+                {
+                    this.nodeService.setProperty(actionedUponNodeRef, PROP_IS_CLOSED, true);
+                }
             }
-        }
-        
-        if (this.recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
-        {
-            Boolean isClosed = (Boolean)this.nodeService.getProperty(actionedUponNodeRef, PROP_IS_CLOSED);
-            if (Boolean.FALSE.equals(isClosed) == true)
+            else
             {
-                this.nodeService.setProperty(actionedUponNodeRef, PROP_IS_CLOSED, true);
+                if (logger.isWarnEnabled())
+                    logger.warn(I18NUtil.getMessage(MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER, actionedUponNodeRef.toString()));
             }
-        }
-        else
-        {
-            if (logger.isWarnEnabled())
-                logger.warn(I18NUtil.getMessage(MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER, actionedUponNodeRef.toString()));
         }
     }
 }

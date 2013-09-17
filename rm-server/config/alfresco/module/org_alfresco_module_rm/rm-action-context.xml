@@ -918,6 +918,7 @@
       <property name="publicAction" value="true"/>
       <property name="delegateAction" ref="set-property-value" />
       <property name="adhocPropertiesAllowed" value="true" />
+      <property name="checkFrozen" value="true" />
    </bean>
 
    <!-- add record types -->

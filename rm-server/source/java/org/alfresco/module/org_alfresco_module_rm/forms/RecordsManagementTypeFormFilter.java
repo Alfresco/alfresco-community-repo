@@ -26,6 +26,7 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.forms.Field;
+import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
@@ -103,8 +104,26 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
             }
         }
         
-        // Group fields
-       // groupFields(form); 
+        // set the id 
+        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        for (FieldDefinition fieldDef : fieldDefs)
+        {
+            String prefixName = fieldDef.getName();                       
+            if (prefixName.equals("rma:identifier") == true)
+            {
+                String defaultId = identifierService.generateIdentifier(typeName, null);                
+                fieldDef.setDefaultValue(defaultId);
+            }
+            // NOTE: we set these defaults in the form for backwards compatibility reasons (RM-753)
+            else if (prefixName.equals("rma:vitalRecordIndicator") == true)
+            {
+                fieldDef.setDefaultValue(Boolean.FALSE.toString());
+            }
+            else if (prefixName.equals("rma:reviewPeriod") == true)
+            {
+                fieldDef.setDefaultValue("none|0");
+            }
+        }
     }
 
     /**

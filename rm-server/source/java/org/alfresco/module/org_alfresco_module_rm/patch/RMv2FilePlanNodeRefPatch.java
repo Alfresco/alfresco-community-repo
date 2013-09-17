@@ -18,11 +18,16 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch;
 
+import java.io.Serializable;
 import java.util.List;
 
+import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.security.Role;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -30,6 +35,8 @@ import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Period;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -53,6 +60,8 @@ public class RMv2FilePlanNodeRefPatch extends AbstractModuleComponent
     private PatchDAO patchDAO;
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
+    private PermissionService permissionService;
+    private RecordsManagementSecurityService recordsManagementSecurityService;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -85,6 +94,22 @@ public class RMv2FilePlanNodeRefPatch extends AbstractModuleComponent
     }
     
     /**
+     * @param recordsManagementSecurityService  records management security service
+     */
+    public void setRecordsManagementSecurityService(RecordsManagementSecurityService recordsManagementSecurityService)
+    {
+        this.recordsManagementSecurityService = recordsManagementSecurityService;
+    }
+    
+    /**
+     * @param permissionService permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+    
+    /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
@@ -98,24 +123,53 @@ public class RMv2FilePlanNodeRefPatch extends AbstractModuleComponent
         Pair<Long, QName> aspectPair = qnameDAO.getQName(ASPECT_FILE_PLAN_COMPONENT);
         if (aspectPair != null)
         {
-            List<Long> records = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
+            List<Long> filePlanComponents = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
     
             if (logger.isDebugEnabled() == true)
             {
-                logger.debug("   ... updating " + records.size() + " items" );
+                logger.debug("   ... updating " + filePlanComponents.size() + " items" );
             }
             
             behaviourFilter.disableBehaviour();
             try
             {
-                for (Long record : records)
+                for (Long filePlanComponent : filePlanComponents)
                 {
-                    Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(record);
-                    NodeRef recordNodeRef = recordPair.getSecond();
+                    Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(filePlanComponent);
+                    NodeRef filePlanComponentNodeRef = recordPair.getSecond();
                     
-                    if (nodeService.getProperty(recordNodeRef, PROP_ROOT_NODEREF) == null)
+                    NodeRef filePlan =  recordsManagementService.getFilePlan(filePlanComponentNodeRef);
+                    
+                    // set the file plan node reference
+                    if (nodeService.getProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF) == null)
                     {
-                       nodeService.setProperty(recordNodeRef, PROP_ROOT_NODEREF, recordsManagementService.getFilePlan(recordNodeRef));
+                       nodeService.setProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF, filePlan);
+                    }                    
+                    
+                    // only set the rmadmin permissions on record categories, record folders and records
+                    FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(filePlanComponentNodeRef);
+                    if (FilePlanComponentKind.RECORD_CATEGORY.equals(kind) == true ||
+                        FilePlanComponentKind.RECORD_FOLDER.equals(kind) == true ||
+                        FilePlanComponentKind.RECORD.equals(kind) == true )
+                    {
+                        // ensure the that the records management role has read and file on the node
+                        Role adminRole = recordsManagementSecurityService.getRole(filePlan, "Administrator");
+                        if (adminRole != null)
+                        {
+                            permissionService.setPermission(filePlanComponentNodeRef, adminRole.getRoleGroupName(), RMPermissionModel.FILING, true);
+                        }
+                        
+                        // ensure that the default vital record default values have been set (RM-753)
+                        Serializable vitalRecordIndicator = nodeService.getProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR);
+                        if (vitalRecordIndicator == null)
+                        {
+                            nodeService.setProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR, false);
+                        }
+                        Serializable reviewPeriod = nodeService.getProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD);
+                        if (reviewPeriod == null)
+                        {
+                            nodeService.setProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD, new Period("none|0"));
+                        }
                     }
                 }
             }

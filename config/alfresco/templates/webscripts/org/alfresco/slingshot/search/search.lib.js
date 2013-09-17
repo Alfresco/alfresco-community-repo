@@ -750,7 +750,7 @@ function resolveRootNode(reference)
    {
       if (reference == "alfresco://company/home")
       {
-         node = null;
+         node = "";
       }
       else if (reference == "alfresco://user/home")
       {
@@ -790,7 +790,7 @@ function resolveRootNode(reference)
    {
       node = null;
    }
-   return node;
+   return node !== "" ? node : null;
 }
 
 /**

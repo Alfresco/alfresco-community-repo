@@ -117,7 +117,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
                 return null;
             }
         };
-        RunAsWork<Void> getConfigRunAs = new RunAsWork<Void>()
+        TenantUtil.TenantRunAsWork<Void> getConfigRunAs = new TenantUtil.TenantRunAsWork<Void>()
         {
             @Override
             public Void doWork() throws Exception
@@ -138,8 +138,8 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
             // Put some mutable config onto the current thread and have the superclasses mess with that.
             ConfigData configData = new ConfigData();
             configUnderConstruction.set(configData);
-            // Do the work
-            AuthenticationUtil.runAsSystem(getConfigRunAs);
+            // Do the work as system tenant, see ALF-19922
+            TenantUtil.runAsSystemTenant(getConfigRunAs, tenantDomain);
             // Now wrap the config so that it cannot be changed
             configData = new ImmutableConfigData(configData);
             // Done

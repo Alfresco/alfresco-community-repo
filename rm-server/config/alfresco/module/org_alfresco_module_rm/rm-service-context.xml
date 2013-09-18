@@ -314,8 +314,8 @@
                 <![CDATA[
                 [
                 	{
-                		"name" : "Vital Records Due For Review",
-                		"description" : "All records currently due for review.",
+                		"name" : "rm.savedsearch.vitalRecordsName",
+                		"description" : "rm.savedsearch.vitalRecordsDesc",
                 		"search" : "rma:reviewAsOf:[MIN TO TODAY]",
                 		"searchparams" :
                 		{
@@ -324,8 +324,8 @@
                 		}
                 	},
                 	{
-                		"name" : "Incomplete Records",
-                		"description" : "All incomplete records.",
+                		"name" : "rm.savedsearch.incompleteRecordsName",
+                		"description" : "rm.savedsearch.incompleteRecordsDesc",
                 		"search" : "ISNODE:T AND NOT ASPECT:\"rma:declaredRecord\"",
                 		"searchparams" :
                 		{
@@ -335,8 +335,8 @@
                 		}
                 	},
                 	{
-                		"name" : "Records Eligible For Cutoff",
-                		"description" : "All records currently eligible for cutoff.",
+                		"name" : "rm.savedsearch.cutoffRecordsName",
+                		"description" : "rm.savedsearch.cutoffRecordsDesc",
                 		"search" : "dispositionActionName:\"cutoff\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY])",
                 		"searchparams" :
                 		{
@@ -345,8 +345,8 @@
                 		}
                 	},
                 	{
-                		"name" : "Records Eligible For Transfer",
-                		"description" : "All records currently eligible for transfer.",
+                		"name" : "rm.savedsearch.transferRecordsName",
+                		"description" : "rm.savedsearch.transferRecordsDesc",
                 		"search" : "dispositionActionName:\"transfer\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY]) AND NOT ASPECT:\"rma:transferred\" AND NOT ASPECT:\"rma:transferring\"",
                 		"searchparams" :
                 		{
@@ -356,8 +356,8 @@
                 		}
                 	},
                 	{
-                		"name" : "Records Eligible For Destruction",
-                		"description" : "All records currently eligible for destruction.",
+                		"name" : "rm.savedsearch.destructionRecordsName",
+                		"description" : "rm.savedsearch.destructionRecordsDesc",
                 		"search" : "dispositionActionName:\"destroy\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY]) AND NOT ASPECT:\"rma:ghosted\"",
                 		"searchparams" :
                 		{
@@ -367,8 +367,8 @@
                 		}
                 	},
                 	{
-                		"name" : "Frozen Records",
-                		"description" : "All frozen records.",
+                		"name" : "rm.savedsearch.frozenRecordsName",
+                		"description" : "rm.savedsearch.frozenRecordsDesc",
                 		"search" : "ISNODE:T",
                 		"searchparams" :
                 		{

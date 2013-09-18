@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -37,4 +37,8 @@ public class NullScope extends NativeObject
         return INSTANCE;
     }
     
+    @Override public Object getDefaultValue(@SuppressWarnings("rawtypes") Class hint)
+    {
+        return INSTANCE.toString();
+    }
 }

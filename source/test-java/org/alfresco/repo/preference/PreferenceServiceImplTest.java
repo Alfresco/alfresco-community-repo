@@ -69,7 +69,7 @@ public class PreferenceServiceImplTest
     // JUnit rule to initialise the default Alfresco spring configuration
     @ClassRule public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
     
-    private static final String USERNAME2 = "userBad";
+    private static final String USERNAME2 = "username2";
     
     // Rules to create test users. Note that this class is unusual in that we do *NOT* want to reuse users across test methods.
     public AlfrescoPerson testUser1 = new AlfrescoPerson(APP_CONTEXT_INIT);
@@ -219,7 +219,8 @@ public class PreferenceServiceImplTest
             {
                 // This test is running as user1 and the JavaScript needs to know that.
                 Map<String, Object> model = new HashMap<String, Object>();
-                model.put("username", testUser1.getUsername());
+                model.put("username1", testUser1.getUsername());
+                model.put("username2", testUser2.getUsername());
                 
                 ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/preference/script/test_preferenceService.js");
                 SCRIPT_SERVICE.executeScript(location, model);

@@ -68,8 +68,10 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
     
     public NativeObject getPreferences(String userName, String preferenceFilter)
     {
+        // It's a tad unusual to return a NativeObject like this - at least within Alfresco.
+        // But we can't change it to e.g. a ScriptableHashMap as the API is published.
         Map<String, Serializable> prefs = this.preferenceService.getPreferences(userName, preferenceFilter);        
-        NativeObject result = new NativeObject();
+        NativeObject result = new NativeObjectDV();
         
         for (Map.Entry<String, Serializable> entry : prefs.entrySet())
         {
@@ -78,6 +80,16 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
         }        
         
         return result;
+    }
+    
+    /**
+     * This extension of NativeObject adds a default value. See ALF-20023 for some background.
+     */
+    private static class NativeObjectDV extends NativeObject
+    {
+        private static final long serialVersionUID = 1L;
+        
+        @Override public Object getDefaultValue(@SuppressWarnings("rawtypes") Class typeHint) { return toString(); }
     }
     
     private void setPrefValue(String[] keys, Serializable value, NativeObject object)
@@ -96,7 +108,7 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
                 Object temp = currentObject.get(key, currentObject);
                 if (temp == null || temp instanceof NativeObject == false)
                 {
-                    newObject = new NativeObject();
+                    newObject = new NativeObjectDV();
                     currentObject.put(key, currentObject, newObject);
                 }
                 else

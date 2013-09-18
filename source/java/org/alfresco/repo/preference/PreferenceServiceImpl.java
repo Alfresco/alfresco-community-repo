@@ -21,11 +21,9 @@ package org.alfresco.repo.preference;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -50,6 +48,8 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -60,7 +60,9 @@ import org.json.JSONObject;
  */
 public class PreferenceServiceImpl implements PreferenceService
 {
-	private static final String SHARE_SITES_PREFERENCE_KEY = "org.alfresco.share.sites.favourites.";
+    private static final Log log = LogFactory.getLog(PreferenceServiceImpl.class);
+    
+    private static final String SHARE_SITES_PREFERENCE_KEY = "org.alfresco.share.sites.favourites.";
 	private static final int SHARE_SITES_PREFERENCE_KEY_LEN = SHARE_SITES_PREFERENCE_KEY.length();
 	private static final String EXT_SITES_PREFERENCE_KEY = "org.alfresco.ext.sites.favourites.";
 	
@@ -192,12 +194,12 @@ public class PreferenceServiceImpl implements PreferenceService
     @SuppressWarnings({ "unchecked" })
     public Map<String, Serializable> getPreferences(String userName, String preferenceFilter)
     {
+        if (log.isTraceEnabled()) { log.trace("getPreferences(" + userName + ", " + preferenceFilter + ")"); }
+        
         Map<String, Serializable> preferences = new TreeMap<String, Serializable>();
         
         try
         {
-        	Set<String> siteIds = new HashSet<String>();
-
 	        JSONObject jsonPrefs = getPreferencesObject(userName);
 	        if(jsonPrefs != null)
 	        {
@@ -220,7 +222,6 @@ public class PreferenceServiceImpl implements PreferenceService
 	                		String siteId = key.substring(SHARE_SITES_PREFERENCE_KEY_LEN, idx);
 	                		StringBuilder sb = new StringBuilder(SHARE_SITES_PREFERENCE_KEY);
 	                		sb.append(siteId);
-	                		siteIds.add(siteId);
 	                		key = sb.toString();
                 		}
 	
@@ -231,7 +232,6 @@ public class PreferenceServiceImpl implements PreferenceService
 	                		StringBuilder sb = new StringBuilder(EXT_SITES_PREFERENCE_KEY);
 	                		sb.append(siteId);
 	                		sb.append(".createdAt");
-	                		siteIds.add(siteId);
 	                		key = sb.toString();
 	                	}
 	                	else if(preferences.containsKey(key))
@@ -254,9 +254,11 @@ public class PreferenceServiceImpl implements PreferenceService
         }
         catch (JSONException exception)
         {
-            throw new AlfrescoRuntimeException("Can not get preferences for " + userName + " because there was an error pasing the JSON data.", exception);
+            throw new AlfrescoRuntimeException("Can not get preferences for " + userName + " because there was an error parsing the JSON data.", exception);
         }
 
+        if (log.isTraceEnabled()) { log.trace("result = " + preferences); }
+        
         return preferences;
     }
     

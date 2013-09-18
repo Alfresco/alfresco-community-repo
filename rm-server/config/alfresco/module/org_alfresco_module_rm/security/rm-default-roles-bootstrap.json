@@ -1,7 +1,7 @@
 [
    {
       "name" : "ExtendedReaders",
-      "displayLabel" : "In-Place Readers",
+      "displayLabel" : "rm.role.extendedReaders",
       "isAdmin" : false,
       "capabilities" :
       [
@@ -10,7 +10,7 @@
    },
    {
       "name" : "ExtendedWriters",
-      "displayLabel" : "In-Place Writers",
+      "displayLabel" : "rm.role.extendedWriters",
       "isAdmin" : false,
       "capabilities" :
       [
@@ -20,7 +20,7 @@
    },
    {
       "name" : "User",
-      "displayLabel" : "Records Management User",
+      "displayLabel" : "rm.role.user",
       "isAdmin" : false,
       "capabilities" :
       [
@@ -30,7 +30,7 @@
    },
    {
       "name" : "PowerUser",
-      "displayLabel" : "Records Management Power User",
+      "displayLabel" : "rm.role.powerUser",
       "isAdmin" : false,
       "capabilities" :
       [
@@ -51,7 +51,7 @@
    },
    {
       "name" : "SecurityOfficer",
-      "displayLabel" : "Records Management Security Officer",
+      "displayLabel" : "rm.role.securityOfficer",
       "isAdmin" : false,
       "capabilities" :
       [
@@ -72,7 +72,7 @@
    },
    {
       "name" : "RecordsManager",
-      "displayLabel" : "Records Management Records Manager",
+      "displayLabel" : "rm.role.recordsManager",
       "isAdmin" : false,
       "capabilities" :
       [
@@ -133,7 +133,7 @@
    },
    {
       "name" : "Administrator",
-      "displayLabel" : "Records Management Administrator",
+      "displayLabel" : "rm.role.administrator",
       "isAdmin" : true, 
       "capabilities" :
       [

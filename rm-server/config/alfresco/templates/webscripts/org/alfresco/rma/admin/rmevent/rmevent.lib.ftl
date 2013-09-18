@@ -4,7 +4,7 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
     "eventName": "${event.name}",
-    "eventDisplayLabel": "${event.displayLabel}",             
+    "eventDisplayLabel": "${msg(event.displayLabel)}",             
     "eventType":"${event.type}"
 }
 </#escape>

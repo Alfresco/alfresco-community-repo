@@ -3,7 +3,7 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "name": "${role.name}",
-   "displayLabel": "${role.displayLabel}",
+   "displayLabel": "${msg(role.displayLabel)}",
    "capabilities":
    {
    <#list role.capabilities as capability>

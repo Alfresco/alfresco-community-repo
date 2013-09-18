@@ -808,7 +808,7 @@ function getSearchResults(params)
       term = params.term,
       tag = params.tag,
       formData = params.query,
-      rootNode = resolveRootNode(params.rootNode);
+      rootNode = params.rootNode ? resolveRootNode(params.rootNode) : null;
    
    // Simple keyword search and tag specific search
    if (term !== null && term.length !== 0)

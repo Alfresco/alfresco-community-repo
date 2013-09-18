@@ -18,13 +18,13 @@
 			"modifiedByUser": "${item.modifiedByUser}",
 			"modifiedBy": "${item.modifiedBy}",
 			"size": ${item.size?c},
-			"tags": [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],
-			"site":
+			<#if item.site??>"site":
 			{
 				"shortName": "${item.site.shortName}",
 				"title": "${item.site.title}"
-			},
-			"container": "${item.container}"
+			},</#if>
+			"container": "${item.container!""}",
+			"tags": [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>]
 		}<#if item_has_next>,</#if>
 		</#list>
 	]

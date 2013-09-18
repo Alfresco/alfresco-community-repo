@@ -43,8 +43,7 @@ function getContents(user, type)
    
    var getDocumentsQuery = function getDocumentsQuery()
    {
-      return 'PATH:"/app:company_home/st:sites/*/cm:documentLibrary//*" ' +
-             'AND +TYPE:"cm:content" ' +
+      return 'TYPE:"cm:content" ' +
              'AND +@cm:' + userProperty + ':"' + user + '" ' +
              'AND +@cm:' + type + ':["' + fromQuery + '" TO "' + toQuery + '"]';
    };

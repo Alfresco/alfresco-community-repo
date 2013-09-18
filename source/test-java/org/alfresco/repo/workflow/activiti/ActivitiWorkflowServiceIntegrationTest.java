@@ -22,6 +22,7 @@ package org.alfresco.repo.workflow.activiti;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -209,6 +210,44 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         {
             // Expected exception
         }
+    }
+    
+    /**
+     * Test to validate fix for ALF-19822
+     */
+    public void testMultiInstanceListenersCalled() throws Exception
+    {
+        // start pooled review and approve workflow
+        WorkflowDefinition workflowDef = deployDefinition(getParallelReviewDefinitionPath());
+        assertNotNull(workflowDef);
+        
+        // Create workflow parameters
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        Serializable wfPackage = workflowService.createPackage(null);
+        params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+        Date dueDate = new Date();
+        params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, 1);
+        params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, "This is the description");
+        NodeRef group = groupManager.get(GROUP);
+        assertNotNull(group);
+        
+        List<NodeRef> assignees = Arrays.asList(personManager.get(USER2), personManager.get(USER3));
+        params.put(WorkflowModel.ASSOC_ASSIGNEES, (Serializable) assignees);
+        
+        // Start a workflow instance
+        WorkflowPath path = workflowService.startWorkflow(workflowDef.getId(), params);
+        assertNotNull(path);
+        assertTrue(path.isActive());
+        String instnaceId = path.getInstance().getId();
+        
+        WorkflowTask startTask = workflowService.getStartTask(instnaceId);
+        workflowService.endTask(startTask.getId(), null);
+        
+        personManager.setUser(USER2);
+        List<WorkflowTask> tasks = workflowService.getAssignedTasks(USER2, WorkflowTaskState.IN_PROGRESS);
+        assertEquals(1, tasks.size());
+        assertEquals("This is the description", tasks.get(0).getDescription());
     }
     
     

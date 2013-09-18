@@ -52,7 +52,17 @@ public class AlfrescoModelsDiff extends DeclarativeWebScript
         }
         catch(JSONException e)
         {
-            throw new WebScriptException("Invalid JSON", e);
+            if (logger.isDebugEnabled())
+            {
+                logger.warn("Unable to fetch model changes from " + req, e);
+            }
+            else
+            {
+                logger.warn("Unable to fetch model changes from " + req);
+            }
+            status.setCode(Status.STATUS_BAD_REQUEST, "Unable to fetch model changes from " + req);
+            status.setException(e);
+            return null;
         }
     }
     

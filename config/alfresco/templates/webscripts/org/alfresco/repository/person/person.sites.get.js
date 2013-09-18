@@ -58,7 +58,7 @@ function main()
       }
 
       var i = 0;
-      while (filteredSites.length < size && i < sites.length)
+      while (i < sites.length)
       {
          for (var key in filterObj)
          {
@@ -68,6 +68,13 @@ function main()
                    filterObj[key] == true)
                {
                   filteredSites.push(sites[i]);
+                  
+                  // If the caller of this webscript has requested a specific result size (non-zero) then do not return more than they asked for
+                  if (size > 0 && filteredSites.length == size)
+                  {
+                     break;
+                  }
+                  
                }
             }
          }

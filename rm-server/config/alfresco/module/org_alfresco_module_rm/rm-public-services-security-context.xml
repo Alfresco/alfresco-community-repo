@@ -65,7 +65,7 @@
     <!-- Note: ff the context evaluates to null (e.g. doing an exists test on a node     -->
     <!-- that does not exist) then access will be allowed.                               -->
 
-    <bean id="aclEntryVoter" class="org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoter" abstract="false" singleton="true" lazy-init="default" autowire="default" dependency-check="default">
+    <bean id="aclEntryVoter" class="org.alfresco.repo.security.permissions.impl.acegi.RMACLEntryVoter" abstract="false" singleton="true" lazy-init="default" autowire="default" dependency-check="default">
         <property name="permissionService">
             <ref bean="permissionService"></ref>
         </property>

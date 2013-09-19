@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.repository;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -47,6 +48,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public interface ContentService
 {
     /**

@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.search;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
@@ -43,6 +44,7 @@ import org.alfresco.util.Pair;
  * @author Andy Hind
  *
  */
+@AlfrescoPublicApi
 public interface CategoryService
 {
     /**

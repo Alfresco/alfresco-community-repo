@@ -18,12 +18,14 @@
  */
 package org.alfresco.service.cmr.action;
 
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Rule condition interface
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface ActionCondition extends ParameterizedItem
 {
 	/**

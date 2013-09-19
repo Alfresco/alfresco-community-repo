@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.workflow;
 
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Workflow Node Data Object
@@ -26,6 +27,7 @@ package org.alfresco.service.cmr.workflow;
  * 
  * @author davidc
  */
+@AlfrescoPublicApi
 public class WorkflowNode
 {
     /** Workflow Node Name */

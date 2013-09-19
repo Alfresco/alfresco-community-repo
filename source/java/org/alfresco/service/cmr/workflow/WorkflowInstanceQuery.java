@@ -22,8 +22,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
+@AlfrescoPublicApi
 public class WorkflowInstanceQuery
 {
     public enum DatePosition

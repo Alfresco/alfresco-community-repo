@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.policy;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 
@@ -28,6 +29,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @param <B>  The type of Binding.
  */
+@AlfrescoPublicApi
 public interface BehaviourDefinition<B extends BehaviourBinding>
 {
     /**

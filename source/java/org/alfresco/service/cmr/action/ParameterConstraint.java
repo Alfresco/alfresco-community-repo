@@ -22,11 +22,14 @@ package org.alfresco.service.cmr.action;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Parameter constraint.  Helps to constraint the list of allowable values for a 
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface ParameterConstraint
 {
     /**

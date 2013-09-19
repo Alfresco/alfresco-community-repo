@@ -20,6 +20,7 @@ package org.alfresco.service.cmr.repository;
 
 import java.text.MessageFormat;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
@@ -28,6 +29,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public class NoTransformerException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = 3689067335554183222L;

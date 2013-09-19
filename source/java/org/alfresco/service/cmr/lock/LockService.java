@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.lock;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.lock.mem.LockState;
 import org.alfresco.service.Auditable;
@@ -33,6 +34,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface LockService
 {
    /**

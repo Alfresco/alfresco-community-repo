@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.util.LockHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,7 +38,7 @@ import org.apache.commons.logging.LogFactory;
  * @param <B>  the type of Binding
  * @param <P>  the type of Policy
  */
-/*package*/ class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> extends PolicyFactory<B, P> 
+/*package*/ @AlfrescoPublicApi class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> extends PolicyFactory<B, P> 
 {
     // Logger
     private static final Log logger = LogFactory.getLog(PolicyComponentImpl.class);

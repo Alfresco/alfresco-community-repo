@@ -21,7 +21,7 @@ package org.alfresco.service.cmr.version;
 import java.io.Serializable;
 import java.util.Collection;
 
-
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Version history interface.
@@ -30,6 +30,7 @@ import java.util.Collection;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface VersionHistory extends Serializable
 {
     /**

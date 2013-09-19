@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.policy;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.policy.Policy.Arg;
 import org.alfresco.service.namespace.QName;
 
@@ -29,6 +30,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @param <P>  the policy interface
  */
+@AlfrescoPublicApi
 public interface PolicyDefinition<P extends Policy>
 {
     /**

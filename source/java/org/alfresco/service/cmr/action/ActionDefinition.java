@@ -20,6 +20,7 @@ package org.alfresco.service.cmr.action;
 
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -27,6 +28,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface ActionDefinition extends ParameterizedItemDefinition
 {
     /**

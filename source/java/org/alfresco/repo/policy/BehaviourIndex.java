@@ -20,6 +20,7 @@ package org.alfresco.repo.policy;
 
 import java.util.Collection;
 
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Index of Bound Behaviours.
@@ -28,7 +29,7 @@ import java.util.Collection;
  *
  * @param <B>  the type of Binding.
  */
-/*package*/ interface BehaviourIndex<B extends BehaviourBinding>
+/*package*/ @AlfrescoPublicApi interface BehaviourIndex<B extends BehaviourBinding>
 {
     /**
      * Gets all bound behaviours

@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.workflow;
 
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Workflow Path Data Object
@@ -29,6 +30,7 @@ package org.alfresco.service.cmr.workflow;
  * 
  * @author davidc
  */
+@AlfrescoPublicApi
 public class WorkflowPath
 {
     /** Unique id of Workflow Path */

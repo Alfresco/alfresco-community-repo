@@ -18,11 +18,14 @@
  */
 package org.alfresco.service.cmr.lock;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * The type of lock to be used by the lock service
  * <p>
  * The lock owner or the administrator can release the lock.
  */
+@AlfrescoPublicApi
 public enum LockType
 {
     /**

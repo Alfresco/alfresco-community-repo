@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.workflow;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 
 
@@ -29,6 +30,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
  * 
  * @author davidc
  */
+@AlfrescoPublicApi
 public class WorkflowTaskDefinition
 {
     /** Unique id of Workflow Task Definition */

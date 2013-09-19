@@ -18,12 +18,14 @@
  */
 package org.alfresco.service.cmr.workflow;
 
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Workflow Definition Deployment
  *  
  * @author davidc
  */
+@AlfrescoPublicApi
 public class WorkflowDeployment
 {
     /** Workflow Definition */

@@ -20,6 +20,7 @@ package org.alfresco.service;
 
 import java.util.Collection;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.cmis.CMISServices;
@@ -92,6 +93,7 @@ import org.alfresco.wcm.webproject.WebProjectService;
  *
  * @author David Caruana
  */
+@AlfrescoPublicApi
 public interface ServiceRegistry
 {
     // Service Bean Names

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.policy;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -30,6 +31,7 @@ import org.alfresco.service.namespace.QName;
  * @author David Caruana
  *
  */
+@AlfrescoPublicApi
 public class ClassBehaviourBinding implements BehaviourBinding
 {
     // The dictionary service

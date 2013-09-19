@@ -18,12 +18,14 @@
  */
 package org.alfresco.service.cmr.workflow;
 
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Workflow Transition.
  * 
  * @author davidc
  */
+@AlfrescoPublicApi
 public class WorkflowTransition
 {
     /** Transition Id */

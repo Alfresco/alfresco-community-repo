@@ -22,9 +22,9 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.service.cmr.repository.NodeRef;
-
 
 /**
  * Version interface.
@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Roy Wetherall, janv
  */
+@AlfrescoPublicApi
 public interface Version extends Serializable
 {
     /**

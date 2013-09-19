@@ -2,6 +2,7 @@ package org.alfresco.service.cmr.model;
 
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 
 /**
@@ -9,6 +10,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
  * 
  * @See FileFolderService
  */
+@AlfrescoPublicApi
 public interface SubFolderFilter
 {
     /**

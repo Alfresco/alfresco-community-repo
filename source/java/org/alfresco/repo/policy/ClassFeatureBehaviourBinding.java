@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.policy;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -30,7 +31,7 @@ import org.alfresco.service.namespace.QName;
  * @author David Caruana
  *
  */
-/*package*/ class ClassFeatureBehaviourBinding extends ClassBehaviourBinding
+/*package*/ @AlfrescoPublicApi class ClassFeatureBehaviourBinding extends ClassBehaviourBinding
 {
     // The feature qualified name (property or association)
     private QName featureQName;

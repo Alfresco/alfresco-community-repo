@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPolicy;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.AspectMissingException;
@@ -34,6 +35,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall, janv
  */
+@AlfrescoPublicApi
 public interface VersionService
 {
     /**

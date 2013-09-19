@@ -20,13 +20,14 @@ package org.alfresco.service.cmr.action;
 
 import java.io.Serializable;
 
-
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * The various states an Action can be in.
  * 
  * @author Nick Burch
  */
+@AlfrescoPublicApi
 public enum ActionStatus
 {
    /**

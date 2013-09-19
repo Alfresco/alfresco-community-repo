@@ -21,6 +21,7 @@ package org.alfresco.repo.node;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.policy.AssociationPolicy;
 import org.alfresco.repo.policy.ClassPolicy;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -35,8 +36,10 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface NodeServicePolicies 
 {
+    @AlfrescoPublicApi
     public interface BeforeCreateStorePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateStore");
@@ -49,6 +52,7 @@ public interface NodeServicePolicies
         public void beforeCreateStore(QName nodeTypeQName, StoreRef storeRef);
     }
     
+    @AlfrescoPublicApi
     public interface OnCreateStorePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateStore");
@@ -59,7 +63,8 @@ public interface NodeServicePolicies
          */
         public void onCreateStore(NodeRef rootNodeRef);
     }
-
+    
+    @AlfrescoPublicApi
     public interface BeforeCreateNodePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateNode");
@@ -78,6 +83,7 @@ public interface NodeServicePolicies
                         QName nodeTypeQName);
     }
     
+    @AlfrescoPublicApi
     public interface OnCreateNodePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode");
@@ -89,6 +95,7 @@ public interface NodeServicePolicies
         public void onCreateNode(ChildAssociationRef childAssocRef);
     }
     
+    @AlfrescoPublicApi
     public interface BeforeMoveNodePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeMoveNode");
@@ -103,6 +110,7 @@ public interface NodeServicePolicies
         public void beforeMoveNode(ChildAssociationRef oldChildAssocRef, NodeRef newParentRef);
     }
     
+    @AlfrescoPublicApi
     public interface OnMoveNodePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode");
@@ -114,7 +122,8 @@ public interface NodeServicePolicies
          */
         public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef);
     }
-
+    
+    @AlfrescoPublicApi
     public interface BeforeUpdateNodePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeUpdateNode");
@@ -127,6 +136,7 @@ public interface NodeServicePolicies
         public void beforeUpdateNode(NodeRef nodeRef);
     }
     
+    @AlfrescoPublicApi 
 	public interface OnUpdateNodePolicy extends ClassPolicy
 	{
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode");
@@ -138,7 +148,8 @@ public interface NodeServicePolicies
 		 */
 		public void onUpdateNode(NodeRef nodeRef);
 	}
-    
+	
+    @AlfrescoPublicApi
     public interface OnUpdatePropertiesPolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties");
@@ -159,6 +170,7 @@ public interface NodeServicePolicies
         static Arg ARG_2 = Arg.END_VALUE;
     }
     
+    @AlfrescoPublicApi 
 	public interface BeforeDeleteNodePolicy extends ClassPolicy
 	{
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode");
@@ -170,6 +182,7 @@ public interface NodeServicePolicies
 		public void beforeDeleteNode(NodeRef nodeRef);
 	}
 	
+    @AlfrescoPublicApi	
     public interface BeforeArchiveNodePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeArchiveNode");
@@ -181,6 +194,7 @@ public interface NodeServicePolicies
         public void beforeArchiveNode(NodeRef nodeRef);
     }
     
+    @AlfrescoPublicApi
 	public interface OnDeleteNodePolicy extends ClassPolicy
 	{
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode");
@@ -195,6 +209,7 @@ public interface NodeServicePolicies
 		public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived);
 	}
 	
+    @AlfrescoPublicApi 	
     public interface BeforeAddAspectPolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeAddAspect");
@@ -206,7 +221,8 @@ public interface NodeServicePolicies
          */
         public void beforeAddAspect(NodeRef nodeRef, QName aspectTypeQName);
     }
-
+    
+    @AlfrescoPublicApi
     public interface OnAddAspectPolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect");
@@ -218,7 +234,8 @@ public interface NodeServicePolicies
          */
         public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName);
     }
-
+    
+    @AlfrescoPublicApi
     public interface BeforeRemoveAspectPolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRemoveAspect");
@@ -230,7 +247,8 @@ public interface NodeServicePolicies
          */
         public void beforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName);
     }
-
+    
+    @AlfrescoPublicApi
     public interface OnRemoveAspectPolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect");
@@ -243,6 +261,7 @@ public interface NodeServicePolicies
         public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName);
     }
     
+    @AlfrescoPublicApi
     public interface OnRestoreNodePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRestoreNode");
@@ -253,7 +272,8 @@ public interface NodeServicePolicies
          */
         public void onRestoreNode(ChildAssociationRef childAssocRef);
     }
-
+    
+    @AlfrescoPublicApi
     public interface OnCreateChildAssociationPolicy extends AssociationPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation");
@@ -266,6 +286,7 @@ public interface NodeServicePolicies
         public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode);
     }
     
+    @AlfrescoPublicApi
     public interface BeforeDeleteChildAssociationPolicy extends AssociationPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteChildAssociation");
@@ -277,6 +298,7 @@ public interface NodeServicePolicies
         public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef);
     }
     
+    @AlfrescoPublicApi
     public interface OnDeleteChildAssociationPolicy extends AssociationPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteChildAssociation");
@@ -287,7 +309,8 @@ public interface NodeServicePolicies
          */
         public void onDeleteChildAssociation(ChildAssociationRef childAssocRef);
     }
-
+    
+    @AlfrescoPublicApi
     public interface OnCreateAssociationPolicy extends AssociationPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateAssociation");
@@ -298,7 +321,8 @@ public interface NodeServicePolicies
          */
         public void onCreateAssociation(AssociationRef nodeAssocRef);
     }
-
+    
+    @AlfrescoPublicApi
     public interface BeforeDeleteAssociationPolicy extends AssociationPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteAssociation");
@@ -309,7 +333,8 @@ public interface NodeServicePolicies
          */
         public void beforeDeleteAssociation(AssociationRef nodeAssocRef);
     }
-
+    
+    @AlfrescoPublicApi
     public interface OnDeleteAssociationPolicy extends AssociationPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteAssociation");
@@ -321,6 +346,7 @@ public interface NodeServicePolicies
         public void onDeleteAssociation(AssociationRef nodeAssocRef);
     }
     
+    @AlfrescoPublicApi
     public interface BeforeSetNodeTypePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeSetNodeType");
@@ -334,6 +360,7 @@ public interface NodeServicePolicies
         public void beforeSetNodeType(NodeRef nodeRef, QName oldType, QName newType);
     }
     
+    @AlfrescoPublicApi
     public interface OnSetNodeTypePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onSetNodeType");

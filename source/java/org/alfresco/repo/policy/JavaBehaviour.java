@@ -23,8 +23,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.springframework.extensions.surf.util.ParameterCheck;
-
 
 /**
  * Java based Behaviour.
@@ -35,6 +35,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @author David Caruana
  *
  */
+@AlfrescoPublicApi
 public class JavaBehaviour extends BaseBehaviour
 {
     // The object instance holding the method

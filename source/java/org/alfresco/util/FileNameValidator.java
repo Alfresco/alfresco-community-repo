@@ -19,11 +19,14 @@ package org.alfresco.util;
 
 import java.util.regex.Pattern;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Static checker for valid file names.
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public class FileNameValidator
 {
     /**

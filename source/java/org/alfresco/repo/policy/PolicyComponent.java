@@ -20,6 +20,7 @@ package org.alfresco.repo.policy;
 
 import java.util.Collection;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 
@@ -51,6 +52,7 @@ import org.alfresco.service.namespace.QName;
  * @author David Caruana
  *
  */
+@AlfrescoPublicApi
 public interface PolicyComponent
 {
     /**

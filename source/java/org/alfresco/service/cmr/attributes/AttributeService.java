@@ -20,6 +20,7 @@ package org.alfresco.service.cmr.attributes;
 
 import java.io.Serializable;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
@@ -35,6 +36,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
  * @author Derek Hulley
  * @since 3.4
  */
+@AlfrescoPublicApi
 public interface AttributeService
 {
     /**

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.policy;
 
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * A Behaviour represents an encapsulated piece of logic (system or business)
@@ -29,6 +30,7 @@ package org.alfresco.repo.policy;
  * 
  * @author David Caruana
  */
+@AlfrescoPublicApi
 public interface Behaviour
 {
     

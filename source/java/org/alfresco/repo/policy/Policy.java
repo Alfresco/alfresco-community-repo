@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.policy;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.NamespaceService;
 
 /**
@@ -25,6 +26,7 @@ import org.alfresco.service.namespace.NamespaceService;
  * 
  * @author David Caruana
  */
+@AlfrescoPublicApi
 public interface Policy
 {
     /**

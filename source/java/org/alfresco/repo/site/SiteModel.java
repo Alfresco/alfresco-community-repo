@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -29,6 +30,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface SiteModel
 {
     /** Site Model */

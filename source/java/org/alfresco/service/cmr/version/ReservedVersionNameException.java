@@ -20,9 +20,12 @@ package org.alfresco.service.cmr.version;
 
 import java.text.MessageFormat;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public class ReservedVersionNameException extends RuntimeException
 {
     /**

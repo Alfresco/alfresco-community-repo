@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.model;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -25,6 +26,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public class FileNotFoundException extends Exception
 {
     private static final long serialVersionUID = 2558540174977806285L;

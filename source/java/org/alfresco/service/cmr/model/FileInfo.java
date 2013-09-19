@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -34,6 +35,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public interface FileInfo extends PermissionCheckValue, Serializable
 {
     /**

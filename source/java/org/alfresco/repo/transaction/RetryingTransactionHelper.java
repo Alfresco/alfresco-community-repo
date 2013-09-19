@@ -34,6 +34,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -78,6 +79,7 @@ import org.springframework.jdbc.UncategorizedSQLException;
  *
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public class RetryingTransactionHelper
 {
     private static final String MSG_READ_ONLY = "permissions.err_read_only";
@@ -207,6 +209,7 @@ public class RetryingTransactionHelper
      * Callback interface
      * @author Derek Hulley
      */
+    @AlfrescoPublicApi
     public interface RetryingTransactionCallback<Result>
     {
         /**

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.policy;
 
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Behaviour binding to a Service.
@@ -25,6 +26,7 @@ package org.alfresco.repo.policy;
  * @author David Caruana
  *
  */
+@AlfrescoPublicApi
 public class ServiceBehaviourBinding implements BehaviourBinding
 {
     // The service

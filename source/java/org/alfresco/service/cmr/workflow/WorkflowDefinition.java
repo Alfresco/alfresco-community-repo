@@ -20,12 +20,15 @@ package org.alfresco.service.cmr.workflow;
 
 import java.io.Serializable;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 
 /**
  * Workflow Definition Data Object
  *  
  * @author davidc
  */
+@AlfrescoPublicApi
 public class WorkflowDefinition implements Serializable
 {
    private static final long serialVersionUID = -4320345925926816927L;

@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
@@ -30,6 +31,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public abstract class BaseBehaviour implements Behaviour 
 {
 	/** The notification frequency */

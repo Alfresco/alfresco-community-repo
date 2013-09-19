@@ -22,9 +22,12 @@ package org.alfresco.service.cmr.action;
 import java.io.Serializable;
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * @author Nick Smith
  */
+@AlfrescoPublicApi
 public interface ActionList<A extends Action> extends Serializable
 {
     /**

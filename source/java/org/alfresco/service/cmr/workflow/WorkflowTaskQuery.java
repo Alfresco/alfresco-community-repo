@@ -20,6 +20,7 @@ package org.alfresco.service.cmr.workflow;
 
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 
@@ -30,6 +31,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author davidc
  */
+@AlfrescoPublicApi
 public class WorkflowTaskQuery
 {
     // Engine Id

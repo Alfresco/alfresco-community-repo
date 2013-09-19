@@ -22,6 +22,7 @@ package org.alfresco.repo.nodelocator;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -31,6 +32,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 4.0
  *
  */
+@AlfrescoPublicApi
 public interface NodeLocatorService
 {
     /**

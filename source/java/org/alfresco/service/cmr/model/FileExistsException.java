@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.model;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -26,6 +27,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public class FileExistsException extends RuntimeException
 {
     private static final long serialVersionUID = -4133713912784624118L;

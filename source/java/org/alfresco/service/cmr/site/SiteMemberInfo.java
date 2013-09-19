@@ -19,12 +19,15 @@
 
 package org.alfresco.service.cmr.site;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Site member's information. The member can either be an individual or a group.
  * 
  * @author Jamal Kaabi-Mofrad
  * @since odin
  */
+@AlfrescoPublicApi
 public interface SiteMemberInfo
 {
 

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.policy;
 
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * A Behaviour Binding represents the way in which a Behaviour is bound
@@ -26,7 +27,7 @@ package org.alfresco.repo.policy;
  * @author David Caruana
  *
  */
-/*package*/ interface BehaviourBinding
+/*package*/ @AlfrescoPublicApi interface BehaviourBinding
 {
     /**
      * Gets a generalised form of the Binding.

@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -36,6 +37,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @param <P>  the policy interface
  */
+@AlfrescoPublicApi
 public class PropertyPolicyDelegate<P extends PropertyPolicy>
 {
     private DictionaryService dictionary;

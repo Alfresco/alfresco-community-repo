@@ -21,10 +21,12 @@ package org.alfresco.service.cmr.site;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
+@AlfrescoPublicApi
 public interface SiteInfo extends PermissionCheckValue
 {
     /**

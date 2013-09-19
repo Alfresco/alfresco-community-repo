@@ -20,6 +20,9 @@ package org.alfresco.service.cmr.workflow;
 
 import java.util.Date;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
+@AlfrescoPublicApi
 public class WorkflowTimer
 {
     /** Timer Id */

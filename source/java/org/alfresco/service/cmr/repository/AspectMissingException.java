@@ -20,6 +20,7 @@ package org.alfresco.service.cmr.repository;
 
 import java.text.MessageFormat;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -27,6 +28,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public class AspectMissingException extends RuntimeException
 {
     private static final long serialVersionUID = 3257852099244210228L;

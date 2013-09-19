@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
@@ -44,6 +45,7 @@ import org.alfresco.util.Pair;
  * 
  * @author Andy Hind
  */
+@AlfrescoPublicApi
 public interface PersonService
 {
     /**

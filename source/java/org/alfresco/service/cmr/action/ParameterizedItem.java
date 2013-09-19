@@ -21,11 +21,14 @@ package org.alfresco.service.cmr.action;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Rule item interface
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface ParameterizedItem
 {
 	/**

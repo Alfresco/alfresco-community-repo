@@ -20,6 +20,7 @@ package org.alfresco.service.cmr.security;
 
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.Auditable;
 
@@ -29,6 +30,7 @@ import org.alfresco.service.Auditable;
  *  
  * @author Andy Hind
  */
+@AlfrescoPublicApi
 public interface AuthenticationService
 {
     /**

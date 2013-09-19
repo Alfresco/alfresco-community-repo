@@ -20,6 +20,9 @@ package org.alfresco.service.cmr.action;
 
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
+@AlfrescoPublicApi
 public interface ParameterizedItemDefinition 
 {
 	/**

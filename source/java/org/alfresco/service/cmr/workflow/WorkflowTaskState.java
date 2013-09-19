@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.workflow;
 
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Workflow Task State
@@ -30,6 +31,7 @@ package org.alfresco.service.cmr.workflow;
  * 
  * @author davidc
  */
+@AlfrescoPublicApi
 public enum WorkflowTaskState
 {
     IN_PROGRESS,

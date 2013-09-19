@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.policy;
 
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Type of Policy.
@@ -25,6 +26,7 @@ package org.alfresco.repo.policy;
  * @author David Caruana
  *
  */
+@AlfrescoPublicApi
 public enum PolicyType
 {
     Class, 

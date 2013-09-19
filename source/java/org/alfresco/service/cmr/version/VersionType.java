@@ -18,6 +18,8 @@
  */
 package org.alfresco.service.cmr.version;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Version type enum.
  * <p>
@@ -26,4 +28,5 @@ package org.alfresco.service.cmr.version;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public enum VersionType {MAJOR, MINOR}

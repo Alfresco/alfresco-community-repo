@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.transaction;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
@@ -26,6 +27,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * 
  * @author dward
  */
+@AlfrescoPublicApi
 public class TooBusyException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = 1L;

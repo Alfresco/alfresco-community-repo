@@ -18,11 +18,14 @@
  */
 package org.alfresco.service.cmr.site;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Enumeration representing the different site visibilities.
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public enum SiteVisibility
 {
     PUBLIC,             // Public site.  Visible and accessible by all

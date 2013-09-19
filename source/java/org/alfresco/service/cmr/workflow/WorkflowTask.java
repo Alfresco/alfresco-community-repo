@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.workflow;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 
@@ -31,6 +32,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author davidc
  */
+@AlfrescoPublicApi
 public class WorkflowTask
 {
     /** Unique id of Task */

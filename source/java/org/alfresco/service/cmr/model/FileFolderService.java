@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.model;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
@@ -41,6 +42,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public interface FileFolderService
 {
     /**

@@ -18,6 +18,8 @@
  */
 package org.alfresco.service.cmr.lock;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Used to indicate lock status.
  * 
@@ -30,6 +32,7 @@ package org.alfresco.service.cmr.lock;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public enum LockStatus 
 {
     /**

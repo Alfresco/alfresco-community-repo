@@ -20,11 +20,14 @@ package org.alfresco.service.cmr.action;
 
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Composite action condition
  * 
  * @author Jean Barmash
  */
+@AlfrescoPublicApi
 public interface CompositeActionCondition extends ActionCondition
 {
 

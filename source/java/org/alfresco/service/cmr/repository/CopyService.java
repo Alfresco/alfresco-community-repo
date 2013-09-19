@@ -20,6 +20,7 @@ package org.alfresco.service.cmr.repository;
 
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
@@ -34,6 +35,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface CopyService
 {
     /**

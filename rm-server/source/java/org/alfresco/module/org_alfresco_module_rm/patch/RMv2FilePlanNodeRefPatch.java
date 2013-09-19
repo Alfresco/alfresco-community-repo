@@ -33,6 +33,7 @@ import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Period;
@@ -62,6 +63,7 @@ public class RMv2FilePlanNodeRefPatch extends AbstractModuleComponent
     private QNameDAO qnameDAO;
     private PermissionService permissionService;
     private RecordsManagementSecurityService recordsManagementSecurityService;
+    private RetryingTransactionHelper retryingTransactionHelper;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -109,6 +111,11 @@ public class RMv2FilePlanNodeRefPatch extends AbstractModuleComponent
         this.permissionService = permissionService;
     }
     
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    {
+        this.retryingTransactionHelper = retryingTransactionHelper;
+    }
+    
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
@@ -120,69 +127,80 @@ public class RMv2FilePlanNodeRefPatch extends AbstractModuleComponent
             logger.debug("RM Module RMv2FilePlanNodeRef Patch ...");
         }
         
-        Pair<Long, QName> aspectPair = qnameDAO.getQName(ASPECT_FILE_PLAN_COMPONENT);
-        if (aspectPair != null)
-        {
-            List<Long> filePlanComponents = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
-    
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug("   ... updating " + filePlanComponents.size() + " items" );
-            }
-            
-            behaviourFilter.disableBehaviour();
-            try
-            {
-                for (Long filePlanComponent : filePlanComponents)
-                {
-                    Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(filePlanComponent);
-                    NodeRef filePlanComponentNodeRef = recordPair.getSecond();
-                    
-                    NodeRef filePlan =  recordsManagementService.getFilePlan(filePlanComponentNodeRef);
-                    
-                    // set the file plan node reference
-                    if (nodeService.getProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF) == null)
-                    {
-                       nodeService.setProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF, filePlan);
-                    }                    
-                    
-                    // only set the rmadmin permissions on record categories, record folders and records
-                    FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(filePlanComponentNodeRef);
-                    if (FilePlanComponentKind.RECORD_CATEGORY.equals(kind) == true ||
-                        FilePlanComponentKind.RECORD_FOLDER.equals(kind) == true ||
-                        FilePlanComponentKind.RECORD.equals(kind) == true )
-                    {
-                        // ensure the that the records management role has read and file on the node
-                        Role adminRole = recordsManagementSecurityService.getRole(filePlan, "Administrator");
-                        if (adminRole != null)
-                        {
-                            permissionService.setPermission(filePlanComponentNodeRef, adminRole.getRoleGroupName(), RMPermissionModel.FILING, true);
-                        }
-                        
-                        // ensure that the default vital record default values have been set (RM-753)
-                        Serializable vitalRecordIndicator = nodeService.getProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR);
-                        if (vitalRecordIndicator == null)
-                        {
-                            nodeService.setProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR, false);
-                        }
-                        Serializable reviewPeriod = nodeService.getProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD);
-                        if (reviewPeriod == null)
-                        {
-                            nodeService.setProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD, new Period("none|0"));
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                behaviourFilter.enableBehaviour();
-            }
-        }
+        retryingTransactionHelper.doInTransaction(new Work(), false, true);
         
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("   ... complete RM Module RMv2FilePlanNodeRef Patch");
         }
         
-    }   
+    }
+    
+    private class Work implements RetryingTransactionHelper.RetryingTransactionCallback<Integer>
+    {	
+    	@Override
+    	public Integer execute() throws Throwable
+    	{
+    		Pair<Long, QName> aspectPair = qnameDAO.getQName(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
+            if (aspectPair != null)
+            {
+                List<Long> filePlanComponents = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
+        
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("   ... updating " + filePlanComponents.size() + " items" );
+                }
+                
+                behaviourFilter.disableBehaviour();
+                try
+                {
+                    for (Long filePlanComponent : filePlanComponents)
+                    {
+                        Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(filePlanComponent);
+                        NodeRef filePlanComponentNodeRef = recordPair.getSecond();
+                        
+                        NodeRef filePlan =  recordsManagementService.getFilePlan(filePlanComponentNodeRef);
+                        
+                        // set the file plan node reference
+                        if (nodeService.getProperty(filePlanComponentNodeRef, RecordsManagementModel.PROP_ROOT_NODEREF) == null)
+                        {
+                           nodeService.setProperty(filePlanComponentNodeRef, RecordsManagementModel.PROP_ROOT_NODEREF, filePlan);
+                        }                    
+                        
+                        // only set the rmadmin permissions on record categories, record folders and records
+                        FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(filePlanComponentNodeRef);
+                        if (FilePlanComponentKind.RECORD_CATEGORY.equals(kind) == true ||
+                            FilePlanComponentKind.RECORD_FOLDER.equals(kind) == true ||
+                            FilePlanComponentKind.RECORD.equals(kind) == true )
+                        {
+                            // ensure the that the records management role has read and file on the node
+                            Role adminRole = recordsManagementSecurityService.getRole(filePlan, "Administrator");
+                            if (adminRole != null)
+                            {
+                                permissionService.setPermission(filePlanComponentNodeRef, adminRole.getRoleGroupName(), RMPermissionModel.FILING, true);
+                            }
+                            
+                            // ensure that the default vital record default values have been set (RM-753)
+                            Serializable vitalRecordIndicator = nodeService.getProperty(filePlanComponentNodeRef, RecordsManagementModel.PROP_VITAL_RECORD_INDICATOR);
+                            if (vitalRecordIndicator == null)
+                            {
+                                nodeService.setProperty(filePlanComponentNodeRef, RecordsManagementModel.PROP_VITAL_RECORD_INDICATOR, false);
+                            }
+                            Serializable reviewPeriod = nodeService.getProperty(filePlanComponentNodeRef, RecordsManagementModel.PROP_REVIEW_PERIOD);
+                            if (reviewPeriod == null)
+                            {
+                                nodeService.setProperty(filePlanComponentNodeRef, RecordsManagementModel.PROP_REVIEW_PERIOD, new Period("none|0"));
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour();
+                }
+            }
+            // nothing to do
+    		return 0;
+    	}
+    }
 }

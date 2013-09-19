@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.domain.mimetype.MimetypeDAO;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -39,9 +38,10 @@ import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -66,6 +66,13 @@ public class DBQueryEngine implements QueryEngine
     private NamespaceService namespaceService;
     
     private NodeService nodeService;
+
+    private TenantService tenantService;
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
 
     public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
@@ -148,7 +155,12 @@ public class DBQueryEngine implements QueryEngine
         key.add("");
         Map<Set<String>, ResultSet> answer = new HashMap<Set<String>, ResultSet>();
         DBQuery dbQuery = (DBQuery)query;
-        dbQuery.setStoreId(nodeDAO.getStore(options.getStores().get(0)).getFirst());
+        
+        // MT
+        StoreRef storeRef = options.getStores().get(0);
+        storeRef = storeRef != null ? tenantService.getName(storeRef) : null;
+
+        dbQuery.setStoreId(nodeDAO.getStore(storeRef).getFirst());
         Pair<Long, QName> sysDeletedType = qnameDAO.getQName(ContentModel.TYPE_DELETED);
         if(sysDeletedType == null)
         {

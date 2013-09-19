@@ -49,6 +49,6 @@ public class VersionSeriesCheckedOutIdProperty extends AbstractProperty
             return null;
         }
 
-        return getGuid(nodeInfo.getCurrentNodeId()) + CMISConnector.ID_SEPERATOR + CMISConnector.PWC_VERSION_LABEL;
+        return connector.constructObjectId(nodeInfo.getCurrentNodeId(), CMISConnector.PWC_VERSION_LABEL);
     }
 }

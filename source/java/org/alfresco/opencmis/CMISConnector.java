@@ -36,6 +36,7 @@ import java.util.EnumSet;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -93,6 +94,7 @@ import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
@@ -1167,15 +1169,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     	}
     	else
     	{
-    		// if input is NodeRef, return NodeRef. If input is guid, return guid.
-    		if(NodeRef.isNodeRef(incomingNodeId))
-    		{
-    			sb.append(incomingNodeId);
-    		}
-    		else
-    		{
-    			sb.append(getGuid(incomingNodeId)); 
-    		}
+    	    sb.append(incomingNodeId);
     	}
     	if(versionLabel != null)
     	{
@@ -1187,28 +1181,19 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     private void createVersion(NodeRef nodeRef, VersionType versionType, String reason)
     {
-    	// disable auto-versioning behaviour for this
-    	disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-    	try
+    	if(versionService.getVersionHistory(nodeRef) == null)
     	{
-	    	if(versionService.getVersionHistory(nodeRef) == null)
-	    	{
-	    		// no version history. Make sure we have an initial major version 1.0.
-	            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(2);
-	            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
-	            versionProperties.put(VersionModel.PROP_DESCRIPTION, "Initial version");
-	            versionService.createVersion(nodeRef, versionProperties);
-	    	}
-	
-	        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(2);
-	        versionProperties.put(VersionModel.PROP_VERSION_TYPE, versionType);
-	        versionProperties.put(VersionModel.PROP_DESCRIPTION, reason);
-	        versionService.createVersion(nodeRef, versionProperties);
+    		// no version history. Make sure we have an initial major version 1.0.
+            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(2);
+            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+            versionProperties.put(VersionModel.PROP_DESCRIPTION, "Initial version");
+            versionService.createVersion(nodeRef, versionProperties);
     	}
-    	finally
-    	{
-    		enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-    	}
+
+        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(2);
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, versionType);
+        versionProperties.put(VersionModel.PROP_DESCRIPTION, reason);
+        versionService.createVersion(nodeRef, versionProperties);
     }
 
     private boolean isPublicApi()
@@ -1349,18 +1334,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
             versionProperties.put(VersionModel.PROP_DESCRIPTION, "Initial Version");
 
-            try
-            {
-            	// don't want auto-versioning to create a version
-            	disableBehaviour(ContentModel.ASPECT_VERSIONABLE, nodeRef);
-
-	            versionService.createVersion(nodeRef, versionProperties);
-		        getCheckOutCheckInService().checkout(nodeRef);
-            }
-            finally
-            {
-                enableBehaviour(ContentModel.ASPECT_VERSIONABLE, nodeRef);
-            }
+            getCheckOutCheckInService().checkout(nodeRef);
         }
         else if ((versioningState == VersioningState.MAJOR) || (versioningState == VersioningState.MINOR))
         {
@@ -1378,17 +1352,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     versioningState == VersioningState.MAJOR ? VersionType.MAJOR : VersionType.MINOR);
             versionProperties.put(VersionModel.PROP_DESCRIPTION, "Initial Version");
 
-            try
-            {
-            	// don't want auto-versioning to create a version
-                disableBehaviour(ContentModel.ASPECT_VERSIONABLE, nodeRef);
-
-                versionService.createVersion(nodeRef, versionProperties);
-            }
-            finally
-            {
-                enableBehaviour(ContentModel.ASPECT_VERSIONABLE, nodeRef);
-            }
+            versionService.createVersion(nodeRef, versionProperties);
         }
     }
 
@@ -2766,7 +2730,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     // set allowable actions
                     if (includeAllowableActions)
                     {
-                        hit.setAllowableActions(getAllowableActions(createNodeInfo(nodeRef)));
+                        CMISNodeInfoImpl nodeInfo = createNodeInfo(nodeRef);
+                        if(!nodeInfo.getObjectVariant().equals(CMISObjectVariant.NOT_EXISTING))
+                        {
+                            hit.setAllowableActions(getAllowableActions(nodeInfo));
+                        }
                     }
 
                     // set relationships
@@ -2811,33 +2779,74 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Sets property values.
      */
+    @SuppressWarnings({ "rawtypes" })
     public void setProperties(NodeRef nodeRef, TypeDefinitionWrapper type, Properties properties, String... exclude)
     {
         if (properties == null)
         {
             return;
         }
-
-        // Need to do this first
-        Map<String, PropertyData<?>> propsMap = properties.getProperties();
-        PropertyData<?> secondaryTypes = propsMap.get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS);
-        if(secondaryTypes != null && secondaryTypes.getValues().size() > 0)
+        
+        Map<String, PropertyData<?>> incomingPropsMap = properties.getProperties();
+        if (incomingPropsMap == null)
         {
-        	setProperty(nodeRef, type, secondaryTypes);
+            return;
         }
 
-        List<PropertyData<?>> props = properties.getPropertyList();
-        for (PropertyData<?> property : props)
+        // extract property data into an easier to use form
+        Map<String, Pair<TypeDefinitionWrapper, Serializable>> propsMap = new HashMap<String, Pair<TypeDefinitionWrapper, Serializable>>();
+        for (String propertyId : incomingPropsMap.keySet())
         {
-        	String propertyId = property.getId();
-        	if(propertyId.equals(PropertyIds.SECONDARY_OBJECT_TYPE_IDS))
-        	{
-        		// handled above
-        		continue;
-        	}
+            PropertyData<?> property = incomingPropsMap.get(propertyId);
+            PropertyDefinitionWrapper propDef = type.getPropertyById(property.getId());
+            if (propDef == null)
+            {
+                throw new CmisInvalidArgumentException("Property " + property.getId() + " is unknown!");
+            }
+
+            Updatability updatability = propDef.getPropertyDefinition().getUpdatability();
+            if ((updatability == Updatability.READONLY)
+                    || (updatability == Updatability.WHENCHECKEDOUT && !checkOutCheckInService.isWorkingCopy(nodeRef)))
+            {
+                throw new CmisInvalidArgumentException("Property " + property.getId() + " is read-only!");
+            }
+            TypeDefinitionWrapper propType = propDef.getOwningType();
+            Serializable value = getValue(property, propDef.getPropertyDefinition().getCardinality() == Cardinality.MULTI);
+            Pair<TypeDefinitionWrapper, Serializable> pair = new Pair<TypeDefinitionWrapper, Serializable>(propType, value);
+            propsMap.put(propertyId, pair);
+        }
+
+        // Need to do deal with secondary types first
+        Pair<TypeDefinitionWrapper, Serializable> pair = propsMap.get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS);
+        Serializable secondaryTypesProperty = (pair != null ? pair.getSecond() : null);
+        if(secondaryTypesProperty != null)
+        {
+            if (!(secondaryTypesProperty instanceof List))
+            {
+                throw new CmisInvalidArgumentException("Secondary types must be a list!");
+            }
+            List secondaryTypes = (List)secondaryTypesProperty;
+            if(secondaryTypes != null && secondaryTypes.size() > 0)
+            {
+                // add/remove secondary types/aspects
+                processSecondaryTypes(nodeRef, secondaryTypes, propsMap);
+            }
+        }
+
+        for (String propertyId : propsMap.keySet())
+        {
+            if(propertyId.equals(PropertyIds.SECONDARY_OBJECT_TYPE_IDS))
+            {
+                // already handled above
+                continue;
+            }
+
+            pair = propsMap.get(propertyId);
+            TypeDefinitionWrapper propType = pair.getFirst();
+            Serializable value = pair.getSecond();
             if (Arrays.binarySearch(exclude, propertyId) < 0)
             {
-                setProperty(nodeRef, type, property);
+                setProperty(nodeRef, propType, propertyId, value);
             }
         }
 
@@ -2853,6 +2862,93 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 {
                     setAspectProperties(nodeRef, isNameChanging, extension);
                     break;
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    private void processSecondaryTypes(NodeRef nodeRef, List secondaryTypes, Map<String, Pair<TypeDefinitionWrapper, Serializable>> propsToAdd)
+    {
+        // diff existing aspects and secondaryTypes/aspects list
+        Set<QName> existingAspects = nodeService.getAspects(nodeRef);
+        Set<QName> secondaryTypeAspects = new HashSet<QName>();
+        for(Object o : secondaryTypes)
+        {
+            String secondaryType = (String)o;
+            
+            TypeDefinitionWrapper wrapper = cmisDictionaryService.findType(secondaryType);
+            if(wrapper != null)
+            {
+                QName aspectQName = wrapper.getAlfrescoName();
+                secondaryTypeAspects.add(aspectQName);
+            }
+            else
+            {
+                throw new CmisInvalidArgumentException("Invalid secondary type id " + secondaryType);
+            }
+        }
+
+        Set<QName> ignore = new HashSet<QName>();
+        ignore.add(ContentModel.ASPECT_REFERENCEABLE);
+        ignore.add(ContentModel.ASPECT_LOCALIZED);
+
+        // aspects to add == the list of secondary types - existing aspects - ignored aspects
+        Set<QName> toAdd = new HashSet<QName>(secondaryTypeAspects);
+        toAdd.removeAll(existingAspects);
+        toAdd.removeAll(ignore);
+
+        // aspects to remove == existing aspects - secondary types
+        Set<QName> aspectsToRemove = new HashSet<QName>();
+        aspectsToRemove.addAll(existingAspects);
+        aspectsToRemove.removeAll(ignore);
+        Iterator<QName> it = aspectsToRemove.iterator();
+        while(it.hasNext())
+        {
+            QName aspectQName = it.next();
+            TypeDefinitionWrapper w = cmisDictionaryService.findNodeType(aspectQName);
+            if(w == null || secondaryTypeAspects.contains(aspectQName))
+            {
+                // the type is not exposed or is in the secondary types to set, so remove it from the to remove set
+                it.remove();
+            }
+        }
+
+        // first, remove aspects
+        for(QName aspectQName : aspectsToRemove)
+        {
+            nodeService.removeAspect(nodeRef, aspectQName);
+            // aspect is being removed so remove all of its properties from the propsToAdd map
+            TypeDefinitionWrapper w = cmisDictionaryService.findNodeType(aspectQName);
+            for(PropertyDefinitionWrapper wr : w.getProperties())
+            {
+                String propertyId = wr.getPropertyId();
+                propsToAdd.remove(propertyId);
+            }
+        }
+
+        // add aspects and properties
+        for(QName aspectQName : toAdd)
+        {
+            nodeService.addAspect(nodeRef, aspectQName, null);
+            
+            // get aspect properties
+            AspectDefinition aspectDef = dictionaryService.getAspect(aspectQName);
+            Map<QName, org.alfresco.service.cmr.dictionary.PropertyDefinition> aspectPropDefs = aspectDef.getProperties();
+            TypeDefinitionWrapper w = cmisDictionaryService.findNodeType(aspectQName);
+            // for each aspect property...
+            for(QName propQName : aspectPropDefs.keySet())
+            {
+                // find CMIS property id
+                PropertyDefinitionWrapper property = w.getPropertyByQName(propQName);
+                String propertyId = property.getPropertyId();
+                if(!propsToAdd.containsKey(propertyId))
+                {
+                    TypeDefinitionWrapper propType = property.getOwningType();
+                    // CMIS 1.1 secondary types specification requires that all secondary type properties are set
+                    // property not included in propsToAdd, add it with null value
+                    Pair<TypeDefinitionWrapper, Serializable> pair = new Pair<TypeDefinitionWrapper, Serializable>(propType, null);
+                    propsToAdd.put(propertyId, pair);
                 }
             }
         }
@@ -3176,62 +3272,39 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Sets a property value.
      */
-    @SuppressWarnings("rawtypes")
-	public void setProperty(NodeRef nodeRef, TypeDefinitionWrapper type, PropertyData<?> property)
+	public void setProperty(NodeRef nodeRef, TypeDefinitionWrapper type, String propertyId, Serializable value)
     {
-        if (property == null)
+        if (propertyId == null)
         {
             throw new CmisInvalidArgumentException("Cannot process not null property!");
         }
 
-        PropertyDefinitionWrapper propDef = type.getPropertyById(property.getId());
+        PropertyDefinitionWrapper propDef = type.getPropertyById(propertyId);
         if (propDef == null)
         {
-            throw new CmisInvalidArgumentException("Property " + property.getId() + " is unknown!");
+            throw new CmisInvalidArgumentException("Property " + propertyId + " is unknown!");
         }
 
         Updatability updatability = propDef.getPropertyDefinition().getUpdatability();
         if ((updatability == Updatability.READONLY)
                 || (updatability == Updatability.WHENCHECKEDOUT && !checkOutCheckInService.isWorkingCopy(nodeRef)))
         {
-            throw new CmisInvalidArgumentException("Property " + property.getId() + " is read-only!");
+            throw new CmisInvalidArgumentException("Property " + propertyId + " is read-only!");
         }
-
-        // get the value
-        Serializable value = getValue(property, propDef.getPropertyDefinition().getCardinality() == Cardinality.MULTI);
 
         if(propDef.getPropertyId().equals(PropertyIds.SECONDARY_OBJECT_TYPE_IDS))
         {
-        	if (!(value instanceof List))
-        	{
-        		throw new CmisInvalidArgumentException("Secondary types must be a list!");
-        	}
-        		
-        	List secondaryTypes = (List)value;
-        	for(Object o : secondaryTypes)
-        	{
-        		String secondaryType = (String)o;
-        		TypeDefinitionWrapper wrapper = cmisDictionaryService.findType(secondaryType);
-        		if(wrapper != null)
-        		{
-        			nodeService.addAspect(nodeRef, wrapper.getAlfrescoName(), null);
-        		}
-        		else
-        		{
-        			throw new CmisInvalidArgumentException("Invalid type id " + secondaryType);
-        		}
-        	}
+            throw new IllegalArgumentException("Cannot process " + PropertyIds.SECONDARY_OBJECT_TYPE_IDS + " in setProperty");
         }
         else
         {
         	QName propertyQName = propDef.getPropertyAccessor().getMappedProperty();
         	if (propertyQName == null)
         	{
-        		throw new CmisConstraintException("Unable to set property " + property.getId() + "!");
+        		throw new CmisConstraintException("Unable to set property " + propertyId + "!");
         	}
-
         
-        	if (property.getId().equals(PropertyIds.NAME))
+        	if (propertyId.equals(PropertyIds.NAME))
         	{
         		if (!(value instanceof String))
         		{
@@ -3259,25 +3332,25 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         		}
         		else
         		{
-            	// overflow check
-            	if(propDef.getPropertyDefinition().getPropertyType() == PropertyType.INTEGER && value instanceof BigInteger) 
-            	{
-            		org.alfresco.service.cmr.dictionary.PropertyDefinition def = dictionaryService.getProperty(propertyQName);
-            		QName dataDef = def.getDataType().getName();
-            		BigInteger bigValue = (BigInteger)value;
-
-            		if ((bigValue.compareTo(maxInt) > 0 || bigValue.compareTo(minInt) < 0 ) && dataDef.equals(DataTypeDefinition.INT))
-            		{
-            			throw new CmisConstraintException("Value is out of range for property " + propertyQName.getLocalName());
-            		}
-
-            		if ((bigValue.compareTo(maxLong) > 0 || bigValue.compareTo(minLong) < 0 ) && dataDef.equals(DataTypeDefinition.LONG))
-            		{
-            			throw new CmisConstraintException("Value is out of range for property " + propertyQName.getLocalName());
-            		}
-            	}
-
-        			nodeService.setProperty(nodeRef, propertyQName, value);
+                	// overflow check
+                	if(propDef.getPropertyDefinition().getPropertyType() == PropertyType.INTEGER && value instanceof BigInteger) 
+                	{
+                		org.alfresco.service.cmr.dictionary.PropertyDefinition def = dictionaryService.getProperty(propertyQName);
+                		QName dataDef = def.getDataType().getName();
+                		BigInteger bigValue = (BigInteger)value;
+    
+                		if ((bigValue.compareTo(maxInt) > 0 || bigValue.compareTo(minInt) < 0 ) && dataDef.equals(DataTypeDefinition.INT))
+                		{
+                			throw new CmisConstraintException("Value is out of range for property " + propertyQName.getLocalName());
+                		}
+    
+                		if ((bigValue.compareTo(maxLong) > 0 || bigValue.compareTo(minLong) < 0 ) && dataDef.equals(DataTypeDefinition.LONG))
+                		{
+                			throw new CmisConstraintException("Value is out of range for property " + propertyQName.getLocalName());
+                		}
+                	}
+    
+                	nodeService.setProperty(nodeRef, propertyQName, value);
         		}
         	}
         }

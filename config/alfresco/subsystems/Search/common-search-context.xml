@@ -116,7 +116,8 @@
         <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="nodeService" ref="nodeService"/>
-       <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="tenantService" ref="tenantService"/>
     </bean>
    
 </beans>

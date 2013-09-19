@@ -144,8 +144,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
     private static final QName PARAM_PARENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "parent");
     private static final QName PARAM_USERNAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "username");
-    private static final String LUCENE_QUERY_CHECKEDOUT = "+@cm\\:workingCopyOwner:${cm:username}";
-    private static final String LUCENE_QUERY_CHECKEDOUT_IN_FOLDER = "+@cm\\:workingCopyOwner:${cm:username} +PARENT:\"${cm:parent}\"";
+    private static final String LUCENE_QUERY_CHECKEDOUT = "+=@cm\\:workingCopyOwner:${cm:username}";
+    private static final String LUCENE_QUERY_CHECKEDOUT_IN_FOLDER = "+=@cm\\:workingCopyOwner:${cm:username} +=PARENT:\"${cm:parent}\"";
 
     private static final String MIN_FILTER = "cmis:name,cmis:baseTypeId,cmis:objectTypeId,"
             + "cmis:createdBy,cmis:creationDate,cmis:lastModifiedBy,cmis:lastModificationDate,"
@@ -811,7 +811,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         // prepare query
         SearchParameters params = new SearchParameters();
-        params.setLanguage(SearchService.LANGUAGE_LUCENE);
+        params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         QueryParameterDefinition usernameDef = new QueryParameterDefImpl(
                 PARAM_USERNAME,
                 connector.getDictionaryService().getDataType(DataTypeDefinition.TEXT),
@@ -1121,65 +1121,55 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisConstraintException("This document type is not versionable!");
         }
 
+        FileInfo fileInfo = connector.getFileFolderService().create(
+                parentInfo.getNodeRef(), name, type.getAlfrescoClass());
+        NodeRef nodeRef = fileInfo.getNodeRef();
+        connector.setProperties(nodeRef, type, properties, new String[] { PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
+        connector.applyPolicies(nodeRef, type, policies);
+        connector.applyACL(nodeRef, type, addAces, removeAces);
+
+        // handle content
+        File tempFile = null;
         try
         {
-        	// don't want auto-versioning to create a version
-            connector.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-
-	        FileInfo fileInfo = connector.getFileFolderService().create(
-	                parentInfo.getNodeRef(), name, type.getAlfrescoClass());
-	        NodeRef nodeRef = fileInfo.getNodeRef();
-	        connector.setProperties(nodeRef, type, properties, new String[] { PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
-	        connector.applyPolicies(nodeRef, type, policies);
-	        connector.applyACL(nodeRef, type, addAces, removeAces);
-
-	        // handle content
-	        File tempFile = null;
-	        try
+	        if (contentStream != null)
 	        {
-		        if (contentStream != null)
-		        {
-		            // write content
-		            String mimeType = parseMimeType(contentStream);
+	            // write content
+	            String mimeType = parseMimeType(contentStream);
 
-		            // copy stream to temp file
-		            // OpenCMIS does this for us ....
-		            tempFile = copyToTempFile(contentStream);
-		            final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
-		                
-		            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-		            writer.setMimetype(mimeType);
-		            writer.setEncoding(encoding.name());
-		            writer.putContent(tempFile);
-		        }
+	            // copy stream to temp file
+	            // OpenCMIS does this for us ....
+	            tempFile = copyToTempFile(contentStream);
+	            final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
+	                
+	            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
+	            writer.setMimetype(mimeType);
+	            writer.setEncoding(encoding.name());
+	            writer.putContent(tempFile);
 	        }
-	        finally
-	        {
-	        	if(tempFile != null)
-	        	{
-	        		removeTempFile(tempFile);
-	        	}
-	        }
-
-	        connector.extractMetadata(nodeRef);
-
-	        // generate "doclib" thumbnail asynchronously
-	        connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
-
-	        connector.applyVersioningState(nodeRef, versioningState);
-
-	        removeTempFile(tempFile);
-
-	        String objectId = connector.createObjectId(nodeRef);
-
-	        connector.getActivityPoster().postFileFolderAdded(nodeRef);
-	
-	        return objectId;
         }
         finally
         {
-            connector.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+        	if(tempFile != null)
+        	{
+        		removeTempFile(tempFile);
+        	}
         }
+
+        connector.extractMetadata(nodeRef);
+
+        // generate "doclib" thumbnail asynchronously
+        connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
+
+        connector.applyVersioningState(nodeRef, versioningState);
+
+        removeTempFile(tempFile);
+
+        String objectId = connector.createObjectId(nodeRef);
+
+        connector.getActivityPoster().postFileFolderAdded(nodeRef);
+
+        return objectId;
     }
 
     @Override
@@ -1216,9 +1206,6 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         try
         {
-        	// don't want auto-versioning to create a version
-            connector.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-
             FileInfo fileInfo = connector.getFileFolderService().copy(
                     sourceNodeRef, parentInfo.getNodeRef(), name);
             NodeRef nodeRef = fileInfo.getNodeRef();
@@ -1232,22 +1219,13 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
             connector.applyVersioningState(nodeRef, versioningState);
             
-//	        connector.setAutoVersionable(nodeRef);
-
             connector.getActivityPoster().postFileFolderAdded(nodeRef);
             
-//	        connector.createVersion(nodeRef, VersionType.MINOR, "Thumbnails");
-//            connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
-
             return connector.createObjectId(nodeRef);
         }
         catch (FileNotFoundException e)
         {
             throw new CmisContentAlreadyExistsException("An object with this name already exists!", e);
-        }
-        finally
-        {
-            connector.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
         }
     }
 
@@ -2002,24 +1980,14 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisConstraintException("Document is not versionable!");
         }
         
-        try
-        {
-        	// don't want auto-versioning to create a version
-            connector.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+        // check out
+        NodeRef pwcNodeRef = connector.getCheckOutCheckInService().checkout(nodeRef);
+        CMISNodeInfo pwcNodeInfo = createNodeInfo(pwcNodeRef);
+        objectId.setValue(pwcNodeInfo.getObjectId());
 
-	        // check out
-	        NodeRef pwcNodeRef = connector.getCheckOutCheckInService().checkout(nodeRef);
-	        CMISNodeInfo pwcNodeInfo = createNodeInfo(pwcNodeRef);
-	        objectId.setValue(pwcNodeInfo.getObjectId());
-	
-	        if (contentCopied != null)
-	        {
-	            contentCopied.setValue(connector.getFileFolderService().getReader(pwcNodeRef) != null);
-	        }
-        }
-        finally
+        if (contentCopied != null)
         {
-            connector.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+            contentCopied.setValue(connector.getFileFolderService().getReader(pwcNodeRef) != null);
         }
     }
 
@@ -2029,28 +1997,24 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         checkRepositoryId(repositoryId);
 
         CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
-
+        
         // only accept a PWC
         if (!info.isVariant(CMISObjectVariant.PWC))
         {
-            throw new CmisVersioningException("Object is not a PWC!");
+            NodeRef nodeRef = info.getNodeRef();
+            NodeRef workingCopyNodeRef = connector.getCheckOutCheckInService().getWorkingCopy(nodeRef);
+            info = getOrCreateNodeInfo(workingCopyNodeRef.getId());
+            if (!info.isVariant(CMISObjectVariant.PWC))
+            {
+                throw new CmisVersioningException("Object is not a PWC!");
+            }
         }
 
         // get object
         final NodeRef nodeRef = info.getNodeRef();
 
-        try
-        {
-        	// don't want auto-versioning to create a version
-            connector.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-
-	        // cancel check out
-	        connector.getCheckOutCheckInService().cancelCheckout(nodeRef);
-        }
-        finally
-        {
-            connector.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-        }
+        // cancel check out
+        connector.getCheckOutCheckInService().cancelCheckout(nodeRef);
     }
 
     @Override
@@ -2077,57 +2041,38 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         final File tempFile = copyToTempFile(contentStream);
         final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
 
-        try
+        // check in
+        // update PWC
+        connector.setProperties(nodeRef, type, properties,
+                new String[] { PropertyIds.OBJECT_TYPE_ID });
+        connector.applyPolicies(nodeRef, type, policies);
+        connector.applyACL(nodeRef, type, addAces, removeAces);
+
+        // handle content
+        if (contentStream != null)
         {
-        	// don't want auto-versioning to create a version
-            connector.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-
-	        // check in
-	        // update PWC
-	        connector.setProperties(nodeRef, type, properties,
-	                new String[] { PropertyIds.OBJECT_TYPE_ID });
-	        connector.applyPolicies(nodeRef, type, policies);
-	        connector.applyACL(nodeRef, type, addAces, removeAces);
-	
-	        // handle content
-	        if (contentStream != null)
-	        {
-	            // write content
-	            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-	            writer.setMimetype(parseMimeType(contentStream));
-	            writer.setEncoding(encoding.name());
-	            writer.putContent(tempFile);
-	        }
-	
-	        // check aspect
-	//        if (connector.getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == false)
-	//        {
-	//            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-	//            props.put(ContentModel.PROP_INITIAL_VERSION, false);
-	//            props.put(ContentModel.PROP_AUTO_VERSION, false);
-	//            connector.getNodeService().addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
-	//        }
-	
-	        // create version properties
-	        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(5);
-	        versionProperties.put(VersionModel.PROP_VERSION_TYPE, major ? VersionType.MAJOR
-	                : VersionType.MINOR);
-	        if (checkinComment != null)
-	        {
-	            versionProperties.put(VersionModel.PROP_DESCRIPTION, checkinComment);
-	        }
-	
-	        // check in
-            NodeRef newNodeRef = connector.getCheckOutCheckInService().checkin(nodeRef, versionProperties);
-
-            connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), newNodeRef);
-
-            objectId.setValue(connector.createObjectId(newNodeRef));
+            // write content
+            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
+            writer.setMimetype(parseMimeType(contentStream));
+            writer.setEncoding(encoding.name());
+            writer.putContent(tempFile);
         }
-        finally
+
+        // create version properties
+        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(5);
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, major ? VersionType.MAJOR
+                : VersionType.MINOR);
+        if (checkinComment != null)
         {
-            connector.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+            versionProperties.put(VersionModel.PROP_DESCRIPTION, checkinComment);
         }
+
+        // check in
+        NodeRef newNodeRef = connector.getCheckOutCheckInService().checkin(nodeRef, versionProperties);
+
+        connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), newNodeRef);
+
+        objectId.setValue(connector.createObjectId(newNodeRef));
         
         removeTempFile(tempFile);
     }
@@ -2605,19 +2550,6 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         return info;
     }
 
-    protected String getGuid(String nodeId)
-    {
-        int idx = nodeId.lastIndexOf("/");
-        if(idx != -1)
-        {
-            return nodeId.substring(idx+1);
-        }
-        else
-        {
-            return nodeId;
-        }
-    }
-
     /**
      * Collects the {@link ObjectInfo} about an object.
      * 
@@ -2722,7 +2654,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             info.setWorkingCopyId(null);
             info.setWorkingCopyOriginalId(null);
 
-            info.setVersionSeriesId(getGuid(ni.getCurrentNodeId()));
+            info.setVersionSeriesId(ni.getCurrentNodeId());
 
             if (ni.isPWC())
             {
@@ -2736,7 +2668,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
                 if (ni.hasPWC())
                 {
-                    info.setWorkingCopyId(getGuid(ni.getCurrentNodeId()) + CMISConnector.ID_SEPERATOR
+                    info.setWorkingCopyId(ni.getCurrentNodeId() + CMISConnector.ID_SEPERATOR
                             + CMISConnector.PWC_VERSION_LABEL);
                     info.setWorkingCopyOriginalId(ni.getCurrentObjectId());
                 } else

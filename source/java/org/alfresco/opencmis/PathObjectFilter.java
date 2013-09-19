@@ -2,6 +2,7 @@ package org.alfresco.opencmis;
 
 import java.util.List;
 
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -44,9 +45,16 @@ public class PathObjectFilter implements ObjectFilter
 	@Override
 	public boolean filter(NodeRef nodeRef)
 	{
-	    Path path = nodeService.getPath(nodeRef);
-	    String s = path.toPrefixString(this.namespaceService);
-	    return filter(s);
+	    try
+	    {
+    	    Path path = nodeService.getPath(nodeRef);
+    	    String s = path.toPrefixString(this.namespaceService);
+    	    return filter(s);
+	    }
+	    catch(AccessDeniedException e)
+	    {
+	        return true;
+	    }
 	}
 	
 	public boolean filter(String path)

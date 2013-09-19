@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -34,9 +35,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
@@ -88,7 +89,8 @@ public class CMISTest
     private VersionService versionService;
     private LockService lockService;
 
-	private AlfrescoCmisServiceFactory factory;
+	private AlfrescoCmisServiceFactory factory10;
+	private AlfrescoCmisServiceFactory factory11;
 	private SimpleCallContext context;
 
 	private ActionService actionService;
@@ -109,6 +111,33 @@ public class CMISTest
         public void init(Map<String, String> parameters)
         {
         	serviceFactory.init(parameters);
+        }
+
+        @Override
+        public void destroy()
+        {
+        }
+
+        @Override
+        public CmisService getService(CallContext context)
+        {
+            return serviceFactory.getService(context);
+        }
+    }
+    
+    /**
+     * Test class to provide the service factory
+     * 
+     * @author Derek Hulley
+     * @since 4.0
+     */
+    public static class TestCmisServiceFactory11 extends AbstractServiceFactory
+    {
+        private static AlfrescoCmisServiceFactory serviceFactory = (AlfrescoCmisServiceFactory) ctx.getBean("CMISServiceFactory1.1");
+        @Override
+        public void init(Map<String, String> parameters)
+        {
+            serviceFactory.init(parameters);
         }
 
         @Override
@@ -212,7 +241,7 @@ public class CMISTest
             return CmisVersion.CMIS_1_1;
         }
     }
-	
+
     @Before
     public void before()
     {
@@ -224,7 +253,8 @@ public class CMISTest
         this.versionService = (VersionService) ctx.getBean("versionService");
         this.lockService = (LockService) ctx.getBean("lockService");
         this.repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
-    	this.factory = (AlfrescoCmisServiceFactory)ctx.getBean("CMISServiceFactory");
+    	this.factory10 = (AlfrescoCmisServiceFactory)ctx.getBean("CMISServiceFactory");
+        this.factory11 = (AlfrescoCmisServiceFactory)ctx.getBean("CMISServiceFactory1.1");
     	this.cmisConnector = (CMISConnector) ctx.getBean("CMISConnector");
         this.context = new SimpleCallContext("admin", "admin");
     }
@@ -307,7 +337,7 @@ public class CMISTest
 
     	try
     	{
-    		cmisService = factory.getService(context);
+    		cmisService = factory10.getService(context);
     		T ret = callback.execute(cmisService);
     		return ret;
     	}
@@ -318,6 +348,25 @@ public class CMISTest
     			cmisService.close();
     		}
     	}
+    }
+    
+    private <T extends Object> T withCmisService11(CmisServiceCallback<T> callback)
+    {
+        CmisService cmisService = null;
+
+        try
+        {
+            cmisService = factory11.getService(context);
+            T ret = callback.execute(cmisService);
+            return ret;
+        }
+        finally
+        {
+            if(cmisService != null)
+            {
+                cmisService.close();
+            }
+        }
     }
     
     private static interface CmisServiceCallback<T>
@@ -524,7 +573,7 @@ public class CMISTest
 				}
 			});
     		
-    		CmisService service = factory.getService(context);
+    		CmisService service = factory10.getService(context);
     		try
     		{
 				List<RepositoryInfo> repositories = service.getRepositoryInfos(null);
@@ -546,7 +595,7 @@ public class CMISTest
 	    	// AtomPub cancel checkout
 	        try
 	        {
-	    		service = factory.getService(context);
+	    		service = factory10.getService(context);
 
 	    		// check allowable actions
 	        	ObjectData originalDoc = service.getObject(repositoryId, objectData.getId(), null, true, IncludeRelationships.NONE, null, false, true, null);
@@ -569,7 +618,7 @@ public class CMISTest
 
 	        try
 	        {
-	    		service = factory.getService(context);
+	    		service = factory10.getService(context);
 
 	    		// cancel checkout on pwc
 	    		service.deleteObjectOrCancelCheckOut(repositoryId, objectId.getValue(), Boolean.TRUE, null);
@@ -581,7 +630,7 @@ public class CMISTest
 
 	        try
 	        {
-	    		service = factory.getService(context);
+	    		service = factory10.getService(context);
 	    		
 	        	// get original document
 	        	ObjectData originalDoc = service.getObject(repositoryId, objectData.getId(), null, true, IncludeRelationships.NONE, null, false, true, null);
@@ -599,7 +648,7 @@ public class CMISTest
     		
 	        try
 	        {
-	    		service = factory.getService(context);
+	    		service = factory10.getService(context);
 	    		
 	        	// delete original document
 	        	service.deleteObject(repositoryId, objectData.getId(), true, null);
@@ -665,7 +714,7 @@ public class CMISTest
             FileInfo folderEmptyWithRule = createContent(folderNameEmptyRule, null, true);
             testFolderMap.put(folderEmptyWithRule, Boolean.TRUE);
 
-            CmisService service = factory.getService(context);
+            CmisService service = factory10.getService(context);
 
             try
             {
@@ -751,7 +800,7 @@ public class CMISTest
                 }
             });
 
-            CmisService service = factory.getService(context);
+            CmisService service = factory10.getService(context);
             try
             {
                 List<RepositoryInfo> repositories = service.getRepositoryInfos(null);
@@ -849,7 +898,7 @@ public class CMISTest
         	AuthenticationUtil.popAuthentication();
         }
 
-        CmisService cmisService = factory.getService(context);
+        CmisService cmisService = factory10.getService(context);
         try
         {
             // get repository id
@@ -901,6 +950,101 @@ public class CMISTest
         }
     }
 
+    @SuppressWarnings("rawtypes")
+    @Test
+    public void testSecondaryTypes()
+    {
+        CmisService cmisService = factory11.getService(context);
+        try
+        {
+            // get repository id
+            List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+            assertTrue(repositories.size() > 0);
+            RepositoryInfo repo = repositories.get(0);
+            final String repositoryId = repo.getId();
+            final String aspectName = "P:cm:indexControl";
+
+            System.out.println("START");
+
+            final String objectId = withCmisService11(new CmisServiceCallback<String>()
+            {
+                @Override
+                public String execute(CmisService cmisService)
+                {
+                    final PropertiesImpl properties = new PropertiesImpl();
+                    String objectTypeId = "cmis:document";
+                    properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, objectTypeId));
+                    String fileName = "textFile" + GUID.generate();
+                    properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, fileName));
+                    final ContentStreamImpl contentStream = new ContentStreamImpl(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Simple text plain document");
+
+                    String objectId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().getId(), contentStream, VersioningState.MAJOR, null, null);
+                    return objectId;
+                }
+            });
+
+            final Holder<String> objectIdHolder = new Holder<String>(objectId);
+
+            withCmisService11(new CmisServiceCallback<Void>()
+            {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    final PropertiesImpl properties = new PropertiesImpl();
+                    properties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, Arrays.asList(aspectName)));
+
+                    cmisService.updateProperties(repositoryId, objectIdHolder, null, properties, null);
+                    return null;
+                }
+            });
+
+            final Properties currentProperties = withCmisService11(new CmisServiceCallback<Properties>()
+            {
+                @Override
+                public Properties execute(CmisService cmisService)
+                {
+                    Properties properties = cmisService.getProperties(repositoryId, objectIdHolder.getValue(), null, null);
+                    return properties;
+                }
+            });
+
+            System.out.println("objectId = " + objectIdHolder.getValue());
+            List secondaryTypeIds = currentProperties.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
+            System.out.println("secondaryTypeIds = " + secondaryTypeIds);
+
+            secondaryTypeIds.remove(aspectName);
+            System.out.println("secondaryTypeIds = " + secondaryTypeIds);
+            final PropertiesImpl newProperties = new PropertiesImpl();
+            newProperties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypeIds));
+
+            withCmisService11(new CmisServiceCallback<Void>()
+            {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    cmisService.updateProperties(repositoryId, objectIdHolder, null, newProperties, null);
+                    return null;
+                }
+            });
+
+            Properties currentProperties1 = withCmisService11(new CmisServiceCallback<Properties>()
+            {
+                @Override
+                public Properties execute(CmisService cmisService)
+                {
+                    Properties properties = cmisService.getProperties(repositoryId, objectIdHolder.getValue(), null, null);
+                    return properties;
+                }
+            });
+            secondaryTypeIds = currentProperties1.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
+            System.out.println("secondaryTypeIds = " + secondaryTypeIds);
+        }
+        finally
+        {
+            cmisService.close();
+        }
+    }
+
     /**
      * Test for MNT-9089
      */
@@ -910,7 +1054,7 @@ public class CMISTest
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
-        CmisService cmisService = factory.getService(context);
+        CmisService cmisService = factory10.getService(context);
 
         try
         {
@@ -1052,7 +1196,7 @@ public class CMISTest
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
-        CmisService cmisService = factory.getService(context);
+        CmisService cmisService = factory10.getService(context);
 
         try
         {

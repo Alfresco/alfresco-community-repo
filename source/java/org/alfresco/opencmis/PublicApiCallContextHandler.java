@@ -5,11 +5,13 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.chemistry.opencmis.server.shared.CallContextHandler;
+import org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler;
 
-public class PublicApiCallContextHandler implements CallContextHandler
+public class PublicApiCallContextHandler extends BasicAuthCallContextHandler
 {
-	@Override
+    private static final long serialVersionUID = 8877878113507734452L;
+
+    @Override
 	public Map<String, String> getCallContextMap(HttpServletRequest request)
 	{
 		Map<String, String> map = new HashMap<String, String>();

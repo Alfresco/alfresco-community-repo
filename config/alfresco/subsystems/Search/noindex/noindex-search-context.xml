@@ -49,6 +49,12 @@
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="queryRegister">
+            <ref bean="search.queryRegisterComponent" />
+        </property>
     </bean>
     
     <alias name="search.indexerAndSearcherFactory" alias="search.admLuceneIndexerAndSearcherFactory"/>

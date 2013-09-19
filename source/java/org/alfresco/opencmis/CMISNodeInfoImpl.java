@@ -37,7 +37,6 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.repo.version.VersionModel;
-import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -366,7 +365,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 	        		// specific non-head version
 	        		String headVersionLabel = (String)connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
 	        		currentObjectId = connector.constructObjectId(currentNodeId, headVersionLabel);
-	
+
 	        		if (versionLabel.equals(headVersionLabel))
 	        		{
 	        			// the version label refers to the current head version
@@ -503,7 +502,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         }
 
         objecVariant = CMISObjectVariant.ASSOC;
-        objectId = connector.constructObjectId(associationRef, null);
+        objectId = CMISConnector.ASSOC_ID_PREFIX + associationRef.getId();
     }
 
     private void determineType()
@@ -583,7 +582,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
     public boolean isLatestVersion()
     {
-        return isPWC() || (isCurrentVersion() && !hasPWC());
+        return isCurrentVersion();
     }
 
     public boolean isLatestMajorVersion()
@@ -865,16 +864,16 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
     private NodeRef getLatestNonMajorVersionNodeRef()
     {
-        if (isPWC())
-        {
-            return nodeRef;
-        } else if (hasPWC())
-        {
-            return connector.getCheckOutCheckInService().getWorkingCopy(getCurrentNodeNodeRef());
-        } else
-        {
+//        if (isPWC())
+//        {
+//            return nodeRef;
+//        } else if (hasPWC())
+//        {
+//            return connector.getCheckOutCheckInService().getWorkingCopy(getCurrentNodeNodeRef());
+//        } else
+//        {
             return getCurrentNodeNodeRef();
-        }
+//        }
     }
 
     // TODO lock here??

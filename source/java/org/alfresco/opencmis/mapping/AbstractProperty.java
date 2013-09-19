@@ -109,7 +109,8 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
     {
         if (nodeInfo.containsPropertyValue(propertyName))
         {
-            return nodeInfo.getPropertyValue(propertyName);
+            Serializable value = nodeInfo.getPropertyValue(propertyName);
+            return value;
         } else
         {
             Serializable value = getValueInternal(nodeInfo);

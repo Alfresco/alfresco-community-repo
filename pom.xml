@@ -114,7 +114,7 @@
         <dependency>
             <groupId>org.alfresco.cmis.client</groupId>
             <artifactId>alfresco-opencmis-extension</artifactId>
-            <version>0.6</version>
+            <version>0.7</version>
             <exclusions>
                 <exclusion>
                     <groupId>junit</groupId>

@@ -43,10 +43,10 @@
       </property>
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
-   
+
    <bean id="publicapi.container" class="org.alfresco.rest.api.PublicApiRepositoryContainer" parent="webscripts.abstractcontainer" init-method="setup">
       <property name="name"><value>Public Api</value></property>
-      <property name="webScriptsRegistryCache" ref="publicapi.webScriptsRegistryCache" />
+	  <property name="webScriptsRegistryCache" ref="publicapi.webScriptsRegistryCache" />
       <!-- Use the time-limited transaction helper to keep request times to an acceptable duration -->
       <property name="transactionService" ref="transactionService" />
       <!-- The transaction helper used to generate error responses must be unlimited -->
@@ -758,15 +758,6 @@
         <property name="serviceName"        value="cmis" />
         <property name="baseUrlGenerator"   ref="baseUrlGenerator" />
         <property name="version"            value="1.1"/>
-    </bean>
-
-    <bean   id="cmisBrowserDispatcher1.0" class="org.alfresco.opencmis.PublicApiBrowserCMISDispatcher" init-method="init">
-        <property name="descriptorService"  ref="DescriptorService"/>
-        <property name="cmisServiceFactory" ref="publicApiCMISServiceFactory"/>
-        <property name="baseUrlGenerator"   ref="baseUrlGenerator"/>
-        <property name="registry"           ref="cmisDispatcherRegistry" />
-        <property name="serviceName"        value="cmis" />
-        <property name="version"            value="1.0"/>
     </bean>
 
     <bean   id="cmisBrowserDispatcher1.1" class="org.alfresco.opencmis.PublicApiBrowserCMISDispatcher" init-method="init">

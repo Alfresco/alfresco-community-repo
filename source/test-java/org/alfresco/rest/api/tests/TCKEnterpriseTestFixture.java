@@ -11,7 +11,9 @@ public class TCKEnterpriseTestFixture extends EnterpriseTestFixture
 		"classpath:alfresco/web-scripts-application-context-test.xml",
 		"rest-api-test-context.xml"
     };
-	
+
+	public final static String[] CLASS_LOCATIONS = new String[] {"classpath*:/publicapi/solr"};
+
     private static TCKEnterpriseTestFixture instance;
 
 	/*
@@ -35,7 +37,7 @@ public class TCKEnterpriseTestFixture extends EnterpriseTestFixture
 	@Override
 	protected JettyComponent makeJettyComponent()
 	{
-		JettyComponent jettyComponent = new CMISTCKJettyComponent(port, contextPath, servletName, configLocations, classLocations);
+		JettyComponent jettyComponent = new EnterpriseJettyComponent(port, contextPath, configLocations, classLocations);
 		return jettyComponent;
 	}
 

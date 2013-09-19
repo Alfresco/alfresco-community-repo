@@ -193,6 +193,7 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 		CMISServletConfig()
     	{
     		parameterNames.add(CmisAtomPubServlet.PARAM_CALL_CONTEXT_HANDLER);
+            parameterNames.add(CmisAtomPubServlet.PARAM_CMIS_VERSION);
 		}
 
 		@Override

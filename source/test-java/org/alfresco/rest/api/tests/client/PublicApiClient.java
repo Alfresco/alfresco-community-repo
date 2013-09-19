@@ -166,6 +166,11 @@ public class PublicApiClient
 	}
 
 	public CmisSession createPublicApiCMISSession(Binding binding, String version)
+    {
+       return createPublicApiCMISSession(binding, version, null);
+    }
+
+	public CmisSession createPublicApiCMISSession(Binding binding, String version, String objectFactoryName)
 	{
 		CmisSession cmisSession = null;
 
@@ -205,11 +210,14 @@ public class PublicApiClient
 			{
 				parameters.put(SessionParameter.REPOSITORY_ID, networkId);
 			}
-			parameters.put(SessionParameter.OBJECT_FACTORY_CLASS, AlfrescoObjectFactoryImpl.class.getName());
-			
+			if(objectFactoryName != null)
+			{
+			    parameters.put(SessionParameter.OBJECT_FACTORY_CLASS, objectFactoryName);
+			}
+
 			// create session
 			Session session = factory.createSession(parameters);
-			
+
 			cmisSession = new CmisSession(session);
 		}
 

@@ -2,13 +2,14 @@ package org.alfresco.rest.api.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.StringWriter;
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +20,7 @@ import java.util.Set;
 
 import org.alfresco.cmis.client.AlfrescoDocument;
 import org.alfresco.cmis.client.AlfrescoFolder;
+import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
@@ -70,6 +72,7 @@ import org.apache.chemistry.opencmis.client.api.ObjectId;
 import org.apache.chemistry.opencmis.client.api.OperationContext;
 import org.apache.chemistry.opencmis.client.api.Relationship;
 import org.apache.chemistry.opencmis.client.api.Repository;
+import org.apache.chemistry.opencmis.client.api.SecondaryType;
 import org.apache.chemistry.opencmis.client.api.Tree;
 import org.apache.chemistry.opencmis.client.runtime.OperationContextImpl;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
@@ -101,6 +104,35 @@ public class TestCMIS extends EnterpriseTestApi
 		this.cmisTypeExclusions = (QNameFilter)ctx.getBean("cmisTypeExclusions");
 	}
 
+	private void checkSecondaryTypes(Document doc, Set<String> expectedSecondaryTypes, Set<String> expectedMissingSecondaryTypes)
+	{
+	    final List<SecondaryType> secondaryTypesList = doc.getSecondaryTypes();
+	    assertNotNull(secondaryTypesList);
+	    List<String> secondaryTypes = new AbstractList<String>()
+	    {
+	        @Override
+	        public String get(int index)
+	        {
+	            SecondaryType type = secondaryTypesList.get(index);
+	            return type.getId();
+	        }
+
+	        @Override
+	        public int size()
+	        {
+	            return secondaryTypesList.size();
+	        }
+	    };
+	    if(expectedSecondaryTypes != null)
+	    {
+	        assertTrue("Missing secondary types: " + secondaryTypes, secondaryTypes.containsAll(expectedSecondaryTypes));
+	    }
+	    if(expectedMissingSecondaryTypes != null)
+	    {
+	        assertTrue("Expected missing secondary types but at least one is still present: " + secondaryTypes, !secondaryTypes.containsAll(expectedMissingSecondaryTypes));
+	    }
+	}
+	   
 	private String getBareObjectId(String objectId)
 	{
 		int idx = objectId.indexOf(";");
@@ -153,7 +185,7 @@ public class TestCMIS extends EnterpriseTestApi
 		}, personId, network1.getId());
 
 		publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
-		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0");
+		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
 		Nodes nodesProxy = publicApiClient.nodes();
 		Comments commentsProxy = publicApiClient.comments();
 
@@ -536,7 +568,7 @@ public class TestCMIS extends EnterpriseTestApi
 		Sites sitesProxy = publicApiClient.sites();
 		Comments commentsProxy = publicApiClient.comments();
 		publicApiClient.setRequestContext(new RequestContext(network1.getId(), person));
-		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0");
+		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
 		
 		ListResponse<MemberOfSite> sites = sitesProxy.getPersonSites(person, null);
 		assertTrue(sites.getList().size() > 0);
@@ -687,7 +719,7 @@ public class TestCMIS extends EnterpriseTestApi
 			OperationContext cmisOperationCtxOverride = new OperationContextImpl();
 			cmisOperationCtxOverride.setIncludeRelationships(IncludeRelationships.BOTH);
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2Id, cmisOperationCtxOverride));
-    		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0");
+    		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
 
 			CmisObject o1 = cmisSession.getObject(nodes.get(0).getId());
 			List<Relationship> relationships = o1.getRelationships();
@@ -837,7 +869,7 @@ public class TestCMIS extends EnterpriseTestApi
 
     	publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
     	
-		cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0");
+		cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
 
 		// test CMIS accepts NodeRefs and guids as input
 		// objectIds returned from public api CMIS are always the guid
@@ -942,11 +974,13 @@ public class TestCMIS extends EnterpriseTestApi
 		final NodeRef doc3NodeRef = documents.get(2);
 
 		publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-		CmisSession atomCmisSession10 = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0");
+		CmisSession atomCmisSession10 = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
 		CmisSession atomCmisSession11 = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.1");
 		CmisSession browserCmisSession11 = publicApiClient.createPublicApiCMISSession(Binding.browser, "1.1");
 
 		// Test that adding aspects works for both 1.0 and 1.1
+
+		// 1.0
 		{
 			AlfrescoDocument doc = (AlfrescoDocument)atomCmisSession10.getObject(doc1NodeRef.getId());
 
@@ -956,7 +990,8 @@ public class TestCMIS extends EnterpriseTestApi
 				@Override
 				public Void doWork() throws Exception
 				{
-					assertTrue(repoService.getAspects(doc1NodeRef).contains(ContentModel.ASPECT_TITLED));
+                    Set<QName> aspects = repoService.getAspects(doc1NodeRef);
+					assertTrue("Missing aspect in current set " + aspects, aspects.contains(ContentModel.ASPECT_TITLED));
 	
 					return null;
 				}
@@ -968,66 +1003,173 @@ public class TestCMIS extends EnterpriseTestApi
 				@Override
 				public Void doWork() throws Exception
 				{
-					assertFalse(repoService.getAspects(doc1NodeRef).contains(ContentModel.ASPECT_TITLED));
+                    Set<QName> aspects = repoService.getAspects(doc1NodeRef);
+					assertFalse("Unexpected aspect in current set " + aspects, aspects.contains(ContentModel.ASPECT_TITLED));
 	
 					return null;
 				}
 			}, person1Id, network1.getId());
 		}
 
+		// 1.1 atom (secondary types)
 		{
-			AlfrescoDocument doc = (AlfrescoDocument)atomCmisSession11.getObject(doc2NodeRef.getId());
+			final Document doc = (Document)atomCmisSession11.getObject(doc2NodeRef.getId());
 
-			doc = (AlfrescoDocument)doc.addAspect("S:cm:titled");
+			final List<SecondaryType> secondaryTypesList = doc.getSecondaryTypes();
+			final List<String> secondaryTypes = new ArrayList<String>();
+			for(SecondaryType secondaryType : secondaryTypesList)
+			{
+			    secondaryTypes.add(secondaryType.getId());   
+			}
+
+			secondaryTypes.add("P:sys:temporary");
+			secondaryTypes.add("P:cm:titled");
+			Map<String, Object> properties = new HashMap<String, Object>();
+			{
+			    // create a document with 2 secondary types
+			    properties.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypes);
+			}
+			Document doc1 = (Document)doc.updateProperties(properties);
+			checkSecondaryTypes(doc1, new HashSet<String>(Arrays.asList(new String[] {"P:sys:temporary", "P:cm:titled"})), null);
+
 			TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
 			{
 				@Override
 				public Void doWork() throws Exception
 				{
-					assertTrue(repoService.getAspects(doc2NodeRef).contains(ContentModel.ASPECT_TITLED));
-	
+                    Set<QName> aspects = repoService.getAspects(doc2NodeRef);
+					assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_TITLED));
+					assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_TEMPORARY));
+
 					return null;
 				}
 			}, person1Id, network1.getId());
-			
-			doc.removeAspect("S:cm:titled");
-			TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+
+			secondaryTypes.add("P:cm:author");
+			properties = new HashMap<String, Object>();
 			{
-				@Override
-				public Void doWork() throws Exception
-				{
-					assertFalse(repoService.getAspects(doc1NodeRef).contains(ContentModel.ASPECT_TITLED));
-	
-					return null;
-				}
-			}, person1Id, network1.getId());
+			    // create a document with 2 secondary types
+			    properties.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypes);
+			}
+			Document doc2 = (Document)doc1.updateProperties(properties);
+			checkSecondaryTypes(doc2, new HashSet<String>(Arrays.asList(new String[] {"P:sys:temporary", "P:cm:titled", "P:cm:author"})), null);
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    Set<QName> aspects = repoService.getAspects(doc2NodeRef);
+                    String title = (String)repoService.getProperty(doc2NodeRef, ContentModel.PROP_TITLE);
+                    assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_AUTHOR));
+                    assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_TEMPORARY));
+                    assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_TITLED));
+                    assertEquals(null, title);
+
+                    return null;
+                }
+            }, person1Id, network1.getId());
+
+            // remove a secondary type
+			secondaryTypes.remove("P:cm:titled");
+			properties = new HashMap<String, Object>();
+			{
+			    properties.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypes);
+			}
+			Document doc3 = (Document)doc2.updateProperties(properties);
+			checkSecondaryTypes(doc3, new HashSet<String>(Arrays.asList(new String[] {"P:sys:temporary", "P:cm:author"})),
+			        new HashSet<String>(Arrays.asList(new String[] {"P:cm:titled"})));
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    Set<QName> aspects = repoService.getAspects(doc2NodeRef);
+                    String title = (String)repoService.getProperty(doc2NodeRef, ContentModel.PROP_TITLE);
+                    assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_AUTHOR));
+                    assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_TEMPORARY));
+                    assertFalse("Unexpected aspect in current set " + aspects, aspects.contains(ContentModel.ASPECT_TITLED));
+                    assertEquals(null, title);
+
+                    return null;
+                }
+            }, person1Id, network1.getId());
 		}
 
+		// 1.1 browser (secondary types)
 		{
-			AlfrescoDocument doc = (AlfrescoDocument)browserCmisSession11.getObject(doc3NodeRef.getId());
+			Document doc = (Document)browserCmisSession11.getObject(doc3NodeRef.getId());
+			final List<SecondaryType> secondaryTypesList = doc.getSecondaryTypes();
+			final List<String> secondaryTypes = new ArrayList<String>();
+            for(SecondaryType secondaryType : secondaryTypesList)
+            {
+                secondaryTypes.add(secondaryType.getId());   
+            }
 
-			doc = (AlfrescoDocument)doc.addAspect("S:cm:titled");
+			secondaryTypes.add("P:sys:temporary");
+			secondaryTypes.add("P:cm:titled");
+			Map<String, Object> properties = new HashMap<String, Object>();
+			{
+			    // create a document with 2 secondary types
+			    properties.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypes);
+			}
+			Document doc1 = (Document)doc.updateProperties(properties);
+			checkSecondaryTypes(doc1, new HashSet<String>(Arrays.asList(new String[] {"P:sys:temporary", "P:cm:titled"})), null);
+
+			TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+	        {
+			    @Override
+			    public Void doWork() throws Exception
+			    {
+			        Set<QName> aspects = repoService.getAspects(doc3NodeRef);
+			        assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_TITLED));
+			        assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_TEMPORARY));
+			        return null;
+			    }
+	        }, person1Id, network1.getId());
+
+			secondaryTypes.add("P:cm:author");
+			properties = new HashMap<String, Object>();
+			{
+			    // create a document with 2 secondary types
+			    properties.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypes);
+			}
+			Document doc2 = (Document)doc1.updateProperties(properties);
+			checkSecondaryTypes(doc2, new HashSet<String>(Arrays.asList(new String[] {"P:sys:temporary", "P:cm:titled", "P:cm:author"})), null);
+			TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+	        {
+			    @Override
+			    public Void doWork() throws Exception
+			    {
+			        Set<QName> aspects = repoService.getAspects(doc3NodeRef);
+                    assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_TITLED));
+                    assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_TEMPORARY));
+                    assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_AUTHOR));
+
+			        return null;
+			    }
+	        }, person1Id, network1.getId());
+
+			secondaryTypes.remove("P:cm:titled");
+			properties = new HashMap<String, Object>();
+			{
+			    // create a document with 2 secondary types
+			    properties.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypes);
+			}
+			Document doc3 = (Document)doc2.updateProperties(properties);
+			checkSecondaryTypes(doc3, new HashSet<String>(Arrays.asList(new String[] {"P:sys:temporary", "P:cm:author"})),
+			        new HashSet<String>(Arrays.asList(new String[] {"P:cm:titled"})));
 			TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
 			{
-				@Override
-				public Void doWork() throws Exception
-				{
-					assertTrue(repoService.getAspects(doc3NodeRef).contains(ContentModel.ASPECT_TITLED));
-	
-					return null;
-				}
-			}, person1Id, network1.getId());
+			    @Override
+			    public Void doWork() throws Exception
+			    {
+			        Set<QName> aspects = repoService.getAspects(doc3NodeRef);
+                    assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_AUTHOR));
+                    assertTrue("Missing aspects in current set " + aspects, aspects.contains(ContentModel.ASPECT_TEMPORARY));
+                    assertFalse("Unexpected aspect in current set " + aspects, aspects.contains(ContentModel.ASPECT_TITLED));
 
-			doc.removeAspect("S:cm:titled");
-			TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-			{
-				@Override
-				public Void doWork() throws Exception
-				{
-					assertFalse(repoService.getAspects(doc1NodeRef).contains(ContentModel.ASPECT_TITLED));
-	
-					return null;
-				}
+			        return null;
+			    }
 			}, person1Id, network1.getId());
 		}
 	}
@@ -1062,7 +1204,7 @@ public class TestCMIS extends EnterpriseTestApi
 
 		// and that we can't get to it through CMIS
 		publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0");
+		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
 		try
 		{
 			cmisSession.getTypeDefinition("D:testCMIS:type1");
@@ -1106,7 +1248,7 @@ public class TestCMIS extends EnterpriseTestApi
 
 		// Create a document...
 		publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0");
+		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
 		AlfrescoFolder docLibrary = (AlfrescoFolder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
         Map<String, String> properties = new HashMap<String, String>();
         {
@@ -1180,7 +1322,7 @@ public class TestCMIS extends EnterpriseTestApi
 
 		// Create a document...
 		publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0");
+		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
 		AlfrescoFolder docLibrary = (AlfrescoFolder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
         Map<String, String> properties = new HashMap<String, String>();
         {

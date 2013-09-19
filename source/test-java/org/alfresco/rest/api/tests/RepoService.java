@@ -1255,8 +1255,7 @@ public class RepoService
 		
 		public TestPerson createUser()
 		{
-			int numPeople = people.size();
-			String username = "user" + (numPeople + 1);
+			String username = "user" + System.currentTimeMillis();
 			PersonInfo personInfo = new PersonInfo("FirstName", "LastName", username, "password", null, "skype", "location",
 					"telephone", "mob", "instant", "google");
 			TestPerson person = createUser(personInfo);

@@ -27,10 +27,7 @@ import org.junit.runners.Suite;
     TestPersonSites.class,
     TestSiteMembershipRequests.class,
     TestFavourites.class,
-    TestPublicApi128.class,
-//    TestEnterpriseAtomPubTCK.class,
-    TestPublicApiAtomPubTCK.class,
-    TestPublicApiBrowserTCK.class
+    TestPublicApi128.class
 })
 public class ApiTest
 {

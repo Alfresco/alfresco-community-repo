@@ -11,7 +11,9 @@ public class EnterprisePublicApiTestFixture extends EnterpriseTestFixture
 		"classpath:alfresco/web-scripts-application-context-test.xml",
 		"rest-api-test-context.xml"
     };
-	
+
+	public final static String[] CLASS_LOCATIONS = new String[] {"classpath*:/publicapi/lucene"};
+	   
     private static EnterprisePublicApiTestFixture instance;
 
 	/*

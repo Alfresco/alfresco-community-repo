@@ -12,7 +12,7 @@
          <constructor-arg name="alfrescoUrl" value="http://localhost:8081/alfresco/" />
          <constructor-arg name="maxNumberOfConnections" value="2" />
     </bean>
-
+<!-- 
     <bean id="Search" class="org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>false</value>
@@ -29,4 +29,5 @@
             </list>
         </property>
     </bean>
+     -->
 </beans>

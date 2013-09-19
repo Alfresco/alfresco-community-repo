@@ -885,7 +885,8 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     private void setPermissionDown(NodeRef nodeRef, String authority, String permission)
     {
         setPermissionImpl(nodeRef, authority, permission);
-        if (recordsManagementService.isRecordCategory(nodeRef) == true)
+        if (recordsManagementService.isFilePlan(nodeRef) == true ||
+        	recordsManagementService.isRecordCategory(nodeRef) == true)
         {
             List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)

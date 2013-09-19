@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstrac
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -67,7 +68,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
     @Override
     protected void executeImpl(Action action, final NodeRef actionedUponNodeRef)
     {
-        filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>()
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override
             public Void doWork() throws Exception
@@ -75,7 +76,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
                 propagateChangeToChildrenOf(actionedUponNodeRef);
                 return null;
             }
-        });        
+        }, AuthenticationUtil.getAdminUserName());        
     }
 
     /**
@@ -102,10 +103,11 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
         {
             NodeRef nextChild = nextAssoc.getChildRef();
 
-            if (filePlanService.isFilePlanComponent(nextChild) == true)
+            if (filePlanService.isFilePlanComponent(nextChild) == true &&
+                freezeService.isFrozen(nextChild) == false)
             {
                 // If the child is a record, then the VitalRecord aspect needs to be applied or updated
-                if (recordService.isRecord(nextChild))
+                if (recordService.isRecord(nextChild) == true)
                 {
                     if (parentVri)
                     {

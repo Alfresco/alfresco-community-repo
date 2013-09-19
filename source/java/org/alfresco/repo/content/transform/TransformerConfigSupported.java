@@ -99,48 +99,45 @@ public class TransformerConfigSupported extends TransformerPropertyNameExtractor
         return isSupported;
     }
     
-    // Class contains both supported and unsupported combinations to avoid having to
-    // add in an extra ANY to ANY combination which could be true or false. Having an
-    // extra combination might reduce understandability.
     private class SupportedAndUnsupportedTransformations
     {
         DoubleMap<String, String, Boolean> supportedTransformations;
-        DoubleMap<String, String, Boolean> unsupportedTransformations;
+        boolean supportedSet = false;
         
-        boolean isSupported(String sourceMimetype, String targetMimetype)
+        SupportedAndUnsupportedTransformations()
         {
-            boolean isSupported = true;
-            if (supportedTransformations != null)
-            {
-                Boolean sup = supportedTransformations.get(sourceMimetype, targetMimetype);            
-                isSupported = sup != null;
-            }
-            if (isSupported && unsupportedTransformations != null)
-            {
-                Boolean sup = unsupportedTransformations.get(sourceMimetype, targetMimetype);            
-                isSupported = sup == null;
-            }
-            return isSupported;
         }
-
+        
         public void put(String sourceMimetype, String targetMimetype, boolean supported)
         {
-            if (supported)
+            if (supportedTransformations == null)
             {
-                if (supportedTransformations == null)
+                supportedTransformations = new DoubleMap<String, String, Boolean>(ANY, ANY);
+                if (supported)
                 {
-                    supportedTransformations = new DoubleMap<String, String, Boolean>(ANY, ANY);
+                    supportedSet = true;
                 }
-                supportedTransformations.put(sourceMimetype, targetMimetype, supported);
             }
-            else
+            supportedTransformations.put(sourceMimetype, targetMimetype, supported);
+        }
+
+        boolean isSupported(String sourceMimetype, String targetMimetype)
+        {
+            // To be backward compatible, the default (ANY to ANY) transformation
+            // needs to be true if only unsupported values are set or neither
+            // unsupported nor supported values are set. If supported values are
+            // set the default is false.
+            boolean isSupported = !supportedSet;
+            
+            if (supportedTransformations != null)
             {
-                if (unsupportedTransformations == null)
+                Boolean sup = supportedTransformations.get(sourceMimetype, targetMimetype);
+                if (sup != null)
                 {
-                    unsupportedTransformations = new DoubleMap<String, String, Boolean>(ANY, ANY);
+                    isSupported = sup;
                 }
-                unsupportedTransformations.put(sourceMimetype, targetMimetype, supported);
             }
+            return isSupported;
         }
     }
 }

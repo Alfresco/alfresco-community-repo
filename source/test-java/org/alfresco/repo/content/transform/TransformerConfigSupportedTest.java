@@ -54,7 +54,8 @@ public class TransformerConfigSupportedTest
         
         mockMimetypes(mimetypeService,
                 "application/pdf", "pdf",
-                "image/png",       "png");
+                "image/png",       "png",
+                "text/xml",        "xml");
     }
 
     @Test
@@ -141,6 +142,72 @@ public class TransformerConfigSupportedTest
         supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.def"), "application/pdf", "image/png", options);
         assertEquals("def supported", true, supported);
         supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.xyz"), "application/pdf", "image/png", options);
+        assertEquals("xyz supported", false, supported);
+    }
+    
+    @Test
+    public void withoutDefaultTest()
+    {
+        mockProperties(transformerProperties,
+                "content.transformer.abc.extensions.pdf.*.supported", "false",
+                "content.transformer.abc.extensions.pdf.png.supported", "true");
+        
+        extractor = new TransformerConfigSupported(transformerProperties, mimetypeService);
+        boolean supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "application/pdf", "application/pdf", options);
+        assertEquals("abc supported", false, supported);
+        supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "application/pdf", "image/png", options);
+        assertEquals("def supported", true, supported);
+        supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "image/png", "text/xml", options);
+        assertEquals("xyz supported", false, supported);  // << not the same in withDefaultTest
+    }
+    
+    @Test
+    public void withDefaultTest()
+    {
+        mockProperties(transformerProperties,
+                "content.transformer.abc.extensions.*.*.supported", "true",  // << not the same in withoutDefaultTest
+                "content.transformer.abc.extensions.pdf.*.supported", "false",
+                "content.transformer.abc.extensions.pdf.png.supported", "true");
+        
+        extractor = new TransformerConfigSupported(transformerProperties, mimetypeService);
+        boolean supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "application/pdf", "application/pdf", options);
+        assertEquals("abc supported", false, supported);
+        supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "application/pdf", "image/png", options);
+        assertEquals("def supported", true, supported);
+        supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "image/png", "text/xml", options);
+        assertEquals("xyz supported", true, supported);  // << not the same in withoutDefaultTest
+    }
+    
+    @Test
+    public void withoutDefaultNegatedTest()
+    {
+        mockProperties(transformerProperties,
+                "content.transformer.abc.extensions.pdf.*.supported", "true",
+                "content.transformer.abc.extensions.pdf.png.supported", "false");
+        
+        extractor = new TransformerConfigSupported(transformerProperties, mimetypeService);
+        boolean supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "application/pdf", "application/pdf", options);
+        assertEquals("abc supported", true, supported);
+        supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "application/pdf", "image/png", options);
+        assertEquals("def supported", false, supported);
+        supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "image/png", "text/xml", options);
+        assertEquals("xyz supported", true, supported);
+    }
+    
+    @Test
+    public void withDefaultNegatedTest()
+    {
+        mockProperties(transformerProperties,
+                "content.transformer.abc.extensions.*.*.supported", "false",
+                "content.transformer.abc.extensions.pdf.*.supported", "true",
+                "content.transformer.abc.extensions.pdf.png.supported", "false");
+        
+        extractor = new TransformerConfigSupported(transformerProperties, mimetypeService);
+        boolean supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "application/pdf", "application/pdf", options);
+        assertEquals("abc supported", true, supported);
+        supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "application/pdf", "image/png", options);
+        assertEquals("def supported", false, supported);
+        supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "image/png", "text/xml", options);
         assertEquals("xyz supported", false, supported);
     }
     

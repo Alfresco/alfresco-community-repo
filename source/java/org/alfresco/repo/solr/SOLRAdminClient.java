@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
@@ -46,7 +45,7 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
-import org.quartz.impl.StdSchedulerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
@@ -57,7 +56,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
  * @since 4.0
  *
  */
-public class SOLRAdminClient implements ApplicationEventPublisherAware
+public class SOLRAdminClient implements ApplicationEventPublisherAware, DisposableBean
 {
 	private String solrHost;
 	private int solrPort;
@@ -67,12 +66,13 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	private String solrPassword;
 	private String solrPingCronExpression;
 	private CommonsHttpSolrServer server;
-	private int solrConnectTimeout; // ms
+	private int solrConnectTimeout = 30000; // ms
 
 	private ApplicationEventPublisher applicationEventPublisher;
 	private SolrTracker solrTracker;
 	
 	private HttpClientFactory httpClientFactory;
+    private Scheduler scheduler;
 
 	public SOLRAdminClient()
 	{
@@ -123,8 +123,16 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	{
 		this.httpClientFactory = httpClientFactory;
 	}
+    
+	/**
+     * @param scheduler the scheduler to set
+     */
+    public void setScheduler(Scheduler scheduler)
+    {
+        this.scheduler = scheduler;
+    }
 
-	public void init()
+    public void init()
 	{
     	ParameterCheck.mandatory("solrHost", solrHost);
     	ParameterCheck.mandatory("solrPort", solrPort);
@@ -150,19 +158,15 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 			server.getHttpClient().getState().setCredentials(new AuthScope(solrHost, solrPort, AuthScope.ANY_REALM), 
 					defaultcreds);
 			server.setConnectionTimeout(solrConnectTimeout);
+			server.setSoTimeout(20000);
 
-			this.solrTracker = new SolrTracker();
+			this.solrTracker = new SolrTracker(scheduler);
 		}
 		catch(MalformedURLException e)
 		{
 			throw new AlfrescoRuntimeException("Cannot initialise Solr admin http client", e);
 		}
 	}
-
-    public void shutdown()
-    {
-    	this.solrTracker.shutdown();
-    }
 
 	public QueryResponse basicQuery(ModifiableSolrParams params)
 	{
@@ -217,8 +221,9 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 
 	    private List<String> cores;
 
-		SolrTracker()
+		SolrTracker(Scheduler scheduler)
 		{
+		    this.scheduler = scheduler;
 	        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 	        writeLock = lock.writeLock();
 	        
@@ -306,19 +311,6 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	    {
 	    	try
 	    	{
-		        StdSchedulerFactory factory = new StdSchedulerFactory();
-		        Properties properties = new Properties();
-		        properties.setProperty("org.quartz.scheduler.instanceName", "SolrWatcherScheduler");
-		        properties.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
-		        properties.setProperty("org.quartz.threadPool.threadCount", "3");
-		        properties.setProperty("org.quartz.threadPool.makeThreadsDaemons", "true");
-		        properties.setProperty("org.quartz.scheduler.makeSchedulerThreadDaemon", "true");
-		        properties.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore");
-		        factory.initialize(properties);
-		        scheduler = factory.getScheduler();
-		
-		        scheduler.start();
-		
                 final String jobName = "SolrWatcher";
                 final String jobGroup = "Solr";
                 
@@ -355,18 +347,6 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	    {
 	    	scheduler.pauseTrigger(trigger.getName(), trigger.getGroup());
 	    }
-	    
-	    void shutdown()
-	    {
-	    	try
-	    	{
-	    		scheduler.shutdown();
-	    	}
-	    	catch(SchedulerException e)
-	    	{
-	    		throw new AlfrescoRuntimeException("Unable to shut down Solr Tracker cleanly", e);
-	    	}
-	    }
 
 	    void registerCores(List<String> cores)
 	    {
@@ -395,5 +375,14 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	        }
 	    }
 	}
+
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.DisposableBean#destroy()
+     */
+    @Override
+    public void destroy() throws Exception
+    {
+        solrTracker.stopTimer();
+    }
 
 }

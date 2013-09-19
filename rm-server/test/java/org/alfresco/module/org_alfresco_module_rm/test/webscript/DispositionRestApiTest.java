@@ -365,7 +365,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         assertEquals(1, events.length());
         JSONObject event1 = events.getJSONObject(0);
         assertEquals("case_closed", event1.get("name"));
-        assertEquals("Case Closed", event1.get("label"));
+        assertEquals("rmevent.case_closed", event1.get("label"));
         assertFalse(event1.getBoolean("complete"));
         assertFalse(event1.getBoolean("automatic"));
         

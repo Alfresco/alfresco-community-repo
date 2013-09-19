@@ -868,10 +868,13 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     {
         NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
         if (parent != null &&
-            recordsManagementService.isFilePlan(parent) == false)
+        	recordsManagementService.isFilePlanComponent(nodeRef) == true)
         {
             setPermissionImpl(parent, authority, RMPermissionModel.READ_RECORDS);
-            setReadPermissionUp(parent, authority);
+            if (recordsManagementService.isFilePlan(parent) == false)
+            {
+            	setReadPermissionUp(parent, authority);
+            }
         }
     }
     
@@ -910,7 +913,8 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
      */
     private void setPermissionImpl(NodeRef nodeRef, String authority, String permission)
     {
-        if (RMPermissionModel.FILING.equals(permission) == true)
+        if (RMPermissionModel.FILING.equals(permission) == true &&
+            permissionService.getInheritParentPermissions(nodeRef) == false)
         {
             // Remove record read permission before adding filing permission
             permissionService.deletePermission(nodeRef, authority, RMPermissionModel.READ_RECORDS);
@@ -928,21 +932,25 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
         {
             public Boolean doWork() throws Exception
             { 
-                // Delete permission on this node
-                permissionService.deletePermission(nodeRef, authority, permission);
-                
-                if (recordsManagementService.isRecordCategory(nodeRef) == true)
+                // can't delete permissions if inherited (eg hold and transfer containers)
+                if (permissionService.getInheritParentPermissions(nodeRef) == false)
                 {
-                    List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-                    for (ChildAssociationRef assoc : assocs)
-                    {
-                        NodeRef child = assoc.getChildRef();
-                        if (recordsManagementService.isRecordCategory(child) == true ||
-                            recordsManagementService.isRecordFolder(child) == true)
-                        {
-                            deletePermission(child, authority, permission);
-                        }
-                    }
+	                // Delete permission on this node
+	                permissionService.deletePermission(nodeRef, authority, permission);
+	                
+	                if (recordsManagementService.isRecordCategory(nodeRef) == true)
+	                {
+	                    List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+	                    for (ChildAssociationRef assoc : assocs)
+	                    {
+	                        NodeRef child = assoc.getChildRef();
+	                        if (recordsManagementService.isRecordCategory(child) == true ||
+	                            recordsManagementService.isRecordFolder(child) == true)
+	                        {
+	                            deletePermission(child, authority, permission);
+	                        }
+	                    }
+	                }
                 }
                 
                 return null;

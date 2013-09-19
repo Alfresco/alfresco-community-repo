@@ -24,9 +24,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.PropertyCheck;
@@ -72,6 +74,33 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     {
         super.onBootstrap(event);        
         PropertyCheck.mandatory(this, "writersCache", writersCache);
+    }
+    
+    /**
+     * Override to deal with the possibility of hard coded permission checks in core code.
+     * 
+     * Note:  Eventually we need to merge the RM permission model into the core to make this more rebust.
+     * 
+     * @see org.alfresco.repo.security.permissions.impl.ExtendedPermissionService#hasPermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    @Override
+    public AccessStatus hasPermission(NodeRef nodeRef, String perm)
+    {
+        AccessStatus acs = super.hasPermission(nodeRef, perm);
+        if (AccessStatus.DENIED.equals(acs) == true && 
+            PermissionService.READ.equals(perm) == true &&
+            nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) == true)
+        {
+            return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
+        }
+        else if (AccessStatus.DENIED.equals(acs) == true && 
+                 PermissionService.WRITE.equals(perm) == true &&
+                 nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) == true)
+        {
+            return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
+        }
+    
+        return acs;
     }
     
     /**

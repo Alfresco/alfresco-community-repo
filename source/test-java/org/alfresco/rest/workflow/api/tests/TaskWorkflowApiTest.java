@@ -2752,8 +2752,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             // Check pagination object for size
             JSONObject pagination = (JSONObject) list.get("pagination");
             assertNotNull(pagination);
-            assertEquals(31L, pagination.get("count"));
-            assertEquals(31L, pagination.get("totalItems"));
+            assertEquals(40L, pagination.get("count"));
+            assertEquals(40L, pagination.get("totalItems"));
             assertEquals(0L, pagination.get("skipCount"));
             assertFalse((Boolean) pagination.get("hasMoreItems"));
         }

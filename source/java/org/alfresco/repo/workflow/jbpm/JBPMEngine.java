@@ -876,8 +876,16 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     }
     
     @Override
-    public List<WorkflowInstance> getWorkflows(final WorkflowInstanceQuery query)
+    public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery)
     {
+        return getWorkflows(workflowInstanceQuery, 0, 0);
+    }
+    
+    @Override
+    public List<WorkflowInstance> getWorkflows(final WorkflowInstanceQuery query, int maxItems, int skipCount)
+    {
+        // MNT-9074 My Tasks fails to render if tasks quantity is excessive
+        // here don't use maxItems and skipCount
         try
         {
             List<ProcessInstance> instances = getProcessInstances(query);
@@ -889,6 +897,13 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
             String msg = messageService.getMessage(ERR_GET_ACTIVE_WORKFLOW_INSTS, query.getWorkflowDefinitionId());
             throw new WorkflowException(msg, e);
         }
+    }
+
+    @Override
+    public long countWorkflows(WorkflowInstanceQuery workflowInstanceQuery)
+    {
+        // MNT-9074 My Tasks fails to render if tasks quantity is excessive
+        return getWorkflows(workflowInstanceQuery).size();
     }
 
     @SuppressWarnings("unchecked")

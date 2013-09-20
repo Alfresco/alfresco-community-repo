@@ -2183,24 +2183,74 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     @Override
     public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery)
     {
+        return getWorkflows(workflowInstanceQuery, 0, 0);
+    }
+    
+    @Override
+    public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery, int maxItems, int skipCount)
+    {
         LinkedList<WorkflowInstance> results = new LinkedList<WorkflowInstance>();
         if (Boolean.FALSE.equals(workflowInstanceQuery.getActive()) == false)
         {
             //Add active. 
-            results.addAll(getWorkflowsInternal(workflowInstanceQuery, true));
+            results.addAll(getWorkflowsInternal(workflowInstanceQuery, true, maxItems, skipCount));
         }
         if (Boolean.TRUE.equals(workflowInstanceQuery.getActive()) == false)
         {
             //Add complete
-            results.addAll(getWorkflowsInternal(workflowInstanceQuery, false));
+            results.addAll(getWorkflowsInternal(workflowInstanceQuery, false, maxItems, skipCount));
         }
         
         return results;
     }
     
     @SuppressWarnings("unchecked")
-    private List<WorkflowInstance> getWorkflowsInternal(WorkflowInstanceQuery workflowInstanceQuery, boolean isActive)
+    private List<WorkflowInstance> getWorkflowsInternal(WorkflowInstanceQuery workflowInstanceQuery, boolean isActive, int maxItems, int skipCount)
     {
+        // MNT-9074 My Tasks fails to render if tasks quantity is excessive
+        HistoricProcessInstanceQuery query = createQuery(workflowInstanceQuery, isActive);
+
+        LinkedList<WorkflowInstance> results = new LinkedList<WorkflowInstance>();
+
+        List<HistoricProcessInstance> completedInstances;
+        if (maxItems > 0)
+        {
+            completedInstances = query.orderByProcessInstanceDuration().desc().listPage(skipCount, maxItems);
+        }
+        else
+        {
+            completedInstances = query.list();
+        }
+
+        List<WorkflowInstance> completedResults = typeConverter.convert(completedInstances);
+
+        results.addAll(completedResults);
+        return results;
+    }
+    
+    @Override
+    public long countWorkflows(WorkflowInstanceQuery workflowInstanceQuery)
+    {
+        // MNT-9074 My Tasks fails to render if tasks quantity is excessive
+        long total = 0;
+        if (Boolean.FALSE.equals(workflowInstanceQuery.getActive()) == false)
+        {
+            // Add active.
+            total += createQuery(workflowInstanceQuery, true).count();
+        }
+        if (Boolean.TRUE.equals(workflowInstanceQuery.getActive()) == false)
+        {
+            // Add complete
+            total += createQuery(workflowInstanceQuery, false).count();
+        }
+
+        return total;
+    }
+     
+    @SuppressWarnings("unchecked")
+    private HistoricProcessInstanceQuery createQuery(WorkflowInstanceQuery workflowInstanceQuery, boolean isActive)
+    {
+        // MNT-9074 My Tasks fails to render if tasks quantity is excessive
         String processDefId = workflowInstanceQuery.getWorkflowDefinitionId() == null ? null : createLocalId(workflowInstanceQuery.getWorkflowDefinitionId());
 
         HistoricProcessInstanceQuery query;
@@ -2324,8 +2374,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             }
         }
 
-        List<HistoricProcessInstance> completedInstances = query.list();
-        return typeConverter.convert(completedInstances);
+        return query;
     }
 
     /**

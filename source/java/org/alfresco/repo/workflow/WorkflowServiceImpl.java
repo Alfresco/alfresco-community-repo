@@ -482,7 +482,13 @@ public class WorkflowServiceImpl implements WorkflowService
     }
 
     @Override
-    public List<WorkflowInstance> getWorkflows(final WorkflowInstanceQuery workflowInstanceQuery)
+    public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery)
+    {
+        return  getWorkflows(workflowInstanceQuery, 0, 0);
+    }
+    
+    @Override
+    public List<WorkflowInstance> getWorkflows(final WorkflowInstanceQuery workflowInstanceQuery, final int maxItems, final int skipCount)
     {
         if(workflowInstanceQuery.getWorkflowDefinitionId() == null)
     {
@@ -492,14 +498,38 @@ public class WorkflowServiceImpl implements WorkflowService
             public List<WorkflowInstance> apply(String id)
             {
                 WorkflowComponent component = registry.getWorkflowComponent(id);
-                return component.getWorkflows(workflowInstanceQuery);
+                return component.getWorkflows(workflowInstanceQuery, maxItems, skipCount);
             }
         });
     }
 
         String engineId = BPMEngineRegistry.getEngineId(workflowInstanceQuery.getWorkflowDefinitionId());
         WorkflowComponent component = getWorkflowComponent(engineId);
-        return component.getWorkflows(workflowInstanceQuery);
+        return component.getWorkflows(workflowInstanceQuery, maxItems, skipCount);
+    }    
+
+    @Override
+    public long countWorkflows(final WorkflowInstanceQuery workflowInstanceQuery)
+    {
+        // MNT-9074 My Tasks fails to render if tasks quantity is excessive
+        if (workflowInstanceQuery.getWorkflowDefinitionId() == null)
+        {
+            List<String> ids = Arrays.asList(registry.getWorkflowComponents());
+
+            long total = 0;
+
+            for (String id : ids)
+            {
+                WorkflowComponent component = registry.getWorkflowComponent(id);
+                total += component.countWorkflows(workflowInstanceQuery);
+            }
+
+            return total;
+        }
+
+        String engineId = BPMEngineRegistry.getEngineId(workflowInstanceQuery.getWorkflowDefinitionId());
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        return component.countWorkflows(workflowInstanceQuery);
     }    
 
     /**

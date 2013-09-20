@@ -246,6 +246,25 @@ public interface WorkflowService
     public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery);
     
     /**
+     * Gets maxItems "in-flight" workflow instances according to the specified workflowInstanceQuery parameter
+     * Get maxItems and skipCount parameters form request
+     * 
+     * @param workflowInstanceQuery
+     * @param maxItems
+     * @param skipCount
+     * @return maxItems workflow instances
+     */
+    public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery, int maxItems, int skipCount);
+    
+    /**
+     * Get count of workflow instances
+     * 
+     * @param workflowInstanceQuery
+     * @return count of workflow instances
+     */
+    public long countWorkflows(WorkflowInstanceQuery workflowInstanceQuery);
+    
+    /**
      * Gets all active workflow instances.
      * 
      * @return  the list of "in-flight" workflow instances

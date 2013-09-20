@@ -288,8 +288,11 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
     {
         try
         {
+            propertyNames = nullDefaultParam(propertyNames);
             return "Properties removed: "+
-                    transformerConfig.removeProperties(nullDefaultParam(propertyNames));
+                    (propertyNames == null
+                    ? 0
+                    : transformerConfig.removeProperties(propertyNames));
         }
         catch (IllegalArgumentException e)
         {
@@ -315,6 +318,38 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
         }
     }
     
+    @Override
+    public String[] getContextNames()
+    {
+        return new String[] {"", "doclib", "index", "webpreview", "syncRule", "asyncRule"};
+    }
+
+    @Override
+    public String[] getCustomePropertyNames()
+    {
+        List<String> propertyNames = new ArrayList<String>();
+        String[] lines = getProperties(false).split("\\n");
+        for (String line: lines)
+        {
+            if (!line.isEmpty() && !line.startsWith("#") && line.indexOf(" # default=") == -1)
+            {
+                int i = line.indexOf('=');
+                if (i != 0)
+                {
+                    String propertyName = line.substring(0, i);
+                    propertyNames.add(propertyName);
+                }
+            }
+        }
+        return propertyNames.toArray(new String[propertyNames.size()]);
+    }
+    
+    @Override
+    public String[] getTestFileExtensionsAndMimetypes()
+    {
+        return transformerDebug.getTestFileExtensionsAndMimetypes();
+    }
+
     /**
      * Returns a full transformer name given a simple transformer name parameter.
      * @param simpleTransformerName the name of the transformer without the
@@ -427,6 +462,15 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
                 "   - transformerName to be checked. If blank all transformers are included\n" +
                 "   - use or context in which the transformation will be used (\"doclib\",\n" +
                 "     \"index\", \"webpreview\", \"syncRule\", \"asyncRule\"...) or blank for\n" +
-                "     the default.";
+                "     the default.\n"+
+                "\n" +
+                "getCustomePropertyNames()\n" +
+                "   Lists custom (non default) property names\n" +
+                "\n" +
+                "getContextNames()\n" +
+                "   Lists the names of the contexts or uses\n" +
+                "\n" +
+                "getTestFileExtensionsAndMimetypes()\n" +
+                "   Lists the extensions of available test files";
     }
 }

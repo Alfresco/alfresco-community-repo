@@ -94,6 +94,21 @@ public interface TransformerConfigMBean
     public String testTransform(String transformerName, String sourceExtension, String targetExtension, String use);
     
     /**
+     * Lists the names of the contexts or uses.
+     */
+    public String[] getContextNames();
+
+    /**
+     * Lists custom (non default) property names.
+     */
+    public String[] getCustomePropertyNames();
+    
+    /**
+     * Lists the extensions of available test files.
+     */
+    public String[] getTestFileExtensionsAndMimetypes();
+    
+    /**
      * Returns a description of each method and its parameters.
      */
     public String help();

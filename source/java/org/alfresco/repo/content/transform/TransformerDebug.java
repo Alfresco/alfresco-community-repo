@@ -1353,14 +1353,53 @@ public class TransformerDebug
         }.run(sourceExtension, targetExtension, use);
     }
     
+    public String[] getTestFileExtensionsAndMimetypes()
+    {
+        List<String> sourceExtensions = new ArrayList<String>();
+        Collection<String> sourceMimetypes = mimetypeService.getMimetypes(null);
+        for (String sourceMimetype: sourceMimetypes)
+        {
+            String sourceExtension = mimetypeService.getExtension(sourceMimetype);
+            if (loadQuickTestFile(sourceExtension) != null)
+            {
+                sourceExtensions.add(sourceExtension+" - "+sourceMimetype);
+            }
+        }
+
+        return sourceExtensions.toArray(new String[sourceExtensions.size()]);
+    }
+
+    /**
+     * Load one of the "The quick brown fox" files from the classpath.
+     * @param extension required, eg <b>txt</b> for the file quick.txt
+     * @return Returns a test resource loaded from the classpath or <tt>null</tt> if
+     *      no resource could be found.
+     */
+    private File loadQuickTestFile(String extension)
+    {
+        try
+        {
+            URL url = this.getClass().getClassLoader().getResource("quick/quick." + extension);
+            if (url == null)
+            {
+                return null;
+            }
+            return ResourceUtils.getFile(url);
+        }
+        catch (IOException e)
+        {
+            return null;
+        }
+    }
+
     private abstract class TestTransform
     {
         String run(String sourceExtension, String targetExtension, String use)
         {
             String debug;
             
-            String sourceMimetype = getMimetype(sourceExtension, true);
             String targetMimetype = getMimetype(targetExtension, false);
+            String sourceMimetype = getMimetype(sourceExtension, true);
             File sourceFile = loadQuickTestFile(sourceExtension);
             if (sourceFile == null)
             {
@@ -1424,28 +1463,5 @@ public class TransformerDebug
         }
         
         protected abstract void transform(ContentReader reader, ContentWriter writer, TransformationOptions options);
-        
-        /**
-         * Load one of the "The quick brown fox" files from the classpath.
-         * @param extension required, eg <b>txt</b> for the file quick.txt
-         * @return Returns a test resource loaded from the classpath or <tt>null</tt> if
-         *      no resource could be found.
-         */
-        private File loadQuickTestFile(String extension)
-        {
-            try
-            {
-                URL url = this.getClass().getClassLoader().getResource("quick/quick." + extension);
-                if (url == null)
-                {
-                    return null;
-                }
-                return ResourceUtils.getFile(url);
-            }
-            catch (IOException e)
-            {
-                return null;
-            }
-        }
     }
 }

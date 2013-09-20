@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.content.transform;
 
+import static org.alfresco.repo.content.transform.TransformerConfig.ANY;
 import static org.alfresco.repo.content.transform.TransformerConfig.AVAILABLE;
 import static org.alfresco.repo.content.transform.TransformerConfig.CONTENT;
 import static org.alfresco.repo.content.transform.TransformerConfig.ERROR_TIME;
@@ -139,11 +140,14 @@ public class TransformerPropertySetter
         
         for (String transformerSimpleName: transformerReferences.keySet())
         {
-            String name = TRANSFORMER+transformerSimpleName;
-            if (!allTransformerNames.contains(name))
+            if (!ANY.equals(transformerSimpleName))
             {
-                String line = transformerReferences.get(transformerSimpleName);
-                throw unexpectedProperty("Transformer "+transformerSimpleName+" does not exist", line);
+                String name = TRANSFORMER+transformerSimpleName;
+                if (!allTransformerNames.contains(name))
+                {
+                    String line = transformerReferences.get(transformerSimpleName);
+                    throw unexpectedProperty("Transformer "+transformerSimpleName+" does not exist", line);
+                }
             }
         }
     }

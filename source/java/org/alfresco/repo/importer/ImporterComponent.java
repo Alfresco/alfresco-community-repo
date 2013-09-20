@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.InvalidClassException;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -1011,6 +1012,10 @@ public class ImporterComponent implements ImporterService
             for (QName parentAspect : parentAspects)
             {
                 classDef = dictionaryService.getClass(parentAspect);
+                if (classDef == null)
+                {
+                    throw new InvalidClassException("Failed import for context '" + context.getParentContext() + "'.  Unknown aspect: ", parentAspect);
+                }
                 childAssocDefs = classDef.getChildAssociations();
                 for (ChildAssociationDefinition childAssocDef : childAssocDefs.values())
                 {

@@ -228,12 +228,12 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
 
     public void setRequiresTransaction(boolean requiresTransaction)
     {
-    	this.requiresTransaction = requiresTransaction;
+        this.requiresTransaction = requiresTransaction;
     }
     
     public boolean requiresTransaction()
     {
-    	return requiresTransaction;
+        return requiresTransaction;
     }
     
     /**
@@ -441,17 +441,17 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         }
         String report = applyInternal();
         
-     	if ((tenantAdminService != null) && tenantAdminService.isEnabled() && applyToTenants)
+        if ((tenantAdminService != null) && tenantAdminService.isEnabled() && applyToTenants)
         {
             if(logger.isDebugEnabled())
             {
                 logger.debug("call applyInternal for all tennants");
             }
-        	final List<Tenant> tenants = tenantAdminService.getAllTenants();
-        	        	
-        	BatchProcessWorkProvider<Tenant> provider = new BatchProcessWorkProvider<Tenant>()
-        	{
-        	    Iterator<Tenant> i = tenants.iterator();
+            final List<Tenant> tenants = tenantAdminService.getAllTenants();
+                        
+            BatchProcessWorkProvider<Tenant> provider = new BatchProcessWorkProvider<Tenant>()
+            {
+                Iterator<Tenant> i = tenants.iterator();
 
                 @Override
                 public int getTotalEstimatedWorkSize()
@@ -471,10 +471,10 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                     }
                     return chunk;
                 }
-        	};
+            };
 
-        	BatchProcessor<Tenant> batchProcessor = new BatchProcessor<Tenant>(
-        	        "AbstractPatch Processor for " + id,
+            BatchProcessor<Tenant> batchProcessor = new BatchProcessor<Tenant>(
+                    "AbstractPatch Processor for " + id,
                     transactionHelper,
                     provider, // collection of tenants
                     10, // worker threads, 
@@ -482,9 +482,9 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                     applicationEventPublisher,
                     logger,
                     1000);
-        	
-        	BatchProcessWorker worker = new BatchProcessWorker<Tenant>()
-        	{
+            
+            BatchProcessWorker worker = new BatchProcessWorker<Tenant>()
+            {
                 @Override
                 public String getIdentifier(Tenant entry)
                 {
@@ -515,17 +515,17 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                 {
                     
                 }
-        	};
-        	
-        	// Now do the work
+            };
+            
+            // Now do the work
             int numberOfInvocations = batchProcessor.process(worker, true);
             
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("batch worker finished processing id:" + id);
             }
             
-            if(batchProcessor.getTotalErrors() > 0)
+            if (batchProcessor.getTotalErrors() > 0)
             {
                 report = report + "\n" + " and failure during update of tennants total success: " + batchProcessor.getSuccessfullyProcessedEntries() + " number of errors: " +batchProcessor.getTotalErrors() + " lastError" + batchProcessor.getLastError();
             }
@@ -536,7 +536,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         }
 
         // done?
-    	return report;
+        return report;
     }
     
     /**
@@ -547,8 +547,8 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
      * @throws PatchException if the patch failed to be applied
      */
     public String applyAsync() throws PatchException
-    {	
-    	return apply(true);
+    {    
+        return apply(true);
     }
 
     /**
@@ -558,14 +558,13 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
      */
     public synchronized String apply() throws PatchException
     {
-    	return apply(false);
+        return apply(false);
     }
     
     private String apply(boolean async)
     {
-    
-    	if(!async)
-    	{
+        if (!async)
+        {
             // Do we bug out of patch execution
             if (deferred)
             {
@@ -577,8 +576,8 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
             {
                 throw new AlfrescoRuntimeException("The patch has already been executed: \n" + "   patch: " + this);
             }
-    	}
-    	
+        }
+        
         // check properties
         checkProperties();
 
@@ -593,22 +592,22 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
             {
                 public String doWork() throws Exception
                 {
-                	if(requiresTransaction())
-                	{
+                    if(requiresTransaction())
+                    {
                         // execute in a transaction
-                		RetryingTransactionCallback<String> patchWork = new RetryingTransactionCallback<String>()
-	                    {
-	                        public String execute() throws Exception
-	                        {
-	                        	return applyImpl();
-	                        }
-	                    };
-	                    return transactionService.getRetryingTransactionHelper().doInTransaction(patchWork, false, true);
-                	}
-                	else
-                	{
-                		return applyImpl();
-                	}
+                        RetryingTransactionCallback<String> patchWork = new RetryingTransactionCallback<String>()
+                        {
+                            public String execute() throws Exception
+                            {
+                                return applyImpl();
+                            }
+                        };
+                        return transactionService.getRetryingTransactionHelper().doInTransaction(patchWork, false, true);
+                    }
+                    else
+                    {
+                        return applyImpl();
+                    }
                 }
             };
             startTime = System.currentTimeMillis();
@@ -735,16 +734,18 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
      * Should the patch be deferred? And not run at bootstrap.
      * @param deferred
      */
-	public void setDeferred(boolean deferred) {
-		this.deferred = deferred;
-	}
+    public void setDeferred(boolean deferred)
+    {
+        this.deferred = deferred;
+    }
 
-	/*
-	 * 
-	 */
-	public boolean isDeferred() {
-		return deferred;
-	}
+    /*
+     * 
+     */
+    public boolean isDeferred()
+    {
+        return deferred;
+    }
 
     private int getReportingInterval(long soFar, long toGo)
     {

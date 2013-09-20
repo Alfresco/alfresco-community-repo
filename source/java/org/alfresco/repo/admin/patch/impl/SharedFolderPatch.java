@@ -48,15 +48,14 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * The first use-case is when there is a child called cm:shared and we want to patch a folder with app:shared
  * 
  * @author mrogers
- *
  */
 public class SharedFolderPatch extends GenericBootstrapPatch
 {
-	private JobLockService jobLockService;
-	
+    private JobLockService jobLockService;
+    
     private long LOCK_TIME_TO_LIVE=10000;
     private long LOCK_REFRESH_TIME=5000;
-	
+    
     private String renamePath;
     
     private Log logger = LogFactory.getLog(SharedFolderPatch.class);
@@ -103,9 +102,9 @@ public class SharedFolderPatch extends GenericBootstrapPatch
         }
     }
 
-	@Override
-	protected String applyInternal() throws Exception 
-	{   
+    @Override
+    protected String applyInternal() throws Exception 
+    {   
         StoreRef storeRef = importerBootstrap.getStoreRef();
         NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
         if (getRenamePath() != null)
@@ -123,25 +122,25 @@ public class SharedFolderPatch extends GenericBootstrapPatch
             }
             else if (results.size() == 1)
             {
-            	if(logger.isDebugEnabled())
-            	{
-            	    logger.debug("There is an existing node in the way path:" + getRenamePath());
-            	}
-            	// A node already exists that we must rename.
-            	NodeRef existingNodeRef = results.get(0);
-            	
-            	// get the path of the parent node e.g. company_home
-            	LinkedList<String> folderElements = new LinkedList<String>(Arrays.asList(getRenamePath().split("/")));
-            	folderElements.removeLast();
-            	
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("There is an existing node in the way path:" + getRenamePath());
+                }
+                // A node already exists that we must rename.
+                NodeRef existingNodeRef = results.get(0);
+                
+                // get the path of the parent node e.g. company_home
+                LinkedList<String> folderElements = new LinkedList<String>(Arrays.asList(getRenamePath().split("/")));
+                folderElements.removeLast();
+                
                 StringBuffer parentPath = new StringBuffer();
-            	
-            	for(String folder : folderElements)
-            	{
-            		parentPath.append("/");
-            		parentPath.append(folder);
-            	}
-            	
+                
+                for(String folder : folderElements)
+                {
+                    parentPath.append("/");
+                    parentPath.append(folder);
+                }
+                
                 List<NodeRef> parentResults = searchService.selectNodes(
                         rootNodeRef,
                         parentPath.toString(),
@@ -151,52 +150,56 @@ public class SharedFolderPatch extends GenericBootstrapPatch
                 
                 if(parentResults.size()==1)
                 {
-            	
+                
                     NodeRef parentNodeRef = parentResults.get(0);
                     
-                	if(logger.isDebugEnabled())
-                	{
-                	    logger.debug("Found the parent node - doing a move parentNodeRef:" + parentNodeRef);
-                	}
-            	
-            	    // rename the existing node
-            	    nodeService.moveNode(existingNodeRef, parentNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName( NamespaceService.APP_MODEL_1_0_URI, "shared"));
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("Found the parent node - doing a move parentNodeRef:" + parentNodeRef);
+                    }
+                
+                    // rename the existing node
+                    nodeService.moveNode(existingNodeRef, parentNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName( NamespaceService.APP_MODEL_1_0_URI, "shared"));
                     return I18NUtil.getMessage(MSG_RENAMED, renamePath);
                 }
                 else
                 {
                     // Something has gone horribly wrong if we get here - we have multiple parents, or none despite finding the node earlier
-                	throw new PatchException(ERR_MULTIPLE_FOUND, parentPath.toString());
+                    throw new PatchException(ERR_MULTIPLE_FOUND, parentPath.toString());
                 }
             }
         }
         
         // Else run the normal GenericBootstrapPatch implementation
         
-    	if(logger.isDebugEnabled())
-    	{
-    	    logger.debug("Node does not already exist, Running the Generic Bootstrap Patch");
-    	}
-		return super.applyInternal();
-	}
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("Node does not already exist, Running the Generic Bootstrap Patch");
+        }
+        return super.applyInternal();
+    }
 
-	public void setRenamePath(String renamePath) {
-		this.renamePath = renamePath;
-	}
+    public void setRenamePath(String renamePath)
+    {
+        this.renamePath = renamePath;
+    }
 
-	public String getRenamePath() {
-		return renamePath;
-	}
-	
-   public void setJobLockService(JobLockService jobLockService) {
-		this.jobLockService = jobLockService;
-	}
+    public String getRenamePath()
+    {
+        return renamePath;
+    }
+    
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
 
-	public JobLockService getJobLockService() {
-		return jobLockService;
-	}
+    public JobLockService getJobLockService()
+    {
+        return jobLockService;
+    }
 
-/**
+    /**
      * Job to initiate the {@link SharedFolderPatch} if it has been deferred
      * 
      * @author Mark Rogers

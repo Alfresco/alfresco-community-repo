@@ -64,10 +64,14 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
     {
         String role1 = GUID.generate();
         String role2 = GUID.generate();
+        String role3 = GUID.generate();
 
         // Create a couple or roles by hand
         filePlanRoleService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));
         filePlanRoleService.createRole(filePlan, role2, "My Test Role Too", getListOfCapabilities(5));
+        
+        //The user can either enter a plain text label or a key to look up in a property file.
+        filePlanRoleService.createRole(filePlan, role3, "bootstrap.rmadmin.lastName", getListOfCapabilities(5));
 
         // create test group
         String groupName = GUID.generate();
@@ -98,6 +102,12 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
             assertEquals(role2, roleObj.get("name"));
             assertEquals("My Test Role Too", roleObj.get("displayLabel"));
             checkCapabilities(roleObj, 5);
+            
+            //Custom role with a user entered message key
+            roleObj = roles.getJSONObject(role3);
+            assertNotNull(roleObj);
+            assertEquals(role3, roleObj.get("name"));
+            assertEquals("System Administrator", roleObj.get("displayLabel"));
 
             // Get the roles, specifying the file plan
             rsp = sendRequest(new GetRequest(getRoleUrlByFilePlan()),200);

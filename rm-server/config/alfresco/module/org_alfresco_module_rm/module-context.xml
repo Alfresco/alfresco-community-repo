@@ -110,15 +110,6 @@
    </bean>
 
    <!-- Event types -->
-
-   <bean id="rmEventResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
-      <property name="resourceBundles">
-         <list>
-            <value>alfresco.module.org_alfresco_module_rm.messages.rm-events</value>
-         </list>
-      </property>
-   </bean>
-
    <bean id="rmEventType" init-method="init" abstract="true">
       <property name="recordsManagementEventService" ref="recordsManagementEventService"/>
    </bean>

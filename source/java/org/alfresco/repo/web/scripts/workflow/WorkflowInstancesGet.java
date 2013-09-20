@@ -149,16 +149,26 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         {
             workflowInstanceQuery.setWorkflowDefinitionId(workflowDefinitionId);
         }
-        workflows.addAll(workflowService.getWorkflows(workflowInstanceQuery));
 
-        // sort workflows by due date
-        Collections.sort(workflows, workflowComparator);
+        // MNT-9074 My Tasks fails to render if tasks quantity is excessive
+        int maxItems = getIntParameter(req, PARAM_MAX_ITEMS, DEFAULT_MAX_ITEMS);
+        int skipCount = getIntParameter(req, PARAM_SKIP_COUNT, DEFAULT_SKIP_COUNT);
 
-        List<Map<String, Object>> results = new ArrayList<Map<String, Object>>(workflows.size());
+        workflows.addAll(workflowService.getWorkflows(workflowInstanceQuery, maxItems, skipCount));
+        
+        int total = (int) workflowService.countWorkflows(workflowInstanceQuery);
+        
+        List<Map<String, Object>> results = new ArrayList<Map<String, Object>>(total);
+        
+        // init empty list 
+        results.addAll(Arrays.asList((Map<String, Object>[]) new Map[total]));
 
         for (WorkflowInstance workflow : workflows)
         {
-            results.add(modelBuilder.buildSimple(workflow));
+            // set to special index
+            results.set(skipCount, modelBuilder.buildSimple(workflow));
+            
+            skipCount++;
         }
 
         // create and return results, paginated if necessary

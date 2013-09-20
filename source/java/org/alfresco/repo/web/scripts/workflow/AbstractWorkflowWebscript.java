@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.workflow;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -227,7 +228,17 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
     protected Map<String, Object> createResultModel(WebScriptRequest req, String dataPropertyName, 
                 List<Map<String, Object>> results)
     {
-        int totalItems = results.size();
+        // MNT-9074 My Tasks fails to render if tasks quantity is excessive
+        int totalItems = 0;
+        try
+        {
+            totalItems = getCapacity(results);
+        }
+        catch (Exception e)
+        {
+            totalItems = results.size();
+        }
+        
         int maxItems = getIntParameter(req, PARAM_MAX_ITEMS, DEFAULT_MAX_ITEMS);
         int skipCount = getIntParameter(req, PARAM_SKIP_COUNT, DEFAULT_SKIP_COUNT);
         
@@ -241,6 +252,19 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
         }
         
         return model;
+    }
+    
+    /**
+     * Get capacity instaead of size of list
+     * MNT-9074 My Tasks fails to render if tasks quantity is excessive
+     * @param list
+     * @return capacity of list
+     * @throws Exception
+     */
+    private int getCapacity(List<?> list) throws Exception {
+        Field dataField = ArrayList.class.getDeclaredField("elementData");
+        dataField.setAccessible(true);
+        return ((Object[]) dataField.get(list)).length;
     }
     
     /**

@@ -1014,7 +1014,9 @@ public class ImporterComponent implements ImporterService
                 classDef = dictionaryService.getClass(parentAspect);
                 if (classDef == null)
                 {
-                    throw new InvalidClassException("Failed import for context '" + context.getParentContext() + "'.  Unknown aspect: ", parentAspect);
+                    throw new InvalidClassException(
+                            "Failed import for context '" + context.getParentContext() + "'.  Unknown aspect: " + parentAspect,
+                            parentAspect);
                 }
                 childAssocDefs = classDef.getChildAssociations();
                 for (ChildAssociationDefinition childAssocDef : childAssocDefs.values())

@@ -1260,34 +1260,33 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
     }
     
-    private NodeRef getAuthorityOrNull(String name)
+    private NodeRef getAuthorityOrNull(final String name)
     {
         try
         {
-            if (AuthorityType.getAuthorityType(name).equals(AuthorityType.USER))
+            final AuthorityType authType = AuthorityType.getAuthorityType(name);
+            switch (authType)
             {
-                return personService.getPerson(name, false);
-            }
-            else if (AuthorityType.getAuthorityType(name).equals(AuthorityType.GUEST))
-            {
-                return personService.getPerson(name, false);
-            }
-            else if (AuthorityType.getAuthorityType(name).equals(AuthorityType.ADMIN))
-            {
-                return personService.getPerson(name, false);
-            }
-            else
-            {
-                Pair <String, String> cacheKey = cacheKey(name);
-                NodeRef result = authorityLookupCache.get(cacheKey);
-                if (result == null)
+                case USER:
+                    return personService.getPerson(name, false);
+                case GUEST:
+                case ADMIN:
+                case EVERYONE:
+                case OWNER:
+                    return null;
+                default:
                 {
-                    List<ChildAssociationRef> results = nodeService.getChildAssocs(getAuthorityContainer(),
-                            ContentModel.ASSOC_CHILDREN, QName.createQName("cm", name, namespacePrefixResolver), false);
-                    result = results.isEmpty() ? NULL_NODEREF :results.get(0).getChildRef(); 
-                    authorityLookupCache.put(cacheKey, result);
+                    Pair <String, String> cacheKey = cacheKey(name);
+                    NodeRef result = authorityLookupCache.get(cacheKey);
+                    if (result == null)
+                    {
+                        List<ChildAssociationRef> results = nodeService.getChildAssocs(getAuthorityContainer(),
+                                ContentModel.ASSOC_CHILDREN, QName.createQName("cm", name, namespacePrefixResolver), false);
+                        result = results.isEmpty() ? NULL_NODEREF :results.get(0).getChildRef(); 
+                        authorityLookupCache.put(cacheKey, result);
+                    }
+                    return result.equals(NULL_NODEREF) ? null : result;
                 }
-                return result.equals(NULL_NODEREF) ? null : result;
             }
         }
         catch (NoSuchPersonException e)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,6 +32,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -62,14 +63,8 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
 {
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
     
-    private MessageService messageService;
-    private NodeService nodeService;
-    private MutableAuthenticationService authenticationService;
-    private ContentService contentService;
-
     private static final String BASE_BUNDLE_NAME = "testMessages";
     private static final String BASE_RESOURCE_CLASSPATH = "org/alfresco/repo/i18n/";
-    
     
     private static final String PARAM_VALUE = "television";
     private static final String MSG_YES = "msg_yes";    
@@ -82,6 +77,14 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     private static final String VALUE_FR_NO = "Non";
     private static final String VALUE_FR_PARAMS = "Que non " + PARAM_VALUE + "?";
    
+    private MessageService messageService;
+    private NodeService nodeService;
+    private MutableAuthenticationService authenticationService;
+    private ContentService contentService;
+    private DictionaryDAO dictionaryDAO;
+    private TransactionService transactionService;
+    private AuthenticationComponent authenticationComponent;
+    
     /**
      * Test user details
      */
@@ -91,10 +94,6 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
      * Test store ref
      */
     private StoreRef testStoreRef;
-
-    private TransactionService transactionService;
-
-    private AuthenticationComponent authenticationComponent;
 
     private UserTransaction testTX;
     
@@ -114,6 +113,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
         contentService = (ContentService) applicationContext.getBean("ContentService");
         transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
+        dictionaryDAO = (DictionaryDAO) applicationContext.getBean("dictionaryDAO");
         
         // Re-set the current locale to be the default
         Locale.setDefault(Locale.ENGLISH);
@@ -427,4 +427,50 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
          assertEquals(VALUE_PARAMS, messageService.getMessage(MSG_PARAMS, Locale.getDefault(), new Object[]{PARAM_VALUE}));
      }  
 
+    /**
+    * See MNT-9462
+    */
+    @SuppressWarnings("deprecation")
+    public void testDictionaryDAOLock()
+    {
+        class DictionaryDAOThread extends Thread
+        {
+            @Override
+            public void run()
+            {
+                dictionaryDAO.destroy();
+                dictionaryDAO.init();
+            }
+        }
+        class MessageServiceThread extends Thread
+        {
+            @Override
+            public void run()
+            {
+                messageService.destroy();
+                messageService.getMessage(MSG_YES);
+            }
+        }
+        DictionaryDAOThread ddt = new DictionaryDAOThread();
+        MessageServiceThread mst = new MessageServiceThread();
+        ddt.start();
+        mst.start();
+        try
+        {
+            ddt.join(1000);
+            mst.join(1000);
+        }
+        catch (InterruptedException ie)
+        {
+            ddt.interrupt();
+            mst.interrupt();
+            fail("Threads were deadlocked.");
+        }
+        if (ddt.isAlive() || mst.isAlive())
+        {
+            ddt.stop();
+            mst.stop();
+            fail("Threads were deadlocked.");
+        }
+    }
 }

@@ -52,6 +52,7 @@ import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
 import org.alfresco.repo.rendition.executer.ReformatRenderingEngine;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
@@ -544,7 +545,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      */
     protected abstract class AbstractNodeModifyingRunnable implements Runnable
     {
-        protected Throwable modicationException;
+        protected Throwable modificationException;
         protected NodeRef nodeRef;
         
         public AbstractNodeModifyingRunnable(NodeRef nodeRef)
@@ -552,9 +553,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
             this.nodeRef = nodeRef;
         }
         
-        public Throwable getModicationException()
+        public Throwable getModificationException()
         {
-            return modicationException;
+            return modificationException;
         }
 
         protected abstract void modifyNode(NodeRef nodeRef);
@@ -562,27 +563,28 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         @Override
         public void run()
         {
-            // Try to check out the document while it's rendering
-            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                    {
-                        public Void execute() throws Throwable
-                        {
-                            // Wait a sufficient time for content transformer to start
-                            Thread.sleep(2000);
-                            
-                            try
-                            {
-                                modifyNode(nodeRef);
-                            }
-                            catch (Throwable e)
-                            {
-                                // Don't re-throw here or the node modification will just be retried
-                                modicationException = e;
-                            }
-                            
-                            return null;
-                        }
-                    });
+            RetryingTransactionCallback<Void> txnWork = new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    // Wait a sufficient time for content transformer to start
+                    Thread.sleep(2000);
+                    modifyNode(nodeRef);
+                    return null;
+                }
+            };
+            // MNT-9598: RenditionServiceIntegrationTest failing on DB2
+            //           We have to give the transaction reties a chance i.e. DO NOT ABSORB EXCEPTIONS inside transaction.
+            //           Retrying is standard behaviour so absorbing the exception but still testing for it is guaranteeing failure.
+            try
+            {
+                transactionHelper.doInTransaction(txnWork);
+            }
+            catch (Exception e)
+            {
+                modificationException = e;
+            }
         }
     }
     
@@ -649,13 +651,12 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         // and will always succeed after the rendition is complete, but due to the 
         // sleep in AbstractNodeModifyingRunnable isModificationUnblocked will still 
         // be false if there was a failure
-        String message = null;
-        if (nodeModifyingRunnable.getModicationException() != null)
+        if (nodeModifyingRunnable.getModificationException() != null)
         {
-            message = nodeModifyingRunnable.getModicationException().getMessage();
+            throw new RuntimeException(
+                    "Modification of node during long running rendition failed",
+                    nodeModifyingRunnable.getModificationException());
         }
-        assertNull("Modification of node during long running rendition failed: " + message, 
-                nodeModifyingRunnable.getModicationException());
     }
     
     /**

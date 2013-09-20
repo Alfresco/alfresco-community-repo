@@ -37,6 +37,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -428,49 +429,97 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
      }  
 
     /**
-    * See MNT-9462
-    */
-    @SuppressWarnings("deprecation")
+     * See MNT-9462
+     */
     public void testDictionaryDAOLock()
     {
         class DictionaryDAOThread extends Thread
         {
+            private volatile boolean success = false;
             @Override
             public void run()
             {
-                dictionaryDAO.destroy();
-                dictionaryDAO.init();
+                success = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>()
+                {
+                    @Override
+                    public Boolean execute() throws Throwable
+                    {
+                        dictionaryDAO.destroy();
+                        dictionaryDAO.init();
+                        return Boolean.TRUE;
+                    }
+                });
             }
         }
         class MessageServiceThread extends Thread
         {
+            private volatile boolean success = false;
             @Override
             public void run()
             {
-                messageService.destroy();
-                messageService.getMessage(MSG_YES);
+                success = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>()
+                {
+                    @Override
+                    public Boolean execute()
+                    {
+                        messageService.destroy();
+                        messageService.getMessage(MSG_YES);
+                        return Boolean.TRUE;
+                    }
+                });
             }
         }
+        // Create the threads so that they die if the VM exits
         DictionaryDAOThread ddt = new DictionaryDAOThread();
+        ddt.setDaemon(true);
         MessageServiceThread mst = new MessageServiceThread();
+        mst.setDaemon(true);
+        
         ddt.start();
         mst.start();
+        // Wait for the first thread to 
         try
         {
-            ddt.join(1000);
-            mst.join(1000);
+            ddt.join(60000);
+            mst.join(60000);
         }
-        catch (InterruptedException ie)
+        catch (InterruptedException e)
         {
+            // Interrupt to terminate any lock trying
             ddt.interrupt();
             mst.interrupt();
-            fail("Threads were deadlocked.");
+            // Something kicked us out before we could join and before the time expired ... unlikely
+            fail("Unexpected interrupt while joining to deadlocking threads.");
         }
-        if (ddt.isAlive() || mst.isAlive())
+        
+        try
         {
-            ddt.stop();
-            mst.stop();
-            fail("Threads were deadlocked.");
+            if (ddt.isAlive() && mst.isAlive())
+            {
+                fail("Deadlock: DictionaryDAOThread and MessageServiceThread are both still alive.");
+            }
+            else if (ddt.isAlive())
+            {
+                fail("Possible deadlock with a background process: DictionaryDAOThread is still alive.");
+            }
+            else if (mst.isAlive())
+            {
+                fail("Possible deadlock with a background process: MessageServiceThread is still alive.");
+            }
+            else if (!ddt.success)
+            {
+                fail("DictionaryDAOThread failed to execute successfully.");
+            }
+            else if (!mst.success)
+            {
+                fail("MessageServiceThread failed to execute successfully.");
+            }
+        }
+        finally
+        {
+            // Interrupt to terminate any lock trying
+            ddt.interrupt();
+            mst.interrupt();
         }
     }
 }

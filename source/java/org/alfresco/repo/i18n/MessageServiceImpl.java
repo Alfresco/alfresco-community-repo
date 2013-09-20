@@ -173,30 +173,19 @@ public class MessageServiceImpl implements MessageService
     {
         String tenantDomain = getTenantDomain(); 
         Set<String> tenantResourceBundleBaseNames = null;
-        boolean requireUnlock = true;
+        LockHelper.tryLock(readLock, 100);
         try
         {
-            LockHelper.tryLock(readLock, 100);
             tenantResourceBundleBaseNames = getResourceBundleBaseNames(tenantDomain);  
-        }
-        catch (LockHelper.LockTryException lte)
-        {
-            requireUnlock = false;
-            // rethrow
-            throw lte;
         }
         finally
         {
-            if (requireUnlock)
-            {
-                readLock.unlock();
-            }
+            readLock.unlock();
         }
         
+        LockHelper.tryLock(writeLock, 100);
         try
         {
-            LockHelper.tryLock(writeLock, 100);
-            
             if (! tenantResourceBundleBaseNames.contains(resBundlePath))
             {
             	tenantResourceBundleBaseNames.add(resBundlePath);
@@ -206,18 +195,9 @@ public class MessageServiceImpl implements MessageService
             
             clearLoadedResourceBundles(tenantDomain); // force re-load of message cache
         }
-        catch (LockHelper.LockTryException lte)
-        {
-            requireUnlock = false;
-            // rethrow
-            throw lte;
-        }
         finally
         {
-            if (requireUnlock)
-            {
-                writeLock.unlock();
-            }
+            writeLock.unlock();
         }
     }
     
@@ -293,11 +273,9 @@ public class MessageServiceImpl implements MessageService
         Set<String> resourceBundleBaseNamesForAllLocales;
         
         String tenantDomain = getTenantDomain();
-        boolean requireUnlock = true;
+        LockHelper.tryLock(readLock, 100);
         try
         {
-            LockHelper.tryLock(readLock, 100);
-
             // all locales
             loadedResourceBundlesForAllLocales = getLoadedResourceBundles(tenantDomain);
             cachedMessagesForAllLocales = getMessages(tenantDomain);
@@ -305,16 +283,12 @@ public class MessageServiceImpl implements MessageService
         }    
         finally
         {
-            if (requireUnlock)
-            {
-                readLock.unlock();
-            }
+            readLock.unlock();
         }
         
+        LockHelper.tryLock(writeLock, 100);
         try
         {
-            LockHelper.tryLock(writeLock, 100);
-                      
             // unload resource bundles for each locale (by tenant, if applicable)        
             if ((loadedResourceBundlesForAllLocales != null) && (cachedMessagesForAllLocales != null))
             {
@@ -386,18 +360,9 @@ public class MessageServiceImpl implements MessageService
                      
             clearLoadedResourceBundles(tenantDomain); // force re-load of message cache
         }
-        catch (LockHelper.LockTryException lte)
-        {
-            requireUnlock = false;
-            // rethrow
-            throw lte;
-        }
         finally
         {
-            if (requireUnlock)
-            {
-                writeLock.unlock();
-            }
+            writeLock.unlock();
         }
     }
     
@@ -422,11 +387,10 @@ public class MessageServiceImpl implements MessageService
         Map<Locale, Set<String>> tenantLoadedResourceBundles = null;
         Map<Locale, Map<String, String>> tenantCachedMessages = null;
         Set<String> tenantResourceBundleBaseNames = null;
-        boolean requireUnlock = true;
+
+        LockHelper.tryLock(readLock, 100);
         try
         {
-            LockHelper.tryLock(readLock, 100);
-
             tenantLoadedResourceBundles = getLoadedResourceBundles(tenantDomain);
             loadedBundles = tenantLoadedResourceBundles.get(locale);
 
@@ -436,75 +400,46 @@ public class MessageServiceImpl implements MessageService
             tenantResourceBundleBaseNames = getResourceBundleBaseNames(tenantDomain);
             loadedBundleCount = tenantResourceBundleBaseNames.size();
         }
-        catch (LockHelper.LockTryException lte)
-        {
-            requireUnlock = false;
-            // rethrow
-            throw lte;
-        }
         finally
         {
-            if (requireUnlock)
-            {
-                readLock.unlock();
-            }
+            readLock.unlock();
         }
 
         if (loadedBundles == null)
         {
+            LockHelper.tryLock(writeLock, 100);
             try
             {
-                LockHelper.tryLock(writeLock, 100);
                 loadedBundles = new HashSet<String>();
                 tenantLoadedResourceBundles.put(locale, loadedBundles);
                 init = true;
             }
-            catch (LockHelper.LockTryException lte)
-            {
-                requireUnlock = false;
-                // rethrow
-                throw lte;
-            }
             finally
             {
-                if (requireUnlock)
-                {
-                    writeLock.unlock();
-                }
+                writeLock.unlock();
             }
         }
 
         if (props == null)
         {
+            LockHelper.tryLock(writeLock, 100);
             try
             {
-                LockHelper.tryLock(writeLock, 100);
-                
                 props = new HashMap<String, String>();
                 tenantCachedMessages.put(locale, props);
                 init = true;
             }
-            catch (LockHelper.LockTryException lte)
-            {
-                requireUnlock = false;
-                // rethrow
-                throw lte;
-            }
             finally
             {
-                if (requireUnlock)
-                {
-                    writeLock.unlock();
-                }
+                writeLock.unlock();
             }
         }
 
         if ((loadedBundles.size() != loadedBundleCount) || (init == true))
         {
+            LockHelper.tryLock(writeLock, 100);
             try
             {
-                LockHelper.tryLock(writeLock, 100);
-
                 // get registered resource bundles               
                 Set<String> resBundleBaseNames = getResourceBundleBaseNames(tenantDomain);
 
@@ -561,18 +496,9 @@ public class MessageServiceImpl implements MessageService
                 
                 logger.info("Message bundles (x " + count + ") loaded for locale " + locale);
             }
-            catch (LockHelper.LockTryException lte)
-            {
-                requireUnlock = false;
-                // rethrow
-                throw lte;
-            }
             finally
             {
-                if (requireUnlock)
-                {
-                    writeLock.unlock();
-                }
+                writeLock.unlock();
             }
         }
 
@@ -656,73 +582,51 @@ public class MessageServiceImpl implements MessageService
     
     public Set<String> getRegisteredBundles()
     {
-        boolean requireUnlock = true;
+        LockHelper.tryLock(readLock, 100);
         try
         {
-            LockHelper.tryLock(readLock, 100);
             return getResourceBundleBaseNames(getTenantDomain());
-        }
-        catch (LockHelper.LockTryException lte)
-        {
-            requireUnlock = false;
-            // rethrow
-            throw lte;
         }
         finally
         {
-            if (requireUnlock)
-            {
-                readLock.unlock();
-            }
+            readLock.unlock();
         }
     }  
     
     private Set<String> getResourceBundleBaseNames(String tenantDomain)
-    {     
+    {
+        // Assume a read lock is present
         Set<String> resourceBundleBaseNames = resourceBundleBaseNamesCache.get(tenantDomain);
+        if (resourceBundleBaseNames != null)
+        {
+            return resourceBundleBaseNames;
+        }
+        
+        // They are not there.  Upgrade to the write lock.
+        readLock.unlock();
+        LockHelper.tryLock(writeLock, 100);
+        try
+        {
+            resourceBundleBaseNames = resourceBundleBaseNamesCache.get(tenantDomain);
+            if (resourceBundleBaseNames != null)
+            {
+                return resourceBundleBaseNames;
+            }
+            reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
+            resourceBundleBaseNames = resourceBundleBaseNamesCache.get(tenantDomain);
+        }
+        finally
+        {
+            writeLock.unlock();
+            LockHelper.tryLock(readLock, 100);
+        }
         
         if (resourceBundleBaseNames == null)
         {     
-            boolean requireUnlock = true;
-            try 
-            {
-                // assume caller has read lock - upgrade lock manually
-                readLock.unlock();
-                LockHelper.tryLock(writeLock, 100);
-                
-                reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
-                resourceBundleBaseNames = resourceBundleBaseNamesCache.get(tenantDomain);
-            }
-            catch (LockHelper.LockTryException lte)
-            {
-                requireUnlock = false;
-                // rethrow
-                throw lte;
-            }
-            finally
-            {
-                try
-                {
-                    LockHelper.tryLock(readLock, 100);  // reacquire read without giving up write lock
-                }
-                catch (LockHelper.LockTryException lte)
-                {
-                    // rethrow
-                    throw lte;
-                }
-                if (requireUnlock)
-                {
-                    writeLock.unlock(); // unlock write, still hold read - caller must unlock the read
-                }
-            }
-            
-            if (resourceBundleBaseNames == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to re-initialise resourceBundleBaseNamesCache " + tenantDomain);
-            }
+            // unexpected
+            throw new AlfrescoRuntimeException("Failed to re-initialise resourceBundleBaseNamesCache " + tenantDomain);
         }
-            
+        // Done
         return resourceBundleBaseNames;
     }  
     
@@ -742,50 +646,38 @@ public class MessageServiceImpl implements MessageService
     
     private Map<Locale, Set<String>> getLoadedResourceBundles(String tenantDomain)
     {
+        // Assume a read lock is present
         Map<Locale, Set<String>> loadedResourceBundles = loadedResourceBundlesCache.get(tenantDomain);
+        if (loadedResourceBundles != null)
+        {
+            return loadedResourceBundles;
+        }
+        
+        // Not present.  Upgrade to write lock.
+        readLock.unlock();
+        LockHelper.tryLock(writeLock, 100);
+        try
+        {
+            loadedResourceBundles = loadedResourceBundlesCache.get(tenantDomain);
+            if (loadedResourceBundles != null)
+            {
+                return loadedResourceBundles;
+            }
+            reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
+            loadedResourceBundles = loadedResourceBundlesCache.get(tenantDomain);
+        }
+        finally
+        {
+            writeLock.unlock();
+            LockHelper.tryLock(readLock, 100);
+        }
         
         if (loadedResourceBundles == null)
-        {   
-            boolean requireUnlock = true;
-            try 
-            {
-                // assume caller has read lock - upgrade lock manually
-                readLock.unlock();
-                LockHelper.tryLock(writeLock, 100);
-                
-                reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
-                loadedResourceBundles = loadedResourceBundlesCache.get(tenantDomain);
-            }
-            catch (LockHelper.LockTryException lte)
-            {
-                requireUnlock = false;
-                // rethrow
-                throw lte;
-            }
-            finally
-            {
-                try
-                {
-                    LockHelper.tryLock(readLock, 100);  // reacquire read without giving up write lock
-                }
-                catch (LockHelper.LockTryException lte)
-                {
-                    // rethrow
-                    throw lte;
-                }
-                if (requireUnlock)
-                {
-                    writeLock.unlock(); // unlock write, still hold read - caller must unlock the read
-                }
-            }
-            
-            if (loadedResourceBundles == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to re-initialise loadedResourceBundlesCache " + tenantDomain);
-            }
+        {     
+            // unexpected
+            throw new AlfrescoRuntimeException("Failed to re-initialise loadedResourceBundlesCache " + tenantDomain);
         }
-            
+        // Done
         return loadedResourceBundles;
     }  
     
@@ -813,50 +705,38 @@ public class MessageServiceImpl implements MessageService
     
     private Map<Locale, Map<String, String>> getMessages(String tenantDomain)
     {
+        // Assume a read lock
         Map<Locale, Map<String, String>> messages = messagesCache.get(tenantDomain);
+        if (messages != null)
+        {
+            return messages;
+        }
+        
+        // Need to create it.  Upgrade to write lock.
+        readLock.unlock();
+        LockHelper.tryLock(writeLock, 100);
+        try
+        {
+            messages = messagesCache.get(tenantDomain);
+            if (messages != null)
+            {
+                return messages;
+            }
+            reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
+            messages = messagesCache.get(tenantDomain);
+        }
+        finally
+        {
+            writeLock.unlock();
+            LockHelper.tryLock(readLock, 100);
+        }
         
         if (messages == null)
-        {   
-            boolean requireUnlock = true;
-            try 
-            {
-                // assume caller has read lock - upgrade lock manually
-                readLock.unlock();
-                LockHelper.tryLock(writeLock, 100);
-                
-                reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
-                messages = messagesCache.get(tenantDomain);
-            }
-            catch (LockHelper.LockTryException lte)
-            {
-                requireUnlock = false;
-                // rethrow
-                throw lte;
-            }
-            finally
-            {
-                try
-                {
-                    LockHelper.tryLock(readLock, 100);  // reacquire read without giving up write lock
-                }
-                catch (LockHelper.LockTryException lte)
-                {
-                    // rethrow
-                    throw lte;
-                }
-                if (requireUnlock)
-                {
-                    writeLock.unlock(); // unlock write, still hold read - caller must unlock the read
-                } 
-            }
-            
-            if (messages == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to re-initialise messagesCache " + tenantDomain);
-            }
+        {     
+            // unexpected
+            throw new AlfrescoRuntimeException("Failed to re-initialise messagesCache " + tenantDomain);
         }
-            
+        // Done
         return messages;
     }  
     

@@ -1540,35 +1540,43 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
             
             params.clear();
+            params.put("where", "(variables/local/numberVar > 'd:int 5')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(variables/local/numberVar > 'd:int 10')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
+            params.put("where", "(variables/local/numberVar >= 'd_int 10')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(variables/local/numberVar >= 'd:int 11')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
+            params.put("where", "(variables/local/numberVar <= 'd:int 10')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(variables/local/numberVar <= 'd:int 9')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
+            params.put("where", "(variables/local/numberVar < 'd_int 15')");
+            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
+            
+            params.clear();
+            params.put("where", "(variables/local/numberVar < 'd:int 10')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
+            params.put("where", "(variables/global/numberVar > 'd:int 5')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
             params.put("where", "(variables/numberVar > 'd:int 5')");
-            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-            
-            params.clear();
-            params.put("where", "(variables/numberVar > 'd:int 10')");
-            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
-            
-            params.clear();
-            params.put("where", "(variables/numberVar >= 'd_int 10')");
-            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-            
-            params.clear();
-            params.put("where", "(variables/numberVar >= 'd:int 11')");
-            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
-            
-            params.clear();
-            params.put("where", "(variables/numberVar <= 'd:int 10')");
-            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-            
-            params.clear();
-            params.put("where", "(variables/numberVar <= 'd:int 9')");
-            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
-            
-            params.clear();
-            params.put("where", "(variables/numberVar < 'd_int 15')");
-            assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
-            
-            params.clear();
-            params.put("where", "(variables/numberVar < 'd:int 10')");
             assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
             
             params.clear();
@@ -1578,6 +1586,10 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             params.clear();
             params.put("where", "(variables/bpm_dueDate = 'd:datetime 2013-09-15T12:22:31.866+0000')");
             assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
+            params.put("where", "(variables/bpm_dueDate > 'd:datetime 2013-09-15T12:22:31.866+0000')");
+            assertEquals(1, getResultSizeForTaskQuery(params, tasksClient));
             
             params.clear();
             params.put("where", "(variables/bpm_comment MATCHES ('test%'))");

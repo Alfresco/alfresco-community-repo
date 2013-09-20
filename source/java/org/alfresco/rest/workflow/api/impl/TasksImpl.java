@@ -274,24 +274,59 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 for (QueryVariableHolder queryVariableHolder : variableProperties)
                 {
                     if (queryVariableHolder.getOperator() == WhereClauseParser.EQUALS)
-                    {    
-                        query.taskVariableValueEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                    {
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.GREATERTHAN)
                     {
-                        query.taskVariableValueGreaterThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueGreaterThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueGreaterThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.GREATERTHANOREQUALS)
                     {
-                        query.taskVariableValueGreaterThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueGreaterThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueGreaterThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.LESSTHAN)
                     {
-                        query.taskVariableValueLessThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueLessThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueLessThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.LESSTHANOREQUALS)
                     {
-                        query.taskVariableValueLessThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueLessThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueLessThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.MATCHES)
                     {
@@ -299,11 +334,26 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         {
                             throw new InvalidArgumentException("the matches operator can only be used with a String value for property " + queryVariableHolder.getPropertyName());
                         }
-                        query.taskVariableValueLike(queryVariableHolder.getPropertyName(), (String) queryVariableHolder.getPropertyValue());
+                        
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueLike(queryVariableHolder.getPropertyName(), (String) queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueLike(queryVariableHolder.getPropertyName(), (String) queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.NEGATION)
                     {
-                        query.taskVariableValueNotEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueNotEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueNotEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else
                     {
@@ -404,24 +454,59 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 for (QueryVariableHolder queryVariableHolder : variableProperties)
                 {
                     if (queryVariableHolder.getOperator() == WhereClauseParser.EQUALS)
-                    {    
-                        query.taskVariableValueEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                    {
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.GREATERTHAN)
                     {
-                        query.taskVariableValueGreaterThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueGreaterThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueGreaterThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.GREATERTHANOREQUALS)
                     {
-                        query.taskVariableValueGreaterThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueGreaterThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueGreaterThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.LESSTHAN)
                     {
-                        query.taskVariableValueLessThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueLessThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueLessThan(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.LESSTHANOREQUALS)
                     {
-                        query.taskVariableValueLessThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueLessThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueLessThanOrEqual(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.MATCHES)
                     {
@@ -429,11 +514,26 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         {
                             throw new InvalidArgumentException("the matches operator can only be used with a String value for property " + queryVariableHolder.getPropertyName());
                         }
-                        query.taskVariableValueLike(queryVariableHolder.getPropertyName(), (String) queryVariableHolder.getPropertyValue());
+                        
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueLike(queryVariableHolder.getPropertyName(), (String) queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueLike(queryVariableHolder.getPropertyName(), (String) queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else if (queryVariableHolder.getOperator() == WhereClauseParser.NEGATION)
                     {
-                        query.taskVariableValueNotEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        if (queryVariableHolder.isGlobalScope())
+                        {
+                            query.processVariableValueNotEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
+                        else
+                        {
+                            query.taskVariableValueNotEquals(queryVariableHolder.getPropertyName(), queryVariableHolder.getPropertyValue());
+                        }
                     }
                     else
                     {

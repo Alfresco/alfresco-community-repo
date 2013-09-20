@@ -337,34 +337,58 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
     {
         String localPropertyName = propertyName.replaceFirst("variables/", "");
         Object actualValue = null;
+        DataTypeDefinition dataTypeDefinition = null;
+        // variable scope global is default
+        String scopeDef = "global";
+        
+        // look for variable scope
+        if (localPropertyName.contains("local/"))
+        {
+            scopeDef = "local";
+            localPropertyName = localPropertyName.replaceFirst("local/", "");
+        }
+    
+        if (localPropertyName.contains("global/"))
+        {
+            localPropertyName = localPropertyName.replaceFirst("global/", "");
+        }
+        
+        // look for variable type definition
         if ((propertyValue.contains("_") || propertyValue.contains(":")) && propertyValue.contains(" ")) 
         {
-            String typeDef = propertyValue.substring(0, propertyValue.indexOf(' '));
-            try
+            int indexOfSpace = propertyValue.indexOf(' ');
+            if ((propertyValue.contains("_") && indexOfSpace > propertyValue.indexOf("_")) || 
+                    (propertyValue.contains(":") && indexOfSpace > propertyValue.indexOf(":")))
             {
-                QName dataType = QName.createQName(typeDef.replace('_', ':'), namespaceService);
-                DataTypeDefinition dataTypeDefinition = dictionaryService.getDataType(dataType);
-                if (dataTypeDefinition != null && "java.util.Date".equalsIgnoreCase(dataTypeDefinition.getJavaClassName()))
+                String typeDef = propertyValue.substring(0, indexOfSpace);
+                try
                 {
-                    // fix for different ISO 8601 Date format classes in Alfresco (org.alfresco.util and Spring Surf)
-                    actualValue = ISO8601DateFormat.parse(propertyValue.substring(propertyValue.indexOf(' ') + 1));
+                    QName dataType = QName.createQName(typeDef.replace('_', ':'), namespaceService);
+                    dataTypeDefinition = dictionaryService.getDataType(dataType);
+                    propertyValue = propertyValue.substring(indexOfSpace + 1);
                 }
-                else
+                catch (Exception e)
                 {
-                    actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, 
-                            propertyValue.substring(propertyValue.indexOf(' ') + 1));
+                    throw new ApiException("Error translating propertyName " + propertyName + " with value " + propertyValue);
                 }
             }
-            catch (Exception e)
-            {
-                throw new ApiException("Error translating propertyName " + propertyName + " with value " + propertyValue);
-            }
-        } 
+        }
+        
+        if (dataTypeDefinition != null && "java.util.Date".equalsIgnoreCase(dataTypeDefinition.getJavaClassName()))
+        {
+            // fix for different ISO 8601 Date format classes in Alfresco (org.alfresco.util and Spring Surf)
+            actualValue = ISO8601DateFormat.parse(propertyValue);
+        }
+        else if (dataTypeDefinition != null)
+        {
+            actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, propertyValue);
+        }
         else 
         {
             actualValue = propertyValue;
         }
-        variableProperties.add(new QueryVariableHolder(localPropertyName, type, actualValue));
+        
+        variableProperties.add(new QueryVariableHolder(localPropertyName, type, actualValue, scopeDef));
     }
 
     /**
@@ -387,13 +411,15 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         private String propertyName;
         private int operator;
         private Object propertyValue;
+        private String scope;
         
         public QueryVariableHolder() {}
         
-        public QueryVariableHolder(String propertyName, int operator, Object propertyValue) {
+        public QueryVariableHolder(String propertyName, int operator, Object propertyValue, String scope) {
             this.propertyName = propertyName;
             this.operator = operator;
             this.propertyValue = propertyValue;
+            this.scope = scope;
         }
         
         public String getPropertyName()
@@ -419,6 +445,17 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         public void setPropertyValue(Object propertyValue)
         {
             this.propertyValue = propertyValue;
+        }
+        public String getScope()
+        {
+            return scope;
+        }
+        public void setScope(String scope)
+        {
+            this.scope = scope;
+        }
+        public boolean isGlobalScope() {
+            return "global".equals(scope);
         }
     }
 }

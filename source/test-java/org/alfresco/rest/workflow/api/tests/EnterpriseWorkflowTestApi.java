@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
+import org.alfresco.util.ISO8601DateFormat;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.junit.Before;
@@ -286,6 +287,7 @@ public class EnterpriseWorkflowTestApi extends EnterpriseTestApi
        
        final JSONObject variablesObject = new JSONObject();
        variablesObject.put("bpm_priority", 1);
+       variablesObject.put("bpm_workflowDueDate", ISO8601DateFormat.format(new Date()));
        variablesObject.put("wf_notifyMe", Boolean.FALSE);
        
        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()

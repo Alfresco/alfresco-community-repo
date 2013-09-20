@@ -12,7 +12,7 @@ public class EnterprisePublicApiTestFixture extends EnterpriseTestFixture
 		"rest-api-test-context.xml"
     };
 
-	public final static String[] CLASS_LOCATIONS = new String[] {"classpath*:/publicapi/lucene"};
+	public final static String[] CLASS_LOCATIONS = new String[] {"classpath*:/publicapi/lucene/"};
 	   
     private static EnterprisePublicApiTestFixture instance;
 

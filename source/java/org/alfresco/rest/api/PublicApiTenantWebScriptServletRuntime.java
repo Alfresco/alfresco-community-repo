@@ -67,7 +67,7 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
         }
         else
         {
-        	if(!pathInfo.substring(0, 5).toLowerCase().equals("/cmis"))
+        	if(!pathInfo.substring(0, 6).toLowerCase().equals("/cmis/"))
         	{
 		        // remove tenant
 		        int idx = pathInfo.indexOf('/', 1);

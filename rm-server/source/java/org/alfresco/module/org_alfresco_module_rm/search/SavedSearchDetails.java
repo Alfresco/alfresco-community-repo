@@ -24,6 +24,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ParameterCheck;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Saved search details.
@@ -139,6 +140,8 @@ public class SavedSearchDetails extends ReportDetails
     	    if (search.has(DESCRIPTION) == true)
     	    {
     	        description = search.getString(DESCRIPTION);
+                String translated = I18NUtil.getMessage(description);
+                if (translated!=null ) description = translated;
     	    }
 
     	    // Get the query

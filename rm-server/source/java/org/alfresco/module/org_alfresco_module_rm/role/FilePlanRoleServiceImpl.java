@@ -518,6 +518,8 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                         String groupShortName = authorityService.getShortName(roleAuthority);
                         String name = getShortRoleName(groupShortName, rmRootNode);
                         String displayLabel = authorityService.getAuthorityDisplayName(roleAuthority);
+                        String translated = I18NUtil.getMessage(displayLabel);
+                        if (translated!=null ) displayLabel = translated;
                         Set<Capability> capabilities = getCapabilitiesImpl(rmRootNode, roleAuthority);
 
                         Role role = new Role(name, displayLabel, capabilities, roleAuthority, groupShortName);
@@ -559,6 +561,8 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                         String groupShortName = authorityService.getShortName(roleAuthority);
                         String name = getShortRoleName(groupShortName, rmRootNode);
                         String displayLabel = authorityService.getAuthorityDisplayName(roleAuthority);
+                        String translated = I18NUtil.getMessage(displayLabel);
+                        if (translated!=null ) displayLabel = translated;
                         Set<Capability> capabilities = getCapabilitiesImpl(rmRootNode, roleAuthority);
 
                         Role role = new Role(name, displayLabel, capabilities, roleAuthority, groupShortName);

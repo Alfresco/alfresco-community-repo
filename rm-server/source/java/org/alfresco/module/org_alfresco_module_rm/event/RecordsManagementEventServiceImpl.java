@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ParameterCheck;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Records management event service implementation
@@ -297,8 +298,12 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
                     // Get the details of the event
                     String eventType = eventJSON.getString("eventType");
                     String eventName = eventJSON.getString("eventName");
-                    String eventDisplayLabel = eventJSON.getString("eventDisplayLabel");
 
+                    String eventDisplayLabel = eventJSON.getString("eventDisplayLabel");
+                    String translated = I18NUtil.getMessage(eventDisplayLabel);
+                    if (translated!=null ) eventDisplayLabel = translated;
+
+                    
                     // Check that the eventType is valid
                     if (eventTypes.containsKey(eventType) == false)
                     {

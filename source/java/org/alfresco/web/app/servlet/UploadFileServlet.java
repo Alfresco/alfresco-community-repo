@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -14,7 +14,8 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>. */
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.web.app.servlet;
 
 import java.io.File;
@@ -45,6 +46,8 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.extensions.config.ConfigService;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -177,25 +180,36 @@ public class UploadFileServlet extends BaseServlet
             throw new AlfrescoRuntimeException("return-page parameter has not been supplied");
          }
          
-         if (returnPage.startsWith("javascript:"))
+         JSONObject json;
+         try
          {
-            returnPage = returnPage.substring("javascript:".length());
-            // finally redirect
-            if (logger.isDebugEnabled())
-            {
-               logger.debug("Sending back javascript response " + returnPage);
-            }
-            response.setContentType(MimetypeMap.MIMETYPE_HTML);
-            response.setCharacterEncoding("utf-8");
-            // work-around for WebKit protection against embedded javascript on POST body response
-            response.setHeader("X-XSS-Protection", "0");
-            final PrintWriter out = response.getWriter();
-            out.println("<html><body><script type=\"text/javascript\">");
-            out.println(returnPage);
-            out.println("</script></body></html>");
-            out.close();
+             json = new JSONObject(returnPage);
+             
+             if (json.has("id") && json.has("args"))
+             {
+                // finally redirect
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Sending back javascript response " + returnPage);
+                }
+                response.setContentType(MimetypeMap.MIMETYPE_HTML);
+                response.setCharacterEncoding("utf-8");
+                // work-around for WebKit protection against embedded javascript on POST body response
+                response.setHeader("X-XSS-Protection", "0");
+                final PrintWriter out = response.getWriter();
+                out.println("<html><body><script type=\"text/javascript\">");
+                
+                out.println("window.parent.upload_complete_helper(");
+                out.println("'" + json.getString("id") + "'");
+                out.println(", ");
+                out.println(json.getJSONObject("args"));
+                out.println(");");
+                
+                out.println("</script></body></html>");
+                out.close();
+             }
          }
-         else
+         catch (JSONException e)
          {
             // finally redirect
             if (logger.isDebugEnabled())

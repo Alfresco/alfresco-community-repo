@@ -65,8 +65,7 @@ function handle_upload_helper(fileInputElement,
     w.upload_complete_helper = window.upload_complete_helper;
   }
 
-  rp.value = "javascript:window.parent.upload_complete_helper('" + uploadId + 
-    "',{error: '${_UPLOAD_ERROR}', fileTypeImage: '${_FILE_TYPE_IMAGE}'})";
+  rp.value = "{id: '" + uploadId + "', args: {error: '${_UPLOAD_ERROR}', fileTypeImage: '${_FILE_TYPE_IMAGE}'}}";
 
   form.submit();
 }

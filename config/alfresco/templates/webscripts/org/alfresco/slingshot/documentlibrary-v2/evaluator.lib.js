@@ -59,19 +59,28 @@ var Evaluator =
                // Working Copy?
                if (node.hasAspect("{http://www.alfresco.org/model/content/1.0}workingcopy"))
                {
-                  var wcNode = node.assocs["cm:original"][0];
-                  workingCopy["isWorkingCopy"] = true;
-                  workingCopy["sourceNodeRef"] = wcNode.nodeRef;
-                  if (wcNode.hasAspect("{http://www.alfresco.org/model/content/1.0}versionable"))
+                  var wcLink = node.sourceAssocs["cm:workingcopylink"];
+                  var isWorkingCopy = wcLink != null;
+                  if (isWorkingCopy)
                   {
-                     workingCopy["workingCopyVersion"] = wcNode.properties["cm:versionLabel"];
-                  }
+                     var wcNode = wcLink[0];
+                     workingCopy["isWorkingCopy"] = true;
+                     workingCopy["sourceNodeRef"] = wcNode.nodeRef;
+                     if (wcNode.hasAspect("{http://www.alfresco.org/model/content/1.0}versionable"))
+                     {
+                        workingCopy["workingCopyVersion"] = wcNode.properties["cm:versionLabel"];
+                     }
 
-                  // Google Doc?
-                  if (node.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
+                     // Google Doc?
+                     if (node.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
+                     {
+                        // Property is duplicated here for convenience
+                        workingCopy["googleDocUrl"] = node.properties["gd:url"];
+                     }
+                  }
+                  else
                   {
-                     // Property is duplicated here for convenience
-                     workingCopy["googleDocUrl"] = node.properties["gd:url"];
+                     logger.error("Node: " + node.nodeRef +" hasn't \"cm:workingcopylink\" association");
                   }
                }
                // Locked?

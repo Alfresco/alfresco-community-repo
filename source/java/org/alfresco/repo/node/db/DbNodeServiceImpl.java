@@ -966,22 +966,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                     nodeAssocIdsToRemove.add(assocPair.getFirst());
                     assocRefsRemoved.add(assocPair.getSecond());
                 }
-                Collection<Pair<Long, AssociationRef>> sourceAssocRefs = nodeDAO.getSourceNodeAssocs(nodeId, assocTypeQName);
-                for (Pair<Long, AssociationRef> assocPair : sourceAssocRefs)
-                {
-                    if (isPendingDelete(assocPair.getSecond().getSourceRef()))
-                    {
-                        if (logger.isTraceEnabled())
-                        {
-                            logger.trace(
-                                    "Aspect-triggered association removal: " +
-                                    "Ignoring peer associations where one of the nodes is pending delete: " + assocPair);
-                        }
-                        continue;
-                    }
-                    nodeAssocIdsToRemove.add(assocPair.getFirst());
-                    assocRefsRemoved.add(assocPair.getSecond());
-                }
+                // MNT-9580: Daisy chained cm:original associations are cascade-deleted when the first original is deleted
+                //           As a side-effect of the investigation of MNT-9446, it was dicovered that inbound associations (ones pointing *to* this aspect)
+                //           were also being removed.  This is incorrect because the aspect being removed here has no say over who points at it.
+                //           Therefore, do not remove inbound associations because we only define outbound associations on types and aspects.
+                //           Integrity checking will ensure that the correct behaviours are in place to maintain model integrity.
             }
             // Now delete peer associations
             int assocsDeleted = nodeDAO.removeNodeAssocs(nodeAssocIdsToRemove);

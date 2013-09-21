@@ -635,6 +635,68 @@ public class CopyServiceImplTest extends TestCase
     }
     
     /**
+     * <a href="https://issues.alfresco.com/jira/browse/MNT-9580">
+     *      MNT-9580: Daisy chained cm:original associations are cascade-deleted when the first original is deleted
+     * </a>
+     */
+    public void testCopyOfCopyOfCopy()
+    {
+        IntegrityChecker integrityChecker = (IntegrityChecker) ctx.getBean("integrityChecker");
+
+        // Create the node used for copying
+        ChildAssociationRef childAssocRef = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}test"),
+                TEST_TYPE_QNAME,
+                createTypePropertyBag());
+        NodeRef nodeRef = childAssocRef.getChildRef();
+
+        PagingRequest pageRequest = new PagingRequest(10);
+        pageRequest.setRequestTotalCountMax(200);
+        PagingResults<CopyInfo> copies = null;
+        
+        NodeRef currentOriginal = nodeRef;
+        NodeRef copyNodeRef = null;
+
+        for (int i = 1; i <= 5; i++)
+        {
+            copyNodeRef = copyService.copy(
+                    currentOriginal,
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName("{test}copyAssoc"+i));
+            copies = copyService.getCopies(currentOriginal, pageRequest);
+            assertEquals("Incorrect number of copies on iteration " + i, 1, copies.getPage().size());
+
+            // Check that the original node can be retrieved
+            NodeRef originalCheck = copyService.getOriginal(copyNodeRef);
+            assertEquals("Original is not as expected. ", currentOriginal, originalCheck);
+            // Run integrity checks to ensure that commit has a chance
+            integrityChecker.checkIntegrity();
+            
+            currentOriginal = copyNodeRef;
+        }
+        
+        // Now, delete the nodes starting with the first original
+        currentOriginal = nodeRef;
+        copyNodeRef = null;
+        for (int i = 1; i < 5; i++)
+        {
+            // Each node must be an original
+            copies = copyService.getCopies(currentOriginal, pageRequest);
+            assertEquals("Incorrect number of copies on iteration " + i, 1, copies.getPage().size());
+            copyNodeRef = copies.getPage().get(0).getNodeRef();
+            // Delete current original
+            nodeService.deleteNode(currentOriginal);
+            // Run integrity checks to ensure that commit has a chance
+            integrityChecker.checkIntegrity();
+            
+            currentOriginal = copyNodeRef;
+        }
+    }
+    
+    /**
      * Test the behaviour of the aspect when copying types not derived from <b>cm:object</b>
      */
     public void testCopiedFromAspect_NonObject()

@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.util.VersionNumber;
 
 /**
@@ -31,6 +32,7 @@ import org.alfresco.util.VersionNumber;
  * @author Roy Wetherall
  * @since 2.0
  */
+@AlfrescoPublicApi
 public interface ModuleDetails extends Serializable
 {
     static final String PROP_ID = "module.id";

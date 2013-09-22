@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.module;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.module.ModuleComponent;
 
 /**
@@ -30,6 +31,7 @@ import org.alfresco.repo.module.ModuleComponent;
  * @author Derek Hulley
  * @since 2.0
  */
+@AlfrescoPublicApi
 public interface ModuleService
 {
     /**

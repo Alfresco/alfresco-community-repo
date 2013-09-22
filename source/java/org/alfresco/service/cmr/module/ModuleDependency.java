@@ -20,6 +20,8 @@ package org.alfresco.service.cmr.module;
 
 import java.io.Serializable;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * An ensapsulated module dependency.  Since module dependencies may be range based and even
  * unbounded, it is not possible to describe a dependency using a list of module version numbers.
@@ -27,6 +29,7 @@ import java.io.Serializable;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public interface ModuleDependency extends Serializable
 {
     /**

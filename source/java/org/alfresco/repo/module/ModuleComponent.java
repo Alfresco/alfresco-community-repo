@@ -20,6 +20,7 @@ package org.alfresco.repo.module;
 
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.util.VersionNumber;
 
 /**
@@ -34,6 +35,7 @@ import org.alfresco.util.VersionNumber;
  * @author Derek Hulley
  * @since 2.0
  */
+@AlfrescoPublicApi
 public interface ModuleComponent
 {
     /**

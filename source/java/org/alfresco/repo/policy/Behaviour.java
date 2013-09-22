@@ -37,6 +37,7 @@ public interface Behaviour
     /**
      * When should behaviour be notified? 
      */
+    @AlfrescoPublicApi
     public enum NotificationFrequency
     {
         EVERY_EVENT,

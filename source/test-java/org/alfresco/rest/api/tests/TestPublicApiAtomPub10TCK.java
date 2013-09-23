@@ -18,6 +18,7 @@ import org.apache.chemistry.opencmis.tck.tests.query.ContentChangesSmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.query.QueryForObject;
 import org.apache.chemistry.opencmis.tck.tests.query.QueryLikeTest;
 import org.apache.chemistry.opencmis.tck.tests.query.QueryRootFolderTest;
+import org.apache.chemistry.opencmis.tck.tests.versioning.CheckedOutTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersionDeleteTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningSmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningStateCreateTest;
@@ -112,7 +113,7 @@ public class TestPublicApiAtomPub10TCK extends AbstractEnterpriseOpenCMIS10TCKTe
             addTest(new VersionDeleteTest());
             addTest(new VersioningStateCreateTest());
             // relies on Solr being available
-//            addTest(new CheckedOutTest());
+            addTest(new CheckedOutTest());
         }
     }
 

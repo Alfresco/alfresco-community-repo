@@ -31,7 +31,7 @@
    
       <!-- Note: intentionally empty list of values - allowed values can be added/updated dynamically -->
       <constraint name="rmc:smList" type="org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint">
-         <title>Supplemental Markings</title>
+         <title>listconstraint.rmc_smList.title</title>
          <parameter name="allowedValues">
             <list>
             </list>
@@ -41,7 +41,7 @@
 
       <!-- Note: intentionally empty list of values - allowed values can be added/updated dynamically -->
       <constraint name="rmc:tlList" type="org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint">
-         <title>Transfer Locations</title>
+         <title>listconstraint.rmc_tlList.title</title>
          <parameter name="allowedValues">
             <list>
             </list>

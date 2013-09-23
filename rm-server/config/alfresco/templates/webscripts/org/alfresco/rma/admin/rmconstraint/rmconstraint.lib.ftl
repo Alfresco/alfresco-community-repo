@@ -5,7 +5,7 @@
 		{
 			"url" : "${url.serviceContext + "/api/rma/admin/rmconstraints/" + constraint.name}",
 			"constraintName" : "${constraint.name}",
-			"constraintTitle" : "${constraint.title}"
+			"constraintTitle" : "${msg(constraint.title)}"
 		}
 </#escape>
 </#macro>

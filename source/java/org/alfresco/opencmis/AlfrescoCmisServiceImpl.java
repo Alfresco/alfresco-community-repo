@@ -142,11 +142,6 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 {
     private static Log logger = LogFactory.getLog(AlfrescoCmisService.class);
 
-    private static final QName PARAM_PARENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "parent");
-    private static final QName PARAM_USERNAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "username");
-    private static final String LUCENE_QUERY_CHECKEDOUT = "+=@cm\\:workingCopyOwner:${cm:username}";
-    private static final String LUCENE_QUERY_CHECKEDOUT_IN_FOLDER = "+=@cm\\:workingCopyOwner:${cm:username} +=PARENT:\"${cm:parent}\"";
-
     private static final String MIN_FILTER = "cmis:name,cmis:baseTypeId,cmis:objectTypeId,"
             + "cmis:createdBy,cmis:creationDate,cmis:lastModifiedBy,cmis:lastModificationDate,"
             + "cmis:contentStreamLength,cmis:contentStreamMimeType,cmis:contentStreamFileName,"
@@ -812,30 +807,18 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         // prepare query
         SearchParameters params = new SearchParameters();
         params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-        QueryParameterDefinition usernameDef = new QueryParameterDefImpl(
-                PARAM_USERNAME,
-                connector.getDictionaryService().getDataType(DataTypeDefinition.TEXT),
-                true,
-                AuthenticationUtil.getFullyAuthenticatedUser());
-        params.addQueryParameterDefinition(usernameDef);
-
+       
         if (folderId == null)
         {
-            params.setQuery(LUCENE_QUERY_CHECKEDOUT);
+            params.setQuery("+=cm:workingCopyOwner:\""+AuthenticationUtil.getFullyAuthenticatedUser()+"\"");
             params.addStore(connector.getRootStoreRef());
         }
         else
         {
             CMISNodeInfo folderInfo = getOrCreateFolderInfo(folderId, "Folder");
 
-            params.setQuery(LUCENE_QUERY_CHECKEDOUT_IN_FOLDER);
+            params.setQuery("+=cm:workingCopyOwner:\""+AuthenticationUtil.getFullyAuthenticatedUser()+"\" +=PARENT:\""+folderInfo.getNodeRef().toString()+"\"");
             params.addStore(folderInfo.getNodeRef().getStoreRef());
-            QueryParameterDefinition parentDef = new QueryParameterDefImpl(
-                    PARAM_PARENT,
-                    connector.getDictionaryService().getDataType(DataTypeDefinition.NODE_REF),
-                    true,
-                    folderInfo.getNodeRef().toString());
-            params.addQueryParameterDefinition(parentDef);
         }
 
         // set up order

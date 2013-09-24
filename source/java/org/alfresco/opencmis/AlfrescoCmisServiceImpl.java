@@ -1308,8 +1308,16 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         }
 
         checkRepositoryId(repositoryId);
+        
+        // workaround for bug in OpenCMIS libraries
+        String nodeId = objectId.getValue();
+        int idx = nodeId.indexOf(";");
+        if(idx != -1)
+        {
+            nodeId = nodeId.substring(0, idx);
+        }
 
-        CMISNodeInfo info = getOrCreateNodeInfo(objectId.getValue(), "Object");
+        CMISNodeInfo info = getOrCreateNodeInfo(nodeId, "Object");
         NodeRef nodeRef = info.getNodeRef();
 
         if (((DocumentTypeDefinition) info.getType().getTypeDefinition(false)).getContentStreamAllowed() == ContentStreamAllowed.NOTALLOWED)

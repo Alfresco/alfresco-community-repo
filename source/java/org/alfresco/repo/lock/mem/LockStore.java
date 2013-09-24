@@ -51,11 +51,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface LockStore
 {
     LockState get(NodeRef nodeRef);
-    boolean contains(NodeRef nodeRef);
     void set(NodeRef nodeRef, LockState lockState);
-    void clear();
     void acquireConcurrencyLock(NodeRef nodeRef);
     void releaseConcurrencyLock(NodeRef nodeRef);
     void setMaxTryLockMillis(long maxTryLockMillis);
     public Set<NodeRef> getNodes();
+    
+    /**
+     * WARNING: only use in test code - unsafe method for production use.
+     * 
+     * TODO: remove this method?
+     */
+    void clear();
 }

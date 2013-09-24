@@ -87,7 +87,8 @@ public class LockableAspectInterceptor implements MethodInterceptor
             
             // If the hasAspect() call is checking for cm:lockable and this is an ephemeral lock,
             // then spoof the aspect's existence on the node.
-            if (ContentModel.ASPECT_LOCKABLE.equals(aspectTypeQName) && hasEphemeralLock(nodeRef))
+            LockState lockState = lockStore.get(nodeRef);
+            if (ContentModel.ASPECT_LOCKABLE.equals(aspectTypeQName) && isEphemeralLock(lockState))
             {
                 return true;
             }
@@ -97,7 +98,8 @@ public class LockableAspectInterceptor implements MethodInterceptor
         {
             NodeRef nodeRef = (NodeRef) args[0];
             Set<QName> aspects = (Set<QName>) invocation.proceed();
-            if (hasEphemeralLock(nodeRef) && !aspects.contains(ContentModel.ASPECT_LOCKABLE))
+            LockState lockState = lockStore.get(nodeRef);
+            if (isEphemeralLock(lockState) && !aspects.contains(ContentModel.ASPECT_LOCKABLE))
             {
                 aspects.add(ContentModel.ASPECT_LOCKABLE);
             }
@@ -106,24 +108,26 @@ public class LockableAspectInterceptor implements MethodInterceptor
         else if (methodName.equals("getProperties"))
         {
             NodeRef nodeRef = (NodeRef) args[0];
-            lockStore.acquireConcurrencyLock(nodeRef);
-            try
+            
+            Map<QName, Serializable> properties = (Map<QName, Serializable>) invocation.proceed();
+            LockState lockState = lockStore.get(nodeRef);
+            if (isEphemeralLock(lockState))
             {
-                Map<QName, Serializable> properties = (Map<QName, Serializable>) invocation.proceed();
-                if (hasEphemeralLock(nodeRef))
+                String userName = lockState.getOwner();
+                properties.put(ContentModel.PROP_LOCK_OWNER, userName);
+                properties.put(ContentModel.PROP_LOCK_TYPE, lockState.getLockType().toString());
+                properties.put(ContentModel.PROP_EXPIRY_DATE, lockState.getExpires());
+                properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.EPHEMERAL);
+            }
+            else if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
+            {
+                // Persistent lock, ensure lifetime property is present.
+                if (!properties.containsKey(ContentModel.PROP_LOCK_LIFETIME))
                 {
-                    LockState lockState = lockStore.get(nodeRef);
-                    String userName = lockState.getOwner();
-                    properties.put(ContentModel.PROP_LOCK_OWNER, userName);
-                    properties.put(ContentModel.PROP_LOCK_TYPE, lockState.getLockType().toString());
-                    properties.put(ContentModel.PROP_EXPIRY_DATE, lockState.getExpires());
+                    properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.PERSISTENT);
                 }
-                return properties;
             }
-            finally
-            {
-                lockStore.releaseConcurrencyLock(nodeRef);
-            }
+            return properties;
         }
         else if (methodName.equals("getProperty"))
         {
@@ -133,60 +137,61 @@ public class LockableAspectInterceptor implements MethodInterceptor
             // Avoid locking unless it is an interesting property.
             if (isLockProperty(propQName))
             {
-                lockStore.acquireConcurrencyLock(nodeRef);
-                try
+                LockState lockState = lockStore.get(nodeRef);
+                if (isEphemeralLock(lockState))
                 {
-                    if (hasEphemeralLock(nodeRef))
+                    if (ContentModel.PROP_LOCK_OWNER.equals(propQName))
                     {
-                        LockState lockState = lockStore.get(nodeRef);
-                        if (ContentModel.PROP_LOCK_OWNER.equals(propQName))
-                        {
-                            return lockState.getOwner();
-                        }
-                        else if (ContentModel.PROP_LOCK_TYPE.equals(propQName))
-                        {
-                            return lockState.getLockType().toString();
-                        }
-                        else if (ContentModel.PROP_EXPIRY_DATE.equals(propQName))
-                        {
-                            return lockState.getExpires();
-                        }
+                        return lockState.getOwner();
+                    }
+                    else if (ContentModel.PROP_LOCK_TYPE.equals(propQName))
+                    {
+                        return lockState.getLockType().toString();
+                    }
+                    else if (ContentModel.PROP_EXPIRY_DATE.equals(propQName))
+                    {
+                        return lockState.getExpires();
+                    }
+                    else if (ContentModel.PROP_LOCK_LIFETIME.equals(propQName))
+                    {
+                        return lockState.getLifetime().toString();
                     }
                 }
-                finally
+                else if (ContentModel.PROP_LOCK_LIFETIME.equals(propQName))
                 {
-                    lockStore.releaseConcurrencyLock(nodeRef);
+                    // Is there a persistent lock?
+                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
+                    {
+                        return Lifetime.PERSISTENT.toString();
+                    }
                 }
-            }
+            } 
             return invocation.proceed();
         }
         else if (methodName.equals("setProperties"))
         {
-            // If a client has retrieved the node's properties using getProperties and is saving them
-            // back using setProperties then it is important that lock properties (e.g. cm:lockType, cm:lockOwner)
-            // are not persisted if there is an ephemeral lock present - otherwise the ephemeral lock will
-            // be effectively converted into a peristent lock.
+            // Ephemeral locks must not be persisted to the database.
+            // TODO: This is potentially creating an ephemeral lock here, put it in the lockstore?
             NodeRef nodeRef = (NodeRef) args[0];
             Map<QName, Serializable> newProperties = (Map<QName, Serializable>) args[1];
 
-            lockStore.acquireConcurrencyLock(nodeRef);
-            try
+            if (newProperties.get(ContentModel.PROP_LOCK_LIFETIME) == Lifetime.EPHEMERAL)
             {
-                if (hasEphemeralLock(nodeRef) && containsLockProperty(newProperties))
-                {
-                    Map<QName, Serializable> convertedProperties = filterLockProperties(newProperties);
-                    // Now complete the call by passing the converted properties
-                    nodeService.setProperties(nodeRef, convertedProperties);
-                    return null;
-                }
-                else
-                {
-                    return invocation.proceed();
-                }
+                Map<QName, Serializable> convertedProperties = filterLockProperties(newProperties);
+                // Now complete the call by passing the converted properties
+                nodeService.setProperties(nodeRef, convertedProperties);
+                return null;
             }
-            finally
+            else if (newProperties.containsKey(ContentModel.PROP_LOCK_LIFETIME))
             {
-                lockStore.releaseConcurrencyLock(nodeRef);
+                // Always remove this property, even for persistent locks.
+                newProperties.remove(ContentModel.PROP_LOCK_LIFETIME);
+                nodeService.setProperties(nodeRef, newProperties);
+                return null;
+            }
+            else
+            {
+                return invocation.proceed();
             }
         }
         else
@@ -236,19 +241,6 @@ public class LockableAspectInterceptor implements MethodInterceptor
     }
     
     /**
-     * Does the collection contain a lock related property?
-     */
-    private boolean containsLockProperty(Map<QName, ?> properties)
-    {
-        boolean containsLockProperty = (
-                    properties.containsKey(ContentModel.PROP_LOCK_OWNER) ||
-                    properties.containsKey(ContentModel.PROP_LOCK_TYPE) ||
-                    properties.containsKey(ContentModel.PROP_EXPIRY_DATE)                    
-        );
-        return containsLockProperty;
-    }
-    
-    /**
      * Return true if the specified property QName is for a lock-related property.
      */
     private boolean isLockProperty(QName propQName)
@@ -256,13 +248,13 @@ public class LockableAspectInterceptor implements MethodInterceptor
         boolean isLockProp =
                     propQName.equals(ContentModel.PROP_LOCK_OWNER) ||
                     propQName.equals(ContentModel.PROP_LOCK_TYPE) ||
+                    propQName.equals(ContentModel.PROP_LOCK_LIFETIME) ||
                     propQName.equals(ContentModel.PROP_EXPIRY_DATE);
         return isLockProp;
     }
 
-    private boolean hasEphemeralLock(NodeRef nodeRef)
+    private boolean isEphemeralLock(LockState lockState)
     {
-        LockState lockState = lockStore.get(nodeRef);
         boolean ephemeral = lockState != null &&
                             lockState.isLockInfo() &&
                             lockState.getLifetime() == Lifetime.EPHEMERAL;

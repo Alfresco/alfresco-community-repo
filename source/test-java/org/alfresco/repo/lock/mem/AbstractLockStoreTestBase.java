@@ -18,10 +18,7 @@
  */
 package org.alfresco.repo.lock.mem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -41,7 +38,7 @@ import org.junit.Test;
  * @author Matt Ward
  */
 public abstract class AbstractLockStoreTestBase<T extends LockStore>
-{
+{    
     /**
      * Instance of the Class Under Test.
      */
@@ -53,7 +50,6 @@ public abstract class AbstractLockStoreTestBase<T extends LockStore>
      * @return LockStore to test
      */
     protected abstract T createLockStore();
-    
     
     @Before
     public void setUpLockStore()
@@ -96,9 +92,9 @@ public abstract class AbstractLockStoreTestBase<T extends LockStore>
         lockStore.set(nodeRef1, lock1);
         lockStore.set(nodeRef2, lock2);
         
-        assertTrue(lockStore.contains(nodeRef1));
-        assertTrue(lockStore.contains(nodeRef2));
-        assertFalse(lockStore.contains(nodeRef3));
+        assertNotNull(lockStore.get(nodeRef1));
+        assertNotNull(lockStore.get(nodeRef2));
+        assertNull(lockStore.get(nodeRef3));
     }
 
     @Test
@@ -113,13 +109,13 @@ public abstract class AbstractLockStoreTestBase<T extends LockStore>
         lockStore.set(nodeRef1, lock1);
         lockStore.set(nodeRef2, lock2);
         
-        assertTrue(lockStore.contains(nodeRef1));
-        assertTrue(lockStore.contains(nodeRef2));
+        assertNotNull(lockStore.get(nodeRef1));
+        assertNotNull(lockStore.get(nodeRef2));
         
         lockStore.clear();
         
-        assertFalse(lockStore.contains(nodeRef1));
-        assertFalse(lockStore.contains(nodeRef2));
+        assertNull(lockStore.get(nodeRef1));
+        assertNull(lockStore.get(nodeRef2));
     }
 
     @Test

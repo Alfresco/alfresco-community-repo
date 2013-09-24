@@ -80,23 +80,20 @@ public class LockKeeperImplTest extends TestCase
     }
 	
     /*
-     * Tests a basic sequence of lock, refresh, remove, refresh in a single transaction
+     * Tests a basic sequence of lock, refresh, remove, refresh in separate transactions
      */
     public void testBasicLockUnlock() throws Exception
 	{
     	logger.debug("testBasicLockUnlock");
     	
     	final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+    	final String FILE_NAME = "LockKeeperImplTestNode";
     	
-        RetryingTransactionCallback<Void> testITCB = new RetryingTransactionCallback<Void>() {
-
+        RetryingTransactionCallback<Boolean> lockCB = new RetryingTransactionCallback<Boolean>() {
             @Override
-            public Void execute() throws Throwable
-            {
-             	String FILE_NAME = "LockKeeperImplTestNode";
-            	
-            	NodeRef companyHome = repositoryHelper.getCompanyHome();
-            	
+            public Boolean execute() throws Throwable
+            {            	
+                NodeRef companyHome = repositoryHelper.getCompanyHome();
             	NodeRef nodeRef = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
             	
             	if(nodeRef == null)
@@ -108,24 +105,48 @@ public class LockKeeperImplTest extends TestCase
             	
             	logger.debug("first lock");
             	lockKeeper.addLock(nodeRef);
-            	assertTrue("node not locked", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE));
-            	
-            	logger.debug("first refresh");
-            	lockKeeper.refreshAllLocks();
-            	
-            	lockKeeper.removeLock(nodeRef);
-            	
-            	assertFalse("node not unlocked", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE));
-            	
-            	logger.debug("second refresh");
-            	lockKeeper.refreshAllLocks();
-              
+            	boolean locked = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE);
+               return locked;
+            }
+        };
+        boolean locked = tran.doInTransaction(lockCB);
+        assertTrue("node not locked", locked);
+        
+        RetryingTransactionCallback<Void> refreshCB = new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
+            {
+                logger.debug("first refresh");
+                lockKeeper.refreshAllLocks();
                return null;
             }
         };
-        tran.doInTransaction(testITCB);
-    	
-      	
+        tran.doInTransaction(refreshCB);
+        
+        RetryingTransactionCallback<Boolean> removeCB = new RetryingTransactionCallback<Boolean>() {
+            @Override
+            public Boolean execute() throws Throwable
+            {
+                NodeRef companyHome = repositoryHelper.getCompanyHome();
+                NodeRef nodeRef = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
+                lockKeeper.removeLock(nodeRef);
+                boolean locked = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE);
+                return locked;
+            }
+        };
+        locked = tran.doInTransaction(removeCB);
+        assertFalse("node not unlocked", locked);
+        
+        RetryingTransactionCallback<Void> refreshAgainCB = new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
+            {
+                logger.debug("second refresh");
+                lockKeeper.refreshAllLocks();
+                return null;
+            }
+        };
+        tran.doInTransaction(refreshAgainCB);
 	}
     
     /*

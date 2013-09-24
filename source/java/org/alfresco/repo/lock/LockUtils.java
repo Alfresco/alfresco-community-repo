@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.lock;
 
+import java.util.Date;
+
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.lock.LockType;
@@ -66,5 +68,40 @@ public class LockUtils
         default:
             return true;
         }
+    }
+    
+    /**
+     * Given the lock owner and expiry date of a lock calculates the lock status with respect
+     * to the user name supplied, e.g. the current user.
+     * 
+     * @param userName    User name to evaluate the lock against.
+     * @param lockOwner   Owner of the lock.
+     * @param expiryDate  Expiry date of the lock.
+     * @return LockStatus
+     */
+    public static LockStatus lockStatus(String userName, String lockOwner, Date expiryDate)
+    {
+        LockStatus result = LockStatus.NO_LOCK;
+        
+        if (lockOwner != null)
+        {
+            if (expiryDate != null && expiryDate.before(new Date()) == true)
+            {
+                // Indicate that the lock has expired
+                result = LockStatus.LOCK_EXPIRED;
+            }
+            else
+            {
+                if (lockOwner.equals(userName) == true)
+                {
+                    result = LockStatus.LOCK_OWNER;
+                }
+                else
+                {
+                    result = LockStatus.LOCKED;
+                }
+            }
+        }
+        return result;
     }
 }

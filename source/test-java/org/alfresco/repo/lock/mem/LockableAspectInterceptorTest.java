@@ -187,22 +187,22 @@ public class LockableAspectInterceptorTest
         // adding cm:auditable will result in cm:created property being added
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUDITABLE, new HashMap<QName, Serializable>());
         
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        Date now = new Date();
+        Map<QName, Serializable> lockProps = new HashMap<QName, Serializable>();
+        lockProps.put(ContentModel.PROP_LOCK_OWNER, "jbloggs");
+        lockProps.put(ContentModel.PROP_LOCK_TYPE, LockType.READ_ONLY_LOCK.toString());
+        lockProps.put(ContentModel.PROP_EXPIRY_DATE, now);
+        nodeService.addAspect(nodeRef, ContentModel.ASPECT_LOCKABLE, lockProps);
         
-        assertFalse("Node should not have lockOwner property",
-                    properties.containsKey(ContentModel.PROP_LOCK_OWNER));
-        assertTrue("Node should have created property",
-                    properties.containsKey(ContentModel.PROP_CREATED));
+        Map<QName, Serializable> readProps = nodeService.getProperties(nodeRef);
         
-        lockStore.set(nodeRef,
-                    LockState.createLock(nodeRef, LockType.WRITE_LOCK, lockOwner, null, Lifetime.PERSISTENT, null));
-        properties = nodeService.getProperties(nodeRef);
-        
-        // Nothing should have changed since the persistent lock was added.
-        assertFalse("Node should not have lockOwner property",
-                    properties.containsKey(ContentModel.PROP_LOCK_OWNER));
-        assertTrue("Node should have created property",
-                    properties.containsKey(ContentModel.PROP_CREATED));
+        assertEquals("jbloggs", readProps.get(ContentModel.PROP_LOCK_OWNER));
+        assertEquals(LockType.READ_ONLY_LOCK.toString(), readProps.get(ContentModel.PROP_LOCK_TYPE));
+        assertEquals(now, readProps.get(ContentModel.PROP_EXPIRY_DATE));
+        // Spoofed - wasn't explicitly added.
+        assertEquals(Lifetime.PERSISTENT, readProps.get(ContentModel.PROP_LOCK_LIFETIME));
+        // Double check - not really present
+        assertFalse(rawNodeService.getProperties(nodeRef).containsKey(ContentModel.PROP_LOCK_LIFETIME));
     }
     
     @Test
@@ -254,7 +254,7 @@ public class LockableAspectInterceptorTest
       assertEquals(null, nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER));
       assertEquals(null, nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_TYPE));
       assertEquals(null, nodeService.getProperty(nodeRef, ContentModel.PROP_EXPIRY_DATE));
-      
+      assertEquals(null, nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_LIFETIME));
       Date now = new Date();
       // Set a lock on the node
       lockStore.set(nodeRef,
@@ -264,6 +264,7 @@ public class LockableAspectInterceptorTest
       assertEquals(lockOwner, nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER));
       assertEquals(LockType.WRITE_LOCK.toString(), nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_TYPE));
       assertEquals(now, nodeService.getProperty(nodeRef, ContentModel.PROP_EXPIRY_DATE));
+      assertEquals(Lifetime.EPHEMERAL.toString(), nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_LIFETIME));
     }
     
     @Test
@@ -281,14 +282,22 @@ public class LockableAspectInterceptorTest
         assertEquals(null, nodeService.getProperty(nodeRef, ContentModel.PROP_EXPIRY_DATE));
         
         Date now = new Date();
+        
         // Set a lock on the node
-        lockStore.set(nodeRef,
-                    LockState.createLock(nodeRef, LockType.WRITE_LOCK, lockOwner, now, Lifetime.PERSISTENT, null));
+        Map<QName, Serializable> lockProps = new HashMap<QName, Serializable>();
+        lockProps.put(ContentModel.PROP_LOCK_OWNER, "another");
+        lockProps.put(ContentModel.PROP_LOCK_TYPE, LockType.WRITE_LOCK.toString());
+        lockProps.put(ContentModel.PROP_EXPIRY_DATE, now);
+        nodeService.addAspect(nodeRef, ContentModel.ASPECT_LOCKABLE, lockProps);
         
         // cm:lockable properties should be unaffected
-        assertEquals(null, nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER));
-        assertEquals(null, nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_TYPE));
-        assertEquals(null, nodeService.getProperty(nodeRef, ContentModel.PROP_EXPIRY_DATE));
+        assertEquals("another", nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER));
+        assertEquals(LockType.WRITE_LOCK.toString(), nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_TYPE));
+        assertEquals(now, nodeService.getProperty(nodeRef, ContentModel.PROP_EXPIRY_DATE));
+        // Spoofed property
+        assertEquals(Lifetime.PERSISTENT.toString(), nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_LIFETIME));
+        // Double check, not really present
+        assertNull(rawNodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_LIFETIME));
     }
     
     @Test
@@ -356,26 +365,18 @@ public class LockableAspectInterceptorTest
                     nodeName,
                     ContentModel.TYPE_BASE).getChildRef();
 
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-        // Properties that should be unaffected
+        Map<QName, Serializable> properties = rawNodeService.getProperties(nodeRef);
+        
+        // With the exception of cm:lockLifetime, lock properties should be unaffected after setProperties()
         properties.put(ContentModel.PROP_AUTHOR, "Joe Bloggs");
         properties.put(ContentModel.PROP_NAME, "A Name");
         properties.put(ContentModel.PROP_LOCK_TYPE, LockType.NODE_LOCK);
+        properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.PERSISTENT);
         properties.put(ContentModel.PROP_LOCK_OWNER, "Alison Bloggs");
         Date expiryDate = new Date();
         properties.put(ContentModel.PROP_EXPIRY_DATE, expiryDate);
         
-        lockStore.set(
-                    nodeRef,
-                    LockState.createLock(
-                                nodeRef,
-                                LockType.NODE_LOCK,
-                                "Alison Bloggs",
-                                expiryDate,
-                                Lifetime.PERSISTENT,
-                                null));
-        
-        // Set the properties
+        // Set the properties (intercepted)
         nodeService.setProperties(nodeRef, properties);
         
         // Check the persisted properties
@@ -385,6 +386,9 @@ public class LockableAspectInterceptorTest
         assertEquals(LockType.NODE_LOCK.toString(), properties.get(ContentModel.PROP_LOCK_TYPE));
         assertEquals("Alison Bloggs", properties.get(ContentModel.PROP_LOCK_OWNER));
         assertEquals(expiryDate, properties.get(ContentModel.PROP_EXPIRY_DATE));
+        
+        // cm:lockLifetime is not persisted.
+        assertFalse(properties.containsKey(ContentModel.PROP_LOCK_LIFETIME));
     }
     
     @Test
@@ -397,25 +401,16 @@ public class LockableAspectInterceptorTest
                     nodeName,
                     ContentModel.TYPE_BASE).getChildRef();
 
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-        // Properties that should be unaffected
+        Map<QName, Serializable> properties = rawNodeService.getProperties(nodeRef);
+        // Non-lock properties should be unaffected after setProperties()
         properties.put(ContentModel.PROP_AUTHOR, "Joe Bloggs");
         properties.put(ContentModel.PROP_NAME, "A Name");
-        // Properties that should not be persisted
+        // Lock properties should not be persisted (filtered out by interceptor)
         properties.put(ContentModel.PROP_LOCK_TYPE, LockType.NODE_LOCK);
+        properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.EPHEMERAL);
         properties.put(ContentModel.PROP_LOCK_OWNER, "Alison Bloggs");
         Date expiryDate = new Date();
         properties.put(ContentModel.PROP_EXPIRY_DATE, expiryDate);
-        
-        lockStore.set(
-                    nodeRef,
-                    LockState.createLock(
-                                nodeRef,
-                                LockType.NODE_LOCK,
-                                "Alison Bloggs",
-                                expiryDate,
-                                Lifetime.EPHEMERAL,
-                                null));
         
         // Set the properties
         nodeService.setProperties(nodeRef, properties);
@@ -426,6 +421,7 @@ public class LockableAspectInterceptorTest
         assertEquals("A Name", properties.get(ContentModel.PROP_NAME));
         // Check the filtered properties
         assertNull(properties.get(ContentModel.PROP_LOCK_TYPE));
+        assertNull(properties.get(ContentModel.PROP_LOCK_LIFETIME));
         assertNull(properties.get(ContentModel.PROP_LOCK_OWNER));
         assertNull(properties.get(ContentModel.PROP_EXPIRY_DATE));
     }

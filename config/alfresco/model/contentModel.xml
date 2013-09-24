@@ -991,6 +991,10 @@
                <type>d:text</type>
                <protected>true</protected>
             </property>
+            <property name="cm:lockLifetime">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
             <property name="cm:expiryDate">
                <type>d:date</type>
                <protected>true</protected>

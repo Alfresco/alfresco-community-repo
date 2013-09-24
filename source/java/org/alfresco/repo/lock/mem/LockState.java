@@ -215,4 +215,12 @@ public final class LockState implements Serializable
         else if (!this.owner.equals(other.owner)) return false;
         return true;
     }
+
+    @Override
+    public String toString()
+    {
+        return "LockState [nodeRef=" + this.nodeRef + ", lockType=" + this.lockType + ", owner="
+                    + this.owner + ", expires=" + this.expires + ", lifetime=" + this.lifetime
+                    + ", additionalInfo=" + this.additionalInfo + "]";
+    }
 }

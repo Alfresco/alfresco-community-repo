@@ -106,10 +106,4 @@ public class LockStoreImpl extends AbstractLockStore<ConcurrentMap<NodeRef, Lock
         WriteLock writeLock = rwLock.writeLock();
         return writeLock;
     }
-
-    @Override
-    protected void doSet(NodeRef nodeRef, LockState lockState)
-    {
-        map.put(nodeRef, lockState);
-    }
 }

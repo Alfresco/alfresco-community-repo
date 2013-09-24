@@ -18,10 +18,19 @@
  */
 package org.alfresco.repo.lock.mem;
 
+import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
+import org.alfresco.repo.lock.LockUtils;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.lock.UnableToAquireLockException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Base class for LockStore implementations that use a ConcurrentMap as storage.
@@ -55,54 +64,101 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
     @Override
     public LockState get(NodeRef nodeRef)
     {
-        // Always lock on NodeRef related LockStore operations. Otherwise it is possible
-        // to, for example, get LockState data that is not consistent with the props in persistent storage.
-        acquireConcurrencyLock(nodeRef);
-        try
+        LockState lockState;
+        Map<NodeRef, LockState> txMap = getTxMap();
+        if (txMap != null && txMap.containsKey(nodeRef))
         {
-            return map.get(nodeRef);
+            // The transactional map is able to provide the LockState
+            lockState = txMap.get(nodeRef);
         }
-        finally
+        else
         {
-            releaseConcurrencyLock(nodeRef);
+            lockState = map.get(nodeRef);
+            if (txMap != null)
+            {
+                // As the txMap doesn't have the LockState, cache it for later.
+                txMap.put(nodeRef, lockState);
+            }
         }
-    }
-
-    @Override
-    public boolean contains(NodeRef nodeRef)
-    {
-        acquireConcurrencyLock(nodeRef);
-        try
-        {
-            return map.containsKey(nodeRef);
-        }
-        finally
-        {
-            releaseConcurrencyLock(nodeRef);
-        }
+        return lockState;
     }
 
     @Override
     public void set(NodeRef nodeRef, LockState lockState)
     {
-        acquireConcurrencyLock(nodeRef);
-        try
+        Map<NodeRef, LockState> txMap = getTxMap();
+        LockState previousLockState = null;
+        if (txMap != null)
         {
-            doSet(nodeRef, lockState);
+            if (txMap.containsKey(nodeRef))
+            {
+                // There is known previous state.
+                previousLockState = txMap.get(nodeRef);
+            }
+            else
+            {
+                // No previous known state - get the current state, this becomes
+                // the previous known state.
+                previousLockState = get(nodeRef);
+            }
         }
-        finally
+        else
         {
-            releaseConcurrencyLock(nodeRef);
+            // No transaction, but we still need to know the previous state, before attempting
+            // to set new state.
+            previousLockState = get(nodeRef);
+        }
+        
+        // Has the lock been succesfully placed into the lock store?
+        boolean updated = false;
+        
+        if (previousLockState != null)
+        {
+            String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+            String owner = previousLockState.getOwner();
+            Date expires = previousLockState.getExpires();
+            if (LockUtils.lockStatus(userName, owner, expires) == LockStatus.LOCKED)
+            {
+                throw new UnableToAquireLockException(nodeRef);
+            }            
+            // Use ConcurrentMap.replace(key, old, new) so that we can ensure we don't encounter a
+            // 'lost update' (i.e. someone else has locked a node while we were thinking about it).
+            updated = map.replace(nodeRef, previousLockState, lockState);
+        }
+        else
+        {
+            if (map.putIfAbsent(nodeRef, lockState) == null)
+            {
+                updated = true;
+            }
+        }
+        
+        if (!updated)
+        {
+            String msg = String.format("Attempt to update lock state failed, old=%s, new=%s, noderef=%s",
+                        previousLockState, lockState, nodeRef);
+            throw new ConcurrencyFailureException(msg);
+        }
+        else
+        {
+            // Keep the new value for future reads within this TX.
+            if (txMap != null)
+            {
+                txMap.put(nodeRef, lockState);
+            }
         }
     }
 
-    protected abstract void doSet(NodeRef nodeRef, LockState lockState);
 
     @Override
     public void clear()
     {
-        // TODO: lock whole map?
         map.clear();
+        Map<NodeRef, LockState> txMap = getTxMap();
+        if (txMap != null)
+        {
+            txMap.clear();
+        }
     }
 
     @Override
@@ -111,10 +167,26 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
     @Override
     public abstract void releaseConcurrencyLock(NodeRef nodeRef);
 
+
+    /**
+     * Returns a transactionally scoped Map that is used to provide repeatable lock store queries
+     * for a given NodeRef. If no transaction is present, then null is returned.
+     * 
+     * @return Transactional Map or null if not available.
+     */
+    protected Map<NodeRef, LockState> getTxMap()
+    {
+        if (!TransactionSynchronizationManager.isSynchronizationActive())
+        {
+            return null;
+        }
+        Map<NodeRef, LockState> map = TransactionalResourceHelper.getMap(getClass().getName()+".repeatableReadMap");
+        return map;
+    }
+    
     @Override
     public Set<NodeRef> getNodes()
     {
-        // TODO: lock whole map?
         return map.keySet();
     }
 }

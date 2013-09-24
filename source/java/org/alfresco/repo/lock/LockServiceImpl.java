@@ -68,6 +68,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.util.Assert;
 
@@ -88,7 +89,7 @@ public class LockServiceImpl implements LockService,
     
     /** Key to the nodes ref's to ignore when checking for locks */
     private static final String KEY_IGNORE_NODES = "lockService.ignoreNodes";
-    private static final Object KEY_LOCKED_NODES = "lockService.lockedNode";
+    private static final Object KEY_MODIFIED_NODES = "lockService.lockedNode";
     
     private NodeService nodeService;
     private TenantService tenantService;
@@ -318,7 +319,11 @@ public class LockServiceImpl implements LockService,
             lockType = LockType.WRITE_LOCK;
         }
 
-        LockStatus currentLockStatus = getLockStatus(nodeRef, userName);
+        // Get the current lock info and status for the node ref.
+        Pair<LockState, LockStatus> statusAndState = getLockStateAndStatus(nodeRef, userName);
+        LockState currentLockInfo = statusAndState.getFirst();
+        LockStatus currentLockStatus = statusAndState.getSecond();
+        
         if (LockStatus.LOCKED.equals(currentLockStatus) == true)
         {
             // Error since we are trying to lock a locked node
@@ -328,50 +333,43 @@ public class LockServiceImpl implements LockService,
                  LockStatus.LOCK_EXPIRED.equals(currentLockStatus) == true ||
                  LockStatus.LOCK_OWNER.equals(currentLockStatus) == true)
         {
-            lockStore.acquireConcurrencyLock(nodeRef);
-            try
+            final Date expiryDate = makeExpiryDate(timeToExpire);
+            
+            // Store the lock in the appropriate place.
+            if (lifetime == Lifetime.PERSISTENT)
             {
-                // Double check lock status now that the lockStore has been locked by NodeRef
-                if (getLockStatus(nodeRef, userName) == LockStatus.LOCKED)
-                {
-                    throw new UnableToAquireLockException(nodeRef);
-                }
-                
-                final Date expiryDate = makeExpiryDate(timeToExpire);
-                
-                // Only persist the lock if required.
-                if (lifetime.equals(Lifetime.PERSISTENT))
+                lockableAspectInterceptor.disableForThread();
+                try
                 {
                     // Add lock aspect if not already present
-                    lockableAspectInterceptor.disableForThread();
-                    try
-                    {
-                        ensureLockAspect(nodeRef);
-                        persistLockProps(nodeRef, lockType, userName, expiryDate);
-                    }
-                    finally
-                    {
-                        lockableAspectInterceptor.enableForThread();
-                    }
+                    ensureLockAspect(nodeRef);
+                    persistLockProps(nodeRef, lockType, lifetime, userName, expiryDate);
                 }
-                
-                // Always store the lock in memory.
-                lockStore.set(
-                            nodeRef,
-                            LockState.createLock(nodeRef, lockType, userName, expiryDate, lifetime, additionalInfo));
-                
-                // Record the NodeRef being locked, so that it can be removed on rollback.
-                TransactionalResourceHelper.getSet(KEY_LOCKED_NODES).add(nodeRef);
+                finally
+                {
+                    lockableAspectInterceptor.enableForThread();
+                }
+            }
+            else if (lifetime == Lifetime.EPHEMERAL)
+            {
+                // Store the lock only in memory.
+                LockState lock = LockState.createLock(nodeRef, lockType, userName,
+                            expiryDate, lifetime, additionalInfo);
+                lockStore.set(nodeRef, lock);
+                // Record the NodeRef being locked and its last known lockstate. This allows
+                // it to be reverted to this state on rollback.
+                TransactionalResourceHelper.getMap(KEY_MODIFIED_NODES).put(nodeRef, currentLockInfo);
                 AlfrescoTransactionSupport.bindListener(this);
             }
-            finally
+            else
             {
-                lockStore.releaseConcurrencyLock(nodeRef);
+                throw new IllegalStateException(lifetime.getClass().getSimpleName() +
+                            " is not a valid value: " + lifetime.toString());
             }
         }
     }
     
-    private void persistLockProps(NodeRef nodeRef, LockType lockType, String userName, Date expiryDate)
+    private void persistLockProps(NodeRef nodeRef, LockType lockType, Lifetime lifetime, String userName, Date expiryDate)
     {  
         addToIgnoreSet(nodeRef);
         try
@@ -379,6 +377,7 @@ public class LockServiceImpl implements LockService,
             // Set the current user as the lock owner
             this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_OWNER, userName);
             this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_TYPE, lockType.toString());
+            this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_LIFETIME, lifetime.toString());
             this.nodeService.setProperty(nodeRef, ContentModel.PROP_EXPIRY_DATE, expiryDate);
         } 
         finally
@@ -467,48 +466,47 @@ public class LockServiceImpl implements LockService,
         // Unlock the parent
         nodeRef = tenantService.getName(nodeRef);
         	
-        lockStore.acquireConcurrencyLock(nodeRef);
-        try
+        LockState lockState = getLockState(nodeRef);
+        
+        if (lockState.isLockInfo())
         {
-            LockState lockState = getLockState(nodeRef);
-            
-            if (lockState.isLockInfo())
+        	// MNT-231: forbidden to unlock a checked out node
+            if (!allowCheckedOut && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT))
             {
-            	// MNT-231: forbidden to unlock a checked out node
-                if (!allowCheckedOut && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT))
-                {
-                	throw new UnableToReleaseLockException(nodeRef, CAUSE.CHECKED_OUT);
-                }
+            	throw new UnableToReleaseLockException(nodeRef, CAUSE.CHECKED_OUT);
+            }
 
-                // Always unlock in memory regardless of lifetime
-                lockStore.set(nodeRef, LockState.createUnlocked(nodeRef));
-                
-                // Remove the lock from persistent storage.
-                if (lockState.getLifetime().equals(Lifetime.PERSISTENT))
+            // Remove the lock from persistent storage.
+            Lifetime lifetime = lockState.getLifetime();
+            if (lifetime == Lifetime.PERSISTENT)
+            {
+                addToIgnoreSet(nodeRef);
+                behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                lockableAspectInterceptor.disableForThread();
+                try
                 {
-                    addToIgnoreSet(nodeRef);
-                    behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
-                    lockableAspectInterceptor.disableForThread();
-                    try
+                    // Clear the lock
+                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
                     {
-                        // Clear the lock
-                        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
-                        {
-                            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_LOCKABLE);
-                        }
+                        nodeService.removeAspect(nodeRef, ContentModel.ASPECT_LOCKABLE);
                     }
-                    finally
-                    {
-                    	behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
-                        lockableAspectInterceptor.enableForThread();
-                        removeFromIgnoreSet(nodeRef);
-                    }
+                }
+                finally
+                {
+                	behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                    lockableAspectInterceptor.enableForThread();
+                    removeFromIgnoreSet(nodeRef);
                 }
             }
-        }
-        finally
-        {
-            lockStore.releaseConcurrencyLock(nodeRef);
+            else if (lifetime == Lifetime.EPHEMERAL)
+            {
+                // Remove the ephemeral lock.
+                lockStore.set(nodeRef, LockState.createUnlocked(nodeRef));
+            }
+            else
+            {
+                throw new IllegalStateException("Unhandled Lifetime value: " + lifetime);
+            }
         }
 
         if (unlockChildren)
@@ -553,49 +551,21 @@ public class LockServiceImpl implements LockService,
      */
     public LockStatus getLockStatus(NodeRef nodeRef, String userName)
     {
+        Pair<LockState, LockStatus> stateAndStatus = getLockStateAndStatus(nodeRef, userName);
+        LockStatus lockStatus = stateAndStatus.getSecond();
+        return lockStatus;
+    }
+
+    private Pair<LockState, LockStatus> getLockStateAndStatus(NodeRef nodeRef, String userName)
+    {
         final LockState lockState = getLockState(nodeRef);
         
         String lockOwner = lockState.getOwner();
         Date expiryDate = lockState.getExpires();
-        LockStatus status = lockStatus(userName, lockOwner, expiryDate);
-        return status;
+        LockStatus status = LockUtils.lockStatus(userName, lockOwner, expiryDate);
+        return new Pair<LockState, LockStatus>(lockState, status);
     }
     
-    /**
-     * Given the lock owner and expiry date of a lock calculates the lock status with respect
-     * to the user name supplied, e.g. the current user.
-     * 
-     * @param userName    User name to evaluate the lock against.
-     * @param lockOwner   Owner of the lock.
-     * @param expiryDate  Expiry date of the lock.
-     * @return LockStatus
-     */
-    private LockStatus lockStatus(String userName, String lockOwner, Date expiryDate)
-    {
-        LockStatus result = LockStatus.NO_LOCK;
-        
-        if (lockOwner != null)
-        {
-            if (expiryDate != null && expiryDate.before(new Date()) == true)
-            {
-                // Indicate that the lock has expired
-                result = LockStatus.LOCK_EXPIRED;
-            }
-            else
-            {
-                if (lockOwner.equals(userName) == true)
-                {
-                    result = LockStatus.LOCK_OWNER;
-                }
-                else
-                {
-                    result = LockStatus.LOCKED;
-                }
-            }
-        }
-        return result;
-    }
-
     /**
      * @see LockService#getLockType(NodeRef)
      */
@@ -850,52 +820,35 @@ public class LockServiceImpl implements LockService,
     @Override
     public LockState getLockState(NodeRef nodeRef)
     {
+        // Check in-memory for ephemeral locks first.
         LockState lockState = lockStore.get(nodeRef);
+        
         if (lockState == null)
         {
-            lockStore.acquireConcurrencyLock(nodeRef);
-            try
+            // No in-memory state, so get from the DB.
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
             {
-                // Double check there is still no lock
-                if (lockStore.contains(nodeRef))
-                {
-                    // In-memory lock state has appeared since last check, so use it. 
-                    lockState = lockStore.get(nodeRef);
-                }
-                else
-                {
-                    // Still no in-memory state, so get from the DB and cache it also.
-                    lockableAspectInterceptor.disableForThread();
-                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
-                    {
-                        String lockOwner = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER);
-                        
-                        Date expiryDate = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_EXPIRY_DATE);
-                        String lockTypeStr = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_TYPE);
-                        LockType lockType = lockTypeStr != null ? LockType.valueOf(lockTypeStr) : null;
-                        
-                        // Add to memory store, we mark it as PERSISTENT as it was in the persistent storage!
-                        lockState = LockState.createLock(
-                                    nodeRef,
-                                    lockType,
-                                    lockOwner,
-                                    expiryDate,
-                                    Lifetime.PERSISTENT,
-                                    null);
-                    }
-                    else
-                    {
-                        // There is no lock information
-                        lockState = LockState.createUnlocked(nodeRef);
-                    }
-                    // Cache the lock state
-                    lockStore.set(nodeRef, lockState);
-                }
+                String lockOwner = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER);
+                
+                Date expiryDate = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_EXPIRY_DATE);
+                String lockTypeStr = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_TYPE);
+                LockType lockType = lockTypeStr != null ? LockType.valueOf(lockTypeStr) : null;
+                String lifetimeStr = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_LIFETIME);
+                Lifetime lifetime = lifetimeStr != null ? Lifetime.valueOf(lifetimeStr) : null;
+                
+                // Mark lockstate as PERSISTENT as it was in the persistent storage!
+                lockState = LockState.createLock(
+                            nodeRef,
+                            lockType,
+                            lockOwner,
+                            expiryDate,
+                            lifetime,
+                            null);
             }
-            finally
+            else
             {
-                lockableAspectInterceptor.enableForThread();
-                lockStore.releaseConcurrencyLock(nodeRef);
+                // There is no lock information
+                lockState = LockState.createUnlocked(nodeRef);
             }
         }
         
@@ -937,11 +890,11 @@ public class LockServiceImpl implements LockService,
     @Override
     public void afterRollback()
     {
-        // As rollback has occurred we are unable to keep hold of any locks set during this transaction.
-        Set<NodeRef> lockedNodes = TransactionalResourceHelper.getSet(KEY_LOCKED_NODES);
-        for (NodeRef nodeRef : lockedNodes)
+        // As rollback has occurred we are unable to keep hold of any ephemeral locks set during this transaction.
+        Map<NodeRef, LockState> lockedNodes = TransactionalResourceHelper.getMap(KEY_MODIFIED_NODES);
+        for (LockState lockInfo : lockedNodes.values())
         {
-            lockStore.set(nodeRef, LockState.createUnlocked(nodeRef));
+            lockStore.set(lockInfo.getNodeRef(), lockInfo);
         }
     }
 }

@@ -21,6 +21,7 @@ package org.alfresco.repo.lock;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
@@ -198,6 +199,13 @@ public class LockServiceImplTest extends BaseSpringTest
         assertEquals(null, lockState.getExpires());
         assertEquals(null, lockState.getAdditionalInfo());
         
+        // Check the correct properties have been set
+        Map<QName, Serializable> props = nodeService.getProperties(parentNode);
+        assertEquals(GOOD_USER_NAME, props.get(ContentModel.PROP_LOCK_OWNER));
+        assertEquals(LockType.WRITE_LOCK.toString(), props.get(ContentModel.PROP_LOCK_TYPE));
+        assertEquals(Lifetime.PERSISTENT.toString(), props.get(ContentModel.PROP_LOCK_LIFETIME));
+        assertEquals(null, props.get(ContentModel.PROP_EXPIRY_DATE));
+        
         TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         
         assertEquals(
@@ -329,21 +337,29 @@ public class LockServiceImplTest extends BaseSpringTest
         assertEquals(LockStatus.NO_LOCK, lockService.getLockStatus(noAspectNode));
     }
 
-    public void testLockReleasedOnRollback() throws NotSupportedException, SystemException
+    public void testLockRevertedOnRollback() throws NotSupportedException, SystemException
     {
         // Preconditions of test
         assertEquals(LockStatus.NO_LOCK, lockService.getLockStatus(noAspectNode));
         assertEquals(LockStatus.NO_LOCK, lockService.getLockStatus(rootNodeRef));
         
-        lockService.lock(noAspectNode, LockType.WRITE_LOCK);
-        lockService.lock(rootNodeRef, LockType.NODE_LOCK);
+        // Lock noAspectNode
+        lockService.lock(noAspectNode, LockType.WRITE_LOCK, 0, Lifetime.EPHEMERAL);
+        
+        // Lock rootNodeRef
+        lockService.lock(rootNodeRef, LockType.NODE_LOCK, 0, Lifetime.EPHEMERAL);
+        
+        // Sometime later, a refresh occurs (so this should not be reverted to unlocked, but to this state)
+        lockService.lock(rootNodeRef, LockType.NODE_LOCK, 3600, Lifetime.EPHEMERAL);
         
         // Rollback
         endTransaction();
         
-        // The locks should not present.
+        // This lock should not be present.
         assertEquals(LockStatus.NO_LOCK, lockService.getLockStatus(noAspectNode));
-        assertEquals(LockStatus.NO_LOCK, lockService.getLockStatus(rootNodeRef));
+        
+        // This lock should still be present.
+        assertEquals(LockStatus.LOCK_OWNER, lockService.getLockStatus(rootNodeRef));
     }
     
     /**
@@ -445,22 +461,18 @@ public class LockServiceImplTest extends BaseSpringTest
         LockStatus lockStatus2 = this.lockService.getLockStatus(this.parentNode);
         assertEquals(LockStatus.LOCKED, lockStatus2);
         
-        // Check lockstore is populated during status read
+        // Check lockstore is not used for persistent locks
+        // Previously LockStore was doubling up as a cache - the change in requirements means a test
+        // is necessary to ensure the work has been implemented correctly (despite being an odd test)
         LockStore lockStore = (LockStore) applicationContext.getBean("lockStore");
         lockStore.clear();
         LockState lockState = lockStore.get(parentNode);
         // Nothing stored against node ref
         assertNull(lockState);
         lockService.getLockStatus(parentNode);
-        // In-memory store populated during getLockStatus
+        // In-memory store still empty - only used for ephemeral locks
         lockState = lockStore.get(parentNode);
-        // Check details are correct
-        assertEquals(Lifetime.PERSISTENT, lockState.getLifetime());
-        assertEquals(null, lockState.getExpires());
-        assertEquals(GOOD_USER_NAME, lockState.getOwner());
-        assertEquals(LockType.WRITE_LOCK, lockState.getLockType());
-        assertEquals(parentNode, lockState.getNodeRef());
-        assertEquals(null, lockState.getAdditionalInfo());
+        assertNull(lockState);
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         

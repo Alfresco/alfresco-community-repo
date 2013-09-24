@@ -817,7 +817,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             CMISNodeInfo folderInfo = getOrCreateFolderInfo(folderId, "Folder");
 
-            params.setQuery("+=cm:workingCopyOwner:\""+AuthenticationUtil.getFullyAuthenticatedUser()+"\" +=PARENT:\""+folderInfo.getNodeRef().toString()+"\"");
+            params.setQuery("+=cm:workingCopyOwner:\""+AuthenticationUtil.getFullyAuthenticatedUser()+"\" AND +=PARENT:\""+folderInfo.getNodeRef().toString()+"\"");
             params.addStore(folderInfo.getNodeRef().getStoreRef());
         }
 

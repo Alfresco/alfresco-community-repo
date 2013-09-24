@@ -536,28 +536,32 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         
         
         String fieldName = qnameString;
-        // Check for any prefixes and expand to the full uri
-        if (qnameString.charAt(0) != '{')
+        if(fieldName.startsWith("@"))
         {
-            int colonPosition = qnameString.indexOf(':');
+            fieldName = fieldName.substring(1);
+        }
+        // Check for any prefixes and expand to the full uri
+        if (fieldName.charAt(0) != '{')
+        {
+            int colonPosition = fieldName.indexOf(':');
             if (colonPosition == -1)
             {
                 
                 
                 // use the default namespace
-                fieldName = "{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}" + qnameString;
+                fieldName = "{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}" + fieldName;
             }
             else
             {
-                String prefix = qnameString.substring(0, colonPosition);
+                String prefix = fieldName.substring(0, colonPosition);
                 String uri = matchURI(prefix, namespacePrefixResolver);
                 if (uri == null)
                 {
-                    fieldName = "{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}" + qnameString;
+                    fieldName = "{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}" + fieldName;
                 }
                 else
                 {
-                    fieldName = "{" + uri + "}" + qnameString.substring(colonPosition + 1);
+                    fieldName = "{" + uri + "}" + fieldName.substring(colonPosition + 1);
                 }
 
             }

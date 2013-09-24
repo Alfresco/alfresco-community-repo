@@ -18,19 +18,27 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 
+import java.io.Serializable;
+import java.util.Map;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyMap;
 
 /**
  * Behaviour associated with the RM Site type
@@ -38,7 +46,8 @@ import org.alfresco.service.cmr.site.SiteService;
  * @author Roy Wetherall
  */
 public class RmSiteType implements RecordsManagementModel,
-                                   NodeServicePolicies.OnCreateNodePolicy
+                                   NodeServicePolicies.OnCreateNodePolicy,
+                                   NodeServicePolicies.OnUpdatePropertiesPolicy
 {
 	/** Constant values */
 	public static final String COMPONENT_DOCUMENT_LIBRARY = "documentLibrary";
@@ -57,7 +66,8 @@ public class RmSiteType implements RecordsManagementModel,
     private RecordsManagementSearchService recordsManagementSearchService;
     
     /** Behaviour */
-    JavaBehaviour behaviour = new JavaBehaviour(this, "onCreateNode", NotificationFrequency.FIRST_EVENT);
+    JavaBehaviour onCreateNode = new JavaBehaviour(this, "onCreateNode", NotificationFrequency.FIRST_EVENT);
+    JavaBehaviour onUpdateProperties = new JavaBehaviour(this, "onUpdateProperties", NotificationFrequency.FIRST_EVENT);
     
     /**
      * Set the policy component
@@ -99,10 +109,13 @@ public class RmSiteType implements RecordsManagementModel,
      */
     public void init()
     {
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnCreateNodePolicy.QNAME,
-                TYPE_RM_SITE,
-                behaviour);
+        policyComponent.bindClassBehaviour(NodeServicePolicies.OnCreateNodePolicy.QNAME,
+                                           TYPE_RM_SITE,
+                                           onCreateNode);
+        
+        policyComponent.bindClassBehaviour(NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME, 
+                                           TYPE_RM_SITE, 
+                                           onUpdateProperties);
     }
 
     /**
@@ -111,7 +124,7 @@ public class RmSiteType implements RecordsManagementModel,
 	@Override
 	public void onCreateNode(ChildAssociationRef childAssocRef) 
 	{
-	    behaviour.disable();
+	    onCreateNode.disable();
 	    try
 	    {	    
     		final NodeRef rmSite = childAssocRef.getChildRef();
@@ -145,7 +158,30 @@ public class RmSiteType implements RecordsManagementModel,
 	    }
 	    finally
 	    {
-	        behaviour.enable();
+	        onCreateNode.enable();
 	    }
 	}
+
+	/**
+	 * Ensure that the visibility of a RM site can not be changed to anything but public.
+	 * 
+	 * TODO support other site visibilities
+	 * 
+	 * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
+	 */
+    @Override
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        if (nodeService.exists(nodeRef) == true)
+        {
+            Map<QName, Serializable> changed = PropertyMap.getChangedProperties(before, after);   
+            if (changed.containsKey(SiteModel.PROP_SITE_VISIBILITY) == true &&
+                changed.get(SiteModel.PROP_SITE_VISIBILITY) != null &&
+                SiteVisibility.PUBLIC.equals(changed.get(SiteModel.PROP_SITE_VISIBILITY)) == false)                
+            {
+                // we do not current support non-public RM sites
+                throw new AlfrescoRuntimeException("The records management site must have public visibility.  It can't be changed to " + changed.get(SiteModel.PROP_SITE_VISIBILITY));
+            }
+        }
+    }
 }

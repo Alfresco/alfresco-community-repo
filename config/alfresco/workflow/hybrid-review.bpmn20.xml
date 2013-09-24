@@ -42,6 +42,7 @@
                         if (typeof bpm_workflowDueDate != 'undefined') task.dueDate = bpm_workflowDueDate;
                         if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
                         task.setVariableLocal('bpm_reassignable', false);
+                        task.setVariableLocal('bpm_packageActionGroup', '');
                      </activiti:string>
                   </activiti:field>
                </activiti:taskListener>

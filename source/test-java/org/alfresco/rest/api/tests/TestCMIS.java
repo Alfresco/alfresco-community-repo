@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -1346,5 +1347,87 @@ public class TestCMIS extends EnterpriseTestApi
 		AlfrescoDocument doc1 = (AlfrescoDocument)doc.getObjectOfLatestVersion(false);
 		String versionLabel1 = doc1.getVersionLabel();
 		assertEquals("1.0", versionLabel1);
+	}
+	
+	@Test
+	public void testAppendContentStream() throws Exception
+	{
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+        String username = "user" + System.currentTimeMillis();
+        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+        TestPerson person1 = network1.createUser(personInfo);
+        String person1Id = person1.getId();
+
+        final String siteName = "site" + System.currentTimeMillis();
+
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
+                TestSite site = repoService.createSite(null, siteInfo);
+
+                String name = GUID.generate();
+                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+                return folderNodeRef;
+            }
+        }, person1Id, network1.getId());
+
+        // Create a document...
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.1");
+        Folder docLibrary = (Folder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
+        String name = "mydoc-" + GUID.generate() + ".txt";
+        Map<String, String> properties = new HashMap<String, String>();
+        {
+            // create a document with 2 aspects
+            properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+            properties.put(PropertyIds.NAME, name);
+        }
+        ContentStreamImpl fileContent = new ContentStreamImpl();
+        {
+            ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+            writer.putContent("Ipsum and so on");
+            ContentReader reader = writer.getReader();
+            fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            fileContent.setStream(reader.getContentInputStream());
+        }
+
+        Document doc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+
+        // append a few times
+        for(int i = 0; i < 5; i++)
+        {
+            fileContent = new ContentStreamImpl();
+            {
+                ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+                writer.putContent("Ipsum and so on");
+                ContentReader reader = writer.getReader();
+                fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                fileContent.setStream(reader.getContentInputStream());
+            }
+            doc.appendContentStream(fileContent, false);
+        }
+        fileContent = new ContentStreamImpl();
+        {
+            ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+            writer.putContent("Ipsum and so on");
+            ContentReader reader = writer.getReader();
+            fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            fileContent.setStream(reader.getContentInputStream());
+        }
+        doc.appendContentStream(fileContent, true);
+
+        // check the appends
+        String path = "/Sites/" + siteName + "/documentLibrary/" + name;
+        Document doc1 = (Document)cmisSession.getObjectByPath(path);
+        ContentStream contentStream = doc1.getContentStream();
+        InputStream in = contentStream.getStream();
+        StringWriter writer = new StringWriter();
+        IOUtils.copy(in, writer, "UTF-8");
+        String content = writer.toString();
+        assertEquals("Ipsum and so onIpsum and so onIpsum and so onIpsum and so onIpsum and so onIpsum and so onIpsum and so on", content);
 	}
 }

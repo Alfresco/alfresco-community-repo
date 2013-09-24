@@ -250,6 +250,46 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertEquals("This is the description", tasks.get(0).getDescription());
     }
     
+    /**
+     * Test to validate fix for WOR-107
+     */
+    public void testLongTextValues() throws Exception
+    {
+        String veryLongTextValue = getLongString(10000);
+        // start pooled review and approve workflow
+        WorkflowDefinition workflowDef = deployDefinition(getAdhocDefinitionPath());
+        assertNotNull(workflowDef);
+        
+        // Create workflow parameters
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        Serializable wfPackage = workflowService.createPackage(null);
+        params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+        Date dueDate = new Date();
+        params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, 1);
+        params.put(WorkflowModel.PROP_COMMENT, veryLongTextValue);
+        
+        NodeRef assignee = personManager.get(USER2);
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, assignee);
+
+        // No exception should be thrown when using *very* long String variables (in this case, 10000)
+        WorkflowPath path = workflowService.startWorkflow(workflowDef.getId(), params);
+        assertNotNull(path);
+        
+        WorkflowTask startTask = workflowService.getStartTask(path.getInstance().getId());
+        assertNotNull(startTask);
+        
+        assertEquals(veryLongTextValue, startTask.getProperties().get(WorkflowModel.PROP_COMMENT));
+    }
+    
+    protected String getLongString(int numberOfCharacters) {
+        StringBuffer stringBuffer = new StringBuffer();
+        for(int i=0; i<numberOfCharacters/10;i++) {
+            stringBuffer.append("ABCDEFGHIJ");
+        }
+        return stringBuffer.toString();
+    }
+    
     
     @Override
     protected void checkTaskQueryStartTaskCompleted(String workflowInstanceId, WorkflowTask startTask) 

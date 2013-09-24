@@ -29,6 +29,7 @@ import org.activiti.engine.impl.variable.SerializableType;
 import org.activiti.engine.impl.variable.VariableType;
 import org.activiti.spring.SpringProcessEngineConfiguration;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.workflow.activiti.variable.CustomStringVariableType;
 import org.alfresco.service.cmr.repository.NodeService;
 
 /**
@@ -61,6 +62,11 @@ public class AlfrescoProcessEngineConfiguration extends SpringProcessEngineConfi
                 variableTypes.addType(type, serializableIndex);
             }
         }
+        
+        // WOR-171: Replace string type by custom one to handle large text-values
+        int stringIndex = variableTypes.getTypeIndex("string");
+        variableTypes.removeType(variableTypes.getVariableType("string"));
+        variableTypes.addType(new CustomStringVariableType(), stringIndex);
     }
     
     @Override

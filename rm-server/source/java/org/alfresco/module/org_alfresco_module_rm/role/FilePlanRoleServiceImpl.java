@@ -79,6 +79,10 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     /** I18N */
     private static final String MSG_FIRST_NAME = "bootstrap.rmadmin.firstName";
     private static final String MSG_LAST_NAME = "bootstrap.rmadmin.lastName";
+    private static final String MSG_ALL_ROLES = "rm.role.all";
+    
+    /** Location of bootstrap role JSON */
+    private static final String BOOTSTRAP_ROLE_JSON_LOCATION = "alfresco/module/org_alfresco_module_rm/security/rm-default-roles-bootstrap.json";
     
     /** Capability service */
     private CapabilityService capabilityService;
@@ -249,7 +253,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     String allRoles = authorityService.createAuthority(
                     						AuthorityType.GROUP, 
                     						getAllRolesGroupShortName(rmRootNode), 
-                    						"All Roles", 
+                    						I18NUtil.getMessage(MSG_ALL_ROLES), 
                     						new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                     // Set the permissions
@@ -332,7 +336,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     try
                     {
                         // Load up the default roles from JSON
-                        InputStream is = getClass().getClassLoader().getResourceAsStream("alfresco/module/org_alfresco_module_rm/security/rm-default-roles-bootstrap.json");
+                        InputStream is = getClass().getClassLoader().getResourceAsStream(BOOTSTRAP_ROLE_JSON_LOCATION);
                         if  (is == null)
                         {
                             throw new AlfrescoRuntimeException("Could not load default bootstrap roles configuration");
@@ -725,7 +729,15 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 Set<String> zones = new HashSet<String>(2);
                 zones.add(getZoneName(rmRootNode));
                 zones.add(RMAuthority.ZONE_APP_RM);
-                String roleGroup = authorityService.createAuthority(AuthorityType.GROUP, fullRoleName, roleDisplayLabel, zones);
+                
+                // Look up string, default to passed value if none found
+                String groupDisplayLabel = I18NUtil.getMessage(roleDisplayLabel);
+                if (groupDisplayLabel == null)
+                {
+                    groupDisplayLabel = roleDisplayLabel;
+                }
+                
+                String roleGroup = authorityService.createAuthority(AuthorityType.GROUP, fullRoleName, groupDisplayLabel, zones);
 
                 // Add the roleGroup to the "all" role group
                 String allRoleGroup = authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(rmRootNode));

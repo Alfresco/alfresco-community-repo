@@ -825,6 +825,30 @@ public class RecordsManagementAuditServiceImpl
                         nodeType = (typeDef != null) ? typeDef.getTitle() : null;
                     }
                 }
+                else if (values.containsKey(RecordsManagementAuditService.DOD5015_AUDIT_DATA_EVENT_NAME))
+                {
+                    // This data is /RM/event/...
+                    eventName = (String) values.get(RecordsManagementAuditService.DOD5015_AUDIT_DATA_EVENT_NAME);
+                    fullName = (String) values.get(RecordsManagementAuditService.DOD5015_AUDIT_DATA_PERSON_FULLNAME);
+                    userRoles = (String) values.get(RecordsManagementAuditService.DOD5015_AUDIT_DATA_PERSON_ROLES);
+                    nodeRef = (NodeRef) values.get(RecordsManagementAuditService.DOD5015_AUDIT_DATA_NODE_NODEREF);
+                    nodeName = (String) values.get(RecordsManagementAuditService.DOD5015_AUDIT_DATA_NODE_NAME);
+                    QName nodeTypeQname = (QName) values.get(RecordsManagementAuditService.DOD5015_AUDIT_DATA_NODE_TYPE);
+                    nodeIdentifier = (String) values.get(RecordsManagementAuditService.DOD5015_AUDIT_DATA_NODE_IDENTIFIER);
+                    namePath = (String) values.get(RecordsManagementAuditService.DOD5015_AUDIT_DATA_NODE_NAMEPATH);
+                    beforeProperties = (Map<QName, Serializable>) values.get(
+                            RecordsManagementAuditService.DOD5015_AUDIT_DATA_NODE_CHANGES_BEFORE);
+                    afterProperties = (Map<QName, Serializable>) values.get(
+                            RecordsManagementAuditService.DOD5015_AUDIT_DATA_NODE_CHANGES_AFTER);
+                    
+                    // Convert some of the values to recognizable forms
+                    nodeType = null;
+                    if (nodeTypeQname != null)
+                    {
+                        TypeDefinition typeDef = dictionaryService.getType(nodeTypeQname);
+                        nodeType = (typeDef != null) ? typeDef.getTitle() : null;
+                    }
+                }
                 else if (values.containsKey(RecordsManagementAuditService.RM_AUDIT_DATA_LOGIN_USERNAME))
                 {
                     user = (String) values.get(RecordsManagementAuditService.RM_AUDIT_DATA_LOGIN_USERNAME);
@@ -837,6 +861,20 @@ public class RecordsManagementAuditServiceImpl
                     {
                         eventName = RecordsManagementAuditService.RM_AUDIT_EVENT_LOGIN_SUCCESS;
                         fullName = (String) values.get(RecordsManagementAuditService.RM_AUDIT_DATA_LOGIN_FULLNAME);
+                    }
+                }
+                else if (values.containsKey(RecordsManagementAuditService.DOD5015_AUDIT_DATA_LOGIN_USERNAME))
+                {
+                    user = (String) values.get(RecordsManagementAuditService.DOD5015_AUDIT_DATA_LOGIN_USERNAME);
+                    if (values.containsKey(RecordsManagementAuditService.DOD5015_AUDIT_DATA_LOGIN_ERROR))
+                    {
+                        eventName = RecordsManagementAuditService.RM_AUDIT_EVENT_LOGIN_FAILURE;
+                        fullName = user;            // The user didn't log in
+                    }
+                    else
+                    {
+                        eventName = RecordsManagementAuditService.RM_AUDIT_EVENT_LOGIN_SUCCESS;
+                        fullName = (String) values.get(RecordsManagementAuditService.DOD5015_AUDIT_DATA_LOGIN_FULLNAME);
                     }
                 }
                 else
@@ -939,6 +977,18 @@ public class RecordsManagementAuditServiceImpl
         }
 
         // Build audit query parameters
+        AuditQueryParameters dod5015AuditQueryParams = new AuditQueryParameters();
+        dod5015AuditQueryParams.setForward(forward);
+        dod5015AuditQueryParams.setApplicationName(RecordsManagementAuditService.DOD5015_AUDIT_APPLICATION_NAME);
+        dod5015AuditQueryParams.setUser(user);
+        dod5015AuditQueryParams.setFromTime(fromTime);
+        dod5015AuditQueryParams.setToTime(toTime);
+        if (nodeRef != null)
+        {
+            dod5015AuditQueryParams.addSearchKey(RecordsManagementAuditService.DOD5015_AUDIT_DATA_NODE_NODEREF, nodeRef);
+        }
+        
+        //
         AuditQueryParameters auditQueryParams = new AuditQueryParameters();
         auditQueryParams.setForward(forward);
         auditQueryParams.setApplicationName(RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME);
@@ -949,7 +999,9 @@ public class RecordsManagementAuditServiceImpl
         {
             auditQueryParams.addSearchKey(RecordsManagementAuditService.RM_AUDIT_DATA_NODE_NODEREF, nodeRef);
         }
+
         // Get audit entries
+        auditService.auditQuery(callback, dod5015AuditQueryParams, maxEntries);
         auditService.auditQuery(callback, auditQueryParams, maxEntries);
         
         // finish off the audit trail report

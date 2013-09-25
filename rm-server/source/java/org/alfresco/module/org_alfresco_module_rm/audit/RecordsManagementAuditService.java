@@ -67,6 +67,33 @@ public interface RecordsManagementAuditService
     public static final String RM_AUDIT_DATA_LOGIN_FULLNAME = "/RM/login/no-error/fullName";
     public static final String RM_AUDIT_DATA_LOGIN_ERROR = "/RM/login/error/value";
     
+    /* Provide Backward compatibility with DOD5015 Audit Events  RM-904*/
+    public static final String DOD5015_AUDIT_APPLICATION_NAME = "DOD5015";
+    public static final String DOD5015_AUDIT_PATH_ROOT = "/DOD5015";
+    public static final String DOD5015_AUDIT_SNIPPET_EVENT = "/event";
+    public static final String DOD5015_AUDIT_SNIPPET_PERSON = "/person";
+    public static final String DOD5015_AUDIT_SNIPPET_NAME = "/name";
+    public static final String DOD5015_AUDIT_SNIPPET_NODE = "/node";
+    public static final String DOD5015_AUDIT_SNIPPET_CHANGES = "/changes";
+    public static final String DOD5015_AUDIT_SNIPPET_BEFORE = "/before";
+    public static final String DOD5015_AUDIT_SNIPPET_AFTER = "/after";
+
+    public static final String DOD5015_AUDIT_DATA_PERSON_FULLNAME = "/DOD5015/event/person/fullName";
+    public static final String DOD5015_AUDIT_DATA_PERSON_ROLES = "/DOD5015/event/person/roles";
+    public static final String DOD5015_AUDIT_DATA_EVENT_NAME = "/DOD5015/event/name/value";
+    public static final String DOD5015_AUDIT_DATA_NODE_NODEREF = "/DOD5015/event/node/noderef";
+    public static final String DOD5015_AUDIT_DATA_NODE_NAME = "/DOD5015/event/node/name";
+    public static final String DOD5015_AUDIT_DATA_NODE_TYPE = "/DOD5015/event/node/type";
+    public static final String DOD5015_AUDIT_DATA_NODE_IDENTIFIER = "/DOD5015/event/node/identifier";
+    public static final String DOD5015_AUDIT_DATA_NODE_NAMEPATH = "/DOD5015/event/node/namePath";
+    public static final String DOD5015_AUDIT_DATA_NODE_CHANGES_BEFORE = "/DOD5015/event/node/changes/before/value";
+    public static final String DOD5015_AUDIT_DATA_NODE_CHANGES_AFTER = "/DOD5015/event/node/changes/after/value";
+
+    public static final String DOD5015_AUDIT_DATA_LOGIN_USERNAME = "/DOD5015/login/args/userName/value";
+    public static final String DOD5015_AUDIT_DATA_LOGIN_FULLNAME = "/DOD5015/login/no-error/fullName";
+    public static final String DOD5015_AUDIT_DATA_LOGIN_ERROR = "/DOD5015/login/error/value";
+    /* End Backward compatibility with DOD5015 Audit Events */
+    
     /**
      * Starts RM auditing.
      */

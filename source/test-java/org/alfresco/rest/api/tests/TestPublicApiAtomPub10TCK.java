@@ -113,7 +113,7 @@ public class TestPublicApiAtomPub10TCK extends AbstractEnterpriseOpenCMIS10TCKTe
             addTest(new VersionDeleteTest());
             addTest(new VersioningStateCreateTest());
             // relies on Solr being available
-            //addTest(new CheckedOutTest());
+            addTest(new CheckedOutTest());
         }
     }
 

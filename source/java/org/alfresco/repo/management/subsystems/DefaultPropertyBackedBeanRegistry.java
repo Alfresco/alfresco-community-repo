@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.alfresco.repo.dictionary.DictionaryRepositoryBootstrappedEvent;
 import org.alfresco.repo.domain.schema.SchemaAvailableEvent;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListener;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 
@@ -36,7 +38,7 @@ import org.springframework.context.ApplicationListener;
  * 
  * @author dward
  */
-public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegistry, ApplicationListener
+public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegistry, ApplicationListener, TransactionListener
 {
     /** Is the database schema available yet? */
     private boolean isSchemaAvailable;
@@ -45,6 +47,9 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
 
     /** Events deferred until the database schema is available. */
     private List<PropertyBackedBeanEvent> deferredEvents = new LinkedList<PropertyBackedBeanEvent>();
+
+    /** Events to be broadcasted after the transaction finished. */
+    private List<PropertyBackedBeanEvent> afterTransactionEvents = new LinkedList<PropertyBackedBeanEvent>();
 
     /** Registered listeners. */
     private List<ApplicationListener> listeners = new LinkedList<ApplicationListener>();
@@ -144,9 +149,22 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
         // If the system is up and running, broadcast the event immediately
         if (this.isSchemaAvailable && this.wasDictionaryBootstrapped)
         {
-            for (ApplicationListener listener : this.listeners)
+            // If we have a transaction, the changed properties in it should be updated earlier,
+            // then the bean restart message will be sent to other node
+            // see ALF-20066
+            if (AlfrescoTransactionSupport.getTransactionId() != null &&
+                    (event instanceof PropertyBackedBeanStartedEvent ||
+                    event instanceof PropertyBackedBeanStoppedEvent))
             {
-                listener.onApplicationEvent(event);
+                this.afterTransactionEvents.add(event);
+                AlfrescoTransactionSupport.bindListener(this);
+            }
+            else
+            {
+                for (ApplicationListener listener : this.listeners)
+                {
+                    listener.onApplicationEvent(event);
+                }
             }
         }
         // Otherwise, defer broadcasting until the schema available event is handled
@@ -193,7 +211,42 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
                 this.deferredEvents.clear();
             }
         }
-        
-        
+    }
+
+    @Override
+    public void beforeCommit(boolean readOnly)
+    {
+        // No-op
+    }
+
+    @Override
+    public void afterCommit()
+    {
+        for (ApplicationEvent event : this.afterTransactionEvents)
+        {
+            for (ApplicationListener listener : this.listeners)
+            {
+                listener.onApplicationEvent(event);
+            }
+        }
+        this.afterTransactionEvents.clear();
+    }
+
+    @Override
+    public void beforeCompletion()
+    {
+        // No-op
+    }
+
+    @Override
+    public void afterRollback()
+    {
+        // No-op
+    }
+
+    @Override
+    public void flush()
+    {
+        // No-op
     }
 }

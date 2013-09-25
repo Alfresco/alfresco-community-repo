@@ -117,10 +117,10 @@
       <property name="targetCapability" ref="rmFileRecordsCapability" />
    </bean>
 
-   <bean id="rmFileToRecordsCapability"
+   <bean id="rmFileUnfiledRecordsCapability"                              
       parent="declarativeCapability">
-      <property name="name" value="FileToRecords"/>
-      <property name="private" value="true" />								<!-- This is an unasingable capability, we reference an assignable one in the target -->
+      <property name="name" value="FileUnfiledRecords"/>						
+      <property name="permission" value="FileUnfiledRecords"/>
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>  		<!--  Checks if the user has the filling capability -->
@@ -128,7 +128,9 @@
             <entry key="capabilityCondition.recordFiled" value="false"/>	<!--  Checks that the node hasn't been filed -->
          </map>
       </property>
-      <property name="targetCapability" ref="rmFileRecordsCapability" />  <!--  Checks that the user has the correct capability on the destination folder -->
+      <property name="targetCapability" ref="rmFileRecordsCapability" />  <!--  Checks that the user has the correct capability on the destination folder -->      
+      <property name="group"><ref bean="recordsGroup"/></property>
+      <property name="index" value="41" />
    </bean>
 
    <bean id="rmDeclareRecordsCapability"
@@ -254,7 +256,7 @@
    <bean id="rmRejectRecordsCapability"
       parent="declarativeCapability">
       <property name="name" value="RejectRecords"/>
-      <property name="private" value="true" />
+      <property name="permission" value="RejectRecords"/>
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>
@@ -265,6 +267,8 @@
             <entry key="capabilityCondition.recordFiled" value="false"/>
          </map>
       </property>
+      <property name="group"><ref bean="recordsGroup"/></property>
+      <property name="index" value="42" />
    </bean>
    
    <bean id="rmHideRecordsCapability" 

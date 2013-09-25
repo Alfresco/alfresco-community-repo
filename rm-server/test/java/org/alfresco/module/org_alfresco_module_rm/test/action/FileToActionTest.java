@@ -83,7 +83,7 @@ public class FileToActionTest extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
 
-                Capability capability = capabilityService.getCapability("FileToRecords");
+                Capability capability = capabilityService.getCapability("FileUnfiledRecords");
                 assertNotNull(capability);
                 assertEquals(AccessStatus.ALLOWED, capability.hasPermission(dmDocument));
 

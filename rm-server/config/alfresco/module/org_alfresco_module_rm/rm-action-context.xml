@@ -807,8 +807,18 @@
       <property name="target" ref="reject"/>
       <property name="interceptorNames">
          <list>
-            <idref bean="allow_security"/>
+            <idref bean="reject_security"/>
          </list>
+      </property>
+   </bean>
+   
+   <bean id="reject_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.RejectRecords
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
       </property>
    </bean>
 
@@ -822,9 +832,19 @@
       <property name="target" ref="fileTo"/>
         <property name="interceptorNames">
             <list>
-               <idref bean="allow_security"/>
+               <idref bean="fileTo_security"/>
             </list>
          </property>
+   </bean>
+   
+   <bean id="fileTo_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.FileUnfiledRecords
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
    </bean>
 
    <bean id="fileTo" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FileToAction" parent="rmAction">

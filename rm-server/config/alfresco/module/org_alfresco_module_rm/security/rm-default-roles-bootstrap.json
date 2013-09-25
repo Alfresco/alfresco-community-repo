@@ -46,7 +46,9 @@
          "ReOpenFolders",
          "CycleVitalRecords",
          "PlanningReviewCycles",
-         "RequestRecordInformation"
+         "RequestRecordInformation",
+         "FileUnfiledRecords",
+         "RejectRecords"
       ]
    },
    {
@@ -67,7 +69,9 @@
           "ReOpenFolders",
           "CycleVitalRecords",
           "PlanningReviewCycles",
-          "RequestRecordInformation"
+          "RequestRecordInformation",
+          "FileUnfiledRecords",
+          "RejectRecords"
       ]
    },
    {
@@ -128,7 +132,9 @@
           "ExportAudit",
           "CreateModifyDestroyReferenceTypes",
           "RequestRecordInformation",
-          "FileDestructionReport"
+          "FileDestructionReport",
+          "FileUnfiledRecords",
+          "RejectRecords"
       ]
    },
    {
@@ -191,7 +197,9 @@
           "ManageAccessControls",
           "ManageRules",
           "RequestRecordInformation",
-          "FileDestructionReport"
+          "FileDestructionReport",
+          "FileUnfiledRecords",
+          "RejectRecords"
       ]
    }
 ]

@@ -84,6 +84,8 @@
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ManageRules"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="RequestRecordInformation"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="FileDestructionReport"/>
+            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="FileUnfiledRecords"/>
+            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="RejectRecords"/>
         </permissionGroup>
         
         <permissionGroup name="Filing" allowFullControl="false" expose="true">
@@ -160,6 +162,8 @@
         <permissionGroup name="ManageRules" expose="false" allowFullControl="false"/>
         <permissionGroup name="RequestRecordInformation" expose="false" allowFullControl="false"/>
         <permissionGroup name="FileDestructionReport" expose="false" allowFullControl="false"/>
+        <permissionGroup name="RejectRecords" expose="false" allowFullControl="false"/>
+        <permissionGroup name="FileUnfiledRecords" expose="false" allowFullControl="false"/>
         
         <!--  End -->
         
@@ -419,6 +423,14 @@
         
         <permission name="_FileDestructionReport" expose="false">
             <grantedToGroup permissionGroup="FileDestructionReport"/>
+        </permission>
+        
+        <permission name="_FileUnfiledRecords" expose="false">
+            <grantedToGroup permissionGroup="FileUnfiledRecords"/>
+        </permission>
+        
+        <permission name="_RejectRecords" expose="false">
+            <grantedToGroup permissionGroup="RejectRecords"/>
         </permission>
         
     </permissionSet>

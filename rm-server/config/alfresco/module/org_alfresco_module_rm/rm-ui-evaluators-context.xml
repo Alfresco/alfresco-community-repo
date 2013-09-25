@@ -308,7 +308,7 @@
             <value>RECORD</value>
          </set>
       </property>
-      <property name="capability" value="FileToRecords" />
+      <property name="capability" value="FileUnfiledRecords" />
    </bean>
 
    <bean id="jsonConversionComponent.file"

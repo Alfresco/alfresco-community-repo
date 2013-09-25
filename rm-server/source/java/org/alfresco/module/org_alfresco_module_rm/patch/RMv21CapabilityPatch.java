@@ -122,7 +122,19 @@ public class RMv21CapabilityPatch extends ModulePatchComponent
             addCapability(filePlan,
                           "FileDestructionReport", 
                           FilePlanRoleService.ROLE_ADMIN, 
-                          FilePlanRoleService.ROLE_RECORDS_MANAGER);            
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER); 
+            addCapability(filePlan,
+                          "RejectRecords", 
+                          FilePlanRoleService.ROLE_ADMIN, 
+                          FilePlanRoleService.ROLE_POWER_USER, 
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                          FilePlanRoleService.ROLE_SECURITY_OFFICER);    
+            addCapability(filePlan,
+                          "FileUnfiledRecords", 
+                          FilePlanRoleService.ROLE_ADMIN, 
+                          FilePlanRoleService.ROLE_POWER_USER, 
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                          FilePlanRoleService.ROLE_SECURITY_OFFICER);         
         }
         
         if (logger.isDebugEnabled() == true)

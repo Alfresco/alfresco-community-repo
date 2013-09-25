@@ -57,16 +57,24 @@ public class RmRolesGet extends RoleDeclarativeWebScript
         {
             throw new WebScriptException(Status.STATUS_FOUND, "File plan does not exist.");
         }
+        
+        // get the includesystem parameter
+        boolean includeSystem = false;
+        String includeSystemValue = req.getParameter("is");
+        if (includeSystemValue != null && includeSystemValue.length() != 0)
+        {
+            includeSystem = Boolean.parseBoolean(includeSystemValue);
+        }
 
         // get the user filter
         String user = req.getParameter("user");
         if (user != null && user.length() != 0)
         {
-            roles = filePlanRoleService.getRolesByUser(filePlan, user, false);
+            roles = filePlanRoleService.getRolesByUser(filePlan, user, includeSystem);
         }
         else
         {
-            roles = filePlanRoleService.getRoles(filePlan, false);
+            roles = filePlanRoleService.getRoles(filePlan, includeSystem);
         }
 
         // get the auths parameter

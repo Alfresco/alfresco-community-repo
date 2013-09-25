@@ -34,6 +34,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderPredicateP
 import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderPredicatePartCommandType;
 import org.alfresco.repo.search.impl.querymodel.impl.db.ParentSupport;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Child;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -60,7 +61,7 @@ public class DBChild extends Child implements DBQueryBuilderComponent
      * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO)
      */
     @Override
-    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, Set<String> selectors, Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors, Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
     {
        
         Argument argument = functionArgs.get(ARG_PARENT);
@@ -82,7 +83,7 @@ public class DBChild extends Child implements DBQueryBuilderComponent
             }
         }
         ParentSupport parentSupport = new ParentSupport();
-        parentSupport.setDbid(DBQuery.getDbid(id, nodeDAO));
+        parentSupport.setDbid(DBQuery.getDbid(id, nodeDAO, tenantService));
         parentSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.EQUALS);
         builderSupport = parentSupport;
     }

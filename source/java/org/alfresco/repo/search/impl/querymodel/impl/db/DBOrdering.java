@@ -33,6 +33,7 @@ import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseOrdering;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -69,7 +70,7 @@ public class DBOrdering extends BaseOrdering implements DBQueryBuilderComponent
      * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
     @Override
-    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, Set<String> selectors,
+    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
     {
         if (getColumn().getFunction().getName().equals(PropertyAccessor.NAME))

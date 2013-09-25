@@ -30,6 +30,7 @@ import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -151,7 +152,7 @@ public class PropertySupport implements DBQueryBuilderComponent
      * org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
     @Override
-    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, Set<String> selectors,
+    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
     {
 

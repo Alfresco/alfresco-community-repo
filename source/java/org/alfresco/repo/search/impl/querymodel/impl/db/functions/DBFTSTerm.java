@@ -40,6 +40,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.db.ParentSupport;
 import org.alfresco.repo.search.impl.querymodel.impl.db.PropertySupport;
 import org.alfresco.repo.search.impl.querymodel.impl.db.TypeSupport;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSTerm;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -70,7 +71,7 @@ public class DBFTSTerm extends FTSTerm implements DBQueryBuilderComponent
      * org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
     @Override
-    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, Set<String> selectors,
+    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
     {
         Argument argument = functionArgs.get(ARG_TERM);
@@ -85,7 +86,7 @@ public class DBFTSTerm extends FTSTerm implements DBQueryBuilderComponent
         {
             ParentSupport parentSupport = new ParentSupport();
             String id = (String) term;
-            parentSupport.setDbid(DBQuery.getDbid(id, nodeDAO));
+            parentSupport.setDbid(DBQuery.getDbid(id, nodeDAO, tenantService));
             parentSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.EQUALS);
             builderSupport = parentSupport;
         }

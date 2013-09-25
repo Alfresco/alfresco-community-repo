@@ -29,6 +29,7 @@ import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseConjunction;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -61,7 +62,7 @@ public class DBConjunction extends BaseConjunction implements DBQueryBuilderComp
      * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
     @Override
-    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, Set<String> selectors,
+    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
     {
         for (Constraint constraint : getConstraints())
@@ -73,7 +74,7 @@ public class DBConjunction extends BaseConjunction implements DBQueryBuilderComp
                     throw new QueryModelException("Disjunctions are not suported");
                 }
                 DBQueryBuilderComponent dbQueryBuilderComponent = (DBQueryBuilderComponent) constraint;
-                dbQueryBuilderComponent.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, selectors, functionArgs, functionContext);
+                dbQueryBuilderComponent.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectors, functionArgs, functionContext);
             }
             else
             {

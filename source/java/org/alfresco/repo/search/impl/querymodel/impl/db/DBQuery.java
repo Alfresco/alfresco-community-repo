@@ -39,6 +39,7 @@ import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.repo.search.impl.querymodel.Source;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseQuery;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -160,7 +161,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
      * .DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO)
      */
     @Override
-    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, Set<String> selectors,
+    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
     {
         selectorGroup = selectors;
@@ -171,7 +172,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
                 Selector current = getSource().getSelector(selector);
                 if (current instanceof DBQueryBuilderComponent)
                 {
-                    ((DBQueryBuilderComponent) current).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, selectorGroup, functionArgs, functionContext);
+                    ((DBQueryBuilderComponent) current).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, functionArgs, functionContext);
                 }
                 else
                 {
@@ -184,7 +185,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         {
             if (getConstraint() instanceof DBQueryBuilderComponent)
             {
-                ((DBQueryBuilderComponent) getConstraint()).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, selectorGroup, functionArgs, functionContext);
+                ((DBQueryBuilderComponent) getConstraint()).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, functionArgs, functionContext);
             }
             else
             {
@@ -198,7 +199,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
             {
                 if(ordering instanceof DBQueryBuilderComponent)
                 {
-                    ((DBQueryBuilderComponent) ordering).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, selectorGroup, functionArgs, functionContext);
+                    ((DBQueryBuilderComponent) ordering).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, functionArgs, functionContext);
                 }
                 else
                 {
@@ -370,7 +371,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         }
     }
     
-    public static Long getDbid(String source, NodeDAO nodeDAO)
+    public static Long getDbid(String source, NodeDAO nodeDAO, TenantService tenantService)
     {
         // Ignore version label  for now
         String ref;
@@ -394,7 +395,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         
         if (NodeRef.isNodeRef(ref))
         {
-            NodeRef nodeRef = new NodeRef(ref);
+            NodeRef nodeRef = tenantService.getName(new NodeRef(ref));
             Pair<Long, NodeRef> pair = nodeDAO.getNodePair(nodeRef);
             if (pair == null)
             {
@@ -408,7 +409,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
 
         else
         {
-            NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, ref);
+            NodeRef nodeRef = new NodeRef(tenantService.getName(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), ref);
             Pair<Long, NodeRef> pair = nodeDAO.getNodePair(nodeRef);
             if (pair == null)
             {
@@ -811,12 +812,12 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
      * @param nodeDAO
      * @return
      */
-    public static Long[] getDbids(String[] stringValues, NodeDAO nodeDAO)
+    public static Long[] getDbids(String[] stringValues, NodeDAO nodeDAO, TenantService tenantService)
     {
         Long[] dbids = new Long[stringValues.length];
         for(int i = 0; i < stringValues.length; i++)
         {
-            dbids[i] = getDbid(stringValues[i], nodeDAO);
+            dbids[i] = getDbid(stringValues[i], nodeDAO, tenantService);
         }
         return dbids;
     }

@@ -38,6 +38,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.db.PropertySupport;
 import org.alfresco.repo.search.impl.querymodel.impl.db.TypeSupport;
 import org.alfresco.repo.search.impl.querymodel.impl.db.UUIDSupport;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Exists;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
@@ -71,7 +72,7 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
      * org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
     @Override
-    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, Set<String> selectors,
+    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
     {
         PropertyArgument propertyArgument = (PropertyArgument) functionArgs.get(ARG_PROPERTY);

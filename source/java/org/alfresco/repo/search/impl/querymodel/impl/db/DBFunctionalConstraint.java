@@ -28,6 +28,7 @@ import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Function;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseFunctionalConstraint;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -62,7 +63,7 @@ public class DBFunctionalConstraint extends BaseFunctionalConstraint implements 
      * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO)
      */
     @Override
-    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, Set<String> selectors, Map<String, Argument> functionArgs,  FunctionEvaluationContext functionContext)
+    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors, Map<String, Argument> functionArgs,  FunctionEvaluationContext functionContext)
     {
         Function function = getFunction();
         if(function != null)
@@ -70,7 +71,7 @@ public class DBFunctionalConstraint extends BaseFunctionalConstraint implements 
             if(function instanceof DBQueryBuilderComponent)
             {
                 DBQueryBuilderComponent dbQueryBuilderComponent = (DBQueryBuilderComponent)function;
-                dbQueryBuilderComponent.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, selectors,  getFunctionArguments(), functionContext);
+                dbQueryBuilderComponent.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectors,  getFunctionArguments(), functionContext);
             }
             else
             {

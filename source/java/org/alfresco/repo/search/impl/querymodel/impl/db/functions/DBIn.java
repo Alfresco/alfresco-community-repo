@@ -42,6 +42,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.db.PropertySupport;
 import org.alfresco.repo.search.impl.querymodel.impl.db.TypeSupport;
 import org.alfresco.repo.search.impl.querymodel.impl.db.UUIDSupport;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.In;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
@@ -71,7 +72,7 @@ public class DBIn extends In implements DBQueryBuilderComponent
      * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
     @Override
-    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, Set<String> selectors,
+    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
     {
         PropertyArgument propertyArgument = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
@@ -85,7 +86,7 @@ public class DBIn extends In implements DBQueryBuilderComponent
         if (propertyArgument.getPropertyName().equals(PropertyIds.PARENT_ID))
         {
             ParentSupport parentSupport = new ParentSupport();
-            parentSupport.setDbids(DBQuery.getDbids(DBQuery.toStringValues(collection), nodeDAO));
+            parentSupport.setDbids(DBQuery.getDbids(DBQuery.toStringValues(collection), nodeDAO, tenantService));
             if((not != null) && (not.equals(Boolean.TRUE)))
             {
                 parentSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTIN);

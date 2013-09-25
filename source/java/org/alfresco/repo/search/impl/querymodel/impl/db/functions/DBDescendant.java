@@ -31,6 +31,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent;
 import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderJoinCommand;
 import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderPredicatePartCommand;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Descendant;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -61,7 +62,7 @@ public class DBDescendant extends Descendant implements DBQueryBuilderComponent
      * org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
     @Override
-    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, Set<String> selectors,
+    public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
     {
         throw new QueryModelException("Descendant/IN_TREE() is unsupported");

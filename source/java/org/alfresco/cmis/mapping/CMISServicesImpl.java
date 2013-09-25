@@ -129,17 +129,6 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
 {
     private static Log logger = LogFactory.getLog(CMISServicesImpl.class);
     
-    /** Query Parameters */
-    private static final QName PARAM_PARENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "parent");
-    private static final QName PARAM_USERNAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "username");
-    
-    private static final String LUCENE_QUERY_CHECKEDOUT =
-        "+@cm\\:workingCopyOwner:${cm:username}";
-    
-    private static final String LUCENE_QUERY_CHECKEDOUT_IN_FOLDER =
-        "+@cm\\:workingCopyOwner:${cm:username} " +
-        "+PARENT:\"${cm:parent}\"";
-    
     private static final int ASSOC_ID_PREFIX_LENGTH = ASSOC_ID_PREFIX.length();
     
     private static final Pattern ORDER_BY_PATTERN = Pattern.compile("^([^\\s,\"'\\\\\\.\\(\\)]+)\\s+(ASC|DESC)$");
@@ -508,57 +497,6 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         return result;
     }
     
-    /*
-     * Lucene based getChildren - deactivated
-     */
-    public NodeRef[] XgetChildren(NodeRef parent, CMISTypesFilterEnum typesFilter, String orderBy)
-            throws CMISInvalidArgumentException
-    {
-        if (typesFilter == CMISTypesFilterEnum.POLICIES)
-        {
-            return new NodeRef[0];
-        }
-        SearchParameters params = new SearchParameters();
-        params.setLanguage(SearchService.LANGUAGE_LUCENE);
-        params.addStore(parent.getStoreRef());
-        QueryParameterDefinition parentDef = new QueryParameterDefImpl(PARAM_PARENT, nodeRefDataType, true, parent.toString());
-        params.addQueryParameterDefinition(parentDef);
-
-        // Build a query for the appropriate types
-        StringBuilder query = new StringBuilder(1024).append("+PARENT:\"${cm:parent}\" -ASPECT:\"").append(
-                ContentModel.ASPECT_WORKING_COPY).append("\" +TYPE:(");
-
-        // Include doc type if necessary
-        if (typesFilter != CMISTypesFilterEnum.FOLDERS)
-        {
-            query.append('"').append(ContentModel.TYPE_CONTENT).append('"');
-        }
-        // Include folder type if necessary
-        if (typesFilter != CMISTypesFilterEnum.DOCUMENTS)
-        {
-            if (typesFilter == CMISTypesFilterEnum.ANY)
-            {
-                query.append(" ");
-            }
-            query.append('"').append(ContentModel.TYPE_FOLDER).append('"');
-        }
-        // Always exclude system folders
-        query.append(") -TYPE:\"").append(ContentModel.TYPE_SYSTEM_FOLDER).append("\"");
-        params.setQuery(query.toString());
-        parseOrderBy(orderBy, params);
-        ResultSet resultSet = null;
-        try
-        {
-            resultSet = searchService.query(params);
-            List<NodeRef> results = resultSet.getNodeRefs();
-            NodeRef[] nodeRefs = new NodeRef[results.size()];
-            return results.toArray(nodeRefs);
-        }
-        finally
-        {
-            if (resultSet != null) resultSet.close();
-        }
-    }
     
     @Override
     public NodeRef[] getChildren(NodeRef folderNodeRef, CMISTypesFilterEnum typesFilter, String orderBy)
@@ -702,15 +640,12 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
             throws CMISInvalidArgumentException
     {
         SearchParameters params = new SearchParameters();
-        params.setLanguage(SearchService.LANGUAGE_LUCENE);
-        QueryParameterDefinition usernameDef = new QueryParameterDefImpl(PARAM_USERNAME, textDataType, true, username);
-        params.addQueryParameterDefinition(usernameDef);
+        params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         
         if (folder == null)
         {
-            // get all checked-out items
-            params.setQuery(LUCENE_QUERY_CHECKEDOUT);
-            params.addStore(getDefaultRootStoreRef());
+            params.setQuery("+=cm:workingCopyOwner:\""+username+"\"");
+            params.addStore(folder.getStoreRef());
         }
         else
         {
@@ -719,16 +654,13 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
             if (includeDescendants && nodeService.getRootNode(folder.getStoreRef()) == folder)
             {
                 // get all checked-out items within specified folder store
-                params.setQuery(LUCENE_QUERY_CHECKEDOUT);
+                params.setQuery("+=cm:workingCopyOwner:\""+username+"\"");
                 params.addStore(folder.getStoreRef());
             }
             else
             {
-                // TODO: implement descendants of folder
-                params.setQuery(LUCENE_QUERY_CHECKEDOUT_IN_FOLDER);
+                params.setQuery("+=cm:workingCopyOwner:\""+username+"\" AND +=PARENT:\""+folder.toString()+"\"");
                 params.addStore(folder.getStoreRef());
-                QueryParameterDefinition parentDef = new QueryParameterDefImpl(PARAM_PARENT, nodeRefDataType, true, folder.toString());
-                params.addQueryParameterDefinition(parentDef);
             }
         }
         parseOrderBy(orderBy, params);

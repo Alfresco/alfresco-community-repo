@@ -125,6 +125,33 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     protected static final String RM_AUDIT_DATA_LOGIN_USERNAME = "/RM/login/args/userName/value";
     protected static final String RM_AUDIT_DATA_LOGIN_FULLNAME = "/RM/login/no-error/fullName";
     protected static final String RM_AUDIT_DATA_LOGIN_ERROR = "/RM/login/error/value";
+    
+    /* Provide Backward compatibility with DOD5015 Audit Events  RM-904*/
+    protected static final String DOD5015_AUDIT_APPLICATION_NAME = "DOD5015";
+    protected static final String DOD5015_AUDIT_PATH_ROOT = "/DOD5015";
+    protected static final String DOD5015_AUDIT_SNIPPET_EVENT = "/event";
+    protected static final String DOD5015_AUDIT_SNIPPET_PERSON = "/person";
+    protected static final String DOD5015_AUDIT_SNIPPET_NAME = "/name";
+    protected static final String DOD5015_AUDIT_SNIPPET_NODE = "/node";
+    protected static final String DOD5015_AUDIT_SNIPPET_CHANGES = "/changes";
+    protected static final String DOD5015_AUDIT_SNIPPET_BEFORE = "/before";
+    protected static final String DOD5015_AUDIT_SNIPPET_AFTER = "/after";
+
+    protected static final String DOD5015_AUDIT_DATA_PERSON_FULLNAME = "/DOD5015/event/person/fullName";
+    protected static final String DOD5015_AUDIT_DATA_PERSON_ROLES = "/DOD5015/event/person/roles";
+    protected static final String DOD5015_AUDIT_DATA_EVENT_NAME = "/DOD5015/event/name/value";
+    protected static final String DOD5015_AUDIT_DATA_NODE_NODEREF = "/DOD5015/event/node/noderef";
+    protected static final String DOD5015_AUDIT_DATA_NODE_NAME = "/DOD5015/event/node/name";
+    protected static final String DOD5015_AUDIT_DATA_NODE_TYPE = "/DOD5015/event/node/type";
+    protected static final String DOD5015_AUDIT_DATA_NODE_IDENTIFIER = "/DOD5015/event/node/identifier";
+    protected static final String DOD5015_AUDIT_DATA_NODE_NAMEPATH = "/DOD5015/event/node/namePath";
+    protected static final String DOD5015_AUDIT_DATA_NODE_CHANGES_BEFORE = "/DOD5015/event/node/changes/before/value";
+    protected static final String DOD5015_AUDIT_DATA_NODE_CHANGES_AFTER = "/DOD5015/event/node/changes/after/value";
+
+    protected static final String DOD5015_AUDIT_DATA_LOGIN_USERNAME = "/DOD5015/login/args/userName/value";
+    protected static final String DOD5015_AUDIT_DATA_LOGIN_FULLNAME = "/DOD5015/login/no-error/fullName";
+    protected static final String DOD5015_AUDIT_DATA_LOGIN_ERROR = "/DOD5015/login/error/value";
+    /* End Backward compatibility with DOD5015 Audit Events */
 
     protected static final String AUDIT_TRAIL_FILE_PREFIX = "audit_";
     protected static final String AUDIT_TRAIL_JSON_FILE_SUFFIX = ".json";
@@ -813,6 +840,28 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                         nodeType = (typeDef != null) ? typeDef.getTitle(dictionaryService) : null;
                     }
                 }
+                else if (values.containsKey(DOD5015_AUDIT_DATA_EVENT_NAME))
+                {
+                    // This data is /RM/event/...
+                    eventName = (String) values.get(DOD5015_AUDIT_DATA_EVENT_NAME);
+                    fullName = (String) values.get(DOD5015_AUDIT_DATA_PERSON_FULLNAME);
+                    userRoles = (String) values.get(DOD5015_AUDIT_DATA_PERSON_ROLES);
+                    nodeRef = (NodeRef) values.get(DOD5015_AUDIT_DATA_NODE_NODEREF);
+                    nodeName = (String) values.get(DOD5015_AUDIT_DATA_NODE_NAME);
+                    QName nodeTypeQname = (QName) values.get(DOD5015_AUDIT_DATA_NODE_TYPE);
+                    nodeIdentifier = (String) values.get(DOD5015_AUDIT_DATA_NODE_IDENTIFIER);
+                    namePath = (String) values.get(DOD5015_AUDIT_DATA_NODE_NAMEPATH);
+                    beforeProperties = (Map<QName, Serializable>) values.get( DOD5015_AUDIT_DATA_NODE_CHANGES_BEFORE);
+                    afterProperties = (Map<QName, Serializable>) values.get(DOD5015_AUDIT_DATA_NODE_CHANGES_AFTER);
+                    
+                    // Convert some of the values to recognizable forms
+                    nodeType = null;
+                    if (nodeTypeQname != null)
+                    {
+                        TypeDefinition typeDef = dictionaryService.getType(nodeTypeQname);
+                        nodeType = (typeDef != null) ? typeDef.getTitle(dictionaryService) : null;
+                    }
+                }
                 else if (values.containsKey(RM_AUDIT_DATA_LOGIN_USERNAME))
                 {
                     user = (String) values.get(RM_AUDIT_DATA_LOGIN_USERNAME);
@@ -827,6 +876,20 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                         fullName = (String) values.get(RM_AUDIT_DATA_LOGIN_FULLNAME);
                     }
                 }
+                else if (values.containsKey(DOD5015_AUDIT_DATA_LOGIN_USERNAME))
+                {
+                    user = (String) values.get(DOD5015_AUDIT_DATA_LOGIN_USERNAME);
+                    if (values.containsKey(DOD5015_AUDIT_DATA_LOGIN_ERROR))
+                    {
+                        eventName = RM_AUDIT_EVENT_LOGIN_FAILURE;
+                        fullName = user;            // The user didn't log in
+                    }
+                    else
+                    {
+                        eventName = RM_AUDIT_EVENT_LOGIN_SUCCESS;
+                        fullName = (String) values.get(DOD5015_AUDIT_DATA_LOGIN_FULLNAME);
+                    }
+                }
                 else
                 {
                     // This is not recognisable data
@@ -837,22 +900,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     // Skip it
                     return true;
                 }
-
-//                // filter out events if set
-//                if (params.getEvent() != null &&
-//                    params.getEvent().endsWith(eventName) == false)
-//                {
-//                    // skip it
-//                    return true;
-//                }
-//
-//
-//                if (params.getProperty() != null &&
-//                    getChangedProperties(beforeProperties, afterProperties).contains(params.getProperty()) == false)
-//                {
-//                    // skip it
-//                    return false;
-//                }
 
                 // TODO: Refactor this to use the builder pattern
                 RecordsManagementAuditEntry entry = new RecordsManagementAuditEntry(
@@ -885,32 +932,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 // Keep going
                 return true;
             }
-
-//            private List<QName> getChangedProperties(Map<QName, Serializable> beforeProperties, Map<QName, Serializable> afterProperties)
-//            {
-//                List<QName> changedProperties = new ArrayList<QName>(21);
-//
-//                if (beforeProperties != null && afterProperties != null)
-//                {
-//                    // add all the properties present before the audited action
-//                    for (QName valuePropName : beforeProperties.keySet())
-//                    {
-//                        changedProperties.add(valuePropName);
-//                    }
-//
-//                    // add all the properties present after the audited action that
-//                    // have not already been added
-//                    for (QName valuePropName : afterProperties.keySet())
-//                    {
-//                        if (!beforeProperties.containsKey(valuePropName))
-//                        {
-//                            changedProperties.add(valuePropName);
-//                        }
-//                    }
-//                }
-//
-//                return changedProperties;
-//            }
 
             private void writeEntryToFile(RecordsManagementAuditEntry entry)
             {
@@ -967,6 +988,18 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         }
 
         // Build audit query parameters
+        AuditQueryParameters dod5015AuditQueryParams = new AuditQueryParameters();
+        dod5015AuditQueryParams.setForward(forward);
+        dod5015AuditQueryParams.setApplicationName(DOD5015_AUDIT_APPLICATION_NAME);
+        dod5015AuditQueryParams.setUser(user);
+        dod5015AuditQueryParams.setFromTime(fromTime);
+        dod5015AuditQueryParams.setToTime(toTime);
+        if (nodeRef != null)
+        {
+            dod5015AuditQueryParams.addSearchKey(DOD5015_AUDIT_DATA_NODE_NODEREF, nodeRef);
+        }
+        
+        //
         AuditQueryParameters auditQueryParams = new AuditQueryParameters();
         auditQueryParams.setForward(forward);
         auditQueryParams.setApplicationName(RM_AUDIT_APPLICATION_NAME);
@@ -981,7 +1014,9 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         {
             auditQueryParams.addSearchKey(RM_AUDIT_DATA_EVENT_NAME, params.getEvent());
         }
+
         // Get audit entries
+        auditService.auditQuery(callback, dod5015AuditQueryParams, maxEntries);
         auditService.auditQuery(callback, auditQueryParams, maxEntries);
 
         // finish off the audit trail report

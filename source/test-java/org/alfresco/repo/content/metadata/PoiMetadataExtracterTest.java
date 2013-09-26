@@ -20,7 +20,6 @@ package org.alfresco.repo.content.metadata;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,15 +68,15 @@ public class PoiMetadataExtracterTest extends AbstractMetadataExtracterTest
     {
         for (String mimetype : PoiMetadataExtracter.SUPPORTED_MIMETYPES)
         {
-        	testExtractFromMimetype(mimetype);
+            testExtractFromMimetype(mimetype);
         }
     }
 
     @Override
     protected boolean skipDescriptionCheck(String mimetype) 
     {
-    	// Our 3 OpenOffice 07 quick files have no description properties.
-    	return true;
+        // Our 3 OpenOffice 07 quick files have no description properties.
+        return true;
     }
 
 
@@ -85,63 +84,64 @@ public class PoiMetadataExtracterTest extends AbstractMetadataExtracterTest
     protected void testFileSpecificMetadata(String mimetype,
          Map<QName, Serializable> properties) 
     {
-    	// This test class is testing 3 files: quick.docx, quick.xlsx & quick.pptx.
-    	// Their created times are hard-coded here for checking.
-    	// Of course this means that if the files are updated, the test will break
-    	// but those files are rarely modified - only added to.
-    	if (MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING.equals(mimetype))
-    	{
-    		checkFileCreationDate(mimetype, properties, "2010-01-06T17:32:00.000Z");
-    	}
-    	else if (MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET.equals(mimetype))
-    	{
-    		checkFileCreationDate(mimetype, properties, "1996-10-15T00:33:28.000+01:00");
-    	}
-    	else if (MimetypeMap.MIMETYPE_OPENXML_PRESENTATION.equals(mimetype))
-    	{
-    		// Extraordinary! This document predates Isaac Newton's Principia Mathematica by almost a century. ;)
-    		checkFileCreationDate(mimetype, properties, "1601-01-01T00:00:00.000Z");
-    	}
+        // This test class is testing 3 files: quick.docx, quick.xlsx & quick.pptx.
+        // Their created times are hard-coded here for checking.
+        // Of course this means that if the files are updated, the test will break
+        // but those files are rarely modified - only added to.
+        if (MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING.equals(mimetype))
+        {
+            checkFileCreationDate(mimetype, properties, "2010-01-06T17:32:00.000Z");
+        }
+        else if (MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET.equals(mimetype))
+        {
+            checkFileCreationDate(mimetype, properties, "1996-10-15T00:33:28.000+01:00");
+        }
+        else if (MimetypeMap.MIMETYPE_OPENXML_PRESENTATION.equals(mimetype))
+        {
+            // Extraordinary! This document predates Isaac Newton's Principia Mathematica by almost a century. ;)
+            checkFileCreationDate(mimetype, properties, "1601-01-01T00:00:00.000Z");
+        }
     }
 
-	private void checkFileCreationDate(String mimetype, Map<QName, Serializable> properties, String date)
-	{
-		assertEquals("Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype, date,
-				DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
-	}
-	
-	/**
-	 * Tests that metadata extraction from a somewhat corrupt file with several
-	 * thousand footnotes times out properly.
-	 * 
-	 * @throws Exception
-	 */
-	public void testProblemFootnotes() throws Exception
-	{
-	    long timeoutMs = 2000;
-	    
-	    MetadataExtracterLimits limits = new MetadataExtracterLimits();
+    private void checkFileCreationDate(String mimetype, Map<QName, Serializable> properties, String date)
+    {
+        assertEquals("Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype, date,
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
+    }
+    
+    /**
+     * Tests that metadata extraction from a somewhat corrupt file with several
+     * thousand footnotes times out properly.
+     * 
+     * @throws Exception
+     */
+    public void testProblemFootnotes() throws Exception
+    {
+        long timeoutMs = 2000;
+        
+        MetadataExtracterLimits limits = new MetadataExtracterLimits();
         limits.setTimeoutMs(timeoutMs);
         HashMap<String, MetadataExtracterLimits> mimetypeLimits =
                 new HashMap<String, MetadataExtracterLimits>(1);
         mimetypeLimits.put("*", limits);
         ((PoiMetadataExtracter) getExtracter()).setMimetypeLimits(mimetypeLimits);
-	    
-	    File sourceFile = AbstractContentTransformerTest.loadNamedQuickTestFile("problemFootnotes.docx");
-	    
-	    long startTime = (new Date()).getTime();
-	    
-	    Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        
+        File sourceFile = AbstractContentTransformerTest.loadNamedQuickTestFile("problemFootnotes.docx");
+        
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         // construct a reader onto the source file
         ContentReader sourceReader = new FileContentReader(sourceFile);
         sourceReader.setMimetype(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING);
+        
+        long startTime = System.currentTimeMillis();
+
         getExtracter().extract(sourceReader, properties);
-	    
-	    long extractionTime = (new Date()).getTime() - startTime;
-	    
-	    assertTrue("Metadata extraction took (" + extractionTime + "ms) " +
-	    		"but should have failed with a timeout at " + timeoutMs + "ms", 
-	            extractionTime < (timeoutMs + 50)); // bit of wiggle room for logging, cleanup, etc.
-	    assertFalse("Reader was not closed", sourceReader.isChannelOpen());
-	}
+        
+        long extractionTime = System.currentTimeMillis() - startTime;
+        
+        assertTrue("Metadata extraction took (" + extractionTime + "ms) " +
+                "but should have failed with a timeout at " + timeoutMs + "ms", 
+                extractionTime < (timeoutMs + 100)); // bit of wiggle room for logging, cleanup, etc.
+        assertFalse("Reader was not closed", sourceReader.isChannelOpen());
+    }
 }

@@ -104,8 +104,8 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
             Map<QName, Serializable> properties = extractFromMimetype(mimetype);
             // check we got something
             
-        	assertFalse("extractFromMimetype should return at least some properties, none found for " + mimetype,
-        			properties.isEmpty());
+            assertFalse("extractFromMimetype should return at least some properties, none found for " + mimetype,
+                    properties.isEmpty());
             
             // check common metadata
             testCommonMetadata(mimetype, properties);
@@ -184,10 +184,10 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_TITLE)));
        if (!skipDescriptionCheck(mimetype)) 
        {
-    	   assertEquals(
-    			   "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
-    			   QUICK_DESCRIPTION,
-    			   DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
+           assertEquals(
+                   "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
+                   QUICK_DESCRIPTION,
+                   DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
        }
     }
     protected abstract void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties);
@@ -201,7 +201,7 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
      */
     protected boolean skipAuthorCheck(String mimetype)
     {
-    	return false;
+        return false;
     }
     
     /**
@@ -213,7 +213,7 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
      */
     protected boolean skipDescriptionCheck(String mimetype)
     {
-    	return false;
+        return false;
     }
     
     

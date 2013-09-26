@@ -63,7 +63,7 @@
 
 
     <!-- Cache factory creates instances of SimpleCache and is defined in cache-context.xml -->
-    <bean id="cachingContentStoreCache" factory-bean="cacheFactory" factory-method="createLocalCache">
+    <bean id="cachingContentStoreCache" factory-bean="cacheFactory" factory-method="createCache">
         <constructor-arg value="cache.cachingContentStoreCache"/>
     </bean>
 

@@ -56,6 +56,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.impl.ExtendedPermissionService;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -97,7 +98,9 @@ public class RecordServiceImpl implements RecordService,
                                           RecordsManagementCustomModel,
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
                                           NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                          ApplicationContextAware
+                                          ApplicationContextAware,
+                                          NodeServicePolicies.OnAddAspectPolicy,
+                                          NodeServicePolicies.OnRemoveAspectPolicy
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
@@ -355,21 +358,43 @@ public class RecordServiceImpl implements RecordService,
         policyComponent.bindClassBehaviour(
 		        NodeServicePolicies.OnAddAspectPolicy.QNAME, 
 		        ContentModel.ASPECT_NO_CONTENT, 
-		        new JavaBehaviour(this, "processNoContentAspect", NotificationFrequency.EVERY_EVENT));
+		        new JavaBehaviour(this, "onAddAspect", NotificationFrequency.EVERY_EVENT));
 		policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnRemoveAspectPolicy.QNAME, 
                 ContentModel.ASPECT_NO_CONTENT, 
-                new JavaBehaviour(this, "processNoContentAspect", NotificationFrequency.EVERY_EVENT));
+                new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.EVERY_EVENT));
     }
     
     /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    @Override
+    public void onRemoveAspect(NodeRef nodeRef, QName aspect)
+    {
+        if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == true)
+        {
+            switchNames(nodeRef);
+        }
+        else
+        {
+            // check whether filling is pending aspect removal
+            Set<NodeRef> pendingFilling = TransactionalResourceHelper.getSet("pendingFilling");
+            if (pendingFilling.contains(nodeRef) == true)
+            {
+                file(nodeRef);
+            }
+        }
+    }
+
+    /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
-    public void processNoContentAspect(NodeRef nodeRef, QName aspectTypeQName)
+    @Override
+    public void onAddAspect(NodeRef nodeRef, QName aspect)
     {
-    	switchNames(nodeRef);
+        switchNames(nodeRef);
     }
-    
+   
     /**
      * Helper method to switch the name of the record around.  Used to support record creation via
      * file protocols.
@@ -393,15 +418,24 @@ public class RecordServiceImpl implements RecordService,
 		} 
     	catch (FileExistsException e) 
 		{
-			e.printStackTrace();
+			if (logger.isDebugEnabled() == true)
+			{
+			    logger.debug(e.getMessage());
+			}
 		}
     	catch (InvalidNodeRefException e) 
 		{
-			e.printStackTrace();
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug(e.getMessage());
+            }
 		} 
     	catch (FileNotFoundException e) 
 		{
-			e.printStackTrace();
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug(e.getMessage());
+            }
 		}
     }
 
@@ -424,8 +458,17 @@ public class RecordServiceImpl implements RecordService,
                 	nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) == false && 
                     nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY) == false)
                 {
-                	// create and file the content as a record
-                    file(nodeRef);
+                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT) == true)
+                    {
+                        // we need to postpone filling until the NO_CONTENT aspect is removed
+                        Set<NodeRef> pendingFilling = TransactionalResourceHelper.getSet("pendingFilling");
+                        pendingFilling.add(nodeRef);
+                    }
+                    else
+                    {
+                        // create and file the content as a record
+                        file(nodeRef);
+                    }
                 }
                 
                 return null;

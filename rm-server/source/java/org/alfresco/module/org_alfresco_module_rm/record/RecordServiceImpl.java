@@ -362,7 +362,7 @@ public class RecordServiceImpl implements RecordService,
 		policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnRemoveAspectPolicy.QNAME, 
                 ContentModel.ASPECT_NO_CONTENT, 
-                new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.EVERY_EVENT));
+                new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.TRANSACTION_COMMIT));
     }
     
     /**
@@ -452,23 +452,31 @@ public class RecordServiceImpl implements RecordService,
             @Override
             public Void doWork() throws Exception
             {
-                NodeRef nodeRef = childAssocRef.getChildRef();
-                if (nodeService.exists(nodeRef) == true  && 
-                    nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false &&
-                	nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) == false && 
-                    nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY) == false)
+                onCreateChildAssociation.disable();
+                try
                 {
-                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT) == true)
+                    NodeRef nodeRef = childAssocRef.getChildRef();
+                    if (nodeService.exists(nodeRef) == true  && 
+                        nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false &&
+                    	nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) == false && 
+                        nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY) == false)
                     {
-                        // we need to postpone filling until the NO_CONTENT aspect is removed
-                        Set<NodeRef> pendingFilling = TransactionalResourceHelper.getSet("pendingFilling");
-                        pendingFilling.add(nodeRef);
+                        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT) == true)
+                        {
+                            // we need to postpone filling until the NO_CONTENT aspect is removed
+                            Set<NodeRef> pendingFilling = TransactionalResourceHelper.getSet("pendingFilling");
+                            pendingFilling.add(nodeRef);
+                        }
+                        else
+                        {
+                            // create and file the content as a record
+                            file(nodeRef);
+                        }
                     }
-                    else
-                    {
-                        // create and file the content as a record
-                        file(nodeRef);
-                    }
+                }
+                finally
+                {
+                    onCreateChildAssociation.enable();
                 }
                 
                 return null;

@@ -195,7 +195,7 @@ subprojects {
         rename { String filename -> warFile }
 	}
 
-	task explodeDeps(dependsOn: fetchWarFile) << {
+	task explodeDeps << {
 	
 		explodedDir = file(explodedDepsDir)
 		explodedLibDir = file(explodedLibsDir)

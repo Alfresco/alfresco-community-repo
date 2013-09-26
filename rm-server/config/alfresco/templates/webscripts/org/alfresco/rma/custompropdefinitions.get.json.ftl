@@ -20,7 +20,7 @@
                <#list prop.constraints as con>
                {
                   "name": "${con.constraint.shortName!""}",
-                  "title": "${con.constraint.title!""}",
+                  "title": "${msg(con.constraint.title)!""}",
                   "type": "${con.constraint.type!""}",
                   "parameters":
                   {

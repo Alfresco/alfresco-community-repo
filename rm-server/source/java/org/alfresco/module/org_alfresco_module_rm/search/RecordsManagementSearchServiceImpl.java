@@ -45,6 +45,7 @@ import org.alfresco.util.ParameterCheck;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Records management search service implementation
@@ -125,6 +126,11 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     	               throw new AlfrescoRuntimeException("Unable to load report details because name has not been specified. \n" + reportsJSON);
     	           }
     	           String name = report.getString(SavedSearchDetails.NAME);
+    	           String translatedName = I18NUtil.getMessage(name);
+    	           if (translatedName != null)
+    	           {
+    	               name = translatedName;
+    	           }
 
     	           // Get the query
     	           if (report.has(SavedSearchDetails.SEARCH) == false)
@@ -138,6 +144,11 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
                    if (report.has(SavedSearchDetails.DESCRIPTION) == true)
                    {
                        description = report.getString(SavedSearchDetails.DESCRIPTION);
+                       String translatedDescription = I18NUtil.getMessage(description);
+                       if (translatedDescription != null)
+                       {
+                           description = translatedDescription;
+                       }
                    }
 
                    RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();

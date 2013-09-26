@@ -51,6 +51,7 @@ public class RMv2ModelPatch extends ModulePatchComponent
     private QNameDAO qnameDAO;
     private RetryingTransactionHelper retryingTransactionHelper;
     
+    
     public void setPatchDAO(PatchDAO patchDAO)
     {
         this.patchDAO = patchDAO;
@@ -89,44 +90,22 @@ public class RMv2ModelPatch extends ModulePatchComponent
     
     private void updateQName(QName qnameBefore, QName qnameAfter, String reindexClass) 
     {
-        Long maxNodeId = patchDAO.getMaxAdmNodeID();
         
-        Pair<Long, QName> before = qnameDAO.getQName(qnameBefore);
+        Work work = new Work(qnameBefore, qnameAfter, reindexClass);
+        retryingTransactionHelper.doInTransaction(work, false, true);
 
-        if (before != null)
-        {
-            for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
-            {
-                Work work = new Work(before.getFirst(), i, reindexClass);
-                retryingTransactionHelper.doInTransaction(work, false, true);
-            }
-            
-            qnameDAO.updateQName(qnameBefore, qnameAfter);
-            
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug(" ... updated qname " + qnameBefore.toString());
-            }
-        }
-        else
-        {
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug(" ... no need to update qname " + qnameBefore.toString());
-            }
-        }
     }
     
     private class Work implements RetryingTransactionHelper.RetryingTransactionCallback<Integer>
     {
-        private long qnameId;        
-        private long lower;
+        private QName qnameBefore;        
+        private QName qnameAfter;
         private String reindexClass;
 
-        Work(long qnameId, long lower, String reindexClass)
+        Work(QName qnameBefore, QName qnameAfter, String reindexClass)
         {
-            this.qnameId = qnameId;
-            this.lower = lower;
+            this.qnameBefore = qnameBefore;
+            this.qnameAfter  = qnameAfter;
             this.reindexClass = reindexClass;
         }
 
@@ -137,24 +116,43 @@ public class RMv2ModelPatch extends ModulePatchComponent
         @Override
         public Integer execute() throws Throwable
         {
-            if ("TYPE".equals(reindexClass))
+            Long maxNodeId = patchDAO.getMaxAdmNodeID();
+            
+            Pair<Long, QName> before = qnameDAO.getQName(qnameBefore);
+            
+            if (before != null)
             {
-                List<Long> nodeIds = patchDAO.getNodesByTypeQNameId(qnameId, lower, lower + BATCH_SIZE);
-                nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
-                return nodeIds.size();
-            }
-            else if ("ASPECT".equals(reindexClass))
-            {
-                List<Long> nodeIds = patchDAO.getNodesByAspectQNameId(qnameId, lower, lower + BATCH_SIZE);
-                nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
-                return nodeIds.size();
-            }
+            	for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
+            	{
+            		if ("TYPE".equals(reindexClass))
+            		{
+            			List<Long> nodeIds = patchDAO.getNodesByTypeQNameId(before.getFirst(), i, i + BATCH_SIZE);
+            			nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
+            		}
+            		else if ("ASPECT".equals(reindexClass))
+            		{
+            			List<Long> nodeIds = patchDAO.getNodesByAspectQNameId(before.getFirst(), i, i + BATCH_SIZE);
+            			nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
+            		}
+            	}
+        	
+            	qnameDAO.updateQName(qnameBefore, qnameAfter);
+            
+            	if (logger.isDebugEnabled() == true)
+            	{
+            		logger.debug(" ... updated qname " + qnameBefore.toString());
+            	}
+        	}
             else
             {
-                // nothing to do
-                return 0;
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug(" ... no need to update qname " + qnameBefore.toString());
+                }
             }
-           
-        }
-    }
+            
+        	//nothing to do
+        	return 0;
+        } 
+    }   
 }

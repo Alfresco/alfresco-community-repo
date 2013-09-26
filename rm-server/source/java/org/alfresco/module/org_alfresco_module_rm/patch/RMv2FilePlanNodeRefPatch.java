@@ -32,6 +32,7 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Period;
@@ -61,6 +62,7 @@ public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
     private PermissionService permissionService;
     private FilePlanService filePlanService;
     private FilePlanRoleService filePlanRoleService;
+    private RetryingTransactionHelper retryingTransactionHelper;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -103,6 +105,11 @@ public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
 		this.filePlanRoleService = filePlanRoleService;
 	}
     
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    {
+        this.retryingTransactionHelper = retryingTransactionHelper;
+    }
+    
     /**
      * @param filePlanService	file plan service
      */
@@ -117,63 +124,81 @@ public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
     @Override
     protected void executePatch() throws Throwable
     {        
-        Pair<Long, QName> aspectPair = qnameDAO.getQName(ASPECT_FILE_PLAN_COMPONENT);
-        if (aspectPair != null)
+        retryingTransactionHelper.doInTransaction(new Work(), false, true);
+        
+        if (logger.isDebugEnabled() == true)
         {
-            List<Long> filePlanComponents = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
+            logger.debug("   ... complete RM Module RMv2FilePlanNodeRef Patch");
+        }
+        
+    }
     
-            if (logger.isDebugEnabled() == true)
+    private class Work implements RetryingTransactionHelper.RetryingTransactionCallback<Integer>
+    {	
+    	@Override
+    	public Integer execute() throws Throwable
+    	{
+    		Pair<Long, QName> aspectPair = qnameDAO.getQName(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
+            if (aspectPair != null)
             {
-                logger.debug("   ... updating " + filePlanComponents.size() + " items" );
-            }
-            
-            behaviourFilter.disableBehaviour();
-            try
-            {
-                for (Long filePlanComponent : filePlanComponents)
+                List<Long> filePlanComponents = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
+        
+                if (logger.isDebugEnabled() == true)
                 {
-                    Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(filePlanComponent);
-                    NodeRef filePlanComponentNodeRef = recordPair.getSecond();
-                    
-                    NodeRef filePlan = filePlanService.getFilePlan(filePlanComponentNodeRef);
-                    
-                    // set the file plan node reference
-                    if (nodeService.getProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF) == null)
+                    logger.debug("   ... updating " + filePlanComponents.size() + " items" );
+                }
+                
+                behaviourFilter.disableBehaviour();
+                try
+                {
+                    for (Long filePlanComponent : filePlanComponents)
                     {
-                       nodeService.setProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF, filePlan);
-                    }                    
-                    
-                    // only set the rmadmin permissions on record categories, record folders and records
-                    FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(filePlanComponentNodeRef);
-                    if (FilePlanComponentKind.RECORD_CATEGORY.equals(kind) == true ||
-                        FilePlanComponentKind.RECORD_FOLDER.equals(kind) == true ||
-                        FilePlanComponentKind.RECORD.equals(kind) == true )
-                    {
-                        // ensure the that the records management role has read and file on the node
-                        Role adminRole = filePlanRoleService.getRole(filePlan, "Administrator");
-                        if (adminRole != null)
-                        {
-                            permissionService.setPermission(filePlanComponentNodeRef, adminRole.getRoleGroupName(), RMPermissionModel.FILING, true);
-                        }
+                        Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(filePlanComponent);
+                        NodeRef filePlanComponentNodeRef = recordPair.getSecond();
                         
-                        // ensure that the default vital record default values have been set (RM-753)
-                        Serializable vitalRecordIndicator = nodeService.getProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR);
-                        if (vitalRecordIndicator == null)
+                        NodeRef filePlan =  filePlanService.getFilePlan(filePlanComponentNodeRef);
+                        
+                        // set the file plan node reference
+                        if (nodeService.getProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF) == null)
                         {
-                            nodeService.setProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR, false);
-                        }
-                        Serializable reviewPeriod = nodeService.getProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD);
-                        if (reviewPeriod == null)
+                           nodeService.setProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF, filePlan);
+                        }                    
+                        
+                        // only set the rmadmin permissions on record categories, record folders and records
+                        FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(filePlanComponentNodeRef);
+                        if (FilePlanComponentKind.RECORD_CATEGORY.equals(kind) == true ||
+                            FilePlanComponentKind.RECORD_FOLDER.equals(kind) == true ||
+                            FilePlanComponentKind.RECORD.equals(kind) == true )
                         {
-                            nodeService.setProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD, new Period("none|0"));
+                            // ensure the that the records management role has read and file on the node
+                            Role adminRole = filePlanRoleService.getRole(filePlan, "Administrator");
+                            if (adminRole != null)
+                            {
+                                permissionService.setPermission(filePlanComponentNodeRef, adminRole.getRoleGroupName(), RMPermissionModel.FILING, true);
+                            }
+                            
+                            // ensure that the default vital record default values have been set (RM-753)
+                            Serializable vitalRecordIndicator = nodeService.getProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR);
+                            if (vitalRecordIndicator == null)
+                            {
+                                nodeService.setProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR, false);
+                            }
+                            Serializable reviewPeriod = nodeService.getProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD);
+                            if (reviewPeriod == null)
+                            {
+                                nodeService.setProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD, new Period("none|0"));
+                            }
                         }
                     }
                 }
+                finally
+                {
+                    behaviourFilter.enableBehaviour();
+                }
             }
-            finally
-            {
-                behaviourFilter.enableBehaviour();
-            }
-        }        
-    }   
+            
+            // nothing to do
+    		return 0;
+    	}
+    }
 }

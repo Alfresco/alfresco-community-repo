@@ -18,17 +18,18 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.recordfolder;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * Record Folder Service Implementation
@@ -36,24 +37,26 @@ import org.alfresco.service.cmr.repository.NodeService;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RecordFolderServiceImpl implements RecordFolderService, 
+public class RecordFolderServiceImpl extends    ServiceBaseImpl
+                                     implements RecordFolderService, 
                                                 RecordsManagementModel,
                                                 NodeServicePolicies.OnCreateChildAssociationPolicy
 {
     /** Policy component */
     private PolicyComponent policyComponent;
     
-    /** Node service */
-    private NodeService nodeService;
-    
     /** Disposition service */
     private DispositionService dispositionService;
     
     /** Behaviours */
-    private JavaBehaviour onCreateChildAssociation = new JavaBehaviour(
-                                                            this, 
-                                                            "onCreateChildAssociation", 
-                                                            NotificationFrequency.FIRST_EVENT);
+    private JavaBehaviour onCreateChildAssociation 
+                                    = new JavaBehaviour(this, 
+                                                        "onCreateChildAssociation", 
+                                                        NotificationFrequency.FIRST_EVENT);
+    private JavaBehaviour onCreateChildAssociationInRecordFolderFolder 
+                                    = new JavaBehaviour(this, 
+                                                        "onCreateChildAssociationInRecordFolder", 
+                                                        NotificationFrequency.FIRST_EVENT);
     
     /**
      * @param policyComponent   policy component 
@@ -61,14 +64,6 @@ public class RecordFolderServiceImpl implements RecordFolderService,
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
-    }
-    
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
     
     /**
@@ -89,6 +84,12 @@ public class RecordFolderServiceImpl implements RecordFolderService,
                TYPE_RECORD_CATEGORY, 
                ContentModel.ASSOC_CONTAINS,
                onCreateChildAssociation);
+       
+       policyComponent.bindAssociationBehaviour(
+               NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, 
+               TYPE_RECORD_FOLDER, 
+               ContentModel.ASSOC_CONTAINS,
+               onCreateChildAssociationInRecordFolderFolder);
    }
 
     /**
@@ -101,6 +102,19 @@ public class RecordFolderServiceImpl implements RecordFolderService,
         if (nodeService.exists(nodeRef) == true)
         {
             initialiseRecordFolder(nodeRef);       
+        }
+    }
+    
+    /**
+     * Prevent folders being created within existing record folders.
+     */
+    public void onCreateChildAssociationInRecordFolder(ChildAssociationRef childAssocRef, boolean bNew)
+    {
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        if (nodeService.exists(nodeRef) == true &&
+            instanceOf(nodeRef, ContentModel.TYPE_FOLDER) == true)
+        {
+            throw new AlfrescoRuntimeException("You can't create a folder within an exisiting record folder.");
         }
     }
     

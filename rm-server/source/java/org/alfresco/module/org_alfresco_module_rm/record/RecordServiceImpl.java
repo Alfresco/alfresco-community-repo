@@ -65,6 +65,7 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -371,9 +372,16 @@ public class RecordServiceImpl implements RecordService,
     @Override
     public void onRemoveAspect(NodeRef nodeRef, QName aspect)
     {
+
         if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == true)
         {
-            switchNames(nodeRef);
+            ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+
+            // Only switch name back to the format of "name (identifierId)" if content size is non-zero, else leave it as the original name to avoid CIFS shuffling issues.
+            if (contentData != null && contentData.getSize() > 0)
+            {
+                switchNames(nodeRef);
+            }
         }
         else
         {
@@ -458,7 +466,7 @@ public class RecordServiceImpl implements RecordService,
                     NodeRef nodeRef = childAssocRef.getChildRef();
                     if (nodeService.exists(nodeRef) == true  && 
                         nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false &&
-                    	nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) == false && 
+                        nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) == false && 
                         nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY) == false)
                     {
                         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT) == true)
@@ -880,6 +888,7 @@ public class RecordServiceImpl implements RecordService,
     @Override
     public void file(NodeRef record)
     {
+
         ParameterCheck.mandatory("item", record);
 
         // we only support filling of content items

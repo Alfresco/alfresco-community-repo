@@ -66,6 +66,7 @@
        <property name="permissionService" ref="PermissionService"/>
        <property name="filePlanService" ref="FilePlanService" />
        <property name="filePlanRoleService" ref="filePlanRoleService" />
+       <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
    </bean>
    
    <bean id="org_alfresco_module_rm_RMv2SavedSearchPatch" 

@@ -20,12 +20,9 @@ package org.alfresco.repo.lock.mem;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.lock.LockServiceImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.LockHelper;
 
 import com.google.common.collect.MapMaker;
 
@@ -36,20 +33,6 @@ import com.google.common.collect.MapMaker;
  */
 public class LockStoreImpl extends AbstractLockStore<ConcurrentMap<NodeRef, LockState>>
 {
-    /**
-     * Locks to provide atomicity for compound operations - ALWAYS use a power of 2 for the number of locks
-     * to avoid hideously unbalanced use of the locks.
-     */
-    private static final ReentrantReadWriteLock[] concurrencyLocks = new ReentrantReadWriteLock[256];
-    
-    static
-    {
-        for (int i = 0; i < concurrencyLocks.length; i++)
-        {
-            concurrencyLocks[i] = new ReentrantReadWriteLock();
-        }
-    }
-    
     /**
      * Default constructor.
      */
@@ -75,35 +58,5 @@ public class LockStoreImpl extends AbstractLockStore<ConcurrentMap<NodeRef, Lock
                     .expiration(expiry, timeUnit)
                     .makeMap();
         return map;
-    }
-
-    @Override
-    public void acquireConcurrencyLock(NodeRef nodeRef)
-    {
-        WriteLock writeLock = getWriteLock(nodeRef);
-        // Block for a short time, if we can't acquire the lock, then throw
-        // an exception that the will allow transaction retry behaviour.
-        LockHelper.tryLock(writeLock, maxTryLockMillis);
-    }
-
-    @Override
-    public void releaseConcurrencyLock(NodeRef nodeRef)
-    {
-        WriteLock writeLock = getWriteLock(nodeRef);
-        writeLock.unlock();
-    }
-
-    private int concurrencyLockIndex(NodeRef nodeRef)
-    {
-        int lockIndex = nodeRef.hashCode() & (concurrencyLocks.length - 1);
-        return lockIndex;
-    }
-    
-    private WriteLock getWriteLock(NodeRef nodeRef)
-    {
-        int lockIndex = concurrencyLockIndex(nodeRef);
-        ReentrantReadWriteLock rwLock = concurrencyLocks[lockIndex];
-        WriteLock writeLock = rwLock.writeLock();
-        return writeLock;
     }
 }

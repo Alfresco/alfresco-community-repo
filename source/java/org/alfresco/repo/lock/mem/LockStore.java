@@ -25,26 +25,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * Defines the in-memory lock storage interface.
  * <p>
- * Individual operations MUST be thread-safe, however clients are expected to synchronise
- * compound operations using {@link #acquireConcurrencyLock(NodeRef)} and
- * {@link #releaseConcurrencyLock(NodeRef)}, for example:
- * <pre>
- *    acquireConcurrencyLock(nodeRef);
- *    try
- *    {
- *       if (lockStore.contains(nodeRef))
- *       {
- *          if (someOtherCondition())
- *          {
- *             lockStore.setUnlocked(nodeRef);
- *          }
- *       }
- *    }
- *    finally
- *    {
- *       releaseConcurrencyLock(nodeRef);
- *    }
- * </pre>
+ * Operations MUST be thread-safe.
  * 
  * @author Matt Ward
  */
@@ -52,9 +33,6 @@ public interface LockStore
 {
     LockState get(NodeRef nodeRef);
     void set(NodeRef nodeRef, LockState lockState);
-    void acquireConcurrencyLock(NodeRef nodeRef);
-    void releaseConcurrencyLock(NodeRef nodeRef);
-    void setMaxTryLockMillis(long maxTryLockMillis);
     public Set<NodeRef> getNodes();
     
     /**

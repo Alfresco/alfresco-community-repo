@@ -39,27 +39,12 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockState>> implements LockStore
 {
-    protected long maxTryLockMillis = 100;
     protected T map;
     
     public AbstractLockStore(T map)
     {
         this.map = map;
     }
-    
-    /**
-     * Set the maximum time a lock store should wait while trying to acquire a concurrency lock.
-     * 
-     * @see #acquireConcurrencyLock(NodeRef)
-     * @param maxTryLockMillis
-     */
-    @Override
-    public void setMaxTryLockMillis(long maxTryLockMillis)
-    {
-        this.maxTryLockMillis = maxTryLockMillis;
-    }
-
-
 
     @Override
     public LockState get(NodeRef nodeRef)
@@ -160,13 +145,6 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
             txMap.clear();
         }
     }
-
-    @Override
-    public abstract void acquireConcurrencyLock(NodeRef nodeRef);
-
-    @Override
-    public abstract void releaseConcurrencyLock(NodeRef nodeRef);
-
 
     /**
      * Returns a transactionally scoped Map that is used to provide repeatable lock store queries

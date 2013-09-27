@@ -91,29 +91,32 @@ public class NotificationTemplatePatch_v21 extends ModulePatchComponent
         {
             // get the parent node
             NodeRef supersededTemplate = notificationHelper.getSupersededTemplate();
-            NodeRef parent = nodeService.getPrimaryParent(supersededTemplate).getParentRef();
-
-            // build the node properties
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(4);
-            props.put(ContentModel.PROP_DESCRIPTION, "Record superseded email template.");
-            props.put(ContentModel.PROP_TITLE, "record-rejected-email.ftl");
-            props.put(ContentModel.PROP_NAME, "record-rejected-email.ftl");
-            props.put(ContentModel.PROP_NODE_UUID, "record_rejected_template");
-
-            // get the assoc qname
-            QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("record-rejected-email.ftl"));
-
-            // create the node
-            ChildAssociationRef node = nodeService.createNode(parent,
-                    ContentModel.ASSOC_CONTAINS,
-                    assocQName,
-                    ContentModel.TYPE_CONTENT,
-                    props);
-
-            // put the content
-            ContentWriter writer = contentService.getWriter(node.getChildRef(), ContentModel.PROP_CONTENT, true);
-            InputStream is = getClass().getClassLoader().getResourceAsStream(PATH_REJECTED);
-            writer.putContent(is);
+            if (nodeService.exists(supersededTemplate) == true)
+            {
+                NodeRef parent = nodeService.getPrimaryParent(supersededTemplate).getParentRef();
+    
+                // build the node properties
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>(4);
+                props.put(ContentModel.PROP_DESCRIPTION, "Record superseded email template.");
+                props.put(ContentModel.PROP_TITLE, "record-rejected-email.ftl");
+                props.put(ContentModel.PROP_NAME, "record-rejected-email.ftl");
+                props.put(ContentModel.PROP_NODE_UUID, "record_rejected_template");
+    
+                // get the assoc qname
+                QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("record-rejected-email.ftl"));
+    
+                // create the node
+                ChildAssociationRef node = nodeService.createNode(parent,
+                        ContentModel.ASSOC_CONTAINS,
+                        assocQName,
+                        ContentModel.TYPE_CONTENT,
+                        props);
+    
+                // put the content
+                ContentWriter writer = contentService.getWriter(node.getChildRef(), ContentModel.PROP_CONTENT, true);
+                InputStream is = getClass().getClassLoader().getResourceAsStream(PATH_REJECTED);
+                writer.putContent(is);
+            }
         }
     }
 }

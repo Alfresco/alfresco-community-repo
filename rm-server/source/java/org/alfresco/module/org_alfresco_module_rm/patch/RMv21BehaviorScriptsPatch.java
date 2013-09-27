@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -84,7 +83,8 @@ public class RMv21BehaviorScriptsPatch extends ModulePatchComponent implements B
         // check that the rm config root has been correctly bootstrapped
         if (nodeService.exists(RM_CONFIG) == false)
         {
-            throw new AlfrescoRuntimeException("Unable to complete the patch because RM config root folder does not exist in the data dictionary.");
+            // we don't need to do anything
+            return;
         }
     
         // check that the behavior scripts folder exists

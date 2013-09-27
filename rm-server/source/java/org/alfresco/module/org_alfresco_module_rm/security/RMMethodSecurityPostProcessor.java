@@ -92,10 +92,13 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
                 }
                 
                 BeanDefinition beanDef = beanFactory.getBeanDefinition(bean);                        
-                PropertyValue beanValue = beanDef.getPropertyValues().getPropertyValue(PROP_OBJECT_DEFINITION_SOURCE);                                     
-                String beanStringValue = (String)((TypedStringValue)beanValue.getValue()).getValue();
-                String mergedStringValue = merge(beanStringValue);
-                beanDef.getPropertyValues().addPropertyValue(PROP_OBJECT_DEFINITION_SOURCE, new TypedStringValue(mergedStringValue));                
+                PropertyValue beanValue = beanDef.getPropertyValues().getPropertyValue(PROP_OBJECT_DEFINITION_SOURCE);          
+                if (beanValue != null)
+                {
+                    String beanStringValue = (String)((TypedStringValue)beanValue.getValue()).getValue();
+                    String mergedStringValue = merge(beanStringValue);
+                    beanDef.getPropertyValues().addPropertyValue(PROP_OBJECT_DEFINITION_SOURCE, new TypedStringValue(mergedStringValue));
+                }
             }
         }
     }

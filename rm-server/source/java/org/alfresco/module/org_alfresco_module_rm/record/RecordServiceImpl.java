@@ -464,12 +464,10 @@ public class RecordServiceImpl implements RecordService,
                 try
                 {
                     NodeRef nodeRef = childAssocRef.getChildRef();
-                    ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
                     if (nodeService.exists(nodeRef) == true  && 
                         nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false &&
                         nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) == false && 
-                        nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY) == false &&
-                        contentData != null && contentData.getSize() != 0)
+                        nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY) == false)
                     {
                         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT) == true)
                         {

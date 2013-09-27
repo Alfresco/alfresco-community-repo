@@ -363,7 +363,7 @@ public class RecordServiceImpl implements RecordService,
 		policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnRemoveAspectPolicy.QNAME, 
                 ContentModel.ASPECT_NO_CONTENT, 
-                new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.TRANSACTION_COMMIT));
+                new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.EVERY_EVENT));
     }
     
     /**

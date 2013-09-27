@@ -3,6 +3,30 @@
 
 <beans>
 
+   <!-- AVM Remote Store to ADM Remote Store migration patch -->
+  <!-- <bean id="patch.avmToAdmRemoteStore" class="org.alfresco.repo.admin.patch.impl.AVMToADMRemoteStorePatch" parent="basePatch">
+        <property name="id"><value>patch.avmToAdmRemoteStore</value></property>
+        <property name="description"><value>patch.avmToAdmRemoteStore.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5011</value></property>
+        <property name="targetSchema"><value>5012</value></property>
+        <property name="requiresTransaction"><value>false</value></property>
+        <property name="fileFolderService" ref="fileFolderService" />
+        <property name="contentService" ref="contentService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="ruleService" ref="ruleService" />
+        <property name="avmService" ref="AVMService" />
+        <property name="hiddenAspect" ref="hiddenAspect" />
+        <property name="avmStore"><value>sitestore</value></property>
+        <property name="avmRootPath"><value>/alfresco/site-data</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.migrateTenantsFromAttrsToTable" />
+                <ref bean="patch.migrateAttrTenants" />
+            </list>
+        </property> 
+    </bean> -->
+
    <bean id="ExtendedPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.repo.security.permissions.impl.ExtendedPermissionService</value>
@@ -203,40 +227,6 @@
     	</property>    
         
    </bean>
-   
-    <bean id="RuleService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
-        <property name="objectDefinitionSource">
-            <value>
-                org.alfresco.service.cmr.rule.RuleService.getRuleTypes=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.getRuleType=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.enableRules=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.disableRules=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.isEnabled=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.rulesEnabled=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.disableRule=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.enableRule=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.disableRuleType=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.enableRuleType=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.isRuleTypeEnabled=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.hasRules=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.getRules=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.countRules=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.getRule=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.saveRule=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.setRulePosition=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.removeRule=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.removeAllRules=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.getOwningNodeRef=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.isLinkedToRuleNode=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.getLinkedToRuleNode=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.getLinkedFromRuleNodes=ACL_ALLOW
-				org.alfresco.service.cmr.rule.RuleService.*=ACL_DENY
-            </value>
-        </property>
-    </bean>   
     
     <bean id="FormService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>

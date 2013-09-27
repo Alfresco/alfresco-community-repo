@@ -115,11 +115,6 @@ public class RMv2RMAdminUserPatch extends ModulePatchComponent implements BeanNa
     @Override
     protected void executePatch() throws Throwable
     {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("RM Module RMv2RMAdminUserPatch ...");
-        }                
-        
         String user = filePlanAuthenticationService.getRmAdminUserName();
         String firstName = I18NUtil.getMessage(MSG_FIRST_NAME);
         String lastName = I18NUtil.getMessage(MSG_LAST_NAME);
@@ -147,11 +142,6 @@ public class RMv2RMAdminUserPatch extends ModulePatchComponent implements BeanNa
             for (NodeRef filePlan : filePlans)
             {
                 filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, user);
-            }
-            
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug("   ... RMv2RMAdminUserPatch complete");
             }
         }
     }

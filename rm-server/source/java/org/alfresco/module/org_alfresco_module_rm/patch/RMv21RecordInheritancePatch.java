@@ -109,11 +109,6 @@ public class RMv21RecordInheritancePatch extends ModulePatchComponent
     @Override
     protected void executePatch() throws Throwable
     {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("RM module: RMv21RecordInheritancePatch executing ...");
-        }
-        
         Pair<Long, QName> aspectPair = qnameDAO.getQName(ASPECT_RECORD);
         if (aspectPair != null)
         {
@@ -142,11 +137,6 @@ public class RMv21RecordInheritancePatch extends ModulePatchComponent
                     }
                 }
             }
-        }
-        
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug(" ... complete");
         }
     }       
 }

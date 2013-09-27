@@ -72,11 +72,6 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
     @Override
     protected void executePatch() throws Throwable
     {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("RM Module RMv2SavedSearchPatch ...");
-        }
-        
         if (siteService.getSite(RM_SITE_ID) != null)
         {
             // get the saved searches
@@ -98,11 +93,6 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
                                                           savedSearchDetails.getSearchParameters(), 
                                                           savedSearchDetails.isPublic());            
             }
-        }
-        
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("   ... complete");
-        }        
+        }       
     }
 }

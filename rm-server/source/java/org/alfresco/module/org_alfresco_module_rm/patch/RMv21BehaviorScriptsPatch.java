@@ -27,7 +27,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -67,9 +66,7 @@ public class RMv21BehaviorScriptsPatch extends ModulePatchComponent implements B
 
     /** File Folder Service */
     private FileFolderService fileFolderService;
-
-    private RetryingTransactionHelper retryingTransactionHelper;
-
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -80,19 +77,10 @@ public class RMv21BehaviorScriptsPatch extends ModulePatchComponent implements B
         this.fileFolderService = fileFolderService;
     }
 
-    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
-    {
-        this.retryingTransactionHelper = retryingTransactionHelper;
-    }
 
     @Override
     protected void executePatch() throws Throwable
-    {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("RM module: RMv21BehaviorScriptsPatch executing ...");
-        }
-        
+    {        
         // check that the rm config root has been correctly bootstrapped
         if (nodeService.exists(RM_CONFIG) == false)
         {
@@ -167,11 +155,6 @@ public class RMv21BehaviorScriptsPatch extends ModulePatchComponent implements B
                 }
             }, AuthenticationUtil.getSystemUserName());
 
-        }
-            
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug(" ... complete");
         }
     }
 

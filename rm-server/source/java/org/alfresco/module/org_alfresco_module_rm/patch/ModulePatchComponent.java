@@ -19,6 +19,8 @@
 package org.alfresco.module.org_alfresco_module_rm.patch;
 
 import org.alfresco.repo.module.AbstractModuleComponent;
+import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -34,6 +36,28 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     /** logger */
     protected static Log logger = LogFactory.getLog(ModulePatchComponent.class);
     
+    /** Retrying transaction helper */
+    protected RetryingTransactionHelper retryingTransactionHelper;
+    
+    /** Behaviour filter */
+    protected BehaviourFilter behaviourFilter;
+    
+    /**
+     * @param retryingTransactionHelper retrying transaction helper
+     */
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    {
+        this.retryingTransactionHelper = retryingTransactionHelper;
+    }
+    
+    /**
+     * @param behaviourFilter   behaviour filter
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+    
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
@@ -47,7 +71,30 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
                 logger.info("Module patch component '" + getName() + "' is executing ...");
             }
             
-            executePatch();
+            // execute path within an isolated transaction
+            retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {   
+                @Override
+                public Void execute() throws Throwable
+                {
+                    behaviourFilter.disableBehaviour();
+                    try
+                    {
+                        executePatch();
+                    }
+                    finally
+                    {
+                        behaviourFilter.enableBehaviour();
+                    }
+                    return null;
+                }
+                
+            }, false, true);
+            
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("   ... completed module patch '" + getName() + "'");
+            }
         }
         catch (Throwable exception)
         {

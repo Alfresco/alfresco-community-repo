@@ -62,8 +62,6 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     private Long storeId;
 
     private Long sysDeletedType;
-    
-    private Long sysHiddenAspect;
 
     Set<String> selectorGroup;
 
@@ -823,22 +821,4 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         }
         return dbids;
     }
-
-    /**
-     * @return the sysHiddenAspect
-     */
-    public Long getSysHiddenAspect()
-    {
-        return sysHiddenAspect;
-    }
-
-    /**
-     * @param sysHiddenAspect the sysHiddenAspect to set
-     */
-    public void setSysHiddenAspect(Long sysHiddenAspect)
-    {
-        this.sysHiddenAspect = sysHiddenAspect;
-    }
-
-    
 }

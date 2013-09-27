@@ -35,7 +35,6 @@
         where 
             node.type_qname_id &lt;&gt; #{sysDeletedType}
             AND node.store_id = #{storeId}
-            AND NOT EXISTS (select 1 from alf_node_aspects ana where ana.node_id = node.id AND ana.qname_id = #{sysHiddenAspect})
             <if test="hasPredicate">
                 AND
                 <foreach item="item" index="index" collection="predicateParts">

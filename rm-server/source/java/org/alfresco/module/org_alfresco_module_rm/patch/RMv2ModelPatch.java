@@ -49,8 +49,6 @@ public class RMv2ModelPatch extends ModulePatchComponent
     private PatchDAO patchDAO;
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
-    private RetryingTransactionHelper retryingTransactionHelper;
-    
     
     public void setPatchDAO(PatchDAO patchDAO)
     {
@@ -67,33 +65,21 @@ public class RMv2ModelPatch extends ModulePatchComponent
         this.qnameDAO = qnameDAO;
     }
     
-    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
-    {
-        this.retryingTransactionHelper = retryingTransactionHelper;
-    }
-    
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
     protected void executePatch() throws Throwable
     {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("RM Module RMv2ModelPatch ...");
-        }
-        
         updateQName(QName.createQName(DOD_URI, "filePlan"), TYPE_FILE_PLAN, "TYPE");
         updateQName(QName.createQName(DOD_URI, "recordCategory"), TYPE_RECORD_CATEGORY, "TYPE");
         updateQName(QName.createQName(DOD_URI, "ghosted"), ASPECT_GHOSTED, "ASPECT");
     }   
     
     private void updateQName(QName qnameBefore, QName qnameAfter, String reindexClass) 
-    {
-        
+    {        
         Work work = new Work(qnameBefore, qnameAfter, reindexClass);
         retryingTransactionHelper.doInTransaction(work, false, true);
-
     }
     
     private class Work implements RetryingTransactionHelper.RetryingTransactionCallback<Integer>
@@ -102,6 +88,13 @@ public class RMv2ModelPatch extends ModulePatchComponent
         private QName qnameAfter;
         private String reindexClass;
 
+        /**
+         * Constructor 
+         * 
+         * @param qnameBefore   qname before
+         * @param qnameAfter    qname after
+         * @param reindexClass  reindex class
+         */
         Work(QName qnameBefore, QName qnameAfter, String reindexClass)
         {
             this.qnameBefore = qnameBefore;
@@ -109,8 +102,7 @@ public class RMv2ModelPatch extends ModulePatchComponent
             this.reindexClass = reindexClass;
         }
 
-        /*
-         * (non-Javadoc)
+        /**
          * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
          */
         @Override

@@ -3,8 +3,13 @@
 
 <beans>
 
+   <bean id="rm.baseModulePatch" abstract="true" parent="module.baseComponent">	
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>      
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
+   </bean>
+
    <bean id="org_alfresco_module_rm_notificationTemplatePatch"
-         parent="module.baseComponent"
+         parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.NotificationTemplatePatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_notificationTemplatePatch"/>
@@ -19,7 +24,7 @@
    </bean>
 
    <bean id="org_alfresco_module_rm_notificationTemplatePatch_v21"
-         parent="module.baseComponent"
+         parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.NotificationTemplatePatch_v21">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_notificationTemplatePatch_v21"/>
@@ -37,7 +42,7 @@
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv2ModelPatch"
-         parent="module.baseComponent"
+         parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2ModelPatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_RMv2ModelPatch"/>
@@ -46,12 +51,11 @@
        <property name="appliesFromVersion" value="2.0"/>
        <property name="patchDAO" ref="patchDAO"/>
        <property name="nodeDAO" ref="nodeDAO" />
-       <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
        <property name="qnameDAO" ref="qnameDAO"/>
    </bean>
    
    <bean id="org_alfresco_module_rm_RMv2FilePlanNodeRefPatch" 
-         parent="module.baseComponent"
+         parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2FilePlanNodeRefPatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_RMv2FilePlanNodeRefPatch"/>
@@ -62,15 +66,13 @@
        <property name="nodeDAO" ref="nodeDAO" />
        <property name="qnameDAO" ref="qnameDAO"/>
        <property name="nodeService" ref="NodeService"/>
-       <property name="behaviourFilter" ref="policyBehaviourFilter"/>
        <property name="permissionService" ref="PermissionService"/>
        <property name="filePlanService" ref="FilePlanService" />
        <property name="filePlanRoleService" ref="filePlanRoleService" />
-       <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
    </bean>
    
    <bean id="org_alfresco_module_rm_RMv2SavedSearchPatch" 
-         parent="module.baseComponent"
+         parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2SavedSearchPatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_RMv2SavedSearchPatch"/>
@@ -82,7 +84,7 @@
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21InPlacePatch"
-         parent="module.baseComponent"
+         parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21InPlacePatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_RMv21InPlacePatch"/>
@@ -98,7 +100,7 @@
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21CapabilityPatch"
-         parent="module.baseComponent"
+         parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21CapabilityPatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_RMv21CapabilityPatch"/>
@@ -111,7 +113,7 @@
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv2RMAdminUserPatch"
-         parent="module.baseComponent"
+         parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2RMAdminUserPatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_RMv2RMAdminUserPatch"/>
@@ -126,7 +128,7 @@
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21RecordInheritancePatch"
-         parent="module.baseComponent"
+         parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21RecordInheritancePatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_RMv21RecordInheritancePatch"/>
@@ -141,7 +143,7 @@
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21RolesPatch"
-         parent="module.baseComponent"
+         parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21RolesPatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_RMv21RolesPatch"/>
@@ -154,7 +156,7 @@
    </bean>
    
    <bean id="org_alfresco_module_rm_RMv21ReportServicePatch"
-         parent="module.baseComponent"
+         parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21ReportServicePatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_RMv21ReportServicePatch"/>
@@ -166,7 +168,7 @@
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21BehaviorScriptsPatch"
-         parent="module.baseComponent"
+         parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21BehaviorScriptsPatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_RMv21BehaviorScriptsPatch"/>
@@ -174,8 +176,7 @@
        <property name="sinceVersion" value="2.1"/>
        <property name="appliesFromVersion" value="2.1"/>
        <property name="fileFolderService" ref="FileFolderService"/>
-       <property name="nodeService" ref="NodeService"/>
-       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />        
+       <property name="nodeService" ref="NodeService"/>        
    </bean>
    
 </beans>

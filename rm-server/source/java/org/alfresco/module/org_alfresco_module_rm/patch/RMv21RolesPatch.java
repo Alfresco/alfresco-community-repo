@@ -65,11 +65,6 @@ public class RMv21RolesPatch extends ModulePatchComponent implements BeanNameAwa
     @Override
     protected void executePatch() throws Throwable
     {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("RM module: RMv21RolesPatch executing ...");
-        }
-        
         Set<NodeRef> filePlans = filePlanService.getFilePlans();
         
         if (logger.isDebugEnabled() == true)
@@ -100,11 +95,6 @@ public class RMv21RolesPatch extends ModulePatchComponent implements BeanNameAwa
                     }
                 }
             }
-        }
-        
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug(" ... complete");
         }
     }
 

@@ -84,11 +84,6 @@ public class RMv21CapabilityPatch extends ModulePatchComponent
     @Override
     protected void executePatch() throws Throwable
     {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("RM module: RMv21CapabilityPatch executing ...");
-        }
-        
         Set<NodeRef> filePlans = filePlanService.getFilePlans();
         
         if (logger.isDebugEnabled() == true)
@@ -135,11 +130,6 @@ public class RMv21CapabilityPatch extends ModulePatchComponent
                           FilePlanRoleService.ROLE_POWER_USER, 
                           FilePlanRoleService.ROLE_RECORDS_MANAGER,
                           FilePlanRoleService.ROLE_SECURITY_OFFICER);         
-        }
-        
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug(" ... complete");
         }
     }   
     

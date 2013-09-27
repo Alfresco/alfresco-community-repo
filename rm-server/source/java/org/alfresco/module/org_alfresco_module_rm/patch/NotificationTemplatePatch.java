@@ -128,11 +128,6 @@ public class NotificationTemplatePatch extends ModulePatchComponent
     @Override
     protected void executePatch() throws Throwable
     {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("RM Module NotificationTemplatePatch ...");
-        }
-
         NodeRef supersededTemplate = notificationHelper.getSupersededTemplate();
         updateTemplate(supersededTemplate, PATH_SUPERSEDED);
 

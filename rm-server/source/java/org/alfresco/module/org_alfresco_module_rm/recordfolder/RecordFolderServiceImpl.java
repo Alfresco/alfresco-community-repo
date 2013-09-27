@@ -111,10 +111,21 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     public void onCreateChildAssociationInRecordFolder(ChildAssociationRef childAssocRef, boolean bNew)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeService.exists(nodeRef) == true &&
-            instanceOf(nodeRef, ContentModel.TYPE_FOLDER) == true)
+        if (nodeService.exists(nodeRef) == true)
         {
-            throw new AlfrescoRuntimeException("You can't create a folder within an exisiting record folder.");
+            // ensure folders are never added to a record folder
+            if (instanceOf(nodeRef, ContentModel.TYPE_FOLDER) == true)
+            {
+                throw new AlfrescoRuntimeException("You can't create a folder within an exisiting record folder.");
+            }
+            
+            // ensure nothing is being added to a closed record folder
+            NodeRef recordFolder = childAssocRef.getParentRef();
+            Boolean isClosed = (Boolean) this.nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
+            if (isClosed != null && Boolean.TRUE.equals(isClosed) == true)
+            {
+                throw new AlfrescoRuntimeException("You can't add new items to a closed record folder.");
+            }
         }
     }
     

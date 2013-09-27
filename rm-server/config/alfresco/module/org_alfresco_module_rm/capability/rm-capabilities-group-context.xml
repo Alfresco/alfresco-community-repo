@@ -135,6 +135,7 @@
             <entry key="capabilityCondition.recordFiled" value="true"/>
          </map>
       </property>
+      <property name="targetCapability" ref="rmFileRecordsCapability"/>
    </bean>
 
    <bean id="rmCopyRecordFolderCapability"

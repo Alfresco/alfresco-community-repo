@@ -91,6 +91,7 @@
       parent="rmBaseWebscript">
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
       <property name="dictionaryService" ref="DictionaryService" />
+      <property name="capabilityService" ref="CapabilityService" />
    </bean>
 
    <!-- REST impl for POST Custom Reference Instance -->

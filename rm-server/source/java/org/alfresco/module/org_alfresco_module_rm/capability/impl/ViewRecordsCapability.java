@@ -25,6 +25,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 public final class ViewRecordsCapability extends DeclarativeCapability
 {
+    /** capability name */
+    public static final String NAME = "ViewRecords";
+    
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */

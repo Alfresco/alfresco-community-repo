@@ -25,17 +25,21 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
+import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * This class provides the implementation for the customrefs.get webscript.
@@ -58,20 +62,45 @@ public class CustomRefsGet extends AbstractRmWebScript
     private static final String NODE_NAME = "nodeName";
     private static final String NODE_TITLE = "nodeTitle";
 
+    /** logger */
     private static Log logger = LogFactory.getLog(CustomRefsGet.class);
+    
+    /** records management admin service */
     private RecordsManagementAdminService rmAdminService;
+    
+    /** dictionary service */
     private DictionaryService dictionaryService;
-
+    
+    /** capability service */
+    private CapabilityService capabilityService;
+    
+    /**
+     * @param rmAdminService    records management admin service
+     */
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
         this.rmAdminService = rmAdminService;
     }
 
+    /**
+     * @param dictionaryService dictionary service
+     */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
+    
+    /**
+     * @param capabilityService capability service
+     */
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
+    }
 
+    /**
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
+     */
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -123,8 +152,7 @@ public class CustomRefsGet extends AbstractRmWebScript
      * @param listOfReferenceData
      * @param assocs
      */
-    private void addParentChildReferenceData(List<Map<String, String>> listOfReferenceData,
-            List<ChildAssociationRef> childAssocs)
+    private void addParentChildReferenceData(List<Map<String, String>> listOfReferenceData,List<ChildAssociationRef> childAssocs)
     {
         for (ChildAssociationRef childAssRef : childAssocs)
     	{
@@ -137,7 +165,9 @@ public class CustomRefsGet extends AbstractRmWebScript
 
             AssociationDefinition assDef = rmAdminService.getCustomReferenceDefinitions().get(typeQName);
 
-            if (assDef != null)
+            if (assDef != null &&
+                hasView(childAssRef.getParentRef()) == true &&   
+                hasView(childAssRef.getChildRef()) == true)
             {
                 String compoundTitle = assDef.getTitle(dictionaryService);
 
@@ -161,8 +191,7 @@ public class CustomRefsGet extends AbstractRmWebScript
      * @param listOfReferenceData
      * @param assocs
      */
-    private void addBidirectionalReferenceData(List<Map<String, String>> listOfReferenceData,
-            List<AssociationRef> assocs)
+    private void addBidirectionalReferenceData(List<Map<String, String>> listOfReferenceData, List<AssociationRef> assocs)
     {
         for (AssociationRef assRef : assocs)
     	{
@@ -171,7 +200,9 @@ public class CustomRefsGet extends AbstractRmWebScript
     		QName typeQName = assRef.getTypeQName();
             AssociationDefinition assDef = rmAdminService.getCustomReferenceDefinitions().get(typeQName);
 
-            if (assDef != null)
+            if (assDef != null && 
+                hasView(assRef.getTargetRef()) == true &&
+                hasView(assRef.getSourceRef()) == true)
             {
                 data.put(LABEL, assDef.getTitle(dictionaryService));
                 data.put(REF_ID, typeQName.getLocalName());
@@ -182,5 +213,23 @@ public class CustomRefsGet extends AbstractRmWebScript
                 listOfReferenceData.add(data);
             }
         }
+    }
+    
+    /**
+     * Determine whether the current user has view capabilities on the given node.
+     * 
+     * @param  nodeRef   node reference
+     * @return boolean   true if current user has view capability, false otherwise
+     */
+    private boolean hasView(NodeRef nodeRef)
+    {
+        boolean result = false;
+        
+        Capability viewRecordCapability = capabilityService.getCapability(ViewRecordsCapability.NAME);
+        if (AccessStatus.ALLOWED.equals(viewRecordCapability.hasPermission(nodeRef)) == true)
+        {
+            result = true;
+        }
+        return result;
     }
 }

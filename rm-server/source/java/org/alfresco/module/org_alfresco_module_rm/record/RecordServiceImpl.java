@@ -482,6 +482,10 @@ public class RecordServiceImpl implements RecordService,
                         }
                     }
                 }
+                catch (AlfrescoRuntimeException e)
+                {
+                    e.printStackTrace();
+                }
                 finally
                 {
                     onCreateChildAssociation.enable();
@@ -659,28 +663,27 @@ public class RecordServiceImpl implements RecordService,
         ParameterCheck.mandatory("filePlan", filePlan);
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("isLinked", isLinked);
-
-        if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == false)
+        
+        // first we do a sanity check to ensure that the user has at least write permissions on the document
+        if (permissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
         {
-            // first we do a sanity check to ensure that the user has at least write permissions on the document
-            if (permissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
+            throw new AccessDeniedException("Can not create record from document, because the user " +
+                                            AuthenticationUtil.getFullyAuthenticatedUser() +
+                                            " does not have Write permissions on the doucment " +
+                                            nodeRef.toString());
+        }
+
+        // Save the id of the currently logged in user
+        final String userId = AuthenticationUtil.getRunAsUser();
+
+        // do the work of creating the record as the system user
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
             {
-                throw new AccessDeniedException("Can not create record from document, because the user " +
-                                                AuthenticationUtil.getFullyAuthenticatedUser() +
-                                                " does not have Write permissions on the doucment " +
-                                                nodeRef.toString());
-            }
-
-            // Save the id of the currently logged in user
-            final String userId = AuthenticationUtil.getRunAsUser();
-
-            // do the work of creating the record as the system user
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
-
-                @Override
-                public Void doWork() throws Exception
-                {
+                if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == false)
+                {                    
                     // disable delete rules
                     ruleService.disableRuleType("outbound");
                     try
@@ -745,11 +748,11 @@ public class RecordServiceImpl implements RecordService,
                     {
                         ruleService.enableRuleType("outbound");
                     }
-
-                    return null;
                 }
-            });
-        }
+
+                return null;
+            }
+        });
     }
     
     /**

@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.test;
 
 import org.alfresco.module.org_alfresco_module_rm.test.issue.RM452Test;
+import org.alfresco.module.org_alfresco_module_rm.test.issue.RM994Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -32,7 +33,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses(
 {
-    RM452Test.class
+    RM452Test.class,
+    RM994Test.class
 })
 public class IssueTestSuite
 {

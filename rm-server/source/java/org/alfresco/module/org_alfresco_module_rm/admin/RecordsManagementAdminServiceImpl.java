@@ -1113,6 +1113,9 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         invokeOnCreateReference(fromNode, toNode, refId);
 	}
 
+	/**
+	 * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#removeCustomReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+	 */
 	public void removeCustomReference(NodeRef fromNode, NodeRef toNode, QName assocId)
 	{
 		Map<QName, AssociationDefinition> availableAssocs = this.getCustomReferenceDefinitions();
@@ -1147,24 +1150,36 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 		invokeOnRemoveReference(fromNode, toNode, assocId);
 	}
 
+	/**
+	 * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#getCustomReferencesFrom(org.alfresco.service.cmr.repository.NodeRef)
+	 */
 	public List<AssociationRef> getCustomReferencesFrom(NodeRef node)
 	{
     	List<AssociationRef> retrievedAssocs = nodeService.getTargetAssocs(node, RegexQNamePattern.MATCH_ALL);
     	return retrievedAssocs;
 	}
 
+	/**
+	 * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#getCustomChildReferences(org.alfresco.service.cmr.repository.NodeRef)
+	 */
 	public List<ChildAssociationRef> getCustomChildReferences(NodeRef node)
 	{
     	List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(node);
     	return childAssocs;
 	}
 
+	/**
+	 * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#getCustomReferencesTo(org.alfresco.service.cmr.repository.NodeRef)
+	 */
     public List<AssociationRef> getCustomReferencesTo(NodeRef node)
     {
         List<AssociationRef> retrievedAssocs = nodeService.getSourceAssocs(node, RegexQNamePattern.MATCH_ALL);
         return retrievedAssocs;
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#getCustomParentReferences(org.alfresco.service.cmr.repository.NodeRef)
+     */
     public List<ChildAssociationRef> getCustomParentReferences(NodeRef node)
     {
         List<ChildAssociationRef> result = nodeService.getParentAssocs(node);

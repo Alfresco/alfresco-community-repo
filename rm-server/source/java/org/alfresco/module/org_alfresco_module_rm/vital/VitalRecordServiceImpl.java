@@ -267,7 +267,15 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                     nodeService.setProperties(nodeRef, props);
                 }
             }
-        }        
+        }       
+        else
+        {
+            // if we are re-filling then remove the vital aspect if it is not longer a vital record
+            if (nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD) == true)
+            {
+                nodeService.removeAspect(nodeRef, ASPECT_VITAL_RECORD);
+            }
+        }
     }
     
     /**

@@ -169,8 +169,8 @@ public class RecordCopyBehaviours implements RecordsManagementModel
                 {
                     if (nodeService.exists(newNodeRef) == true)
                     {
-                        // Remove unwanted aspects
-                        removeUnwantedAspects(nodeService, newNodeRef);
+                        // only remove the search details .. the rest will be resolved automatically
+                        nodeService.removeAspect(newNodeRef, RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH);
                     }
                     
                     return null;

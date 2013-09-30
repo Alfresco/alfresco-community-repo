@@ -193,5 +193,12 @@
          parent="capabilityCondition.base"
          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FailCapabilityCondition">
    </bean>
+
+   <bean id="capabilityCondition.isRecordOriginatingLocationSet"
+         parent="capabilityCondition.base"
+         class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsPropertySetCondition">
+      <property name="propertyName" value="rma:recordOriginatingLocation"/>
+      <property name="namespaceService" ref="NamespaceService" />
+   </bean>
    
 </beans>

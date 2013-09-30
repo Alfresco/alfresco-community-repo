@@ -102,7 +102,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             for (NodeRef node : resultNodes)
             {
                 final NodeRef currentNode = node;
-    
+                
                 RetryingTransactionCallback<Boolean> processTranCB = new RetryingTransactionCallback<Boolean>()
                 {
                     public Boolean execute() throws Throwable
@@ -138,7 +138,11 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 /**
                  * Now do the work, one action in each transaction
                  */
-                retryingTransactionHelper.doInTransaction(processTranCB);
+
+                if (nodeService.exists(currentNode) == false)
+                {
+                    retryingTransactionHelper.doInTransaction(processTranCB);                    
+                }
             }
      
             logger.debug("Job Finished");

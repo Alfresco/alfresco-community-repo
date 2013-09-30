@@ -64,6 +64,8 @@ public class WorkflowObjectFactory
     private final String engineId;
     private final QName defaultStartTaskType;
     
+    private boolean ignoreTenantCheck;
+    
     public WorkflowObjectFactory(WorkflowQNameConverter qNameConverter,
             TenantService tenantService,
             MessageService messageService,
@@ -364,7 +366,7 @@ public class WorkflowObjectFactory
      */
     public void checkDomain(String defName)
     {
-        if (tenantService.isEnabled())
+        if (tenantService.isEnabled() && !ignoreTenantCheck)
         {
             String processKey = defName;
             if (isGlobalId(defName))
@@ -393,6 +395,24 @@ public class WorkflowObjectFactory
                 String key = processKeyGetter.apply(value);
                 String domain = TenantUtil.getTenantDomain(key);
                 return currentDomain.equals(domain) || domain.equals(TenantService.DEFAULT_DOMAIN);
+            }
+        });
+    }
+
+    /**
+     * For "default" domain return ALL workflows
+     * For tenant-specific workflows exclude "default"
+     */
+    public <T extends Object> List<T> doSpecialTenantFilter(Collection<T> values, final Function<T, String> processKeyGetter)
+    {
+        final String currentDomain = tenantService.getCurrentUserDomain();
+        return CollectionUtils.filter(values, new Filter<T>()
+        {
+            public Boolean apply(T value)
+            {
+                String key = processKeyGetter.apply(value);
+                String domain = TenantUtil.getTenantDomain(key);
+                return currentDomain.equals(domain) || currentDomain.equals(TenantService.DEFAULT_DOMAIN);
             }
         });
     }
@@ -466,5 +486,15 @@ public class WorkflowObjectFactory
     public void clearQNameCache()
     {
         qNameConverter.clearCache();
+    }
+
+    public boolean isIgnoreTenantCheck()
+    {
+        return ignoreTenantCheck;
+    }
+
+    public void setIgnoreTenantCheck(boolean ignoreTenantCheck)
+    {
+        this.ignoreTenantCheck = ignoreTenantCheck;
     }
 }

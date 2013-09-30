@@ -109,6 +109,30 @@ public class ActivitiTypeConverter
     }
 
     /**
+     * filters HistoricProcessInstances by domain
+     * including all instances for default domain
+     * and excluding shared instances (THOR-206) for tenants 
+     * 
+     * @param completedInstances
+     * @param function
+     * @return
+     */
+    public <F, T> List<T> doSpecialTenantFilterAndSafeConvert(List<F> values, Function<F, String> processKeyGetter)
+    {
+        List<F> filtered = factory.doSpecialTenantFilter(values, processKeyGetter);
+        factory.setIgnoreTenantCheck(factory.isDefaultDomain());
+        try
+        {
+            return convert(filtered, true);
+        }
+        finally
+        {
+            factory.setIgnoreTenantCheck(false);
+        }
+        
+    }
+
+    /**
      * Convert a {@link Deployment} into a {@link WorkflowDeployment}.
      * @param deployment
      * @return
@@ -329,13 +353,29 @@ public class ActivitiTypeConverter
         return results;
     }
     
-    @SuppressWarnings("unchecked")
     public <T> List<T> convert(List<?> inputs)
+    {
+        return convert(inputs, false);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <T> List<T> convert(List<?> inputs, boolean ignoreNotDeployed)
     {
         ArrayList<T> results = new ArrayList<T>(inputs.size());
         for (Object in : inputs)
         {
-            T out = (T) convert(in);
+            T out = null;
+            try
+            {
+                out = (T) convert(in);
+            }
+            catch (NullPointerException npe)
+            {
+                if (!ignoreNotDeployed)
+                {
+                    throw npe;
+                }
+            }
             if(out != null)
             {
                 results.add(out);

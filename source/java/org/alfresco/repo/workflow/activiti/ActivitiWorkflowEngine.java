@@ -1121,7 +1121,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      */
     private List<WorkflowTask> getValidWorkflowTasks(List<Task> tasks)
     {
-        return typeConverter.filterByDomainAndConvert(tasks, new Function<Task, String>()
+        return typeConverter.doSpecialTenantFilterAndSafeConvert(tasks, new Function<Task, String>()
         {
             public String apply(Task task)
             {

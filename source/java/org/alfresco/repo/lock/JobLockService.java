@@ -171,14 +171,27 @@ public interface JobLockService
     /**
      * Release the lock using a valid lock token.  The lock can have expired or even been taken
      * by another processes (i.e. the lock token will no longer be valid); none of this will
-     * prevent the method from succeeding.
+     * prevent the method from succeeding. This operation is functionally the same as the newer 
+     * {@link #releaseLockVerify(String, QName)} operation, other than it returns void. Retained 
+     * for backwards-compatibility.
+     * 
+     * @param lockToken             the lock token returned when the lock was acquired
+     * @param lockQName             the name of the previously-acquired lock
+     */
+    void releaseLock(String lockToken, QName lockQName);
+    
+    /**
+     * Release the lock using a valid lock token.  The lock can have expired or even been taken
+     * by another processes (i.e. the lock token will no longer be valid); none of this will
+     * prevent the method from succeeding. Functionally similar to {@link #releaseLock(String, QName)}, but
+     * this newer operation indicates whether a lock was actually released by its return value.
      * 
      * @param lockToken             the lock token returned when the lock was acquired
      * @param lockQName             the name of the previously-acquired lock
      * @return                      <tt>true</tt> if the lock was valid and released otherwise
      *                              <tt>false</tt> if the lock was no longer valid in any case
      */
-    boolean releaseLock(String lockToken, QName lockQName);
+    boolean releaseLockVerify(String lockToken, QName lockQName);
     
     /**
      * Interface for implementations that need a timed callback in order to refresh the lock.

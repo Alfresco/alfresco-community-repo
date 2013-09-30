@@ -419,7 +419,15 @@ public class JobLockServiceImpl implements JobLockService
     /**
      * {@inheritDoc}
      */
-    public boolean releaseLock(final String lockToken, final QName lockQName)
+    public void releaseLock(final String lockToken, final QName lockQName)
+    {
+    	releaseLockVerify(lockToken, lockQName);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean releaseLockVerify(final String lockToken, final QName lockQName)
     {
         RetryingTransactionCallback<Boolean> releaseCallback = new RetryingTransactionCallback<Boolean>()
         {

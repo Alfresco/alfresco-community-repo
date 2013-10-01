@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.util;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
@@ -42,6 +43,7 @@ import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearch
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAO;
@@ -400,16 +402,31 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected void tearDownImpl()
     {
-        // Delete the folder
-        nodeService.deleteNode(folder);
-
-        // Delete the site
-        siteService.deleteSite(siteId);
-
-        // delete the collaboration site (if required)
-        if (isCollaborationSiteTest() == true)
+        BehaviourFilter filter = (BehaviourFilter)applicationContext.getBean("policyBehaviourFilter");
+        filter.disableBehaviour();
+        try
         {
-            siteService.deleteSite(COLLABORATION_SITE_ID);
+            Set<NodeRef> holds = freezeService.getHolds(filePlan);
+            for (NodeRef hold : holds)
+            {
+                freezeService.relinquish(hold);
+            }
+            
+            // Delete the folder
+            nodeService.deleteNode(folder);
+    
+            // Delete the site
+            siteService.deleteSite(siteId);
+    
+            // delete the collaboration site (if required)
+            if (isCollaborationSiteTest() == true)
+            {
+                siteService.deleteSite(COLLABORATION_SITE_ID);
+            }
+        }
+        finally
+        {
+            filter.enableBehaviour();
         }
     }
 

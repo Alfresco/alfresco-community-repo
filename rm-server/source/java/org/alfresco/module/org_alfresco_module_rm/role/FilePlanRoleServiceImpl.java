@@ -23,9 +23,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -238,10 +240,12 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         
         if (nodeService.exists(rmRootNode) == true)
         {
-            NodeRef unfiledContainer = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+            List<NodeRef> systemContainers = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<List<NodeRef>>()
             {
-                public NodeRef doWork()
+                public List<NodeRef> doWork()
                 {
+                    List<NodeRef> systemContainers = new ArrayList<NodeRef>(3);
+                    
                     //In a multi tenant store we need to initialize the rm config if it has been done yet
                     NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID); 
                     if (nodeService.exists(nodeRef) == false)
@@ -263,17 +267,18 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     permissionService.setPermission(rmRootNode, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
 
                     // Create the transfer and hold containers
-                    // NOTE:  don't need to worry about the admin permissions as for now we just inherit all
-                    filePlanService.createHoldContainer(rmRootNode);
-                    filePlanService.createTransferContainer(rmRootNode);
+                    systemContainers.add(filePlanService.createHoldContainer(rmRootNode));
+                    systemContainers.add(filePlanService.createTransferContainer(rmRootNode));
                     
                     // Create the unfiled record container
-                    return filePlanService.createUnfiledContainer(rmRootNode);
+                    systemContainers.add(filePlanService.createUnfiledContainer(rmRootNode));
+                    
+                    return systemContainers;
                 }
             }, AuthenticationUtil.getSystemUserName());
 
             // Bootstrap in the default set of roles for the newly created root node
-            bootstrapDefaultRoles(rmRootNode, unfiledContainer);
+            bootstrapDefaultRoles(rmRootNode, systemContainers);
         }
     }
 
@@ -324,7 +329,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
      * @param rmRootNode
      * @param unfiledContainer
      */
-    private void bootstrapDefaultRoles(final NodeRef filePlan, final NodeRef unfiledContainer)
+    private void bootstrapDefaultRoles(final NodeRef filePlan, final List<NodeRef> systemContainers)
     {
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -408,9 +413,12 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                         {
                             // Admin has filing
                             permissionService.setPermission(filePlan, role.getRoleGroupName(), RMPermissionModel.FILING, true);
-                            if (unfiledContainer != null)
+                            if (systemContainers != null)
                             {
-                                permissionService.setPermission(unfiledContainer, role.getRoleGroupName(), RMPermissionModel.FILING, true);
+                                for (NodeRef systemContainer : systemContainers)
+                                {
+                                    permissionService.setPermission(systemContainer, role.getRoleGroupName(), RMPermissionModel.FILING, true);
+                                }
                             }
 
                             // Add the creating user to the administration group

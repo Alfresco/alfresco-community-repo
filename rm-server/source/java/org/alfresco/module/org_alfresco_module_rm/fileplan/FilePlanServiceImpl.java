@@ -450,7 +450,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      */
     public NodeRef createUnfiledContainer(NodeRef filePlan)
     {       
-        return createFilePlanRootContainer(filePlan, TYPE_UNFILED_RECORD_CONTAINER, NAME_UNFILED_CONTAINER, false);
+        return createFilePlanRootContainer(filePlan, TYPE_UNFILED_RECORD_CONTAINER, NAME_UNFILED_CONTAINER);
     }
     
     /**
@@ -459,7 +459,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     @Override
     public NodeRef createHoldContainer(NodeRef filePlan)
     {
-        return createFilePlanRootContainer(filePlan, TYPE_HOLD_CONTAINER, NAME_HOLD_CONTAINER, true);
+        return createFilePlanRootContainer(filePlan, TYPE_HOLD_CONTAINER, NAME_HOLD_CONTAINER);
     }
     
     /**
@@ -468,7 +468,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     @Override
     public NodeRef createTransferContainer(NodeRef filePlan)
     {
-        return createFilePlanRootContainer(filePlan, TYPE_TRANSFER_CONTAINER, NAME_TRANSFER_CONTAINER, true);
+        return createFilePlanRootContainer(filePlan, TYPE_TRANSFER_CONTAINER, NAME_TRANSFER_CONTAINER);
     }
     
     /**
@@ -479,7 +479,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      * @param inheritPermissions
      * @return
      */
-    private NodeRef createFilePlanRootContainer(NodeRef filePlan, QName containerType, String containerName, boolean inheritPermissions)
+    private NodeRef createFilePlanRootContainer(NodeRef filePlan, QName containerType, String containerName)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
         if (isFilePlan(filePlan) == false)
@@ -502,23 +502,24 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                         properties).getChildRef();
 
         
-        if (inheritPermissions == false)
-        {
+   //     if (inheritPermissions == false)
+   //     {
             // set inheritance to false
             getPermissionService().setInheritParentPermissions(container, false);
             getPermissionService().setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
             getPermissionService().setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
             getPermissionService().setPermission(container, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+            getPermissionService().setPermission(container, "Administrator", RMPermissionModel.FILING, true);
             
             // TODO set the admin users to have filing permissions on the unfiled container!!!
             // TODO we will need to be able to get a list of the admin roles from the service
-        }
-        else
-        {
+  //      }
+   //     else
+   //     {
             // just inherit eveything
             // TODO will change this when we are able to set permissions on holds and transfers!
-            getPermissionService().setInheritParentPermissions(container, true);
-        }
+   //         getPermissionService().setInheritParentPermissions(container, true);
+   //     }
 
         return container;
     }

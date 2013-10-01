@@ -18,7 +18,9 @@
  */
 package org.alfresco.repo.tagging;
 
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -2120,5 +2122,17 @@ public class TaggingServiceImplTest extends TestCase
                 return null;
             }
         });
+    }
+    
+    public void testTagFileRead() throws UnsupportedEncodingException
+    {
+        List<TagDetails> tags = TaggingServiceImpl.readTagDetails(new ByteArrayInputStream("Tag1|10\nTag2|20\nInvalid\nInvalid2|\nInvalid3|One\nTooMany|1|2\n\n".getBytes("UTF-8")));
+        assertEquals(3, tags.size());
+        assertEquals(tags.get(0).getName(), "Tag1");
+        assertEquals(tags.get(1).getName(), "Tag2");
+        assertEquals(tags.get(2).getName(), "TooMany");
+        assertEquals(tags.get(0).getCount(), 10);
+        assertEquals(tags.get(1).getCount(), 20);
+        assertEquals(tags.get(2).getCount(), 1);
     }
 }

@@ -1188,14 +1188,41 @@ public class TaggingServiceImpl implements TaggingService,
             while (nextLine != null)
             {
                 String[] values = nextLine.split("\\" + TAG_DETAILS_DELIMITER);
-                result.add(new TagDetailsImpl(values[0], Integer.parseInt(values[1])));
+                if(values.length == 1)
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("No count for tag "+values[0]);
+                    }
+                }
+                else if (values.length > 1)
+                {
+                    try
+                    {
+                        result.add(new TagDetailsImpl(values[0], Integer.parseInt(values[1])));
+                        if(values.length > 2)
+                        {
+                            if(logger.isDebugEnabled())
+                            {
+                                logger.debug("Ignoring extra guff for tag: " + values[0]);
+                            }
+                        }
+                    }
+                    catch(NumberFormatException nfe)
+                    {
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("Invalid tag count for " + values[0] + "<"+values[1]+">");
+                        }
+                    }
+                }
                 
                 nextLine = reader.readLine();
             }
         }
-        catch (IOException exception)
+        catch (Exception exception)
         {
-            throw new AlfrescoRuntimeException("Unable to read tag details", exception);
+            logger.warn("Unable to read tag details", exception);
         }
         finally
         {

@@ -1121,7 +1121,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      */
     private List<WorkflowTask> getValidWorkflowTasks(List<Task> tasks)
     {
-        return typeConverter.doSpecialTenantFilterAndSafeConvert(tasks, new Function<Task, String>()
+        return typeConverter.filterByDomainAndConvert(tasks, new Function<Task, String>()
         {
             public String apply(Task task)
             {
@@ -2222,7 +2222,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             completedInstances = query.list();
         }
 
-        List<WorkflowInstance> completedResults = typeConverter.convert(completedInstances);
+        List<WorkflowInstance> completedResults = typeConverter.doSpecialTenantFilterAndSafeConvert(completedInstances, new Function<HistoricProcessInstance, String>()
+        {
+            public String apply(HistoricProcessInstance historicProcessInstance)
+            {
+                ProcessDefinition procDef = activitiUtil.getProcessDefinition(historicProcessInstance.getProcessDefinitionId());
+                return procDef.getKey();
+            }
+        });
 
         results.addAll(completedResults);
         return results;

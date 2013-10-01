@@ -298,7 +298,9 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private PermissionService permissionService;
     private ModelDAO permissionModelDao;
     private CMISDictionaryService cmisDictionaryService;
+    private CMISDictionaryService cmisDictionaryService11;
     private CMISQueryService cmisQueryService;
+    private CMISQueryService cmisQueryService11;
     private MimetypeService mimetypeService;
     private AuditService auditService;
     private NamespaceService namespaceService;
@@ -308,8 +310,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private ActionService actionService;
     private ThumbnailService thumbnailService;
     private ServiceRegistry serviceRegistry;
-
-    private CmisVersion cmisVersion;
 
     private ActivityPoster activityPoster;
 
@@ -348,11 +348,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public void setObjectFilter(ObjectFilter objectFilter)
     {
 		this.objectFilter = objectFilter;
-	}
-
-	public void setCmisVersion(CmisVersion cmisVersion)
-	{
-		this.cmisVersion = cmisVersion;
 	}
 
 	/**
@@ -640,9 +635,22 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         this.cmisDictionaryService = cmisDictionaryService;
     }
 
+    public void setOpenCMISDictionaryService11(CMISDictionaryService cmisDictionaryService)
+    {
+        this.cmisDictionaryService11 = cmisDictionaryService;
+    }
+
     public CMISDictionaryService getOpenCMISDictionaryService()
     {
-        return cmisDictionaryService;
+        CmisVersion cmisVersion = getRequestCmisVersion();
+        if(cmisVersion.equals(CmisVersion.CMIS_1_0))
+        {
+            return cmisDictionaryService;
+        }
+        else
+        {
+            return cmisDictionaryService11;
+        }
     }
 
     /**
@@ -651,6 +659,24 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public void setOpenCMISQueryService(CMISQueryService cmisQueryService)
     {
         this.cmisQueryService = cmisQueryService;
+    }
+
+    public void setOpenCMISQueryService11(CMISQueryService cmisQueryService)
+    {
+        this.cmisQueryService11 = cmisQueryService;
+    }
+    
+    public CMISQueryService getOpenCMISQueryService()
+    {
+        CmisVersion cmisVersion = getRequestCmisVersion();
+        if(cmisVersion.equals(CmisVersion.CMIS_1_0))
+        {
+            return cmisQueryService;
+        }
+        else
+        {
+            return cmisQueryService11;
+        }
     }
 
     /**
@@ -1196,6 +1222,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         versionService.createVersion(nodeRef, versionProperties);
     }
 
+    public CmisVersion getRequestCmisVersion()
+    {
+        CallContext callContext = AlfrescoCmisServiceCall.get();
+        CmisVersion cmisVersion = callContext.getCmisVersion();
+        return cmisVersion;
+    }
+
     private boolean isPublicApi()
     {
     	boolean isPublicApi = false;
@@ -1263,7 +1296,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     private TypeDefinitionWrapper getType(QName typeQName)
     {
-        return cmisDictionaryService.findNodeType(typeQName);
+        return getOpenCMISDictionaryService().findNodeType(typeQName);
     }
 
     /**
@@ -1273,7 +1306,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public TypeDefinitionWrapper getType(AssociationRef assocRef)
     {
         QName typeQName = assocRef.getTypeQName();
-        return cmisDictionaryService.findAssocType(typeQName);
+        return getOpenCMISDictionaryService().findAssocType(typeQName);
     }
 
     /**
@@ -1282,7 +1315,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      */
     public TypeDefinitionWrapper getType(String cmisTypeId)
     {
-        return cmisDictionaryService.findType(cmisTypeId);
+        return getOpenCMISDictionaryService().findType(cmisTypeId);
     }
 
     /**
@@ -1483,6 +1516,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             	});
             }
 
+            CmisVersion cmisVersion = getRequestCmisVersion();
             if(cmisVersion.equals(CmisVersion.CMIS_1_0))
             {
 	            // add aspects (cmis 1.0)
@@ -1707,7 +1741,47 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             throw new CmisConstraintException("Document cannot have content!");
         }
     }
+
+    private void addAspectProperties(CMISNodeInfo info, String filter, PropertiesImpl result)
+    {
+        if(getRequestCmisVersion().equals(CmisVersion.CMIS_1_1))
+        {
+            Set<String> propertyIds = new HashSet<String>();
+            Set<String> filterSet = splitFilter(filter);
     
+            Set<QName> aspects = nodeService.getAspects(info.getNodeRef());
+            for (QName aspect : aspects)
+            {
+                TypeDefinitionWrapper aspectType = getOpenCMISDictionaryService().findNodeType(aspect);
+                if (aspectType == null)
+                {
+                    continue;
+                }
+    
+                for (PropertyDefinitionWrapper propDef : aspectType.getProperties())
+                {
+                    if (propertyIds.contains(propDef.getPropertyId()))
+                    {
+                        // skip properties that have already been added
+                        continue;
+                    }
+    
+                    if ((filterSet != null) && (!filterSet.contains(propDef.getPropertyDefinition().getQueryName())))
+                    {
+                        // skip properties that are not in the filter
+                        continue;
+                    }
+    
+                    Serializable value = propDef.getPropertyAccessor().getValue(info);
+                    result.addProperty(getProperty(propDef.getPropertyDefinition().getPropertyType(), propDef, value));
+    
+                    // mark property as 'added'
+                    propertyIds.add(propDef.getPropertyId());
+                }
+            }
+        }
+    }
+
     public Properties getNodeProperties(CMISNodeInfo info, String filter)
     {
         PropertiesImpl result = new PropertiesImpl();
@@ -1729,6 +1803,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             Serializable value = propDef.getPropertyAccessor().getValue(info);
             result.addProperty(getProperty(propDef.getPropertyDefinition().getPropertyType(), propDef, value));
         }
+
+        addAspectProperties(info, filter, result);
 
         return result;
     }
@@ -1767,6 +1843,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
             result.addProperty(getProperty(propDef.getPropertyDefinition().getPropertyType(), propDef, value));
         }
+
+        addAspectProperties(info, filter, result);
 
         return result;
     }
@@ -1809,7 +1887,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         Set<QName> aspects = nodeService.getAspects(info.getNodeRef());
         for (QName aspect : aspects)
         {
-            TypeDefinitionWrapper aspectType = cmisDictionaryService.findNodeType(aspect);
+            TypeDefinitionWrapper aspectType = getOpenCMISDictionaryService().findNodeType(aspect);
             if (aspectType == null)
             {
                 continue;
@@ -2133,7 +2211,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         // filter relationships that not map the CMIS domain model
         for (AssociationRef assocRef : assocs)
         {
-            TypeDefinitionWrapper assocTypeDef = cmisDictionaryService.findAssocType(assocRef.getTypeQName());
+            TypeDefinitionWrapper assocTypeDef = getOpenCMISDictionaryService().findAssocType(assocRef.getTypeQName());
             if (assocTypeDef == null || getType(assocRef.getSourceRef()) == null
                     || getType(assocRef.getTargetRef()) == null)
             {
@@ -2201,7 +2279,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             // filter relationships that not map the CMIS domain model
             for (AssociationRef assocRef : assocs)
             {
-                TypeDefinitionWrapper assocTypeDef = cmisDictionaryService.findAssocType(assocRef.getTypeQName());
+                TypeDefinitionWrapper assocTypeDef = getOpenCMISDictionaryService().findAssocType(assocRef.getTypeQName());
                 if (assocTypeDef == null || getType(assocRef.getSourceRef()) == null
                         || getType(assocRef.getTargetRef()) == null)
                 {
@@ -2678,6 +2756,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         // prepare query
         CMISQueryOptions options = new CMISQueryOptions(statement, getRootStoreRef());
+        CmisVersion cmisVersion = getRequestCmisVersion();
         options.setCmisVersion(cmisVersion);
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
 
@@ -2697,7 +2776,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 || (!RENDITION_NONE.equals(renditionFilter));
 
         // query
-        CMISResultSet rs = cmisQueryService.query(options);
+        CMISResultSet rs = getOpenCMISQueryService().query(options);
         try
         {
             CMISResultSetColumn[] columns = rs.getMetaData().getColumns();
@@ -2801,7 +2880,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             PropertyDefinitionWrapper propDef = type.getPropertyById(property.getId());
             if (propDef == null)
             {
-                throw new CmisInvalidArgumentException("Property " + property.getId() + " is unknown!");
+                propDef = getOpenCMISDictionaryService().findProperty(propertyId);
+                if (propDef == null)
+                {
+                    throw new CmisInvalidArgumentException("Property " + property.getId() + " is unknown!");
+                }
             }
 
             Updatability updatability = propDef.getPropertyDefinition().getUpdatability();
@@ -2877,7 +2960,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             String secondaryType = (String)o;
             
-            TypeDefinitionWrapper wrapper = cmisDictionaryService.findType(secondaryType);
+            TypeDefinitionWrapper wrapper = getOpenCMISDictionaryService().findType(secondaryType);
             if(wrapper != null)
             {
                 QName aspectQName = wrapper.getAlfrescoName();
@@ -2906,7 +2989,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         while(it.hasNext())
         {
             QName aspectQName = it.next();
-            TypeDefinitionWrapper w = cmisDictionaryService.findNodeType(aspectQName);
+            TypeDefinitionWrapper w = getOpenCMISDictionaryService().findNodeType(aspectQName);
             if(w == null || secondaryTypeAspects.contains(aspectQName))
             {
                 // the type is not exposed or is in the secondary types to set, so remove it from the to remove set
@@ -2919,7 +3002,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             nodeService.removeAspect(nodeRef, aspectQName);
             // aspect is being removed so remove all of its properties from the propsToAdd map
-            TypeDefinitionWrapper w = cmisDictionaryService.findNodeType(aspectQName);
+            TypeDefinitionWrapper w = getOpenCMISDictionaryService().findNodeType(aspectQName);
             for(PropertyDefinitionWrapper wr : w.getProperties())
             {
                 String propertyId = wr.getPropertyId();
@@ -2935,7 +3018,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             // get aspect properties
             AspectDefinition aspectDef = dictionaryService.getAspect(aspectQName);
             Map<QName, org.alfresco.service.cmr.dictionary.PropertyDefinition> aspectPropDefs = aspectDef.getProperties();
-            TypeDefinitionWrapper w = cmisDictionaryService.findNodeType(aspectQName);
+            TypeDefinitionWrapper w = getOpenCMISDictionaryService().findNodeType(aspectQName);
             // for each aspect property...
             for(QName propQName : aspectPropDefs.keySet())
             {
@@ -3099,7 +3182,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                                     	}
 
                                     	// overflow check
-                                    	PropertyDefinitionWrapper propDef = cmisDictionaryService.findProperty(propertyId);
+                                    	PropertyDefinitionWrapper propDef = getOpenCMISDictionaryService().findProperty(propertyId);
                                         if(propDef == null)
                                         {
                                             throw new CmisInvalidArgumentException("Property " + propertyId + " is unknown!");

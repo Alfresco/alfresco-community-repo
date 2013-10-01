@@ -29,7 +29,6 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -161,7 +160,6 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     {
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
-
             @Override
             public Void doWork() throws Exception
             {
@@ -616,20 +614,6 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
             msg.append("Created hold object '").append(holdNodeRef).append("' with name '").append(holdQName).append("'.");
             logger.debug(msg.toString());
         }
-        
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                // set inherit to false
-                permissionService.setInheritParentPermissions(holdNodeRef, false);
-                String allGroup = filePlanRoleService.getAllRolesContainerGroup(root);
-                permissionService.setPermission(holdNodeRef, allGroup, RMPermissionModel.FILING, true);
-                
-                return null;
-            }
-        });
                 
         // Bind the hold node reference to the transaction
         AlfrescoTransactionSupport.bindResource(KEY_HOLD_NODEREF, holdNodeRef);

@@ -501,10 +501,10 @@
 	<!--  File Plan Permission Service -->
 
 	<bean id="filePlanPermissionService"
+	      parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionServiceImpl"
           init-method="init">
         <property name="permissionService" ref="PermissionService"/>
-        <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="recordsManagementService" ref="RecordsManagementService"/>
         <property name="filePlanService" ref="FilePlanService" />

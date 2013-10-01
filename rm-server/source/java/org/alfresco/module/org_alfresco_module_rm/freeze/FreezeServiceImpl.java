@@ -593,10 +593,8 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
      */
     private NodeRef createHold(NodeRef nodeRef, String reason)
     {
-        NodeRef holdNodeRef = null;
-        
         // get the hold container
-        NodeRef root = filePlanService.getFilePlan(nodeRef);
+        final NodeRef root = filePlanService.getFilePlan(nodeRef);
         NodeRef holdContainer = filePlanService.getHoldContainer(root);
 
         // calculate the hold name
@@ -610,7 +608,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
 
         // create the hold object        
         QName holdQName = QName.createQName(RM_URI, holdName);
-        holdNodeRef = nodeService.createNode(holdContainer, ContentModel.ASSOC_CONTAINS, holdQName, TYPE_HOLD, holdProps).getChildRef();
+        final NodeRef holdNodeRef = nodeService.createNode(holdContainer, ContentModel.ASSOC_CONTAINS, holdQName, TYPE_HOLD, holdProps).getChildRef();
 
         if (logger.isDebugEnabled())
         {
@@ -619,10 +617,19 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
             logger.debug(msg.toString());
         }
         
-        // set inherit to false
-        permissionService.setInheritParentPermissions(holdNodeRef, false);
-        String allGroup = filePlanRoleService.getAllRolesContainerGroup(root);
-        permissionService.setPermission(holdNodeRef, allGroup, RMPermissionModel.FILING, true);
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // set inherit to false
+                permissionService.setInheritParentPermissions(holdNodeRef, false);
+                String allGroup = filePlanRoleService.getAllRolesContainerGroup(root);
+                permissionService.setPermission(holdNodeRef, allGroup, RMPermissionModel.FILING, true);
+                
+                return null;
+            }
+        });
                 
         // Bind the hold node reference to the transaction
         AlfrescoTransactionSupport.bindResource(KEY_HOLD_NODEREF, holdNodeRef);

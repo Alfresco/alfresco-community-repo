@@ -1430,4 +1430,95 @@ public class TestCMIS extends EnterpriseTestApi
         String content = writer.toString();
         assertEquals("Ipsum and so onIpsum and so onIpsum and so onIpsum and so onIpsum and so onIpsum and so onIpsum and so on", content);
 	}
+
+	@Test
+	public void testSecondaryTypes() throws Exception
+	{
+	    final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+	    String username = "user" + System.currentTimeMillis();
+	    PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+	    TestPerson person1 = network1.createUser(personInfo);
+	    String person1Id = person1.getId();
+
+	    final String siteName = "site" + System.currentTimeMillis();
+
+	    TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+	            {
+	        @Override
+	        public NodeRef doWork() throws Exception
+	        {
+	            SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
+	            TestSite site = repoService.createSite(null, siteInfo);
+
+	            String name = GUID.generate();
+	            NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+	            return folderNodeRef;
+	        }
+	            }, person1Id, network1.getId());
+
+	    // Create a document...
+	    publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+	    CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.1");
+	    Folder docLibrary = (Folder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
+	    String name = "mydoc-" + GUID.generate() + ".txt";
+        final List<String> secondaryTypes = new ArrayList<String>();
+        secondaryTypes.add("P:cm:summarizable");
+	    Map<String, Object> properties = new HashMap<String, Object>();
+	    {
+	        // create a document with 2 aspects
+	        properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+	        properties.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypes);
+	        properties.put("cm:summary", "My summary");
+	        properties.put(PropertyIds.NAME, name);
+	    }
+	    ContentStreamImpl fileContent = new ContentStreamImpl();
+	    {
+	        ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+	        writer.putContent("Ipsum and so on");
+	        ContentReader reader = writer.getReader();
+	        fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+	        fileContent.setStream(reader.getContentInputStream());
+	    }
+
+	    Document doc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+
+	    {
+    	    // check that the secondary types and properties are present
+    	    {
+        	    checkSecondaryTypes(doc, Collections.singleton("P:cm:summarizable"), null);
+        	    String summary = (String)doc.getProperty("cm:summary").getFirstValue();
+        	    assertEquals("My summary", summary);
+    	    }
+    
+    	    {
+    	        doc = (Document)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary/" + name);
+    	        checkSecondaryTypes(doc, Collections.singleton("P:cm:summarizable"), null);
+                String summary = (String)doc.getProperty("cm:summary").getFirstValue();
+                assertEquals("My summary", summary);
+    	    }
+	    }
+	    
+	    // update property and check
+	    {
+    	    properties = new HashMap<String, Object>();
+            {
+                properties.put("cm:summary", "My updated summary");
+            }
+    	    doc.updateProperties(properties);
+
+            {
+                checkSecondaryTypes(doc, Collections.singleton("P:cm:summarizable"), null);
+                String summary = (String)doc.getProperty("cm:summary").getFirstValue();
+                assertEquals("My updated summary", summary);
+            }
+    
+            {
+                doc = (Document)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary/" + name);
+                checkSecondaryTypes(doc, Collections.singleton("P:cm:summarizable"), null);
+                String summary = (String)doc.getProperty("cm:summary").getFirstValue();
+                assertEquals("My updated summary", summary);
+            }
+	    }
+	}
 }

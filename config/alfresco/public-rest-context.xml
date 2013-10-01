@@ -728,17 +728,6 @@
         <property name="networksService"        ref="networksService"/>
     </bean>
 
-    <bean id="publicApiCMISServiceFactory1.1" class="org.alfresco.opencmis.PublicApiAlfrescoCmisServiceFactory" init-method="init">
-        <property name="cmisConnector"          ref="CMISConnector1.1" />
-        <property name="cmisTransactions"       ref="CMISService_Transactions" />
-        <property name="cmisExceptions"         ref="CMISService_Exceptions" />
-        <property name="cmisControl"            ref="CMISService_Control" />
-        <property name="cmisStreams"            ref="CMISService_Streams" />
-        <property name="authorityService"       ref="AuthorityService" />
-        <property name="tenantAdminService"     ref="tenantAdminService"/>
-        <property name="networksService"        ref="networksService"/>
-    </bean>
-
     <bean   id="cmisDispatcherRegistry" class="org.alfresco.opencmis.CMISDispatcherRegistryImpl">
     </bean>
 
@@ -753,7 +742,7 @@
 
     <bean   id="cmisAtomPubDispatcher1.1" class="org.alfresco.opencmis.PublicApiAtomPubCMISDispatcher" init-method="init">
         <property name="descriptorService"  ref="DescriptorService"/>
-        <property name="cmisServiceFactory" ref="publicApiCMISServiceFactory1.1"/>
+        <property name="cmisServiceFactory" ref="publicApiCMISServiceFactory"/>
         <property name="registry"           ref="cmisDispatcherRegistry" />
         <property name="serviceName"        value="cmis" />
         <property name="baseUrlGenerator"   ref="baseUrlGenerator" />
@@ -762,7 +751,7 @@
 
     <bean   id="cmisBrowserDispatcher1.1" class="org.alfresco.opencmis.PublicApiBrowserCMISDispatcher" init-method="init">
         <property name="descriptorService"  ref="DescriptorService"/>
-        <property name="cmisServiceFactory" ref="publicApiCMISServiceFactory1.1"/>
+        <property name="cmisServiceFactory" ref="publicApiCMISServiceFactory"/>
         <property name="baseUrlGenerator"   ref="baseUrlGenerator"/>
         <property name="registry"           ref="cmisDispatcherRegistry" />
         <property name="serviceName"        value="cmis" />

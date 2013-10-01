@@ -404,7 +404,7 @@
    <bean id="webscripts.js.cmis.client" class="org.alfresco.repo.cmis.client.CMISLocalConnectionManagerImpl" init-method="init">
       <property name="authenticationService" ref="AuthenticationService" />
       <property name="configService" ref="webscripts.config" />
-      <property name="cmisConnector" ref="CMISConnector1.1" />
+      <property name="cmisConnector" ref="CMISConnector" />
    </bean>
 
    <!--   

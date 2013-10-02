@@ -467,17 +467,34 @@ public class ADMRemoteStore extends BaseRemoteStore
                     
                     try
                     {
-                        FileInfo fileInfo = fileFolderService.create(
-                                parentFolderRef, encpath.substring(off + 1), ContentModel.TYPE_CONTENT);
-                        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
-                        aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
-                        unprotNodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
-                        ContentWriter writer = contentService.getWriter(
-                                fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
-                        writer.guessMimetype(fileInfo.getName());
-                        writer.putContent(content);
-                        if (logger.isDebugEnabled())
-                            logger.debug("createDocument: " + fileInfo.toString());
+                        final String name = encpath.substring(off + 1);
+                        // existence check - convert to an UPDATE - could occur if multiple threads request
+                        // a write to the same document - a valid possibility but rare
+                        if (nodeService.getChildByName(parentFolderRef, ContentModel.ASSOC_CONTAINS, name) == null)
+                        {
+                            FileInfo fileInfo = fileFolderService.create(
+                                    parentFolderRef, name, ContentModel.TYPE_CONTENT);
+                            Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
+                            aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
+                            unprotNodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
+                            ContentWriter writer = contentService.getWriter(
+                                    fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                            writer.guessMimetype(fileInfo.getName());
+                            writer.putContent(content);
+                            if (logger.isDebugEnabled())
+                                logger.debug("createDocument: " + fileInfo.toString());
+                        }
+                        else
+                        {
+                            ContentWriter writer = contentService.getWriter(
+                                    nodeService.getChildByName(parentFolderRef, ContentModel.ASSOC_CONTAINS, name),
+                                    ContentModel.PROP_CONTENT,
+                                    true);
+                            writer.guessMimetype(name);
+                            writer.putContent(content);
+                            if (logger.isDebugEnabled())
+                                logger.debug("createDocument (updated): " + name);
+                        }
                     }
                     finally
                     {

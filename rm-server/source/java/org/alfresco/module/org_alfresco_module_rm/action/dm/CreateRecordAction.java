@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
 import java.util.List;
 
+import org.alfresco.enterprise.repo.sync.SyncModel;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
@@ -159,6 +160,14 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
             if (logger.isDebugEnabled() == true)
             {
                 logger.debug("Can not create record, because " + actionedUponNodeRef.toString() + " has previously been rejected.");
+            }
+        }
+        else if (nodeService.hasAspect(actionedUponNodeRef, SyncModel.ASPECT_SYNCED) == true)
+        {
+            // can't declare the record if the node is sync'ed
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Can't declare as record, because " + actionedUponNodeRef.toString() + " is synched content.");
             }
         }
         else 

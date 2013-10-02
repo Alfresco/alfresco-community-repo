@@ -157,39 +157,42 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     @Override
     public void executeRule(final Rule rule, final NodeRef nodeRef, final Set<ExecutedRuleData> executedRules)
     {
-        QName typeQName = nodeService.getType(nodeRef);
-
-        // check if this is a rm rule on a rm artifact
-        if (filePlanService.isFilePlanComponent(nodeRef) == true && 
-        	isFilePlanComponentRule(rule) == true)
+        if (nodeService.exists(nodeRef) == true)
         {
-        	// ignore and
-            if (isIgnoredType(typeQName) == false)
-	        {
-	        	if (runAsRmAdmin == true)
-	            {
-            		// run as rmadmin
-	            	filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>() 
-	            	{
-						@Override
-						public Void doWork() throws Exception 
-						{
-							ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
-							return null;
-						}
-					});
-            	}
-            	else
-            	{
-            		// run as current user
-            		ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
-            	}
-	        }
-        }
-        else
-        {
-            // just execute the rule as the current user
-            super.executeRule(rule, nodeRef, executedRules);
+            QName typeQName = nodeService.getType(nodeRef);
+    
+            // check if this is a rm rule on a rm artifact
+            if (filePlanService.isFilePlanComponent(nodeRef) == true && 
+            	isFilePlanComponentRule(rule) == true)
+            {
+            	// ignore and
+                if (isIgnoredType(typeQName) == false)
+    	        {
+    	        	if (runAsRmAdmin == true)
+    	            {
+                		// run as rmadmin
+    	            	filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>() 
+    	            	{
+    						@Override
+    						public Void doWork() throws Exception 
+    						{
+    							ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+    							return null;
+    						}
+    					});
+                	}
+                	else
+                	{
+                		// run as current user
+                		ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+                	}
+    	        }
+            }
+            else
+            {
+                // just execute the rule as the current user
+                super.executeRule(rule, nodeRef, executedRules);
+            }
         }
     }
 

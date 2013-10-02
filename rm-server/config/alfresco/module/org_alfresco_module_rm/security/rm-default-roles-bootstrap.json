@@ -48,7 +48,8 @@
          "PlanningReviewCycles",
          "RequestRecordInformation",
          "FileUnfiledRecords",
-         "RejectRecords"
+         "RejectRecords",
+         "LinkToRecords"
       ]
    },
    {
@@ -71,7 +72,8 @@
           "PlanningReviewCycles",
           "RequestRecordInformation",
           "FileUnfiledRecords",
-          "RejectRecords"
+          "RejectRecords",
+          "LinkToRecords"
       ]
    },
    {
@@ -134,7 +136,8 @@
           "RequestRecordInformation",
           "FileDestructionReport",
           "FileUnfiledRecords",
-          "RejectRecords"
+          "RejectRecords",
+          "LinkToRecords"
       ]
    },
    {
@@ -199,7 +202,8 @@
           "RequestRecordInformation",
           "FileDestructionReport",
           "FileUnfiledRecords",
-          "RejectRecords"
+          "RejectRecords",
+          "LinkToRecords"
       ]
    }
 ]

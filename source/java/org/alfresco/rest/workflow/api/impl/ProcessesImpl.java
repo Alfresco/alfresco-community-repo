@@ -607,74 +607,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                         if (taskAssociations.containsKey(propNameMap.get(variableName)))
                         {
                             AssociationDefinition associationDef = taskAssociations.get(propNameMap.get(variableName));
-                            if (variableValue != null && ContentModel.TYPE_PERSON.equals(associationDef.getTargetClass().getName()))
-                            {
-                                if (associationDef.isTargetMany())
-                                {
-                                    if (variableValue instanceof List<?>)
-                                    {
-                                        List<NodeRef> personList = new ArrayList<NodeRef>();
-                                        List<?> values = (List<?>) variableValue;
-                                        for (Object value : values)
-                                        {
-                                            NodeRef personRef = getPersonNodeRef(value.toString());
-                                            if (personRef == null)
-                                            {
-                                                throw new InvalidArgumentException(value.toString() + " is not a valid person user id");
-                                            }
-                                            personList.add(personRef);
-                                        }
-                                        variableValue = personList;
-                                    }
-                                    else
-                                    {
-                                        throw new InvalidArgumentException(variableName + " should have an array value");
-                                    }
-                                }
-                                else
-                                {
-                                    NodeRef personRef = getPersonNodeRef(variableValue.toString());
-                                    if (personRef == null)
-                                    {
-                                        throw new InvalidArgumentException(variableValue.toString() + " is not a valid person user id");
-                                    }
-                                    variableValue = personRef;
-                                }
-                            }
-                            else if (variableValue != null && ContentModel.TYPE_AUTHORITY_CONTAINER.equals(associationDef.getTargetClass().getName()))
-                            {
-                                if (associationDef.isTargetMany())
-                                {
-                                    if (variableValue instanceof List<?>)
-                                    {
-                                        List<NodeRef> authorityList = new ArrayList<NodeRef>();
-                                        List<?> values = (List<?>) variableValue;
-                                        for (Object value : values)
-                                        {
-                                            NodeRef authorityRef = authorityService.getAuthorityNodeRef(value.toString());
-                                            if (authorityRef == null)
-                                            {
-                                                throw new InvalidArgumentException(value.toString() + " is not a valid authority id");
-                                            }
-                                            authorityList.add(authorityRef);
-                                        }
-                                        variableValue = authorityList;
-                                    }
-                                    else
-                                    {
-                                        throw new InvalidArgumentException(variableName + " should have an array value");
-                                    }
-                                }
-                                else
-                                {
-                                    NodeRef authorityRef = authorityService.getAuthorityNodeRef(variableValue.toString());
-                                    if (authorityRef == null)
-                                    {
-                                        throw new InvalidArgumentException(variableValue.toString() + " is not a valid authority id");
-                                    }
-                                    variableValue = authorityRef;
-                                }
-                            }
+                            variableValue = convertAssociationDefinitionValue(associationDef, variableName, variableValue);
                         }
                         else if (taskProperties.containsKey(propNameMap.get(variableName)))
                         {
@@ -921,7 +854,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             throw new EntityNotFoundException(processId);
         }
         
-        return updateVariableInProcess(processId, variable);
+        return updateVariableInProcess(processId, processInstance.getProcessDefinitionId(), variable);
     }
     
     @Override
@@ -944,21 +877,45 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         {
             for (Variable variable : variables)
             {
-                updatedVariables.add(updateVariableInProcess(processId, variable));
+                updatedVariables.add(updateVariableInProcess(processId, processInstance.getProcessDefinitionId(), variable));
             }
         }
         return updatedVariables;
     }
     
-    protected Variable updateVariableInProcess(String processId,Variable variable)
+    protected Variable updateVariableInProcess(String processId, String processDefinitionId, Variable variable)
     {
         if (variable.getName() == null)
         {
             throw new InvalidArgumentException("Variable name is required.");
         }
         
+        // Get start-task definition for explicit typing of variables submitted at the start
+        String formKey = null;
+        StartFormData startFormData = activitiProcessEngine.getFormService().getStartFormData(processDefinitionId);
+        if (startFormData != null)
+        {
+            formKey = startFormData.getFormKey();
+        }
+        
         DataTypeDefinition dataTypeDefinition = null;
-        if(variable.getType() != null)
+        
+        TypeDefinition startTaskTypeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(formKey, true);
+        TypeDefinitionContext context = new TypeDefinitionContext(startTaskTypeDefinition, getQNameConverter());
+        if (context.getPropertyDefinition(variable.getName()) != null) 
+        {
+            dataTypeDefinition = context.getPropertyDefinition(variable.getName()).getDataType();
+            if (variable.getType() != null && dataTypeDefinition.getName().toPrefixString(namespaceService).equals(variable.getType()) == false) {
+                throw new InvalidArgumentException("type of variable " + variable.getName() + " should be " + 
+                        dataTypeDefinition.getName().toPrefixString(namespaceService));
+            }
+        }
+        else if (context.getAssociationDefinition(variable.getName()) != null) 
+        {
+            dataTypeDefinition = dictionaryService.getDataType(DataTypeDefinition.NODE_REF);
+        }
+        
+        if (dataTypeDefinition == null && variable.getType() != null)
         {
             try
             {
@@ -970,13 +927,13 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                 throw new InvalidArgumentException("Unsupported type of variable: '" + variable.getType() +"'.");
             }
         } 
-        else
+        else if (dataTypeDefinition == null)
         {
             // Fallback to raw value when no type has been passed and not present in model
             dataTypeDefinition = dictionaryService.getDataType(restVariableHelper.extractTypeFromValue(variable.getValue()));
         }
         
-        if(dataTypeDefinition == null)
+        if (dataTypeDefinition == null)
         {
             throw new InvalidArgumentException("Unsupported type of variable: '" + variable.getType() +"'.");
         }
@@ -989,7 +946,15 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         }
         else
         {
-            actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, variable.getValue());
+            if (context.getAssociationDefinition(variable.getName()) != null)
+            {
+                actualValue = convertAssociationDefinitionValue(context.getAssociationDefinition(variable.getName()), 
+                        variable.getName(), variable.getValue());
+            }
+            else
+            {
+                actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, variable.getValue());
+            }
         }
         variable.setValue(actualValue);
         
@@ -1064,6 +1029,79 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         {
             throw new ApiException("Error while getting process image.");
         }
+    }
+    
+    protected Object convertAssociationDefinitionValue(AssociationDefinition associationDef, String variableName, Object variableValue) 
+    {
+        if (variableValue != null && ContentModel.TYPE_PERSON.equals(associationDef.getTargetClass().getName()))
+        {
+            if (associationDef.isTargetMany())
+            {
+                if (variableValue instanceof List<?>)
+                {
+                    List<NodeRef> personList = new ArrayList<NodeRef>();
+                    List<?> values = (List<?>) variableValue;
+                    for (Object value : values)
+                    {
+                        NodeRef personRef = getPersonNodeRef(value.toString());
+                        if (personRef == null)
+                        {
+                            throw new InvalidArgumentException(value.toString() + " is not a valid person user id");
+                        }
+                        personList.add(personRef);
+                    }
+                    variableValue = personList;
+                }
+                else
+                {
+                    throw new InvalidArgumentException(variableName + " should have an array value");
+                }
+            }
+            else
+            {
+                NodeRef personRef = getPersonNodeRef(variableValue.toString());
+                if (personRef == null)
+                {
+                    throw new InvalidArgumentException(variableValue.toString() + " is not a valid person user id");
+                }
+                variableValue = personRef;
+            }
+        }
+        else if (variableValue != null && ContentModel.TYPE_AUTHORITY_CONTAINER.equals(associationDef.getTargetClass().getName()))
+        {
+            if (associationDef.isTargetMany())
+            {
+                if (variableValue instanceof List<?>)
+                {
+                    List<NodeRef> authorityList = new ArrayList<NodeRef>();
+                    List<?> values = (List<?>) variableValue;
+                    for (Object value : values)
+                    {
+                        NodeRef authorityRef = authorityService.getAuthorityNodeRef(value.toString());
+                        if (authorityRef == null)
+                        {
+                            throw new InvalidArgumentException(value.toString() + " is not a valid authority id");
+                        }
+                        authorityList.add(authorityRef);
+                    }
+                    variableValue = authorityList;
+                }
+                else
+                {
+                    throw new InvalidArgumentException(variableName + " should have an array value");
+                }
+            }
+            else
+            {
+                NodeRef authorityRef = authorityService.getAuthorityNodeRef(variableValue.toString());
+                if (authorityRef == null)
+                {
+                    throw new InvalidArgumentException(variableValue.toString() + " is not a valid authority id");
+                }
+                variableValue = authorityRef;
+            }
+        }
+        return variableValue;
     }
     
     protected String getProcessDefinitionKey(String paramProcessDefinitionKey)

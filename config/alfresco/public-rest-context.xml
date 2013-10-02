@@ -882,6 +882,7 @@
     <bean id="tasks" class="org.alfresco.rest.workflow.api.impl.TasksImpl" parent="baseWorkflowRest">
         <property name="restVariableHelper" ref="restVariableHelper" />
         <property name="messageService" ref="messageService" />
+        <property name="personService" ref="PersonService" />
     </bean>
 
     <bean id="Tasks" class="org.springframework.aop.framework.ProxyFactoryBean">

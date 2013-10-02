@@ -224,6 +224,7 @@ public class ProcessDefinitionsImpl extends WorkflowRestImpl implements ProcessD
         
         List<org.activiti.engine.repository.ProcessDefinition> processDefinitions = 
                 query.listPage(parameters.getPaging().getSkipCount(), parameters.getPaging().getMaxItems());
+        int totalCount = (int) query.count();
 
         List<ProcessDefinition> page = new ArrayList<ProcessDefinition>(processDefinitions.size());
         for (org.activiti.engine.repository.ProcessDefinition processDefinition: processDefinitions) 
@@ -231,7 +232,7 @@ public class ProcessDefinitionsImpl extends WorkflowRestImpl implements ProcessD
             page.add(createProcessDefinitionRest((ProcessDefinitionEntity) processDefinition));
         }
         
-        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), page, false, page.size());
+        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), page, page.size() != totalCount, totalCount);
     }
 
     @Override

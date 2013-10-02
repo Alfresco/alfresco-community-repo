@@ -38,6 +38,7 @@ import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.workflow.api.model.Deployment;
 import org.alfresco.rest.workflow.api.tests.WorkflowApiClient.DeploymentsClient;
+import org.json.simple.JSONObject;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 
@@ -120,6 +121,58 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals(activitiDeployment.getCategory(), adhocDeployment.getCategory());
         assertEquals(activitiDeployment.getName(), adhocDeployment.getName());
         assertEquals(activitiDeployment.getDeploymentTime(), adhocDeployment.getDeployedAt());
+        
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("maxItems", "2");
+        JSONObject deploymentsListObject = deploymentsClient.getDeploymentsWithRawResponse(params);
+        assertNotNull(deploymentsListObject);
+        JSONObject paginationJSON = (JSONObject) deploymentsListObject.get("pagination");
+        assertEquals(2l, paginationJSON.get("count"));
+        assertEquals(5l, paginationJSON.get("totalItems"));
+        assertEquals(0l, paginationJSON.get("skipCount"));
+        assertEquals(true, paginationJSON.get("hasMoreItems"));
+        
+        params = new HashMap<String, String>();
+        deploymentsListObject = deploymentsClient.getDeploymentsWithRawResponse(params);
+        assertNotNull(deploymentsListObject);
+        paginationJSON = (JSONObject) deploymentsListObject.get("pagination");
+        assertEquals(5l, paginationJSON.get("count"));
+        assertEquals(5l, paginationJSON.get("totalItems"));
+        assertEquals(0l, paginationJSON.get("skipCount"));
+        assertEquals(false, paginationJSON.get("hasMoreItems"));
+        
+        params = new HashMap<String, String>();
+        params.put("skipCount", "2");
+        params.put("maxItems", "2");
+        deploymentsListObject = deploymentsClient.getDeploymentsWithRawResponse(params);
+        assertNotNull(deploymentsListObject);
+        paginationJSON = (JSONObject) deploymentsListObject.get("pagination");
+        assertEquals(2l, paginationJSON.get("count"));
+        assertEquals(5l, paginationJSON.get("totalItems"));
+        assertEquals(2l, paginationJSON.get("skipCount"));
+        assertEquals(true, paginationJSON.get("hasMoreItems"));
+        
+        params = new HashMap<String, String>();
+        params.put("skipCount", "2");
+        params.put("maxItems", "5");
+        deploymentsListObject = deploymentsClient.getDeploymentsWithRawResponse(params);
+        assertNotNull(deploymentsListObject);
+        paginationJSON = (JSONObject) deploymentsListObject.get("pagination");
+        assertEquals(3l, paginationJSON.get("count"));
+        assertEquals(5l, paginationJSON.get("totalItems"));
+        assertEquals(2l, paginationJSON.get("skipCount"));
+        assertEquals(true, paginationJSON.get("hasMoreItems"));
+        
+        params = new HashMap<String, String>();
+        params.put("skipCount", "0");
+        params.put("maxItems", "7");
+        deploymentsListObject = deploymentsClient.getDeploymentsWithRawResponse(params);
+        assertNotNull(deploymentsListObject);
+        paginationJSON = (JSONObject) deploymentsListObject.get("pagination");
+        assertEquals(5l, paginationJSON.get("count"));
+        assertEquals(5l, paginationJSON.get("totalItems"));
+        assertEquals(0l, paginationJSON.get("skipCount"));
+        assertEquals(false, paginationJSON.get("hasMoreItems"));
     }
     
     @Test

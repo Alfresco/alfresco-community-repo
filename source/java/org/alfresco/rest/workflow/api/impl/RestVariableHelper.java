@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -94,13 +93,13 @@ public class RestVariableHelper
         List<TaskVariable> result = new ArrayList<TaskVariable>();
         if (localVariables != null && localVariables.size() > 0) 
         {
-            TypeDefinitionContext context = new TypeDefinitionContext(taskTypeDefinition);
+            TypeDefinitionContext context = new TypeDefinitionContext(taskTypeDefinition, getQNameConverter());
             addTaskVariables(result, localVariables, context, VariableScope.LOCAL);
         }
         
         if (globalVariables != null && globalVariables.size() > 0) 
         {
-            TypeDefinitionContext context = new TypeDefinitionContext(startFormTypeDefinition);
+            TypeDefinitionContext context = new TypeDefinitionContext(startFormTypeDefinition, getQNameConverter());
             addTaskVariables(result, globalVariables, context, VariableScope.GLOBAL);
         }
         
@@ -115,7 +114,7 @@ public class RestVariableHelper
     public List<Variable> getVariables(Map<String, Object> variables, TypeDefinition typeDefinition)
     {
         List<Variable> result = new ArrayList<Variable>();
-        TypeDefinitionContext context = new TypeDefinitionContext(typeDefinition);
+        TypeDefinitionContext context = new TypeDefinitionContext(typeDefinition, getQNameConverter());
         
         Variable variable = null;
         for(Entry<String, Object> entry : variables.entrySet()) 
@@ -371,41 +370,5 @@ public class RestVariableHelper
     {
        QName type = extractTypeFromValue(value);
        return type.toPrefixString(namespaceService);
-    }
-
-    /**
-     * Helper contxt class used when checking variable types based on {@link TypeDefinition}. 
-     *
-     * @author Frederik Heremans
-     */
-    private class TypeDefinitionContext {
-        private Map<String, PropertyDefinition> propertyDefinitions;
-        private Map<String, AssociationDefinition> associationDefinitions;
-
-        public TypeDefinitionContext(TypeDefinition typeDefinition)
-        {
-            propertyDefinitions = new HashMap<String, PropertyDefinition>();
-            associationDefinitions = new HashMap<String, AssociationDefinition>();
-            
-            for (Entry<QName, PropertyDefinition> entry : typeDefinition.getProperties().entrySet())
-            {
-                propertyDefinitions.put(getQNameConverter().mapQNameToName(entry.getKey()), entry.getValue());
-            }
-            
-            for (Entry<QName, AssociationDefinition> entry : typeDefinition.getAssociations().entrySet())
-            {
-                associationDefinitions.put(getQNameConverter().mapQNameToName(entry.getKey()), entry.getValue());
-            }
-        }
-        
-        public PropertyDefinition getPropertyDefinition(String rawVariableName) 
-        {
-            return propertyDefinitions.get(rawVariableName);
-        }
-        
-        public AssociationDefinition getAssociationDefinition(String rawVariableName)
-        {
-            return associationDefinitions.get(rawVariableName);
-        }
     }
 }

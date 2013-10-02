@@ -1749,6 +1749,25 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals("d:long", result.get("type"));
             assertEquals(4567L, activitiProcessEngine.getRuntimeService().getVariable(processId, "newVariable"));
             
+            JSONObject processvariables = publicApiClient.processesClient().getProcessvariables(processId);
+            assertNotNull(processvariables);
+            JSONObject newVariableEntry = null;
+            JSONArray entries = (JSONArray) processvariables.get("entries");
+            assertNotNull(entries);
+            for(int i=0; i<entries.size(); i++) 
+            {
+                JSONObject entry = (JSONObject) entries.get(i);
+                assertNotNull(entry);
+                entry = (JSONObject) entry.get("entry");
+                assertNotNull(entry);
+                if ("newVariable".equals((String) entry.get("name"))) {
+                    newVariableEntry = entry;
+                }
+            }
+            
+            assertNotNull(newVariableEntry);
+            assertEquals(4567L, newVariableEntry.get("value"));
+            
             // Update an existing variable, creates a new one using no explicit typing 
             variableJson = new JSONObject();
             variableJson.put("name", "stringVariable");
@@ -1849,6 +1868,187 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             {
                 assertEquals(HttpStatus.FORBIDDEN.value(), e.getHttpResponse().getStatusCode());
             }
+        }
+        finally
+        {
+            cleanupProcessInstance(processRest.getId());
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testUpdateProcessVariableWithWrongType() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        
+        ProcessInfo processRest = startParallelReviewProcess(requestContext);
+        
+        try
+        {
+            assertNotNull(processRest);
+            String processId = processRest.getId();
+            
+            // Update an existing variable with wrong type
+            JSONObject variableJson = new JSONObject();
+            variableJson.put("name", "wf_requiredApprovePercent");
+            variableJson.put("value", 55.99);
+            variableJson.put("type", "d:double");
+            
+            try 
+            {
+                publicApiClient.processesClient().updateVariable(processId, "wf_requiredApprovePercent", variableJson);
+                fail("Exception expected");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
+            }
+            
+            variableJson = new JSONObject();
+            variableJson.put("name", "wf_requiredApprovePercent");
+            variableJson.put("value", 55.99);
+            variableJson.put("type", "d:int");
+            
+            JSONObject resultEntry = publicApiClient.processesClient().updateVariable(processId, "wf_requiredApprovePercent", variableJson);
+            assertNotNull(resultEntry);
+            JSONObject result = (JSONObject) resultEntry.get("entry");
+            
+            assertEquals("wf_requiredApprovePercent", result.get("name"));
+            assertEquals(55l, result.get("value"));
+            assertEquals("d:int", result.get("type"));
+            assertEquals(55, activitiProcessEngine.getRuntimeService().getVariable(processId, "wf_requiredApprovePercent"));
+            
+            JSONObject processvariables = publicApiClient.processesClient().getProcessvariables(processId);
+            assertNotNull(processvariables);
+            
+            // Add process variables to map for easy lookup
+            Map<String, JSONObject> variablesByName = new HashMap<String, JSONObject>();
+            JSONObject entry = null;
+            JSONArray entries = (JSONArray) processvariables.get("entries");
+            assertNotNull(entries);
+            for(int i=0; i<entries.size(); i++) 
+            {
+                entry = (JSONObject) entries.get(i);
+                assertNotNull(entry);
+                entry = (JSONObject) entry.get("entry");
+                assertNotNull(entry);
+                variablesByName.put((String) entry.get("name"), entry);
+            }
+            
+            JSONObject approvePercentObject = variablesByName.get("wf_requiredApprovePercent");
+            assertNotNull(approvePercentObject);
+            assertEquals(55l, approvePercentObject.get("value"));
+            assertEquals("d:int", approvePercentObject.get("type"));
+            
+            // set a new variable
+            variableJson = new JSONObject();
+            variableJson.put("name", "testVariable");
+            variableJson.put("value", "text");
+            variableJson.put("type", "d:text");
+            
+            resultEntry = publicApiClient.processesClient().updateVariable(processId, "testVariable", variableJson);
+            assertNotNull(resultEntry);
+            result = (JSONObject) resultEntry.get("entry");
+            
+            assertEquals("testVariable", result.get("name"));
+            assertEquals("text", result.get("value"));
+            assertEquals("d:text", result.get("type"));
+            assertEquals("text", activitiProcessEngine.getRuntimeService().getVariable(processId, "testVariable"));
+            
+            // change the variable value and type (should be working because no content model type)
+            variableJson = new JSONObject();
+            variableJson.put("name", "testVariable");
+            variableJson.put("value", 123);
+            variableJson.put("type", "d:int");
+            
+            resultEntry = publicApiClient.processesClient().updateVariable(processId, "testVariable", variableJson);
+            assertNotNull(resultEntry);
+            result = (JSONObject) resultEntry.get("entry");
+            
+            assertEquals("testVariable", result.get("name"));
+            assertEquals(123l, result.get("value"));
+            assertEquals("d:int", result.get("type"));
+            assertEquals(123, activitiProcessEngine.getRuntimeService().getVariable(processId, "testVariable"));
+            
+            // change the variable value for a list of noderefs (bpm_assignees)
+            final JSONObject updateAssigneesJson = new JSONObject();
+            updateAssigneesJson.put("name", "bpm_assignees");
+            updateAssigneesJson.put("type", "d:noderef");
+            
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    JSONArray assigneeArray = new JSONArray();
+                    assigneeArray.add(requestContext.getRunAsUser());
+                    updateAssigneesJson.put("value", assigneeArray);
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            
+            resultEntry = publicApiClient.processesClient().updateVariable(processId, "bpm_assignees", updateAssigneesJson);
+            assertNotNull(resultEntry);
+            final JSONObject updateAssigneeResult = (JSONObject) resultEntry.get("entry");
+            
+            assertEquals("bpm_assignees", updateAssigneeResult.get("name"));
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    JSONArray assigneeArray = (JSONArray) updateAssigneeResult.get("value");
+                    assertNotNull(assigneeArray);
+                    assertEquals(1, assigneeArray.size());
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            
+            assertEquals("d:noderef", updateAssigneeResult.get("type"));
+            
+            // update the bpm_assignees with a single entry, should result in an error
+            final JSONObject updateAssigneeJson = new JSONObject();
+            updateAssigneeJson.put("name", "bpm_assignees");
+            updateAssigneeJson.put("type", "d:noderef");
+            
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    updateAssigneeJson.put("value", requestContext.getRunAsUser());
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            
+            try 
+            {
+                publicApiClient.processesClient().updateVariable(processId, "bpm_assignees", updateAssigneeJson);
+                fail("Exception expected");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
+            }
+            
+            // change the variable value with a non-existing person
+            variableJson = new JSONObject();
+            variableJson.put("name", "bpm_assignees");
+            JSONArray assigneeArray = new JSONArray();
+            assigneeArray.add("nonExistingPerson");
+            variableJson.put("value", assigneeArray);
+            variableJson.put("type", "d:noderef");
+            
+            try 
+            {
+                publicApiClient.processesClient().updateVariable(processId, "bpm_assignees", variableJson);
+                fail("Exception expected");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
+            }
+            
         }
         finally
         {

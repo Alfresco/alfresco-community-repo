@@ -88,6 +88,58 @@ public class ProcessDefinitionWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals("wf:submitAdhocTask", adhocDefinitionRest.getStartFormResourceKey());
         assertEquals("New Task", adhocDefinitionRest.getTitle());
         assertEquals("Assign a new task to yourself or a colleague", adhocDefinitionRest.getDescription());
+        
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("maxItems", "2");
+        JSONObject definitionListObject = processDefinitionsClient.getProcessDefinitionsWithRawResponse(params);
+        assertNotNull(definitionListObject);
+        JSONObject paginationJSON = (JSONObject) definitionListObject.get("pagination");
+        assertEquals(2l, paginationJSON.get("count"));
+        assertEquals(5l, paginationJSON.get("totalItems"));
+        assertEquals(0l, paginationJSON.get("skipCount"));
+        assertEquals(true, paginationJSON.get("hasMoreItems"));
+        
+        params = new HashMap<String, String>();
+        definitionListObject = processDefinitionsClient.getProcessDefinitionsWithRawResponse(params);
+        assertNotNull(definitionListObject);
+        paginationJSON = (JSONObject) definitionListObject.get("pagination");
+        assertEquals(5l, paginationJSON.get("count"));
+        assertEquals(5l, paginationJSON.get("totalItems"));
+        assertEquals(0l, paginationJSON.get("skipCount"));
+        assertEquals(false, paginationJSON.get("hasMoreItems"));
+        
+        params = new HashMap<String, String>();
+        params.put("skipCount", "2");
+        params.put("maxItems", "2");
+        definitionListObject = processDefinitionsClient.getProcessDefinitionsWithRawResponse(params);
+        assertNotNull(definitionListObject);
+        paginationJSON = (JSONObject) definitionListObject.get("pagination");
+        assertEquals(2l, paginationJSON.get("count"));
+        assertEquals(5l, paginationJSON.get("totalItems"));
+        assertEquals(2l, paginationJSON.get("skipCount"));
+        assertEquals(true, paginationJSON.get("hasMoreItems"));
+        
+        params = new HashMap<String, String>();
+        params.put("skipCount", "2");
+        params.put("maxItems", "5");
+        definitionListObject = processDefinitionsClient.getProcessDefinitionsWithRawResponse(params);
+        assertNotNull(definitionListObject);
+        paginationJSON = (JSONObject) definitionListObject.get("pagination");
+        assertEquals(3l, paginationJSON.get("count"));
+        assertEquals(5l, paginationJSON.get("totalItems"));
+        assertEquals(2l, paginationJSON.get("skipCount"));
+        assertEquals(true, paginationJSON.get("hasMoreItems"));
+        
+        params = new HashMap<String, String>();
+        params.put("skipCount", "0");
+        params.put("maxItems", "7");
+        definitionListObject = processDefinitionsClient.getProcessDefinitionsWithRawResponse(params);
+        assertNotNull(definitionListObject);
+        paginationJSON = (JSONObject) definitionListObject.get("pagination");
+        assertEquals(5l, paginationJSON.get("count"));
+        assertEquals(5l, paginationJSON.get("totalItems"));
+        assertEquals(0l, paginationJSON.get("skipCount"));
+        assertEquals(false, paginationJSON.get("hasMoreItems"));
     }
     
     @Test

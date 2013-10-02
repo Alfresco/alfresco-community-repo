@@ -69,6 +69,13 @@ public class WorkflowApiClient extends PublicApiClient
             HttpResponse response = getAll("deployments", null, null, null, params, "Failed to get deploymentsClient");
             return DeploymentParser.INSTANCE.parseList(response.getJsonResponse());
         }
+        
+        public JSONObject getDeploymentsWithRawResponse(Map<String, String> params) throws PublicApiException
+        {
+            HttpResponse response = getAll("deployments", null, null, null, params, "Failed to get deploymentsClient");
+            JSONObject list = (JSONObject) response.getJsonResponse().get("list");
+            return list;
+        }
 
         public ListResponse<Deployment> getDeployments() throws PublicApiException
         {
@@ -105,6 +112,13 @@ public class WorkflowApiClient extends PublicApiClient
         {
             HttpResponse response = getAll("process-definitions", null, null, null, params, "Failed to get process definitions");
             return ProcessDefinitionParser.INSTANCE.parseList(response.getJsonResponse());
+        }
+        
+        public JSONObject getProcessDefinitionsWithRawResponse(Map<String, String> params) throws PublicApiException
+        {
+            HttpResponse response = getAll("process-definitions", null, null, null, params, "Failed to get process definitions");
+            JSONObject list = (JSONObject) response.getJsonResponse().get("list");
+            return list;
         }
 
         public ProcessDefinition findProcessDefinitionById(String processDefinitionId) throws PublicApiException

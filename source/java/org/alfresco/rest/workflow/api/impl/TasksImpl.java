@@ -36,6 +36,7 @@ import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.IdentityLink;
 import org.activiti.engine.task.IdentityLinkType;
 import org.activiti.engine.task.TaskQuery;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -65,10 +66,11 @@ import org.alfresco.rest.workflow.api.model.TaskVariable;
 import org.alfresco.rest.workflow.api.model.VariableScope;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
@@ -123,6 +125,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     private WorkflowObjectFactory workflowFactory;
     private WorkflowQNameConverter qNameConverter;
     private MessageService messageService;
+    private PersonService personService;
     
     public void setRestVariableHelper(RestVariableHelper restVariableHelper)
     {
@@ -132,6 +135,11 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     public void setMessageService(MessageService messageService)
     {
         this.messageService = messageService;
+    }
+    
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
     }
     
     @Override
@@ -1054,9 +1062,63 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         {
             throw new InvalidArgumentException("Variable scope is required and can only be 'local' or 'global'.");
         }
-
+        
         DataTypeDefinition dataTypeDefinition = null;
-        if (taskVariable.getType() != null)
+        TypeDefinitionContext context = null;
+        if (taskVariable.getVariableScope() == VariableScope.GLOBAL)
+        {
+            // Get start-task definition for explicit typing of variables submitted at the start
+            String formKey = null;
+            StartFormData startFormData = activitiProcessEngine.getFormService().getStartFormData(taskInstance.getProcessDefinitionId());
+            if (startFormData != null)
+            {
+                formKey = startFormData.getFormKey();
+            }
+            
+            TypeDefinition startTaskTypeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(formKey, true);
+            context = new TypeDefinitionContext(startTaskTypeDefinition, getQNameConverter());
+            if (context.getPropertyDefinition(taskVariable.getName()) != null) 
+            {
+                dataTypeDefinition = context.getPropertyDefinition(taskVariable.getName()).getDataType();
+                if (taskVariable.getType() != null && dataTypeDefinition.getName().toPrefixString(namespaceService).equals(taskVariable.getType()) == false) {
+                    throw new InvalidArgumentException("type of variable " + taskVariable.getName() + " should be " + 
+                            dataTypeDefinition.getName().toPrefixString(namespaceService));
+                }
+            }
+            else if (context.getAssociationDefinition(taskVariable.getName()) != null) 
+            {
+                dataTypeDefinition = dictionaryService.getDataType(DataTypeDefinition.NODE_REF);
+            }
+        } 
+        else
+        {
+            // Revert to either the content-model type or the raw type provided by the request
+            try 
+            {
+                String formKey = activitiProcessEngine.getFormService().getTaskFormKey(taskInstance.getProcessDefinitionId(), taskInstance.getTaskDefinitionKey());
+                TypeDefinition typeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(formKey, false);
+                context = new TypeDefinitionContext(typeDefinition, getQNameConverter());
+                if (context.getPropertyDefinition(taskVariable.getName()) != null) 
+                {
+                    dataTypeDefinition = context.getPropertyDefinition(taskVariable.getName()).getDataType();
+                    if (taskVariable.getType() != null && dataTypeDefinition.getName().toPrefixString(namespaceService).equals(taskVariable.getType()) == false) {
+                        throw new InvalidArgumentException("type of variable " + taskVariable.getName() + " should be " + 
+                                dataTypeDefinition.getName().toPrefixString(namespaceService));
+                    }
+                }
+                else if (context.getAssociationDefinition(taskVariable.getName()) != null) 
+                {
+                    dataTypeDefinition = dictionaryService.getDataType(DataTypeDefinition.NODE_REF);
+                }
+            }
+            catch (InvalidQNameException ignore)
+            {
+                // In case the property is not part of the model, it's possible that the property-name is not a valid.
+                // This can be ignored safeley as it falls back to the raw type
+            }
+        }
+        
+        if (dataTypeDefinition == null && taskVariable.getType() != null)
         {
             try
             {
@@ -1067,41 +1129,11 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             {
                 throw new InvalidArgumentException("Unsupported type of variable: '" + taskVariable.getType() +"'.");
             }
-        } 
-        else
+        }
+        else if (dataTypeDefinition == null)
         {
-            // Revert to either the content-model type or the raw type provided by the request
-            try 
-            {
-                String formKey = activitiProcessEngine.getFormService().getTaskFormKey(taskInstance.getProcessDefinitionId(), taskInstance.getTaskDefinitionKey());
-                TypeDefinition typeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(formKey, false);
-                QName propQName = WorkflowQNameConverter.convertNameToQName(taskVariable.getName(), namespaceService);
-                
-                PropertyDefinition propDef = typeDefinition.getProperties().get(propQName);
-                if (propDef != null)
-                {
-                    dataTypeDefinition = propDef.getDataType();
-                }
-                else
-                {
-                    AssociationDefinition assocDef = typeDefinition.getAssociations().get(propQName);
-                    if(assocDef != null)
-                    {
-                        dataTypeDefinition = dictionaryService.getDataType(DataTypeDefinition.NODE_REF);
-                    }
-                }
-            }
-            catch (InvalidQNameException ignore)
-            {
-                // In case the property is not part of the model, it's possible that the property-name is not a valid.
-                // This can be ignored safeley as it falls back to the raw type
-            }
-            
-            if (dataTypeDefinition == null)
-            {
-                // Final fallback to raw value when no type has been passed and not present in model
-                dataTypeDefinition = dictionaryService.getDataType(restVariableHelper.extractTypeFromValue(taskVariable.getValue()));
-            }
+            // Final fallback to raw value when no type has been passed and not present in model
+            dataTypeDefinition = dictionaryService.getDataType(restVariableHelper.extractTypeFromValue(taskVariable.getValue()));
         }
         
         if (dataTypeDefinition == null)
@@ -1117,7 +1149,15 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         else
         {
-            actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, taskVariable.getValue());
+            if (context != null && context.getAssociationDefinition(taskVariable.getName()) != null)
+            {
+                actualValue = convertAssociationDefinitionValue(context.getAssociationDefinition(taskVariable.getName()), 
+                        taskVariable.getName(), taskVariable.getValue());
+            }
+            else
+            {
+                actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, taskVariable.getValue());
+            }
         }
         
         taskVariable.setValue(actualValue);
@@ -1554,6 +1594,92 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         {
             query.orderByTaskDueDate().asc();
         }
+    }
+    
+    protected Object convertAssociationDefinitionValue(AssociationDefinition associationDef, String variableName, Object variableValue) 
+    {
+        if (variableValue != null && ContentModel.TYPE_PERSON.equals(associationDef.getTargetClass().getName()))
+        {
+            if (associationDef.isTargetMany())
+            {
+                if (variableValue instanceof List<?>)
+                {
+                    List<NodeRef> personList = new ArrayList<NodeRef>();
+                    List<?> values = (List<?>) variableValue;
+                    for (Object value : values)
+                    {
+                        NodeRef personRef = getPersonNodeRef(value.toString());
+                        if (personRef == null)
+                        {
+                            throw new InvalidArgumentException(value.toString() + " is not a valid person user id");
+                        }
+                        personList.add(personRef);
+                    }
+                    variableValue = personList;
+                }
+                else
+                {
+                    throw new InvalidArgumentException(variableName + " should have an array value");
+                }
+            }
+            else
+            {
+                NodeRef personRef = getPersonNodeRef(variableValue.toString());
+                if (personRef == null)
+                {
+                    throw new InvalidArgumentException(variableValue.toString() + " is not a valid person user id");
+                }
+                variableValue = personRef;
+            }
+        }
+        else if (variableValue != null && ContentModel.TYPE_AUTHORITY_CONTAINER.equals(associationDef.getTargetClass().getName()))
+        {
+            if (associationDef.isTargetMany())
+            {
+                if (variableValue instanceof List<?>)
+                {
+                    List<NodeRef> authorityList = new ArrayList<NodeRef>();
+                    List<?> values = (List<?>) variableValue;
+                    for (Object value : values)
+                    {
+                        NodeRef authorityRef = authorityService.getAuthorityNodeRef(value.toString());
+                        if (authorityRef == null)
+                        {
+                            throw new InvalidArgumentException(value.toString() + " is not a valid authority id");
+                        }
+                        authorityList.add(authorityRef);
+                    }
+                    variableValue = authorityList;
+                }
+                else
+                {
+                    throw new InvalidArgumentException(variableName + " should have an array value");
+                }
+            }
+            else
+            {
+                NodeRef authorityRef = authorityService.getAuthorityNodeRef(variableValue.toString());
+                if (authorityRef == null)
+                {
+                    throw new InvalidArgumentException(variableValue.toString() + " is not a valid authority id");
+                }
+                variableValue = authorityRef;
+            }
+        }
+        return variableValue;
+    }
+    
+    protected NodeRef getPersonNodeRef(String name)
+    {
+        NodeRef authority = null;
+        if (name != null)
+        {
+            if (personService.personExists(name))
+            {
+                authority = personService.getPerson(name);
+            }
+        }
+        return authority;
     }
     
     protected WorkflowQNameConverter getQNameConverter()

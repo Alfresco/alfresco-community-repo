@@ -57,6 +57,7 @@ public class DeploymentsImpl extends WorkflowRestImpl implements Deployments
         
         query.orderByDeploymenTime().desc();
         List<org.activiti.engine.repository.Deployment> deployments = query.listPage(paging.getSkipCount(), paging.getMaxItems());
+        int totalCount = (int) query.count();
 
         List<Deployment> page = new ArrayList<Deployment>(deployments.size());
         for (org.activiti.engine.repository.Deployment deployment: deployments) 
@@ -64,7 +65,7 @@ public class DeploymentsImpl extends WorkflowRestImpl implements Deployments
             page.add(new Deployment(deployment));
         }
           
-        return CollectionWithPagingInfo.asPaged(paging, page, false, page.size());
+        return CollectionWithPagingInfo.asPaged(paging, page, page.size() != totalCount, totalCount);
     }
     
     @Override

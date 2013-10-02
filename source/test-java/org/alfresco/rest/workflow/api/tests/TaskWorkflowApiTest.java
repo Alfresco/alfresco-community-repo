@@ -1106,7 +1106,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             JSONObject variableBody = new JSONObject();
             variableBody.put("name", "bpm_workflowDueDate");
             variableBody.put("value", formatDate(new Date()));
-            variableBody.put("type", "d:datetime");
+            variableBody.put("type", "d:date");
             variableBody.put("scope", "global");
             
             tasksClient.updateTaskVariable(task.getId(), "bpm_workflowDueDate", variableBody);
@@ -2394,6 +2394,179 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         finally
         {
             cleanupProcessInstance(processInstance);
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testUpdateTaskVariableWithWrongType() throws Exception
+    {
+        final RequestContext requestContext = initApiClientWithTestUser();
+        
+        ProcessInfo processRest = startParallelReviewProcess(requestContext);
+        
+        try
+        {
+            List<Task> tasks = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processRest.getId()).list();
+            assertNotNull(tasks);
+            
+            String taskId = tasks.get(0).getId();
+            
+            // Update an existing variable with wrong type
+            JSONObject variableJson = new JSONObject();
+            variableJson.put("name", "wf_requiredApprovePercent");
+            variableJson.put("value", 55.99);
+            variableJson.put("type", "d:double");
+            variableJson.put("scope", "global");
+            
+            try 
+            {
+                publicApiClient.tasksClient().updateTaskVariable(taskId, "wf_requiredApprovePercent", variableJson);
+                fail("Exception expected");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
+            }
+            
+            variableJson = new JSONObject();
+            variableJson.put("name", "wf_requiredApprovePercent");
+            variableJson.put("value", 55.99);
+            variableJson.put("type", "d:int");
+            variableJson.put("scope", "global");
+            
+            JSONObject resultEntry = publicApiClient.tasksClient().updateTaskVariable(taskId, "wf_requiredApprovePercent", variableJson);
+            assertNotNull(resultEntry);
+            JSONObject result = (JSONObject) resultEntry.get("entry");
+            
+            assertEquals("wf_requiredApprovePercent", result.get("name"));
+            assertEquals(55l, result.get("value"));
+            assertEquals("d:int", result.get("type"));
+            assertEquals(55, activitiProcessEngine.getRuntimeService().getVariable(processRest.getId(), "wf_requiredApprovePercent"));
+            
+            JSONObject taskVariables = publicApiClient.tasksClient().findTaskVariables(taskId);
+            assertNotNull(taskVariables);
+            JSONObject list = (JSONObject) taskVariables.get("list");
+            assertNotNull(list);
+            
+            // Add process variables to map for easy lookup
+            Map<String, JSONObject> variablesByName = new HashMap<String, JSONObject>();
+            JSONObject entry = null;
+            JSONArray entries = (JSONArray) list.get("entries");
+            assertNotNull(entries);
+            for(int i=0; i<entries.size(); i++) 
+            {
+                entry = (JSONObject) entries.get(i);
+                assertNotNull(entry);
+                entry = (JSONObject) entry.get("entry");
+                assertNotNull(entry);
+                variablesByName.put((String) entry.get("name"), entry);
+            }
+            
+            JSONObject approvePercentObject = variablesByName.get("wf_requiredApprovePercent");
+            assertNotNull(approvePercentObject);
+            assertEquals(55l, approvePercentObject.get("value"));
+            assertEquals("d:int", approvePercentObject.get("type"));
+            
+            // set a new variable
+            variableJson = new JSONObject();
+            variableJson.put("name", "testVariable");
+            variableJson.put("value", "text");
+            variableJson.put("type", "d:text");
+            variableJson.put("scope", "local");
+            
+            resultEntry = publicApiClient.tasksClient().updateTaskVariable(taskId, "testVariable", variableJson);
+            assertNotNull(resultEntry);
+            result = (JSONObject) resultEntry.get("entry");
+            
+            assertEquals("testVariable", result.get("name"));
+            assertEquals("text", result.get("value"));
+            assertEquals("d:text", result.get("type"));
+            assertEquals("text", activitiProcessEngine.getTaskService().getVariable(taskId, "testVariable"));
+            
+            // change the variable value and type (should be working because no content model type)
+            variableJson = new JSONObject();
+            variableJson.put("name", "testVariable");
+            variableJson.put("value", 123);
+            variableJson.put("type", "d:int");
+            variableJson.put("scope", "local");
+            
+            resultEntry = publicApiClient.tasksClient().updateTaskVariable(taskId, "testVariable", variableJson);
+            assertNotNull(resultEntry);
+            result = (JSONObject) resultEntry.get("entry");
+            
+            assertEquals("testVariable", result.get("name"));
+            assertEquals(123l, result.get("value"));
+            assertEquals("d:int", result.get("type"));
+            assertEquals(123, activitiProcessEngine.getTaskService().getVariable(taskId, "testVariable"));
+            
+            // change the variable value for a list of noderefs (bpm_assignees)
+            final JSONObject updateAssigneesJson = new JSONObject();
+            updateAssigneesJson.put("name", "bpm_assignees");
+            updateAssigneesJson.put("type", "d:noderef");
+            updateAssigneesJson.put("scope", "global");
+            
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    JSONArray assigneeArray = new JSONArray();
+                    assigneeArray.add(requestContext.getRunAsUser());
+                    updateAssigneesJson.put("value", assigneeArray);
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            
+            resultEntry = publicApiClient.tasksClient().updateTaskVariable(taskId, "bpm_assignees", updateAssigneesJson);
+            assertNotNull(resultEntry);
+            final JSONObject updateAssigneeResult = (JSONObject) resultEntry.get("entry");
+            
+            assertEquals("bpm_assignees", updateAssigneeResult.get("name"));
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    JSONArray assigneeArray = (JSONArray) updateAssigneeResult.get("value");
+                    assertNotNull(assigneeArray);
+                    assertEquals(1, assigneeArray.size());
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            
+            assertEquals("d:noderef", updateAssigneeResult.get("type"));
+            
+            // update the bpm_assignees with a single entry, should result in an error
+            final JSONObject updateAssigneeJson = new JSONObject();
+            updateAssigneeJson.put("name", "bpm_assignees");
+            updateAssigneeJson.put("type", "d:noderef");
+            updateAssigneeJson.put("scope", "global");
+            
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    updateAssigneeJson.put("value", requestContext.getRunAsUser());
+                    return null;
+                }
+            }, requestContext.getRunAsUser(), requestContext.getNetworkId());
+            
+            try 
+            {
+                publicApiClient.tasksClient().updateTaskVariable(taskId, "bpm_assignees", updateAssigneeJson);
+                fail("Exception expected");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
+            }
+            
+        }
+        finally
+        {
+            cleanupProcessInstance(processRest.getId());
         }
     }
     

@@ -129,8 +129,14 @@ public class RMv21CapabilityPatch extends ModulePatchComponent
                           FilePlanRoleService.ROLE_ADMIN, 
                           FilePlanRoleService.ROLE_POWER_USER, 
                           FilePlanRoleService.ROLE_RECORDS_MANAGER,
-                          FilePlanRoleService.ROLE_SECURITY_OFFICER);         
-        }
+                          FilePlanRoleService.ROLE_SECURITY_OFFICER);     
+            addCapability(filePlan,
+                          "LinkToRecords", 
+                          FilePlanRoleService.ROLE_ADMIN, 
+                          FilePlanRoleService.ROLE_POWER_USER, 
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                          FilePlanRoleService.ROLE_SECURITY_OFFICER);    
+}
     }   
     
     /**

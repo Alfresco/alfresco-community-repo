@@ -370,12 +370,20 @@ public class RecordCopyBehaviours implements RecordsManagementModel
         final NodeService nodeService = rmServiceRegistry.getNodeService();
         
         //Generate the id for the copy
-        String id = rmIdentifierService.generateIdentifier(nodeService.getType(nodeService.getPrimaryParent(targetNodeRef).getParentRef()), (nodeService.getPrimaryParent(targetNodeRef).getParentRef()));
+        String id = rmIdentifierService.generateIdentifier(
+                                            nodeService.getType(nodeService.getPrimaryParent(targetNodeRef).getParentRef()), 
+                                            (nodeService.getPrimaryParent(targetNodeRef).getParentRef()));
         
         //We need to allow the id to be overwritten disable the policy protecting changes to the id
-        behaviourFilter.disableBehaviour(targetNodeRef, ASPECT_RECORD_COMPONENT_ID);
-        nodeService.setProperty(targetNodeRef, PROP_IDENTIFIER, id);
-        behaviourFilter.enableBehaviour(targetNodeRef, ASPECT_RECORD_COMPONENT_ID);
+        behaviourFilter.disableBehaviour();
+        try
+        {
+            nodeService.setProperty(targetNodeRef, PROP_IDENTIFIER, id);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour();
+        }
     }
     
     /**

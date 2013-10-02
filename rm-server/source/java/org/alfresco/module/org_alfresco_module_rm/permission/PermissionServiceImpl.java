@@ -1057,6 +1057,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 			{
 				String result = perm;
 				if ("Read".equals(perm) == true  && 
+                    nodeService.exists(nodeRef) &&
 					nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) == true)
 				{
 					result = "ReadRecords";

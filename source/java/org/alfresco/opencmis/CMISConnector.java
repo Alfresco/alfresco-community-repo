@@ -1225,7 +1225,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public CmisVersion getRequestCmisVersion()
     {
         CallContext callContext = AlfrescoCmisServiceCall.get();
-        CmisVersion cmisVersion = callContext.getCmisVersion();
+        CmisVersion cmisVersion = (callContext != null ? callContext.getCmisVersion() : CmisVersion.CMIS_1_0);
         return cmisVersion;
     }
 

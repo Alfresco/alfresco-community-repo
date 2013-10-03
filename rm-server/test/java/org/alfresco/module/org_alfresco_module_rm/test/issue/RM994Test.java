@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,6 +28,7 @@ import org.alfresco.service.cmr.repository.Period;
  * System test for RM-994
  * 
  * @author Roy Wetherall
+ * @since 2.1
  */
 public class RM994Test extends BaseRMTestCase 
 {    

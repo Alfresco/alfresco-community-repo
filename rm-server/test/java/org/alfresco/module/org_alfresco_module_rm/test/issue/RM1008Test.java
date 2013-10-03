@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -42,6 +42,7 @@ import org.alfresco.util.GUID;
  * System test for RM-1008
  * 
  * @author Roy Wetherall
+ * @since 2.1
  */
 public class RM1008Test extends BaseRMTestCase 
 {    

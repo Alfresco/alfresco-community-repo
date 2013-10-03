@@ -1289,7 +1289,7 @@
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.getCustomMappings=RM_CAP.-1.rma:filePlanComponent.MapEmailMetadata
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.addCustomMapping=RM_CAP.-1.rma:filePlanComponent.MapEmailMetadata
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.deleteCustomMapping=RM_CAP.-1.rma:filePlanComponent.MapEmailMetadata
-                    org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.getEmailMappingKeys=RM_ALLOW
+                    org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.getEmailMappingKeys=RM_CAP.-1.rma:filePlanComponent.MapEmailMetadata
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.*=RM_DENY
                 ]]>
             </value>

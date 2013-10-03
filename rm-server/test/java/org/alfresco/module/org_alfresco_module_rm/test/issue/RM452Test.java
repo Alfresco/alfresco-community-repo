@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,6 +29,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.TestService;
  * See alfresco.extension.rm-method-security.properties
  * 
  * @author Roy Wetherall
+ * @since 2.1
  */
 public class RM452Test extends BaseRMTestCase 
 {

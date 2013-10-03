@@ -333,13 +333,17 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
             List<NodeRef> records = recordsManagementService.getRecords(nodeRef);
             for (NodeRef record : records)
             {
-                nodeService.addAspect(record, ASPECT_FROZEN, props);
-
-                if (logger.isDebugEnabled())
+                // no need to freeze if already frozen!
+                if (nodeService.hasAspect(record, ASPECT_FROZEN) == false)
                 {
-                    StringBuilder msg = new StringBuilder();
-                    msg.append("Frozen aspect applied to '").append(record).append("'.");
-                    logger.debug(msg.toString());
+                    nodeService.addAspect(record, ASPECT_FROZEN, props);
+
+                    if (logger.isDebugEnabled())
+                    {
+                        StringBuilder msg = new StringBuilder();
+                        msg.append("Frozen aspect applied to '").append(record).append("'.");
+                        logger.debug(msg.toString());
+                    }
                 }
             }
         }

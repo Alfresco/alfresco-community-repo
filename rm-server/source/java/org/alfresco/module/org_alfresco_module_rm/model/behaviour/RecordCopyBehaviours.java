@@ -279,6 +279,21 @@ public class RecordCopyBehaviours implements RecordsManagementModel
         {
             final NodeService nodeService = rmServiceRegistry.getNodeService();
             
+            @Override
+            public Map<QName, Serializable> getCopyProperties(QName classRef, CopyDetails copyDetails,  Map<QName, Serializable> properties)
+            {
+                Map<QName, Serializable> sourceProperties = super.getCopyProperties(classRef, copyDetails, properties);
+                
+                // ensure that the 'closed' status of the record folder is not copied
+                if (sourceProperties.containsKey(PROP_IS_CLOSED))
+                {
+                    sourceProperties.remove(PROP_IS_CLOSED);
+                }
+
+                return sourceProperties;
+            }
+            
+            
             /**
              * If the targets parent is a Record Folder -- Do Not Allow Copy
              * 
@@ -289,7 +304,18 @@ public class RecordCopyBehaviours implements RecordsManagementModel
             @Override
             public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
             {
-                return nodeService.getType(copyDetails.getTargetParentNodeRef()).equals(TYPE_RECORD_FOLDER) ? false : true;
+                boolean result = true;
+                
+                if (nodeService.getType(copyDetails.getTargetParentNodeRef()).equals(TYPE_RECORD_FOLDER) == true)
+                {
+                    result = false;
+                }
+                else if (unwantedAspects.contains(classQName) == true)
+                {
+                    result = false;
+                }
+                
+                return result;
             }
         };
     }

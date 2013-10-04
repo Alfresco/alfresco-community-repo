@@ -79,8 +79,10 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (recordService.isRecord(actionedUponNodeRef) == true && 
-            nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) == false)
+        if (nodeService.exists(actionedUponNodeRef) == true &&
+            nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) == false &&
+            recordService.isRecord(actionedUponNodeRef) == true && 
+            recordService.isDeclared(actionedUponNodeRef) == false)
         {
             String workflowDefinitionId = workflowService.getDefinitionByName(REQUEST_INFO_WORKFLOW_DEFINITION_NAME).getId();
             Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
@@ -94,7 +96,7 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
         }
         else
         {
-            logger.info("The node '" + actionedUponNodeRef.toString() + "' is not a record so a workflow will not be started for it." );
+            logger.info("Can't start the request information workflow for node '" + actionedUponNodeRef.toString() + "'." );
         }
     }
 

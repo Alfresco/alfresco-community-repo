@@ -81,6 +81,41 @@ task localisationPackage (dependsOn: [':rm-server:assembleLocalisationPackage', 
 	}
 }
 
+/** Icon extraction */
+
+task iconPackage (dependsOn: [':rm-server:assembleIconPackage', ':rm-share:assembleIconPackage']) << {
+
+	distDirFile = file('dist')
+	if (distDirFile.exists() == false) {
+		distDirFile.mkdirs();
+	}	
+	
+	def svnVersion
+	new ByteArrayOutputStream().withStream { os ->
+		
+		def result = exec {
+			executable = 'svn'
+			args = ['info']
+			standardOutput = os
+		}
+		
+		def outputAsString = os.toString()
+		def matchLastChangedRev = outputAsString =~ /Last Changed Rev: (\d+)/
+		svnVersion = matchLastChangedRev[0][1]
+	}
+		
+	iconPackageZipFile = "icons-${groupid}-${packageName}-${version}-r${svnVersion}.zip"
+	
+	alfrescoIconPackage = "${project(':rm-server').name}/${project(':rm-server').iconDir}"
+	shareIconPackage = "${project(':rm-share').name}/${project(':rm-share').iconDir}"
+
+	ant.zip(destfile: "${distDir}/${iconPackageZipFile}", update: 'true') {	
+		
+		ant.zipfileset(dir: "${alfrescoIconPackage}")
+		ant.zipfileset(dir: "${shareIconPackage}")
+	}
+}
+
 /** Subproject configuration */
 subprojects {
 
@@ -99,6 +134,7 @@ subprojects {
 	sourceWebDir = 'source/web'
 	assembleDir = 'build/assemble'
 	i18nDir = 'build/i18n'
+	iconDir = 'build/icon'
 	testJavaDir = 'test/java'
 	testResourceDir = 'test/resources'
 	configDir = 'config'
@@ -263,6 +299,7 @@ subprojects {
 	task assembleLocalisationPackage << {
 	
 		delete i18nDir
+		file(i18nDir).mkdirs()
 	
 		copy {
 			from configDir
@@ -273,7 +310,23 @@ subprojects {
 			exclude '**/log4j.properties'
 			exclude '**/module.properties'
 			exclude '**/file-mapping.properties'
-			into "${i18nDir}/${project.name}"	
+			into "${i18nDir}/${project.name}/${configDir}"	
+            includeEmptyDirs = false 			
+		}
+	
+	}
+	
+	task assembleIconPackage << {
+	
+		delete iconDir
+		file(iconDir).mkdirs()
+	
+		copy {
+			from '.'
+			include '**/*.png'
+			exclude 'build'
+			exclude "${explodedDepsDir}"
+			into "${iconDir}/${project.name}"	
             includeEmptyDirs = false 			
 		}
 	

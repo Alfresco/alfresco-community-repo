@@ -26,21 +26,21 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.namespace.QName;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 /**
  * Implementation for Java backed webscript to add RM custom reference instances
  * to a node.
- * 
+ *
  * @author Neil McErlean
  */
 public class CustomRefPost extends AbstractRmWebScript
@@ -48,15 +48,27 @@ public class CustomRefPost extends AbstractRmWebScript
     private static final String TO_NODE = "toNode";
     private static final String REF_ID = "refId";
 
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(CustomRefPost.class);
-    
+    /** RM Admin Service */
     private RecordsManagementAdminService rmAdminService;
-    
+
+    /** Rule Service */
+    private RuleService ruleService;
+
+    /**
+     * @param rmAdminService    RM Admin Service
+     */
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
-		this.rmAdminService = rmAdminService;
-	}
+        this.rmAdminService = rmAdminService;
+    }
+
+    /**
+     * @param ruleService   Rule Service
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
 
     /*
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
@@ -68,8 +80,10 @@ public class CustomRefPost extends AbstractRmWebScript
         Map<String, Object> ftlModel = null;
         try
         {
+            ruleService.disableRuleType(RuleType.INBOUND);
+
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
+
             ftlModel = addCustomReferenceInstance(req, json);
         }
         catch (IOException iox)
@@ -82,10 +96,14 @@ public class CustomRefPost extends AbstractRmWebScript
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                         "Could not parse JSON from req.", je);
         }
-        
+        finally
+        {
+            ruleService.enableRuleType(RuleType.INBOUND);
+        }
+
         return ftlModel;
     }
-    
+
     /**
      * Applies custom reference.
      */
@@ -94,7 +112,7 @@ public class CustomRefPost extends AbstractRmWebScript
         NodeRef fromNode = parseRequestForNodeRef(req);
 
         Map<String, Object> result = new HashMap<String, Object>();
-        
+
         String toNodeStg = json.getString(TO_NODE);
         NodeRef toNode = new NodeRef(toNodeStg);
 
@@ -105,9 +123,9 @@ public class CustomRefPost extends AbstractRmWebScript
             throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
             		"Unable to find reference type: " + clientsRefId);
         }
-        
+
         rmAdminService.addCustomReference(fromNode, toNode, qn);
-        
+
         result.put("success", true);
 
         return result;

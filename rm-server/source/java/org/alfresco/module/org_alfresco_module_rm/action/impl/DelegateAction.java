@@ -67,6 +67,12 @@ public class DelegateAction extends RMActionExecuterAbstractBase
         if (nodeService.exists(actionedUponNodeRef) == true &&
             (checkFrozen == false || freezeService.isFrozen(actionedUponNodeRef) == false))
         {
+            // do the property subs (if any exist)
+            if (allowParameterSubstitutions == true)
+            {
+               parameterProcessorComponent.process(action, delegateActionExecuter.getActionDefinition(), actionedUponNodeRef);
+            }
+            
             delegateActionExecuter.execute(action, actionedUponNodeRef);
         }
     }

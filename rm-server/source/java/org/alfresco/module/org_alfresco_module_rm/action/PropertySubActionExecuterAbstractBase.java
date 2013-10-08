@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public abstract class PropertySubActionExecuterAbstractBase extends AuditableActionExecuterAbstractBase
 {
 	/** Parameter processor component */
-    private ParameterProcessorComponent parameterProcessorComponent;
+    protected ParameterProcessorComponent parameterProcessorComponent;
     
     /** Indicates whether parameter substitutions are allowed */
     protected boolean allowParameterSubstitutions = false;

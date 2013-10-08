@@ -940,6 +940,7 @@
       <property name="delegateAction" ref="set-property-value" />
       <property name="adhocPropertiesAllowed" value="true" />
       <property name="checkFrozen" value="true" />
+      <property name="allowParameterSubstitutions" value="true" />
    </bean>
 
    <!-- add record types -->

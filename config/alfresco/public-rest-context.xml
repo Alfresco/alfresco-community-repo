@@ -142,9 +142,14 @@
 		/> <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" 
 		/> -->
 
-    <bean id="apiWebScriptParent" abstract="true" parent="webscript">
+    <bean id="apiWebScriptParent" abstract="true" parent="webscript" init-method="init">
         <property name="resolver" ref="simpleMappingExceptionResolver" />
         <property name="jsonHelper" ref="jsonHelper" />
+        <property name="encryptTempFiles" value="${webscripts.encryptTempFiles}"/>
+        <property name="tempDirectoryName" value="${webscripts.tempDirectoryName}"/>
+        <property name="memoryThreshold" value="${webscripts.memoryThreshold}"/>
+        <property name="maxContentSize" value="${webscripts.setMaxContentSize}"/>
+        <property name="transactionService" ref="transactionService" />
     </bean>
  
     <alias name="webscript.org.alfresco.api.ResourceWebScript.get" alias="executorForHttpGet"/>
@@ -159,7 +164,6 @@
 	        class="org.alfresco.rest.framework.webscripts.ResourceWebScriptGet" parent="apiWebScriptParent">              
         <property name="helper" ref="webscriptHelper" />
         <property name="locator" ref="apiLookup" />
-        <property name="transactionService" ref="transactionService" />
         <property name="streamer" ref="webscript.content.streamer" />   
 	</bean>
 	
@@ -167,7 +171,6 @@
             class="org.alfresco.rest.framework.webscripts.ResourceWebScriptPost" parent="apiWebScriptParent">
         <property name="helper" ref="webscriptHelper" />
         <property name="locator" ref="apiLookup" />        
-        <property name="transactionService" ref="transactionService" />
         <property name="streamer" ref="webscript.content.streamer" />
    </bean>
  
@@ -175,7 +178,6 @@
             class="org.alfresco.rest.framework.webscripts.ResourceWebScriptPut" parent="apiWebScriptParent">
         <property name="helper" ref="webscriptHelper" />
         <property name="locator" ref="apiLookup" />
-        <property name="transactionService" ref="transactionService" />
         <property name="streamer" ref="webscript.content.streamer" />
    </bean>
     
@@ -183,7 +185,6 @@
             class="org.alfresco.rest.framework.webscripts.ResourceWebScriptDelete" parent="apiWebScriptParent">
         <property name="helper" ref="webscriptHelper" />
         <property name="locator" ref="apiLookup" />
-        <property name="transactionService" ref="transactionService" />
         <property name="streamer" ref="webscript.content.streamer" />
    </bean>
 
@@ -702,16 +703,14 @@
     </bean>
 
     <bean   id="getNetworksWebScript" 
-           class="org.alfresco.rest.api.NetworksWebScriptGet">
+           class="org.alfresco.rest.api.NetworksWebScriptGet" parent="apiWebScriptParent">
         <property name="networks" ref="Networks" />
-        <property name="jsonHelper" ref="jsonHelper" />
         <property name="helper" ref="webscriptHelper" />
     </bean>
 
     <bean   id="getNetworkWebScript" 
-           class="org.alfresco.rest.api.NetworkWebScriptGet">
+           class="org.alfresco.rest.api.NetworkWebScriptGet" parent="apiWebScriptParent">
         <property name="networks" ref="Networks" />
-        <property name="jsonHelper" ref="jsonHelper" />
         <property name="helper" ref="webscriptHelper" />
     </bean>
 

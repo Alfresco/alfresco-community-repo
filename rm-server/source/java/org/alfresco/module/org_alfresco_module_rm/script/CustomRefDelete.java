@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -37,19 +39,35 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Implementation for Java backed webscript to remove RM custom reference instances
  * from a node.
- * 
+ *
  * @author Neil McErlean
  */
 public class CustomRefDelete extends AbstractRmWebScript
 {
+    /** Logger */
     private static Log logger = LogFactory.getLog(CustomRefDelete.class);
-    
+
+    /** RM Admin Service */
     private RecordsManagementAdminService rmAdminService;
 
+    /** Rule Service */
+    private RuleService ruleService;
+
+    /**
+     * @param rmAdminService    RM Admin Service
+     */
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
 		this.rmAdminService = rmAdminService;
 	}
+
+    /**
+     * @param ruleService   Rule Service
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
 
     /*
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
@@ -57,11 +75,21 @@ public class CustomRefDelete extends AbstractRmWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> ftlModel = removeCustomReferenceInstance(req);
-        
+        Map<String, Object> ftlModel;
+        ruleService.disableRuleType(RuleType.OUTBOUND);
+
+        try
+        {
+            ftlModel = removeCustomReferenceInstance(req);
+        }
+        finally
+        {
+            ruleService.enableRuleType(RuleType.OUTBOUND);
+        }
+
         return ftlModel;
     }
-    
+
     /**
      * Removes custom reference.
      */
@@ -73,19 +101,19 @@ public class CustomRefDelete extends AbstractRmWebScript
         String storeType = req.getParameter("st");
         String storeId = req.getParameter("si");
         String nodeId = req.getParameter("id");
-        
+
         // create the NodeRef and ensure it is valid
         StoreRef storeRef = new StoreRef(storeType, storeId);
         NodeRef toNodeRef = new NodeRef(storeRef, nodeId);
-        
+
         if (!this.nodeService.exists(toNodeRef))
         {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find to-node: " + 
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find to-node: " +
             		toNodeRef.toString());
         }
 
         Map<String, Object> result = new HashMap<String, Object>();
-        
+
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String clientsRefId = templateVars.get("refId");
         QName qn = rmAdminService.getQNameForClientId(clientsRefId);
@@ -94,7 +122,7 @@ public class CustomRefDelete extends AbstractRmWebScript
             throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
             		"Unable to find reference type: " + clientsRefId);
         }
-        
+
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
@@ -102,10 +130,10 @@ public class CustomRefDelete extends AbstractRmWebScript
                 .append(fromNodeRef).append(" to ").append(toNodeRef);
             logger.debug(msg.toString());
         }
-        
+
         rmAdminService.removeCustomReference(fromNodeRef, toNodeRef, qn);
         rmAdminService.removeCustomReference(toNodeRef, fromNodeRef, qn);
-        
+
         result.put("success", true);
 
         return result;

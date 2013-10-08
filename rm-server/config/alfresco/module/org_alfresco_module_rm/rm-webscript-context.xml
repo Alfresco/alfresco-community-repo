@@ -106,6 +106,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefDelete"
       parent="rmBaseWebscript">
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+      <property name="ruleService" ref="RuleService" />
    </bean>
 
    <!-- REST impl for GET Disposition Schedule -->

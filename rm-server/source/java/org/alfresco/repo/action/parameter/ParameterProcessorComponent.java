@@ -25,10 +25,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.action.ParameterizedItem;
 import org.alfresco.service.cmr.action.ParameterizedItemDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -66,20 +64,14 @@ public class ParameterProcessorComponent
         for (Map.Entry<String, Serializable> entry : ruleItem.getParameterValues().entrySet())
         {
             String parameterName = entry.getKey();            
-            
-            // get the parameter definition
-            ParameterDefinition def = ruleItemDefinition.getParameterDefintion(parameterName);
-            if (def != null)
+            Object parameterValue = entry.getValue();
+                
+            // only sub string property values
+            if (parameterValue != null && parameterValue instanceof String)
             {
-                if (DataTypeDefinition.TEXT.equals(def.getType()) == true)
-                {
-                    // get the parameter value
-                    String parameterValue = (String)entry.getValue();
-                    
-                    // set the updated parameter value
-                    ruleItem.setParameterValue(parameterName, process(parameterValue, actionedUponNodeRef));
-                }
-            }            
+                // set the updated parameter value
+                ruleItem.setParameterValue(parameterName, process((String)parameterValue, actionedUponNodeRef));
+            }
         }        
     }
     

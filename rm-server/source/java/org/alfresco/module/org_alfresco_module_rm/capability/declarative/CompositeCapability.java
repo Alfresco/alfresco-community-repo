@@ -91,25 +91,35 @@ public class CompositeCapability extends DeclarativeCapability
     {
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
         
-        if (targetCapability != null)
+        // Check we are dealing with a file plan component
+        if (filePlanService.isFilePlanComponent(source) == true && 
+            filePlanService.isFilePlanComponent(target) == true)
         {
-            result = super.evaluate(source, target);
-        }
-        else
-        {
-         // Check each capability using 'OR' logic
-            for (Capability capability : capabilities)
+            // Check the kind of the object, the permissions and the conditions
+            if (checkKinds(source) == true && checkPermissions(source) == true && checkConditions(source) == true)
             {
-                int capabilityResult = capability.evaluate(source, target);
-                if (capabilityResult != AccessDecisionVoter.ACCESS_DENIED) 
+                if (targetCapability != null)
                 {
-                    result = AccessDecisionVoter.ACCESS_ABSTAIN;
-                    if (isUndetermined() == false && capabilityResult == AccessDecisionVoter.ACCESS_GRANTED)
-                    {
-                        result = AccessDecisionVoter.ACCESS_GRANTED;
-                    }
-                    break;
+                    result = targetCapability.evaluate(target);
                 }
+                
+                if (AccessDecisionVoter.ACCESS_DENIED != result)
+                {
+                    // Check each capability using 'OR' logic
+                    for (Capability capability : capabilities)
+                    {
+                        result = capability.evaluate(source, target);
+                        if (result == AccessDecisionVoter.ACCESS_GRANTED) 
+                        {                            
+                            break;
+                        }
+                    }
+                    
+                }
+            }
+            else
+            {
+                result = AccessDecisionVoter.ACCESS_DENIED;
             }
         }
         

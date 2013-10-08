@@ -208,21 +208,34 @@ public class DispositionServiceImpl implements
     {
         if (nodeService.exists(nodeRef) == true)
         {
-            // get this disposition instructions for the node
-            DispositionSchedule di = getDispositionSchedule(nodeRef);
-            if (di != null)
-            {                       
-                List<DispositionActionDefinition> dispositionActionDefinitions = di.getDispositionActionDefinitions();            
-                if (dispositionActionDefinitions.isEmpty() == false)
-                {
-                    // get the first disposition action definition
-                    DispositionActionDefinition nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
-                    
-                    // initialise the details of the next disposition action
-                    initialiseDispositionAction(nodeRef, nextDispositionActionDefinition);
-                }
+            refreshDispositionAction(nodeRef);
+        }
+    }
+    
+    /**
+     * Helper method used to refresh the dispostion action details of the given node.
+     * 
+     * @param nodeRef   node reference
+     */
+    public void refreshDispositionAction(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
+        // get this disposition instructions for the node
+        DispositionSchedule di = getDispositionSchedule(nodeRef);
+        if (di != null)
+        {                       
+            List<DispositionActionDefinition> dispositionActionDefinitions = di.getDispositionActionDefinitions();            
+            if (dispositionActionDefinitions.isEmpty() == false)
+            {
+                // get the first disposition action definition
+                DispositionActionDefinition nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
+                
+                // initialise the details of the next disposition action
+                initialiseDispositionAction(nodeRef, nextDispositionActionDefinition);
             }
         }
+        
     }
     
     /** ========= Disposition Property Methods ========= */
@@ -733,33 +746,37 @@ public class DispositionServiceImpl implements
             if (result == false)
             {
                 DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa);
-                boolean firstComplete = da.getDispositionActionDefinition().eligibleOnFirstCompleteEvent();
-                
-                List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa, ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
-                for (ChildAssociationRef assoc : assocs)
+                DispositionActionDefinition dad = da.getDispositionActionDefinition();
+                if (dad != null)
                 {
-                    NodeRef eventExecution = assoc.getChildRef();
-                    Boolean isCompleteValue = (Boolean)this.nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
-                    boolean isComplete = false;
-                    if (isCompleteValue != null)
+                    boolean firstComplete = dad.eligibleOnFirstCompleteEvent();
+                    
+                    List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa, ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
+                    for (ChildAssociationRef assoc : assocs)
                     {
-                        isComplete = isCompleteValue.booleanValue();
-                        
-                        // implement AND and OR combination of event completions
-                        if (isComplete == true)
+                        NodeRef eventExecution = assoc.getChildRef();
+                        Boolean isCompleteValue = (Boolean)this.nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
+                        boolean isComplete = false;
+                        if (isCompleteValue != null)
                         {
-                            result = true;
-                            if (firstComplete == true)
+                            isComplete = isCompleteValue.booleanValue();
+                            
+                            // implement AND and OR combination of event completions
+                            if (isComplete == true)
                             {
-                                break;
+                                result = true;
+                                if (firstComplete == true)
+                                {
+                                    break;
+                                }
                             }
-                        }
-                        else
-                        {
-                            result = false;
-                            if (firstComplete == false)
+                            else
                             {
-                                break;
+                                result = false;
+                                if (firstComplete == false)
+                                {
+                                    break;
+                                }
                             }
                         }
                     }

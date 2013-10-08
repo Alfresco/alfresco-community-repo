@@ -99,6 +99,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefPost"
       parent="rmBaseWebscript">
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+      <property name="ruleService" ref="RuleService" />
    </bean>
 
    <!-- REST impl for DELETE Custom Reference Instance -->

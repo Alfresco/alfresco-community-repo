@@ -25,31 +25,36 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * Class containing behaviour for the vitalRecordDefinition aspect.
  * 
  * @author neilm
  */
-public class RecordCopyBehaviours implements RecordsManagementModel
+public class RecordCopyBehaviours implements RecordsManagementModel,
+                                             ApplicationContextAware
 {
     /** The policy component */
     private PolicyComponent policyComponent;
@@ -62,6 +67,18 @@ public class RecordCopyBehaviours implements RecordsManagementModel
     
     /** List of aspects to remove during move and copy */
     private List<QName> unwantedAspects = new ArrayList<QName>(5);
+    
+    /** Application context */
+    private ApplicationContext applicationContext;
+
+    /**
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+       this.applicationContext = applicationContext; 
+    } 
     
     /**
      * Set the policy component
@@ -193,7 +210,7 @@ public class RecordCopyBehaviours implements RecordsManagementModel
         {        
             if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()))
             {
-                final NodeRef oldNodeRef = oldChildAssocRef.getChildRef();
+                //final NodeRef oldNodeRef = oldChildAssocRef.getChildRef();
                 final NodeRef newNodeRef = newChildAssocRef.getChildRef();
             
                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
@@ -201,26 +218,37 @@ public class RecordCopyBehaviours implements RecordsManagementModel
                     public Object doWork() throws Exception
                     {
                         final RecordsManagementService rmService = rmServiceRegistry.getRecordsManagementService();
-                        final DispositionService rmDispositionService = rmServiceRegistry.getDispositionService();
                         final RecordService rmRecordService = rmServiceRegistry.getRecordService();
-                        
-                        if (rmDispositionService.getDispositionSchedule(oldNodeRef) != null || rmService.isCutoff(oldNodeRef))
-                        {
-                            throw new UnsupportedOperationException("Moving a record folder that has a disposition schedule or is cutoff is not suported.");
-                        }
-                        else
+                        final RecordFolderServiceImpl recordFolderService = (RecordFolderServiceImpl)applicationContext.getBean("recordFolderService");
+                        final DispositionServiceImpl dispositionService = (DispositionServiceImpl)applicationContext.getBean("dispositionService");
+                               
+                        behaviourFilter.disableBehaviour();
+                        try
                         {
                             // Remove unwanted aspects
                             removeUnwantedAspects(nodeService, newNodeRef);
-
+                            
+                            // reinitialise the record folder
+                            recordFolderService.initialiseRecordFolder(newNodeRef);
+                            
+                            // reinitialise the record folder disposition action details
+                            dispositionService.refreshDispositionAction(newNodeRef);
+    
                             // Sort out the child records
                             for (NodeRef record : rmService.getRecords(newNodeRef))
                             {
+                                // Remove unwanted aspects
+                                removeUnwantedAspects(nodeService, record);
+                                
                                 // Re-initiate the records in the new folder.
                                 rmRecordService.file(record);
                             }
                         }
-                        
+                        finally
+                        {
+                            behaviourFilter.enableBehaviour();
+                        }
+
                         return null;
                     }
                 }, AuthenticationUtil.getSystemUserName());
@@ -428,5 +456,5 @@ public class RecordCopyBehaviours implements RecordsManagementModel
            result = "0" + result;
        }
        return result;
-    } 
+    }
 }

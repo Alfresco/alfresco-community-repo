@@ -28,5 +28,5 @@ package org.alfresco.module.org_alfresco_module_rm.recordfolder;
  */
 public interface RecordFolderService
 {
-
+    // TODO see RecordManagementService for Record Folder methods that need moving into this interface
 }

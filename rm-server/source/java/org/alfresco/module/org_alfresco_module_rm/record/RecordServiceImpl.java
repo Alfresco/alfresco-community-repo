@@ -891,7 +891,6 @@ public class RecordServiceImpl implements RecordService,
     @Override
     public void file(NodeRef record)
     {
-
         ParameterCheck.mandatory("item", record);
 
         // we only support filling of content items

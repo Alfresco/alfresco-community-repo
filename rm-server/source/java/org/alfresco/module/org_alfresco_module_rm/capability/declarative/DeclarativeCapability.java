@@ -327,14 +327,10 @@ public class DeclarativeCapability extends AbstractCapability
     @Override
     public int evaluate(NodeRef source, NodeRef target)
     {
-        int result = AccessDecisionVoter.ACCESS_ABSTAIN;
-        if (targetCapability != null)
+        int result = evaluate(source);
+        if (targetCapability != null && result != AccessDecisionVoter.ACCESS_DENIED)
         {
-            result = evaluate(source);
-            if (result != AccessDecisionVoter.ACCESS_DENIED)
-            {
-                result = targetCapability.evaluate(target);
-            }
+            result = targetCapability.evaluate(target);
         }
         return result;
     }

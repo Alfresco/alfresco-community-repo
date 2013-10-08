@@ -25,7 +25,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 
 /**
- * Unit test for RM-1030 .. can't freeze a record folder that already has a frozen record containted within
+ * Unit test for RM-1030 .. can't freeze a record folder that already has a frozen record contained within
  * 
  * @author Roy Wetherall
  * @since 2.1

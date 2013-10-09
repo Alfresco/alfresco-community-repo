@@ -264,7 +264,7 @@ public class WikiServiceImplTest
        
        // Check
        page = WIKI_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName());
-       assertEquals("Alternate%20Title", page.getSystemName());
+       assertEquals("Alternate_Title", page.getSystemName());
        assertEquals("Alternate Title", page.getTitle());
        assertEquals("Changed contents", page.getContents());
        assertEquals(TEST_USER, page.getCreator());

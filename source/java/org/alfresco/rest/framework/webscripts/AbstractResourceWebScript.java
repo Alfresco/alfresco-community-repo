@@ -17,7 +17,6 @@ import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Params;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.JsonGenerationException;
@@ -52,7 +51,6 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     private ParamsExtractor paramsExtractor;
     private ContentStreamer streamer;
     protected ResourceWebScriptHelper helper;
-    protected TransactionService transactionService;
 
     @SuppressWarnings("rawtypes")
     @Override
@@ -60,13 +58,12 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     {
     	try
     	{
-
             final Map<String, Object> respons = new HashMap<String, Object>();
             final Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
 	        final ResourceWithMetadata resource = locator.locateResource(api,templateVars, httpMethod);
             final Params params = paramsExtractor.extractParams(resource.getMetaData(),req);
             final ActionExecutor executor = findExecutor(httpMethod, params, resource, req.getContentType());
-            
+
             //This execution usually takes place in a Retrying Transaction (see subclasses)
             executor.execute(resource, params, new ExecutionCallback()
             {
@@ -172,11 +169,6 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         //Ignore all params and return this
         return this;
     }
-    
-    public void setTransactionService(TransactionService transactionService)
-	{
-		this.transactionService = transactionService;
-	}
 
     public void setLocator(ResourceLocator locator)
     {

@@ -18,7 +18,6 @@
  */
 package org.alfresco.rest.api;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,13 +61,19 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
     {
     	if(method.equalsIgnoreCase("get") && uri.equals(PublicApiTenantWebScriptServletRequest.NETWORKS_PATH))
     	{
-    		Map<String, String> templateVars = Collections.emptyMap();
+    		Map<String, String> templateVars = new HashMap<String, String>();
+    		templateVars.put("apiScope", "public");
+    		templateVars.put("apiVersion", "1");
+    		templateVars.put("apiName", "networks");
     		Match match = new Match("", templateVars, "", getNetworksWebScript);
     		return match;
     	}
     	else if(method.equalsIgnoreCase("get") && uri.equals(PublicApiTenantWebScriptServletRequest.NETWORK_PATH))
     	{
-    		Map<String, String> templateVars = new HashMap<String, String>();
+    	    Map<String, String> templateVars = new HashMap<String, String>();
+            templateVars.put("apiScope", "public");
+            templateVars.put("apiVersion", "1");
+            templateVars.put("apiName", "network");
     		Match match = new Match("", templateVars, "", getNetworkWebScript);
     		return match;
     	} 

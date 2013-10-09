@@ -38,6 +38,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Patch to duplicate the AliasableAspect into the attributes service.
@@ -189,7 +190,7 @@ public class AliasableAspectPatch extends AbstractPatch
         
         batchProcessor.process(worker, true);
        
-        return MSG_SUCCESS;
+        return I18NUtil.getMessage(MSG_SUCCESS);
     }
 
 

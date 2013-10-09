@@ -627,7 +627,7 @@ public class RepoAdminServiceImplTest extends TestCase
         
         deployModels(n);
         
-        assertEquals(deployedModelCount+n, repoAdminService.getModels().size());
+        assertEquals("assert A: deployed model count not equal to the repoAdminService", deployedModelCount+n, repoAdminService.getModels().size());
         
         for (int i = 1; i <= n; i++)
         {
@@ -639,7 +639,7 @@ public class RepoAdminServiceImplTest extends TestCase
         // concurrently undeploy N models
         runConcurrentOps(n, 2);
         
-        assertEquals(deployedModelCount, repoAdminService.getModels().size());
+        assertEquals("assert after concurrent undeploy", deployedModelCount, repoAdminService.getModels().size());
         
         for (int i = 1; i <= n; i++)
         {

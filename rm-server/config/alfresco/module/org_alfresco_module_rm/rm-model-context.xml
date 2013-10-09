@@ -63,6 +63,7 @@
       parent="org_alfresco_module_rm_BaseBehaviour">
       <property name="siteService" ref="SiteService"/>
       <property name="recordsManagementSearchService" ref="RecordsManagementSearchService" />
+      <property name="capabilityService" ref="CapabilityService" />
    </bean>
 
    <!--  Record Component Identifier aspect behaviour bean -->

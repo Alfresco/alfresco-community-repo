@@ -406,20 +406,29 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         filter.disableBehaviour();
         try
         {
-            Set<NodeRef> holds = freezeService.getHolds(filePlan);
-            for (NodeRef hold : holds)
+            if (nodeService.exists(filePlan) == true)
             {
-                freezeService.relinquish(hold);
+                Set<NodeRef> holds = freezeService.getHolds(filePlan);
+                for (NodeRef hold : holds)
+                {
+                    freezeService.relinquish(hold);
+                }
             }
             
-            // Delete the folder
-            nodeService.deleteNode(folder);
-    
-            // Delete the site
-            siteService.deleteSite(siteId);
+            if (nodeService.exists(folder) == true)
+            {
+                // Delete the folder
+                nodeService.deleteNode(folder);
+            }
+            
+            if (siteService.getSite(siteId) != null)
+            {
+                // Delete the site
+                siteService.deleteSite(siteId);
+            }
     
             // delete the collaboration site (if required)
-            if (isCollaborationSiteTest() == true)
+            if (isCollaborationSiteTest() == true && siteService.getSite(COLLABORATION_SITE_ID) != null)
             {
                 siteService.deleteSite(COLLABORATION_SITE_ID);
             }

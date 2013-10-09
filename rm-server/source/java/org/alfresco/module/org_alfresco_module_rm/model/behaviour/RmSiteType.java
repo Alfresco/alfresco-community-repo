@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -29,11 +30,13 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -47,27 +50,32 @@ import org.alfresco.util.PropertyMap;
  */
 public class RmSiteType implements RecordsManagementModel,
                                    NodeServicePolicies.OnCreateNodePolicy,
-                                   NodeServicePolicies.OnUpdatePropertiesPolicy
+                                   NodeServicePolicies.OnUpdatePropertiesPolicy,
+                                   NodeServicePolicies.BeforeDeleteNodePolicy
 {
 	/** Constant values */
 	public static final String COMPONENT_DOCUMENT_LIBRARY = "documentLibrary";
     public static final String DEFAULT_SITE_NAME = "rm";
 	
     /** Policy component */
-    private PolicyComponent policyComponent;
+    protected PolicyComponent policyComponent;
     
     /** Site service */
-    private SiteService siteService;
+    protected SiteService siteService;
     
     /** Node service */
-    private NodeService nodeService;
+    protected NodeService nodeService;
     
     /** Record Management Search Service */
-    private RecordsManagementSearchService recordsManagementSearchService;
+    protected RecordsManagementSearchService recordsManagementSearchService;
+    
+    /** Capability service */
+    protected CapabilityService capabilityService;
     
     /** Behaviour */
     JavaBehaviour onCreateNode = new JavaBehaviour(this, "onCreateNode", NotificationFrequency.FIRST_EVENT);
     JavaBehaviour onUpdateProperties = new JavaBehaviour(this, "onUpdateProperties", NotificationFrequency.FIRST_EVENT);
+    JavaBehaviour beforeDelete = new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT);
     
     /**
      * Set the policy component
@@ -105,6 +113,14 @@ public class RmSiteType implements RecordsManagementModel,
     }
     
     /**
+     * @param capabilityService capability service
+     */
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
+    }
+    
+    /**
      * Bean initialisation method
      */
     public void init()
@@ -116,6 +132,10 @@ public class RmSiteType implements RecordsManagementModel,
         policyComponent.bindClassBehaviour(NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME, 
                                            TYPE_RM_SITE, 
                                            onUpdateProperties);
+        
+        policyComponent.bindClassBehaviour(NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
+                                           TYPE_RM_SITE, 
+                                           beforeDelete);
     }
 
     /**
@@ -181,6 +201,38 @@ public class RmSiteType implements RecordsManagementModel,
             {
                 // we do not current support non-public RM sites
                 throw new AlfrescoRuntimeException("The records management site must have public visibility.  It can't be changed to " + changed.get(SiteModel.PROP_SITE_VISIBILITY));
+            }
+        }
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        final SiteInfo siteInfo = siteService.getSite(nodeRef);
+        if (siteInfo != null)
+        {
+            // grab the file plan for the RM site
+            NodeRef filePlan = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>() 
+            {
+                @Override
+                public NodeRef doWork() throws Exception
+                {
+                    return siteService.getContainer(siteInfo.getShortName(), COMPONENT_DOCUMENT_LIBRARY);
+                }
+                
+            });
+            
+            if (filePlan != null)
+            {
+                // determine whether the current user has delete capability on the file plan node
+                AccessStatus accessStatus = capabilityService.getCapabilityAccessState(filePlan, "Delete");
+                if (AccessStatus.DENIED.equals(accessStatus) == true)
+                {
+                    throw new AlfrescoRuntimeException("The records management site can not be deleted, because the user doesn't have sufficient privillages to delete the file plan.");
+                }
             }
         }
     }

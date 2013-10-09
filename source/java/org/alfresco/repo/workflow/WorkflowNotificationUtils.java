@@ -101,7 +101,7 @@ public class WorkflowNotificationUtils
      */
     public void sendWorkflowAssignedNotificationEMail(
             String taskId,
-            String taskType,
+            String taskTitle,
             String description,
             Date dueDate,
             Integer priority,
@@ -129,7 +129,7 @@ public class WorkflowNotificationUtils
         // Build the template args
         Map<String, Serializable>templateArgs = new HashMap<String, Serializable>(7);
         templateArgs.put(ARG_WF_ID, taskId);
-        templateArgs.put(ARG_WF_TITLE, taskType);
+        templateArgs.put(ARG_WF_TITLE, taskTitle);
         templateArgs.put(ARG_WF_DESCRIPTION, description);
         if (dueDate != null)
         {

@@ -337,7 +337,7 @@
                 	{
                 		"name" : "rm.savedsearch.cutoffRecordsName",
                 		"description" : "rm.savedsearch.cutoffRecordsDesc",
-                		"search" : "dispositionActionName:\"cutoff\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY])",
+                		"search" : "dispositionActionName:\"cutoff\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY]) AND NOT ASPECT:\"rma:cutoff\"",
                 		"searchparams" :
                 		{
                 			"records" : true,

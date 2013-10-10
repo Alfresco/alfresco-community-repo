@@ -26,9 +26,8 @@ import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.transaction.UserTransaction;
 
-import org.springframework.extensions.config.Config;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -40,6 +39,8 @@ import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.PreferencesService;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.LanguagesConfigElement;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Simple bean backing the user preferences settings.
@@ -113,7 +114,23 @@ public class UserPreferencesBean implements Serializable
    {
       if (this.contentFilterLanguage == null)
       {
-         Locale locale = (Locale) PreferencesService.getPreferences().getValue(PREF_CONTENTFILTERLANGUAGE);
+         Locale locale = null;
+         UserTransaction tx = null;
+         try
+         {
+            FacesContext context = FacesContext.getCurrentInstance();
+            tx = Repository.getUserTransaction(context, true);
+            tx.begin();
+            
+            locale = (Locale) PreferencesService.getPreferences().getValue(PREF_CONTENTFILTERLANGUAGE);
+            
+            tx.commit();
+         }
+         catch (Throwable err)
+         {
+            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+         }
+         
          // Null means All Languages
          if (locale == null)
          {
@@ -260,7 +277,22 @@ public class UserPreferencesBean implements Serializable
     */
    public String getStartLocation()
    {
-      String location = (String)PreferencesService.getPreferences().getValue(PREF_STARTLOCATION);
+      String location = null;
+      UserTransaction tx = null;
+      try
+      {
+         FacesContext context = FacesContext.getCurrentInstance();
+         tx = Repository.getUserTransaction(context, true);
+         tx.begin();
+         
+         location = (String)PreferencesService.getPreferences().getValue(PREF_STARTLOCATION);
+         
+         tx.commit();
+      }
+      catch (Throwable err)
+      {
+          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
+      }
       if (location == null)
       {
          // default to value from client config

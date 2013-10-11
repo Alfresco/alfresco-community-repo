@@ -117,16 +117,26 @@ public interface ImapService
     public void renameMailbox(AlfrescoImapUser user, String oldMailboxName, String newMailboxName);
 
     /**
-     * Returns a reference to a mailbox, either creating a new one or retrieving an existing one.
+     * Returns a reference to a mailbox, either creating a new one or retrieving an existing one.<br />
+     * <br />
+     * <code>mailbox</code> parameter may specify absolute or relative path to a folder. Absolute path uniquely identifies some directory, whereas relative path implies that root
+     * folder should be <code>IMAP home</code> directory for the specified <code>user</code> rather than <code>IMAP root</code> (i.e. <code>IMAP mount point</code>). Mailbox will
+     * be found or created (<code>mayCreate=true<code>, <code>mayExist=false<code> or ) in <code>user<code>'s <code>IMAP home</code> directory if relative path is specified.<br />
+     * <br />
+     * <code>mayExist</code> and mayCreate parameters' combinations and results:
+     * <ul>
+     * <li><code>mayCreate=false</code>, <code>mayExist=true</code> - mailbox is found and not created if it doesn't exist. Error is thrown if mailbox doesn't not exist;</li>
+     * <li><code>mayCreate=true</code>, <code>mayExist=true</code> - mailbox is created if it doesn't exist or it is just found in other case. No error is thrown;</li>
+     * <li><code>mayCreate=true</code>, <code>mayExist=false</code> - mailbox is created if it doesn't exist. Error is thrown if it is already created;</li>
+     * <li><code>mayCreate=false</code>, <code>mayExist=false</code> - error is thrown that mailbox cannot be created if doesn't exist. Error is thrown that mailbox should not
+     * exist in other case.<br />
+     * <b>It's a very shady combination!</b></li>
+     * </ul>
      * 
-     * @param user
-     *            User making the request.
-     * @param mailboxName
-     *            String name of the target.
-     * @param mayExist
-     * Is the mailbox allowed to exist already? If <code>false</code> and the mailbox already exists, an error will be thrown
-     * @param mayCreate
-     * If the mailbox does not exist, can one be created? If <code>false</code> then an error is thrown if the folder does not exist 
+     * @param user User making the request.
+     * @param mailboxName String name of the target.
+     * @param mayExist Is the mailbox allowed to exist already? If <code>false</code> and the mailbox already exists, an error will be thrown
+     * @param mayCreate If the mailbox does not exist, can one be created? If <code>false</code> then an error is thrown if the folder does not exist
      * @return a Mailbox reference
      */
     public AlfrescoImapFolder getOrCreateMailbox(AlfrescoImapUser user, String mailboxName, boolean mayExist, boolean mayCreate);

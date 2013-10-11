@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,6 +22,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +51,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -73,6 +78,9 @@ import org.springframework.core.io.ClassPathResource;
  */
 public class ImapServiceImplTest extends TestCase 
 {
+    private static final String IMAP_ROOT = "Alfresco IMAP";
+
+    private static final String APP_COMPANY_HOME = "/app:company_home";
 
     private static final String USER_NAME = "admin";
     private static final String USER_PASSWORD = "admin";
@@ -149,17 +157,7 @@ public class ImapServiceImplTest extends TestCase
         
         user = new AlfrescoImapUser(anotherUserName + "@alfresco.com", anotherUserName, anotherUserName);
 
-        String storePath = "workspace://SpacesStore";
-        String companyHomePathInStore = "/app:company_home";
-
-        StoreRef storeRef = new StoreRef(storePath);
-
-        NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
-
-        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, companyHomePathInStore, null, namespaceService, false);
-        NodeRef companyHomeNodeRef = nodeRefs.get(0);
-
-        
+        NodeRef companyHomeNodeRef = findCompanyHomeNodeRef();
 
         ChildApplicationContextFactory imap = (ChildApplicationContextFactory) ctx.getBean("imap");
         ApplicationContext imapCtx = imap.getApplicationContext();
@@ -172,16 +170,18 @@ public class ImapServiceImplTest extends TestCase
         
         // Setting IMAP root
         RepositoryFolderConfigBean imapHome = new RepositoryFolderConfigBean();
-        imapHome.setStore(storePath);
-        imapHome.setRootPath(companyHomePathInStore);
+        imapHome.setStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString());
+        imapHome.setRootPath(APP_COMPANY_HOME);
         imapHome.setFolderPath(NamespaceService.CONTENT_MODEL_PREFIX + ":" + TEST_IMAP_FOLDER_NAME);
         imapServiceImpl.setImapHome(imapHome);
         
         // Starting IMAP
         imapServiceImpl.startupInTxn(true);
-        
-        nodeRefs = searchService.selectNodes(storeRootNodeRef,
-                companyHomePathInStore + "/" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + TEST_IMAP_FOLDER_NAME,
+
+        NodeRef storeRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+
+        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef ,
+                APP_COMPANY_HOME + "/" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + TEST_IMAP_FOLDER_NAME,
                 null,
                 namespaceService,
                 false);
@@ -591,18 +591,9 @@ public class ImapServiceImplTest extends TestCase
         assertNotNull("unable to find test resource test-tnef-message.eml", fileResource);
         InputStream is = new FileInputStream(fileResource.getFile());
         MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()), is);
-        
-        /**
-         * Create a test node containing the message
-         */
-        String storePath = "workspace://SpacesStore";
-        String companyHomePathInStore = "/app:company_home";
-        StoreRef storeRef = new StoreRef(storePath);
-        NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
-        
-        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, companyHomePathInStore, null, namespaceService, false);
-        NodeRef companyHomeNodeRef = nodeRefs.get(0);
-        
+
+        NodeRef companyHomeNodeRef = findCompanyHomeNodeRef();
+
         FileInfo f1 = fileFolderService.create(companyHomeNodeRef, "ImapServiceImplTest", ContentModel.TYPE_FOLDER);
         FileInfo f2 = fileFolderService.create(f1.getNodeRef(), "test-tnef-message.eml", ContentModel.TYPE_CONTENT);
         
@@ -620,5 +611,371 @@ public class ImapServiceImplTest extends TestCase
         List<FileInfo> files = fileFolderService.listFiles(attachmentFolderRef);
         assertTrue("three files not found", files.size() == 3);
 
+    }
+
+    public void testMailboxRenamingInTheRootForMNT9055() throws Exception
+    {
+        reauthenticate(USER_NAME, USER_PASSWORD);
+        AlfrescoImapUser poweredUser = new AlfrescoImapUser((USER_NAME + "@alfresco.com"), USER_NAME, USER_PASSWORD);
+
+        NodeRef root = findCompanyHomeNodeRef();
+
+        String targetNodeName = "Test-" + System.currentTimeMillis();
+
+        FileInfo targetNode = fileFolderService.create(root, targetNodeName, ContentModel.TYPE_FOLDER);
+
+        String renamedNodeName = "Renamed-" + System.currentTimeMillis();
+        String renamedNodePath = IMAP_ROOT + AlfrescoImapConst.HIERARCHY_DELIMITER + renamedNodeName;
+
+        assertMailboxRenaming(poweredUser, root, (IMAP_ROOT + AlfrescoImapConst.HIERARCHY_DELIMITER + targetNodeName), java.util.Collections.singletonList(renamedNodeName),
+                renamedNodePath, targetNode);
+
+        AlfrescoImapFolder actualMailbox = imapService.getOrCreateMailbox(poweredUser, renamedNodePath, true, false);
+
+        List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(actualMailbox.getFolderInfo().getNodeRef());
+
+        assertNotNull(parentAssocs);
+        assertFalse(parentAssocs.isEmpty());
+        assertEquals(1, parentAssocs.size());
+
+        assertEquals(root, parentAssocs.iterator().next().getParentRef());
+    }
+
+    public void testMailboxRenamingInTheUserImapHomeForMNT9055() throws Exception
+    {
+        reauthenticate(USER_NAME, USER_PASSWORD);
+        AlfrescoImapUser poweredUser = new AlfrescoImapUser((USER_NAME + "@alfresco.com"), USER_NAME, USER_PASSWORD);
+
+        NodeRef root = findCompanyHomeNodeRef();
+
+        String targetNodeName = "Test-" + System.currentTimeMillis();
+        String renamedNodeName = "Renamed-" + System.currentTimeMillis();
+
+        AlfrescoImapFolder mailbox = imapService.getOrCreateMailbox(poweredUser, targetNodeName, false, true);
+        assertMailboxNotNull(mailbox);
+
+        List<String> pathBeforeRenaming = fileFolderService.getNameOnlyPath(root, mailbox.getFolderInfo().getNodeRef());
+
+        assertMailboxRenaming(poweredUser, root, targetNodeName, Collections.singletonList(renamedNodeName), renamedNodeName, null);
+
+        mailbox = imapService.getOrCreateMailbox(poweredUser, renamedNodeName, true, false);
+        assertMailboxNotNull(mailbox);
+
+        List<String> pathAfterRenaming = fileFolderService.getNameOnlyPath(root, mailbox.getFolderInfo().getNodeRef());
+
+        assertPathHierarchy(pathBeforeRenaming, pathAfterRenaming);
+    }
+
+    public void testMailboxRenamingInDeepHierarchyForMNT9055() throws Exception
+    {
+        reauthenticate(USER_NAME, USER_PASSWORD);
+        AlfrescoImapUser poweredUser = new AlfrescoImapUser((USER_NAME + "@alfresco.com"), USER_NAME, USER_PASSWORD);
+
+        NodeRef root = findCompanyHomeNodeRef();
+
+        NodeRef parent = root;
+
+        FileInfo targetNode = null;
+        String targetNodeName = IMAP_ROOT;
+        StringBuilder fullPath = new StringBuilder();
+        List<String> fullPathList = new LinkedList<String>();
+        String renamedNodeName = "Renamed-" + System.currentTimeMillis();
+
+        for (int i = 0; i < 10; i++)
+        {
+            fullPath.append(targetNodeName).append(AlfrescoImapConst.HIERARCHY_DELIMITER);
+            targetNodeName = new StringBuilder("Test").append(i).append("-").append(System.currentTimeMillis()).toString();
+
+            if (i < 9)
+            {
+                fullPathList.add(targetNodeName);
+            }
+
+            targetNode = fileFolderService.create(parent, targetNodeName, ContentModel.TYPE_FOLDER);
+            assertNotNull(targetNode);
+
+            parent = targetNode.getNodeRef();
+            assertNotNull(parent);
+        }
+
+        String path = fullPath.toString();
+        String targetNodePath = path + targetNodeName;
+        String renamedNodePath = path + renamedNodeName;
+
+        List<String> renamedFullPathList = new LinkedList<String>(fullPathList);
+        renamedFullPathList.add(renamedNodeName);
+        fullPathList.add(targetNodeName);
+
+        assertMailboxRenaming(poweredUser, root, targetNodePath, renamedFullPathList, renamedNodePath, targetNode);
+
+        AlfrescoImapFolder mailbox = imapService.getOrCreateMailbox(poweredUser, renamedNodePath, true, false);
+        assertMailboxNotNull(mailbox);
+
+        List<String> pathAfterRenaming = fileFolderService.getNameOnlyPath(root, mailbox.getFolderInfo().getNodeRef());
+
+        assertPathHierarchy(fullPathList, pathAfterRenaming);
+
+        FileInfo renamedNode = fileFolderService.resolveNamePath(root, pathAfterRenaming);
+        assertNotNull(renamedNode);
+        assertEquals(targetNode.getNodeRef(), renamedNode.getNodeRef());
+    }
+
+    public void testMiddleMailboxRenamingInDeepHierarchyForMNT9055() throws Exception
+    {
+        reauthenticate(USER_NAME, USER_PASSWORD);
+        AlfrescoImapUser poweredUser = new AlfrescoImapUser((USER_NAME + "@alfresco.com"), USER_NAME, USER_PASSWORD);
+
+        NodeRef root = findCompanyHomeNodeRef();
+
+        NodeRef parent = root;
+
+        String middleName = null; // Name of the middle folder
+        FileInfo targetNode = null; // A leaf folder
+        FileInfo middleNode = null; // A middle folder
+        String targetNodeName = IMAP_ROOT; // Current folder name
+        StringBuilder fullPath = new StringBuilder(); // Path from the middle to the leaf folder
+        StringBuilder fullLeftPath = new StringBuilder(); // Path to the middle folder
+        List<String> fullLeftPathList = new LinkedList<String>(); // Path elements to the middle folder
+        List<String> fullRightPathList = new LinkedList<String>(); // Path from the middle to the leaf folder
+        String renamedNodeName = "Renamed-" + System.currentTimeMillis();
+
+        for (int i = 0; i < 10; i++)
+        {
+            if (i <= 5)
+            {
+                fullLeftPath.append(targetNodeName).append(AlfrescoImapConst.HIERARCHY_DELIMITER);
+            }
+            else
+            {
+                if (i > 6)
+                {
+                    fullPath.append(targetNodeName).append(AlfrescoImapConst.HIERARCHY_DELIMITER);
+                }
+            }
+
+            targetNodeName = new StringBuilder("Test").append(i).append("-").append(System.currentTimeMillis()).toString();
+
+            if (i < 5)
+            {
+                fullLeftPathList.add(targetNodeName);
+            }
+            else
+            {
+                if (i > 5)
+                {
+                    fullRightPathList.add(targetNodeName);
+                }
+            }
+
+            targetNode = fileFolderService.create(parent, targetNodeName, ContentModel.TYPE_FOLDER);
+            assertNotNull(targetNode);
+            assertNotNull(targetNode.getNodeRef());
+
+            parent = targetNode.getNodeRef();
+
+            if (5 == i)
+            {
+                middleName = targetNodeName;
+                middleNode = targetNode;
+            }
+        }
+
+        String path = fullLeftPath.toString();
+        String targetNodePath = path + middleName;
+        String renamedNodePath = path + renamedNodeName;
+
+        List<String> renamedFullLeftPathList = new LinkedList<String>(fullLeftPathList);
+        renamedFullLeftPathList.add(renamedNodeName);
+        fullLeftPathList.add(middleName);
+
+        assertMailboxRenaming(poweredUser, root, targetNodePath, renamedFullLeftPathList, renamedNodePath, middleNode);
+
+        AlfrescoImapFolder mailbox = imapService.getOrCreateMailbox(poweredUser, renamedNodePath, true, false);
+        assertMailboxNotNull(mailbox);
+
+        List<String> pathAfterRenaming = fileFolderService.getNameOnlyPath(root, mailbox.getFolderInfo().getNodeRef());
+
+        assertPathHierarchy(fullLeftPathList, pathAfterRenaming);
+
+        FileInfo renamedNode = fileFolderService.resolveNamePath(root, pathAfterRenaming);
+        assertNotNull(renamedNode);
+        assertEquals(middleNode.getNodeRef(), renamedNode.getNodeRef());
+
+        String fullRenamedPath = new StringBuilder(path).append(renamedNodeName).append(AlfrescoImapConst.HIERARCHY_DELIMITER).append(fullPath).append(targetNodeName).toString();
+        mailbox = imapService.getOrCreateMailbox(poweredUser, fullRenamedPath, true, false);
+        assertMailboxNotNull(mailbox);
+
+        assertEquals(targetNode.getNodeRef(), mailbox.getFolderInfo().getNodeRef());
+
+        pathAfterRenaming = fileFolderService.getNameOnlyPath(middleNode.getNodeRef(), targetNode.getNodeRef());
+        assertPathHierarchy(fullRightPathList, pathAfterRenaming);
+    }
+
+    public void testMailboxMoving() throws Exception
+    {
+        reauthenticate(USER_NAME, USER_PASSWORD);
+        AlfrescoImapUser poweredUser = new AlfrescoImapUser((USER_NAME + "@alfresco.com"), USER_NAME, USER_PASSWORD);
+
+        NodeRef root = findCompanyHomeNodeRef();
+
+        FileInfo targetNode = null;
+        String imapUserHomePath = "";
+        StringBuilder fullPath = new StringBuilder();
+        List<String> fullPathList = new LinkedList<String>(Arrays.asList(new String[] { TEST_IMAP_FOLDER_NAME, USER_NAME }));
+        String targetNodeName = new StringBuilder(IMAP_ROOT).append(AlfrescoImapConst.HIERARCHY_DELIMITER).append(TEST_IMAP_FOLDER_NAME).append(
+                AlfrescoImapConst.HIERARCHY_DELIMITER).append(USER_NAME).toString();
+
+        for (int i = 0; i < 4; i++)
+        {
+            fullPath.append(targetNodeName).append(AlfrescoImapConst.HIERARCHY_DELIMITER);
+            targetNodeName = new StringBuilder("Test").append(i).append("-").append(System.currentTimeMillis()).toString();
+
+            if (i < 3)
+            {
+                fullPathList.add(targetNodeName);
+            }
+
+            AlfrescoImapFolder mailbox = imapService.getOrCreateMailbox(poweredUser, (imapUserHomePath + targetNodeName), false, true);
+            assertNotNull(mailbox);
+
+            targetNode = mailbox.getFolderInfo();
+            imapUserHomePath = fullPath.toString() + targetNodeName + AlfrescoImapConst.HIERARCHY_DELIMITER;
+        }
+
+        String path = fullPath.toString();
+        String targetNodePath = path + targetNodeName;
+        String newName = "Renamed-" + System.currentTimeMillis();
+        String renamedNodeName = IMAP_ROOT + AlfrescoImapConst.HIERARCHY_DELIMITER + newName;
+
+        imapService.renameMailbox(poweredUser, targetNodePath, renamedNodeName);
+
+        AlfrescoImapFolder mailbox = imapService.getOrCreateMailbox(poweredUser, renamedNodeName, true, false);
+        assertMailboxNotNull(mailbox);
+
+        targetNodePath = renamedNodeName;
+        renamedNodeName = path + newName;
+        imapService.renameMailbox(poweredUser, targetNodePath, renamedNodeName);
+
+        mailbox = imapService.getOrCreateMailbox(poweredUser, renamedNodeName, true, false);
+        assertMailboxNotNull(mailbox);
+
+        assertMailboxInUserImapHomeDirectory(root, mailbox.getFolderInfo().getNodeRef());
+
+        List<String> pathAfterRenaming = fileFolderService.getNameOnlyPath(root, targetNode.getNodeRef());
+        fullPathList.add(newName);
+        assertPathHierarchy(fullPathList, pathAfterRenaming);
+    }
+
+    /**
+     * @param mailbox - {@link AlfrescoImapFolder} instance which should be checked
+     */
+    private void assertMailboxNotNull(AlfrescoImapFolder mailbox)
+    {
+        assertNotNull(mailbox);
+        assertNotNull(mailbox.getFolderInfo());
+        assertNotNull(mailbox.getFolderInfo().getNodeRef());
+    }
+
+    /**
+     * @param user - {@link AlfrescoImapUser} instance, which determines a user who has enough permissions to rename a node
+     * @param root - {@link NodeRef} instance, which determines <code>Alfresco IMAP</code> root node
+     * @param targetNodePath - {@link String} value, which determines a path in IMAP notation to a node which should be renamed
+     * @param targetNode - {@link FileInfo} instance, which determines a node, located at the <code>targetNodePath</code> path
+     * @throws FileNotFoundException
+     */
+    private void assertMailboxRenaming(AlfrescoImapUser user, NodeRef root, String targetNodePath, List<String> renamedNodeName, String renamedNodePath, FileInfo targetNode)
+            throws FileNotFoundException
+    {
+        AlfrescoImapFolder mailbox = imapService.getOrCreateMailbox(user, targetNodePath, true, false);
+        assertNotNull(("Just created mailbox can't be received by full path via the ImapService. Path: '" + targetNodePath + "'"), mailbox);
+        assertNotNull(mailbox.getFolderInfo());
+        assertNotNull(mailbox.getFolderInfo().getNodeRef());
+
+        imapService.renameMailbox(user, targetNodePath, renamedNodePath);
+
+        NodeRef actualNode = null;
+
+        if (null != targetNode)
+        {
+            FileInfo actualFileInfo = fileFolderService.resolveNamePath(root, renamedNodeName);
+            assertNotNull(actualFileInfo);
+            assertNotNull(actualFileInfo.getNodeRef());
+            actualNode = actualFileInfo.getNodeRef();
+        }
+        else
+        {
+            mailbox = imapService.getOrCreateMailbox(user, renamedNodePath, true, false);
+            assertNotNull(mailbox);
+            actualNode = mailbox.getFolderInfo().getNodeRef();
+        }
+
+        assertNotNull(("Can't receive renamed node by full path: '" + renamedNodePath + "'"), actualNode);
+
+        if (null != targetNode)
+        {
+            assertEquals(targetNode.getNodeRef(), actualNode);
+        }
+        else
+        {
+            assertMailboxInUserImapHomeDirectory(root, actualNode);
+        }
+    }
+
+    /**
+     * @param root - {@link NodeRef} instance, which determines <code>Alfresco IMAP</code> root node
+     * @param actualNode - {@link NodeRef} instance, which determines mailbox in actual state
+     * @throws FileNotFoundException
+     */
+    private void assertMailboxInUserImapHomeDirectory(NodeRef root, NodeRef actualNode) throws FileNotFoundException
+    {
+        List<String> path = fileFolderService.getNameOnlyPath(root, actualNode);
+
+        int satisfactionFlag = 0;
+        for (String element : path)
+        {
+            if (TEST_IMAP_FOLDER_NAME.equals(element) || USER_NAME.equals(element))
+            {
+                satisfactionFlag++;
+            }
+
+            if (satisfactionFlag > 1)
+            {
+                break;
+            }
+        }
+
+        assertTrue(satisfactionFlag > 1);
+    }
+
+    /**
+     * @param pathBeforeRenaming - {@link List}&lt;{@link String}&gt; instance, which represents a path to some node <b>before</b> some action
+     * @param pathAfterRenaming - {@link List}&lt;{@link String}&gt; instance, which represents a path to some node <b>after</b> some action
+     */
+    private void assertPathHierarchy(List<String> pathBeforeRenaming, List<String> pathAfterRenaming)
+    {
+        assertNotNull(pathAfterRenaming);
+        assertNotNull(pathBeforeRenaming);
+        assertEquals(pathBeforeRenaming.size(), pathAfterRenaming.size());
+
+        Iterator<String> before = pathBeforeRenaming.iterator();
+        Iterator<String> after = pathAfterRenaming.iterator();
+
+        for (int i = 0; i < (pathAfterRenaming.size() - 2); i++)
+        {
+            assertTrue(before.hasNext());
+            assertTrue(after.hasNext());
+
+            assertEquals(before.next(), after.next());
+        }
+    }
+
+    /**
+     * @return {@link NodeRef} instance of '<code>/app:company_home</code>' node
+     */
+    private NodeRef findCompanyHomeNodeRef()
+    {
+        NodeRef storeRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, APP_COMPANY_HOME, null, namespaceService, false);
+        return nodeRefs.get(0);
     }
 }

@@ -18,7 +18,8 @@
  */
 package org.alfresco.repo.web.scripts.site;
 
-import org.alfresco.repo.activities.SiteActivityTest;
+import org.alfresco.repo.activities.SiteActivityTestCaseSensitivity;
+import org.alfresco.repo.activities.SiteActivityTestCaseInsensitivity;
 import org.alfresco.repo.site.SiteServiceImplMoreTest;
 import org.alfresco.repo.site.SiteServiceImplTest;
 import org.alfresco.service.cmr.site.SiteService;
@@ -38,7 +39,8 @@ import org.junit.runners.Suite;
     SiteServiceImplTest.class,
     SiteServiceImplMoreTest.class,
     SiteServiceTest.class,
-    SiteActivityTest.class
+    SiteActivityTestCaseSensitivity.class,
+    SiteActivityTestCaseInsensitivity.class
 })
 public class AllSiteTests
 {

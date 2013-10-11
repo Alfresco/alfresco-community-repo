@@ -1553,9 +1553,11 @@
             <columnname>store_id</columnname>
           </columnnames>
         </index>
-        <index name="fk_alf_node_tqn" unique="false">
+        <index name="idx_alf_node_tqn" unique="false">
           <columnnames>
             <columnname>type_qname_id</columnname>
+            <columnname>store_id</columnname>
+            <columnname>id</columnname>
           </columnnames>
         </index>
         <index name="idx_alf_node_txn_type" unique="false">

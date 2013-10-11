@@ -34,6 +34,7 @@
       <property name="policyComponent" ref="policyComponent"/>
       <property name="transactionService" ref="transactionService"/>
       
+      <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
       <property name="maxIdRange">
          <value>${activities.feed.max.idRange}</value> <!-- max ID range between max(id) and min(id).  Limits absolute number of entries. -->
       </property>
@@ -99,6 +100,8 @@
       <property name="permissionService" ref="PermissionService"/>
       <property name="subscriptionService" ref="SubscriptionService"/>
       <property name="tenantService" ref="tenantService"/>
+            
+      <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
             
       <property name="templateSearchPaths">
           <list>

@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.activities.feed.cleanup;
 
+import static org.junit.Assert.*;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
@@ -37,6 +39,10 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
 import org.quartz.Scheduler;
 import org.springframework.context.ApplicationContext;
 
@@ -46,16 +52,16 @@ import org.springframework.context.ApplicationContext;
  * @author janv
  * @since 3.0
  */
-public class FeedCleanerTest extends TestCase
-{
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+public abstract class AbstractFeedCleanerTest
+{  
+    private ApplicationContext ctx;
     
     private ActivityFeedDAO feedDAO;
-    private FeedCleaner cleaner;
+    protected FeedCleaner cleaner;
     private SiteService siteService;
     private PersonService personService;
     protected RetryingTransactionHelper transactionHelper;
-    
+
     private static final String TEST_SITE = "testSite";
     
     private static final String TEST_SITE_1 = TEST_SITE+"1";
@@ -70,12 +76,13 @@ public class FeedCleanerTest extends TestCase
     private static final String TEST_USER_B = "testUserB";
     private static final String TEST_USER_C = "testUserC";
     private static final String TEST_USER_D = "testUserD";
-    private static final String TEST_USER_E = "testUserE";
+    protected static final String TEST_USER_E = "testUserE";
     private static final String TEST_USER_F = "testUserF";
     
-    @Override
+    @Before
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         JobLockService jobLockService = (JobLockService) ctx.getBean("JobLockService");
         PolicyComponent policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
         NodeService nodeService = (NodeService) ctx.getBean("NodeService");
@@ -84,7 +91,7 @@ public class FeedCleanerTest extends TestCase
         personService = (PersonService) ctx.getBean("PersonService");
         feedDAO = (ActivityFeedDAO) ctx.getBean("feedDAO");
         transactionHelper = (RetryingTransactionHelper)ctx.getBean("retryingTransactionHelper");
-        
+
         // Let's shut down the scheduler so that we aren't competing with the scheduled versions of jobs (ie. feed cleaner)
         Scheduler scheduler = (Scheduler) ctx.getBean("schedulerFactory");
         scheduler.shutdown();
@@ -107,6 +114,7 @@ public class FeedCleanerTest extends TestCase
         cleaner.setNodeService(nodeService);
     }
     
+    @After
     public void tearDown() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -130,6 +138,7 @@ public class FeedCleanerTest extends TestCase
         // NOOP
     }
     
+    @Test
     public void testMaxIdRange() throws Exception
     {
         // insert site feed entries for TEST_SITE_4
@@ -154,6 +163,8 @@ public class FeedCleanerTest extends TestCase
         // Check
         assertEquals(5, feedDAO.selectSiteFeedEntries(TEST_SITE_4, -1).size());
     }
+    
+    @Test
     public void testMaxAge() throws Exception
     {
         cleaner.setMaxFeedSize(0);
@@ -199,7 +210,7 @@ public class FeedCleanerTest extends TestCase
         
         feedEntry.setPostDate(new Date()); // now
         feedEntry.setSiteNetwork(TEST_SITE_3);
-        feedEntry.setActivityType("testActivityType");
+        feedEntry.setActivityType("testActivityType"); 
         feedEntry.setPostUserId(TEST_USER_A);
         feedEntry.setFeedUserId(TEST_USER_B);
         feedEntry.setFeedDate(new Date());
@@ -217,10 +228,11 @@ public class FeedCleanerTest extends TestCase
         assertEquals(1, feedDAO.selectUserFeedEntries(TEST_USER_B, null, false, false, -1L, -1).size());
     }
     
+    @Test
     public void testMaxSize() throws Exception
     {
         cleaner.setMaxAgeMins(0);
-        
+      
         // insert site feed entries for TEST_SITE_4
         
         for (int i = 0; i < 10; i++)
@@ -310,6 +322,7 @@ public class FeedCleanerTest extends TestCase
         assertEquals(10, feedDAO.selectUserFeedEntries(TEST_USER_F, null, false, false, -1L, -1).size());
     }
     
+    @Test
     public void testSiteDelete() throws Exception
     {
         cleaner.setMaxAgeMins(100);
@@ -348,7 +361,7 @@ public class FeedCleanerTest extends TestCase
             
             feedEntry.setPostDate(new Date(System.currentTimeMillis()-(i*60*1000L)));
             feedEntry.setSiteNetwork(TEST_SITE_5);
-            feedEntry.setActivityType("testActivityType");
+            feedEntry.setActivityType("testActivityType"); 
             feedEntry.setPostUserId(TEST_USER_C);
             feedEntry.setFeedUserId(TEST_USER_D);
             feedEntry.setFeedDate(new Date());
@@ -378,14 +391,28 @@ public class FeedCleanerTest extends TestCase
         }, false, true);
     }
     
+    @Test
     public void testPersonDelete() throws Exception
+    {
+        boolean caseSensitive = Boolean.getBoolean(System.getProperty("user.name.caseSensitive"));
+        if (caseSensitive)
+        {
+            testPersonDelete(TEST_USER_E);
+        }
+        else
+        {
+            testPersonDelete(TEST_USER_E.toLowerCase());
+        }
+    }
+    
+    protected void testPersonDelete(final String userId) throws Exception
     {
         cleaner.setMaxAgeMins(100);
         
-        createPerson(TEST_USER_E); // ignore result
+        createPerson(userId); // ignore result
         
         assertEquals(0, feedDAO.selectSiteFeedEntries(TEST_SITE_6, -1).size());
-        assertEquals(0, feedDAO.selectUserFeedEntries(TEST_USER_E, null, false, false, -1L, -1).size());
+        assertEquals(0, feedDAO.selectUserFeedEntries(userId, null, false, false, -1L, -1).size());
         
         final int site6FeedCnt = 10;
         
@@ -397,16 +424,16 @@ public class FeedCleanerTest extends TestCase
             feedEntry.setPostDate(new Date(System.currentTimeMillis()-(i*60*1000L)));
             feedEntry.setSiteNetwork(TEST_SITE_6);
             feedEntry.setActivityType("testActivityType");
-            feedEntry.setPostUserId(TEST_USER_E);
+            feedEntry.setPostUserId(userId);
             feedEntry.setFeedUserId("");
             feedEntry.setFeedDate(new Date());
-            
+            //bypassing FeedTaskProcessor.process() call feedDAO.insertFeedEntry()
             feedDAO.insertFeedEntry(feedEntry); // for TEST_SITE_6 site feed
-            
-            feedEntry.setFeedUserId(TEST_USER_E); // for TEST_USER_E user feed
+              
+            feedEntry.setFeedUserId(userId); // for TEST_USER_E user feed
             feedEntry.setFeedDate(new Date());
-            
-            feedDAO.insertFeedEntry(feedEntry);
+            //bypassing FeedTaskProcessor.process() call feedDAO.insertFeedEntry()
+            feedDAO.insertFeedEntry(feedEntry);   
         }
         
         final int site7FeedCnt = 5;
@@ -418,26 +445,26 @@ public class FeedCleanerTest extends TestCase
             
             feedEntry.setPostDate(new Date(System.currentTimeMillis()-(i*60*1000L)));
             feedEntry.setSiteNetwork(TEST_SITE_7);
-            feedEntry.setActivityType("testActivityType");
-            feedEntry.setPostUserId(TEST_USER_E);
+            feedEntry.setActivityType("testActivityType"); 
+            feedEntry.setPostUserId(userId);
             feedEntry.setFeedUserId("");
             feedEntry.setFeedDate(new Date());
-            
+            //bypassing FeedTaskProcessor.process() call feedDAO.insertFeedEntry()
             feedDAO.insertFeedEntry(feedEntry); // for TEST_SITE_7 site feed
-            
-            feedEntry.setFeedUserId(TEST_USER_E); // for TEST_USER_E user feed
+               
+            feedEntry.setFeedUserId(userId); // for TEST_USER_E user feed
             feedEntry.setFeedDate(new Date());
-            
+            //bypassing FeedTaskProcessor.process() call feedDAO.insertFeedEntry()
             feedDAO.insertFeedEntry(feedEntry);
         }
         
         assertEquals(site6FeedCnt, feedDAO.selectSiteFeedEntries(TEST_SITE_6, -1).size());
         assertEquals(site7FeedCnt, feedDAO.selectSiteFeedEntries(TEST_SITE_7, -1).size());
-        assertEquals(site6FeedCnt+site7FeedCnt, feedDAO.selectUserFeedEntries(TEST_USER_E, null, false, false, -1L, -1).size());
-        
+        assertEquals(site6FeedCnt+site7FeedCnt, feedDAO.selectUserFeedEntries(userId, null, false, false, -1L, -1).size());
+      
         // delete the person
-        personService.deletePerson(TEST_USER_E);
-        
+        personService.deletePerson(userId);
+ 
         // note: site feed cleanup is done in separate txn after commit
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
         {
@@ -446,11 +473,11 @@ public class FeedCleanerTest extends TestCase
                 assertEquals(site6FeedCnt, feedDAO.selectSiteFeedEntries(TEST_SITE_6, -1).size());
                 assertEquals(site7FeedCnt, feedDAO.selectSiteFeedEntries(TEST_SITE_7, -1).size());
                 
-                assertEquals(0, feedDAO.selectUserFeedEntries(TEST_USER_E, null, false, false, -1L, -1).size());
+                assertEquals(0, feedDAO.selectUserFeedEntries(userId, null, false, false, -1L, -1).size());
                 
-                assertTrue(createPerson(TEST_USER_E));
-                
-                assertEquals(0, feedDAO.selectUserFeedEntries(TEST_USER_E, null, false, false, -1L, -1).size());
+                assertTrue(createPerson(userId));
+
+                assertEquals(0, feedDAO.selectUserFeedEntries(userId, null, false, false, -1L, -1).size());
                 return null;
             }
         }, false, true);
@@ -476,6 +503,7 @@ public class FeedCleanerTest extends TestCase
         return false; // already exists
     }
     
+    @Test
     public void testConcurrentAccessAndRemoval() throws Exception
     {
         cleaner.setMaxAgeMins(1);
@@ -603,5 +631,12 @@ public class FeedCleanerTest extends TestCase
                 fail(t.getMessage());
             }
         }
+    }
+    
+    @AfterClass
+    // remove system "user.name.caseSensitive" property
+    public static void afterClass()
+    {
+        System.clearProperty("user.name.caseSensitive");
     }
 }

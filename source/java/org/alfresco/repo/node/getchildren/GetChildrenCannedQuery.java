@@ -224,24 +224,24 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         
         if(assocTypeQNames != null)
         {
-        	Set<Long> assocTypeQNameIds = qnameDAO.convertQNamesToIds(assocTypeQNames, false);
+            Set<Long> assocTypeQNameIds = qnameDAO.convertQNamesToIds(assocTypeQNames, false);
             if (assocTypeQNameIds.size() > 0)
             {
-            	params.setAssocTypeQNameIds(assocTypeQNameIds);
+                params.setAssocTypeQNameIds(assocTypeQNameIds);
             }
         }
 
         if (pattern != null)
         {
-        	// TODO, check that we should be tied to the content model in this way. Perhaps a configurable property
-        	// name against which compare the pattern?
-        	Pair<Long, QName> nameQName = qnameDAO.getQName(ContentModel.PROP_NAME);
-        	if(nameQName == null)
-        	{
-        		throw new AlfrescoRuntimeException("Unable to determine qname id of name property");
-        	}
-        	params.setNamePropertyQNameId(nameQName.getFirst());
-        	params.setPattern(pattern);
+            // TODO, check that we should be tied to the content model in this way. Perhaps a configurable property
+            // name against which compare the pattern?
+            Pair<Long, QName> nameQName = qnameDAO.getQName(ContentModel.PROP_NAME);
+            if(nameQName == null)
+            {
+                throw new AlfrescoRuntimeException("Unable to determine qname id of name property");
+            }
+            params.setNamePropertyQNameId(nameQName.getFirst());
+            params.setPattern(pattern);
         }
         
         final List<NodeRef> result;
@@ -608,73 +608,73 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     
     protected class DefaultFilterSortChildQueryCallback implements FilterSortChildQueryCallback
     {
-    	private List<FilterSortNode> children;
-    	private List<FilterProp> filterProps;
-    	private boolean applyFilter;
+        private List<FilterSortNode> children;
+        private List<FilterProp> filterProps;
+        private boolean applyFilter;
         private Set<QName> inclusiveAspects;
         private Set<QName> exclusiveAspects;
 
-    	public DefaultFilterSortChildQueryCallback(final List<FilterSortNode> children, final List<FilterProp> filterProps)
-    	{
+        public DefaultFilterSortChildQueryCallback(final List<FilterSortNode> children, final List<FilterProp> filterProps)
+        {
     	    this(children, filterProps, null, null);
     	}
 
     	public DefaultFilterSortChildQueryCallback(final List<FilterSortNode> children, final List<FilterProp> filterProps, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
     	{
-    		this.children = children;
-    		this.filterProps = filterProps;
+            this.children = children;
+            this.filterProps = filterProps;
             this.applyFilter = (filterProps.size() > 0);
             this.inclusiveAspects = inclusiveAspects;
             this.exclusiveAspects = exclusiveAspects;
-		}
+        }
 
-		@Override
-		public boolean handle(FilterSortNode node)
-		{
-			if(include(node))
-			{
+        @Override
+        public boolean handle(FilterSortNode node)
+        {
+            if(include(node))
+            {
                 children.add(node);
-			}
+            }
 
             // More results
             return true;
-		}
-		
-		protected boolean include(FilterSortNode node)
-		{
+        }
+        
+        protected boolean include(FilterSortNode node)
+        {
             // filter, if needed
         	return(!applyFilter || includeFilter(node.getPropVals(), filterProps)) && includeAspects(node.getNodeRef(), inclusiveAspects, exclusiveAspects);
-		}
+        }
     }
     
     protected class DefaultUnsortedChildQueryCallback implements UnsortedChildQueryCallback
     {
-    	private List<NodeRef> rawResult;
-    	private int requestedCount;
+        private List<NodeRef> rawResult;
+        private int requestedCount;
         private Set<QName> inclusiveAspects;
         private Set<QName> exclusiveAspects;
         
     	public DefaultUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
-    	{
-    		this.rawResult = rawResult;
-    		this.requestedCount = requestedCount;
+        {
+            this.rawResult = rawResult;
+            this.requestedCount = requestedCount;
     		this.inclusiveAspects = inclusiveAspects;
     		this.exclusiveAspects = exclusiveAspects;
-    	}
+        }
 
-		@Override
-		public boolean handle(NodeRef nodeRef)
-		{
-			if(include(nodeRef))
-			{
-	        	rawResult.add(tenantService.getBaseName(nodeRef));
-			}
+        @Override
+        public boolean handle(NodeRef nodeRef)
+        {
+            if(include(nodeRef))
+            {
+                rawResult.add(tenantService.getBaseName(nodeRef));
+            }
 
             // More results ?
             return (rawResult.size() < requestedCount);
-		}
+        }
 
-		protected boolean include(NodeRef nodeRef)
+        protected boolean include(NodeRef nodeRef)
         {
             return includeAspects(nodeRef, inclusiveAspects, exclusiveAspects);
         }

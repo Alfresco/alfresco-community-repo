@@ -60,7 +60,7 @@ public class StreamContent extends AbstractWebScript
     protected PermissionService permissionService;
     protected NodeService nodeService;
     protected MimetypeService mimetypeService;
-    private ContentStreamer delegate;
+    protected ContentStreamer delegate;
     
     /**
      * @param mimetypeService
@@ -194,7 +194,7 @@ public class StreamContent extends AbstractWebScript
      */
     protected void setAttachment(WebScriptResponse res, boolean attach, String attachFileName)
     {
-        delegate.setAttachment(res, attach, attachFileName);
+        delegate.setAttachment(null, res, attach, attachFileName);
     }
     
     /**

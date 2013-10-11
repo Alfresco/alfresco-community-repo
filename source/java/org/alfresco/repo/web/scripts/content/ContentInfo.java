@@ -46,7 +46,7 @@ public class ContentInfo extends StreamContent
 {
 
     private ReferenceFactory referenceFactory;
-
+    
     public void setReferenceFactory(ReferenceFactory referenceFactory)
     {
         this.referenceFactory = referenceFactory;
@@ -79,7 +79,7 @@ public class ContentInfo extends StreamContent
             boolean attach, Date modified, String eTag, String attachFileName)
             throws IOException
     {
-        setAttachment(res, attach, attachFileName);
+        delegate.setAttachment(req, res, attach, attachFileName);
 
         // establish mimetype
         String mimetype = reader.getMimetype();

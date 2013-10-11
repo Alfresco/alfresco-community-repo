@@ -19,15 +19,23 @@
 package org.alfresco.service.cmr.calendar;
 
 import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.repo.calendar.CalendarModel;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -205,11 +213,11 @@ public class CalendarRecurrenceHelper
     * @return The next recurrence on or after the given date, or null if there aren't any 
     */
    public static List<Date> getRecurrencesOnOrAfter(CalendarEntry entry, Date onOrAfter,
-                                                    Date until, boolean firstOnly)
+                                                    Date until, boolean firstOnly, Set<Date> ignoredDates)
    {
       return getRecurrencesOnOrAfter(
             entry.getRecurrenceRule(), entry.getStart(), entry.getEnd(), 
-            entry.getLastRecurrence(), onOrAfter, until, firstOnly);
+            entry.getLastRecurrence(), onOrAfter, until, firstOnly, ignoredDates);
    }
    
    /**
@@ -223,7 +231,8 @@ public class CalendarRecurrenceHelper
     */
    public static List<Date> getRecurrencesOnOrAfter(String recurrenceRule, Date eventStart, 
                                                     Date eventEnd, Date lastRecurrence,
-                                                    Date onOrAfter, Date until, boolean firstOnly)
+                                                    Date onOrAfter, Date until, boolean firstOnly,
+                                                    Set<Date> ignoredDates)
    {
       if (recurrenceRule == null)
       {
@@ -318,7 +327,22 @@ public class CalendarRecurrenceHelper
          {
             logger.warn("Unsupported recurrence frequency " + freq);
          }
-         
+
+         SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+         for (Date ignoredDate : ignoredDates)
+         {
+             Iterator<Date> i = dates.iterator();
+             while (i.hasNext())
+             {
+                 Date date = i.next();
+                 if (fmt.format(date).equals(fmt.format(ignoredDate)))
+                 {
+                     // occurrence is on the same day to ignore
+                     i.remove();
+                 }
+             }
+         }
+
          // Return what we've got
          return dates;
       }

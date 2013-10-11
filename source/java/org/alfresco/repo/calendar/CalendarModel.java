@@ -52,4 +52,13 @@ public interface CalendarModel
     /** SharePoint Event */
     public static final QName ASPECT_DOC_FOLDERED = QName.createQName(CALENDAR_MODEL_URL, "docFoldered");
     public static final QName PROP_DOC_FOLDER = QName.createQName(CALENDAR_MODEL_URL, "docFolder");
+    
+    /** Updated instances of recurrent series **/
+    public static final QName PROP_UPDATED_EVENT_DATE = QName.createQName(CALENDAR_MODEL_URL, "updatedDate");
+    public static final QName PROP_UPDATED_WHAT = QName.createQName(CALENDAR_MODEL_URL, "newWhatEvent");
+    public static final QName PROP_UPDATED_START = QName.createQName(CALENDAR_MODEL_URL, "newStart");
+    public static final QName PROP_UPDATED_END = QName.createQName(CALENDAR_MODEL_URL, "newEnd");
+    public static final QName PROP_UPDATED_WHERE= QName.createQName(CALENDAR_MODEL_URL, "newWhereEvent");
+    public static final QName ASSOC_UPDATED_EVENT_LIST = QName.createQName(CALENDAR_MODEL_URL, "updatedEventList");
+    public static final QName TYPE_UPDATED_EVENT = QName.createQName(CALENDAR_MODEL_URL, "updateEvent");
 }

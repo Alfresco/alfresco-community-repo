@@ -22,9 +22,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.ForumModel;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
@@ -37,6 +40,8 @@ import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
 import org.alfresco.service.cmr.calendar.CalendarService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -142,9 +147,21 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
                      searchTo = recurringLastDate;
                   }
                      
+                  Set<QName> childNodeTypeQNames = new HashSet<QName>();
+                  childNodeTypeQNames.add(CalendarModel.TYPE_IGNORE_EVENT);
+                  List<ChildAssociationRef> ignoreEventList = nodeService.getChildAssocs(result.getNodeRef(), childNodeTypeQNames);
+                  Set<Date> ignoredDates = new HashSet<Date>();
+                  for (ChildAssociationRef ignoreEvent : ignoreEventList)
+                  {
+                      NodeRef nodeRef = ignoreEvent.getChildRef();
+                      Date ignoredDate = (Date) nodeService.getProperty(nodeRef, CalendarModel.PROP_IGNORE_EVENT_DATE);
+                      ignoredDates.add(ignoredDate);
+                  }
+                  
+                  
                   List<Date> dates = CalendarRecurrenceHelper.getRecurrencesOnOrAfter(
                         recurringRule, fromDate, toDate, recurringLastDate,
-                        searchFrom, searchTo, false);
+                        searchFrom, searchTo, false, ignoredDates);
                   if (dates != null && dates.size() > 0)
                   {
                      // Do any of these fit?

@@ -108,8 +108,16 @@ public class NodeParameterProcessor extends ParameterProcessor
             QName type = propertyDefinition.getDataType().getName();
             if (ArrayUtils.contains(supportedDataTypes, type) == true)
             {
-                Serializable propertyValue = nodeService.getProperty(actionedUponNodeRef, qname);                
-                result = propertyValue.toString();                
+                Serializable propertyValue = nodeService.getProperty(actionedUponNodeRef, qname);   
+                if (propertyValue != null)
+                {
+                    result = propertyValue.toString();
+                }
+                else
+                {
+                    // set the result to the empty string
+                    result = "";
+                }
             }
             else
             {

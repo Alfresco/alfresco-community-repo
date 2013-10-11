@@ -35,7 +35,7 @@ import freemarker.template.TemplateScalarModel;
  * 
  * FreeMarker custom method to return the short (prefix) version of a QName.
  * <p>
- * Usage: String shortQname(String longQName)
+ * Usage: String shortQName(String longQName)
  */
 public final class ShortQNameMethod extends BaseProcessorExtension implements TemplateMethodModelEx
 {

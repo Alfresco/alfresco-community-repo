@@ -192,21 +192,21 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
      */
     public static final String PARAM_ENCODING = "encoding";
 
-	/**
-	 * Default {@link NodeLocator} simply returns the source node.
-	 */
-	private final static NodeLocator defaultNodeLocator = new SelfNodeLocator();
-	
-	/*
-	 * Injected beans
-	 */
-	private RenditionLocationResolver renditionLocationResolver;
-	protected NodeService nodeService;
-	private RenditionService renditionService;
+    /**
+     * Default {@link NodeLocator} simply returns the source node.
+     */
+    private final static NodeLocator defaultNodeLocator = new SelfNodeLocator();
+    
+    /*
+     * Injected beans
+     */
+    private RenditionLocationResolver renditionLocationResolver;
+    protected NodeService nodeService;
+    private RenditionService renditionService;
     private BehaviourFilter behaviourFilter;
-	
-	private final NodeLocator temporaryParentNodeLocator;
-	private final QName temporaryRenditionLinkType;
+    
+    private final NodeLocator temporaryParentNodeLocator;
+    private final QName temporaryRenditionLinkType;
 
     /**
      * Injects the nodeService bean.
@@ -376,9 +376,9 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     @Override
     protected void executeImpl(final Action action, final NodeRef sourceNode)
     {
-    	executeImpl( (RenditionDefinition)action, sourceNode );
+        executeImpl( (RenditionDefinition)action, sourceNode );
     }
-    	
+        
     protected void executeImpl(final RenditionDefinition renditionDef, final NodeRef sourceNode)
     {
         if (nodeService.exists(sourceNode) == true)
@@ -387,18 +387,18 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Rendering node ").append(sourceNode).append(" with rendition definition ").append(
-                		renditionDef.getRenditionName());
+                        renditionDef.getRenditionName());
                 msg.append("\n").append("  parameters:").append("\n");
                 if (renditionDef.getParameterValues().isEmpty() == false)
                 {
-                	for (String paramKey : renditionDef.getParameterValues().keySet())
-                	{
-                		msg.append("    ").append(paramKey).append("=").append(renditionDef.getParameterValue(paramKey)).append("\n");
-                	}
+                    for (String paramKey : renditionDef.getParameterValues().keySet())
+                    {
+                        msg.append("    ").append(paramKey).append("=").append(renditionDef.getParameterValue(paramKey)).append("\n");
+                    }
                 }
                 else
                 {
-                	msg.append("    [None]");
+                    msg.append("    [None]");
                 }
                 logger.debug(msg.toString());
             }
@@ -419,22 +419,22 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                 @Override
                 public Void doWork() throws Exception
                 {
-                	ChildAssociationRef result = null;
-                	try
-                	{
-                	    // Check whether this rendition is a component of a larger CompositeRendition
-    					boolean isComponentRendition = isComponentRendition(renditionDef);
-    					if (isComponentRendition == false)
-    					{
-    					    // Request that the rendition is initially created
-    					    //  as a child of the source node
-    				        setTemporaryRenditionProperties(sourceNode, renditionDef);					    
-    					}
+                    ChildAssociationRef result = null;
+                    try
+                    {
+                        // Check whether this rendition is a component of a larger CompositeRendition
+                        boolean isComponentRendition = isComponentRendition(renditionDef);
+                        if (isComponentRendition == false)
+                        {
+                            // Request that the rendition is initially created
+                            //  as a child of the source node
+                            setTemporaryRenditionProperties(sourceNode, renditionDef);                        
+                        }
     
-    				    // Have the concrete implementation do the actual rendition
-    					executeRenditionImpl(renditionDef, sourceNode);
+                        // Have the concrete implementation do the actual rendition
+                        executeRenditionImpl(renditionDef, sourceNode);
     
-    					// 
+                        // 
                         if (isComponentRendition == false)
                         {
                             // Add renditioned aspect to the source node
@@ -446,21 +446,21 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                             // So, have the correct node created, and switch everything to use it
                             switchToFinalRenditionNode(renditionDef, sourceNode);
                         }
-    					
-    					// Grab a link to the rendition node - it's been saved as a parameter for us
+                        
+                        // Grab a link to the rendition node - it's been saved as a parameter for us
                         // (Wait until now to fetch in case it was moved)
-    					result = (ChildAssociationRef)renditionDef.getParameterValue(PARAM_RESULT);
-    				} catch (Throwable t)
-    	            {
-    	                notifyCallbackOfException(renditionDef, t);
-    	                throwWrappedException(t);
-    	            }
-    	            if (result != null)
-    	            {
-    	                notifyCallbackOfResult(renditionDef, result);
-    	            }
-    	            	return null;
-    	            }
+                        result = (ChildAssociationRef)renditionDef.getParameterValue(PARAM_RESULT);
+                    } catch (Throwable t)
+                    {
+                        notifyCallbackOfException(renditionDef, t);
+                        throwWrappedException(t);
+                    }
+                    if (result != null)
+                    {
+                        notifyCallbackOfResult(renditionDef, result);
+                    }
+                        return null;
+                    }
             }, runAsName);
         }
         else
@@ -482,23 +482,23 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
      * @param action
      * @return
      */
-	private boolean isComponentRendition(Action action) {
-		Serializable s = action.getParameterValue(PARAM_IS_COMPONENT_RENDITION);
-		boolean result = s == null ? false : (Boolean)s;
-		return result;
-	}
+    private boolean isComponentRendition(Action action) {
+        Serializable s = action.getParameterValue(PARAM_IS_COMPONENT_RENDITION);
+        boolean result = s == null ? false : (Boolean)s;
+        return result;
+    }
     
     protected void executeRenditionImpl(Action action, NodeRef sourceNode)
     {
-    	if (logger.isDebugEnabled())
-    	{
-    		StringBuilder msg = new StringBuilder();
-    		msg.append("Executing rendering engine; name:")
-    		   .append(this.name).append(", class:")
-    		   .append(this.getClass().getName());
-    		logger.debug(msg.toString());
-    	}
-    	
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Executing rendering engine; name:")
+               .append(this.name).append(", class:")
+               .append(this.getClass().getName());
+            logger.debug(msg.toString());
+        }
+        
         checkParameterValues(action);
         RenditionDefinition renditionDefinition = checkActionIsRenditionDefinition(action);
         checkSourceNodeExists(sourceNode);
@@ -639,13 +639,13 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                     getParamDisplayLabel(PARAM_DESTINATION_PATH_TEMPLATE)));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_ORPHAN_EXISTING_RENDITION, DataTypeDefinition.BOOLEAN, false,
-        		getParamDisplayLabel(PARAM_ORPHAN_EXISTING_RENDITION)));
+                getParamDisplayLabel(PARAM_ORPHAN_EXISTING_RENDITION)));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_RESULT, DataTypeDefinition.CHILD_ASSOC_REF, false,
                 getParamDisplayLabel(PARAM_RESULT)));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_IS_COMPONENT_RENDITION, DataTypeDefinition.BOOLEAN, false,
-        		getParamDisplayLabel(PARAM_IS_COMPONENT_RENDITION)));
+                getParamDisplayLabel(PARAM_IS_COMPONENT_RENDITION)));
         return paramList;
     }
 
@@ -779,11 +779,11 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
          */
         public synchronized ChildAssociationRef getChildAssociationRef()
         {
-        	if (this.caNodeRef == null)
-        	{
-        		this.caNodeRef = createRenditionNodeAssoc(sourceNode, definition);
-        	}
-        	return this.caNodeRef;
+            if (this.caNodeRef == null)
+            {
+                this.caNodeRef = createRenditionNodeAssoc(sourceNode, definition);
+            }
+            return this.caNodeRef;
         }
 
         /**
@@ -883,7 +883,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     protected void notifyCallbackOfException(RenditionDefinition renditionDefinition, Throwable t)
     {
-    	// Rendition has failed. If there is a callback, it needs to be notified
+        // Rendition has failed. If there is a callback, it needs to be notified
         if (renditionDefinition != null)
         {
             RenderCallback callback = renditionDefinition.getCallback();
@@ -896,7 +896,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     protected void throwWrappedException(Throwable t)
     {
-    	// and rethrow Exception
+        // and rethrow Exception
         if (t instanceof AlfrescoRuntimeException)
         {
             throw (AlfrescoRuntimeException) t;
@@ -1097,7 +1097,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         if (executionSummaries.size() > 1)
         {
             throw new ActionServiceException("getExecutionSummary not supported for " +
-            		"multiple instances of the same action");
+                    "multiple instances of the same action");
         }
         return executionSummaries.iterator().next();
     }

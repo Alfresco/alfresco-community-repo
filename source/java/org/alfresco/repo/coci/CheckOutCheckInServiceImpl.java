@@ -80,7 +80,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     private static final String MSG_ERR_NOT_OWNER = "coci_service.err_not_owner"; 
     private static final String MSG_ERR_ALREADY_WORKING_COPY = "coci_service.err_workingcopy_checkout";
     private static final String MSG_ERR_NOT_AUTHENTICATED = "coci_service.err_not_authenticated";
-    private static final String MSG_ERR_WORKINGCOPY_HAS_NO_MIMETYPE = "coci_service.err_workingcopy_has_no_mimetype"; 
+    private static final String MSG_ERR_WORKINGCOPY_HAS_NO_CONTENT = "coci_service.err_workingcopy_has_no_content"; 
     private static final String MSG_ALREADY_CHECKEDOUT = "coci_service.err_already_checkedout";
     private static final String MSG_ERR_CANNOT_RENAME = "coci_service.err_cannot_rename";
     
@@ -563,7 +563,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             ContentData contentData = (ContentData) nodeService.getProperty(workingCopyNodeRef, ContentModel.PROP_CONTENT);
             if (contentData == null)
             {
-                throw new AlfrescoRuntimeException(MSG_ERR_WORKINGCOPY_HAS_NO_MIMETYPE, new Object[]{workingCopyNodeRef});
+                throw new AlfrescoRuntimeException(MSG_ERR_WORKINGCOPY_HAS_NO_CONTENT, new Object[]{workingCopyNodeRef});
             }
             else
             {

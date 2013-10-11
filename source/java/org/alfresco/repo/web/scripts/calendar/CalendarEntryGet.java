@@ -23,16 +23,23 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.TimeZone;
 
+import org.alfresco.repo.calendar.CalendarModel;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -66,7 +73,30 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
          String message = rb.getString(MSG_EVENT_NOT_FOUND);
          return buildError(MessageFormat.format(message, eventName));
       }
-      
+
+      Date date = parseDate(req.getParameter("date"));
+      if (date != null)
+      {
+         // if some instances were updated
+         SimpleDateFormat fdt = new SimpleDateFormat("yyyyMMdd");
+         Set<QName> childNodeTypeQNames = new HashSet<QName>();
+         childNodeTypeQNames.add(CalendarModel.TYPE_UPDATED_EVENT);
+         List<ChildAssociationRef> updatedEventList = nodeService.getChildAssocs(entry.getNodeRef(), childNodeTypeQNames);
+         for (ChildAssociationRef updatedEvent : updatedEventList)
+         {
+            NodeRef nodeRef = updatedEvent.getChildRef();
+            Date updatedDate = (Date) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_EVENT_DATE);
+            if (fdt.format(updatedDate).equals(fdt.format(date)))
+            {
+               entry.setStart((Date) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_START));
+               entry.setEnd((Date) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_END));
+               entry.setTitle((String) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_WHAT));
+               entry.setLocation((String) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_WHERE));
+               break;
+            }
+         }
+      }
+
       // Build the object
       Map<String, Object> result = new HashMap<String, Object>();
       result.put("name", entry.getSystemName());

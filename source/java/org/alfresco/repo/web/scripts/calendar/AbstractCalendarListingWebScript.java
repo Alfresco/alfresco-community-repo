@@ -24,16 +24,21 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.repo.calendar.CalendarModel;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 
 /**
  * This class provides functionality common across the webscripts
@@ -136,9 +141,21 @@ public abstract class AbstractCalendarListingWebScript extends AbstractCalendarW
       // How long is it?
       long duration = entry.getEnd().getTime() - entry.getStart().getTime();
       
+      // if some instances were deleted from series ignore them
+      Set<QName> childNodeTypeQNames = new HashSet<QName>();
+      childNodeTypeQNames.add(CalendarModel.TYPE_IGNORE_EVENT);
+      List<ChildAssociationRef> ignoreEventList = nodeService.getChildAssocs(entry.getNodeRef(), childNodeTypeQNames);
+      Set<Date> ignoredDates = new HashSet<Date>();
+      for (ChildAssociationRef ignoreEvent : ignoreEventList)
+      {
+          NodeRef nodeRef = ignoreEvent.getChildRef();
+          Date ignoredDate = (Date) nodeService.getProperty(nodeRef, CalendarModel.PROP_IGNORE_EVENT_DATE);
+          ignoredDates.add(ignoredDate);
+      }
+      
       // Get it's recurring instances
       List<Date> dates = CalendarRecurrenceHelper.getRecurrencesOnOrAfter(
-            entry, from, until, repeatingFirstOnly);
+            entry, from, until, repeatingFirstOnly, ignoredDates);
       if (dates == null)
       {
          dates = new ArrayList<Date>();
@@ -161,27 +178,49 @@ public abstract class AbstractCalendarListingWebScript extends AbstractCalendarW
          return false; // Remains sorted despite delete
       }
 
-      // Always update the live entry
-      updateRepeatingStartEnd(dates.get(0), duration, entryResult);
+      // if some instances were updated
+      SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+      childNodeTypeQNames = new HashSet<QName>();
+      childNodeTypeQNames.add(CalendarModel.TYPE_UPDATED_EVENT);
+      List<ChildAssociationRef> updatedEventList = nodeService.getChildAssocs(entry.getNodeRef(), childNodeTypeQNames);
+      Map<String, Date[]> updatedDates = new HashMap<String, Date[]>();
+      for (ChildAssociationRef updatedEvent : updatedEventList)
+      {
+          NodeRef nodeRef = updatedEvent.getChildRef();
+          Date updatedDate = (Date) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_EVENT_DATE);
+          Date newStart = (Date) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_START);
+          Date newEnd = (Date) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_END);
+          updatedDates.put(fmt.format(updatedDate), new Date[] { newStart, newEnd });
+      }
+      
+      // first occurrence can be edited as separate event
+      Date liveEntry = dates.get(0);
       
       // If first result only, alter title and finish
       if (repeatingFirstOnly)
       {
+         updateRepeating(entry, updatedDates, entryResult, duration, fmt, liveEntry);
+         
          entryResult.put(RESULT_TITLE, entry.getTitle() + " (Repeating)");
          return true; // Date has been changed
       }
-      
-      // Otherwise generate one entry per extra date
-      for (int i=1; i<dates.size(); i++)
+      else
       {
-         // Clone the properties
-         Map<String, Object> newResult = new HashMap<String, Object>(entryResult);
+         // Otherwise generate one entry per extra date
+         for (int i = 1; i < dates.size(); i++)
+         {
+            // Clone the properties
+            Map<String, Object> newResult = new HashMap<String, Object>(entryResult);
+            
+            Date extra = dates.get(i);
+            
+            updateRepeating(entry, updatedDates, newResult, duration, fmt, extra);
+            
+            // Save as a new event
+            allResults.add(newResult);
+         }
          
-         // Generate start and end based on this date
-         updateRepeatingStartEnd(dates.get(i), duration, newResult);
-         
-         // Save as a new event
-         allResults.add(newResult);
+         updateRepeating(entry, updatedDates, entryResult, duration, fmt, liveEntry);
       }
       
       // TODO Skip ignored instances
@@ -203,5 +242,27 @@ public abstract class AbstractCalendarListingWebScript extends AbstractCalendarW
       result.put("legacyTimeFrom", ltf.format(newStart));
       result.put("legacyDateTo", ldf.format(newEnd));
       result.put("legacyTimeTo", ltf.format(newEnd));
+   }
+   
+   private void updateRepeating(CalendarEntry entry, Map<String, Date[]> updatedDates, Map<String, Object> entryResult, long duration, SimpleDateFormat fmt, Date date)
+   {
+      if (updatedDates.keySet().contains(fmt.format(date)))
+      {
+         // there is day that was edited
+         Date[] newValues = updatedDates.get(fmt.format(date));
+         long newDuration = newValues[1].getTime() - newValues[0].getTime();
+         NodeRef nodeRef = nodeService.getChildAssocsByPropertyValue(entry.getNodeRef(), CalendarModel.PROP_UPDATED_EVENT_DATE, date).get(0).getChildRef();
+         if (nodeRef != null)
+         {
+            entryResult.put(RESULT_TITLE, (String) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_WHAT));
+            entryResult.put("where", (String) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_WHERE));
+         }
+         updateRepeatingStartEnd(newValues[0], newDuration, entryResult);
+      }
+      else
+      {
+         // Update entry
+         updateRepeatingStartEnd(date, duration, entryResult);
+      }
    }
 }

@@ -691,8 +691,8 @@
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.checkout=ACL_NODE.0.cm:lockable.CheckOut
-                org.alfresco.service.cmr.coci.CheckOutCheckInService.checkin=ACL_NODE.0.cm:lockable.CheckIn
-                org.alfresco.service.cmr.coci.CheckOutCheckInService.cancelCheckout=ACL_NODE.0.cm:lockable.CancelCheckOut
+                org.alfresco.service.cmr.coci.CheckOutCheckInService.checkin=ACL_NODE.0.cm:workingcopy.CheckIn
+                org.alfresco.service.cmr.coci.CheckOutCheckInService.cancelCheckout=ACL_NODE.0.cm:workingcopy.CancelCheckOut
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.getWorkingCopy=ACL_NODE.0.sys:base.Read
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.getCheckedOut=ACL_NODE.0.sys:base.Read
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.isWorkingCopy=ACL_NODE.0.sys:base.Read

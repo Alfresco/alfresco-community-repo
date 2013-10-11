@@ -39,6 +39,7 @@ import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -1131,7 +1132,6 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         assertTrue(thrown);
         
         ////////////////////////////////////////////////
-        // testing "move" actions with non-owner user //
         ////////////////////////////////////////////////
 
         // create another person
@@ -1187,8 +1187,6 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 
     /**
      * MNT-2641 
-     * <p/>
-     * Original cannot be deleted while it is checked out. No one should be able to delete or update the original.
      */
     public void testDeleteUpdateOriginalOfCheckedOutDocument()
     {
@@ -1398,7 +1396,6 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     {
         return nodeService.createNode(parentRef, ContentModel.ASSOC_CONTAINS, QName.createQName(contentName), ContentModel.TYPE_CONTENT).getChildRef();
     }
-
     private void createPerson(String userName)
     {
         // if user with given user name doesn't already exist then create user
@@ -1433,4 +1430,27 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         }
     }
 
+    /**
+     * <br>
+     * Creating node - CheckOut - Add write lock to working copy - Unlock working copy - CancelCheckOut
+     */
+    public void testCancelCheckoutUnlockedWCopy()
+    {
+        ServiceRegistry serviceRegistry = (ServiceRegistry)this.applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        CheckOutCheckInService securityCOCIService = serviceRegistry.getCheckOutCheckInService();
+        NodeRef folderA = createFolder(rootNodeRef, "testMnt9502_" + System.currentTimeMillis());
+        assertNotNull(folderA);
+        NodeRef clucc = createContent("checkout_lock_unlock_cancelCO", folderA);
+        assertNotNull(clucc);
+        
+        NodeRef wc = securityCOCIService.checkout(clucc);
+        lockService.lock(wc, LockType.WRITE_LOCK, 60*60);
+        lockService.unlock(wc);
+        securityCOCIService.cancelCheckout(wc);
+    }
+    
+    private NodeRef createFolder(NodeRef rootNodeRef, String fName)
+    {
+        return nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(fName), ContentModel.TYPE_FOLDER).getChildRef();
+    }
 }

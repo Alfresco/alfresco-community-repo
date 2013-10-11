@@ -137,18 +137,18 @@ public interface NodeServicePolicies
     }
     
     @AlfrescoPublicApi 
-	public interface OnUpdateNodePolicy extends ClassPolicy
-	{
+    public interface OnUpdateNodePolicy extends ClassPolicy
+    {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode");
-		/**
-		 * Called after a new node has been created.  This includes the modification of properties, child and target
-		 * associations and the addition of aspects.
-		 * 
-		 * @param nodeRef  reference to the updated node
-		 */
-		public void onUpdateNode(NodeRef nodeRef);
-	}
-	
+        /**
+         * Called after a new node has been created.  This includes the modification of properties, child and target
+         * associations and the addition of aspects.
+         * 
+         * @param nodeRef  reference to the updated node
+         */
+        public void onUpdateNode(NodeRef nodeRef);
+    }
+    
     @AlfrescoPublicApi
     public interface OnUpdatePropertiesPolicy extends ClassPolicy
     {
@@ -171,18 +171,18 @@ public interface NodeServicePolicies
     }
     
     @AlfrescoPublicApi 
-	public interface BeforeDeleteNodePolicy extends ClassPolicy
-	{
+    public interface BeforeDeleteNodePolicy extends ClassPolicy
+    {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode");
-		/**
-		 * Called before a node is deleted.
-		 * 
-		 * @param nodeRef   the node reference
-		 */
-		public void beforeDeleteNode(NodeRef nodeRef);
-	}
-	
-    @AlfrescoPublicApi	
+        /**
+         * Called before a node is deleted.
+         * 
+         * @param nodeRef   the node reference
+         */
+        public void beforeDeleteNode(NodeRef nodeRef);
+    }
+    
+    @AlfrescoPublicApi    
     public interface BeforeArchiveNodePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeArchiveNode");
@@ -195,21 +195,21 @@ public interface NodeServicePolicies
     }
     
     @AlfrescoPublicApi
-	public interface OnDeleteNodePolicy extends ClassPolicy
-	{
+    public interface OnDeleteNodePolicy extends ClassPolicy
+    {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode");
-		/**
-		 * Called after a node is deleted.  The reference given is for an association
+        /**
+         * Called after a node is deleted.  The reference given is for an association
          * which has been deleted and cannot be used to retrieve node or associaton
          * information from any of the services.
-		 * 
-         * @param childAssocRef 	the primary parent-child association of the deleted node
-         * @param isNodeArchived	indicates whether the node has been archived rather than purged
-		 */
-		public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived);
-	}
-	
-    @AlfrescoPublicApi 	
+         * 
+         * @param childAssocRef     the primary parent-child association of the deleted node
+         * @param isNodeArchived    indicates whether the node has been archived rather than purged
+         */
+        public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived);
+    }
+    
+    @AlfrescoPublicApi     
     public interface BeforeAddAspectPolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeAddAspect");

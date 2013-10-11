@@ -25,6 +25,8 @@
 package org.alfresco.repo.bulkimport.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.Serializable;
@@ -45,9 +47,12 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -306,6 +311,68 @@ public class BulkImportTest extends AbstractBulkImportTests
 	    },
 	    new ExpectedFolder[] {
 	    });
+	}
+
+    /**
+     * MNT-9076: Penultimate version cannot be accessed from Share when uploading using bulkimport
+     *
+     * @throws Throwable
+     */
+    @Test
+    public void testMNT9076() throws Throwable
+    {
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        NodeRef folderNode = topLevelFolder.getNodeRef();
+
+        try
+        {
+            NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport2"));
+            BulkImportParameters bulkImportParameters = new BulkImportParameters();
+            bulkImportParameters.setTarget(folderNode);
+            bulkImportParameters.setReplaceExisting(true);
+            bulkImportParameters.setDisableRulesService(true);
+            bulkImportParameters.setBatchSize(40);
+            bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
+        }
+        catch(Throwable e)
+        {
+            fail(e.getMessage());
+        }
+
+        System.out.println(bulkImporter.getStatus());
+        assertEquals(false, bulkImporter.getStatus().inProgress());
+
+        List<FileInfo> files = getFiles(folderNode, null);
+        assertEquals("One file is expected to be imported:", 1, files.size());
+        FileInfo file = files.get(0);
+        assertEquals("File name is not equal:", "fileWithVersions.txt", file.getName());
+
+        NodeRef file0NodeRef = file.getNodeRef();
+        assertTrue("Imported file should be versioned:", versionService.isVersioned(file0NodeRef));
+
+        VersionHistory history = versionService.getVersionHistory(file0NodeRef);
+        assertEquals("Imported file should have 4 versions:", 4, history.getAllVersions().size());
+        Version[] versions = history.getAllVersions().toArray(new Version[4]);
+
+        //compare the content of each version
+        ContentReader contentReader;
+        contentReader = this.contentService.getReader(versions[0].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is the final version of fileWithVersions.txt.", contentReader.getContentString());
+
+        contentReader = this.contentService.getReader(versions[1].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 3 of fileWithVersions.txt.", contentReader.getContentString());
+
+        contentReader = this.contentService.getReader(versions[2].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 2 of fileWithVersions.txt.", contentReader.getContentString());
+
+        contentReader = this.contentService.getReader(versions[3].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 1 of fileWithVersions.txt.", contentReader.getContentString());
 	}
 
 }

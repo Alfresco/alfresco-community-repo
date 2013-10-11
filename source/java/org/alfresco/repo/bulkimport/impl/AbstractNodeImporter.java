@@ -188,10 +188,10 @@ public abstract class AbstractNodeImporter implements NodeImporter
 
     		result = importContentVersions(nodeRef, importableItem);
     	}
-
-    	if (logger.isDebugEnabled()) logger.debug("Creating head revision of node " + nodeRef.toString());
-
-    	importContentAndMetadata(nodeRef, importableItem.getHeadRevision(), metadata);
+        else
+        {
+            importContentAndMetadata(nodeRef, importableItem.getHeadRevision(), metadata);
+        }
 
     	return(result);
     }
@@ -199,25 +199,29 @@ public abstract class AbstractNodeImporter implements NodeImporter
     protected final int importContentVersions(NodeRef nodeRef, ImportableItem importableItem)
     {
     	int result = 0;
+        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+        // Note: PROP_VERSION_LABEL is a "reserved" property, and cannot be modified by custom code.
+        // In other words, we can't use the version label on disk as the version label in Alfresco.  :-(
+        // See: http://code.google.com/p/alfresco-bulk-filesystem-import/issues/detail?id=85
+        //versionProperties.put(ContentModel.PROP_VERSION_LABEL.toPrefixString(), String.valueOf(versionEntry.getVersion()));
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR); // Load every version as a major version for now - see http://code.google.com/p/alfresco-bulk-filesystem-import/issues/detail?id=84
 
     	for (final ImportableItem.VersionedContentAndMetadata versionEntry : importableItem.getVersionEntries())
     	{
-    		Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
-    		MetadataLoader.Metadata   metadata          = loadMetadata(versionEntry);
-
+    		MetadataLoader.Metadata metadata = loadMetadata(versionEntry);
     		importContentAndMetadata(nodeRef, versionEntry, metadata);
 
     		if (logger.isDebugEnabled()) logger.debug("Creating v" + String.valueOf(versionEntry.getVersion()) + " of node '" + nodeRef.toString() + "' (note: version label in Alfresco will not be the same - it is not currently possible to explicitly force a particular version label).");
 
-    		// Note: PROP_VERSION_LABEL is a "reserved" property, and cannot be modified by custom code.
-    		// In other words, we can't use the version label on disk as the version label in Alfresco.  :-(
-    		// See: http://code.google.com/p/alfresco-bulk-filesystem-import/issues/detail?id=85
-    		//versionProperties.put(ContentModel.PROP_VERSION_LABEL.toPrefixString(), String.valueOf(versionEntry.getVersion()));
-    		versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);   // Load every version as a major version for now - see http://code.google.com/p/alfresco-bulk-filesystem-import/issues/detail?id=84
     		versionService.createVersion(nodeRef, versionProperties);
-
     		result += metadata.getProperties().size() + 4;  // Add 4 for "standard" metadata properties read from filesystem
     	}
+
+        if (logger.isDebugEnabled()) logger.debug("Creating head revision of node " + nodeRef.toString());
+        ImportableItem.ContentAndMetadata contentAndMetadata = importableItem.getHeadRevision();
+        MetadataLoader.Metadata metadata = loadMetadata(contentAndMetadata);
+        importContentAndMetadata(nodeRef, importableItem.getHeadRevision(), metadata);
+        versionService.createVersion(nodeRef, versionProperties);
 
     	return(result);
     }

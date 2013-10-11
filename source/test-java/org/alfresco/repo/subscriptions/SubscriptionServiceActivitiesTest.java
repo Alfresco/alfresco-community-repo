@@ -155,6 +155,7 @@ public class SubscriptionServiceActivitiesTest
     {
         // We put the scheduler in standby mode BeforeClass. Now we must restore it.
         QUARTZ_SCHEDULER.start();
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     @Before public void createTestSites() throws Exception
@@ -171,6 +172,7 @@ public class SubscriptionServiceActivitiesTest
         modSite2     = testSites.createSite("sitePreset", "mod2" + guid, "", "",  SiteVisibility.MODERATED, ADMIN);
         log.debug("Created some test sites...");
         
+        AuthenticationUtil.clearCurrentSecurityContext();
         // test site cleanup is handled automatically by the JUnit Rule.
     }
     

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012
+ * Copyright (C) 2005-2013
  Alfresco Software Limited.
  *
  * This file is part of Alfresco
@@ -20,9 +20,12 @@
 package org.alfresco.util.test.junitrules;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.activities.ActivityPostDAO;
+import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
@@ -70,6 +73,7 @@ public class TemporarySites extends AbstractPersonRule
     {
         final RetryingTransactionHelper transactionHelper = (RetryingTransactionHelper) appContextRule.getApplicationContext().getBean("retryingTransactionHelper");
         final SiteService siteService = appContextRule.getApplicationContext().getBean("siteService", SiteService.class);
+        final ActivityPostDAO postDAO = appContextRule.getApplicationContext().getBean("postDAO", ActivityPostDAO.class);
         
         // Run as admin to ensure all sites can be deleted irrespective of which user created them.
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -95,6 +99,15 @@ public class TemporarySites extends AbstractPersonRule
                             log.debug("Deleting temporary site user " + username);
                             deletePerson(username);
                         }
+                        
+                        // Clean all the post feeds 
+                        int deletedCnt = 0;
+                        Date keepDate = new Date(System.currentTimeMillis() + (120 * 1000L));
+                        for (ActivityPostEntity.STATUS status : ActivityPostEntity.STATUS.values())
+                        {
+                            deletedCnt += postDAO.deletePosts(keepDate, status);
+                        }
+                        log.debug("Deleted " + deletedCnt + " post feeds.");
                         
                         return null;
                     }

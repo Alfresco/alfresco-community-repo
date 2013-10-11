@@ -78,7 +78,7 @@ public class WikiPageMovePost extends AbstractWikiWebScript
          
       
       // Have the page re-named, if possible
-      String oldTitle = page.getTitle();
+      String oldTitle = page.getTitle().length() == 0 ? pageTitle : page.getTitle();
       try
       {
          page.setTitle(newTitle);

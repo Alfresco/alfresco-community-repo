@@ -33,14 +33,23 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.bulkimport.AnalysedDirectory;
 import org.alfresco.repo.bulkimport.DirectoryAnalyser;
 import org.alfresco.repo.bulkimport.ImportFilter;
 import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.repo.bulkimport.ImportableItem.FileType;
 import org.alfresco.repo.bulkimport.MetadataLoader;
+import org.alfresco.service.cmr.dictionary.Constraint;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.cmr.dictionary.ConstraintException;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * This class provides the implementation for directory analysis, the process by
@@ -49,7 +58,7 @@ import org.apache.commons.logging.LogFactory;
  * @since 4.0
  * 
  */
-public class DirectoryAnalyserImpl implements DirectoryAnalyser
+public class DirectoryAnalyserImpl implements DirectoryAnalyser, InitializingBean
 {
     private final static Log log = LogFactory.getLog(DirectoryAnalyserImpl.class);
     
@@ -58,18 +67,52 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
     private MetadataLoader metadataLoader;
     private BulkImportStatusImpl importStatus;
     private List<ImportFilter> importFilters;
+    private DictionaryService dictionaryService;
+    private Constraint filenameConstraint;
     
-    public DirectoryAnalyserImpl(MetadataLoader metadataLoader, BulkImportStatusImpl importStatus, List<ImportFilter> importFilters)
+    public DirectoryAnalyserImpl(MetadataLoader metadataLoader, BulkImportStatusImpl importStatus, List<ImportFilter> importFilters,
+            DictionaryService dictionaryService)
     {
         this.metadataLoader = metadataLoader;
         this.importStatus = importStatus;
         this.importFilters = importFilters;
+        this.dictionaryService = dictionaryService;
     }
     
     public DirectoryAnalyserImpl()
     {
     }
     
+    public DictionaryService getDictionaryService()
+    {
+        return dictionaryService;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
+    /**
+     * Loads filename constraint from dictionary
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+
+        QName qNameConstraint = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "filename");
+        ConstraintDefinition constraintDef = dictionaryService.getConstraint(qNameConstraint);
+        if (constraintDef == null)
+        {
+            throw new AlfrescoRuntimeException("Constraint definition does not exist: " + qNameConstraint);
+        }
+        filenameConstraint = constraintDef.getConstraint();
+        if (filenameConstraint == null)
+        {
+            throw new AlfrescoRuntimeException("Constraint does not exist: " + qNameConstraint);
+        }
+    }
+
 	public void setMetadataLoader(MetadataLoader metadataLoader)
 	{
 		this.metadataLoader = metadataLoader;
@@ -143,6 +186,22 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
             
             if (file.canRead())
             {
+                try
+                {
+                    filenameConstraint.evaluate(file.getName());
+                }
+                catch (ConstraintException e)
+                {
+                    if (log.isWarnEnabled())
+                    {
+                        log.warn("Skipping file with invalid name: '" + FileUtils.getFileName(file) + "'.");
+                    }
+                    // mark file with invalid name as unreadable
+                    importStatus.incrementNumberOfUnreadableEntries();
+                    
+                    continue;
+                }
+                
                 if (isVersionFile(file))
                 {
                     addVersionFile(directory, result, file);

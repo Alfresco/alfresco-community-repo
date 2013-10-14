@@ -1,8 +1,11 @@
 package org.alfresco.rest.framework.webscripts;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+import org.alfresco.repo.web.scripts.BufferedRequest;
+import org.alfresco.repo.web.scripts.BufferedResponse;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
 import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
@@ -11,6 +14,9 @@ import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper.Writer;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.TempFileProvider;
+import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStreamFactory;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -35,6 +41,54 @@ public abstract class ApiWebScript extends AbstractWebScript
     protected JacksonHelper jsonHelper;
     ExceptionResolver<Exception> defaultResolver = new DefaultExceptionResolver();
     ExceptionResolver<Exception> resolver;
+
+    protected boolean encryptTempFiles = false;
+    protected String tempDirectoryName = null;
+    protected int memoryThreshold = 4 * 1024 * 1024; // 4mb
+    protected long maxContentSize = (long) 4 * 1024 * 1024 * 1024; // 4gb
+    protected ThresholdOutputStreamFactory streamFactory = null;
+    protected TransactionService transactionService;
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    public void setDefaultResolver(ExceptionResolver<Exception> defaultResolver)
+    {
+        this.defaultResolver = defaultResolver;
+    }
+
+    public void setTempDirectoryName(String tempDirectoryName)
+    {
+        this.tempDirectoryName = tempDirectoryName;
+    }
+
+    public void setEncryptTempFiles(boolean encryptTempFiles)
+    {
+        this.encryptTempFiles = encryptTempFiles;
+    }
+
+    public void setMemoryThreshold(int memoryThreshold)
+    {
+        this.memoryThreshold = memoryThreshold;
+    }
+
+    public void setMaxContentSize(long maxContentSize)
+    {
+        this.maxContentSize = maxContentSize;
+    }
+
+    public void setStreamFactory(ThresholdOutputStreamFactory streamFactory)
+    {
+        this.streamFactory = streamFactory;
+    }
+    
+    public void init()
+    {
+        File tempDirectory = new File(TempFileProvider.getTempDir(), tempDirectoryName);
+        this.streamFactory = ThresholdOutputStreamFactory.newInstance(tempDirectory, memoryThreshold, maxContentSize, encryptTempFiles);
+    }
 
     public final static String UTF8 = "UTF-8";
     public final static Cache CACHE_NEVER = new Cache(new RequiredCache()
@@ -64,7 +118,28 @@ public abstract class ApiWebScript extends AbstractWebScript
     {
 		Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
 		Api api = determineApi(templateVars);
-		execute(api, req, res);
+		
+		final BufferedRequest bufferedReq = getRequest(req);
+		final BufferedResponse bufferedRes = getResponse(res);
+
+		try
+		{
+		    execute(api, bufferedReq, bufferedRes);
+		}
+		finally
+		{
+            // Get rid of any temporary files
+            if (bufferedReq != null)
+            {
+                bufferedReq.close();
+            }
+		}
+
+        // Ensure a response is always flushed after successful execution
+        if (bufferedRes != null)
+        {
+            bufferedRes.writeResponse();
+        }
     }
 
     private Api determineApi(Map<String, String> templateVars)
@@ -83,6 +158,20 @@ public abstract class ApiWebScript extends AbstractWebScript
             error = defaultResolver.resolveException(ex);
         }
         return error;
+    }
+
+    protected BufferedRequest getRequest(final WebScriptRequest req)
+    {
+        // create buffered request and response that allow transaction retrying
+        final BufferedRequest bufferedReq = new BufferedRequest(req, streamFactory);
+        return bufferedReq;
+    }
+
+    protected BufferedResponse getResponse(final WebScriptResponse resp)
+    {
+        // create buffered request and response that allow transaction retrying
+        final BufferedResponse bufferedRes = new BufferedResponse(resp, memoryThreshold);
+        return bufferedRes;
     }
 
     public abstract void execute(final Api api, WebScriptRequest req, WebScriptResponse res) throws IOException;

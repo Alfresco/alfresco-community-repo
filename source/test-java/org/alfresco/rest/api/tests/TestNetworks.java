@@ -405,5 +405,21 @@ public class TestNetworks extends EnterpriseTestApi
 		Person ret = peopleProxy.getPerson(person31.getId());
 		person31.expected(ret);
 	}
+	
+	// ALF-20216, ALF-20217, ALF-20098
+	// http://localhost:8080/alfresco/api/-default-
+	@Test
+	public void testALF20098() throws Exception
+	{
+        final TestNetwork testAccount = getTestFixture().getRandomNetwork();
+        Iterator<TestPerson> personIt = testAccount.getPeople().iterator();
+        final TestPerson person = personIt.next();
+
+        RequestContext rc = new RequestContext("-default-", person.getId());
+        publicApiClient.setRequestContext(rc);
+
+        HttpResponse response = publicApiClient.get("/-default-", null);
+        assertEquals(200, response.getStatusCode());
+	}
 
 }

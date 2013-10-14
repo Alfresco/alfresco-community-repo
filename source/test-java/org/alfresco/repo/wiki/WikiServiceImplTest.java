@@ -212,13 +212,13 @@ public class WikiServiceImplTest
        page.setContents("This is new content");
        
        page = WIKI_SERVICE.updateWikiPage(page);
-       assertEquals("New%20Title", page.getSystemName()); // Name has underscores
+       assertEquals("New_Title", page.getSystemName()); // Name has underscores
        assertEquals("New Title", page.getTitle());
        
        
        // Fetch, and check
        page = WIKI_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName());
-       assertEquals("New%20Title", page.getSystemName()); // Name has underscores
+       assertEquals("New_Title", page.getSystemName()); // Name has underscores
        assertEquals("New Title", page.getTitle());
        assertEquals("This is new content", page.getContents());
        assertEquals(TEST_USER, page.getCreator());
@@ -238,7 +238,7 @@ public class WikiServiceImplTest
        testNodesToTidy.add(page.getNodeRef());
        
        // Check it
-       assertEquals("Title%20Space", page.getSystemName());
+       assertEquals("Title_Space", page.getSystemName());
        assertEquals("Title Space", page.getTitle());
        assertEquals("This Is Some Content", page.getContents());
        assertEquals(TEST_USER, page.getCreator());
@@ -251,7 +251,7 @@ public class WikiServiceImplTest
        
        // Check
        page = WIKI_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName());
-       assertEquals("Title%20Space", page.getSystemName());
+       assertEquals("Title_Space", page.getSystemName());
        assertEquals("Title Space", page.getTitle());
        assertEquals("Changed contents", page.getContents());
        assertEquals(TEST_USER, page.getCreator());

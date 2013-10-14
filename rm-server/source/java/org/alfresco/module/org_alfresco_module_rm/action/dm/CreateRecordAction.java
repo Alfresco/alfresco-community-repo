@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
 import java.util.List;
 
-import org.alfresco.enterprise.repo.sync.SyncModel;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
@@ -36,14 +35,15 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  * Creates a new record from an existing content object.
- * 
+ *
  * Note:  This is a 'normal' dm action, rather than a records management action.
- * 
+ *
  * @author Roy Wetherall
  */
 public class CreateRecordAction extends AuditableActionExecuterAbstractBase
@@ -51,29 +51,34 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(CreateRecordAction.class);
-    
+
     /** Action name */
     public static final String NAME = "create-record";
-    
+
     /** Parameter names */
     public static final String PARAM_FILE_PLAN = "file-plan";
     public static final String PARAM_HIDE_RECORD = "hide-record";
-    
+
+    /** Sync Model URI */
+    static final String SYNC_MODEL_1_0_URI = "http://www.alfresco.org/model/sync/1.0";
+    /** Synced aspect */
+    static final QName ASPECT_SYNCED = QName.createQName(SYNC_MODEL_1_0_URI, "synced");
+
     /** Record service */
     private RecordService recordService;
-    
+
     /** Node service */
     private NodeService nodeService;
-    
+
     /** File plan service */
     private FilePlanService filePlanService;
-    
+
     /** Dictionary service */
     private DictionaryService dictionaryService;
-    
+
     /** File plan authentication service */
     private FilePlanAuthenticationService filePlanAuthenticationService;
-    
+
     /**
      * @param recordService record service
      */
@@ -81,7 +86,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     {
         this.recordService = recordService;
     }
-    
+
     /**
      * @param nodeService   node service
      */
@@ -89,7 +94,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -97,7 +102,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @param dictionaryService dictionary service
      */
@@ -105,7 +110,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * @param filePlanAuthenticationService file plan authentication service
      */
@@ -113,15 +118,15 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     {
         this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
-    {       
-        
-        if (nodeService.exists(actionedUponNodeRef) == false)        
+    {
+
+        if (nodeService.exists(actionedUponNodeRef) == false)
         {
             // do not create record if the actioned upon node does not exist!
             if (logger.isDebugEnabled() == true)
@@ -152,7 +157,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
             {
                 logger.debug("Can node create record, because " + actionedUponNodeRef.toString() + " is a working copy.");
             }
-            
+
         }
         else if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS) == true)
         {
@@ -162,7 +167,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                 logger.debug("Can not create record, because " + actionedUponNodeRef.toString() + " has previously been rejected.");
             }
         }
-        else if (nodeService.hasAspect(actionedUponNodeRef, SyncModel.ASPECT_SYNCED) == true)
+        else if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_SYNCED) == true)
         {
             // can't declare the record if the node is sync'ed
             if (logger.isDebugEnabled() == true)
@@ -170,11 +175,11 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                 logger.debug("Can't declare as record, because " + actionedUponNodeRef.toString() + " is synched content.");
             }
         }
-        else 
+        else
         {
             NodeRef filePlan = (NodeRef)action.getParameterValue(PARAM_FILE_PLAN);
             if (filePlan == null)
-            {                
+            {
                 // TODO .. eventually make the file plan parameter required
                 filePlan = filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<NodeRef>()
                 {
@@ -184,7 +189,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                         return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
                     }
                 });
-                
+
                 // if the file plan is still null, raise an exception
                 if (filePlan == null)
                 {
@@ -193,7 +198,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                         logger.debug("Can not create record, because the default file plan can not be determined.  Make sure at least one file plan has been created.");
                     }
                     throw new AlfrescoRuntimeException("Can not create record, because the default file plan can not be determined.");
-                } 
+                }
             }
             else
             {
@@ -207,7 +212,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                     throw new AlfrescoRuntimeException("Can not create record, because the provided file plan node reference is not a file plan.");
                 }
             }
-            
+
             // indicate whether the record should be hidden or not (default not)
             boolean hideRecord = false;
             Boolean hideRecordValue = ((Boolean)action.getParameterValue(PARAM_HIDE_RECORD));
@@ -215,7 +220,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
             {
                 hideRecord = hideRecordValue.booleanValue();
             }
-            
+
             // create record from existing document
             recordService.createRecord(filePlan, actionedUponNodeRef, !hideRecord);
         }
@@ -231,5 +236,5 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         //params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
         params.add(new ParameterDefinitionImpl(PARAM_HIDE_RECORD, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_HIDE_RECORD)));
     }
-   
+
 }

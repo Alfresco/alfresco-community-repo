@@ -3,6 +3,7 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
 
 const REQUEST_MAX = 1000;
+const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
 
 /**
  * Main entry point: Create collection of documents and folders in the given space
@@ -61,7 +62,7 @@ function getDoclist()
                skip = (args.pos - 1) * max;
             }
          }
-          
+         
          var sortField = (args.sortField == null ? "cm:name" : args.sortField),
             sortAsc = (((args.sortAsc == null) || (args.sortAsc == "true")) ? true : false);
 
@@ -97,21 +98,28 @@ function getDoclist()
    }
    if (logger.isLoggingEnabled())
       logger.log("doclist.get.js - query results: " + allNodes.length);
-   // Generate the qname path match regex required for all sites 'documentLibrary' results match
-   var pathRegex;
+   
+   // TODO: replace with java.lang.String regex match for performance
+   var pathMatch;
    if (allSites)
    {
-      // escape the forward slash characters in the qname path
-      // TODO: replace with java.lang.String regex match for performance
-      var pathMatch = new String(parsedArgs.rootNode.qnamePath).replace(/\//g, '\\/') + "\\/.*\\/cm:documentLibrary\\/.*";
-      pathRegex = new RegExp(pathMatch, "gi");
+      // Generate a qname path match regex required for all sites 'documentLibrary' results match
+      pathMatch = new String(parsedArgs.rootNode.qnamePath).replace(/\//g, '\\/') + "\\/.*\\/cm:documentLibrary\\/.*";
       if (logger.isLoggingEnabled())
          logger.log("doclist.get.js - will match results using regex: " + pathMatch);
    }
+   else if (query)
+   {
+      // Generate a qname path match regex required for queries where entire repo has been searched - but don't want results
+      // from sites which are not documents - i.e. filter wiki, blog etc. from results
+      pathMatch = new String(SITES_SPACE_QNAME_PATH).replace(/\//g, '\\/') + ".*\\/cm:documentLibrary\\/.*";
+   }
+   var pathRegex = new RegExp(pathMatch, "gi");
 
    // Ensure folders and folderlinks appear at the top of the list
    var folderNodes = [],
-      documentNodes = [];
+      documentNodes = [],
+      qnamepath;
 
    for each (node in allNodes)
    {
@@ -119,7 +127,8 @@ function getDoclist()
       {
          try
          {
-            if (!allSites || node.qnamePath.match(pathRegex))
+            var qnamePath = node.qnamePath;
+            if (!query || (allSites && qnamePath.match(pathRegex)) || qnamePath.indexOf(SITES_SPACE_QNAME_PATH) !== 0 || qnamePath.match(pathRegex))
             {
                totalItemCount--;
                if (node.isContainer || node.isLinkToContainer)

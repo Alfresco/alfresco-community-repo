@@ -481,7 +481,7 @@ a.spaceBreadcrumbLink:link, a.spaceBreadcrumbLink:visited, a.spaceBreadcrumbLink
    position: absolute;
    border: 1px solid #CCD4DB;
    background-color: #EEF7FB;
-   width: 24em;
+   width: 27em;
    height: 11.4em;
    padding: 8px;
    margin: 8px;

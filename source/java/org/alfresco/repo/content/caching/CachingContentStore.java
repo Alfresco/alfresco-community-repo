@@ -301,7 +301,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
             
             // Writing will be performed straight to the cache.
             final String url = bsWriter.getContentUrl();
-            final ContentWriter cacheWriter = cache.getWriter(url);
+            final BackingStoreAwareCacheWriter cacheWriter = new BackingStoreAwareCacheWriter(cache.getWriter(url), bsWriter);
             
             // When finished writing perform these actions.
             cacheWriter.addListener(new ContentStreamListener()

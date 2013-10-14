@@ -22,10 +22,10 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.script.admin.RoleDeclarativeWebScript;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.tuckey.web.filters.urlrewrite.utils.StringUtils;
 
 /**
  * Abstract class for adding/removing a user/group to/from a role

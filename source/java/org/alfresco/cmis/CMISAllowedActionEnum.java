@@ -61,8 +61,8 @@ public enum CMISAllowedActionEnum implements EnumLabel
     
     // versioning services
     CAN_CHECKOUT("canCheckOut", "canCheckout.Document", CMISAccessControlService.CMIS_ALL_PERMISSION, "canCheckout.Document", "{http://www.alfresco.org/model/content/1.0}lockable.CheckOut"), 
-    CAN_CANCEL_CHECKOUT("canCancelCheckOut", "canCancelCheckout.Document", CMISAccessControlService.CMIS_ALL_PERMISSION, "canCancelCheckout.Document", "{http://www.alfresco.org/model/content/1.0}lockable.CancelCheckOut"), 
-    CAN_CHECKIN("canCheckIn", "canCheckin.Document", CMISAccessControlService.CMIS_ALL_PERMISSION, "canCheckin.Document", "{http://www.alfresco.org/model/content/1.0}lockable.CheckIn"), 
+    CAN_CANCEL_CHECKOUT("canCancelCheckOut", "canCancelCheckout.Document", CMISAccessControlService.CMIS_ALL_PERMISSION, "canCancelCheckout.Document", "{http://www.alfresco.org/model/content/1.0}workingcopy.CancelCheckOut"), 
+    CAN_CHECKIN("canCheckIn", "canCheckin.Document", CMISAccessControlService.CMIS_ALL_PERMISSION, "canCheckin.Document", "{http://www.alfresco.org/model/content/1.0}workingcopy.CheckIn"), 
     CAN_GET_ALL_VERSIONS("canGetAllVersions", "canGetAllVersions.VersionSeries", CMISAccessControlService.CMIS_READ_PERMISSION, "canGetAllVersions.VersionSeries", "{http://www.alfresco.org/model/system/1.0}base.Read"), 
 
     // relationship services

@@ -4945,7 +4945,16 @@ public class ContentDiskDriverTest extends TestCase
         
          
         // clean up so we could run the test again
-        //driver.deleteFile(testSession, testConnection, FILE_PATH);    
+        RetryingTransactionCallback<Void> deleteFile = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, FILE_PATH);
+                return null;
+            }
+        };
+        tran.doInTransaction(deleteFile, false, true);
         
     } // test set modified scenario
     

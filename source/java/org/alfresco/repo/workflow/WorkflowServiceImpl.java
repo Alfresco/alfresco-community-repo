@@ -34,7 +34,6 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -978,13 +977,11 @@ public class WorkflowServiceImpl implements WorkflowService
                         {
                             workflowDefId = workflowDefId.substring(workflowDefId.indexOf('$') + 1);
                         }
-                        String taskDefId = task.getDefinition().getId().replace(":", "_");
-                        String taskType = workflowDefId + "." + (engineId.equals(JBPMEngine.ENGINE_ID) ? "type" : "task") + "." + taskDefId;
                         
                         // Send the notification
                         workflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
                                     taskId,
-                                    taskType,
+                                    null,
                                     assignee,
                                     false);
                     }

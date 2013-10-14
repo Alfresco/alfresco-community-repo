@@ -423,7 +423,7 @@ public class LoginBean implements Serializable
                // note: to enable MT runtime client config customization, need to re-init NavigationBean
                // in context of tenant login page
                this.navigator.initFromClientConfig();
-                 
+               
                if (NavigationBean.LOCATION_MYALFRESCO.equals(this.preferences.getStartLocation()))
                {
                   return "myalfresco";

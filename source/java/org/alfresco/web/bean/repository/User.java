@@ -203,7 +203,7 @@ public final class User implements SessionUser
       }
       return this.preferences;
    }
-   
+    
    /**
     * Get or create the node used to store user preferences.
     * Utilises the 'configurable' aspect on the Person linked to this user.
@@ -267,7 +267,7 @@ public final class User implements SessionUser
                 }
                 return prefRef;
             }
-        });
+        }, txService.isReadOnly());
     }
    
    /**

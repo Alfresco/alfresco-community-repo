@@ -19,12 +19,17 @@
 package org.alfresco.repo.content.caching;
 
 import java.io.File;
+import java.util.Arrays;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.TempFileProvider;
@@ -150,6 +155,40 @@ public class CachingContentStoreSpringTest extends AbstractWritableContentStoreT
         assertEquals(content, contentAfterDelete);
     }
     
+    public void testQuotaOnOverlimitCacheFile()
+    {
+        store = new CachingContentStore(backingStore, cache, true);
+        
+        final int overLimitSize = 1;
+        QuotaManagerStrategy quota = mock(QuotaManagerStrategy.class);
+        store.setQuota(quota);
+        when(quota.beforeWritingCacheFile(0)).thenReturn(true);
+        when(quota.afterWritingCacheFile(overLimitSize)).thenReturn(false);
+        
+        char[] chars = new char[overLimitSize];
+        // Optional step - unnecessary if you're happy with the array being full of \0
+        Arrays.fill(chars, 'f');
+        final String content = new String(chars);
+        final String contentUrl = FileContentStore.createNewFileStoreUrl();
+        assertFalse("Content shouldn't be cached yet", cache.contains(contentUrl));
+        
+        // Write some content using the caching store
+        ContentWriter writer = store.getWriter(new ContentContext(null, contentUrl));
+        writer.putContent(content);
+        
+        assertFalse("Overlimit content should be deleted from cache", cache.contains(contentUrl));
+        assertFalse("Overlimit content should be deleted from cache", writer.getReader().exists());
+
+        // The content should have been written through to the backing store.
+        String fromBackingStore = backingStore.getReader(contentUrl).getContentString();
+        assertEquals("Content should be in backing store", content, fromBackingStore);
+        assertEquals("Content should be in backing store", overLimitSize, fromBackingStore.length());
+        
+        // cache writer should still return actual size
+        // so that listeners could be executed correctly
+        assertEquals("Cache writer should still return actual size", overLimitSize, writer.getSize());
+        assertEquals("Cache writer should still return actual size", overLimitSize, writer.getContentData().getSize());
+    }
     
     /*
      * @see org.alfresco.repo.content.AbstractReadOnlyContentStoreTest#getStore()

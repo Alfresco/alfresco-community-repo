@@ -123,30 +123,30 @@ public class SearchServiceTest extends TestCase
         rootNodeRef = nodeService.getRootNode(storeRef);
 
         n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}01"),
-                ContentModel.TYPE_CONTAINER).getChildRef();
+                ContentModel.TYPE_FOLDER).getChildRef();
         pubPermissionService.setPermission(n1, "andy", "Read", true);
         n2 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}02"),
-                ContentModel.TYPE_CONTAINER).getChildRef();
+                ContentModel.TYPE_FOLDER).getChildRef();
         pubPermissionService.setPermission(n2, "andy", "Read", true);
         n3 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}03"),
-                ContentModel.TYPE_CONTAINER).getChildRef();
+                ContentModel.TYPE_FOLDER).getChildRef();
         pubPermissionService.setPermission(n3, "andy", "Read", true);
         n4 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}04"),
-                ContentModel.TYPE_CONTAINER).getChildRef();
+                ContentModel.TYPE_FOLDER).getChildRef();
         pubPermissionService.setPermission(n4, "andy", "Read", true);
         n5 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}05"),
-                ContentModel.TYPE_CONTAINER).getChildRef();
+                ContentModel.TYPE_FOLDER).getChildRef();
         pubPermissionService.setPermission(n5, "andy", "Read", true);
         n6 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}06"),
-                ContentModel.TYPE_CONTAINER).getChildRef();
+                ContentModel.TYPE_FOLDER).getChildRef();
         n7 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}07"),
-                ContentModel.TYPE_CONTAINER).getChildRef();
+                ContentModel.TYPE_FOLDER).getChildRef();
         n8 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}08"),
-                ContentModel.TYPE_CONTAINER).getChildRef();
+                ContentModel.TYPE_FOLDER).getChildRef();
         n9 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}09"),
-                ContentModel.TYPE_CONTAINER).getChildRef();
+                ContentModel.TYPE_FOLDER).getChildRef();
         n10 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}10"),
-                ContentModel.TYPE_CONTAINER).getChildRef();
+                ContentModel.TYPE_FOLDER).getChildRef();
 
     }
 
@@ -256,6 +256,21 @@ public class SearchServiceTest extends TestCase
         assertEquals(results.length(), 2);
         assertNotNull(results.getResultSetMetaData());
         assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.FINAL_SIZE);
+        assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
+        results.close();
+    }
+    
+    public void testAndyCMIS()
+    {
+        authenticationComponent.setCurrentUser("andy");
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
+        sp.setQuery("select * from cmis:folder");
+        sp.addStore(rootNodeRef.getStoreRef());
+        ResultSet results = pubSearchService.query(sp);
+        assertEquals(results.length(), 5);
+        assertNotNull(results.getResultSetMetaData());
+        assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.UNLIMITED);
         assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
         results.close();
     }

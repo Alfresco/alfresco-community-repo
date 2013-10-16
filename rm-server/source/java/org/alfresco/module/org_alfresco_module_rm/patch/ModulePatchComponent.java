@@ -91,15 +91,18 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
                 
             }, false, true);
             
-            if (logger.isDebugEnabled() == true)
+            if (logger.isInfoEnabled() == true)
             {
-                logger.debug("   ... completed module patch '" + getName() + "'");
+                logger.info("  ... completed module patch '" + getName() + "'");
             }
         }
         catch (Throwable exception)
         {
             // record the exception otherwise it gets swallowed
-            exception.printStackTrace();
+            if (logger.isInfoEnabled() == true)
+            {
+                logger.info("  ... error encountered.  " + exception.getMessage(), exception);
+            }
             throw exception;
         }
     }

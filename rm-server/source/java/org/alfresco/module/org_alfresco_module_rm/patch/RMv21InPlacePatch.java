@@ -39,8 +39,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -66,9 +64,6 @@ public class RMv21InPlacePatch extends ModulePatchComponent
        "ViewRecords",
        "EditNonRecordMetadata"
     };
-    
-    /** Logger */
-    private static Log logger = LogFactory.getLog(RMv21InPlacePatch.class);  
     
     /** file plan role service */
     private FilePlanRoleService filePlanRoleService;

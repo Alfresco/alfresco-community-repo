@@ -32,8 +32,6 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -47,9 +45,6 @@ public class RMv2RMAdminUserPatch extends ModulePatchComponent implements BeanNa
     /** I18N */
     private static final String MSG_FIRST_NAME = "bootstrap.rmadmin.firstName";
     private static final String MSG_LAST_NAME = "bootstrap.rmadmin.lastName";
-    
-    /** Logger */
-    private static Log logger = LogFactory.getLog(RMv2RMAdminUserPatch.class);
 
     /** generate rm admin password */
     private String password = GUID.generate();

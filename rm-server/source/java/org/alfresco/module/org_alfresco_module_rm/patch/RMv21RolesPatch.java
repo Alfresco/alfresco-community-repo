@@ -28,8 +28,6 @@ import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -40,11 +38,13 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 public class RMv21RolesPatch extends ModulePatchComponent implements BeanNameAware
 {
-    /** logger */
-    private static Log logger = LogFactory.getLog(RMv21RolesPatch.class); 
-    
+    /** file plan service */
     private FilePlanService filePlanService;
+    
+    /** file plan role service */
     private FilePlanRoleService filePlanRoleService;
+    
+    /** authority service */
     private AuthorityService authorityService;
 
     public void setFilePlanService(FilePlanService filePlanService)
@@ -62,6 +62,9 @@ public class RMv21RolesPatch extends ModulePatchComponent implements BeanNameAwa
         this.authorityService = authorityService;
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchComponent#executePatch()
+     */
     @Override
     protected void executePatch() throws Throwable
     {

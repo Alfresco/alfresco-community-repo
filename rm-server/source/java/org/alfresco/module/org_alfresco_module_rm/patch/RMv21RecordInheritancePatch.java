@@ -31,8 +31,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -43,11 +41,7 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 public class RMv21RecordInheritancePatch extends ModulePatchComponent 
                                          implements BeanNameAware, RecordsManagementModel, DOD5015Model
-{
-    
-    /** logger */
-    private static Log logger = LogFactory.getLog(RMv21RecordInheritancePatch.class);  
-    
+{  
     /** file plan permission service */
     private FilePlanPermissionServiceImpl filePlanPermissionServiceImpl;
     

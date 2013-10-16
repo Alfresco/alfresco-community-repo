@@ -34,8 +34,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -47,10 +45,7 @@ import org.springframework.beans.factory.BeanNameAware;
  * @since 2.1
  */
 public class RMv21BehaviorScriptsPatch extends ModulePatchComponent implements BeanNameAware
-{
-    /** logger */
-    private static Log logger = LogFactory.getLog(RMv21BehaviorScriptsPatch.class); 
-    
+{   
     /** rm config folder root lookup */
     protected static final NodeRef RM_CONFIG = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
 
@@ -59,6 +54,9 @@ public class RMv21BehaviorScriptsPatch extends ModulePatchComponent implements B
 
     /** new behavior scripts folder root lookup */
     protected static NodeRef newBehaviorScriptsFolder = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_behavior_scripts");
+    
+    /** name of example script */
+    protected static final String IS_CLOSED_JS = "rma_isClosed.js";
 
     /** Node Service */
     private NodeService nodeService;
@@ -66,17 +64,25 @@ public class RMv21BehaviorScriptsPatch extends ModulePatchComponent implements B
     /** File Folder Service */
     private FileFolderService fileFolderService;
     
+    /**
+     * @param nodeService   node service
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
+    /**
+     * @param fileFolderService file folder service
+     */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
     }
 
-
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchComponent#executePatch()
+     */
     @Override
     protected void executePatch() throws Throwable
     {        
@@ -113,7 +119,6 @@ public class RMv21BehaviorScriptsPatch extends ModulePatchComponent implements B
         // move to the new behavior scripts folder if the old behavior scripts folder exists and contains files
         if (nodeService.exists(OLD_BEHAVIOR_SCRIPTS_FOLDER) == true)
         {
-
             // run the following code as System
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {
@@ -138,6 +143,7 @@ public class RMv21BehaviorScriptsPatch extends ModulePatchComponent implements B
 
                                 for (FileInfo script : oldBehaviorScripts)
                                 {
+                                    // move the old script to the new location
                                     fileFolderService.moveFrom(script.getNodeRef(), OLD_BEHAVIOR_SCRIPTS_FOLDER, RMv21BehaviorScriptsPatch.newBehaviorScriptsFolder, script.getName());
 
                                     if (logger.isDebugEnabled() == true)
@@ -145,6 +151,7 @@ public class RMv21BehaviorScriptsPatch extends ModulePatchComponent implements B
                                         logger.debug(" ...... moved " + script.getName());
                                     }
                                 }
+
                             }
                             return null;
                         }

@@ -32,8 +32,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -50,12 +48,10 @@ public class RMv21ReportServicePatch extends ModulePatchComponent
     
     private static final String PATH_DESTRUCTION_TEMPLATE = "alfresco/module/org_alfresco_module_rm/bootstrap/report/report_rmr_destructionReport.html.ftl";
     
-    /** logger */
-    private static Log logger = LogFactory.getLog(RMv21ReportServicePatch.class);
-    
     /** node service */
     private NodeService nodeService;
     
+    /** content service */
     private ContentService contentService;
     
     /**

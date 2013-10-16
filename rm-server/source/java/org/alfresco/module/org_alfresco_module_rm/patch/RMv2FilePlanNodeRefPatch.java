@@ -37,8 +37,6 @@ import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -48,10 +46,7 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent 
                                       implements BeanNameAware, RecordsManagementModel, DOD5015Model
-{
-    /** Logger */
-    private static Log logger = LogFactory.getLog(RMv2FilePlanNodeRefPatch.class);  
-    
+{    
     private NodeService nodeService;
     private PatchDAO patchDAO;
     private NodeDAO nodeDAO;

@@ -22,10 +22,11 @@ task deleteDist(type: Delete) {
 }
 
 /** Global Values **/
-
-distDir = 'dist'
-packageBaseName = "${groupid}-${packageName}-${version}-${build}"
-packageZipFile = "${packageBaseName}.zip"
+ext {
+    distDir = 'dist'
+    packageBaseName = "${groupid}-${packageName}-${version}-${build}"
+    packageZipFile = "${packageBaseName}.zip"
+}
 
 /** Package Build Tasks */
 
@@ -124,29 +125,25 @@ subprojects {
 	
 	sourceCompatibility = 1.6
     targetCompatibility = 1.6
-	
-	explodedDepsDir = 'explodedDeps'	
-	explodedLibsDir = "${explodedDepsDir}/lib"
-	explodedConfigDir = "${explodedDepsDir}/config"
-	buildDistDir = 'build/dist'
-	buildLibDir = 'build/libs'
-	sourceJavaDir = 'source/java'
-	sourceWebDir = 'source/web'
-	assembleDir = 'build/assemble'
-	i18nDir = 'build/i18n'
-	iconDir = 'build/icon'
-	testJavaDir = 'test/java'
-	testResourceDir = 'test/resources'
-	configDir = 'config'
-	configModuleDir = "config/alfresco/module/${moduleid}"
-	moduleProperties = 'module.properties'
-	fileMapping = 'file-mapping.properties'
-	baseName = "${groupid}-${appName}-${version}-${build}"
-	jarFile = "${baseName}.jar"
-	ampFile = "${baseName}.amp"
-	tomcatRoot = System.getenv(tomcatEnv)
-	jarFilePath = "${buildLibDir}/${jarFile}"
-		
+
+    ext {	
+    	explodedDepsDir = 'explodedDeps'	
+    	explodedLibsDir = "${explodedDepsDir}/lib"
+    	explodedConfigDir = "${explodedDepsDir}/config"
+    	sourceJavaDir = 'source/java'
+    	sourceWebDir = 'source/web'
+    	iconDir = 'build/icon'
+    	testJavaDir = 'test/java'
+    	testResourceDir = 'test/resources'
+    	configDir = 'config'
+    	configModuleDir = "config/alfresco/module/${moduleid}"
+    	baseName = "${groupid}-${appName}-${version}-${build}"
+    	jarFile = "${baseName}.jar"
+    	ampFile = "${baseName}.amp"
+    	tomcatRoot = System.getenv(tomcatEnv)
+    	jarFilePath = "${buildLibDir}/${jarFile}"
+	}
+    	
 	sourceSets {
 		main {
 			java {
@@ -233,10 +230,10 @@ subprojects {
 
 	task explodeDeps << {
 	
-		explodedDir = file(explodedDepsDir)
-		explodedLibDir = file(explodedLibsDir)
-		explodedConfigDir = file("${explodedDepsDir}/config")
-		warFileObj = file(warFile)
+		def explodedDir = file(explodedDepsDir)
+		def explodedLibDir = file(explodedLibsDir)
+		def explodedConfigDir = file("${explodedDepsDir}/config")
+		def warFileObj = file(warFile)
 	
 		// if the WAR file still isn't there raise an error
 		if (warFileObj.exists() == true) {
@@ -369,17 +366,17 @@ subprojects {
 			into "${assembleDir}/web"
 		}
 		
-		tree = fileTree("${assembleDir}/web") {
+		def tree = fileTree("${assembleDir}/web") {
 			include '**/*.js'
 			exclude '**/*-min.js'
 		}
 		
 		tree.each {File file ->
 				
-			destinationFile = new File(file.getPath().replaceFirst('\\.js', '-min.js'))
+			def destinationFile = new File(file.getPath().replaceFirst('\\.js', '-min.js'))
 			
 			file.withReader{ reader -> 
-				compressor = new com.yahoo.platform.yui.compressor.JavaScriptCompressor(reader, null)
+				def compressor = new com.yahoo.platform.yui.compressor.JavaScriptCompressor(reader, null)
 				destinationFile.withWriter { writer ->
 					compressor.compress(writer, -1, false, false, false, false)
 				}

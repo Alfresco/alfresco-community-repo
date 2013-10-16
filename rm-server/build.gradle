@@ -15,8 +15,9 @@ dependencies {
 	testRuntime files(configDir)
 	testRuntime files(testResourceDir)
 
-	alfrescoDeps group: alfrescoGroupId, name: 'alfresco', version: alfrescoBaseVersion, type: 'war'
-	alfrescoDeps group: alfrescoGroupId, name: 'alfresco-solr', version: alfrescoBaseSolrVersion, type: 'zip'
+    alfrescoDeps "${alfrescoGroupId}:alfresco:${alfrescoBaseVersion}@war"
+    alfrescoDeps "${alfrescoGroupId}:alfresco-solr:${alfrescoBaseSolrVersion}@zip"
+
 }
 
 task fetchSOLR(type:Copy) {

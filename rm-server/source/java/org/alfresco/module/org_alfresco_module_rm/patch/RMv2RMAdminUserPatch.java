@@ -127,12 +127,28 @@ public class RMv2RMAdminUserPatch extends ModulePatchComponent implements BeanNa
             }
             
             authenticationService.createAuthentication(user, password.toCharArray());
-            Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-            properties.put(ContentModel.PROP_USERNAME, user);
-            properties.put(ContentModel.PROP_FIRSTNAME, firstName);
-            properties.put(ContentModel.PROP_LASTNAME, lastName);
-            personService.createPerson(properties);
             
+            if (personService.personExists(user) == false)
+            {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("   ... creating RM Admin person");
+                }
+                
+                Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                properties.put(ContentModel.PROP_USERNAME, user);
+                properties.put(ContentModel.PROP_FIRSTNAME, firstName);
+                properties.put(ContentModel.PROP_LASTNAME, lastName);
+                personService.createPerson(properties);
+            }
+            else
+            {
+                if (logger.isInfoEnabled() == true)
+                {
+                    logger.debug("   ... RM Admin person already exists");
+                }
+            }
+                
             if (logger.isDebugEnabled() == true)
             {
                 logger.debug("   ... assigning RM Admin user to file plans");

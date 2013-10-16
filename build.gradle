@@ -26,6 +26,8 @@ ext {
     distDir = 'dist'
     packageBaseName = "${groupid}-${packageName}-${version}-${build}"
     packageZipFile = "${packageBaseName}.zip"
+    if (!project.hasProperty('alfrescoBaseSolrVersion')) alfrescoBaseSolrVersion=alfrescoBaseVersion
+    if (!project.hasProperty('alfrescoTestDepsVersion')) alfrescoTestDepsVersion=alfrescoBaseVersion
 }
 
 /** Package Build Tasks */

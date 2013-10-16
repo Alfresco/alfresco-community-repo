@@ -47,6 +47,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.PropertyMap;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -300,7 +301,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
      */
     public void onChangeToAnyRmProperty(final NodeRef node, final Map<QName, Serializable> oldProps, final Map<QName, Serializable> newProps)
     {
-        serviceRegistry.getFilePlanAuthenticationService().runAsRmAdmin(new RunAsWork<Void>()
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override
             public Void doWork() throws Exception
@@ -311,7 +312,8 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
                 }
 
                 return null;
-            }});
+            }
+        }, AuthenticationUtil.getAdminUserName());
     }
 
     /**
@@ -831,8 +833,8 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     {
         List<NodeRef> result = new ArrayList<NodeRef>();
 
-        Set<QName> changedProps = determineChangedProps(oldProps, newProps);
-        for (QName propQName : changedProps)
+        Map<QName, Serializable> changedProps = PropertyMap.getChangedProperties(oldProps, newProps);
+        for (QName propQName : changedProps.keySet())
         {
             QName prefixedQName = propQName.getPrefixedQName(serviceRegistry.getNamespaceService());
 

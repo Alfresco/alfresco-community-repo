@@ -21,9 +21,6 @@ package org.alfresco.repo.security.authority;
 import java.util.List;
 
 import org.alfresco.repo.cache.AbstractAsynchronouslyRefreshedCache;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.BridgeTable;
@@ -38,7 +35,6 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends AbstractAs
 {
     private AuthorityBridgeDAO authorityBridgeDAO;
     private RetryingTransactionHelper retryingTransactionHelper;
-    private TenantAdminService tenantAdminService;
 
     /**
      * @param authorityBridgeDAO
@@ -58,29 +54,17 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends AbstractAs
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
 
-    public void setTenantAdminService(TenantAdminService tenantAdminService)
-    {
-        this.tenantAdminService = tenantAdminService;
-    }
-
     @Override
     protected BridgeTable<String> buildCache(final String tenantId)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<BridgeTable<String>>()
+        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<BridgeTable<String>>()
         {
-            public BridgeTable<String> doWork() throws Exception
+            @Override
+            public BridgeTable<String> execute() throws Throwable
             {
-                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<BridgeTable<String>>()
-                {
-                    @Override
-                    public BridgeTable<String> execute() throws Throwable
-                    {
-                        return doBuildCache(tenantId);
-                    }
-                }, true, false);
-
+                return doBuildCache(tenantId);
             }
-        }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantId));
+        }, true, false);
     }
 
     private BridgeTable<String> doBuildCache(String tenantId)

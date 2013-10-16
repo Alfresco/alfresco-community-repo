@@ -36,8 +36,6 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -51,9 +49,6 @@ public class NotificationTemplatePatch extends ModulePatchComponent
 
     private static final String PATH_DUE_FOR_REVIEW = "alfresco/module/org_alfresco_module_rm/bootstrap/content/notify-records-due-for-review-email.ftl";
     private static final String PATH_SUPERSEDED = "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-superseded-email.ftl";
-
-    /** Logger */
-    private static Log logger = LogFactory.getLog(NotificationTemplatePatch.class);
 
     /** Records management notification helper */
     private RecordsManagementNotificationHelper notificationHelper;
@@ -152,8 +147,6 @@ public class NotificationTemplatePatch extends ModulePatchComponent
         }
         else
         {
-            System.out.println(nodeService.getProperty(template, ContentModel.PROP_DESCRIPTION));
-
             // Check to see if this template has already been updated
             String lastPatchUpdate = (String)nodeService.getProperty(template, PROP_LAST_PATCH_UPDATE);
             if (lastPatchUpdate == null || name.equals(lastPatchUpdate) == false)

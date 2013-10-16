@@ -29,8 +29,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -41,10 +39,7 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 public class RMv21CapabilityPatch extends ModulePatchComponent 
                                   implements BeanNameAware, RecordsManagementModel, DOD5015Model
-{
-    /** Logger */
-    private static Log logger = LogFactory.getLog(RMv21CapabilityPatch.class);  
-    
+{    
     /** file plan service */
     private FilePlanService filePlanService;
     

@@ -28,8 +28,6 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -41,9 +39,6 @@ import org.springframework.beans.factory.BeanNameAware;
 public class RMv2ModelPatch extends ModulePatchComponent 
                             implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
-    /** Logger */
-    private static Log logger = LogFactory.getLog(RMv2ModelPatch.class);  
-    
     private static long BATCH_SIZE = 100000L;
     
     private PatchDAO patchDAO;

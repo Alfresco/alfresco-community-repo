@@ -25,8 +25,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
 import org.alfresco.service.cmr.site.SiteService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -37,10 +35,7 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 public class RMv2SavedSearchPatch extends ModulePatchComponent 
                                   implements BeanNameAware, RecordsManagementModel, DOD5015Model
-{
-    /** Logger */
-    private static Log logger = LogFactory.getLog(RMv2SavedSearchPatch.class);  
-    
+{    
     /** RM site id */
     private static final String RM_SITE_ID = "rm";
     

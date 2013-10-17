@@ -18,12 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.job;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
-import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.namespace.NamespaceService;
@@ -102,37 +99,17 @@ public class RecordsManagementJob implements Job
             {        
                 // try and get the lock
                 String lockToken = getLock();
-                if (lockToken == null)
-                {
-                    // exit
-                    return null;            
-                }
-                
-                // use a flag to keep track of the running job
-                final AtomicBoolean running = new AtomicBoolean(true);
-                jobLockService.refreshLock(lockToken, getLockQName(), DEFAULT_TIME, new JobLockRefreshCallback()
-                {
-                    @Override
-                    public boolean isActive()
+                if (lockToken != null)
+                {                               
+                    try
                     {
-                        return running.get();
+                        // do work
+                        jobExecuter.execute();
                     }
-                    @Override
-                    public void lockReleased()
+                    finally
                     {
-                        running.set(false);
+                        jobLockService.releaseLock(lockToken, getLockQName());
                     }
-                });
-                
-                try
-                {
-                    // do work
-                    jobExecuter.execute();
-                }
-                finally
-                {
-                    // The lock will self-release if answer isActive in the negative
-                    running.set(false);
                 }
             
                 // return 

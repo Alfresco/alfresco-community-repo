@@ -4,7 +4,8 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">   
    <meta name="Generator" content="Alfresco Repository">
-   <meta name="layoutengine" content="MSHTML"><style type="text/css">
+   <meta name="layoutengine" content="MSHTML">
+   <style type="text/css">
       body {
          background-color:#FFFFFF;
          color:#000000;
@@ -39,40 +40,40 @@
 </head>
 <body>
 <hr>
-<h1> 文档（名称）：  <!--SDL${document.name}SDL--> </h1>
+<h1> 文档（名称）：  ${document.name} </h1>
 <hr>
 <h2> 元数据 </h2>
 <table class="description">
    <#if document.properties.title?exists>
-                     <tr><td valign="top">标题：</td><td> <!--SDL${document.properties.title}SDL--></td></tr>
+                     <tr><td valign="top">标题：</td><td> ${document.properties.title}</td></tr>
    <#else>
                      <tr><td valign="top">标题：</td><td>&nbsp;</td></tr>
    </#if>
    <#if document.properties.description?exists>
-                     <tr><td valign="top">说明：</td><td> <!--SDL${document.properties.description}SDL--></td></tr>
+                     <tr><td valign="top">说明：</td><td> ${document.properties.description}</td></tr>
    <#else>
                      <tr><td valign="top">说明：</td><td>&nbsp;</td></tr>
    </#if>
-                     <tr><td>创建者：</td><td> <!--SDL${document.properties.creator}SDL--></td></tr>
-                     <tr><td>创建时间：</td><td> <!--SDL${document.properties.created?datetime}SDL--></td></tr>
-                     <tr><td>修改者：</td><td> <!--SDL${document.properties.modifier}SDL--></td></tr>
-                     <tr><td>修改时间：</td><td> <!--SDL${document.properties.modified?datetime}SDL--></td></tr>
-                     <tr><td>大小：</td><td> <!--SDL${document.size / 1024}SDL--> KB</td></tr>
+                     <tr><td>创建者：</td><td> ${document.properties.creator}</td></tr>
+                     <tr><td>创建时间：</td><td> ${document.properties.created?datetime}</td></tr>
+                     <tr><td>修改者：</td><td> ${document.properties.modifier}</tr>
+                     <tr><td>修改时间：</td><td> ${document.properties.modified?datetime}</td></tr>
+                     <tr><td>大小：</td><td> ${document.size / 1024} KB</td></tr>
 </table>
 <br>
 <h2> 内容链接 </h2>
 <table class="links">
    <tr>
-   <td>内容文件夹：</td><td> <!--SDL<a href="${contextUrl}/navigate/browse${document.parent.webdavUrl}">${contextUrl}/navigate/browse${document.parent.webdavUrl}</a>SDL--></td>
+   <td>内容文件夹：</td><td> <a href="${contextUrl}/navigate/browse${document.parent.webdavUrl}">${contextUrl}/navigate/browse${document.parent.webdavUrl}</a></td>
    </tr>
    <tr>
-   <td>内容 URL：</td><td> <!--SDL<a href="${contextUrl}${document.url}">${contextUrl}${document.url}</a>SDL--></td>
+   <td>内容 URL：</td><td> <a href="${contextUrl}${document.url}">${contextUrl}${document.url}</a></td>
    </tr>
    <tr>
-   <td>下载 URL：</td><td> <!--SDL<a href="${contextUrl}${document.downloadUrl}">${contextUrl}${document.downloadUrl}</a>SDL--></td>
+   <td>下载 URL：</td><td> <a href="${contextUrl}${document.downloadUrl}">${contextUrl}${document.downloadUrl}</a></td>
    </tr>
    <tr>
-   <td>WebDAV URL：</td><td> <!--SDL<a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a>SDL--></td>
+   <td>WebDAV URL：</td><td> <a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a></td>
    </tr>
 </table>
 </body>

@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.job;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 
 /**
  * Records management job executer base class.
@@ -59,7 +60,16 @@ public abstract class RecordsManagementJobExecuter implements RecordsManagementM
         // jobs not allowed to execute unless bootstrap is complete
         if (repositoryState.isBootstrapping() == false)
         {
-            executeImpl();
+            retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    executeImpl();
+                    
+                    return null;
+                }
+            }, false, true);
         }
     }
     

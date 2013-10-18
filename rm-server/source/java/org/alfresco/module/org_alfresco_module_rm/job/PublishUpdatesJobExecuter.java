@@ -97,37 +97,41 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                 // Deal with each updated disposition action in turn
                 for (NodeRef nodeRef : nodeRefs)
                 {
-                    // Mark the update node as publishing in progress
-                    markPublishInProgress(nodeRef);                        
-                    try
-                    {
-                        Date start = new Date();
-                        if (logger.isDebugEnabled() == true)
-                        {
-                            logger.debug("Starting publish of updates ...");
-                            logger.debug("   - for " + nodeRef.toString());
-                            logger.debug("   - at " + start.toString());
-                        }
-                        
-                        // Publish updates
-                        publishUpdates(nodeRef);
-                        
-                        
-                        if (logger.isDebugEnabled() == true)
-                        {
-                            Date end = new Date();
-                            long duration = end.getTime() - start.getTime();
-                            logger.debug("Completed publish of updates ...");
-                            logger.debug("   - for " + nodeRef.toString());
-                            logger.debug("   - at " + end.toString());
-                            logger.debug("   - duration " + Long.toString(duration));
-                        }
-                    }
-                    finally
-                    {
-                        // Ensure the update node has either completed the publish or is marked as no longer in progress
-                        unmarkPublishInProgress(nodeRef);
-                    }                    
+                	// double check that the node in question still exists
+                	if (nodeService.exists(nodeRef) == true)
+                	{
+	                    // Mark the update node as publishing in progress
+	                    markPublishInProgress(nodeRef);                        
+	                    try
+	                    {
+	                        Date start = new Date();
+	                        if (logger.isDebugEnabled() == true)
+	                        {
+	                            logger.debug("Starting publish of updates ...");
+	                            logger.debug("   - for " + nodeRef.toString());
+	                            logger.debug("   - at " + start.toString());
+	                        }
+	                        
+	                        // Publish updates
+	                        publishUpdates(nodeRef);
+	                        
+	                        
+	                        if (logger.isDebugEnabled() == true)
+	                        {
+	                            Date end = new Date();
+	                            long duration = end.getTime() - start.getTime();
+	                            logger.debug("Completed publish of updates ...");
+	                            logger.debug("   - for " + nodeRef.toString());
+	                            logger.debug("   - at " + end.toString());
+	                            logger.debug("   - duration " + Long.toString(duration));
+	                        }
+	                    }
+	                    finally
+	                    {
+	                        // Ensure the update node has either completed the publish or is marked as no longer in progress
+	                        unmarkPublishInProgress(nodeRef);
+	                    }     
+                	}
                 }
                 return null;
             };

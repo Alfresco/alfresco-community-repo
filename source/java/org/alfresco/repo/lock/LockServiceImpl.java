@@ -823,10 +823,13 @@ public class LockServiceImpl implements LockService,
         // Check in-memory for ephemeral locks first.
         LockState lockState = lockStore.get(nodeRef);
         
-        if (lockState == null)
+        //ALF-20361: It is possible that a rollback has resulted in a "non-lock" lock state being added to 
+        //the lock store. Because of that, we check both whether the retrieved lockState is null and, if it isn't, 
+        //whether it represents a real lock
+        if (lockState == null || !lockState.isLockInfo())
         {
             // No in-memory state, so get from the DB.
-            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
+            if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
             {
                 String lockOwner = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER);
                 

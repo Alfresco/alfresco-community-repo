@@ -40,6 +40,7 @@ import org.apache.commons.httpclient.ProxyHost;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -174,8 +175,15 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
         }
         
         // Log what we're doing
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
             logger.debug("Performing " + request.getMethod() + " request to " + request.getURL());
+            for (Header hdr : request.getRequestHeaders())
+            {
+                logger.debug("Header: " + hdr );
+            }
+            StringRequestEntity re = (StringRequestEntity)request.getRequestBody();
+            logger.debug("Payload: " + re.getContent());
+        }
         
         // Perform the request, and wrap the response
         int status = -1;

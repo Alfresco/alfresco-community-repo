@@ -228,8 +228,6 @@ public class SubscriptionServiceActivitiesTest
     {
         // We'll change things in the system in order to cause the generation of activity events and compare the feeds with these totals as we go.
         // Initially, both users have zero activity feed entries.
-        final MutableInt user1Entries = new MutableInt(0);
-        final MutableInt user2Entries = new MutableInt(0);
         // Java's requirement for final modifiers on variables accessed within inner classes means we can't use simple ints here.
         
         doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
@@ -253,22 +251,21 @@ public class SubscriptionServiceActivitiesTest
                         log.debug("Now to check if the activity tables have the correct number of entries for our test users");
                         
                         List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
-                        assertEquals(USER_ONE_NAME + " had wrong feed size.", user1Entries.intValue(), feed.size());
+                        assertEquals(USER_ONE_NAME + " had wrong feed size.", 0, feed.size());
                         
                         feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
-                        assertEquals(USER_TWO_NAME + " had wrong feed size.", user2Entries.intValue(), feed.size());
+                        assertEquals(USER_TWO_NAME + " had wrong feed size.", 0, feed.size());
                         
+                        // userId1 + 5, userId2 + 0
                         generateFeed();
-                        // User1 now has 5 'user-joined' events. User2 has no events.
-                        user1Entries.add(5);
                         
                         feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
                         log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
-                        assertEquals(USER_ONE_NAME + " had wrong feed size", user1Entries.intValue(), feed.size());
+                        assertEquals(USER_ONE_NAME + " had wrong feed size", 5, feed.size());
                         
                         feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
                         log.debug(USER_TWO_NAME + "'s feed: " + prettyJson(feed));
-                        assertEquals(USER_TWO_NAME + " had wrong feed size", user2Entries.intValue(), feed.size());
+                        assertEquals(USER_TWO_NAME + " had wrong feed size", 0, feed.size());
                         return null;
                     }
                 });
@@ -300,18 +297,16 @@ public class SubscriptionServiceActivitiesTest
                 {
                     @Override public Void execute() throws Throwable
                     {
+                        // userId1 + 5, userId2 + 2
                         generateFeed();
-                        // Both users see a new 'followed' event.
-                        user1Entries.add(1);
-                        user2Entries.add(1);
                         
                         List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
                         log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
-                        assertEquals(USER_ONE_NAME + "'s feed was wrong size", user1Entries.intValue(), feed.size());
+                        assertEquals(USER_ONE_NAME + "'s feed was wrong size", 7, feed.size());
                         
                         feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
                         log.debug(USER_TWO_NAME + "'s feed: " + prettyJson(feed));
-                        assertEquals(USER_TWO_NAME + "'s feed was wrong size", user2Entries.intValue(), feed.size());
+                        assertEquals(USER_TWO_NAME + "'s feed was wrong size", 2, feed.size());
                         return null;
                     }
                 });
@@ -336,38 +331,34 @@ public class SubscriptionServiceActivitiesTest
                 {
                     @Override public Void execute() throws Throwable
                     {
+                        // userId1 + 5, userId2 + 1
                         generateFeed();
-                        // User1 sees 5 'file-added' events.
-                        // User2 sees nothing new.
-                        user1Entries.add(5);
                         
                         List <String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
                         log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
-                        assertEquals(USER_ONE_NAME + "'s feed was wrong size", user1Entries.intValue(), feed.size());
+                        assertEquals(USER_ONE_NAME + "'s feed was wrong size", 12, feed.size());
                         
                         // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
                         feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
                         log.debug(USER_TWO_NAME + "'s feed: " + prettyJson(feed));
-                        assertEquals(USER_TWO_NAME + "'s feed was wrong size", user2Entries.intValue(), feed.size());
+                        assertEquals(USER_TWO_NAME + "'s feed was wrong size", 3, feed.size());
         
                         siteService.setMembership(privateSite2.getShortName(), USER_TWO_NAME, SiteModel.SITE_CONSUMER);
                         siteService.setMembership(modSite2.getShortName(),     USER_TWO_NAME, SiteModel.SITE_MANAGER);
                         
                         log.debug(USER_TWO_NAME + "'s role changed on some sites.");
                         
+                        // userId1 + 2, userId2 + 2
                         generateFeed();
-                        // User1 & 2 both see 2 new 'joined' events.
-                        user1Entries.add(2);
-                        user2Entries.add(2);
                         
                         feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
                         log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
-                        assertEquals(USER_ONE_NAME + "'s feed was wrong size", user1Entries.intValue(), feed.size());
+                        assertEquals(USER_ONE_NAME + "'s feed was wrong size", 16, feed.size());
                         
                         // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
                         feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
                         log.debug(USER_TWO_NAME + "'s feed: " + prettyJson(feed));
-                        assertEquals(USER_TWO_NAME + "'s feed was wrong size", user2Entries.intValue(), feed.size());
+                        assertEquals(USER_TWO_NAME + "'s feed was wrong size", 5, feed.size());
                         return null;
                     }
                 });
@@ -393,18 +384,15 @@ public class SubscriptionServiceActivitiesTest
                 {
                     @Override public Void execute() throws Throwable
                     {
+                        // userId1 + 5, userId2 + 3
                         generateFeed();
-                        // User1 sees 5 more 'file-added' events
-                        // User2 only sees 2 of them
-                        user1Entries.add(5);
-                        user2Entries.add(2);
                         
                         List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
-                        assertEquals("User's feed was wrong size", user1Entries.intValue(), feed.size());
+                        assertEquals("User's feed was wrong size", 21, feed.size());
                         
                         // note: userId2 should not see activities from followers in moderated sites that they do not belong to (ALF-16460)
                         feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
-                        assertEquals("User's feed was wrong size", user2Entries.intValue(), feed.size());
+                        assertEquals("User's feed was wrong size", 10, feed.size());
                         
                         return null;
                     }
@@ -431,15 +419,12 @@ public class SubscriptionServiceActivitiesTest
                     @Override public Void execute() throws Throwable
                     {
                         // Feeds should now be reduced to 'follow' events only - see FeedCleaner's behaviours/policies/transaction listeners.
-                        user1Entries.setValue(1);
-                        user2Entries.setValue(1);
-                        
                         List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
                         log.debug(USER_ONE_NAME + "'s feed:\n" + prettyJson(feed));
-                        assertEquals("User's feed was wrong size", user1Entries.intValue(), feed.size());
+                        assertEquals("User's feed was wrong size", 2, feed.size());
                         
                         feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
-                        assertEquals("User's feed was wrong size", user2Entries.intValue(), feed.size());
+                        assertEquals("User's feed was wrong size", 2, feed.size());
                         
                         return null;
                     }
@@ -469,16 +454,14 @@ public class SubscriptionServiceActivitiesTest
                         // Now both users should be reduced to having no events.
                         // FIXME So shouldn't these numbers be down to 0 now?
                         // Use log4j.logger.org.alfresco.repo.activities.feed.cleanup.FeedCleaner=trace to see the FeedCleaner's work
-                        user1Entries.setValue(1);
-                        user2Entries.setValue(1);
                         
                         List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
                         log.debug("User1's feed: " + prettyJson(feed));
                         
-                        assertEquals("User's feed was wrong size", user1Entries.intValue(), feed.size());
+                        assertEquals("User's feed was wrong size", 0, feed.size());
                         
                         feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
-                        assertEquals("User's feed was wrong size", user2Entries.intValue(), feed.size());
+                        assertEquals("User's feed was wrong size", 0, feed.size());
                         
                         return null;
                     }

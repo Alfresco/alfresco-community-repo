@@ -715,8 +715,11 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
          if (nodes.size() > 1)
          {
             String currentSortColumn = this.browseBean.getContentRichList().getCurrentSortColumn();
-            boolean currentSortDescending = this.browseBean.getContentRichList().isCurrentSortDescending();
-            Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            if (currentSortColumn != null)
+            {
+               boolean currentSortDescending = this.browseBean.getContentRichList().isCurrentSortDescending();
+               Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            }
             Node next = NodeListUtils.nextItem(nodes, id);
             getRecentNodeRefsStack().clear();
             this.browseBean.setupContentAction(next.getId(), false);
@@ -738,8 +741,11 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
          if (nodes.size() > 1)
          {
             String currentSortColumn = this.browseBean.getContentRichList().getCurrentSortColumn();
-            boolean currentSortDescending = this.browseBean.getContentRichList().isCurrentSortDescending();
-            Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            if (currentSortColumn != null)
+            {
+               boolean currentSortDescending = this.browseBean.getContentRichList().isCurrentSortDescending();
+               Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            }
             Node previous = NodeListUtils.previousItem(nodes, id);
             getRecentNodeRefsStack().clear();
             this.browseBean.setupContentAction(previous.getId(), false);

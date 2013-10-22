@@ -20,10 +20,14 @@ package org.alfresco.module.org_alfresco_module_rm.patch;
 
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteService;
 import org.springframework.beans.factory.BeanNameAware;
 
@@ -45,6 +49,9 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
     /** Site service */
     private SiteService siteService;
     
+    /** Content service */
+    private ContentService contentService;
+    
     /**
      * @param recordsManagementSearchService    records management search service
      */
@@ -62,6 +69,14 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
     }
     
     /**
+     * @param contentService    content service
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+    
+    /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
@@ -74,19 +89,26 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
             
             if (logger.isDebugEnabled() == true)
             {
-                logger.debug("   ... updating " + savedSearches.size() + " saved searches");
+                logger.debug("  ... updating " + savedSearches.size() + " saved searches");
             }
             
             for (SavedSearchDetails savedSearchDetails : savedSearches)
             {
-                // re-save each search so that the query is regenerated correctly
-                recordsManagementSearchService.deleteSavedSearch(RM_SITE_ID, savedSearchDetails.getName());
-                recordsManagementSearchService.saveSearch(RM_SITE_ID, 
-                                                          savedSearchDetails.getName(), 
-                                                          savedSearchDetails.getDescription(), 
-                                                          savedSearchDetails.getSearch(), 
-                                                          savedSearchDetails.getSearchParameters(), 
-                                                          savedSearchDetails.isPublic());            
+                // refresh the query
+                String refreshedJSON = savedSearchDetails.toJSONString();
+                NodeRef nodeRef = savedSearchDetails.getNodeRef(); 
+ 
+                if (nodeRef != null)
+                {
+                    ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+                    writer.putContent(refreshedJSON);
+                    
+                    
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("    ... updated saved search " + savedSearchDetails.getName() + " (nodeRef=" + nodeRef.toString() + ")");
+                    }
+                }                
             }
         }       
     }

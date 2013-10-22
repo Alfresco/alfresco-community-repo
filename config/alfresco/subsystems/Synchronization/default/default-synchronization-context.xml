@@ -77,6 +77,7 @@
         <property name="allowDeletions">
             <value>${synchronization.allowDeletions}</value>
         </property>
+        <property name="nameChecker" ref="nameChecker" />
     </bean>
 
 

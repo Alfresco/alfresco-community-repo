@@ -56,6 +56,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
+import org.alfresco.repo.dictionary.constraint.NameChecker;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
@@ -207,7 +208,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
     /** Allow a full sync to perform deletions? */
     private boolean allowDeletions = true;
-    
+
+    /** Validates person names over cm:filename constraint **/
+    private NameChecker nameChecker;
+
     private SysAdminParams sysAdminParams;
     
     public void init()
@@ -220,6 +224,14 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         PropertyCheck.mandatory(this, "jobLockService", jobLockService);
         PropertyCheck.mandatory(this, "applicationEventPublisher", applicationEventPublisher);
         PropertyCheck.mandatory(this, "sysAdminParams", sysAdminParams);
+    }
+
+    /**
+     * Sets name checker
+     */
+    public void setNameChecker(NameChecker nameChecker)
+    {
+        this.nameChecker = nameChecker;
     }
 
     /**
@@ -1813,6 +1825,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 // Make a mutable copy of the person properties, since they get written back to by person service
                 HashMap<QName, Serializable> personProperties = new HashMap<QName, Serializable>(person.getProperties());
                 String personName = (String) personProperties.get(ContentModel.PROP_USERNAME);
+                // for invalid names will throw ConstraintException that will be catched by BatchProcessor$TxnCallback
+                nameChecker.evaluate(personName);
                 Set<String> zones = ChainingUserRegistrySynchronizer.this.authorityService
                         .getAuthorityZones(personName);
                 if (zones == null)

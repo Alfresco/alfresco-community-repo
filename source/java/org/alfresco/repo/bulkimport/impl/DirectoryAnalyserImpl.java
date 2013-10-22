@@ -34,23 +34,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.bulkimport.AnalysedDirectory;
 import org.alfresco.repo.bulkimport.DirectoryAnalyser;
 import org.alfresco.repo.bulkimport.ImportFilter;
 import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.repo.bulkimport.ImportableItem.FileType;
 import org.alfresco.repo.bulkimport.MetadataLoader;
-import org.alfresco.service.cmr.dictionary.Constraint;
-import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.repo.dictionary.constraint.NameChecker;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.exception.PlatformRuntimeException;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
@@ -61,7 +54,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
  * @since 4.0
  * 
  */
-public class DirectoryAnalyserImpl implements DirectoryAnalyser, InitializingBean
+public class DirectoryAnalyserImpl implements DirectoryAnalyser
 {
     private final static Log log = LogFactory.getLog(DirectoryAnalyserImpl.class);
     
@@ -70,50 +63,25 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser, InitializingBea
     private MetadataLoader metadataLoader;
     private BulkImportStatusImpl importStatus;
     private List<ImportFilter> importFilters;
-    private DictionaryService dictionaryService;
-    private Constraint filenameConstraint;
+    private NameChecker nameChecker;
+
     
     public DirectoryAnalyserImpl(MetadataLoader metadataLoader, BulkImportStatusImpl importStatus, List<ImportFilter> importFilters,
-            DictionaryService dictionaryService)
+            NameChecker nameChecker)
     {
         this.metadataLoader = metadataLoader;
         this.importStatus = importStatus;
         this.importFilters = importFilters;
-        this.dictionaryService = dictionaryService;
+        this.nameChecker = nameChecker;
     }
     
     public DirectoryAnalyserImpl()
     {
     }
     
-    public DictionaryService getDictionaryService()
+    public void setNameChecker(NameChecker nameChecker)
     {
-        return dictionaryService;
-    }
-
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * Loads filename constraint from dictionary
-     */
-    public void afterPropertiesSet() throws Exception
-    {
-        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
-
-        QName qNameConstraint = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "filename");
-        ConstraintDefinition constraintDef = dictionaryService.getConstraint(qNameConstraint);
-        if (constraintDef == null)
-        {
-            throw new AlfrescoRuntimeException("Constraint definition does not exist: " + qNameConstraint);
-        }
-        filenameConstraint = constraintDef.getConstraint();
-        if (filenameConstraint == null)
-        {
-            throw new AlfrescoRuntimeException("Constraint does not exist: " + qNameConstraint);
-        }
+        this.nameChecker = nameChecker;
     }
 
 	public void setMetadataLoader(MetadataLoader metadataLoader)
@@ -205,7 +173,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser, InitializingBea
             {
                 try
                 {
-                    filenameConstraint.evaluate(file.getName());
+                    nameChecker.evaluate(file.getName());
                 }
                 catch (ConstraintException e)
                 {

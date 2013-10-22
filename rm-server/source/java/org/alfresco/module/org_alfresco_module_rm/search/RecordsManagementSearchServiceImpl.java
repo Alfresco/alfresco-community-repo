@@ -402,7 +402,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     {
         ContentReader reader = fileFolderService.getReader(searchNode);
         String jsonString = reader.getContentString();
-        SavedSearchDetails savedSearchDetails = SavedSearchDetails.createFromJSON(jsonString, namespaceService, this);
+        SavedSearchDetails savedSearchDetails = SavedSearchDetails.createFromJSON(jsonString, namespaceService, this, searchNode);
         searches.add(savedSearchDetails);
     }
 
@@ -428,7 +428,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
             String jsonString = reader.getContentString();
 
             // create the saved search details
-            result = SavedSearchDetails.createFromJSON(jsonString, namespaceService, this);
+            result = SavedSearchDetails.createFromJSON(jsonString, namespaceService, this, searchNode);
         }
 
         return result;

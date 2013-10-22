@@ -93,7 +93,7 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
             
             if (logger.isInfoEnabled() == true)
             {
-                logger.info("  ... completed module patch '" + getName() + "'");
+                logger.info(" ... completed module patch '" + getName() + "'");
             }
         }
         catch (Throwable exception)

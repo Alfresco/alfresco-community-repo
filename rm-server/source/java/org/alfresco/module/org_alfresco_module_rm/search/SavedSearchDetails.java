@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.search;
 
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ParameterCheck;
 import org.json.JSONException;
@@ -100,6 +101,9 @@ public class SavedSearchDetails extends ReportDetails
 	
 	/** Indicates whether the saved search is a report */
 	private boolean isReport = false;
+	
+	/** Helper method to link to search node ref if provided */
+	private NodeRef nodeRef = null;
 		  
     /** Namespace service */
     NamespaceService namespaceService;
@@ -115,7 +119,7 @@ public class SavedSearchDetails extends ReportDetails
 	 * @param jsonString
 	 * @return
 	 */
-	/*package*/ static SavedSearchDetails createFromJSON(String jsonString, NamespaceService namespaceService, RecordsManagementSearchServiceImpl searchService)
+	/*package*/ static SavedSearchDetails createFromJSON(String jsonString, NamespaceService namespaceService, RecordsManagementSearchServiceImpl searchService, NodeRef nodeRef)
 	{
 	    try
 	    {
@@ -197,7 +201,9 @@ public class SavedSearchDetails extends ReportDetails
     	    }
     	    
     	    // Create the saved search details object
-    	    return new SavedSearchDetails(siteId, name, description, query, searchParameters, isPublic, isReport, namespaceService, searchService);    	    
+    	    SavedSearchDetails savedSearchDetails = new SavedSearchDetails(siteId, name, description, query, searchParameters, isPublic, isReport, namespaceService, searchService);
+    	    savedSearchDetails.nodeRef = nodeRef;
+    	    return savedSearchDetails;
 	    }
 	    catch (JSONException exception)
 	    {
@@ -266,9 +272,17 @@ public class SavedSearchDetails extends ReportDetails
 	}
 	
 	/**
+	 * @return NodeRef search node ref, null if not set
+	 */
+	public NodeRef getNodeRef()
+	{
+	    return nodeRef;
+	}
+	
+	/**
 	 * @return
 	 */
-	/*package*/ String toJSONString()
+	public String toJSONString()
 	{
 	    try
 	    {

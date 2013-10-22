@@ -213,13 +213,13 @@ public class WikiServiceImplTest
        
        page = WIKI_SERVICE.updateWikiPage(page);
        assertEquals("New_Title", page.getSystemName()); // Name has underscores
-       assertEquals("New Title", page.getTitle());
+       assertEquals("New_Title", page.getTitle());
        
        
        // Fetch, and check
        page = WIKI_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName());
        assertEquals("New_Title", page.getSystemName()); // Name has underscores
-       assertEquals("New Title", page.getTitle());
+       assertEquals("New_Title", page.getTitle());
        assertEquals("This is new content", page.getContents());
        assertEquals(TEST_USER, page.getCreator());
        assertEquals(0, page.getTags().size());
@@ -239,7 +239,7 @@ public class WikiServiceImplTest
        
        // Check it
        assertEquals("Title_Space", page.getSystemName());
-       assertEquals("Title Space", page.getTitle());
+       assertEquals("Title_Space", page.getTitle());
        assertEquals("This Is Some Content", page.getContents());
        assertEquals(TEST_USER, page.getCreator());
        assertEquals(0, page.getTags().size());
@@ -252,7 +252,7 @@ public class WikiServiceImplTest
        // Check
        page = WIKI_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName());
        assertEquals("Title_Space", page.getSystemName());
-       assertEquals("Title Space", page.getTitle());
+       assertEquals("Title_Space", page.getTitle());
        assertEquals("Changed contents", page.getContents());
        assertEquals(TEST_USER, page.getCreator());
        assertEquals(0, page.getTags().size());
@@ -265,7 +265,7 @@ public class WikiServiceImplTest
        // Check
        page = WIKI_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName());
        assertEquals("Alternate_Title", page.getSystemName());
-       assertEquals("Alternate Title", page.getTitle());
+       assertEquals("Alternate_Title", page.getTitle());
        assertEquals("Changed contents", page.getContents());
        assertEquals(TEST_USER, page.getCreator());
        assertEquals(0, page.getTags().size());

@@ -25,11 +25,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import marquee.xmlrpc.XmlRpcClient;
-import marquee.xmlrpc.XmlRpcException;
-import marquee.xmlrpc.XmlRpcParser;
-import marquee.xmlrpc.XmlRpcSerializer;
-import marquee.xmlrpc.serializers.HashtableSerializer;
+import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
 /**
  * Default blog integration implementation.  Uses various standard XML PRC blogging API to satisfy the 
@@ -156,9 +154,11 @@ public abstract class DefaultBlogIntegrationImplementation extends BaseBlogInteg
         XmlRpcClient client = null;
         try
         {
-            XmlRpcSerializer.registerCustomSerializer(new HashtableSerializer());
-            XmlRpcParser.setDriver("org.apache.xerces.parsers.SAXParser");
-            client = new XmlRpcClient(new URL(url));
+            client = new XmlRpcClient();
+            XmlRpcClientConfigImpl conf = new XmlRpcClientConfigImpl();
+            conf.setServerURL(new URL(url));
+            conf.setEncoding("UTF-8");
+            client.setConfig(conf);
         }
         catch (MalformedURLException exception)
         {
@@ -184,7 +184,7 @@ public abstract class DefaultBlogIntegrationImplementation extends BaseBlogInteg
         try
         {
             XmlRpcClient client = getClient(url);
-            result = client.invoke(method, params);
+            result = client.execute(method, params);
         }
         catch (XmlRpcException exception)
         {

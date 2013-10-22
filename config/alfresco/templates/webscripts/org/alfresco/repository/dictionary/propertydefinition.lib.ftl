@@ -25,20 +25,24 @@
 		"indexed" : ${propertydefs.indexed?string},
 		"indexedAtomically" : ${propertydefs.indexedAtomically?string},
 		"constraints" :
-		[<#--
-		<#if propertydefs.constraints?exists>
+		[
 			<#list propertydefs.constraints as constraintdefs>
 		{ 
-				<#assign keys = constraintdefs.getConstraint()?keys>
+			"type" : "${constraintdefs.getConstraint().getType()}",
+			"parameters" : 
+			[
+				<#assign params = constraintdefs.getConstraint().getParameters()>
+				<#assign keys = params?keys>
 				<#list keys as key>
-					<#if key == "expression">
-			"${key}" : <#if constraintdefs.getConstraint()[key]?exists>"${constraintdefs.getConstraint()[key]}" <#else>"has no value"</#if>
-					</#if>
-					<#if key_has_next>,</#if>   
+				{
+					"${key}" : <#rt><#if params[key]?is_enumerable>[<#list params[key] as mlist>"${mlist}"<#if mlist_has_next>,</#if></#list>]
+								<#t><#else><#if params[key]?is_boolean>${params[key]?string}<#else>"${params[key]?string}"</#if></#if>
+				}
+					<#if key_has_next>,</#if>
 				</#list> 
+			]
 		}<#if constraintdefs_has_next>,</#if>
 			</#list>
-		</#if>-->
 		],
 		"url" : "${"/api/property/" + propertydefs.name.toPrefixString()?replace(":","_")}"
 	}

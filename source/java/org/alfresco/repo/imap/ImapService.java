@@ -333,4 +333,10 @@ public interface ImapService
             this.search = search;
         }
     }
+
+    /**
+     * @param nodeRef
+     * @return path for node relatively to site root
+     */
+    public String getPathFromSites(NodeRef nodeRef);
 }

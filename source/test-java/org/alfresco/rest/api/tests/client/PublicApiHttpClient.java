@@ -69,13 +69,14 @@ public class PublicApiHttpClient
 {
     private static final Log logger = LogFactory.getLog(PublicApiHttpClient.class);
 
-    private static final String OLD_BASE_URL = "http://{0}:{1}{2}/{3}/{4}/api/";
-	private static final String INDEX_URL = "http://{0}:{1}{2}/{3}";
-	private static final String BASE_URL = "http://{0}:{1}{2}/{3}/{4}/{5}/{6}/versions/1";
-	private static final String PUBLICAPI_CMIS_SERVICE_URL = "http://{0}:{1}{2}/{3}/cmis/versions/{4}/{5}";
-	private static final String PUBLICAPI_CMIS_URL = "http://{0}:{1}{2}/{3}/{4}/{5}/cmis/versions/{6}/{7}";
-	private static final String ATOM_PUB_URL = "http://{0}:{1}{2}/cmisatom";
+    private static final String OLD_BASE_URL = "{0}://{1}:{2}{3}{4}{5}/api/";
+	private static final String INDEX_URL = "{0}://{1}:{2}{3}{4}";
+	private static final String BASE_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/{7}/versions/1";
+	private static final String PUBLICAPI_CMIS_SERVICE_URL = "{0}://{1}:{2}{3}{4}cmis/versions/{5}/{6}";
+	private static final String PUBLICAPI_CMIS_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/cmis/versions/{7}/{8}";
+	private static final String ATOM_PUB_URL = "{0}://{1}:{2}{3}/cmisatom";
 
+	private String scheme = "http";
     private String host = "localhost";
     private int port = 8081;
 
@@ -91,11 +92,29 @@ public class PublicApiHttpClient
 	
 	public PublicApiHttpClient(String host, int port, String contextPath, String servletName, AuthenticatedHttp authenticatedHttp)
 	{
+	    this("http", host, port, contextPath, servletName, authenticatedHttp);
+	}
+
+	public PublicApiHttpClient(String scheme, String host, int port, String contextPath, String servletName, AuthenticatedHttp authenticatedHttp)
+	{
 		super();
+		this.scheme = scheme;
 		this.host = host;
 		this.port = port;
 		this.contextPath = contextPath;
+		if(this.contextPath != null && !this.contextPath.isEmpty() && !this.contextPath.endsWith("/"))
+		{
+		    this.contextPath = this.contextPath + "/";
+		}
+		if(this.contextPath != null && !this.contextPath.startsWith("/"))
+		{
+		    this.contextPath = "/" + this.contextPath;
+		}
 		this.servletName = servletName;
+		if(this.servletName != null && !this.servletName.isEmpty() && !this.servletName.endsWith("/"))
+		{
+		    this.servletName = this.servletName + "/";
+		}
 		this.authenticatedHttp = authenticatedHttp;
 	}
 
@@ -104,11 +123,11 @@ public class PublicApiHttpClient
 		StringBuilder url = new StringBuilder();
 		if(repositoryId == null)
 		{
-			url.append(MessageFormat.format(ATOM_PUB_URL, new Object[] { host, String.valueOf(port), contextPath}));
+			url.append(MessageFormat.format(ATOM_PUB_URL, new Object[] { scheme, host, String.valueOf(port), contextPath}));
 		}
 		else
 		{
-			url.append(MessageFormat.format(ATOM_PUB_URL, new Object[] { host, String.valueOf(port), contextPath}));
+			url.append(MessageFormat.format(ATOM_PUB_URL, new Object[] { scheme, host, String.valueOf(port), contextPath}));
 			url.append("/");
 			url.append(repositoryId);
 		}
@@ -127,12 +146,12 @@ public class PublicApiHttpClient
 		StringBuilder url = new StringBuilder();
 		if(networkId == null)
 		{
-			url.append(MessageFormat.format(PUBLICAPI_CMIS_SERVICE_URL, new Object[] { host, String.valueOf(port), contextPath,
+			url.append(MessageFormat.format(PUBLICAPI_CMIS_SERVICE_URL, new Object[] { scheme, host, String.valueOf(port), contextPath,
 					servletName, version, binding.toString().toLowerCase()}));
 		}
 		else
 		{
-			url.append(MessageFormat.format(PUBLICAPI_CMIS_URL, new Object[] { host, String.valueOf(port), contextPath, servletName,
+			url.append(MessageFormat.format(PUBLICAPI_CMIS_URL, new Object[] { scheme, host, String.valueOf(port), contextPath, servletName,
 					networkId, "public", version, binding.toString().toLowerCase()}));
 		}
 
@@ -471,7 +490,7 @@ public class PublicApiHttpClient
 
     	RestApiEndpoint(String url, Map<String, String> params) throws IOException
     	{
-			StringBuilder sb = new StringBuilder(MessageFormat.format(INDEX_URL, new Object[] {host, String.valueOf(port), contextPath, servletName}));
+			StringBuilder sb = new StringBuilder(MessageFormat.format(INDEX_URL, new Object[] {scheme, host, String.valueOf(port), contextPath, servletName}));
 			if(url != null)
 			{
 				sb.append(url);
@@ -484,7 +503,7 @@ public class PublicApiHttpClient
 
     	RestApiEndpoint(String tenantDomain, String url, Map<String, String> params) throws IOException
     	{
-			StringBuilder sb = new StringBuilder(MessageFormat.format(OLD_BASE_URL, new Object[] { host, String.valueOf(port), contextPath, servletName,
+			StringBuilder sb = new StringBuilder(MessageFormat.format(OLD_BASE_URL, new Object[] {scheme, host, String.valueOf(port), contextPath, servletName,
 					tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain }));
 			sb.append("/");
 			sb.append(url);
@@ -502,7 +521,7 @@ public class PublicApiHttpClient
     		SCOPE scope = api.getScope();
     		Pair<String, String> relationshipCollectionInfo = getRelationCollectionInfo(resourceClass);
 
-			sb.append(MessageFormat.format(BASE_URL, new Object[] {host, String.valueOf(port), contextPath, servletName,
+			sb.append(MessageFormat.format(BASE_URL, new Object[] {scheme, host, String.valueOf(port), contextPath, servletName,
 					tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain, scope.toString(), apiName}));
 
     		if(relationshipCollectionInfo != null)
@@ -580,7 +599,7 @@ public class PublicApiHttpClient
 			{
 				tenantDomain = TenantUtil.DEFAULT_TENANT;
 			}
-			sb.append(MessageFormat.format(BASE_URL, new Object[] {host, String.valueOf(port), contextPath, servletName, 
+			sb.append(MessageFormat.format(BASE_URL, new Object[] {scheme, host, String.valueOf(port), contextPath, servletName, 
 					tenantDomain, scope, apiName}));
 
 			if(collectionName != null)

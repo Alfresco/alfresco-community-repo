@@ -7,7 +7,12 @@ public class WorkflowApiHttpClient extends PublicApiHttpClient
 {
     public WorkflowApiHttpClient(String host, int port, String contextPath, String servletName, AuthenticatedHttp authenticatedHttp)
     {
-        super(host, port, contextPath, servletName, authenticatedHttp);
+        this("http", host, port, contextPath, servletName, authenticatedHttp);
+    }
+
+    public WorkflowApiHttpClient(String scheme, String host, int port, String contextPath, String servletName, AuthenticatedHttp authenticatedHttp)
+    {
+        super(scheme, host, port, contextPath, servletName, authenticatedHttp);
         apiName = "workflow";
     }
 

@@ -51,7 +51,7 @@
 			</list>
         </property>
         <property name="queryEngine">
-            <ref bean="search.dbQueryEngineImpl" />
+            <ref bean="search.dbQueryEngine" />
         </property>
         <property name="cmisDictionaryService">
             <ref bean="OpenCMISDictionaryService" />

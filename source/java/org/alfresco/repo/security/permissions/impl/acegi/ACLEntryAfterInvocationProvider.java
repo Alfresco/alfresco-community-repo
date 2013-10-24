@@ -500,6 +500,11 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
     {
         ResultSet raw = returnedObject.getWrapped();
+        // Check for nested evaluation FilteringResultSet is only wrapped here
+        if(raw instanceof FilteringResultSet)
+        {
+            return returnedObject;
+        }
         ResultSet filteredForPermissions = decide(authentication, object, config, raw);
         PagingLuceneResultSet newPaging = new PagingLuceneResultSet(filteredForPermissions, returnedObject.getResultSetMetaData().getSearchParameters(), nodeService);
         return newPaging;

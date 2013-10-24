@@ -533,7 +533,7 @@ public class PublicApiClient
 
 	public HttpResponse index(Map<String, String> params) throws IOException
 	{
-		HttpResponse response = get("/", params);
+		HttpResponse response = get("", params);
 		return response;
 	}
 

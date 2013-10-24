@@ -74,7 +74,7 @@ public class PublicApiHttpClient
 	private static final String BASE_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/{7}/versions/1";
 	private static final String PUBLICAPI_CMIS_SERVICE_URL = "{0}://{1}:{2}{3}{4}cmis/versions/{5}/{6}";
 	private static final String PUBLICAPI_CMIS_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/cmis/versions/{7}/{8}";
-	private static final String ATOM_PUB_URL = "{0}://{1}:{2}{3}/cmisatom";
+	private static final String ATOM_PUB_URL = "{0}://{1}:{2}{3}cmisatom";
 
 	private String scheme = "http";
     private String host = "localhost";

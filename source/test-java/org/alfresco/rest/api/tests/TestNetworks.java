@@ -418,7 +418,7 @@ public class TestNetworks extends EnterpriseTestApi
         RequestContext rc = new RequestContext("-default-", person.getId());
         publicApiClient.setRequestContext(rc);
 
-        HttpResponse response = publicApiClient.get("/-default-", null);
+        HttpResponse response = publicApiClient.get("-default-", null);
         assertEquals(200, response.getStatusCode());
 	}
 

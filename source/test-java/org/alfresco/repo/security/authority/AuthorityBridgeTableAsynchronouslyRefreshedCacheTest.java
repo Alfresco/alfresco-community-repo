@@ -19,16 +19,20 @@
 package org.alfresco.repo.security.authority;
 
 import junit.framework.TestCase;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-
 import org.alfresco.util.GUID;
 import org.springframework.context.ApplicationContext;
 
@@ -42,6 +46,8 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
     private TenantAdminService tenantAdminService;
     private TransactionService transactionService;
     private PersonService personService;
+    private TenantService tenantService;
+    private AuthorityBridgeTableAsynchronouslyRefreshedCache authorityBridgeTableCache;
 
     private static final String TENANT_DOMAIN = GUID.generate() + ".com";
     private static final String TENANT_ADMIN_USER = AuthenticationUtil.getAdminUserName() + "@" + TENANT_DOMAIN;
@@ -54,16 +60,25 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
     @Override
     public void setUp() throws Exception
     {
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            throw new AlfrescoRuntimeException(
+                    "A previous tests did not clean up transaction: " +
+                    AlfrescoTransactionSupport.getTransactionId());
+        }
+        
         transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
         authorityService = (AuthorityService) ctx.getBean(ServiceRegistry.AUTHORITY_SERVICE.getLocalName());
         tenantAdminService = ctx.getBean("tenantAdminService", TenantAdminService.class);
         personService = (PersonService) ctx.getBean(ServiceRegistry.PERSON_SERVICE.getLocalName());
+        tenantService = (TenantService) ctx.getBean("tenantService");
+        authorityBridgeTableCache = (AuthorityBridgeTableAsynchronouslyRefreshedCache) ctx.getBean("authorityBridgeTableCache");
     }
 
     @Override
     protected void tearDown()
     {
-
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
 
     /**
@@ -79,6 +94,7 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
 
         // Create a group and place a user in it
         AuthenticationUtil.setFullyAuthenticatedUser(TENANT_ADMIN_USER);
+        assertEquals(TENANT_DOMAIN, tenantService.getCurrentUserDomain());
         final String tenantChildGroup = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>()
         {
             @Override
@@ -89,6 +105,7 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
                 String tenantChildGroup = authorityService.createAuthority(AuthorityType.GROUP, childGroupName);
                 assertNotNull(authorityService.getAuthorityNodeRef(tenantChildGroup));
                 authorityService.addAuthority(tenantChildGroup, tenantPersonName);
+                authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
                 return tenantChildGroup;
             }
         }, false, true);
@@ -103,7 +120,7 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
                 String tenantParentGroup = authorityService.createAuthority(AuthorityType.GROUP, parentGroupName);
                 assertNotNull(authorityService.getAuthorityNodeRef(tenantParentGroup));
                 authorityService.addAuthority(tenantParentGroup, tenantChildGroup);
-
+                authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
                 return tenantParentGroup;
             }
         }, false, true);
@@ -125,6 +142,10 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCa
                 if (!tenantAdminService.existsTenant(tenantDomain))
                 {
                     tenantAdminService.createTenant(tenantDomain, "password".toCharArray());
+                }
+                else
+                {
+                    throw new IllegalStateException("Tenant exists!");
                 }
                 return null;
             }

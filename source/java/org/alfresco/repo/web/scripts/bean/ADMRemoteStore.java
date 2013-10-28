@@ -546,26 +546,35 @@ public class ADMRemoteStore extends BaseRemoteStore
     @Override
     protected void updateDocument(final WebScriptResponse res, String store, final String path, final InputStream content)
     {
-        final String encpath = encodePath(path);
-        final FileInfo fileInfo = resolveFilePath(encpath);
-        if (fileInfo == null || fileInfo.isFolder())
+        final String runAsUser = getPathRunAsUser(path);
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
-            res.setStatus(Status.STATUS_NOT_FOUND);
-            return;
-        }
-        
-        try
-        {
-            ContentWriter writer = contentService.getWriter(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
-            writer.putContent(content);
-            if (logger.isDebugEnabled())
-                logger.debug("updateDocument: " + fileInfo.toString());
-        }
-        catch (AccessDeniedException ae)
-        {
-            res.setStatus(Status.STATUS_UNAUTHORIZED);
-            throw ae;
-        }
+            @SuppressWarnings("synthetic-access")
+            public Void doWork() throws Exception
+            {
+                final String encpath = encodePath(path);
+                final FileInfo fileInfo = resolveFilePath(encpath);
+                if (fileInfo == null || fileInfo.isFolder())
+                {
+                    res.setStatus(Status.STATUS_NOT_FOUND);
+                    return null;
+                }
+                
+                try
+                {
+                    ContentWriter writer = contentService.getWriter(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                    writer.putContent(content);
+                    if (logger.isDebugEnabled())
+                        logger.debug("updateDocument: " + fileInfo.toString());
+                }
+                catch (AccessDeniedException ae)
+                {
+                    res.setStatus(Status.STATUS_UNAUTHORIZED);
+                    throw ae;
+                }
+                return null;
+            }
+        }, runAsUser);
     }
     
     /**

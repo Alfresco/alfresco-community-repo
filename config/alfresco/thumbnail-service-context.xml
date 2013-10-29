@@ -48,6 +48,10 @@
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="ruleService" ref="ruleService"/>
         <property name="transactionService" ref="TransactionService" />
+        <!-- Generate thumbnails at all? A false value turns generation off regardless of mimetype -->
+        <property name="thumbnailsEnabled">
+            <value>${system.thumbnail.generate}</value>
+        </property>
     </bean>
     
     <!-- This bean is responsible for the conversion of thumbnail definitions to
@@ -243,10 +247,6 @@
         <property name="thumbnailService">
             <ref bean="ThumbnailService" />
         </property>
-      <!-- Generate thumbnails at all? A false value turns generation off regardless of mimetype -->
-      <property name="generateThumbnails">
-            <value>${system.thumbnail.generate}</value>
-      </property>
       <property name="mimetypeMaxSourceSizeKBytes">
           <ref bean="mimetypeMaxSourceSizeKBytes" />
       </property>
@@ -266,10 +266,6 @@
         <property name="thumbnailService">
             <ref bean="ThumbnailService" />
         </property>
-      <!-- Generate thumbnails at all? A false value turns generation off regardless of mimetype -->
-      <property name="generateThumbnails">
-            <value>${system.thumbnail.generate}</value>
-      </property>
       <property name="mimetypeMaxSourceSizeKBytes">
           <ref bean="mimetypeMaxSourceSizeKBytes" />
       </property>

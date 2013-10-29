@@ -148,4 +148,18 @@ public interface ThumbnailService
      */
     @Auditable(parameters = {"sourceNode"})
     Map<String, FailedThumbnailInfo> getFailedThumbnails(NodeRef sourceNode);
+    
+    /**
+     * This method enables or disables the creation of all thumbnails by this service.
+     * 
+     * @param thumbnailsEnabled <code>true</code> to enable all thumbnail creation (the default setting), or <code>false</code> to disable.
+     * @since 4.1.7
+     */
+    void setThumbnailsEnabled(boolean thumbnailsEnabled);
+    
+    /**
+     * This method indicates whether thumbnail creation via this service has been globally enabled or disabled.
+     * @since 4.1.7
+     */
+    boolean getThumbnailsEnabled();
 }

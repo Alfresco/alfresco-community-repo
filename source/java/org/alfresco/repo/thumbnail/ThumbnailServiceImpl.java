@@ -91,6 +91,9 @@ public class ThumbnailServiceImpl implements ThumbnailService,
     /** Thumbnail registry */
     private ThumbnailRegistry thumbnailRegistry;
     
+    /** Flag to enable/disable the generation of all thumbnails. */
+    private boolean thumbnailsEnabled;
+    
     /** Rendition service */
     private RenditionService renditionService;
     
@@ -147,6 +150,10 @@ public class ThumbnailServiceImpl implements ThumbnailService,
     {
         this.thumbnailRegistry = thumbnailRegistry;
     }
+    
+    @Override public void setThumbnailsEnabled(boolean thumbnailsEnabled) { this.thumbnailsEnabled = thumbnailsEnabled; }
+    
+    @Override public boolean getThumbnailsEnabled() { return this.thumbnailsEnabled; }
     
     /**
      * Set the policy component to listen for various events

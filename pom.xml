@@ -901,6 +901,7 @@
                                 <exclude>**/org/alfresco/repo/action/evaluator/HasChildEvaluatorTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/action/scheduled/ScheduledPersistedActionServiceTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/avm/AVMServiceRemoteSystemTest.*</exclude>
+                                <exclude>**/org/alfresco/wcm/**/*Test.*</exclude>
                                 <exclude>**/org/alfresco/repo/blog/BlogIntegrationServiceSystemTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/MimetypeMapContentTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/caching/quota/StandardQuotaStrategyTest.*</exclude>

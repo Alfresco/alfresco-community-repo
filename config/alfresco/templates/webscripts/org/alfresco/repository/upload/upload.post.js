@@ -241,6 +241,12 @@ function main()
          updateNode.properties.content.guessMimetype(filename);
          updateNode.properties.content.guessEncoding();
          // check it in again, with supplied version history note
+         
+         // Extract the metadata
+         // (The overwrite policy controls which if any parts of
+         //  the document's properties are updated from this)
+         extractMetadata(updateNode);
+         
          updateNode = updateNode.checkin(description, majorVersion);
          if (aspects.length != 0)
          {
@@ -252,11 +258,6 @@ function main()
                }
             }
          }
-
-         // Extract the metadata
-         // (The overwrite policy controls which if any parts of
-         //  the document's properties are updated from this)
-         extractMetadata(updateNode);
 
          // Record the file details ready for generating the response
          model.document = updateNode;

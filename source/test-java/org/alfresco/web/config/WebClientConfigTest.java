@@ -20,16 +20,10 @@ package org.alfresco.web.config;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.springframework.extensions.config.Config;
-import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.config.ConfigException;
-import org.springframework.extensions.config.xml.XMLConfigService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseTest;
 import org.alfresco.web.config.ActionsConfigElement.ActionDefinition;
@@ -41,6 +35,10 @@ import org.alfresco.web.config.WizardsConfigElement.ConditionalPageConfig;
 import org.alfresco.web.config.WizardsConfigElement.PageConfig;
 import org.alfresco.web.config.WizardsConfigElement.StepConfig;
 import org.alfresco.web.config.WizardsConfigElement.WizardConfig;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigException;
+import org.springframework.extensions.config.xml.XMLConfigService;
 
 /**
  * JUnit tests to exercise the capabilities added to the web client config
@@ -50,6 +48,10 @@ import org.alfresco.web.config.WizardsConfigElement.WizardConfig;
  */
 public class WebClientConfigTest extends BaseTest
 {
+   private static final String TEST_CONFIG = "test-config.xml";
+   private static final String TEST_CONFIG_OVERRIDE = "test-config-override.xml";
+   private static final String CLASSPATH_RESOURCE = "classpath:";
+   
    /**
     * @see junit.framework.TestCase#setUp()
     */
@@ -63,7 +65,7 @@ public class WebClientConfigTest extends BaseTest
     */
    public void testPropertySheetConfig()
    {
-      XMLConfigService svc = initXMLConfigService("test-config.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG);
 
       // get hold of the property sheet config from the global section
       Config global = svc.getGlobalConfig();
@@ -122,9 +124,15 @@ public class WebClientConfigTest extends BaseTest
    }
 
    
-   public void testPropertyViewing()
+   @Override
+    public String getResourcesDir()
+    {
+        return CLASSPATH_RESOURCE;
+    }
+
+public void testPropertyViewing()
    {
-      XMLConfigService svc = initXMLConfigService("test-config.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG);
       
       Config propViewConfig = svc.getConfig("Property Viewing");
       assertNotNull("Property Viewing section should not be null", propViewConfig);
@@ -162,7 +170,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testPropertyEditing()
    {
-      XMLConfigService svc = initXMLConfigService("test-config.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG);
       
       Config propEditConfig = svc.getConfig("Property Editing");
       assertNotNull("Property Editing section should not be null", propEditConfig);
@@ -203,7 +211,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testPropertyOverride()
    {
-      XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG, TEST_CONFIG_OVERRIDE);
       
       // get the config for the size property in the space-aspect property sheet
       PropertySheetConfigElement propSheet = ((PropertySheetConfigElement)svc.getConfig("space-aspect").
@@ -278,7 +286,7 @@ public class WebClientConfigTest extends BaseTest
     */
    public void testClientConfig()
    {
-      XMLConfigService svc = initXMLConfigService("test-config.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG);
       
       // get the global config and from that the client config
       ClientConfigElement clientConfig = (ClientConfigElement)svc.getGlobalConfig().
@@ -298,7 +306,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testClientOverride()
    {
-      XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG, TEST_CONFIG_OVERRIDE);
         
       // try and get the global config section
       Config globalSection = svc.getGlobalConfig();
@@ -330,7 +338,7 @@ public class WebClientConfigTest extends BaseTest
     */
    public void testNavigation()
    {
-      XMLConfigService svc = initXMLConfigService("test-config.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG);
 
       // *** Test the returning of a view id override
       Config testCfg = svc.getConfig("viewid-navigation-result");
@@ -405,7 +413,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testNavigationGenericConfig()
    {
-      XMLConfigService svc = initXMLConfigService("test-config.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG);
       
       // do a lookup using the generic config elements and make sure the correct
       // info comes out
@@ -451,7 +459,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testLanguages()
    {
-      XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG, TEST_CONFIG_OVERRIDE);
       
       LanguagesConfigElement config = (LanguagesConfigElement)svc.getConfig("Languages").
             getConfigElement(LanguagesConfigElement.CONFIG_ELEMENT_ID);
@@ -486,7 +494,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testAdvancedSearch()
    {
-	  XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
+	  XMLConfigService svc = initXMLConfigService(TEST_CONFIG, TEST_CONFIG_OVERRIDE);
       
       AdvancedSearchConfigElement config = (AdvancedSearchConfigElement)svc.getConfig("Advanced Search").
             getConfigElement(AdvancedSearchConfigElement.CONFIG_ELEMENT_ID);
@@ -529,7 +537,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testViews()
    {
-	  XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
+	  XMLConfigService svc = initXMLConfigService(TEST_CONFIG, TEST_CONFIG_OVERRIDE);
       
       ViewsConfigElement config = (ViewsConfigElement)svc.getConfig("Views").
             getConfigElement(ViewsConfigElement.CONFIG_ELEMENT_ID);
@@ -661,7 +669,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testDialogOverride()
    {
-	  XMLConfigService svc = initXMLConfigService("test-config-dialogs-wizards.xml", "test-config-override.xml");
+	  XMLConfigService svc = initXMLConfigService("test-config-dialogs-wizards.xml", TEST_CONFIG_OVERRIDE);
       
       // get the 'dialogs' element
       DialogsConfigElement dialogsElement = ((DialogsConfigElement)svc.getConfig("Dialogs").
@@ -803,7 +811,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testActions()
    {
-      XMLConfigService svc = initXMLConfigService("test-config.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG);
       
       // get the "Actions" config
       Config cfg = svc.getGlobalConfig();
@@ -839,7 +847,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testActionsOverriding()
    {
-	   XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
+	   XMLConfigService svc = initXMLConfigService(TEST_CONFIG, TEST_CONFIG_OVERRIDE);
       
       // get the "Actions" config
       Config cfg = svc.getConfig("Actions Override");
@@ -900,7 +908,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testETHREEOH2145()
    {
-      XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-e30-2145.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG, "test-config-e30-2145.xml");
       
       // get the "client" config from global config section
       Config cfg = svc.getGlobalConfig();
@@ -922,7 +930,7 @@ public class WebClientConfigTest extends BaseTest
    public void testWCM()
    {
       // setup the config service
-      XMLConfigService svc = initXMLConfigService("test-config.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG);
       
       // get the global config object
       Config global = svc.getGlobalConfig();
@@ -981,7 +989,7 @@ public class WebClientConfigTest extends BaseTest
    public void testWCMOverride()
    {
       // setup the config service
-      XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
+      XMLConfigService svc = initXMLConfigService(TEST_CONFIG, TEST_CONFIG_OVERRIDE);
       
       // get the global config object
       Config global = svc.getGlobalConfig();

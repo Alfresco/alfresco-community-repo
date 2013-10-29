@@ -800,10 +800,8 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                
                 try
                 {
-                    this.applicationContext = applicationContext;
-                    
                     applicationContext.refresh();
-                    
+                    this.applicationContext = applicationContext;
                     ChildApplicationContextFactory.logger.info("Startup of '" + getCategory() + "' subsystem, ID: "
                             + getId() + " complete");
                     

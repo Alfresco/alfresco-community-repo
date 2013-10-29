@@ -1104,7 +1104,7 @@
         </property>
     </bean>
     
-    <bean id="lucene" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+    <bean id="lucene" class="org.alfresco.repo.management.subsystems.LuceneChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>false</value>
         </property>

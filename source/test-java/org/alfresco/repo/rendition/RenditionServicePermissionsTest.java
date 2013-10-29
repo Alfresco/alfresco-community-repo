@@ -25,11 +25,15 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
@@ -41,11 +45,13 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
@@ -76,7 +82,8 @@ public class RenditionServicePermissionsTest
     private static Log logger = LogFactory.getLog(RenditionServicePermissionsTest.class);
     
     // JUnit Rule to initialise the default Alfresco spring configuration
-    public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
+    public static ApplicationContextInit APP_CONTEXT_INIT = 
+            ApplicationContextInit.createStandardContextWithOverrides("classpath:/test/alfresco/test-renditions-context.xml");
     
     // JUnit Rules to create test users.
     public static AlfrescoPerson TEST_USER1 = new AlfrescoPerson(APP_CONTEXT_INIT, "UserOne");
@@ -225,6 +232,80 @@ public class RenditionServicePermissionsTest
                     }
                 });
         }
+    
+    /**
+     * This test method uses the RenditionService to render a test document and 
+     * check that the content transformer has access to the original initiating username
+     */
+    @Test public void testRenditionUserPreserved() throws Exception
+    {
+        final String normalUser = TEST_USER1.getUsername();
+        
+        // Register our dummy transformer
+        ContentTransformerRegistry contentTransformerRegistry = 
+                (ContentTransformerRegistry) APP_CONTEXT_INIT.getApplicationContext().getBean("contentTransformerRegistry");
+        MockUserCheckingContentTransformer transformer = new MockUserCheckingContentTransformer();
+        transformer.setExpectedUsername(normalUser);
+        contentTransformerRegistry.addTransformer(transformer);
+        
+        // As admin, create a user who has coordinator access to the testFolder
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // Restrict write access to the test folder
+                permissionService.setPermission(testFolder, normalUser, PermissionService.COORDINATOR, true);
+                
+                return null;
+            }
+        });
+
+        // As the user, render a piece of content with the rendition going to testFolder
+        final NodeRef rendition = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                // Set the current security context as a rendition user
+                AuthenticationUtil.setFullyAuthenticatedUser(normalUser);
+                
+                assertFalse("Source node has unexpected renditioned aspect.", nodeService.hasAspect(nodeWithImageContent,
+                            RenditionModel.ASPECT_RENDITIONED));
+
+                String path = testFolderName+"/testRendition.png";
+                // Create the rendering action.
+                QName renditionName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                        "PreserveUser" + System.currentTimeMillis());
+                
+                RenditionDefinition action = renditionService.createRenditionDefinition(renditionName, MockRenderingEngine.NAME);
+                action.setParameterValue(RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, path);
+                action.setParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE, 
+                        MockUserCheckingContentTransformer.SUPPORTED_TARGET_MIMETYPE);
+
+                // Perform the action with an explicit destination folder
+                logger.debug("Creating rendition of: " + nodeWithImageContent);
+                ChildAssociationRef renditionAssoc = renditionService.render(nodeWithImageContent, action);
+                logger.debug("Created rendition: " + renditionAssoc.getChildRef());
+                
+                NodeRef renditionNode = renditionAssoc.getChildRef();
+                
+                return renditionNode;
+            }
+        });
+
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // Set the current security context as admin
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+                final Serializable renditionCreator = nodeService.getProperty(rendition, ContentModel.PROP_CREATOR);
+                assertEquals("Incorrect creator", normalUser, renditionCreator);
+
+                return null;
+            }
+        });
+    }
 
     /** This test case relates to ALF-17797. */
     @Test public void userWithReadOnlyAccessToNodeShouldNotCauseFailedThumbnailProblems() throws Exception
@@ -361,5 +442,117 @@ public class RenditionServicePermissionsTest
                     ImageRenderingEngine.NAME);
         result.setParameterValue(ImageRenderingEngine.PARAM_RESIZE_WIDTH, 42);
         return result;
+    }
+    
+    /**
+     * Rendering engine that does nothing on parameter value check
+     *
+     */
+    private static class MockRenderingEngine extends ImageRenderingEngine
+    {
+        public static final String NAME = "mockRenderingEngine";
+        
+        @Override
+        protected void checkParameterValues(Action action)
+        {
+            // Everything looks fantastic
+        }
+    }
+    
+    /**
+     * Mock content transformer which checks an expected authenticated user against the actual
+     * authenticated user.
+     */
+    private static class MockUserCheckingContentTransformer implements ContentTransformer
+    {
+        public static final String SUPPORTED_TARGET_MIMETYPE = "dummy/dummy";
+        public static final String TEST_TARGET_CONTENT = "transformed text";
+        
+        private String expectedUsername;
+
+        public void setExpectedUsername(String expectedUsername)
+        {
+            this.expectedUsername = expectedUsername;
+        }
+
+        @Override
+        public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
+        {
+            return SUPPORTED_TARGET_MIMETYPE.equals(targetMimetype);
+        }
+
+        @Override
+        public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype,
+                TransformationOptions options)
+        {
+            return SUPPORTED_TARGET_MIMETYPE.equals(targetMimetype);
+        }
+
+        @Override
+        public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype,
+                TransformationOptions options)
+        {
+            return SUPPORTED_TARGET_MIMETYPE.equals(targetMimetype);
+        }
+
+        @Override
+        public boolean isTransformableSize(String sourceMimetype, long sourceSize, String targetMimetype,
+                TransformationOptions options)
+        {
+            return SUPPORTED_TARGET_MIMETYPE.equals(targetMimetype);
+        }
+
+        @Override
+        public long getMaxSourceSizeKBytes(String sourceMimetype, String targetMimetype, TransformationOptions options)
+        {
+            return -1;
+        }
+
+        @Override
+        public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype,
+                TransformationOptions options)
+        {
+            return false;
+        }
+
+        @Override
+        public long getTransformationTime()
+        {
+            return 0;
+        }
+
+        protected void checkUser() throws ContentIOException
+        {
+            String username = AuthenticationUtil.getFullyAuthenticatedUser();
+            if (!expectedUsername.equals(username))
+            {
+                throw new ContentIOException(
+                        "Expected username '" + expectedUsername + "' but found '" + username + "'");
+            }
+        }
+        
+        @Override
+        public void transform(ContentReader reader, ContentWriter writer) throws ContentIOException
+        {
+            checkUser();
+            writer.putContent(TEST_TARGET_CONTENT);
+        }
+
+        @Override
+        @Deprecated
+        public void transform(ContentReader reader, ContentWriter writer, Map<String, Object> options)
+                throws ContentIOException
+        {
+            checkUser();
+            writer.putContent(TEST_TARGET_CONTENT);
+        }
+
+        @Override
+        public void transform(ContentReader reader, ContentWriter contentWriter, TransformationOptions options)
+                throws ContentIOException
+        {
+            checkUser();
+            contentWriter.putContent(TEST_TARGET_CONTENT);
+        }
     }
 }

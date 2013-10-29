@@ -223,4 +223,38 @@ public class TransformerConfigSupportedTest
         boolean supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "application/pdf", "image/png", options);
         assertEquals("supported", true, supported);
     }
+    
+    @Test
+    public void supportedWildcardMimetypeTest()
+    {
+        mockMimetypes(mimetypeService,
+                "application/pdf",         "pdf",
+                "image/png",               "png",
+                "image/x-raw-adobe",       "dng",
+        		"image/x-raw-hasselblad",  "3fr",
+        		"image/x-raw-fuji",        "raf",
+        		"image/x-raw-canon",       "cr2",
+        		"image/x-raw-kodak",       "k25",
+                "text/xml",                "xml");
+        mockProperties(transformerProperties, "content.transformer.abc.mimetypes.image/x-raw*.application/pdf.supported", "true");
+        
+        extractor = new TransformerConfigSupported(transformerProperties, mimetypeService);
+        ContentTransformer transformer = (ContentTransformer) new DummyContentTransformer("transformer.abc");
+		boolean supported = extractor.isSupportedTransformation(transformer, "image/png", "application/pdf", options);
+        assertEquals("png supported", false, supported);
+        
+		supported = extractor.isSupportedTransformation(transformer, "image/x-raw-adobe", "application/pdf", options);
+        assertEquals("dng supported", true, supported);
+		supported = extractor.isSupportedTransformation(transformer, "image/x-raw-hasselblad", "application/pdf", options);
+        assertEquals("3fr supported", true, supported);
+		supported = extractor.isSupportedTransformation(transformer, "image/x-raw-fuji", "application/pdf", options);
+        assertEquals("raf supported", true, supported);
+		supported = extractor.isSupportedTransformation(transformer, "image/x-raw-canon", "application/pdf", options);
+        assertEquals("cr2 supported", true, supported);
+		supported = extractor.isSupportedTransformation(transformer, "image/x-raw-kodak", "application/pdf", options);
+        assertEquals("k25 supported", true, supported);
+
+        supported = extractor.isSupportedTransformation(transformer, "text/xml", "application/pdf", options);
+        assertEquals("txt supported", false, supported);
+    }
 }

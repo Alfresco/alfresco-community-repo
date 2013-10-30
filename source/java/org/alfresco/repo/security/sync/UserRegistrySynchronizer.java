@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -45,6 +45,9 @@ public interface UserRegistrySynchronizer
      * Retrieves timestamped user and group information from configured external sources and compares it with the local
      * users and groups last retrieved from the same sources. Any updates and additions made to those users and groups
      * are applied to the local Alfresco copies.
+     * <p>
+     *     This method is <b>deprecated</b>, use {@link #synchronize(boolean forceUpdate, boolean isFullSync)} instead.
+     * </p>
      * 
      * @param forceUpdate
      *            Should the complete set of users and groups be updated / created locally or just those known to have
@@ -62,8 +65,28 @@ public interface UserRegistrySynchronizer
      *            <code>false</code>, all users and groups are processed in the current transaction. This is required if
      *            calling synchronously (e.g. in response to an authentication event in the same transaction).
      */
+    @Deprecated
     public void synchronize(boolean forceUpdate, boolean isFullSync, boolean splitTxns);
-    
+
+    /**
+     * Retrieves timestamped user and group information from configured external sources and compares it with the local
+     * users and groups last retrieved from the same sources. Any updates and additions made to those users and groups
+     * are applied to the local Alfresco copies. Unlike deprecated {@link #synchronize(boolean, boolean, boolean)},
+     * this process is always run in different transactions and threads.
+     *
+     * @param forceUpdate
+     *            Should the complete set of users and groups be updated / created locally or just those known to have
+     *            changed since the last sync? When <code>true</code> then <i>all</i> users and groups are queried from
+     *            the user registry and updated locally. When <code>false</code> then each source is only queried for
+     *            those users and groups modified since the most recent modification date of all the objects last
+     *            queried from that same source.
+     * @param isFullSync
+     *            Should a complete set of user and group IDs be queried from the user registries in order to determine
+     *            deletions? This parameter is independent of <code>force</code> as a separate query is run to process
+     *            updates.
+     */
+    public void synchronize(boolean forceUpdate, boolean isFullSync);
+
     /**
      * Gets the set of property names that are auto-mapped for the user with the given user name. These should remain
      * read-only for the user in the UI.

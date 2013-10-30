@@ -312,7 +312,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 {
                     public Void doWork() throws Exception
                     {
-                        ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(false, false, false);
+                        // Split transactions to avoid MNT-9768
+                        ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(false, false);
                         return null;
                     }
                 });

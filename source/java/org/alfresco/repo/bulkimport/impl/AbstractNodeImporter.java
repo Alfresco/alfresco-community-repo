@@ -281,7 +281,7 @@ public abstract class AbstractNodeImporter implements NodeImporter
             }
             else
             {
-                if (logger.isDebugEnabled()) logger.debug("Skipping creation of new node '" + nodeName + "' within node '" + target.toString() + "' since it doesn't have a content file.");
+                if (logger.isWarnEnabled()) logger.warn("Skipping creation of new node '" + nodeName + "' within node '" + target.toString() + "' since it doesn't have a content file.");
                 nodeRef   = null;
                 nodeState = NodeState.SKIPPED;
             }
@@ -440,7 +440,7 @@ public abstract class AbstractNodeImporter implements NodeImporter
     {
         if (logger.isInfoEnabled())
         {
-            logger.info("Skipping '" + getFileName(importableItem.getHeadRevision().getContentFile()) + "' as it already exists in the repository and 'replace existing' is false.");
+            logger.info("Skipping '" + getFileName(importableItem.getHeadRevision().getContentFile()));
         }
         importStatus.incrementImportableItemsSkipped(importableItem, true);
     }
@@ -449,7 +449,7 @@ public abstract class AbstractNodeImporter implements NodeImporter
     {
         if (logger.isInfoEnabled())
         {
-            logger.info("Skipping '" + getFileName(importableItem.getHeadRevision().getContentFile()) + "' as it already exists in the repository and 'replace existing' is false.");
+            logger.info("Skipping '" + getFileName(importableItem.getHeadRevision().getContentFile()));
         }
         importStatus.incrementImportableItemsSkipped(importableItem, false);
     }

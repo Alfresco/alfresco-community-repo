@@ -20,10 +20,15 @@ package org.alfresco.filesys.auth;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.jlan.netbios.NetBIOSSession;
 import org.alfresco.jlan.server.auth.passthru.AuthSessionFactory;
 import org.alfresco.jlan.server.auth.passthru.PassthruServers;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
@@ -193,6 +198,61 @@ public class PassthruServerFactory implements FactoryBean, InitializingBean, Dis
                     + Protocol.asString(secondaryProto));
     }
 
+    /**
+     * Set the broadcast mask to use for NetBIOS name lookups
+     * 
+     * @param bcastMask String
+     * @exception AlfrescoRuntimeException
+     */
+    public final void setBroadcastMask( String bcastMask)
+    	throws IOException {
+    	
+    	if ( bcastMask == null || bcastMask.length() == 0) {
+    		
+    		// Clear the NetBIOS subnet mask
+    		
+    		NetBIOSSession.setDefaultSubnetMask( null);
+    		return;
+    	}
+    	
+    	// Find the network adapter with the matching broadcast mask
+    	
+		try {
+			Enumeration<NetworkInterface> netEnum = NetworkInterface.getNetworkInterfaces();
+			NetworkInterface bcastIface = null;
+			
+			while ( netEnum.hasMoreElements() && bcastIface == null) {
+
+				NetworkInterface ni = netEnum.nextElement();
+				for ( InterfaceAddress iAddr : ni.getInterfaceAddresses()) {
+					InetAddress broadcast = iAddr.getBroadcast();
+					if ( broadcast != null && broadcast.getHostAddress().equals( bcastMask))
+						bcastIface = ni;
+				}
+			}
+			
+			// DEBUG
+			
+			if ( logger.isDebugEnabled()) {
+				if ( bcastIface != null)
+					logger.debug("Broadcast mask " + bcastMask + " found on network interface " + bcastIface.getDisplayName() + "/" + bcastIface.getName());
+				else
+					logger.debug("Failed to find network interface for broadcast mask " + bcastMask);
+			}
+			
+			// Check if we found a valid network interface for the broadcast mask
+			
+			if ( bcastIface == null)
+				throw new AlfrescoRuntimeException("Network interface for broadcast mask " + bcastMask + " not found");
+			
+			// Set the NetBIOS broadcast mask
+			
+			NetBIOSSession.setDefaultSubnetMask( bcastMask);
+		}
+		catch ( SocketException ex) {
+		}
+    }
+    
     public void afterPropertiesSet() throws InvalidConfigurationException
     {
         // Check if the offline check interval has been specified

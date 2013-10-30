@@ -279,6 +279,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         // Check if the user is already authenticated        
         SessionUser user = getSessionUser(context, req, resp, true);
         HttpSession httpSess = req.getSession(true);
+        if (user == null)
+        {
+            user = (SessionUser) httpSess.getAttribute("_alfAuthTicket");
+        }
         
         // If the user has been validated and we do not require re-authentication then continue to
         // the next filter
@@ -298,7 +302,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         }
 
         // Check if the login page is being accessed, do not intercept the login page
-        if (hasLoginPage() && req.getRequestURI().endsWith(getLoginPage()))
+        if (checkLoginPage(req, resp))
         {
             if (getLogger().isDebugEnabled())
                 getLogger().debug("Login page requested, chaining ...");
@@ -459,6 +463,11 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             }
         }
         return false;
+    }
+
+    protected boolean checkLoginPage(HttpServletRequest req, HttpServletResponse resp)
+    {
+        return (hasLoginPage() && req.getRequestURI().endsWith(getLoginPage()));
     }
 
     /**

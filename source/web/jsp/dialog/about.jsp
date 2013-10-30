@@ -51,7 +51,10 @@
                               <a href="http://www.springframework.org/" target="new"><img src="<%=request.getContextPath()%>/images/logo/spring_logo.jpg" alt="Spring Framework" width="355" height="73" border="0"></a>
                            </span>
                            <span style="text-align:center">
-                              <a href="http://www.hibernate.org/" target="new"><img src="<%=request.getContextPath()%>/images/logo/hibernate_logo.gif" alt="Hibernate" width="249" height="78" border="0"></a>
+                              <a href="http://mybatis.github.io/" target="new"><img src="<%=request.getContextPath()%>/images/logo/mybatis.png" alt="Mybatis" width="250" height="63" border="0"></a>
+                           </span>
+                           <span style="text-align:center">
+                              <a href="http://ibatis.apache.org/" target="new"><img src="<%=request.getContextPath()%>/images/logo/ibatis.png" alt="Ibatis" width="183" height="87" border="0"></a>
                            </span>
                         </div>
                         <div style="padding:4px">
@@ -80,6 +83,12 @@
                               <a href="http://lucene.apache.org/" target="new"><img src="<%=request.getContextPath()%>/images/logo/lucene.gif" alt="Lucene" width="300" height="46" border="0"></a>
                            </span>
                            <span style="text-align:center">
+                              <a href="http://lucene.apache.org/solr/" target="new"><img src="<%=request.getContextPath()%>/images/logo/solr.png" alt="Solr" width="182" height="100" border="0"></a>
+                           </span>
+                           <span style="text-align:center">
+                              <a href="http://www.hazelcast.com/" target="new"><img src="<%=request.getContextPath()%>/images/logo/hazelcast.png" alt="Hazelcast" width="241" height="72" border="0"></a>
+                           </span>
+                           <span style="text-align:center">
                               <a href="http://cglib.sourceforge.net/" target="new"><img src="<%=request.getContextPath()%>/images/logo/cglib.png" alt="Code Generation Library" width="228" height="35" border="0"></a>
                            </span>
                         </div>
@@ -91,7 +100,7 @@
                               <a href="http://tinymce.moxiecode.com/" target="new"><img src="<%=request.getContextPath()%>/images/logo/tinymce.png" alt="TinyMCE" width="88" height="32" border="0"></a>
                            </span>
                            <span style="text-align:center">
-                              <a href="http://www.openoffice.org/" target="new"><img src="<%=request.getContextPath()%>/images/logo/open-office.gif" alt="OpenOffice.org" width="122" height="40" border="0"></a>
+                              <a href="http://www.libreoffice.org/" target="new"><img src="<%=request.getContextPath()%>/images/logo/libreoffice.png" alt="LibreOffice" width="256" height="56" border="0"></a>
                            </span>
                            <span style="text-align:center">
                               <a href="http://jooreports.sourceforge.net/" target="new"><img src="<%=request.getContextPath()%>/images/logo/jooreports.png" alt="JooReports" width="125" height="24" border="0"></a>

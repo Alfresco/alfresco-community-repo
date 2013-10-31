@@ -315,15 +315,6 @@
                 <configuration>
 					<attachClasses>true</attachClasses>
                     <archiveClasses>false</archiveClasses>
-                    <!-- Temporary ugly hack until we can really move the public_api file out of remote-api without breaking the Ant build -->
-                    <webResources>
-                        <resource>
-                            <directory>../../projects/remote-api/source/web</directory>
-                            <includes>
-                            	<include>WEB-INF/server-config.wsdd</include>
-                            </includes>
-                        </resource>
-                    </webResources>
                 </configuration>
                 <!-- This allows overlays to be prepared on the FS for minification and faster run -->
 				<executions>

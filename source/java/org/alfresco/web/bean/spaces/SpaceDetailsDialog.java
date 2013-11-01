@@ -179,8 +179,11 @@ public class SpaceDetailsDialog extends BaseDetailsBean implements NavigationSup
          if (nodes.size() > 1)
          {
             String currentSortColumn = this.browseBean.getSpacesRichList().getCurrentSortColumn();
-            boolean currentSortDescending = this.browseBean.getSpacesRichList().isCurrentSortDescending();
-            Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            if (currentSortColumn != null)
+            {
+                boolean currentSortDescending = this.browseBean.getSpacesRichList().isCurrentSortDescending();
+                Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            }
             next = NodeListUtils.nextItem(nodes, id);
             this.browseBean.setupSpaceAction(next.getId(), false);
          }
@@ -208,8 +211,11 @@ public class SpaceDetailsDialog extends BaseDetailsBean implements NavigationSup
          if (nodes.size() > 1)
          {
             String currentSortColumn = this.browseBean.getSpacesRichList().getCurrentSortColumn();
-            boolean currentSortDescending = this.browseBean.getSpacesRichList().isCurrentSortDescending();
-            Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            if (currentSortColumn != null)
+            {
+                boolean currentSortDescending = this.browseBean.getSpacesRichList().isCurrentSortDescending();
+                Collections.sort(nodes, new NodePropertyComparator(currentSortColumn, !currentSortDescending));
+            }
             previous = NodeListUtils.previousItem(nodes, id);
             this.browseBean.setupSpaceAction(previous.getId(), false);
          }

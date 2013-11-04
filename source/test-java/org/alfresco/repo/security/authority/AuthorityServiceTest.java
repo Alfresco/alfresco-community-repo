@@ -611,7 +611,6 @@ public class AuthorityServiceTest extends TestCase
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(exampleWork);
     }
-    }
 
     private void checkAuthorityCollectionSize(int expected, List<String> actual, AuthorityType type)
     {

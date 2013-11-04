@@ -23,7 +23,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.archive.ArchivedNodesCannedQueryBuilder;
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -188,13 +187,9 @@ public abstract class AbstractArchivedNodeWebScript extends DeclarativeWebScript
     
     protected void validatePermission(NodeRef nodeRef, String currentUser)
     {
-        String archivedBy = (String) serviceRegistry.getNodeService().getProperty(nodeRef, ContentModel.PROP_ARCHIVED_BY);
-        if (!(currentUser.equals(archivedBy)))
+        if (!nodeArchiveService.hasFullAccess(nodeRef))
         {
-            if (!(serviceRegistry.getAuthorityService().isAdminAuthority(currentUser)))
-            {
-                throw new WebScriptException(Status.STATUS_FORBIDDEN, "You don't have permission to act on the node.");
-            }
+            throw new WebScriptException(Status.STATUS_FORBIDDEN, "You don't have permission to act on the node.");
         }
     }
 }

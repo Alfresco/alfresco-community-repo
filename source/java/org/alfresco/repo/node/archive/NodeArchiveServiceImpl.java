@@ -39,6 +39,7 @@ import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -48,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -75,11 +77,14 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         
     private static Log logger = LogFactory.getLog(NodeArchiveServiceImpl.class);
     
-    private NodeService nodeService;
+    protected NodeService nodeService;
     private PermissionService permissionService;
     private TransactionService transactionService;
     private JobLockService jobLockService;
+    private AuthorityService authorityService;
     private NamedObjectRegistry<CannedQueryFactory<ArchivedNodeEntity>> cannedQueryRegistry;
+    private TenantService tenantService;
+    private boolean userNamesAreCaseSensitive = false;
 
     public void setNodeService(NodeService nodeService)
     {
@@ -106,9 +111,24 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         this.jobLockService = jobLockService;
     }
     
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+    
     public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<ArchivedNodeEntity>> cannedQueryRegistry)
     {
         this.cannedQueryRegistry = cannedQueryRegistry;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
+    public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
+    {
+        this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
     }
 
     public NodeRef getArchivedNode(NodeRef originalNodeRef)
@@ -566,8 +586,9 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         GetArchivedNodesCannedQueryFactory getArchivedNodesCannedQueryFactory = (GetArchivedNodesCannedQueryFactory) cannedQueryRegistry
                     .getNamedObject(CANNED_QUERY_ARCHIVED_NODES_LIST);
 
+        Pair<NodeRef, QName> archiveNodeRefAssocTypePair = getArchiveNodeRefAssocTypePair(cannedQueryBuilder.getArchiveRootNodeRef());
         GetArchivedNodesCannedQuery cq = (GetArchivedNodesCannedQuery) getArchivedNodesCannedQueryFactory
-                    .getCannedQuery(cannedQueryBuilder.getArchiveRootNodeRef(),
+                    .getCannedQuery(archiveNodeRefAssocTypePair.getFirst(), archiveNodeRefAssocTypePair.getSecond(),
                                 cannedQueryBuilder.getFilter(),
                                 cannedQueryBuilder.isFilterIgnoreCase(),
                                 cannedQueryBuilder.getPagingRequest(),
@@ -650,5 +671,81 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                 return totalCount;
             }
         };
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public boolean hasFullAccess(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+
+        String currentUser = getCurrentUser();        
+        if (hasAdminAccess(currentUser))
+        {
+            return true;
+        }
+        else
+        {
+            String archivedBy = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_ARCHIVED_BY);
+            if(!userNamesAreCaseSensitive && archivedBy != null)
+            {
+                archivedBy = archivedBy.toLowerCase();
+            }
+            return currentUser.equals(archivedBy);
+        }
+    }
+    
+    protected boolean hasAdminAccess(String userID)
+    {
+        return authorityService.isAdminAuthority(userID);
+    }
+    
+    private Pair<NodeRef, QName> getArchiveNodeRefAssocTypePair(final NodeRef archiveStoreRootNodeRef)
+    {
+        String currentUser = getCurrentUser();
+
+        if (archiveStoreRootNodeRef == null || !nodeService.exists(archiveStoreRootNodeRef))
+        {
+            throw new InvalidNodeRefException("Invalid archive store root node Ref.",
+                        archiveStoreRootNodeRef);
+        }
+
+        if (hasAdminAccess(currentUser))
+        {
+            return new Pair<NodeRef, QName>(archiveStoreRootNodeRef, ContentModel.ASSOC_CHILDREN);
+        }
+        else
+        {
+            List<ChildAssociationRef> list = nodeService.getChildrenByName(archiveStoreRootNodeRef,
+                        ContentModel.ASSOC_ARCHIVE_USER_LINK,
+                        Collections.singletonList(currentUser));
+
+            // Empty list means that the current user hasn't deleted anything yet.
+            if (list.isEmpty())
+            {
+                return new Pair<NodeRef, QName>(null, null);
+            }
+            NodeRef userArchive = list.get(0).getChildRef();
+            return new Pair<NodeRef, QName>(userArchive, ContentModel.ASSOC_ARCHIVED_LINK);
+        }
+    }
+    
+    private String getCurrentUser()
+    {
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (currentUser == null)
+        {
+            throw new AccessDeniedException("No authenticated user; cannot get archived nodes.");
+        }
+
+        if (!userNamesAreCaseSensitive
+                    && !AuthenticationUtil.getSystemUserName().equals(
+                                tenantService.getBaseNameUser(currentUser)))
+        {
+            // user names are not case-sensitive
+            currentUser = currentUser.toLowerCase();
+        }
+        return currentUser;
     }
 }

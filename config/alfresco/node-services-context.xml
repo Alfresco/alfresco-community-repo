@@ -127,6 +127,15 @@
       <property name="cannedQueryRegistry">
          <ref bean="archivedNodesCannedQueryRegistry"/>
       </property>
+      <property name="authorityService">
+         <ref bean="authorityService"/>
+      </property>
+      <property name="tenantService">
+         <ref bean="tenantService"/>
+      </property>
+      <property name="userNamesAreCaseSensitive">
+         <value>${user.name.caseSensitive}</value>
+      </property>
    </bean>
    
    <!-- Archived Nodes -->    
@@ -135,10 +144,8 @@
    </bean>    
    <bean name="archivedNodesCannedQueryFactory" class="org.alfresco.repo.node.archive.GetArchivedNodesCannedQueryFactory">
         <property name="registry" ref="archivedNodesCannedQueryRegistry"/>
-        <property name="authorityService" ref="authorityService"/>
         <property name="tenantService" ref="tenantService"/>
         <property name="nodeDAO" ref="nodeDAO"/>
-        <property name="nodeService" ref="nodeService"/>
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
         <property name="methodSecurity" ref="ArchivedNodes_security_listArchivedNodes"/>

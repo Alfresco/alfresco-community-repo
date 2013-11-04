@@ -953,13 +953,13 @@ public class ArchiveAndRestoreTest extends TestCase
                     this.archiveStoreRootNodeRef, paging).filterIgnoreCase(true).build();
 
         // Query the DB
-        PagingResults<NodeRef> result = nodeArchiveService.listArchivedNodes(queryBuilder);
+        PagingResults<NodeRef> result = runListArchivedNodesAsAdmin(queryBuilder);
         assertEquals("USER_B hasn't deleted anything yet.", 0, result.getPage().size());
 
         // USER_B deletes "bb"
         nodeService.deleteNode(bb);
         
-        result = nodeArchiveService.listArchivedNodes(queryBuilder);
+        result = runListArchivedNodesAsAdmin(queryBuilder);
         assertEquals("USER_B deleted only 1 item.", 1, result.getPage().size());
 
         AuthenticationUtil.setFullyAuthenticatedUser(USER_A);
@@ -971,7 +971,7 @@ public class ArchiveAndRestoreTest extends TestCase
                     this.archiveStoreRootNodeRef, paging)
                     .filterIgnoreCase(true).build();
 
-        result = nodeArchiveService.listArchivedNodes(queryBuilder);
+        result = runListArchivedNodesAsAdmin(queryBuilder);
         assertEquals("USER_A deleted only 1 item.", 1, result.getPage().size());
         assertEquals(QNAME_AA.getLocalName(),
                     nodeService.getProperty(result.getPage().get(0), ContentModel.PROP_NAME));
@@ -986,6 +986,18 @@ public class ArchiveAndRestoreTest extends TestCase
         result = nodeArchiveService.listArchivedNodes(queryBuilder);
         // Admin can retrieve all users' deleted nodes
         assertEquals("Admin can retrieve all users' deleted nodes.", 2, result.getPage().size());
+    }
+    
+    private PagingResults<NodeRef> runListArchivedNodesAsAdmin(final ArchivedNodesCannedQueryBuilder queryBuilder)
+    {
+        return AuthenticationUtil.runAs(new RunAsWork<PagingResults<NodeRef>>()
+        {
+            @Override
+            public PagingResults<NodeRef> doWork() throws Exception
+            {
+                return nodeArchiveService.listArchivedNodes(queryBuilder);
+            }
+        }, AuthenticationUtil.getAdminUserName());
     }
     
     /**

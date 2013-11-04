@@ -188,4 +188,13 @@ public interface NodeArchiveService
      * @since 4.2
      */
     public PagingResults<NodeRef> listArchivedNodes(ArchivedNodesCannedQueryBuilder cannedQueryBuilder);
+    
+    /**
+     * Check if the current user has authority to access the archived node.
+     * 
+     * @param nodeRef
+     * @return true if the currently authenticated user has authority to access
+     *         the archived node, otherwise false.
+     */
+    public boolean hasFullAccess(NodeRef nodeRef);
 }

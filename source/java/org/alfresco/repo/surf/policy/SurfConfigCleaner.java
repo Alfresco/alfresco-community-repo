@@ -62,6 +62,8 @@ public class SurfConfigCleaner extends ADMRemoteStore implements BeforeDeleteNod
             NodeRef userFolderNodeRef = nodeService.getChildByName(usersFolderRef, ContentModel.ASSOC_CONTAINS, encodePath(userName));
             if (userFolderNodeRef != null)
             {
+                // CLOUD-2053: Need to set as temporary to delete node instead of archiving.
+                nodeService.addAspect(userFolderNodeRef, ContentModel.ASPECT_TEMPORARY, null);
                 nodeService.deleteNode(userFolderNodeRef);
             }
         }
@@ -79,6 +81,8 @@ public class SurfConfigCleaner extends ADMRemoteStore implements BeforeDeleteNod
             
             for (FileInfo fileInfo : configNodes)
             {
+                // CLOUD-2053: Need to set as temporary to delete node instead of archiving.
+                nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_TEMPORARY, null);
                 nodeService.deleteNode(fileInfo.getNodeRef());
             }
         }

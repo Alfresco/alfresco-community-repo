@@ -44,10 +44,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -61,7 +59,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
 public class AuthorityServiceTest extends TestCase
@@ -113,7 +110,7 @@ public class AuthorityServiceTest extends TestCase
         
         String defaultAdminUser = AuthenticationUtil.getAdminUserName();
         AuthenticationUtil.setFullyAuthenticatedUser(defaultAdminUser);
-
+        
         // note: currently depends on any existing (and/or bootstrap) group data - eg. default site "swsdp" (Sample Web Site Design Project)
         SiteService siteService = (SiteService) ctx.getBean("SiteService");
         SITE_CNT = siteService.listSites(defaultAdminUser).size();
@@ -594,22 +591,6 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.deleteAuthority(auth1);
         assertEquals(0, getAllAuthorities(AuthorityType.ROLE).size());
         assertEquals(0, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
-    }
-
-    public void createAuthority(final AuthorityType dublicatedAuthorityType, final String dublicatedAuthorityShortName)
-    {
-        final ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        TransactionService transactionService = serviceRegistry.getTransactionService();
-
-        RetryingTransactionCallback<Object> exampleWork = new RetryingTransactionCallback<Object>() {
-            public Object execute() throws Exception
-            {
-                pubAuthorityService.createAuthority(dublicatedAuthorityType,
-                        dublicatedAuthorityShortName);
-                return null;
-            }
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(exampleWork);
     }
 
     private void checkAuthorityCollectionSize(int expected, List<String> actual, AuthorityType type)

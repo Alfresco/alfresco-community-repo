@@ -115,6 +115,29 @@ public class WebDAVHelper
 
     private String m_urlPathPrefix;
         
+    private long sizeLimit = -1L;
+    
+    /**
+     * This method sets a value for the limit. If the string does not {@link Long#parseLong(String) parse} to a
+     * java long.
+     * 
+     * @param limit a String representing a valid Java long.
+     */
+    public void setSizeLimitString(String limit)
+    {
+        // A string parameter is used here in order to not to require end users to provide a value for the limit in a property
+        // file. This results in the empty string being injected to this method.
+        long longLimit = -1L;
+        try
+        {
+            longLimit = Long.parseLong(limit);
+        } catch (NumberFormatException ignored)
+        {
+            // Intentionally empty
+        }
+        this.sizeLimit = longLimit;
+    }
+    
     /**
      * Set the regular expression that will be applied to filenames during renames
      * to detect whether clients are performing a renaming shuffle - common during
@@ -129,6 +152,14 @@ public class WebDAVHelper
         this.m_renameShufflePattern = renameShufflePattern;
     }
 
+    /**
+     * @return          Return the limit size
+     */
+    public long getSizeLimit()
+    {
+        return sizeLimit;
+    }
+    
     /**
      * @return          Return the authentication service
      */

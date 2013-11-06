@@ -289,7 +289,15 @@ public abstract class WebDAVMethod
             long bytes = streamCopier.copyStreamsLong(req.getInputStream(), new FileOutputStream(this.m_requestBody), m_davHelper.getSizeLimit());
             
             // get content length
-            long contentLength = Long.valueOf(req.getHeader(WebDAV.HEADER_CONTENT_LENGTH));
+            long contentLength = -1;
+            try
+            {
+                    contentLength = Long.valueOf(req.getHeader(WebDAV.HEADER_CONTENT_LENGTH));
+            }
+            catch (NumberFormatException e)
+            {
+                    ; // may be null etc.
+            }
             
             // ALF-7377: check for corrupt request
             if (contentLength >= 0 && contentLength != bytes)

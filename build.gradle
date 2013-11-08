@@ -28,6 +28,7 @@ ext {
     packageZipFile = "${packageBaseName}.zip"
     if (!project.hasProperty('alfrescoBaseSolrVersion')) alfrescoBaseSolrVersion=alfrescoBaseVersion
     if (!project.hasProperty('alfrescoTestDepsVersion')) alfrescoTestDepsVersion=alfrescoBaseVersion
+    javaVersion = JavaVersion.current()
 }
 
 /** Package Build Tasks */
@@ -120,7 +121,7 @@ task iconPackage (dependsOn: [':rm-server:assembleIconPackage', ':rm-share:assem
 }
 
 /** Subproject configuration */
-subprojects {
+subprojects { subproject ->
 
 	apply plugin: 'java'	
 	apply plugin: 'eclipse'
@@ -220,20 +221,26 @@ subprojects {
 	tasks.eclipse.dependsOn(cleanEclipse)
 	
 	/** --- Compile tasks --- */
+    tasks.withType(Compile) {
+        options.encoding = 'utf-8'
+    }
 
-	// make sure that the dependancies have been unpacked before compiling the Java
-//	compileJava.doFirst {
-//		explodeDeps.execute()
-//	}
-	compileJava.options.encoding = 'UTF-8'
-	compileTestJava.options.encoding = 'UTF-8'
-	
     jar {
         archiveName = jarFile
         exclude "**/dev-context.xml"
         exclude "**/readme.txt"
      }
 	
+    //Add manifest attributes
+    tasks.withType(Jar) {
+        manifest {
+            attributes 'Specification-Title': "Alfresco Records Management",
+                       'Implementation-Title': "${subproject.archivesBaseName}",
+                       'Implementation-Version': version,
+                       'Created-By': "${javaVersion} (${System.getProperty('java.specification.vendor')})"
+        }
+    }
+
 	/** --- Dependancy tasks --- */	
 
 	task fetchWarFile(type:Copy) {
@@ -306,6 +313,12 @@ subprojects {
 		ant.delete(file: warFile)
 	}	
 	
+    
+    task showme << {
+        println sourceWebDir
+        println sourceSets.web.resources.srcDirs
+    }
+    
 	/** --- I18N tasks */
 		
 	task assembleLocalisationPackage << {

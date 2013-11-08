@@ -312,12 +312,6 @@ subprojects { subproject ->
 		ant.delete(includeEmptyDirs: 'true', dir: explodedDepsDir)
 		ant.delete(file: warFile)
 	}	
-	
-    
-    task showme << {
-        println sourceWebDir
-        println sourceSets.web.resources.srcDirs
-    }
     
 	/** --- I18N tasks */
 		

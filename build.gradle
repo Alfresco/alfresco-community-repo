@@ -1,14 +1,21 @@
 buildscript {
 
 	repositories {
-		flatDir {
-			dirs 'mmt'
-		}
-		mavenCentral()		
+		mavenCentral()
+        maven {
+            url alfrescoMavenUrl
+        }
 	}
 
 	dependencies {
-		classpath fileTree(dir: 'mmt', include: '*.jar')
+        //MMT dependencies
+        classpath('org.alfresco:alfresco-mmt:4.2.d-beta') {
+            transitive = true
+        }
+        classpath 'de.schlichtherle.truezip:truezip-kernel:7.5.5'
+        classpath 'de.schlichtherle.truezip:truezip-swing:7.5.5'
+
+        //YUI
 	    classpath 'com.yahoo.platform.yui:yuicompressor:2.4.6'
 	}
 }

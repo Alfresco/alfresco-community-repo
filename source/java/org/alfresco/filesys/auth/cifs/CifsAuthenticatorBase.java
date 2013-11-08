@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -450,75 +450,67 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
             getAuthenticationComponent().clearCurrentSecurityContext();
             return;
         }
-
-        doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+        if (client.isGuest() == false && client instanceof AlfrescoClientInfo)
         {
-            public Object execute() throws Throwable
+            // Set the authentication context for the request
+
+            AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
+            if (alfClient.hasAuthenticationTicket())
             {
-                if (client.isGuest() == false && client instanceof AlfrescoClientInfo)
+                boolean ticketFailed = false;
+
+                try
                 {
-                    // Set the authentication context for the request
-        
-                    AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                    if (alfClient.hasAuthenticationTicket())
-                    {
-                    	boolean ticketFailed = false;
-                    	
-                        try
-                        {
-                            getAuthenticationService().validate(alfClient.getAuthenticationTicket());
-                        }
-                        catch (AuthenticationException e)
-                        {
-                        	// Indicate the existing ticket is bad
-                        	
-                        	ticketFailed = true;
-                        	
-                        	// DEBUG
-                        	
-                        	if ( logger.isDebugEnabled())
-                        		logger.debug("Failed to validate ticket, user=" + client.getUserName() + ", ticket=" + alfClient.getAuthenticationTicket());
-                        }
-                        
-                        // If the ticket did not validate then try and get a new ticket for the user
-                        
-                        if ( ticketFailed == true) {
-                        	
-                        	try {
-                        		String normalized = mapUserNameToPerson( client.getUserName(), false);
-                        		getAuthenticationComponent().setCurrentUser( normalized);
-                                alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
-                        	}
-                        	catch ( AuthenticationException ex) {
-                            	
-                                // Cannot get a new ticket for the user
+                    getAuthenticationService().validate(alfClient.getAuthenticationTicket());
+                }
+                catch (AuthenticationException e)
+                {
+                    // Indicate the existing ticket is bad
 
-                        		if ( logger.isErrorEnabled()) {
-                        			logger.error("Failed to get new ticket for user=" + client.getUserName());
-                        			logger.error( ex);
-                        		}
+                    ticketFailed = true;
 
-                        		// Clear the ticket/security context
-                        		
-                        		alfClient.setAuthenticationTicket(null);
-                                getAuthenticationComponent().clearCurrentSecurityContext();
-                        	}
-                        }
+                    // DEBUG
+
+                    if ( logger.isDebugEnabled())
+                        logger.debug("Failed to validate ticket, user=" + client.getUserName() + ", ticket=" + alfClient.getAuthenticationTicket());
+                }
+
+                // If the ticket did not validate then try and get a new ticket for the user
+
+                if ( ticketFailed == true) {
+
+                    try {
+                        String normalized = mapUserNameToPerson( client.getUserName(), false);
+                        getAuthenticationComponent().setCurrentUser( normalized);
+                        alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
                     }
-                    else
-                    {
+                    catch ( AuthenticationException ex) {
+
+                        // Cannot get a new ticket for the user
+
+                        if ( logger.isErrorEnabled()) {
+                            logger.error("Failed to get new ticket for user=" + client.getUserName());
+                            logger.error( ex);
+                        }
+
+                        // Clear the ticket/security context
+
+                        alfClient.setAuthenticationTicket(null);
                         getAuthenticationComponent().clearCurrentSecurityContext();
                     }
                 }
-                else
-                {
-                    // Enable guest access for the request
-        
-                    getAuthenticationComponent().setGuestUserAsCurrentUser();
-                }
-                return null;
             }
-        });
+            else
+            {
+                getAuthenticationComponent().clearCurrentSecurityContext();
+            }
+        }
+        else
+        {
+            // Enable guest access for the request
+
+            getAuthenticationComponent().setGuestUserAsCurrentUser();
+        }
     }
     
     /**

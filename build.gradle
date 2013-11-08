@@ -34,13 +34,13 @@ ext {
 
 task packageBuild (dependsOn: [':rm-server:amp', ':rm-share:amp']) << {
 	
-	distDirFile = file('dist')
+	def distDirFile = file('dist')
 	if (distDirFile.exists() == false) {
 		distDirFile.mkdirs();
 	}
 	
-	alfrescoAmp = "${project(':rm-server').name}/${project(':rm-server').buildDistDir}/${project(':rm-server').ampFile}"
-	shareAmp = "${project(':rm-share').name}/${project(':rm-share').buildDistDir}/${project(':rm-share').ampFile}"
+	def alfrescoAmp = "${project(':rm-server').name}/${project(':rm-server').buildDistDir}/${project(':rm-server').ampFile}"
+	def shareAmp = "${project(':rm-share').name}/${project(':rm-share').buildDistDir}/${project(':rm-share').ampFile}"
 	
 	ant.zip(destfile: "${distDir}/${packageZipFile}", update: 'true') {	
 		
@@ -132,12 +132,7 @@ subprojects {
     	explodedDepsDir = 'explodedDeps'	
     	explodedLibsDir = "${explodedDepsDir}/lib"
     	explodedConfigDir = "${explodedDepsDir}/config"
-    	sourceJavaDir = 'source/java'
-    	sourceWebDir = 'source/web'
     	iconDir = 'build/icon'
-    	testJavaDir = 'test/java'
-    	testResourceDir = 'test/resources'
-    	configDir = 'config'
     	configModuleDir = "config/alfresco/module/${moduleid}"
     	baseName = "${groupid}-${appName}-${version}-${build}"
     	jarFile = "${baseName}.jar"
@@ -145,23 +140,37 @@ subprojects {
     	tomcatRoot = System.getenv(tomcatEnv)
     	jarFilePath = "${buildLibDir}/${jarFile}"
 	}
-    	
+   
 	sourceSets {
 		main {
 			java {
-				srcDir sourceJavaDir
-			}			
+				srcDir 'source/java'
+			}
+            resources {
+                srcDir 'source/resources'
+            }
 		}
+        amp {
+            resources {         
+               srcDir 'config'
+            }
+        }
 		test {
 			java {
-				srcDir testJavaDir
+				srcDir 'test/java'
 			}	
 			resources {
-				srcDir testResourceDir
+				srcDir 'test/resources'
 			}
-		}
+            runtimeClasspath += amp.output
+		}        
+        web {
+            resources {
+                srcDir 'source/web'
+            }
+        }
 	}
-
+    
 	repositories { 
 	
 		flatDir {
@@ -219,7 +228,11 @@ subprojects {
 	compileJava.options.encoding = 'UTF-8'
 	compileTestJava.options.encoding = 'UTF-8'
 	
-	jar.archiveName = jarFile
+    jar {
+        archiveName = jarFile
+        exclude "**/dev-context.xml"
+        exclude "**/readme.txt"
+     }
 	
 	/** --- Dependancy tasks --- */	
 
@@ -301,7 +314,7 @@ subprojects {
 		file(i18nDir).mkdirs()
 	
 		copy {
-			from configDir
+			from sourceSets.amp.resources
 			include '**/*.properties'			
 			exclude '**/*_*.properties'
 			exclude '**/rm-method-security.properties'
@@ -309,7 +322,7 @@ subprojects {
 			exclude '**/log4j.properties'
 			exclude '**/module.properties'
 			exclude '**/file-mapping.properties'
-			into "${i18nDir}/${project.name}/${configDir}"	
+			into "${i18nDir}/${project.name}/config"	
             includeEmptyDirs = false 			
 		}
 	
@@ -355,15 +368,16 @@ subprojects {
 		}
 		
 		copy {
-			from configDir
+			from sourceSets.amp.resources
 			exclude "**/${moduleProperties}"
-			exclude "**/${fileMapping}"			
+			exclude "**/${fileMapping}"	
+            exclude "**/readme.txt"
 			exclude "**/dev-context.xml"
 			into "${assembleDir}/config"		
 		}
 		
 		copy {
-			from sourceWebDir			
+			from sourceSets.web.resources			
 			include '**/*'
 			into "${assembleDir}/web"
 		}
@@ -393,10 +407,8 @@ subprojects {
 	task deployExploded(dependsOn: 'jar') << {
 	
 		def jarFileObj = file(jarFilePath)
-		def configDirObj = file(configDir)
-		def sourceWebObj = file(sourceWebDir)
 	
-		explodedWebAppDir = new File("${tomcatRoot}/webapps/${webAppName}")
+		def explodedWebAppDir = new File("${tomcatRoot}/webapps/${webAppName}")
 		if (explodedWebAppDir.exists() == true) {
 		
 				// copy module properties
@@ -411,23 +423,16 @@ subprojects {
 				}
 				
 				// copy config
-				if (configDirObj.exists() == true) {
-					copy {
-						from(configDir) {
-							exclude "**/${moduleProperties}"
-							exclude  "**/${fileMapping}"
-						}
-						into "${explodedWebAppDir}/WEB-INF/classes"
-						
-					}
-				}
-				
+                from(sourceSets.amp.resources) {
+                    exclude "**/${moduleProperties}"
+                    exclude  "**/${fileMapping}"
+                }
+                into "${explodedWebAppDir}/WEB-INF/classes"
+		
 				// copy web
-				if (sourceWebObj.exists() == true) {
-					copy {
-						from sourceWebObj
-						into "${explodedWebAppDir}"						
-					}
+				copy {
+					from sourceSets.web.resources
+					into "${explodedWebAppDir}"						
 				}
 		}
 		else {

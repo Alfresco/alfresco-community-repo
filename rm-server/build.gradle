@@ -1,5 +1,5 @@
 
-sourceSets.main.java.srcDirs = [sourceJavaDir, 'source/compatibility']
+sourceSets.main.java.srcDir('source/compatibility')
 
 dependencies {
 
@@ -10,11 +10,8 @@ dependencies {
     testCompile "${alfrescoGroupId}:alfresco-repository:${alfrescoTestDepsVersion}:tests@jar"
     testCompile "${alfrescoGroupId}:alfresco-remote-api:${alfrescoTestDepsVersion}:tests@jar"
 
-
 	testRuntime files(explodedConfigDir)
-	testRuntime files(configDir)
-	testRuntime files(testResourceDir)
-
+    
     alfrescoDeps "${alfrescoGroupId}:alfresco:${alfrescoBaseVersion}@war"
     alfrescoDeps "${alfrescoGroupId}:alfresco-solr:${alfrescoBaseSolrVersion}@zip"
 
@@ -28,22 +25,6 @@ task fetchSOLR(type:Copy) {
 }
 
 task useSOLR << {
-}
-
-eclipse {
-	classpath {
-		file {
-			withXml {
-
-				Map<String, String> map = new HashMap<String, String>()
-				map.put('kind', 'src')
-				map.put('path', configDir)
-
-				def node = it.asNode()
-				node.appendNode('classpathentry', map)
-			}
-		}
-	}
 }
 
 task resetDatabase << {

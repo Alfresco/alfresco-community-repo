@@ -42,10 +42,10 @@ import org.alfresco.repo.bulkimport.ImportableItem.FileType;
 import org.alfresco.repo.bulkimport.MetadataLoader;
 import org.alfresco.repo.dictionary.constraint.NameChecker;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
+import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.exception.PlatformRuntimeException;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * This class provides the implementation for directory analysis, the process by

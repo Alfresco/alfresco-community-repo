@@ -38,9 +38,9 @@ public class ClosedCapabilityCondition extends AbstractCapabilityCondition
     public boolean evaluate(NodeRef nodeRef)
     {
         boolean result = false;
-        if (rmService.isRecordFolder(nodeRef) == true)
+        if (recordFolderService.isRecordFolder(nodeRef) == true)
         {
-            result = rmService.isRecordFolderClosed(nodeRef);
+            result = recordFolderService.isRecordFolderClosed(nodeRef);
         }
         else if (recordService.isRecord(nodeRef) == true)
         {
@@ -48,14 +48,14 @@ public class ClosedCapabilityCondition extends AbstractCapabilityCondition
             for (ChildAssociationRef assoc : assocs)
             {
                 NodeRef parent = assoc.getParentRef();
-                if (rmService.isRecordFolder(parent) == true &&
-                    rmService.isRecordFolderClosed(parent) == true)
+                if (recordFolderService.isRecordFolder(parent) == true &&
+                    recordFolderService.isRecordFolderClosed(parent) == true)
                 {
                     result = true;
                     break;
-                }                   
+                }
             }
-        }        
+        }
         return result;
     }
 

@@ -26,17 +26,17 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Indicates whether the given disposition action 'may' be scheduled in the future
- * 
+ *
  * @author Roy Wetherall
  */
 public class MayBeScheduledCapabilityCondition extends AbstractCapabilityCondition
 {
     /** Disposition action */
     private String dispositionAction;
-    
+
     /** Disposition service */
     private DispositionService dispositionService;
-    
+
     /**
      * @param dispositionAction     disposition action
      */
@@ -44,7 +44,7 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
     {
         this.dispositionAction = dispositionAction;
     }
-    
+
     /**
      * @param dispositionService    disposition service
      */
@@ -52,20 +52,20 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     public boolean evaluate(NodeRef nodeRef)
     {
-        boolean result = false;        
-        
+        boolean result = false;
+
         DispositionSchedule dispositionSchedule = dispositionService.getDispositionSchedule(nodeRef);
         if (dispositionSchedule != null)
-        {        
+        {
             if (checkDispositionLevel(nodeRef, dispositionSchedule) == true)
-            {             
+            {
                 for (DispositionActionDefinition dispositionActionDefinition : dispositionSchedule.getDispositionActionDefinitions())
                 {
                     if (dispositionActionDefinition.getName().equals(dispositionAction) == true)
@@ -79,10 +79,10 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
         }
         return result;
     }
-    
+
     /**
      * Checks the disposition level
-     * 
+     *
      * @param nodeRef
      * @param dispositionSchedule
      * @return
@@ -95,8 +95,8 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
         {
             result = true;
         }
-        else if (rmService.isRecordFolder(nodeRef) == true && isRecordLevelDisposition == false)
-            
+        else if (recordFolderService.isRecordFolder(nodeRef) == true && isRecordLevelDisposition == false)
+
         {
             result = true;
         }

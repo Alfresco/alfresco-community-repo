@@ -24,8 +24,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -37,10 +35,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public abstract class AbstractCapability extends RMSecurityCommon
                                          implements Capability, RecordsManagementModel, RMPermissionModel
 {
-    /** Logger */
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(AbstractCapability.class);
-
     /** Capability service */
     protected CapabilityService capabilityService;
 
@@ -115,7 +109,7 @@ public abstract class AbstractCapability extends RMSecurityCommon
             {
                 title = getName();
             }
-                    
+
         }
         return title;
     }

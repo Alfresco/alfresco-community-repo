@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -31,19 +29,16 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Role GET web script API
- * 
+ *
  * @author Roy Wetherall
  */
 public class RmRoleGet extends RoleDeclarativeWebScript
 {
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(RmRoleGet.class);
-
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         // Role name
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String roleParam = templateVars.get("rolename");
@@ -51,24 +46,24 @@ public class RmRoleGet extends RoleDeclarativeWebScript
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "No role name was provided on the URL.");
         }
-        
+
         // get the file plan
         NodeRef filePlan = getFilePlan(req);
         if (filePlan == null)
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "File plan does not exist.");
         }
-        
+
         // Check that the role exists
         if (filePlanRoleService.existsRole(filePlan, roleParam) == false)
         {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, 
+            throw new WebScriptException(Status.STATUS_NOT_FOUND,
                                          "The role " + roleParam + " does not exist on the records managment root " + filePlan);
         }
-        
+
         RoleItem item = new RoleItem(filePlanRoleService.getRole(filePlan, roleParam));
         model.put("role", item);
-        
+
         return model;
     }
 }

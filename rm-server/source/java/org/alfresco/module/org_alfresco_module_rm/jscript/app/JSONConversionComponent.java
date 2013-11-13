@@ -21,7 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.jscript.app;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
@@ -41,9 +40,6 @@ import org.json.simple.JSONObject;
  */
 public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONConversionComponent
 {
-    /** Records management service */
-    private RecordsManagementService recordsManagementService;
-
     /** Record service */
     private RecordService recordService;
 
@@ -58,14 +54,6 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
 
     /** Actions */
     private List<BaseEvaluator> actions = new ArrayList<BaseEvaluator>();
-
-    /**
-     * @param recordsManagementService records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
-    }
 
     /**
      * @param recordService record service
@@ -238,7 +226,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                 }
                 case RECORD_FOLDER:
                 {
-                    if (recordsManagementService.isMetadataStub(nodeRef) == true)
+                    if (recordService.isMetadataStub(nodeRef) == true)
                     {
                         result = "metadata-stub-folder";
                     }
@@ -250,7 +238,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                 }
                 case RECORD:
                 {
-                    if (recordsManagementService.isMetadataStub(nodeRef) == true)
+                    if (recordService.isMetadataStub(nodeRef) == true)
                     {
                         result = "metadata-stub";
                     }

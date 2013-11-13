@@ -27,25 +27,20 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Records management event delete web script
- * 
+ *
  * @author Roy Wetherall
  */
 public class RmEventDelete extends DeclarativeWebScript
 {
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(RmEventDelete.class);
-    
     /** Reccords management event service */
     private RecordsManagementEventService rmEventService;
-    
+
     /**
      * Set the records management event service
-     * 
+     *
      * @param rmEventService
      */
     public void setRecordsManagementEventService(RecordsManagementEventService rmEventService)
@@ -60,7 +55,7 @@ public class RmEventDelete extends DeclarativeWebScript
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         // Event name
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String eventName = templateVars.get("eventname");
@@ -68,16 +63,16 @@ public class RmEventDelete extends DeclarativeWebScript
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "No event name was provided on the URL.");
         }
-        
+
         // Check the event exists
         if (rmEventService.existsEvent(eventName) == false)
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "The event " + eventName + " does not exist.");
         }
-        
+
         // Remove the event
         rmEventService.removeEvent(eventName);
-        
+
         return model;
     }
 }

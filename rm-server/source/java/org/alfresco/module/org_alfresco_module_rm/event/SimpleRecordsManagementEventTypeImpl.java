@@ -18,44 +18,38 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.event;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Simple records management event type implementation
- * 
+ *
  * @author Roy Wetherall
  */
 public class SimpleRecordsManagementEventTypeImpl implements RecordsManagementEventType, BeanNameAware
 {
-	/** Logger */
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(SimpleRecordsManagementEventTypeImpl.class);
-	
     /** Display label lookup prefix */
     protected static final String LOOKUP_PREFIX = "rmeventservice.";
-    
+
     /** Name */
     public static final String NAME = "rmEventType.simple";
-    
+
     /** Records management event service */
     protected RecordsManagementEventService recordsManagementEventService;
-    
+
     /** Name */
     protected String name;
-    
+
     /**
      * Set the records management event service
-     * 
+     *
      * @param recordsManagementEventService     records management service
      */
     public void setRecordsManagementEventService(RecordsManagementEventService recordsManagementEventService)
     {
         this.recordsManagementEventService = recordsManagementEventService;
     }
-    
+
     /**
      * Initialisation method
      */
@@ -63,7 +57,7 @@ public class SimpleRecordsManagementEventTypeImpl implements RecordsManagementEv
     {
         recordsManagementEventService.registerEventType(this);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType#isAutomaticEvent()
      */
@@ -87,7 +81,7 @@ public class SimpleRecordsManagementEventTypeImpl implements RecordsManagementEv
     {
         this.name = name;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType#getDisplayLabel()
      */

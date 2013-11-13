@@ -58,9 +58,9 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
 
             // Remove the cutoff aspect
             nodeService.removeAspect(actionedUponNodeRef, ASPECT_CUT_OFF);
-            if (recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
+            if (recordFolderService.isRecordFolder(actionedUponNodeRef) == true)
             {
-                List<NodeRef> records = this.recordsManagementService.getRecords(actionedUponNodeRef);
+                List<NodeRef> records = recordService.getRecords(actionedUponNodeRef);
                 for (NodeRef record : records)
                 {
                     nodeService.removeAspect(record, ASPECT_CUT_OFF);

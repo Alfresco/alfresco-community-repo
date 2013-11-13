@@ -30,21 +30,21 @@ import org.alfresco.util.GUID;
 
 /**
  * File plan service unit test
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
 public class FilePlanServiceImplTest extends BaseRMTestCase
 {
-    /** 
-     * Pull in collaboration test data 
+    /**
+     * Pull in collaboration test data
      */
     @Override
     protected boolean isCollaborationSiteTest()
     {
         return true;
     }
-    
+
     /**
      * {@link FilePlanService#isFilePlan(org.alfresco.service.cmr.repository.NodeRef)}
      */
@@ -53,14 +53,14 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
         doTestInTransaction(new VoidTest()
         {
             public void runImpl() throws Exception
-            {             
+            {
                 assertTrue(filePlanService.isFilePlan(filePlan));
                 assertFalse(filePlanService.isFilePlan(rmContainer));
                 assertFalse(filePlanService.isFilePlan(dmDocument));
             }
-        });         
+        });
     }
-    
+
     /**
      * {@link FilePlanService#getFilePlan(org.alfresco.service.cmr.repository.NodeRef)}
      */
@@ -69,15 +69,15 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
         doTestInTransaction(new VoidTest()
         {
             public void runImpl() throws Exception
-            {             
+            {
                 assertEquals(filePlan, filePlanService.getFilePlan(filePlan));
                 assertEquals(filePlan, filePlanService.getFilePlan(rmContainer));
                 assertEquals(filePlan, filePlanService.getFilePlan(rmFolder));
                 assertNull(filePlanService.getFilePlan(dmDocument));
             }
-        });        
+        });
     }
-    
+
     /**
      * {@link FilePlanService#getFilePlanBySiteId(String)}
      */
@@ -86,18 +86,18 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
         doTestInTransaction(new VoidTest()
         {
             public void runImpl() throws Exception
-            {             
+            {
                 assertEquals(filePlan, filePlanService.getFilePlanBySiteId(siteId));
                 assertNull(filePlanService.getFilePlanBySiteId("rubbish"));
-                
+
                 String siteId = GUID.generate();
                 siteService.createSite("anything", siteId, "title", "descrition", SiteVisibility.PUBLIC);
                 assertNull(filePlanService.getFilePlanBySiteId(siteId));
             }
-        }); 
-        
+        });
+
     }
-    
+
     /**
      * @see FilePlanService#isFilePlanComponent(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -111,12 +111,12 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
                 assertTrue("The rm root container should be a rm component", filePlanService.isFilePlanComponent(filePlan));
                 assertTrue("The rm container should be a rm component", filePlanService.isFilePlanComponent(rmContainer));
                 assertTrue("The rm folder should be a rm component", filePlanService.isFilePlanComponent(rmFolder));
-                
+
                 return null;
             }
         });
     }
-    
+
     /**
      * @see FilePlanService#getFilePlanComponentKind(NodeRef)
      */
@@ -129,20 +129,20 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
             {
                 return utils.createRecord(rmFolder, "testRecord.txt");
             }
-            
+
             @Override
             public void test(NodeRef result) throws Exception
             {
                 assertEquals(FilePlanComponentKind.FILE_PLAN, filePlanService.getFilePlanComponentKind(filePlan));
                 assertEquals(FilePlanComponentKind.RECORD_CATEGORY, filePlanService.getFilePlanComponentKind(rmContainer));
                 assertEquals(FilePlanComponentKind.RECORD_FOLDER, filePlanService.getFilePlanComponentKind(rmFolder));
-                assertEquals(FilePlanComponentKind.RECORD, filePlanService.getFilePlanComponentKind(result));     
-                // TODO HOLD and TRANSFER              
+                assertEquals(FilePlanComponentKind.RECORD, filePlanService.getFilePlanComponentKind(result));
+                // TODO HOLD and TRANSFER
                 assertNull(filePlanService.getFilePlanComponentKind(folder));
             }
-        });        
+        });
     }
-    
+
     /**
      * @see FilePlanService#isRecordCategory(NodeRef)
      */
@@ -156,12 +156,12 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
                 assertFalse("This should not be a record category.", filePlanService.isRecordCategory(filePlan));
                 assertTrue("This is a record category.", filePlanService.isRecordCategory(rmContainer));
                 assertFalse("This should not be a record category.", filePlanService.isRecordCategory(rmFolder));
-                
+
                 return null;
             }
         });
     }
-    
+
     /**
      * @see FilePlanService#createFilePlan(org.alfresco.service.cmr.repository.NodeRef, String)
      * @see FilePlanService#createFilePlan(org.alfresco.service.cmr.repository.NodeRef, String, org.alfresco.service.namespace.QName)
@@ -185,7 +185,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
                 basicRMContainerCheck(result, getString("id"), TYPE_FILE_PLAN);
             }
         });
-        
+
         // Create specific type of root
         doTestInTransaction(new Test<NodeRef>()
         {
@@ -203,43 +203,43 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
                 basicRMContainerCheck(result, getString("id"), TYPE_FILE_PLAN);
             }
         });
-        
+
         // Failure: creating root in existing hierarchy
         doTestInTransaction(new FailureTest()
         {
             @Override
             public void run()
             {
-            	filePlanService.createFilePlan(rmContainer, GUID.generate());                                
+            	filePlanService.createFilePlan(rmContainer, GUID.generate());
             }
         });
-        
+
         // Failure: type no extended from root container
         doTestInTransaction(new FailureTest()
         {
             @Override
             public void run()
             {
-            	filePlanService.createFilePlan(folder, GUID.generate(), TYPE_FOLDER);                                
+            	filePlanService.createFilePlan(folder, GUID.generate(), TYPE_FOLDER);
             }
         });
     }
-    
+
     /**
      * A basic test of a records management container
-     * 
+     *
      * @param nodeRef   node reference
      * @param name      name of the container
-     * @param type      the type of container 
+     * @param type      the type of container
      */
     private void basicRMContainerCheck(NodeRef nodeRef, String name, QName type)
     {
         // Check the basic details
         assertEquals(name, nodeService.getProperty(nodeRef, PROP_NAME));
         assertNotNull("RM id has not been set", nodeService.getProperty(nodeRef, PROP_IDENTIFIER));
-        assertEquals(type, nodeService.getType(nodeRef));        
+        assertEquals(type, nodeService.getType(nodeRef));
     }
-    
+
     /**
      * @see FilePlanService#createRecordCategory(NodeRef, String)
      * @see FilePlanService#createRecordCategory(NodeRef, String, org.alfresco.service.namespace.QName)
@@ -263,7 +263,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
                 basicRMContainerCheck(result, getString("id"), TYPE_RECORD_CATEGORY);
             }
         });
-        
+
         // Create container (in container)
         doTestInTransaction(new Test<NodeRef>()
         {
@@ -281,7 +281,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
                 basicRMContainerCheck(result, getString("id"), TYPE_RECORD_CATEGORY);
             }
         });
-        
+
         // TODO need a custom type of container!
         // Create container of a given type
 //        doTestInTransaction(new Test<NodeRef>()
@@ -300,28 +300,28 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
 //                basicRMContainerCheck(result, getString("id"), TYPE_RECORD_SERIES);
 //            }
 //        });
-        
+
         // Fail Test: parent is not a container
         doTestInTransaction(new FailureTest()
         {
             @Override
             public void run()
             {
-            	filePlanService.createRecordCategory(folder, GUID.generate());                                
+            	filePlanService.createRecordCategory(folder, GUID.generate());
             }
         });
-        
+
         // Fail Test: type is not a sub-type of rm:recordsManagementContainer
         doTestInTransaction(new FailureTest()
         {
             @Override
             public void run()
             {
-            	filePlanService.createRecordCategory(filePlan, GUID.generate(), TYPE_FOLDER);                                
+            	filePlanService.createRecordCategory(filePlan, GUID.generate(), TYPE_FOLDER);
             }
         });
     }
-    
+
     /**
      * @see FilePlanService#getAllContained(NodeRef)
      * @see FilePlanService#getAllContained(NodeRef, boolean)
@@ -336,43 +336,43 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
             {
                 // Add to the test data
                 NodeRef series = filePlanService.createRecordCategory(rmContainer, "rmSeries");
-                NodeRef seriesChildFolder = rmService.createRecordFolder(series, "seriesRecordFolder");
+                NodeRef seriesChildFolder = recordFolderService.createRecordFolder(series, "seriesRecordFolder");
                 NodeRef seriesChildContainer = filePlanService.createRecordCategory(series, "childContainer");
-                
+
                 // Put in model
                 setNodeRef("series", series);
                 setNodeRef("seriesChildFolder", seriesChildFolder);
                 setNodeRef("seriesChildContainer", seriesChildContainer);
-                
+
                 return null;
             }
-            
+
             @Override
             public void test(Void result) throws Exception
-            {               
+            {
                 List<NodeRef> nodes = filePlanService.getAllContained(rmContainer);
                 assertNotNull(nodes);
-                assertEquals(2, nodes.size());                
+                assertEquals(2, nodes.size());
                 assertTrue(nodes.contains(getNodeRef("series")));
                 assertTrue(nodes.contains(rmFolder));
-                
+
                 nodes = filePlanService.getAllContained(rmContainer, false);
                 assertNotNull(nodes);
-                assertEquals(2, nodes.size());                
+                assertEquals(2, nodes.size());
                 assertTrue(nodes.contains(getNodeRef("series")));
                 assertTrue(nodes.contains(rmFolder));
-                
+
                 nodes = filePlanService.getAllContained(rmContainer, true);
                 assertNotNull(nodes);
-                assertEquals(4, nodes.size());                
+                assertEquals(4, nodes.size());
                 assertTrue(nodes.contains(getNodeRef("series")));
-                assertTrue(nodes.contains(rmFolder));         
+                assertTrue(nodes.contains(rmFolder));
                 assertTrue(nodes.contains(getNodeRef("seriesChildFolder")));
                 assertTrue(nodes.contains(getNodeRef("seriesChildContainer")));
 
             }
         });
-        
+
         // Failure: call on record folder
         doTestInTransaction(new FailureTest()
         {
@@ -381,9 +381,9 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
             {
             	filePlanService.getAllContained(rmFolder);
             }
-        });       
+        });
     }
-    
+
     /**
      * @see FilePlanService#getContainedRecordCategories(NodeRef)
      * @see FilePlanService#getContainedRecordCategories(NodeRef, boolean)
@@ -398,38 +398,38 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
             {
                 // Add to the test data
                 NodeRef series = filePlanService.createRecordCategory(rmContainer, "rmSeries");
-                NodeRef seriesChildFolder = rmService.createRecordFolder(series, "seriesRecordFolder");
+                NodeRef seriesChildFolder = recordFolderService.createRecordFolder(series, "seriesRecordFolder");
                 NodeRef seriesChildContainer = filePlanService.createRecordCategory(series, "childContainer");
-                
+
                 // Put in model
                 setNodeRef("series", series);
                 setNodeRef("seriesChildFolder", seriesChildFolder);
                 setNodeRef("seriesChildContainer", seriesChildContainer);
-                
+
                 return null;
             }
-            
+
             @Override
             public void test(Void result) throws Exception
-            {               
+            {
                 List<NodeRef> nodes = filePlanService.getContainedRecordCategories(rmContainer);
                 assertNotNull(nodes);
-                assertEquals(1, nodes.size()); 
-                assertTrue(nodes.contains(getNodeRef("series")));      
-                
+                assertEquals(1, nodes.size());
+                assertTrue(nodes.contains(getNodeRef("series")));
+
                 nodes = filePlanService.getContainedRecordCategories(rmContainer, false);
                 assertNotNull(nodes);
-                assertEquals(1, nodes.size());       
+                assertEquals(1, nodes.size());
                 assertTrue(nodes.contains(getNodeRef("series")));
-                
+
                 nodes = filePlanService.getContainedRecordCategories(rmContainer, true);
                 assertNotNull(nodes);
-                assertEquals(2, nodes.size());       
+                assertEquals(2, nodes.size());
                 assertTrue(nodes.contains(getNodeRef("series")));
                 assertTrue(nodes.contains(getNodeRef("seriesChildContainer")));
             }
         });
-        
+
         // Failure: call on record folder
         doTestInTransaction(new FailureTest()
         {
@@ -438,9 +438,9 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
             {
             	filePlanService.getContainedRecordCategories(rmFolder);
             }
-        });         
+        });
     }
-    
+
     /**
      * @see FilePlanService#getContainedRecordFolders(NodeRef)
      * @see FilePlanService#getContainedRecordFolders(NodeRef, boolean)
@@ -455,38 +455,38 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
             {
                 // Add to the test data
                 NodeRef series = filePlanService.createRecordCategory(rmContainer, "rmSeries");
-                NodeRef seriesChildFolder = rmService.createRecordFolder(series, "seriesRecordFolder");
+                NodeRef seriesChildFolder = recordFolderService.createRecordFolder(series, "seriesRecordFolder");
                 NodeRef seriesChildContainer = filePlanService.createRecordCategory(series, "childContainer");
-                
+
                 // Put in model
                 setNodeRef("series", series);
                 setNodeRef("seriesChildFolder", seriesChildFolder);
                 setNodeRef("seriesChildContainer", seriesChildContainer);
-                
+
                 return null;
             }
-            
+
             @Override
             public void test(Void result) throws Exception
-            {               
+            {
                 List<NodeRef> nodes = filePlanService.getContainedRecordFolders(rmContainer);
                 assertNotNull(nodes);
-                assertEquals(1, nodes.size());              
-                assertTrue(nodes.contains(rmFolder));           
-                
+                assertEquals(1, nodes.size());
+                assertTrue(nodes.contains(rmFolder));
+
                 nodes = filePlanService.getContainedRecordFolders(rmContainer, false);
                 assertNotNull(nodes);
-                assertEquals(1, nodes.size());                      
-                assertTrue(nodes.contains(rmFolder));   
-                
+                assertEquals(1, nodes.size());
+                assertTrue(nodes.contains(rmFolder));
+
                 nodes = filePlanService.getContainedRecordFolders(rmContainer, true);
                 assertNotNull(nodes);
-                assertEquals(2, nodes.size());                   
-                assertTrue(nodes.contains(rmFolder));      
+                assertEquals(2, nodes.size());
+                assertTrue(nodes.contains(rmFolder));
                 assertTrue(nodes.contains(getNodeRef("seriesChildFolder")));
             }
         });
-        
+
         // Failure: call on record folder
         doTestInTransaction(new FailureTest()
         {
@@ -495,11 +495,11 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
             {
             	filePlanService.getContainedRecordFolders(rmFolder);
             }
-        });       
+        });
     }
-    
+
     /**
-     * Test to create a simple multi-hierarchy record taxonomy  
+     * Test to create a simple multi-hierarchy record taxonomy
      */
     public void testCreateSimpleHierarchy()
     {
@@ -509,15 +509,15 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
             public Void run()
             {
                 // Create 3 level hierarchy
-                NodeRef levelOne = setNodeRef("container1", filePlanService.createRecordCategory(filePlan, "container1"));    
+                NodeRef levelOne = setNodeRef("container1", filePlanService.createRecordCategory(filePlan, "container1"));
                 assertNotNull("Unable to create container", levelOne);
                 NodeRef levelTwo = setNodeRef("container2", filePlanService.createRecordCategory(levelOne, "container2"));
                 assertNotNull("Unable to create container", levelTwo);
                 NodeRef levelThree = setNodeRef("container3", filePlanService.createRecordCategory(levelTwo, "container3"));
                 assertNotNull("Unable to create container", levelThree);
-                NodeRef levelThreeRecordFolder = setNodeRef("recordFolder3", rmService.createRecordFolder(levelThree, "recordFolder3"));
+                NodeRef levelThreeRecordFolder = setNodeRef("recordFolder3", recordFolderService.createRecordFolder(levelThree, "recordFolder3"));
                 assertNotNull("Unable to create record folder", levelThreeRecordFolder);
-                
+
                 return null;
             }
 
@@ -529,9 +529,9 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
                 basicRMContainerCheck(getNodeRef("container2"), "container2", TYPE_RECORD_CATEGORY);
                 basicRMContainerCheck(getNodeRef("container3"), "container3", TYPE_RECORD_CATEGORY);
                 basicRMContainerCheck(getNodeRef("recordFolder3"), "recordFolder3", TYPE_RECORD_FOLDER);
-                
+
                 // TODO need to check that the parents and children can be retrieved correctly
             }
-        });                
+        });
     }
 }

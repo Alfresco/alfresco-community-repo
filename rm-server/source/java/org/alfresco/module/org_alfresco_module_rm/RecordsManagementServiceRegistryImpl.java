@@ -27,6 +27,7 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
@@ -36,11 +37,11 @@ import org.alfresco.repo.service.ServiceDescriptorRegistry;
 
 /**
  * Records management service registry implementation
- * 
+ *
  * @author Roy Wetherall
  */
 @SuppressWarnings("deprecation")
-public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegistry 
+public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegistry
                                                   implements RecordsManagementServiceRegistry
 {
     /**
@@ -141,7 +142,7 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
     {
         return (ExtendedSecurityService) getService(EXTENDED_SECURITY_SERVICE);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFilePlanService()
      */
@@ -159,7 +160,7 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
     {
         return (FilePlanRoleService) getService(FILE_PLAN_ROLE_SERVICE);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFilePlanPermissionService()
      */
@@ -168,7 +169,7 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
     {
         return (FilePlanPermissionService) getService(FILE_PLAN_PERMISSION_SERVICE);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFilePlanAuthenticationService()
      */
@@ -177,7 +178,7 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
     {
         return (FilePlanAuthenticationService) getService(FILE_PLAN_AUTHENTICATION_SERVICE);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getIdentifierService()
      */
@@ -185,5 +186,14 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
     public IdentifierService getIdentifierService()
     {
         return (IdentifierService) getService(IDENTIFIER_SERVICE);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordFolderService()
+     */
+    @Override
+    public RecordFolderService getRecordFolderService()
+    {
+        return (RecordFolderService) getService(RECORD_FOLDER_SERVICE);
     }
 }

@@ -128,7 +128,6 @@
       <property name="recordsManagementAuditService" ref="recordsManagementAuditService"/>
       <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
-      <property name="recordsManagementService" ref="recordsManagementService"/>
       <property name="dispositionService" ref="dispositionService"/>
       <property name="vitalRecordService" ref="vitalRecordService"/>
       <property name="recordsManagementEventService" ref="recordsManagementEventService"/>
@@ -138,6 +137,7 @@
       <property name="recordService" ref="recordService"/>
       <property name="parameterProcessorComponent" ref="parameterProcessorComponent"/>
       <property name="modelSecurityService" ref="modelSecurityService" />
+      <property name="recordFolderService" ref="RecordFolderService" />
    </bean>
 
    <bean id="rmProxyAction"
@@ -811,7 +811,7 @@
          </list>
       </property>
    </bean>
-   
+
    <bean id="reject_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
@@ -836,7 +836,7 @@
             </list>
          </property>
    </bean>
-   
+
    <bean id="fileTo_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>

@@ -327,7 +327,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                             {
                                 // Fire action to "set-up" the folder correctly
                                 logger.info("Setting up bootstraped record folder: " + folderName);
-                                RecordFolderServiceImpl recordService = (RecordFolderServiceImpl)applicationContext.getBean("recordFolderService");
+                                RecordFolderServiceImpl recordService = (RecordFolderServiceImpl)applicationContext.getBean("RecordFolderService");
                                 recordService.initialiseRecordFolder(recordFolder);
                             }
                         }

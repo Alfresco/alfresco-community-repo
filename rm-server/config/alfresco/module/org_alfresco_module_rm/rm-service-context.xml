@@ -122,12 +122,12 @@
     <!--  Vital Record Service -->
 
     <bean id="vitalRecordService" class="org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl" init-method="init">
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
         <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
         <property name="policyComponent" ref="policyComponent"/>
         <property name="filePlanService" ref="FilePlanService" />
+        <property name="recordFolderService" ref="RecordFolderService" />
     </bean>
 
     <bean id="VitalRecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -184,6 +184,9 @@
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="policyComponent" ref="policyComponent" />
         <property name="filePlanService" ref="FilePlanService" />
+        <!-- FIXME -->
+        <!-- <property name="recordFolderService" ref="RecordFolderService"/> -->
+        <property name="recordService" ref="RecordService"/>
         <property name="dispositionSelectionStrategy">
            <ref local="org_alfresco_module_rm_dispositionSelectionStrategy" />
         </property>
@@ -506,9 +509,9 @@
           init-method="init">
         <property name="permissionService" ref="PermissionService"/>
         <property name="policyComponent" ref="policyComponent"/>
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
         <property name="filePlanService" ref="FilePlanService" />
         <property name="recordService" ref="RecordService" />
+        <property name="recordFolderService" ref="RecordFolderService" />
     </bean>
 
     <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -563,7 +566,7 @@
 
     <bean id="filePlanRoleService"
           class="org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleServiceImpl"
-          init-method="init">
+          init-method="init" depends-on="org_alfresco_module_rm_dictionaryBootstrap">
         <property name="capabilityService" ref="CapabilityService"/>
         <property name="authorityService" ref="AuthorityService"/>
         <property name="permissionService" ref="PermissionService"/>
@@ -573,7 +576,7 @@
         <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
         <property name="authenticationService" ref="AuthenticationService" />
         <property name="personService" ref="PersonService" />
-        
+
         <!-- init repo for when a tenant is created -->
         <property name="bootstrapImporterModuleComponent" ref="org_alfresco_module_rm_bootstrapData"/>
 
@@ -970,13 +973,13 @@
 
     <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl" init-method="init">
         <property name="policyComponent" ref="policyComponent" />
-        <property name="recordsManagementService" ref="RecordsManagementService" />
         <property name="nodeService" ref="nodeService" />
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="recordService" ref="RecordService" />
         <property name="filePlanService" ref="FilePlanService" />
         <property name="permissionService" ref="PermissionService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
+        <property name="recordFolderService" ref="RecordFolderService" />
     </bean>
 
     <bean id="FreezeService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1047,7 +1050,6 @@
         <property name="auditComponent" ref="auditComponent" />
         <property name="auditService" ref="auditService" />
         <property name="contentService" ref="ContentService" />
-        <property name="recordsManagementService" ref="RecordsManagementService" />
         <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
         <property name="filePlanService" ref="FilePlanService" />
         <property name="namespaceService" ref="NamespaceService" />
@@ -1105,7 +1107,7 @@
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.auditEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.clearAuditLog=RM_CAP.0.rma:filePlanComponent.DeleteAudit
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditTrail=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditTrailFile=RM_ALLOW       
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditTrailFile=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getDateAuditLogLastStarted=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getDateAuditLogLastStopped=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.isAuditLogEnabled=RM_ALLOW
@@ -1126,6 +1128,59 @@
         <property name="policyComponent" ref="policyComponent" />
         <property name="dispositionService" ref="DispositionService" />
         <property name="dictionaryService" ref="DictionaryService" />
+        <!-- FIXME -->
+        <!-- <property name="recordService" ref="RecordService" /> -->
+    </bean>
+
+    <bean id="RecordFolderService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService</value>
+        </property>
+        <property name="target">
+            <ref bean="recordFolderService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="RecordFolderService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="RecordFolderService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="RecordFolderService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="RecordFolderService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager">
+            <ref bean="authenticationManager"/>
+        </property>
+        <property name="accessDecisionManager">
+            <ref bean="accessDecisionManager"/>
+        </property>
+        <property name="afterInvocationManager">
+            <ref bean="afterInvocationManager"/>
+        </property>
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolder=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolderDeclared=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolderClosed=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.createRecordFolder=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.getRecordFolders=RM.Read.0,AFTER_RM.FilterNode
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.*=RM_DENY
+                ]]>
+            </value>
+        </property>
     </bean>
 
     <!--  Record Service -->
@@ -1136,15 +1191,17 @@
         <property name="identifierService" ref="recordsManagementIdentifierService"/>
         <property name="permissionService" ref="ExtendedPermissionService"/>
         <property name="extendedSecurityService" ref="ExtendedSecurityService" />
-        <property name="recordsManagementService" ref="RecordsManagementService" />
         <property name="policyComponent" ref="policyComponent" />
-        <property name="dispositionService" ref="DispositionService" />
+        <!-- FIXME -->
+        <!-- <property name="dispositionService" ref="DispositionService" /> -->
         <property name="filePlanService" ref="FilePlanService" />
         <property name="ownableService" ref="OwnableService" />
         <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
         <property name="capabilityService" ref="CapabilityService" />
         <property name="ruleService" ref="RuleService" />
         <property name="fileFolderService" ref="FileFolderService" />
+        <!-- FIXME -->
+        <!-- <property name="recordFolderService" ref="RecordFolderService" /> -->
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1248,7 +1305,6 @@
       <property name="namespacePrefixResolver">
          <ref bean="namespaceService"></ref>
       </property>
-      <property name="policyComponent"><ref bean="policyComponent" /></property>
       <property name="transactionService"><ref bean="transactionService" /></property>
       <property name="emailMappingKeys">
          <list>
@@ -1485,6 +1541,7 @@
         <property name="filePlanRoleService" ref="FilePlanRoleService"/>
         <property name="recordsManagementSearchBehaviour" ref="recordsManagementSearchBehaviour"/>
         <property name="dispositionService" ref="DispositionService"/>
+        <property name="recordFolderService" ref="RecordFolderService"/>
     </bean>
 
     <bean id="DataSetService" class="org.springframework.aop.framework.ProxyFactoryBean">

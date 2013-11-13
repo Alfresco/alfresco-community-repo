@@ -27,24 +27,31 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
 
 /**
  * Create group capability implementation
- * 
+ *
  * @author Andy Hind
  */
 public class CreateCapability extends DeclarativeCapability
 {
     private RecordService recordService;
-    
+    private RecordFolderService recordFolderService;
+
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
     }
-    
+
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
+    }
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -55,7 +62,7 @@ public class CreateCapability extends DeclarativeCapability
     }
 
     /**
-     * 
+     *
      * @param destination
      * @param linkee
      * @param type
@@ -66,7 +73,7 @@ public class CreateCapability extends DeclarativeCapability
     {
         if (linkee != null)
         {
-            int state = checkRead(linkee, true);            
+            int state = checkRead(linkee, true);
             if (state != AccessDecisionVoter.ACCESS_GRANTED)
             {
                 return AccessDecisionVoter.ACCESS_DENIED;
@@ -84,7 +91,7 @@ public class CreateCapability extends DeclarativeCapability
                         {
                             return AccessDecisionVoter.ACCESS_GRANTED;
                         }
-                    }   
+                    }
                 }
                 else
                 {
@@ -96,31 +103,31 @@ public class CreateCapability extends DeclarativeCapability
                         }
                     }
                 }
-              
+
             }
-            
+
             // Build the conditions map
             Map<String, Boolean> conditions = new HashMap<String, Boolean>(5);
             conditions.put("capabilityCondition.filling", Boolean.TRUE);
-            conditions.put("capabilityCondition.frozen", Boolean.FALSE);                 
+            conditions.put("capabilityCondition.frozen", Boolean.FALSE);
             conditions.put("capabilityCondition.closed", Boolean.FALSE);
-            conditions.put("capabilityCondition.cutoff", Boolean.FALSE);          
-            
+            conditions.put("capabilityCondition.cutoff", Boolean.FALSE);
+
             if (checkConditions(destination, conditions) == true)
             {
-                if (rmService.isRecordFolder(destination))
+                if (recordFolderService.isRecordFolder(destination))
                 {
                     if (permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
                     {
                         return AccessDecisionVoter.ACCESS_GRANTED;
                     }
                 }
-            }            
-            
-            conditions.put("capabilityCondition.closed", Boolean.TRUE);            
+            }
+
+            conditions.put("capabilityCondition.closed", Boolean.TRUE);
             if (checkConditions(destination, conditions) == true)
             {
-                if (rmService.isRecordFolder(destination))
+                if (recordFolderService.isRecordFolder(destination))
                 {
                     if (permissionService.hasPermission(filePlanService.getFilePlan(destination), RMPermissionModel.DECLARE_RECORDS_IN_CLOSED_FOLDERS) == AccessStatus.ALLOWED)
                     {
@@ -128,12 +135,12 @@ public class CreateCapability extends DeclarativeCapability
                     }
                 }
             }
-            
+
             conditions.remove("capabilityCondition.closed");
             conditions.put("capabilityCondition.cutoff", Boolean.TRUE);
             if (checkConditions(destination, conditions) == true)
             {
-                if (rmService.isRecordFolder(destination))
+                if (recordFolderService.isRecordFolder(destination))
                 {
                     if (permissionService.hasPermission(filePlanService.getFilePlan(destination), RMPermissionModel.CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS) == AccessStatus.ALLOWED)
                     {

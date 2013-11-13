@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -38,6 +37,7 @@ import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
@@ -124,7 +124,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected TaggingService taggingService;
 
     /** RM Services */
-    protected RecordsManagementService rmService;
     protected DispositionService dispositionService;
     protected RecordsManagementEventService eventService;
     protected RecordsManagementAdminService adminService;
@@ -139,6 +138,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected RecordService recordService;
     protected FilePlanService filePlanService;
     protected FilePlanAuthenticationService filePlanAuthenticationService;
+    protected RecordFolderService recordFolderService;
 
     /** test data */
     protected String siteId;
@@ -295,7 +295,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         // Get the application context
         applicationContext = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
         utils = new CommonRMTestUtils(applicationContext);
-	
+
         // Initialise the service beans
         initServices();
 
@@ -358,7 +358,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         taggingService = (TaggingService)applicationContext.getBean("TaggingService");
 
         // Get RM services
-        rmService = (RecordsManagementService)applicationContext.getBean("RecordsManagementService");
         dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
         eventService = (RecordsManagementEventService)applicationContext.getBean("RecordsManagementEventService");
         adminService = (RecordsManagementAdminService)applicationContext.getBean("RecordsManagementAdminService");
@@ -373,6 +372,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         recordService = (RecordService) applicationContext.getBean("RecordService");
         filePlanService = (FilePlanService) applicationContext.getBean("FilePlanService");
         filePlanAuthenticationService = (FilePlanAuthenticationService) applicationContext.getBean("FilePlanAuthenticationService");
+        recordFolderService = (RecordFolderService) applicationContext.getBean("RecordFolderService");
     }
 
     /**
@@ -414,19 +414,19 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                     freezeService.relinquish(hold);
                 }
             }
-            
+
             if (nodeService.exists(folder) == true)
             {
                 // Delete the folder
                 nodeService.deleteNode(folder);
             }
-            
+
             if (siteService.getSite(siteId) != null)
             {
                 // Delete the site
                 siteService.deleteSite(siteId);
             }
-    
+
             // delete the collaboration site (if required)
             if (isCollaborationSiteTest() == true && siteService.getSite(COLLABORATION_SITE_ID) != null)
             {
@@ -510,7 +510,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
               ContentModel.TYPE_FOLDER,
               containerProps).getChildRef();
         assertNotNull("Could not create base folder", folder);
-        
+
         permissionService.setPermission(folder, "rmadmin", PermissionService.WRITE, true);
         permissionService.setPermission(folder, "rmadmin", PermissionService.ADD_CHILDREN, true);
 
@@ -534,7 +534,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         dispositionSchedule = utils.createBasicDispositionSchedule(rmContainer);
 
         // Create RM folder
-        rmFolder = rmService.createRecordFolder(rmContainer, "rmFolder");
+        rmFolder = recordFolderService.createRecordFolder(rmContainer, "rmFolder");
         assertNotNull("Could not create rm folder", rmFolder);
     }
 
@@ -687,11 +687,11 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         mhDispositionSchedule35 = utils.createBasicDispositionSchedule(mhContainer35, "ds35", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, true, true);
 
         // Record folders
-        mhRecordFolder41 = rmService.createRecordFolder(mhContainer31, "mhFolder41");
-        mhRecordFolder42 = rmService.createRecordFolder(mhContainer32, "mhFolder42");
-        mhRecordFolder43 = rmService.createRecordFolder(mhContainer33, "mhFolder43");
-        mhRecordFolder44 = rmService.createRecordFolder(mhContainer34, "mhFolder44");
-        mhRecordFolder45 = rmService.createRecordFolder(mhContainer35, "mhFolder45");
+        mhRecordFolder41 = recordFolderService.createRecordFolder(mhContainer31, "mhFolder41");
+        mhRecordFolder42 = recordFolderService.createRecordFolder(mhContainer32, "mhFolder42");
+        mhRecordFolder43 = recordFolderService.createRecordFolder(mhContainer33, "mhFolder43");
+        mhRecordFolder44 = recordFolderService.createRecordFolder(mhContainer34, "mhFolder44");
+        mhRecordFolder45 = recordFolderService.createRecordFolder(mhContainer35, "mhFolder45");
     }
 
     protected void setupCollaborationSiteTestData()

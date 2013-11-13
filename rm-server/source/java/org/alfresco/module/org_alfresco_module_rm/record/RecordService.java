@@ -20,6 +20,7 @@
 package org.alfresco.module.org_alfresco_module_rm.record;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,12 +40,12 @@ public interface RecordService
      * Disables the property editable check.
      */
     void disablePropertyEditableCheck();
-    
+
     /**
      * Enables the property editable check.  By default this is always enabled.
      */
     void enablePropertyEditableCheck();
-    
+
     /**
     * Gets a list of all the record meta-data aspects
     *
@@ -86,10 +87,10 @@ public interface RecordService
     * @see #createRecord(NodeRef, NodeRef, boolean)
     */
    void createRecord(NodeRef filePlan, NodeRef nodeRef);
-   
+
    /**
     * Creates a new document as a unfiled record.
-    * 
+    *
     * @param filePlan
     * @param name
     * @param type
@@ -107,11 +108,11 @@ public interface RecordService
 
    /**
     * 'File' a new document that arrived in the file plan structure.
-    * 
+    *
     * @param nodeRef    record
     */
    void file(NodeRef record);
-   
+
    /**
     * Hides a record within a collaboration site
     *
@@ -126,13 +127,29 @@ public interface RecordService
     * @param reason    The reason for rejection
     */
    void rejectRecord(NodeRef nodeRef, String reason);
-   
+
    /**
     * Indicates whether a property of a record is editable for the current user or not.
-    * 
+    *
     * @param record     record
     * @param property   property
     * @return boolean   true if editable, false otherwise.
     */
    boolean isPropertyEditable(NodeRef record, QName property);
+
+   /**
+    * Indicates whether the given node (record or record folder) is a metadata stub or not.
+    *
+    * @param nodeRef   node reference
+    * @return boolean  true if a metadata stub, false otherwise
+    */
+   boolean isMetadataStub(NodeRef nodeRef);
+
+   /**
+    * Gets a list of all the records within a record folder
+    *
+    * @param recordFolder      record folder
+    * @return List<NodeRef>    list of records in the record folder
+    */
+   List<NodeRef> getRecords(NodeRef recordFolder);
 }

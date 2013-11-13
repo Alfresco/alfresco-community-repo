@@ -7,7 +7,6 @@
     <bean id="rmBaseWebscript" parent="webscript" abstract="true">
         <property name="nodeService" ref="NodeService"/>
         <property name="namespaceService" ref="NamespaceService"/>
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
         <property name="dispositionService" ref="DispositionService"/>
     </bean>
 
@@ -145,7 +144,6 @@
    <bean id="webscript.org.alfresco.rma.listofvalues.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.ListOfValuesGet"
       parent="webscript">
-      <property name="recordsManagementService" ref="RecordsManagementService" />
       <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
       <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
       <property name="recordsManagementEventService" ref="RecordsManagementEventService" />
@@ -224,7 +222,6 @@
       <property name="nodeService" ref="NodeService" />
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="importerService" ref="ImporterService" />
-      <property name="recordsManagementService" ref="RecordsManagementService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />
       <property name="filePlanService" ref="FilePlanService" />
    </bean>
@@ -250,7 +247,6 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.TransferReportGet"
       parent="rmBaseTransferWebscript">
       <property name="dictionaryService" ref="DictionaryService" />
-      <property name="recordsManagementService" ref="RecordsManagementService" />
       <property name="dispositionService" ref="DispositionService" />
       <property name="contentStreamer" ref="webscript.content.streamer" />
    </bean>
@@ -260,7 +256,6 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.TransferReportPost"
       parent="rmBaseTransferWebscript">
       <property name="dictionaryService" ref="DictionaryService" />
-      <property name="recordsManagementService" ref="RecordsManagementService" />
       <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
       <property name="dispositionService" ref="DispositionService" />
       <property name="contentService" ref="ContentService"/>
@@ -392,7 +387,6 @@
       <property name="authorityService" ref="AuthorityService" />
       <property name="personService" ref="PersonService" />
       <property name="nodeService" ref="NodeService" />
-      <property name="recordsManagementService" ref="RecordsManagementService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />
       <property name="filePlanService" ref="FilePlanService" />
    </bean>

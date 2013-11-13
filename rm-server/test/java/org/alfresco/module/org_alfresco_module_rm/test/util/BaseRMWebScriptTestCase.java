@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
@@ -34,6 +33,7 @@ import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventSe
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
@@ -96,7 +96,6 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected TaggingService taggingService;
 
     /** RM Services */
-    protected RecordsManagementService rmService;
     protected DispositionService dispositionService;
     protected RecordsManagementEventService eventService;
     protected RecordsManagementAdminService adminService;
@@ -108,6 +107,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected CapabilityService capabilityService;
     protected VitalRecordService vitalRecordService;
     protected FilePlanService filePlanService;
+    protected RecordFolderService recordFolderService;
 
     /** test data */
     protected String siteId;
@@ -169,7 +169,6 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         taggingService = (TaggingService)applicationContext.getBean("TaggingService");
 
         // Get RM services
-        rmService = (RecordsManagementService)applicationContext.getBean("RecordsManagementService");
         dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
         eventService = (RecordsManagementEventService)applicationContext.getBean("RecordsManagementEventService");
         adminService = (RecordsManagementAdminService)applicationContext.getBean("RecordsManagementAdminService");
@@ -181,6 +180,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
         vitalRecordService = (VitalRecordService)applicationContext.getBean("VitalRecordService");
         filePlanService = (FilePlanService)applicationContext.getBean("FilePlanService");
+        recordFolderService = (RecordFolderService)applicationContext.getBean("RecordFolderService");
     }
 
     /**
@@ -293,9 +293,9 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         dispositionSchedule = utils.createBasicDispositionSchedule(recordCategory);
 
         // Create RM folder
-        recordFolder = rmService.createRecordFolder(recordCategory, "rmFolder");
+        recordFolder = recordFolderService.createRecordFolder(recordCategory, "rmFolder");
         assertNotNull("Could not create rm folder", recordFolder);
-        recordFolder2 = rmService.createRecordFolder(recordCategory, "rmFolder2");
+        recordFolder2 = recordFolderService.createRecordFolder(recordCategory, "rmFolder2");
         assertNotNull("Could not create rm folder 2", recordFolder2);
 
         // Create collaboration data

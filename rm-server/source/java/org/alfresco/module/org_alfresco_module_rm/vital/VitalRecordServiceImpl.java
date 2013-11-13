@@ -24,11 +24,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -46,11 +46,11 @@ import org.alfresco.util.PropertyMap;
 
 /**
  * Vital record service interface implementation.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.0
  */
-public class VitalRecordServiceImpl implements VitalRecordService, 
+public class VitalRecordServiceImpl implements VitalRecordService,
                                                RecordsManagementModel,
                                                NodeServicePolicies.OnUpdatePropertiesPolicy,
                                                NodeServicePolicies.OnCreateChildAssociationPolicy
@@ -58,15 +58,15 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     /** Services */
     private NodeService nodeService;
     private PolicyComponent policyComponent;
-    private RecordsManagementService rmService;
     private RecordsManagementActionService rmActionService;
     private FilePlanAuthenticationService filePlanAuthenticationService;
     private FilePlanService filePlanService;
-    
+    private RecordFolderService recordFolderService;
+
     /** Behaviours */
     private JavaBehaviour onUpdateProperties;
     private JavaBehaviour onCreateChildAssociation;
-    
+
     /**
      * @param nodeService   node service
      */
@@ -74,7 +74,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param policyComponent   policy component
      */
@@ -82,15 +82,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     {
         this.policyComponent = policyComponent;
     }
-    
-    /**
-     * @param rmService records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
-    }
-    
+
     /**
      * @param rmActionService   records management action service
      */
@@ -98,20 +90,28 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     {
         this.rmActionService = rmActionService;
     }
-    
+
     public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
     {
         this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
-    
+
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
-    
+
+    /**
+     * @param recordFolderService
+     */
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
+    }
+
     /**
      * Init method.
      */
@@ -122,16 +122,16 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                 NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
                 ASPECT_VITAL_RECORD_DEFINITION,
                 onUpdateProperties);
-        
-        onCreateChildAssociation = new JavaBehaviour(this, "onCreateChildAssociation", NotificationFrequency.TRANSACTION_COMMIT);        
+
+        onCreateChildAssociation = new JavaBehaviour(this, "onCreateChildAssociation", NotificationFrequency.TRANSACTION_COMMIT);
         policyComponent.bindAssociationBehaviour(
-                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, 
-                TYPE_RECORD_FOLDER, 
+                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
+                TYPE_RECORD_FOLDER,
                 ContentModel.ASSOC_CONTAINS,
                 onCreateChildAssociation);
         policyComponent.bindAssociationBehaviour(
-                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, 
-                TYPE_RECORD_CATEGORY, 
+                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
+                TYPE_RECORD_CATEGORY,
                 ContentModel.ASSOC_CONTAINS,
                 onCreateChildAssociation);
     }
@@ -142,7 +142,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     @Override
     public void onUpdateProperties(final NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        if (nodeService.exists(nodeRef) == true && 
+        if (nodeService.exists(nodeRef) == true &&
             nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
         {
             // check that vital record definition has been changed in the first place
@@ -160,9 +160,9 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                     }}
                 );
             }
-        }        
+        }
     }
-    
+
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
@@ -174,7 +174,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
            if (nodeService.exists(nodeRef) == true)
            {
               onCreateChildAssociation.disable();
-              onUpdateProperties.disable();               
+              onUpdateProperties.disable();
               try
               {
                   AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
@@ -183,11 +183,11 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                       public Void doWork() throws Exception
                       {
                           if (filePlanService.isRecordCategory(nodeRef) == true ||
-                              rmService.isRecordFolder(nodeRef) == true)
+                              recordFolderService.isRecordFolder(nodeRef) == true)
                           {
                               inheritVitalRecordDefinition(nodeRef);
                           }
-                          
+
                           return null;
                       }
                   });
@@ -195,15 +195,15 @@ public class VitalRecordServiceImpl implements VitalRecordService,
               finally
               {
                   onCreateChildAssociation.enable();
-                  onUpdateProperties.enable();  
+                  onUpdateProperties.enable();
               }
            }
         }
     }
-    
+
     /**
      * Helper method to set the inherited vital record definition details.
-     * 
+     *
      * @param nodeRef   node reference
      */
     private void inheritVitalRecordDefinition(NodeRef nodeRef)
@@ -212,12 +212,12 @@ public class VitalRecordServiceImpl implements VitalRecordService,
         Period currentReviewPeriod = (Period)nodeService.getProperty(nodeRef, PROP_REVIEW_PERIOD);
         if (currentReviewPeriod == null ||
             PERIOD_NONE.equals(currentReviewPeriod) == true)
-        {                        
+        {
             // get the immediate parent
             NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
-            
+
             // is the parent a record category
-            if (parentRef != null && 
+            if (parentRef != null &&
                 FilePlanComponentKind.RECORD_CATEGORY.equals(filePlanService.getFilePlanComponentKind(parentRef)) == true)
             {
                 // is the child a record category or folder
@@ -226,22 +226,22 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                     kind.equals(FilePlanComponentKind.RECORD_FOLDER) == true)
                 {
                     // set the vital record definition values to match that of the parent
-                    nodeService.setProperty(nodeRef, 
-                                            PROP_VITAL_RECORD_INDICATOR, 
+                    nodeService.setProperty(nodeRef,
+                                            PROP_VITAL_RECORD_INDICATOR,
                                             nodeService.getProperty(parentRef, PROP_VITAL_RECORD_INDICATOR));
-                    nodeService.setProperty(nodeRef, 
-                                            PROP_REVIEW_PERIOD, 
+                    nodeService.setProperty(nodeRef,
+                                            PROP_REVIEW_PERIOD,
                                             nodeService.getProperty(parentRef, PROP_REVIEW_PERIOD));
                 }
             }
-        }        
+        }
     }
-    
+
     /**
      * Helper method used by services with access to the private bean to initialise vital record details.
-     * 
+     *
      * TODO consider what (if any of this) should be on the public interface
-     * 
+     *
      * @param nodeRef   node reference to initialise with vital record details
      */
     public void initialiseVitalRecord(NodeRef nodeRef)
@@ -255,7 +255,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
             {
                 Map<QName, Serializable> reviewProps = new HashMap<QName, Serializable>(1);
                 reviewProps.put(RecordsManagementModel.PROP_REVIEW_AS_OF, reviewAsOf);
-                
+
                 if (nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD) == false)
                 {
                     nodeService.addAspect(nodeRef, RecordsManagementModel.ASPECT_VITAL_RECORD, reviewProps);
@@ -267,7 +267,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                     nodeService.setProperties(nodeRef, props);
                 }
             }
-        }       
+        }
         else
         {
             // if we are re-filling then remove the vital aspect if it is not longer a vital record
@@ -277,14 +277,14 @@ public class VitalRecordServiceImpl implements VitalRecordService,
             }
         }
     }
-    
+
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getVitalRecordDefinition(org.alfresco.service.cmr.repository.NodeRef)
+     * @see VitalRecordService#getVitalRecordDefinition(NodeRef)
      */
     public VitalRecordDefinition getVitalRecordDefinition(NodeRef nodeRef)
     {
         VitalRecordDefinition result = null;
-        
+
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
         if (FilePlanComponentKind.RECORD.equals(kind) == true)
         {
@@ -297,28 +297,28 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                 result = VitalRecordDefinitionImpl.create(nodeService, nodeRef);
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * Resolves the record vital definition.
      * <p>
-     * NOTE:  Currently we only support the resolution of the vital record definition from the 
+     * NOTE:  Currently we only support the resolution of the vital record definition from the
      * primary record parent.  ie the record folder the record was originally filed within.
      * <p>
      * TODO:  Add an algorithm to resolve the correct vital record definition when a record is filed in many
      * record folders.
-     * 
+     *
      * @param record
      * @return VitalRecordDefinition
      */
     private VitalRecordDefinition resolveVitalRecordDefinition(NodeRef record)
     {
         NodeRef parent = nodeService.getPrimaryParent(record).getParentRef();
-        return getVitalRecordDefinition(parent);        
+        return getVitalRecordDefinition(parent);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService#setVitalRecordDefintion(org.alfresco.service.cmr.repository.NodeRef, boolean, org.alfresco.service.cmr.repository.Period)
      */
@@ -328,16 +328,16 @@ public class VitalRecordServiceImpl implements VitalRecordService,
         // Check params
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("enabled", enabled);
-        
+
         // Set the properties (will automatically add the vital record definition aspect)
         nodeService.setProperty(nodeRef, PROP_VITAL_RECORD_INDICATOR, enabled);
         nodeService.setProperty(nodeRef, PROP_REVIEW_PERIOD, reviewPeriod);
-        
+
         return new VitalRecordDefinitionImpl(enabled, reviewPeriod);
     }
-    
+
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isVitalRecord(org.alfresco.service.cmr.repository.NodeRef)
+     * @see VitalRecordService#isVitalRecord(NodeRef)
      */
     public boolean isVitalRecord(NodeRef nodeRef)
     {

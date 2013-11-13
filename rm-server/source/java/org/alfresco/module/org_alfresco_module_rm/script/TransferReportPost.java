@@ -31,7 +31,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -77,7 +76,6 @@ public class TransferReportPost extends BaseTransferWebScript
 
     protected DictionaryService ddService;
     protected RecordsManagementActionService rmActionService;
-    protected RecordsManagementService rmService;
     protected DispositionService dispositionService;
     protected ContentService contentService;
 
@@ -89,16 +87,6 @@ public class TransferReportPost extends BaseTransferWebScript
     public void setDictionaryService(DictionaryService ddService)
     {
         this.ddService = ddService;
-    }
-
-    /**
-     * Sets the RecordsManagementService instance
-     *
-     * @param rmService RecordsManagementService instance
-     */
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
     }
 
     /**

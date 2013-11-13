@@ -22,7 +22,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -41,11 +41,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
-public class DataSetServiceImpl implements DataSetService, RecordsManagementModel, ApplicationContextAware
+public class DataSetServiceImpl implements DataSetService, RecordsManagementModel
 {
 
     /** Logger */
@@ -87,17 +84,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /** Disposition service */
     private DispositionService dispositionService;
 
-    /** Application context */
-    private ApplicationContext applicationContext;
-
-    /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
+    /** Record folder service */
+    private RecordFolderService recordFolderService;
 
     /**
      * Set importer service
@@ -186,6 +174,16 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     public void setDispositionService(DispositionService dispositionService)
     {
         this.dispositionService = dispositionService;
+    }
+
+    /**
+     * Set record folder service
+     *
+     * @param recordFolderService the record folder service
+     */
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
     }
 
     /**
@@ -346,11 +344,6 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
     /**
      * Temp method to patch AMP'ed data
-     *
-     * @param searchService
-     * @param nodeService
-     * @param recordsManagementService
-     * @param recordsManagementActionService
      */
     private void patchLoadedData()
     {
@@ -445,8 +438,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
                             {
                                 // Fire action to "set-up" the folder correctly
                                 logger.info("Setting up bootstraped record folder: " + folderName);
-                                RecordFolderServiceImpl recordService = (RecordFolderServiceImpl)applicationContext.getBean("recordFolderService");
-                                recordService.initialiseRecordFolder(recordFolder);
+                                recordFolderService.initialiseRecordFolder(recordFolder);
                             }
                         }
 

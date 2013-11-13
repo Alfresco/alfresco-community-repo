@@ -46,13 +46,13 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     private static final String MSG_NEXT_DISP_NOT_SET = "rm.action.next-disp-not-set";
     private static final String MSG_NOT_NEXT_DISP = "rm.action.not-next-disp";
     private static final String MSG_NOT_RECORD_FOLDER = "rm.action.not-record-folder";
-    
+
     /** Parameter value indicating whether we should be doing non-error raising state checks */
     public static final String PARAM_NO_ERROR_CHECK = "rm.no-error-check";
 
     /**
      * All children of this implementation are disposition actions.
-     * 
+     *
      * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isDispositionAction()
      */
     @Override
@@ -63,28 +63,28 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
 
     /**
      * Indicates whether the disposition is marked complete
-     * 
+     *
      * @return boolean true if marked complete, false otherwise
      */
     public boolean getSetDispositionActionComplete()
     {
         return true;
     }
-    
+
     /**
      * Indicates whether we should validate the next disposition action is the action we are
      * trying to execute.
-     * 
+     *
      * @return
      */
     protected boolean checkNextDispositionAction(NodeRef actionedUponNodeRef)
     {
         return true;
     }
-    
+
     /**
      * Indicated whether we should validate the disposition action is eligible or not.
-     * 
+     *
      * @param actionedUponNodeRef
      * @return
      */
@@ -101,7 +101,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
     	NodeRef nextDispositionActionNodeRef = getNextDispostionAction(actionedUponNodeRef);
-        
+
         // determine whether we should be raising errors during state checking or not
     	boolean checkError = true;
     	Boolean checkErrorValue = (Boolean)action.getParameterValue(PARAM_NO_ERROR_CHECK);
@@ -109,14 +109,14 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     	{
     	    checkError = checkErrorValue.booleanValue();
     	}
-        
+
         // Check the validity of the action (is it the next action, are we dealing with the correct type of object for
         // the disposition level?
         DispositionSchedule di = checkDispositionActionExecutionValidity(actionedUponNodeRef, nextDispositionActionNodeRef, checkError);
         if (di != null)
         {
             // Check the eligibility of the action
-            if (checkEligibility(actionedUponNodeRef) == false || 
+            if (checkEligibility(actionedUponNodeRef) == false ||
                 dispositionService.isNextDispositionActionEligible(actionedUponNodeRef) == true)
             {
                 if (di.isRecordLevelDisposition() == true)
@@ -128,17 +128,17 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
                         if (recordService.isDeclared(actionedUponNodeRef) == true)
                         {
                             // Indicate that the disposition action is underway
-                            this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
-                            this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY, AuthenticationUtil.getRunAsUser());
-    
+                            nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
+                            nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY, AuthenticationUtil.getRunAsUser());
+
                             // Execute record level disposition
                             executeRecordLevelDisposition(action, actionedUponNodeRef);
-    
-                            if (this.nodeService.exists(nextDispositionActionNodeRef) == true &&
+
+                            if (nodeService.exists(nextDispositionActionNodeRef) == true &&
                                 getSetDispositionActionComplete() == true)
                             {
-                                this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
-                                this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
+                                nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
+                                nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
                             }
                         }
                         else
@@ -153,24 +153,24 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
                 }
                 else
                 {
-                    if (this.recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
+                    if (recordFolderService.isRecordFolder(actionedUponNodeRef) == true)
                     {
-                        if (this.recordsManagementService.isRecordFolderDeclared(actionedUponNodeRef) == true)
+                        if (recordFolderService.isRecordFolderDeclared(actionedUponNodeRef) == true)
                         {
                             // Indicate that the disposition action is underway
-                            this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
-                            this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY, AuthenticationUtil.getRunAsUser());
-    
+                            nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
+                            nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY, AuthenticationUtil.getRunAsUser());
+
                             executeRecordFolderLevelDisposition(action, actionedUponNodeRef);
-                            
+
                             // Indicate that the disposition action is compelte
-                            if (this.nodeService.exists(nextDispositionActionNodeRef) == true &&
+                            if (nodeService.exists(nextDispositionActionNodeRef) == true &&
                                 getSetDispositionActionComplete() == true)
                             {
-                                this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
-                                this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
+                                nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
+                                nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
                             }
-    
+
                         }
                         else
                         {
@@ -181,10 +181,10 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
                     {
                         throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_RECORD_FOLDER, getName(), actionedUponNodeRef.toString()));
                     }
-    
+
                 }
-    
-                if (this.nodeService.exists(actionedUponNodeRef) == true && getSetDispositionActionComplete() == true)
+
+                if (nodeService.exists(actionedUponNodeRef) == true && getSetDispositionActionComplete() == true)
                 {
                     // Update the disposition schedule
                     updateNextDispositionAction(actionedUponNodeRef);
@@ -217,7 +217,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
      * @param recordFolder
      */
     protected abstract void executeRecordFolderLevelDisposition(Action action, NodeRef recordFolder);
-    
+
     /**
      * @param nodeRef
      * @return
@@ -225,7 +225,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     protected DispositionSchedule checkDispositionActionExecutionValidity(NodeRef nodeRef, NodeRef nextDispositionActionNodeRef, boolean throwError)
     {
         // Check the node has associated disposition instructions
-        DispositionSchedule di = this.dispositionService.getDispositionSchedule(nodeRef);
+        DispositionSchedule di = dispositionService.getDispositionSchedule(nodeRef);
         if (di == null)
         {
             if (throwError)
@@ -239,7 +239,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
         }
 
         // Check the node has the disposition schedule aspect applied
-        if (this.nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == false)
+        if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == false)
         {
             if (throwError)
             {
@@ -253,7 +253,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
 
         if (checkNextDispositionAction(nodeRef) == true)
         {
-            // Check this the next disposition action        
+            // Check this the next disposition action
             NodeRef nextDispositionAction = nextDispositionActionNodeRef;
             if (nextDispositionAction == null)
             {
@@ -266,7 +266,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
                     return null;
                 }
             }
-            String actionName = (String) this.nodeService.getProperty(nextDispositionAction, PROP_DISPOSITION_ACTION);
+            String actionName = (String) nodeService.getProperty(nextDispositionAction, PROP_DISPOSITION_ACTION);
             if (actionName == null || actionName.equals(getName()) == false)
             {
                 if (throwError)
@@ -285,7 +285,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
 
     /**
      * Get the next disposition action node. Null if none present.
-     * 
+     *
      * @param nodeRef
      *            the disposable node reference
      * @return NodeRef the next disposition action, null if none
@@ -293,7 +293,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     private NodeRef getNextDispostionAction(NodeRef nodeRef)
     {
         NodeRef result = null;
-        List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, RegexQNamePattern.MATCH_ALL);
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, RegexQNamePattern.MATCH_ALL);
         if (assocs.size() != 0)
         {
             result = assocs.get(0).getChildRef();

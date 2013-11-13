@@ -26,28 +26,23 @@ import java.util.Map;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
  * Disposition action definition publish executor
- * 
+ *
  * @author Roy Wetherall
  */
 public class DispositionActionDefinitionPublishExecutor extends BasePublishExecutor
 {
     /** Node service */
     private NodeService nodeService;
-    
+
     /** Records management action service */
     private RecordsManagementActionService rmActionService;
 
-    /** Behaviour filter */
-    @SuppressWarnings("unused")
-    private BehaviourFilter behaviourFilter;
-    
     /**
      * Set node service
      * @param nodeService   node service
@@ -56,7 +51,7 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set records management service
      * @param rmActionService   records management service
@@ -65,16 +60,7 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
     {
         this.rmActionService = rmActionService;
     }
-    
-    /**
-     * Set behaviour filter
-     * @param behaviourFilter   behaviour filter
-     */
-    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
-    {
-        this.behaviourFilter = behaviourFilter;
-    }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutor#getName()
      */
@@ -96,7 +82,7 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
         {
             Map<String, Serializable> params = new HashMap<String, Serializable>();
             params.put(BroadcastDispositionActionDefinitionUpdateAction.CHANGED_PROPERTIES, (Serializable)updatedProps);
-            rmActionService.executeRecordsManagementAction(nodeRef, BroadcastDispositionActionDefinitionUpdateAction.NAME, params);            
+            rmActionService.executeRecordsManagementAction(nodeRef, BroadcastDispositionActionDefinitionUpdateAction.NAME, params);
         }
     }
 }

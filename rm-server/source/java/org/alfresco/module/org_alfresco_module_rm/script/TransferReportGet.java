@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -59,7 +58,6 @@ public class TransferReportGet extends BaseTransferWebScript
     protected static final String REPORT_FILE_SUFFIX = ".json";
 
     protected DictionaryService ddService;
-    protected RecordsManagementService rmService;
     protected DispositionService dispositionService;
     protected ContentStreamer contentStreamer;
 
@@ -81,16 +79,6 @@ public class TransferReportGet extends BaseTransferWebScript
     public void setDispositionService(DispositionService dispositionService)
     {
         this.dispositionService = dispositionService;
-    }
-
-    /**
-     * Sets the RecordsManagementService instance
-     *
-     * @param rmService RecordsManagementService instance
-     */
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
     }
 
     /**

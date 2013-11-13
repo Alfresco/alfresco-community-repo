@@ -30,14 +30,14 @@ public class VitalRecordOrFolderCapabilityCondition extends AbstractCapabilityCo
     @Override
     public boolean evaluate(NodeRef nodeRef)
     {
-        boolean result = false;        
-        
+        boolean result = false;
+
         if (recordService.isRecord(nodeRef) == true)
         {
             // Check the record for the vital record aspect
             result = nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_VITAL_RECORD);
         }
-        else if (rmService.isRecordFolder(nodeRef) == true)
+        else if (recordFolderService.isRecordFolder(nodeRef) == true)
         {
             // Check the folder for the vital record indicator
             Boolean value = (Boolean)nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_VITAL_RECORD_INDICATOR);
@@ -45,8 +45,8 @@ public class VitalRecordOrFolderCapabilityCondition extends AbstractCapabilityCo
             {
                 result = value.booleanValue();
             }
-        }    
-        
+        }
+
         return result;
     }
 }

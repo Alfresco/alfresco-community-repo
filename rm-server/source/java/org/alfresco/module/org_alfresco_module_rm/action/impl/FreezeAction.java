@@ -30,14 +30,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Freeze Action
- * 
+ *
  * @author Roy Wetherall
  */
 public class FreezeAction extends RMActionExecuterAbstractBase
 {
    /** Parameter names */
    public static final String PARAM_REASON = "reason";
-   
+
    /**
     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
     */
@@ -46,7 +46,7 @@ public class FreezeAction extends RMActionExecuterAbstractBase
    {
        paramList.add(new ParameterDefinitionImpl(PARAM_REASON, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_REASON)));
    }
-   
+
    /**
     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
     */
@@ -57,7 +57,7 @@ public class FreezeAction extends RMActionExecuterAbstractBase
        if (nodeService.exists(actionedUponNodeRef) == true &&
            nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) == false &&
            (recordService.isRecord(actionedUponNodeRef) == true ||
-            recordsManagementService.isRecordFolder(actionedUponNodeRef) == true) &&
+           recordFolderService.isRecordFolder(actionedUponNodeRef) == true) &&
            freezeService.isFrozen(actionedUponNodeRef) == false)
        {
            freezeService.freeze((String) action.getParameterValue(PARAM_REASON), actionedUponNodeRef);

@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
@@ -40,7 +41,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Records management service registry
- * 
+ *
  * @author Roy Wetherall
  */
 @SuppressWarnings("deprecation")
@@ -64,110 +65,118 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     static final QName IDENTIFIER_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "recordsManagementIdentifierService");
     @Deprecated
     static final QName RECORDS_MANAGEMENT_SECURITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementSecurityService");
-    
-    
+    static final QName RECORD_FOLDER_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordFolderService");
+
+
     /**
      * @return  records management service
      */
     @NotAuditable
     RecordsManagementService getRecordsManagementService();
-    
+
     /**
      * @return  record service
      */
     @NotAuditable
     RecordService getRecordService();
-    
+
     /**
      * @return disposition service
      */
     @NotAuditable
     DispositionService getDispositionService();
-    
+
     /**
      * @return  records management admin service
      */
     @NotAuditable
     RecordsManagementAdminService getRecordsManagementAdminService();
-    
+
     /**
      * @return  records management action service
      */
     @NotAuditable
     RecordsManagementActionService getRecordsManagementActionService();
-    
+
     /**
      * @return  records management event service
      */
     @NotAuditable
     RecordsManagementEventService getRecordsManagementEventService();
-    
+
     /**
      * @return  records management security service
-     * 
+     *
      * @deprecated As of release 2.1, replaced with {@link FilePlanRoleService}, {@link FilePlanPermissionService} and {@link ModelSecurityService}
      */
     @Deprecated
     @NotAuditable
     RecordsManagementSecurityService getRecordsManagementSecurityService();
-    
+
     /**
      * @return  records management audit service
      */
     @NotAuditable
     RecordsManagementAuditService getRecordsManagementAuditService();
-    
+
     /**
      * @return  capability service
      * @since 2.0
      */
     @NotAuditable
     CapabilityService getCapabilityService();
-    
+
     /**
      * @return  freeze service
      * @since 2.1
      */
     @NotAuditable
     FreezeService getFreezeService();
-    
+
     /**
      * @return extended security service
      * @since 2.1
      */
     @NotAuditable
     ExtendedSecurityService getExtendedSecurityService();
-    
+
     /**
      * @return  file plan service
-     * @since 2.1 
+     * @since 2.1
      */
     @NotAuditable
     FilePlanService getFilePlanService();
-    
+
     /**
      * @return  file plan role service
      * @since 2.1
      */
     @NotAuditable
     FilePlanRoleService getFilePlanRoleService();
-    
+
     /**
      * @return  file plan permission service
-     * @since 2.1 
+     * @since 2.1
      */
     @NotAuditable
     FilePlanPermissionService getFilePlanPermissionService();
-    
+
     /**
      * @return file plan authentication service
      * @since 2.1
      */
     FilePlanAuthenticationService getFilePlanAuthenticationService();
-    
+
     /**
      * @return identifier service
      * @since 2.1
      */
     IdentifierService getIdentifierService();
+
+    /**
+     * @return  record folder service
+     * @since 2.2
+     */
+    @NotAuditable
+    RecordFolderService getRecordFolderService();
 }

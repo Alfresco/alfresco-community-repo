@@ -372,7 +372,6 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             nodeService.removeAspect(person, ContentModel.ASPECT_ANULLABLE);
         }
         
-        
         return invitation;
     }
 

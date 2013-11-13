@@ -24,8 +24,6 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -38,10 +36,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class RmRolesGet extends RoleDeclarativeWebScript
 {
-    /** Logger */
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(RmRolesGet.class);
-
     /**
      * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
@@ -57,7 +51,7 @@ public class RmRolesGet extends RoleDeclarativeWebScript
         {
             throw new WebScriptException(Status.STATUS_FOUND, "File plan does not exist.");
         }
-        
+
         // get the includesystem parameter
         boolean includeSystem = false;
         String includeSystemValue = req.getParameter("is");

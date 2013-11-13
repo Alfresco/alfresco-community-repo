@@ -21,7 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.audit.extractor;
 import java.io.Serializable;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
@@ -32,9 +31,9 @@ import org.alfresco.service.cmr.repository.NodeService;
  * An extractor that extracts the NodeRef path from the RM root down to
  * - and including - the node itself.  This will only extract data if the
  * node is a {@link RecordsManagementModel#ASPECT_FILE_PLAN_COMPONENT fileplan component}.
- * 
- * @see RecordsManagementService#getNodeRefPath(NodeRef)
- * 
+ *
+ * @see FilePlanService#getNodeRefPath(NodeRef)
+ *
  * @author Derek Hulley
  * @since 1.0
  */
@@ -51,7 +50,7 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
         this.nodeService = nodeService;
     }
 
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
@@ -72,10 +71,10 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
     public Serializable extractData(Serializable value) throws Throwable
     {
         NodeRef nodeRef = (NodeRef) value;
-        
+
         // Get path from the RM root
         List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
-        
+
         // Done
         return (Serializable) nodeRefPath;
     }

@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.record;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -30,7 +31,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -43,13 +43,13 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomM
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelAccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -78,6 +78,7 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.ArrayUtils;
@@ -105,13 +106,13 @@ public class RecordServiceImpl implements RecordService,
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
-    
+
     /** Always edit property array */
     private static final QName[] ALWAYS_EDIT_PROPERTIES = new QName[]
     {
        ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA
     };
-    
+
     private static final String[] ALWAYS_EDIT_URIS = new String[]
     {
         NamespaceService.SECURITY_MODEL_1_0_URI,
@@ -122,15 +123,15 @@ public class RecordServiceImpl implements RecordService,
         NamespaceService.DICTIONARY_MODEL_1_0_URI,
         NamespaceService.BPM_MODEL_1_0_URI,
         NamespaceService.RENDITION_MODEL_1_0_URI
-     }; 
-    
+     };
+
     private static final String[] RECORD_MODEL_URIS = new String[]
     {
        RM_URI,
        RM_CUSTOM_URI,
        DOD5015Model.DOD_URI
     };
-    
+
     private static final String[] NON_RECORD_MODEL_URIS = new String[]
     {
         NamespaceService.AUDIO_MODEL_1_0_URI,
@@ -142,7 +143,7 @@ public class RecordServiceImpl implements RecordService,
         NamespaceService.REPOSITORY_VIEW_1_0_URI
 
     };
-    
+
     /** Application context */
     private ApplicationContext applicationContext;
 
@@ -161,11 +162,9 @@ public class RecordServiceImpl implements RecordService,
     /** Extended security service */
     private ExtendedSecurityService extendedSecurityService;
 
-    /** Records management service */
-    private RecordsManagementService recordsManagementService;
-
     /** Disposition service */
-    private DispositionService dispositionService;
+    // FIXME
+    //private DispositionService dispositionService;
 
     /** File plan service */
     private FilePlanService filePlanService;
@@ -178,22 +177,22 @@ public class RecordServiceImpl implements RecordService,
 
     /** Ownable service */
     private OwnableService ownableService;
-    
+
     /** Capability service */
     private CapabilityService capabilityService;
-    
+
     /** Rule service */
     private RuleService ruleService;
-    
+
     /** File folder service */
     private FileFolderService fileFolderService;
-    
-    /** Behaviour filter */
-    @SuppressWarnings("unused")
-    private BehaviourFilter behaviourFilter;
+
+    /** Record folder service */
+    // FIXME
+    //private RecordFolderService recordFolderService;
 
     /** List of available record meta-data aspects */
-    private Set<QName> recordMetaDataAspects;    
+    private Set<QName> recordMetaDataAspects;
 
     /** Behaviours */
     private JavaBehaviour onCreateChildAssociation = new JavaBehaviour(
@@ -256,20 +255,12 @@ public class RecordServiceImpl implements RecordService,
     }
 
     /**
-     * @param recordsManagementService  records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
-    }
-
-    /**
      * @param dispositionService    disposition service
      */
-    public void setDispositionService(DispositionService dispositionService)
-    {
-        this.dispositionService = dispositionService;
-    }
+//    public void setDispositionService(DispositionService dispositionService)
+//    {
+//        this.dispositionService = dispositionService;
+//    }
 
     /**
      * @param filePlanService   file plan service
@@ -302,7 +293,7 @@ public class RecordServiceImpl implements RecordService,
     {
         this.ownableService = ownableService;
     }
-    
+
     /**
      * @param capabilityService capability service
      */
@@ -310,7 +301,7 @@ public class RecordServiceImpl implements RecordService,
     {
         this.capabilityService = capabilityService;
     }
-    
+
     /**
      * @param ruleService   rule service
      */
@@ -318,7 +309,7 @@ public class RecordServiceImpl implements RecordService,
     {
         this.ruleService = ruleService;
     }
-    
+
     /**
      * @param fileFolderService file folder service
      */
@@ -326,14 +317,14 @@ public class RecordServiceImpl implements RecordService,
     {
         this.fileFolderService = fileFolderService;
     }
-    
+
     /**
-     * @param behaviourFilter   behaviour filter
+     * @param recordFolderService record folder service
      */
-    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
-    {
-        this.behaviourFilter = behaviourFilter;
-    }
+//    public void setRecordFolderService(RecordFolderService recordFolderService)
+//    {
+//        this.recordFolderService = recordFolderService;
+//    }
 
     /**
      * Init method
@@ -346,26 +337,26 @@ public class RecordServiceImpl implements RecordService,
                 ContentModel.ASSOC_CONTAINS,
                 onCreateChildAssociation);
         policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME, 
-                ASPECT_RECORD, 
+                NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
+                ASPECT_RECORD,
                 onUpdateProperties);
         policyComponent.bindAssociationBehaviour(
                 NodeServicePolicies.BeforeDeleteChildAssociationPolicy.QNAME,
                 ContentModel.TYPE_FOLDER,
-                ContentModel.ASSOC_CONTAINS, 
+                ContentModel.ASSOC_CONTAINS,
                 onDeleteDeclaredRecordLink);
-        
+
         // Handle the special case when we are dealing with new records that are being added via a file protocol
         policyComponent.bindClassBehaviour(
-		        NodeServicePolicies.OnAddAspectPolicy.QNAME, 
-		        ContentModel.ASPECT_NO_CONTENT, 
+		        NodeServicePolicies.OnAddAspectPolicy.QNAME,
+		        ContentModel.ASPECT_NO_CONTENT,
 		        new JavaBehaviour(this, "onAddAspect", NotificationFrequency.EVERY_EVENT));
 		policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnRemoveAspectPolicy.QNAME, 
-                ContentModel.ASPECT_NO_CONTENT, 
+                NodeServicePolicies.OnRemoveAspectPolicy.QNAME,
+                ContentModel.ASPECT_NO_CONTENT,
                 new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.EVERY_EVENT));
     }
-    
+
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
@@ -402,16 +393,16 @@ public class RecordServiceImpl implements RecordService,
     {
         switchNames(nodeRef);
     }
-   
+
     /**
      * Helper method to switch the name of the record around.  Used to support record creation via
      * file protocols.
-     * 
+     *
      * @param nodeRef	node reference (record)
      */
     private void switchNames(NodeRef nodeRef)
     {
-    	try 
+    	try
     	{
     		if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == true)
     		{
@@ -423,22 +414,22 @@ public class RecordServiceImpl implements RecordService,
     				nodeService.setProperty(nodeRef, PROP_ORIGIONAL_NAME, name);
     			}
     		}
-		} 
-    	catch (FileExistsException e) 
+		}
+    	catch (FileExistsException e)
 		{
 			if (logger.isDebugEnabled() == true)
 			{
 			    logger.debug(e.getMessage());
 			}
 		}
-    	catch (InvalidNodeRefException e) 
+    	catch (InvalidNodeRefException e)
 		{
             if (logger.isDebugEnabled() == true)
             {
                 logger.debug(e.getMessage());
             }
-		} 
-    	catch (FileNotFoundException e) 
+		}
+    	catch (FileNotFoundException e)
 		{
             if (logger.isDebugEnabled() == true)
             {
@@ -464,9 +455,9 @@ public class RecordServiceImpl implements RecordService,
                 try
                 {
                     NodeRef nodeRef = childAssocRef.getChildRef();
-                    if (nodeService.exists(nodeRef) == true  && 
+                    if (nodeService.exists(nodeRef) == true  &&
                         nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false &&
-                        nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) == false && 
+                        nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) == false &&
                         nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY) == false)
                     {
                         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT) == true)
@@ -490,15 +481,15 @@ public class RecordServiceImpl implements RecordService,
                 {
                     onCreateChildAssociation.enable();
                 }
-                
+
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * Ensure that the user only updates record properties that they have permission to.
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
@@ -520,15 +511,15 @@ public class RecordServiceImpl implements RecordService,
                         {
                             beforeValue = before.get(property);
                         }
-                        
+
                         Serializable afterValue = null;
                         if (after != null)
                         {
                             afterValue = after.get(property);
                         }
-                        
+
                         boolean propertyUnchanged = false;
-                        if (beforeValue != null && afterValue != null && 
+                        if (beforeValue != null && afterValue != null &&
                             beforeValue instanceof Date && afterValue instanceof Date)
                         {
                             // deal with date values
@@ -539,7 +530,7 @@ public class RecordServiceImpl implements RecordService,
                             // otherwise
                             propertyUnchanged = EqualsHelper.nullSafeEquals(beforeValue, afterValue);
                         }
-    
+
                         if (propertyUnchanged == false &&
                             isPropertyEditable(nodeRef, property) == false)
                         {
@@ -558,12 +549,12 @@ public class RecordServiceImpl implements RecordService,
             onUpdateProperties.enable();
         }
     }
-    
+
     /**
      * Looking specifically at linked content that was declared a record from a non-rm site.
-     * When the site or the folder that the link was declared in is deleted we need to remove 
+     * When the site or the folder that the link was declared in is deleted we need to remove
      * the extended security property accounts in the tree
-     * 
+     *
      * @param childAssocRef
      */
     public void onDeleteDeclaredRecordLink(ChildAssociationRef childAssocRef)
@@ -571,15 +562,15 @@ public class RecordServiceImpl implements RecordService,
         // Is the deleted child association not a primary association?
         // Does the deleted child association have the rma:recordOriginatingDetails aspect?
         // Is the parent of the deleted child association a folder (cm:folder)?
-        if (!childAssocRef.isPrimary() && 
-            nodeService.hasAspect(childAssocRef.getChildRef(), ASPECT_RECORD_ORIGINATING_DETAILS) && 
+        if (!childAssocRef.isPrimary() &&
+            nodeService.hasAspect(childAssocRef.getChildRef(), ASPECT_RECORD_ORIGINATING_DETAILS) &&
             nodeService.getType(childAssocRef.getParentRef()).equals(ContentModel.TYPE_FOLDER))
         {
             // ..then remove the extended readers and writers up the tree for this remaining node
             extendedSecurityService.removeExtendedSecurity(childAssocRef.getChildRef(), extendedSecurityService.getExtendedReaders(childAssocRef.getChildRef()), extendedSecurityService.getExtendedWriters(childAssocRef.getChildRef()), true);
         }
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#disablePropertyEditableCheck()
      */
@@ -588,7 +579,7 @@ public class RecordServiceImpl implements RecordService,
     {
         onUpdateProperties.disable();
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#enablePropertyEditableCheck()
      */
@@ -663,7 +654,7 @@ public class RecordServiceImpl implements RecordService,
         ParameterCheck.mandatory("filePlan", filePlan);
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("isLinked", isLinked);
-        
+
         // first we do a sanity check to ensure that the user has at least write permissions on the document
         if (permissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
         {
@@ -683,7 +674,7 @@ public class RecordServiceImpl implements RecordService,
             public Void doWork() throws Exception
             {
                 if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == false)
-                {                    
+                {
                     // disable delete rules
                     ruleService.disableRuleType("outbound");
                     try
@@ -694,34 +685,34 @@ public class RecordServiceImpl implements RecordService,
                         {
                             throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
                         }
-    
+
                         // get the documents readers
                         Long aclId = nodeService.getNodeAclId(nodeRef);
                         Set<String> readers = permissionService.getReaders(aclId);
                         Set<String> writers = permissionService.getWriters(aclId);
-    
+
                         // add the current owner to the list of extended writers
                         String owner = ownableService.getOwner(nodeRef);
-    
+
                         // remove the owner
                         ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);
-    
+
                         // get the documents primary parent assoc
                         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
-    
+
                         // move the document into the file plan
                         nodeService.moveNode(nodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
-    
+
                         // save the information about the originating details
                         Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
                         aspectProperties.put(PROP_RECORD_ORIGINATING_LOCATION, (Serializable) parentAssoc.getParentRef());
                         aspectProperties.put(PROP_RECORD_ORIGINATING_USER_ID, userId);
                         aspectProperties.put(PROP_RECORD_ORIGINATING_CREATION_DATE, new Date());
                         nodeService.addAspect(nodeRef, ASPECT_RECORD_ORIGINATING_DETAILS, aspectProperties);
-    
+
                         // make the document a record
                         makeRecord(nodeRef);
-    
+
                         if (isLinked == true)
                         {
                             // turn off rules
@@ -730,12 +721,12 @@ public class RecordServiceImpl implements RecordService,
                             {
                                 // maintain the original primary location
                                 nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
-        
+
                                 // set the extended security
                                 Set<String> combinedWriters = new HashSet<String>(writers);
                                 combinedWriters.add(owner);
                                 combinedWriters.add(AuthenticationUtil.getFullyAuthenticatedUser());
-                                
+
                                 extendedSecurityService.addExtendedSecurity(nodeRef, readers, combinedWriters);
                             }
                             finally
@@ -754,7 +745,7 @@ public class RecordServiceImpl implements RecordService,
             }
         });
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map, org.alfresco.service.cmr.repository.ContentReader)
      */
@@ -763,30 +754,30 @@ public class RecordServiceImpl implements RecordService,
     {
         ParameterCheck.mandatory("filePlan", filePlan);
         ParameterCheck.mandatory("name", name);
-        
+
         // if none set the default record type is cm:content
         if (type == null)
         {
             type = ContentModel.TYPE_CONTENT;
         }
         // TODO ensure that the type is a sub-type of cm:content
-        
+
         // get the unfiled record container for the file plan
         NodeRef unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
         if (unfiledContainer == null)
         {
             throw new AlfrescoRuntimeException("Unable to create record, because unfiled container could not be found.");
         }
-        
+
         // create the new record
         NodeRef record = fileFolderService.create(unfiledContainer, name, type).getNodeRef();
-        
+
         // set the properties
         if (properties != null)
         {
             nodeService.addProperties(record, properties);
         }
-        
+
         // set the content
         if (reader != null)
         {
@@ -795,10 +786,10 @@ public class RecordServiceImpl implements RecordService,
             writer.setMimetype(reader.getMimetype());
             writer.putContent(reader);
         }
-        
+
         // make record
         makeRecord(record);
-        
+
         return record;
     }
 
@@ -813,12 +804,12 @@ public class RecordServiceImpl implements RecordService,
         try
         {
         	// get the record id
-            String recordId = identifierService.generateIdentifier(ASPECT_RECORD, 
+            String recordId = identifierService.generateIdentifier(ASPECT_RECORD,
                                                                    nodeService.getPrimaryParent(document).getParentRef());
-            
+
             // get the record name
             String name = (String)nodeService.getProperty(document, ContentModel.PROP_NAME);
-                        
+
             // rename the record
             int dotIndex = name.lastIndexOf(".");
             String prefix = name;
@@ -827,20 +818,20 @@ public class RecordServiceImpl implements RecordService,
             {
                 prefix = name.substring(0, dotIndex);
                 postfix = name.substring(dotIndex);
-            }            
+            }
             String recordName = prefix + " (" + recordId + ")" + postfix;
             fileFolderService.rename(document, recordName);
-            
+
             if (logger.isDebugEnabled() == true)
             {
                 logger.debug("Rename " + name + " to " + recordName);
             }
-            
+
             // add the record aspect
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
             props.put(PROP_IDENTIFIER, recordId);
             props.put(PROP_ORIGIONAL_NAME, name);
-            nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, props);     
+            nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, props);
         }
         catch (FileNotFoundException e)
         {
@@ -850,7 +841,7 @@ public class RecordServiceImpl implements RecordService,
         {
             ruleService.enableRules();
         }
-        
+
     }
 
     /**
@@ -869,8 +860,9 @@ public class RecordServiceImpl implements RecordService,
             if (childAssocRef != null)
             {
                 NodeRef parent = childAssocRef.getParentRef();
-                if (parent != null &&
-                    recordsManagementService.isRecordFolder(parent) == true)
+                //FIXME
+                RecordFolderService recordFolderService = (RecordFolderService) applicationContext.getBean("RecordFolderService");
+                if (parent != null && recordFolderService.isRecordFolder(parent) == true)
                 {
                     result = true;
                 }
@@ -921,6 +913,8 @@ public class RecordServiceImpl implements RecordService,
             // initialise disposition details
             if (nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE) == false)
             {
+                //FIXME
+                DispositionService dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
                 DispositionSchedule di = dispositionService.getDispositionSchedule(record);
                 if (di != null && di.isRecordLevelDisposition() == true)
                 {
@@ -985,14 +979,14 @@ public class RecordServiceImpl implements RecordService,
             {
                 ruleService.disableRules();
                 try
-                {                
+                {
                     // get record property values
                     Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                    String recordId = (String)properties.get(PROP_IDENTIFIER);                    
+                    String recordId = (String)properties.get(PROP_IDENTIFIER);
                     String documentOwner = (String)properties.get(PROP_RECORD_ORIGINATING_USER_ID);
                     String origionalName = (String)properties.get(PROP_ORIGIONAL_NAME);
                     NodeRef originatingLocation = (NodeRef)properties.get(PROP_RECORD_ORIGINATING_LOCATION);
-                    
+
                     // first remove the secondary link association
                     List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
                     for (ChildAssociationRef childAssociationRef : parentAssocs)
@@ -1003,7 +997,7 @@ public class RecordServiceImpl implements RecordService,
                             break;
                         }
                     }
-                    
+
                     // remove all RM related aspects from the node
                     Set<QName> aspects = nodeService.getAspects(nodeRef);
                     for (QName aspect : aspects)
@@ -1014,39 +1008,39 @@ public class RecordServiceImpl implements RecordService,
                             nodeService.removeAspect(nodeRef, aspect);
                         }
                     }
-                    
+
                     // get the records primary parent association
                     ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
-    
+
                     // move the record into the collaboration site
                     nodeService.moveNode(nodeRef, originatingLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
-                   
+
                     // rename to the origional name
                     if (origionalName != null)
                     {
                         fileFolderService.rename(nodeRef, origionalName);
-                        
+
                         if (logger.isDebugEnabled() == true)
                         {
                             String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                             logger.debug("Rename " + name + " to " + origionalName);
                         }
                     }
-                    
+
                     // save the information about the rejection details
                     Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
                     aspectProperties.put(PROP_RECORD_REJECTION_USER_ID, userId);
                     aspectProperties.put(PROP_RECORD_REJECTION_DATE, new Date());
                     aspectProperties.put(PROP_RECORD_REJECTION_REASON, reason);
                     nodeService.addAspect(nodeRef, ASPECT_RECORD_REJECTION_DETAILS, aspectProperties);
-    
-                    // Restore the owner of the document                
+
+                    // Restore the owner of the document
                     if (StringUtils.isBlank(documentOwner))
                     {
                         throw new AlfrescoRuntimeException("Unable to find the creator of document.");
                     }
                     ownableService.setOwner(nodeRef, documentOwner);
-    
+
                     // send an email to the record creator
                     notificationHelper.recordRejectedEmailNotification(nodeRef, recordId, documentOwner);
                 }
@@ -1068,46 +1062,46 @@ public class RecordServiceImpl implements RecordService,
     {
         ParameterCheck.mandatory("record", record);
         ParameterCheck.mandatory("property", property);
-        
+
         if (isRecord(record) == false)
         {
             throw new AlfrescoRuntimeException("Can not check if the property " + property.toString() + " is editable, because node reference is not a record.");
         }
-        
+
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Checking whether property " + property.toString() + " is editable for user " + AuthenticationUtil.getRunAsUser());
         }
-        
+
         // DEBUG ...
         FilePlanService fps = (FilePlanService)applicationContext.getBean("filePlanService");
         FilePlanRoleService fprs = (FilePlanRoleService)applicationContext.getBean("filePlanRoleService");
         PermissionService ps = (PermissionService)applicationContext.getBean("permissionService");
-        
-        NodeRef filePlan = fps.getFilePlan(record); 
+
+        NodeRef filePlan = fps.getFilePlan(record);
         Set<Role> roles = fprs.getRolesByUser(filePlan, AuthenticationUtil.getRunAsUser());
-        
+
         if (logger.isDebugEnabled() == true)
         {
             logger.debug(" ... users roles");
         }
-        
+
         for (Role role : roles)
         {
             if (logger.isDebugEnabled() == true)
             {
                 logger.debug("     ... user has role " + role.getName() + " with capabilities ");
             }
-            
+
             for (Capability cap : role.getCapabilities())
             {
                 if (logger.isDebugEnabled() == true)
                 {
                     logger.debug("         ... " + cap.getName());
                 }
-            }       
+            }
         }
-        
+
         if (logger.isDebugEnabled() == true)
         {
             logger.debug(" ... user has the following set permissions on the file plan");
@@ -1115,14 +1109,14 @@ public class RecordServiceImpl implements RecordService,
         Set<AccessPermission> perms = ps.getAllSetPermissions(filePlan);
         for (AccessPermission perm : perms)
         {
-            if (logger.isDebugEnabled() == true && 
+            if (logger.isDebugEnabled() == true &&
                 (perm.getPermission().contains(RMPermissionModel.EDIT_NON_RECORD_METADATA) ||
                  perm.getPermission().contains(RMPermissionModel.EDIT_RECORD_METADATA)))
             {
                 logger.debug("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
-            }           
+            }
         }
-        
+
         if (ps.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA).equals(AccessStatus.ALLOWED))
         {
             if (logger.isDebugEnabled() == true)
@@ -1130,9 +1124,9 @@ public class RecordServiceImpl implements RecordService,
                 logger.debug(" ... user has the edit non record metadata permission on the file plan");
             }
         }
-        
+
         // END DEBUG ...
-        
+
         boolean result = alwaysEditProperty(property);
         if (result == true)
         {
@@ -1149,17 +1143,17 @@ public class RecordServiceImpl implements RecordService,
             AccessStatus accessNonRecord = capabilityService.getCapabilityAccessState(record, RMPermissionModel.EDIT_NON_RECORD_METADATA);
             AccessStatus accessDeclaredRecord = capabilityService.getCapabilityAccessState(record, RMPermissionModel.EDIT_DECLARED_RECORD_METADATA);
             AccessStatus accessRecord = capabilityService.getCapabilityAccessState(record, RMPermissionModel.EDIT_RECORD_METADATA);
-            
+
             if (AccessStatus.ALLOWED.equals(accessNonRecord) == true)
             {
                 if (logger.isDebugEnabled() == true)
                 {
                     logger.debug(" ... user has edit nonrecord metadata capability");
                 }
-                
+
                 allowNonRecordEdit = true;
             }
-            
+
             if (AccessStatus.ALLOWED.equals(accessRecord) == true ||
                 AccessStatus.ALLOWED.equals(accessDeclaredRecord) == true)
             {
@@ -1167,29 +1161,29 @@ public class RecordServiceImpl implements RecordService,
                 {
                     logger.debug(" ... user has edit record or declared metadata capability");
                 }
-                
+
                 allowRecordEdit = true;
             }
-            
+
             if (allowNonRecordEdit == true && allowRecordEdit == true)
             {
                 if (logger.isDebugEnabled() == true)
                 {
                     logger.debug(" ... so all properties can be edited.");
                 }
-                
+
                 result = true;
             }
             else if (allowNonRecordEdit == true && allowRecordEdit == false)
             {
                 // can only edit non record properties
-                if (isRecordMetadata(property) == false)                    
+                if (isRecordMetadata(property) == false)
                 {
                     if (logger.isDebugEnabled() == true)
                     {
                         logger.debug(" ... property is not considered record metadata so editable.");
                     }
-                    
+
                     result = true;
                 }
                 else
@@ -1209,9 +1203,9 @@ public class RecordServiceImpl implements RecordService,
                     {
                         logger.debug(" ... property is considered record metadata so editable.");
                     }
-                    
+
                     result = true;
-                }  
+                }
                 else
                 {
                     if (logger.isDebugEnabled() == true)
@@ -1224,17 +1218,17 @@ public class RecordServiceImpl implements RecordService,
         }
         return result;
     }
-    
+
     /**
      * Helper method that indicates whether a property is considered record metadata or not.
-     * 
-     * @param property  property 
+     *
+     * @param property  property
      * @return boolea   true if record metadata, false otherwise
      */
     private boolean isRecordMetadata(QName property)
     {
         boolean result = ArrayUtils.contains(RECORD_MODEL_URIS, property.getNamespaceURI());
-        
+
         if (result == false && ArrayUtils.contains(NON_RECORD_MODEL_URIS, property.getNamespaceURI()) == false)
         {
             PropertyDefinition def = dictionaryService.getProperty(property);
@@ -1247,13 +1241,13 @@ public class RecordServiceImpl implements RecordService,
                 }
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * Determines whether the property should always be allowed to be edited or not.
-     * 
+     *
      * @param property
      * @return
      */
@@ -1263,22 +1257,58 @@ public class RecordServiceImpl implements RecordService,
                 ArrayUtils.contains(ALWAYS_EDIT_PROPERTIES, property) ||
                 isProtectedProperty(property));
     }
-    
+
     /**
      * Helper method to determine whether a property is protected at a dictionary definition
      * level.
-     * 
+     *
      * @param property  property qualified name
      * @return booelan  true if protected, false otherwise
      */
     private boolean isProtectedProperty(QName property)
     {
-        boolean result = false;        
+        boolean result = false;
         PropertyDefinition def = dictionaryService.getProperty(property);
         if (def != null)
         {
             result = def.isProtected();
-        }        
+        }
+        return result;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isMetadataStub(NodeRef)
+     */
+    @Override
+    public boolean isMetadataStub(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        return nodeService.hasAspect(nodeRef, ASPECT_GHOSTED);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecords(NodeRef)
+     */
+    @Override
+    public List<NodeRef> getRecords(NodeRef recordFolder)
+    {
+        ParameterCheck.mandatory("recordFolder", recordFolder);
+
+        List<NodeRef> result = new ArrayList<NodeRef>(1);
+        //FIXME
+        RecordFolderService recordFolderService = (RecordFolderService) applicationContext.getBean("RecordFolderService");
+        if (recordFolderService.isRecordFolder(recordFolder) == true)
+        {
+            List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(recordFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef assoc : assocs)
+            {
+                NodeRef child = assoc.getChildRef();
+                if (isRecord(child) == true)
+                {
+                    result.add(child);
+                }
+            }
+        }
         return result;
     }
 }

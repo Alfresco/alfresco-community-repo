@@ -30,7 +30,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.RFC822MetadataExtracter;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -86,8 +85,6 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     /** Services */
     private NodeService nodeService;
     private NamespacePrefixResolver nspr;
-    @SuppressWarnings("unused")
-    private PolicyComponent policyComponent;
     private ContentService contentService;
     private TransactionService transactionService;
 
@@ -96,14 +93,6 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
 
     /** List of email mapping keys */
     private List<String> emailMappingKeys;
-
-    /**
-     * @param policyComponent   policy component
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
 
     /**
      * @param nspr  namespace service

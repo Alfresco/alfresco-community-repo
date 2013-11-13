@@ -28,7 +28,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Action to re-open the records folder
- * 
+ *
  * @author Roy Wetherall
  */
 public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
@@ -38,7 +38,7 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
 
     /** I18N */
     private static final String MSG_NO_OPEN_RECORD_FOLDER = "rm.action.no-open-record-folder";
-    
+
     /** Parameter names */
     public static final String PARAM_OPEN_PARENT = "openParent";
 
@@ -54,7 +54,7 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
     	{
 	        // TODO move re-open logic into a service method
 	        // TODO check that the user in question has the correct permission to re-open a records folder
-	
+
 	        if (recordService.isRecord(actionedUponNodeRef))
 	        {
 	            ChildAssociationRef assocRef = nodeService.getPrimaryParent(actionedUponNodeRef);
@@ -63,13 +63,13 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
 	                actionedUponNodeRef = assocRef.getParentRef();
 	            }
 	        }
-	
-	        if (this.recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
+
+	        if (recordFolderService.isRecordFolder(actionedUponNodeRef) == true)
 	        {
-	            Boolean isClosed = (Boolean) this.nodeService.getProperty(actionedUponNodeRef, PROP_IS_CLOSED);
+	            Boolean isClosed = (Boolean) nodeService.getProperty(actionedUponNodeRef, PROP_IS_CLOSED);
 	            if (Boolean.TRUE.equals(isClosed) == true)
 	            {
-	                this.nodeService.setProperty(actionedUponNodeRef, PROP_IS_CLOSED, false);
+	                nodeService.setProperty(actionedUponNodeRef, PROP_IS_CLOSED, false);
 	            }
 	        }
 	        else

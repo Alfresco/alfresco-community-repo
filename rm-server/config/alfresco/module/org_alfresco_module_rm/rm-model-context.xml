@@ -87,11 +87,12 @@
    <bean id="recordsManagementSearchBehaviour"
       class="org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour"
       parent="org_alfresco_module_rm_BaseBehaviour">
-      <property name="recordsManagementService" ref="recordsManagementService"/>
       <property name="dispositionService" ref="dispositionService"/>
       <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
       <property name="vitalRecordService" ref="VitalRecordService"/>
       <property name="nodeService" ref="nodeService"/>
+      <property name="recordService" ref="RecordService"/>
+      <property name="recordFolderService" ref="RecordFolderService"/>
    </bean>
 
    <!--  Base bean definition for customisable types bootstrap -->

@@ -7,6 +7,7 @@
       parent="rmBaseCapability"
       class="org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability">
       <property name="recordService" ref="recordService"/>
+      <property name="recordFolderService" ref="RecordFolderService"/>
       <property name="name" value="Create"/>
       <property name="private" value="true"/>
    </bean>
@@ -149,7 +150,7 @@
       </property>
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.frozen" value="false"/>           
+            <entry key="capabilityCondition.frozen" value="false"/>
          </map>
       </property>
    </bean>
@@ -165,7 +166,7 @@
       </property>
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.frozen" value="false"/>           
+            <entry key="capabilityCondition.frozen" value="false"/>
          </map>
       </property>
    </bean>

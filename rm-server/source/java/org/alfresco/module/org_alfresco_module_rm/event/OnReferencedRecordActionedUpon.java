@@ -24,18 +24,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -46,48 +46,40 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Behaviour executed when a references record is actioned upon.
- * 
+ *
  * @author Roy Wetherall
  */
 public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEventTypeImpl
                                             implements RecordsManagementModel
-                                                   
+
 {
-    /** Records management service */
-    private RecordsManagementService recordsManagementService;
-    
     /** Disposition service */
     private DispositionService dispositionService;
-    
+
     /** Records management action service */
     private RecordsManagementActionService recordsManagementActionService;
-    
+
     /** Records management admin service */
     private RecordsManagementAdminService recordsManagementAdminService;
-    
+
     /** Node service */
     private NodeService nodeService;
-    
+
     /** Policy component */
     private PolicyComponent policyComponent;
-    
+
     /** Record service */
     private RecordService recordService;
 
+    /** Record folder service */
+    private RecordFolderService recordFolderService;
+
     /** Action name */
     private String actionName;
-    
+
     /** Reference */
     private QName reference;
-    
-    /**
-     * @param recordsManagementService  the records management service to set
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
-    }    
-    
+
     /**
      * @param dispositionService    the disposition service
      */
@@ -95,7 +87,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @param recordsManagementActionService the recordsManagementActionService to set
      */
@@ -103,7 +95,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     {
         this.recordsManagementActionService = recordsManagementActionService;
     }
-    
+
     /**
      * @param recordsManagementAdminService record management admin service
      */
@@ -111,7 +103,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     {
         this.recordsManagementAdminService = recordsManagementAdminService;
     }
-    
+
     /**
      * @param nodeService   node service
      */
@@ -119,7 +111,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param recordService record service
      */
@@ -127,7 +119,15 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     {
         this.recordService = recordService;
     }
-    
+
+    /**
+     * @param recordFolderService record folder service
+     */
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
+    }
+
     /**
      * @param policyComponent   policy component
      */
@@ -135,7 +135,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * @param reference reference name
      */
@@ -143,7 +143,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     {
         this.reference = QName.createQName(reference);
     }
-    
+
     /**
      * @param actionName    action name
      */
@@ -151,17 +151,17 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     {
         this.actionName = actionName;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.event.SimpleRecordsManagementEventTypeImpl#init()
      */
     public void init()
     {
         super.init();
-        
+
         // Register interest in the on create reference policy
-        policyComponent.bindClassBehaviour(RecordsManagementPolicies.BEFORE_RM_ACTION_EXECUTION, 
-                                           ASPECT_FILE_PLAN_COMPONENT, 
+        policyComponent.bindClassBehaviour(RecordsManagementPolicies.BEFORE_RM_ACTION_EXECUTION,
+                                           ASPECT_FILE_PLAN_COMPONENT,
                                            new JavaBehaviour(this, "beforeActionExecution", NotificationFrequency.FIRST_EVENT));
     }
 
@@ -173,10 +173,10 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     {
         return true;
     }
-    
+
     /**
      * Before action exeuction behaviour.
-     * 
+     *
      * @param nodeRef
      * @param name
      * @param parameters
@@ -206,32 +206,32 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
                         }
                     }
                 }
-                
+
                 return null;
-            }           
+            }
         };
-        
+
         AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminUserName());
-        
+
     }
-    
+
     private void processRecordFolder(NodeRef recordFolder)
     {
         if (recordService.isRecord(recordFolder) == true)
         {
             processRecord(recordFolder);
         }
-        else if (recordsManagementService.isRecordFolder(recordFolder) == true)
+        else if (recordFolderService.isRecordFolder(recordFolder) == true)
         {
-            for (NodeRef record : recordsManagementService.getRecords(recordFolder))
+            for (NodeRef record : recordService.getRecords(recordFolder))
             {
                 processRecord(record);
             }
         }
     }
-    
+
     private void processRecord(NodeRef record)
-    {        
+    {
         List<AssociationRef> fromAssocs = recordsManagementAdminService.getCustomReferencesFrom(record);
         for (AssociationRef fromAssoc : fromAssocs)
         {
@@ -241,7 +241,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
                 doEventComplete(nodeRef);
             }
         }
-        
+
         List<AssociationRef> toAssocs = recordsManagementAdminService.getCustomReferencesTo(record);
         for (AssociationRef toAssoc : toAssocs)
         {
@@ -250,9 +250,9 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
                 NodeRef nodeRef = toAssoc.getSourceRef();
                 doEventComplete(nodeRef);
             }
-        }                                       
+        }
     }
-    
+
     private void doEventComplete(NodeRef nodeRef)
     {
         DispositionAction da = dispositionService.getNextDispositionAction(nodeRef);
@@ -271,7 +271,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
                     params.put(CompleteEventAction.PARAM_EVENT_COMPLETED_BY, AuthenticationUtil.getFullyAuthenticatedUser());
                     params.put(CompleteEventAction.PARAM_EVENT_COMPLETED_AT, new Date());
                     recordsManagementActionService.executeRecordsManagementAction(nodeRef, "completeEvent", params);
-                    
+
                     break;
                 }
             }

@@ -28,7 +28,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -50,8 +49,8 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
-import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 import org.springframework.extensions.webscripts.servlet.FormData.FormField;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 import org.springframework.util.FileCopyUtils;
 
 /**
@@ -73,7 +72,6 @@ public class ImportPost extends DeclarativeWebScript
     protected NodeService nodeService;
     protected DictionaryService dictionaryService;
     protected ImporterService importerService;
-    protected RecordsManagementService rmService;
     protected FilePlanRoleService filePlanRoleService;
     protected FilePlanService filePlanService;
 
@@ -111,16 +109,6 @@ public class ImportPost extends DeclarativeWebScript
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
         this.filePlanRoleService = filePlanRoleService;
-    }
-
-    /**
-     * Sets the RecordsManagementService instance
-     *
-     * @param rmService The RecordsManagementService instance
-     */
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
     }
 
     /**

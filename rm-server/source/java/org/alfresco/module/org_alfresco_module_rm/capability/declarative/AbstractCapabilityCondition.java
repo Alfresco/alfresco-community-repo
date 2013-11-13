@@ -18,43 +18,37 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Abstract capability condition.
- * 
+ *
  * @author Roy Wetherall
  */
-public abstract class AbstractCapabilityCondition implements CapabilityCondition, 
+public abstract class AbstractCapabilityCondition implements CapabilityCondition,
                                                              BeanNameAware,
                                                              RecordsManagementModel
 {
     /** Capability condition name */
     protected String name;
-    
+
     /** Services */
-    protected RecordsManagementService rmService;
     protected RecordService recordService;
     protected PermissionService permissionService;
     protected NodeService nodeService;
     protected FreezeService freezeService;
     protected FilePlanService filePlanService;
-    
-    /**
-     * @param rmService records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
-    }
-    
+    protected DispositionService dispositionService;
+    protected RecordFolderService recordFolderService;
+
     /**
      * @param recordService     record service
      */
@@ -62,7 +56,7 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     {
         this.recordService = recordService;
     }
-    
+
     /**
      * @param permissionService permission service
      */
@@ -70,7 +64,7 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
      * @param nodeService   node service
      */
@@ -78,7 +72,7 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param freezeService   freeze service
      */
@@ -86,15 +80,31 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     {
        this.freezeService = freezeService;
     }
-    
+
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
-    
+
+    /**
+     * @param dispositionService disposition service
+     */
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
+    }
+
+    /**
+     * @param recordFolderService record folder service
+     */
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
+    }
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#getName()
      */
@@ -103,7 +113,7 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     {
         return name;
     }
-    
+
     /**
      * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
      */

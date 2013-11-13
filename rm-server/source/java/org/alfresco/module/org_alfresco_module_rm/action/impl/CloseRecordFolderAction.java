@@ -28,7 +28,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Action to close the records folder
- * 
+ *
  * @author Roy Wetherall
  */
 public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
@@ -49,7 +49,7 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) == true && 
+        if (nodeService.exists(actionedUponNodeRef) == true &&
             freezeService.isFrozen(actionedUponNodeRef) == false)
         {
             if (recordService.isRecord(actionedUponNodeRef))
@@ -61,12 +61,12 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
                 }
             }
 
-            if (this.recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
+            if (recordFolderService.isRecordFolder(actionedUponNodeRef) == true)
             {
-                Boolean isClosed = (Boolean) this.nodeService.getProperty(actionedUponNodeRef, PROP_IS_CLOSED);
+                Boolean isClosed = (Boolean) nodeService.getProperty(actionedUponNodeRef, PROP_IS_CLOSED);
                 if (Boolean.FALSE.equals(isClosed) == true)
                 {
-                    this.nodeService.setProperty(actionedUponNodeRef, PROP_IS_CLOSED, true);
+                    nodeService.setProperty(actionedUponNodeRef, PROP_IS_CLOSED, true);
                 }
             }
             else

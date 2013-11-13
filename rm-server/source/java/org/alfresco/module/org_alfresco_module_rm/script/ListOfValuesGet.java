@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
@@ -54,23 +53,12 @@ import org.springframework.util.StringUtils;
  */
 public class ListOfValuesGet extends DeclarativeWebScript
 {
-    protected RecordsManagementService rmService;
     protected RecordsManagementActionService rmActionService;
     protected RecordsManagementAuditService rmAuditService;
     protected RecordsManagementEventService rmEventService;
     protected DispositionService dispositionService;
     protected DictionaryService ddService;
     protected NamespaceService namespaceService;
-
-    /**
-     * Sets the RecordsManagementService instance
-     *
-     * @param rmService The RecordsManagementService instance
-     */
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
-    }
 
     /**
      * Sets the RecordsManagementActionService instance

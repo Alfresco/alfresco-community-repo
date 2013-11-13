@@ -44,28 +44,28 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Destroy action.
- * 
+ *
  * @author Roy Wetherall
  */
-public class DestroyAction extends RMDispositionActionExecuterAbstractBase 
-                           implements ContentServicePolicies.OnContentUpdatePolicy, 
+public class DestroyAction extends RMDispositionActionExecuterAbstractBase
+                           implements ContentServicePolicies.OnContentUpdatePolicy,
                                       InitializingBean
 {
     /** Action name */
     public static final String NAME = "destroy";
-    
+
     /** I18N */
     private static final String MSG_GHOSTED_PROP_UPDATE = "rm.action.ghosted-prop-update";
-   
+
     /** Policy component */
     private PolicyComponent policyComponent;
-    
+
     /** Eager content store cleaner */
     private EagerContentStoreCleaner eagerContentStoreCleaner;
- 
+
     /** Capability service */
     private CapabilityService capabilityService;
-    
+
     /** Indicates if ghosting is enabled or not */
     private boolean ghostingEnabled = true;
 
@@ -76,7 +76,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * @param eagerContentStoreCleaner eager content store cleaner
      */
@@ -92,7 +92,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     {
         this.capabilityService = capabilityService;
     }
-    
+
     /**
      * @param ghostingEnabled   true if ghosting is enabled, false otherwise
      */
@@ -100,7 +100,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     {
         this.ghostingEnabled = ghostingEnabled;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#checkNextDispositionAction()
      */
@@ -109,7 +109,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     {
         return checkForDestroyRecordsCapability(actionedUponNodeRef);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#checkEligibility(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -118,9 +118,9 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     {
         return checkForDestroyRecordsCapability(actionedUponNodeRef);
     }
-    
+
     /**
-     * 
+     *
      * @param actionedUponNodeRef
      * @return
      */
@@ -131,7 +131,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
         {
             result = false;
         }
-        return result; 
+        return result;
     }
 
     /**
@@ -140,15 +140,15 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     @Override
     protected void executeRecordFolderLevelDisposition(Action action, NodeRef recordFolder)
     {
-        List<NodeRef> records = this.recordsManagementService.getRecords(recordFolder);
+        List<NodeRef> records = recordService.getRecords(recordFolder);
         for (NodeRef record : records)
         {
             executeRecordLevelDisposition(action, record);
         }
-        
+
         if (ghostingEnabled == true)
         {
-            nodeService.addAspect(recordFolder, ASPECT_GHOSTED, Collections.<QName, Serializable> emptyMap());  
+            nodeService.addAspect(recordFolder, ASPECT_GHOSTED, Collections.<QName, Serializable> emptyMap());
         }
         else
         {
@@ -164,20 +164,20 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     {
         doDestroy(record);
     }
-    
+
     /**
      * Do the content destroy
-     * 
+     *
      * @param nodeRef
      */
     private void doDestroy(NodeRef nodeRef)
     {
         // Clear the content
         clearAllContent(nodeRef);
-        
+
         // Clear thumbnail content
         clearThumbnails(nodeRef);
-        
+
         if (ghostingEnabled == true)
         {
             // Add the ghosted aspect
@@ -186,13 +186,13 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
         else
         {
             // If ghosting is not enabled, delete the node
-            nodeService.deleteNode(nodeRef);    
+            nodeService.deleteNode(nodeRef);
         }
     }
-    
+
     /**
      * Clear all the content properties
-     * 
+     *
      * @param nodeRef
      */
     private void clearAllContent(NodeRef nodeRef)
@@ -203,15 +203,15 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
         {
             // Clear the content
             clearContent(nodeRef, prop);
-            
+
             // Remove the property
             this.nodeService.removeProperty(nodeRef, prop);
-        }    
+        }
     }
-    
+
     /**
      * Clear all the thumbnail information
-     * 
+     *
      * @param nodeRef
      */
     @SuppressWarnings("deprecation")
@@ -226,7 +226,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
       // We want to remove the rn:renditioned aspect, but due to the possibility
       // that there is Alfresco 3.2-era data with the cm:thumbnailed aspect
       // applied, we must consider removing it too.
-      if (nodeService.hasAspect(nodeRef, RenditionModel.ASPECT_RENDITIONED) || 
+      if (nodeService.hasAspect(nodeRef, RenditionModel.ASPECT_RENDITIONED) ||
           nodeService.hasAspect(nodeRef, ContentModel.ASPECT_THUMBNAILED))
       {
           // Add the ghosted aspect to all the renditioned children, so that they will not be archived when the
@@ -241,12 +241,12 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
                   nodeService.deleteNode(child.getChildRef());
               }
           }
-       }        
+       }
     }
-    
+
     /**
      * Clear a content property
-     * 
+     *
      * @param nodeRef
      * @param contentProperty
      */
@@ -257,7 +257,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
         if (contentData != null && contentData.getContentUrl() != null)
         {
             eagerContentStoreCleaner.registerOrphanedContentUrl(contentData.getContentUrl(), true);
-        }        
+        }
     }
 
     /**
@@ -276,7 +276,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
         // Register interest in the onContentUpdate policy
         policyComponent.bindClassBehaviour(
                 ContentServicePolicies.OnContentUpdatePolicy.QNAME,
-                ASPECT_GHOSTED, 
+                ASPECT_GHOSTED,
                 new JavaBehaviour(this, "onContentUpdate"));
     }
 }

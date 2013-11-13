@@ -28,25 +28,20 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Records management event types GET web script
- * 
+ *
  * @author Roy Wetherall
  */
 public class RmEventTypesGet extends DeclarativeWebScript
 {
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(RmEventTypesGet.class);
-    
     /** Reccords management event service */
     private RecordsManagementEventService rmEventService;
-    
+
     /**
      * Set the records management event service
-     * 
+     *
      * @param rmEventService
      */
     public void setRecordsManagementEventService(RecordsManagementEventService rmEventService)
@@ -58,11 +53,11 @@ public class RmEventTypesGet extends DeclarativeWebScript
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         // Get the events
         List<RecordsManagementEventType> events = rmEventService.getEventTypes();
         model.put("eventtypes", events);
-        
+
         return model;
     }
 }

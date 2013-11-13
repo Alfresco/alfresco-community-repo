@@ -38,7 +38,7 @@ public class IsRecordFolderCondition extends AbstractCapabilityCondition
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        return rmService.isRecordFolder(nodeRef);
+        return recordFolderService.isRecordFolder(nodeRef);
     }
 
 }

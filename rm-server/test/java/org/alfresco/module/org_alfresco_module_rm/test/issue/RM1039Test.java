@@ -36,21 +36,21 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Unit test for RM-1039 ... can't move a folder into a category with a disposition schedule
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RM1039Test extends BaseRMTestCase 
-{    
+public class RM1039Test extends BaseRMTestCase
+{
     @Override
     protected boolean isRecordTest()
     {
         return true;
     }
-   
+
     // try and move a folder from no disposition schedule to a disposition schedule
     public void testMoveRecordFolderFromNoDisToDis() throws Exception
-    {        
+    {
         final NodeRef recordFolder = doTestInTransaction(new Test<NodeRef>()
         {
             @Override
@@ -58,11 +58,11 @@ public class RM1039Test extends BaseRMTestCase
             {
                 // create a record category (no disposition schedule)
                 NodeRef recordCategory = filePlanService.createRecordCategory(filePlan, "Caitlin Reed");
-                
+
                 // create a record folder
-                return rmService.createRecordFolder(recordCategory, "Grace Wetherall");
+                return recordFolderService.createRecordFolder(recordCategory, "Grace Wetherall");
             }
-            
+
             @Override
             public void test(NodeRef result) throws Exception
             {
@@ -71,16 +71,16 @@ public class RM1039Test extends BaseRMTestCase
                 assertFalse(nodeService.hasAspect(result, ASPECT_DISPOSITION_LIFECYCLE));
             }
         });
-        
+
         final NodeRef record = doTestInTransaction(new Test<NodeRef>()
         {
             @Override
             public NodeRef run()
             {
-                // create a record 
+                // create a record
                 return fileFolderService.create(recordFolder, "mytest.txt", ContentModel.TYPE_CONTENT).getNodeRef();
             }
-            
+
             @Override
             public void test(NodeRef result) throws Exception
             {
@@ -89,7 +89,7 @@ public class RM1039Test extends BaseRMTestCase
                 assertFalse(nodeService.hasAspect(result, ASPECT_DISPOSITION_LIFECYCLE));
             }
         });
-        
+
         doTestInTransaction(new Test<NodeRef>()
         {
             @Override
@@ -98,79 +98,79 @@ public class RM1039Test extends BaseRMTestCase
                 Capability capability = capabilityService.getCapability("CreateModifyDestroyFolders");
                 assertEquals(AccessDecisionVoter.ACCESS_GRANTED, capability.evaluate(recordFolder));
                 assertEquals(AccessDecisionVoter.ACCESS_GRANTED, capability.evaluate(recordFolder, rmContainer));
-                
+
                 // take a look at the move capability
                 Capability moveCapability = capabilityService.getCapability("Move");
                 assertEquals(AccessDecisionVoter.ACCESS_GRANTED, moveCapability.evaluate(recordFolder, rmContainer));
-                
+
                 // move the node
                 return fileFolderService.move(recordFolder, rmContainer, null).getNodeRef();
             }
-            
+
             @Override
             public void test(NodeRef result) throws Exception
             {
                 assertNotNull(result);
                 assertNotNull(dispositionService.getDispositionSchedule(result));
                 assertTrue(nodeService.hasAspect(result, ASPECT_DISPOSITION_LIFECYCLE));
-                
+
                 DispositionAction dispositionAction = dispositionService.getNextDispositionAction(result);
                 assertNotNull(dispositionAction);
-                
+
                 assertNull(dispositionAction.getAsOfDate());
-                assertEquals("cutoff", dispositionAction.getName());                
+                assertEquals("cutoff", dispositionAction.getName());
                 assertEquals(1, dispositionAction.getEventCompletionDetails().size());
-                
+
                 // take a look at the record and check things are as we would expect
-                assertFalse(nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE));                                
+                assertFalse(nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE));
             }
         });
     }
-    
+
     // move from a disposition schedule to another .. both record folder level
-    
+
     // move from a disposition schedule to another .. from record to folder level
-    
-    
+
+
     // try and move a cutoff folder
     public void testMoveCutoffRecordFolder() throws Exception
-    {        
+    {
         final NodeRef destination = doTestInTransaction(new Test<NodeRef>()
         {
             @Override
             public NodeRef run()
             {
                 // create a record category (no disposition schedule)
-                return filePlanService.createRecordCategory(filePlan, "Caitlin Reed");     
+                return filePlanService.createRecordCategory(filePlan, "Caitlin Reed");
             }
         });
-        
+
         final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>()
         {
             @Override
             public NodeRef run()
             {
                 // create folder
-                NodeRef testFolder = rmService.createRecordFolder(rmContainer, "Peter Edward Francis");
-                
+                NodeRef testFolder = recordFolderService.createRecordFolder(rmContainer, "Peter Edward Francis");
+
                 // complete event
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 actionService.executeRecordsManagementAction(testFolder, CompleteEventAction.NAME, params);
-                
+
                 // cutoff folder
                 actionService.executeRecordsManagementAction(testFolder, CutOffAction.NAME);
-                
+
                 // take a look at the move capability
                 Capability moveCapability = capabilityService.getCapability("Move");
                 assertEquals(AccessDecisionVoter.ACCESS_DENIED, moveCapability.evaluate(testFolder, destination));
-                               
-                return testFolder;                
+
+                return testFolder;
             }
         });
-        
+
         doTestInTransaction(new FailureTest()
-        {            
+        {
             @Override
             public void run() throws Exception
             {

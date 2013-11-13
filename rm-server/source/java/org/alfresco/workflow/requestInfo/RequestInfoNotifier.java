@@ -20,7 +20,6 @@ package org.alfresco.workflow.requestInfo;
 
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -92,16 +91,15 @@ public class RequestInfoNotifier implements TaskListener
      * @param recordName The name of the record
      * @return Returns the email subject
      */
-    @SuppressWarnings("unused")
-	private String getEmailSubject(String recordName)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.subject"));
-        sb.append(" '");
-        sb.append(recordName);
-        sb.append("'");
-        return sb.toString();
-    }
+//	private String getEmailSubject(String recordName)
+//    {
+//        StringBuilder sb = new StringBuilder();
+//        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.subject"));
+//        sb.append(" '");
+//        sb.append(recordName);
+//        sb.append("'");
+//        return sb.toString();
+//    }
 
     /**
      * Helper method for building the email body
@@ -109,18 +107,17 @@ public class RequestInfoNotifier implements TaskListener
      * @param recordName The name of the record
      * @return Returns the email body
      */
-    @SuppressWarnings("unused")
-	private String getEmailBody(String recordName)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.body1"));
-        sb.append(" '");
-        sb.append(AuthenticationUtil.getFullyAuthenticatedUser());
-        sb.append("' ");
-        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.body2"));
-        sb.append(" '");
-        sb.append(recordName);
-        sb.append("'.");
-        return  sb.toString();
-    }
+//	private String getEmailBody(String recordName)
+//    {
+//        StringBuilder sb = new StringBuilder();
+//        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.body1"));
+//        sb.append(" '");
+//        sb.append(AuthenticationUtil.getFullyAuthenticatedUser());
+//        sb.append("' ");
+//        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.body2"));
+//        sb.append(" '");
+//        sb.append(recordName);
+//        sb.append("'.");
+//        return  sb.toString();
+//    }
 }

@@ -28,25 +28,20 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Records management event GET web script
- * 
+ *
  * @author Roy Wetherall
  */
 public class RmEventGet extends DeclarativeWebScript
 {
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(RmEventGet.class);
-    
     /** Reccords management event service */
     private RecordsManagementEventService rmEventService;
-    
+
     /**
      * Set the records management event service
-     * 
+     *
      * @param rmEventService
      */
     public void setRecordsManagementEventService(RecordsManagementEventService rmEventService)
@@ -58,7 +53,7 @@ public class RmEventGet extends DeclarativeWebScript
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         // Event name
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String eventName = templateVars.get("eventname");
@@ -66,17 +61,17 @@ public class RmEventGet extends DeclarativeWebScript
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "No event name was provided on the URL.");
         }
-        
+
         // Check the event exists
         if (rmEventService.existsEvent(eventName) == false)
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "The event " + eventName + " does not exist.");
         }
-        
+
         // Get the event
         RecordsManagementEvent event = rmEventService.getEvent(eventName);
         model.put("event", event);
-        
+
         return model;
     }
 }

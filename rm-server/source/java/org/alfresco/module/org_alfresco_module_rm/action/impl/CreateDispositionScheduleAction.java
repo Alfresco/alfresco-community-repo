@@ -23,31 +23,25 @@ import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstrac
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Create disposition schedule action
- * 
+ *
  * @author Roy Wetherall
  */
 public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBase
 {
-    /** Logger */
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(CreateDispositionScheduleAction.class);
- 
     /** file plan service */
     private FilePlanService filePlanService;
-    
+
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -63,5 +57,5 @@ public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBas
         {
             throw new AlfrescoRuntimeException("The disposition schedule could not be created, because the actioned upon node was not a record category.");
         }
-    }  
+    }
 }

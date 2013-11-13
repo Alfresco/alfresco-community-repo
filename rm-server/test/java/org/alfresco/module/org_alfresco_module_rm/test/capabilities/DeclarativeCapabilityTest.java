@@ -77,17 +77,17 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         undeclaredRecord = utils.createRecord(rmFolder, "undeclaredRecord.txt");
 
         // Closed folder
-        closedFolder = rmService.createRecordFolder(rmContainer, "closedFolder");
+        closedFolder = recordFolderService.createRecordFolder(rmContainer, "closedFolder");
         utils.closeFolder(closedFolder);
 
         // Frozen artifacts
-        recordFolderContainsFrozen = rmService.createRecordFolder(rmContainer, "containsFrozen");
+        recordFolderContainsFrozen = recordFolderService.createRecordFolder(rmContainer, "containsFrozen");
         frozenRecord = utils.createRecord(rmFolder, "frozenRecord.txt");
         frozenRecord2 = utils.createRecord(recordFolderContainsFrozen, "frozen2.txt");
-        frozenRecordFolder = rmService.createRecordFolder(rmContainer, "frozenRecordFolder");
+        frozenRecordFolder = recordFolderService.createRecordFolder(rmContainer, "frozenRecordFolder");
 
         // MoveTo artifacts
-        moveToFolder = rmService.createRecordFolder(rmContainer, "moveToFolder");
+        moveToFolder = recordFolderService.createRecordFolder(rmContainer, "moveToFolder");
         moveToCategory = filePlanService.createRecordCategory(rmContainer, "moveToCategory");
     }
 

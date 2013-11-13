@@ -23,13 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
@@ -50,7 +49,7 @@ import org.springframework.context.ApplicationContextAware;
 
 /**
  * Class containing behaviour for the vitalRecordDefinition aspect.
- * 
+ *
  * @author neilm
  */
 public class RecordCopyBehaviours implements RecordsManagementModel,
@@ -58,16 +57,16 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
 {
     /** The policy component */
     private PolicyComponent policyComponent;
-    
+
     /** The Behaviour Filter */
     private BehaviourFilter behaviourFilter;
-    
+
     /** The rm service registry */
     private RecordsManagementServiceRegistry rmServiceRegistry;
-    
+
     /** List of aspects to remove during move and copy */
     private List<QName> unwantedAspects = new ArrayList<QName>(5);
-    
+
     /** Application context */
     private ApplicationContext applicationContext;
 
@@ -77,32 +76,32 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
-       this.applicationContext = applicationContext; 
-    } 
-    
+       this.applicationContext = applicationContext;
+    }
+
     /**
      * Set the policy component
-     * 
+     *
      * @param policyComponent   the policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * Set the behaviour Filter
-     * 
+     *
      * @param behaviourFilter
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
     }
-    
+
     /**
      * Set the rm service registry.
-     * 
+     *
      * @param recordsManagementServiceRegistry   the rm service registry.
      */
     public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry recordsManagementServiceRegistry)
@@ -119,7 +118,7 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
         unwantedAspects.add(ASPECT_VITAL_RECORD);
         unwantedAspects.add(ASPECT_DISPOSITION_LIFECYCLE);
         unwantedAspects.add(RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH);
-        
+
         // Do not copy any of the Alfresco-internal 'state' aspects
         for (QName aspect : unwantedAspects)
         {
@@ -132,43 +131,43 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ASPECT_RECORD_COMPONENT_ID,
                 new JavaBehaviour(this, "getDoNothingCopyCallback"));
-        
+
         //On Copy we need a new ID
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
                 ASPECT_RECORD_COMPONENT_ID,
                 new JavaBehaviour(this, "generateId", NotificationFrequency.TRANSACTION_COMMIT));
-        
+
         //Don't copy the Aspect Record -- it should be regenerated
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
-                ASPECT_RECORD, 
+                ASPECT_RECORD,
                 new JavaBehaviour(this, "onCopyRecord"));
-        
-        // Move behaviour 
+
+        // Move behaviour
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"),
-                RecordsManagementModel.ASPECT_RECORD, 
+                RecordsManagementModel.ASPECT_RECORD,
                 new JavaBehaviour(this, "onMoveRecordNode", NotificationFrequency.FIRST_EVENT));
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"),
-                RecordsManagementModel.TYPE_RECORD_FOLDER, 
+                RecordsManagementModel.TYPE_RECORD_FOLDER,
                 new JavaBehaviour(this, "onMoveRecordFolderNode", NotificationFrequency.FIRST_EVENT));
-        
+
         //Copy Behaviour
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"), 
-                RecordsManagementModel.TYPE_RECORD_FOLDER, 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                RecordsManagementModel.TYPE_RECORD_FOLDER,
                 new JavaBehaviour(this, "onCopyRecordFolderNode"));
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"), 
-                RecordsManagementModel.TYPE_RECORD_CATEGORY, 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                RecordsManagementModel.TYPE_RECORD_CATEGORY,
                 new JavaBehaviour(this, "onCopyRecordCategoryNode"));
     }
-    
+
     /**
      * onMove record behaviour
-     * 
+     *
      * @param oldChildAssocRef
      * @param newChildAssocRef
      */
@@ -179,7 +178,7 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
         {
             final NodeRef newNodeRef = newChildAssocRef.getChildRef();
             final NodeService nodeService = rmServiceRegistry.getNodeService();
-            
+
             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
                 public Object doWork() throws Exception
@@ -189,57 +188,56 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
                         // only remove the search details .. the rest will be resolved automatically
                         nodeService.removeAspect(newNodeRef, RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH);
                     }
-                    
+
                     return null;
                 }
             }, AuthenticationUtil.getAdminUserName());
         }
     }
-    
+
     /**
      * onMove record folder behaviour
-     * 
+     *
      * @param oldChildAssocRef
      * @param newChildAssocRef
      */
     public void onMoveRecordFolderNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
         final NodeService nodeService = rmServiceRegistry.getNodeService();
-        
+
         if (!nodeService.getType(newChildAssocRef.getParentRef()).equals(TYPE_RECORD_FOLDER))
-        {        
+        {
             if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()))
             {
                 //final NodeRef oldNodeRef = oldChildAssocRef.getChildRef();
                 final NodeRef newNodeRef = newChildAssocRef.getChildRef();
-            
+
                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                 {
                     public Object doWork() throws Exception
                     {
-                        final RecordsManagementService rmService = rmServiceRegistry.getRecordsManagementService();
                         final RecordService rmRecordService = rmServiceRegistry.getRecordService();
-                        final RecordFolderServiceImpl recordFolderService = (RecordFolderServiceImpl)applicationContext.getBean("recordFolderService");
+                        final RecordFolderService recordFolderService = rmServiceRegistry.getRecordFolderService();
                         final DispositionServiceImpl dispositionService = (DispositionServiceImpl)applicationContext.getBean("dispositionService");
-                               
+
                         behaviourFilter.disableBehaviour();
                         try
                         {
                             // Remove unwanted aspects
                             removeUnwantedAspects(nodeService, newNodeRef);
-                            
+
                             // reinitialise the record folder
                             recordFolderService.initialiseRecordFolder(newNodeRef);
-                            
+
                             // reinitialise the record folder disposition action details
                             dispositionService.refreshDispositionAction(newNodeRef);
-    
+
                             // Sort out the child records
-                            for (NodeRef record : rmService.getRecords(newNodeRef))
+                            for (NodeRef record : rmRecordService.getRecords(newNodeRef))
                             {
                                 // Remove unwanted aspects
                                 removeUnwantedAspects(nodeService, record);
-                                
+
                                 // Re-initiate the records in the new folder.
                                 rmRecordService.file(record);
                             }
@@ -259,11 +257,11 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
             throw new UnsupportedOperationException("Cannot move record folder into another record folder.");
         }
     }
-    
+
     /**
      * Handle the copying of the record aspect.
      * Excludes the Date Filed property.  The Date Filed will be generated on copy.
-     * 
+     *
      * @param classRef
      * @param copyDetails
      * @return
@@ -278,7 +276,7 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
                     Map<QName, Serializable> properties)
             {
                 Map<QName, Serializable> sourceProperties = super.getCopyProperties(classRef, copyDetails, properties);
-                
+
                 // Remove the Date Filed property from record properties on copy.
                 // It will be generated for the copy
                 if (sourceProperties.containsKey(PROP_DATE_FILED))
@@ -288,15 +286,15 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
 
                 return sourceProperties;
             }
-            
+
         };
     }
-    
+
     /**
      * Record Folder Copy Behaviour
-     * 
+     *
      * <li> Do not allow copy of record folder into another record folder</li>
-     * 
+     *
      * @param classRef
      * @param copyDetails
      * @return
@@ -306,12 +304,12 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
         return new DefaultCopyBehaviourCallback()
         {
             final NodeService nodeService = rmServiceRegistry.getNodeService();
-            
+
             @Override
             public Map<QName, Serializable> getCopyProperties(QName classRef, CopyDetails copyDetails,  Map<QName, Serializable> properties)
             {
                 Map<QName, Serializable> sourceProperties = super.getCopyProperties(classRef, copyDetails, properties);
-                
+
                 // ensure that the 'closed' status of the record folder is not copied
                 if (sourceProperties.containsKey(PROP_IS_CLOSED))
                 {
@@ -320,11 +318,11 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
 
                 return sourceProperties;
             }
-            
-            
+
+
             /**
              * If the targets parent is a Record Folder -- Do Not Allow Copy
-             * 
+             *
              * @param classQName
              * @param copyDetails
              * @return boolean
@@ -333,7 +331,7 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
             public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
             {
                 boolean result = true;
-                
+
                 if (nodeService.getType(copyDetails.getTargetParentNodeRef()).equals(TYPE_RECORD_FOLDER) == true)
                 {
                     result = false;
@@ -342,17 +340,17 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
                 {
                     result = false;
                 }
-                
+
                 return result;
             }
         };
     }
-    
+
     /**
      * Record Category Copy Behaviour
-     * 
+     *
      * <li> Do not allow copy of record category into a record folder</li>
-     * 
+     *
      * @param classRef
      * @param copyDetails
      * @return
@@ -362,10 +360,10 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
         return new DefaultCopyBehaviourCallback()
         {
             final NodeService nodeService = rmServiceRegistry.getNodeService();
-            
+
             /**
              * If the targets parent is a Record Folder -- Do Not Allow Copy
-             * 
+             *
              * @param classQName
              * @param copyDetails
              * @return boolean
@@ -377,10 +375,10 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
             }
         };
     }
-    
+
     /**
      * Removes unwanted aspects
-     * 
+     *
      * @param nodeService
      * @param nodeRef
      */
@@ -395,10 +393,10 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
             }
         }
     }
-    
+
     /**
      * Get the "do nothing" call back behaviour
-     * 
+     *
      * @param classRef
      * @param copyDetails
      * @return
@@ -407,10 +405,10 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
     {
         return new DoNothingCopyBehaviourCallback();
     }
-    
+
     /**
      * Generate and set a new ID for copy of a record
-     * 
+     *
      * @param classRef
      * @param sourceNodeRef
      * @param targetNodeRef
@@ -422,12 +420,12 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
     {
         final IdentifierService rmIdentifierService = rmServiceRegistry.getIdentifierService();
         final NodeService nodeService = rmServiceRegistry.getNodeService();
-        
+
         //Generate the id for the copy
         String id = rmIdentifierService.generateIdentifier(
-                                            nodeService.getType(nodeService.getPrimaryParent(targetNodeRef).getParentRef()), 
+                                            nodeService.getType(nodeService.getPrimaryParent(targetNodeRef).getParentRef()),
                                             (nodeService.getPrimaryParent(targetNodeRef).getParentRef()));
-        
+
         //We need to allow the id to be overwritten disable the policy protecting changes to the id
         behaviourFilter.disableBehaviour();
         try
@@ -439,14 +437,14 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
             behaviourFilter.enableBehaviour();
         }
     }
-    
+
     /**
      * Function to pad a string with zero '0' characters to the required length
-     * 
+     *
      * @param s     String to pad with leading zero '0' characters
      * @param len   Length to pad to
-     * 
-     * @return padded string or the original if already at >=len characters 
+     *
+     * @return padded string or the original if already at >=len characters
      */
     protected String padString(String s, int len)
     {

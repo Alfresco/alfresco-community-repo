@@ -46,7 +46,6 @@
     <bean id="RMSecurityCommon" abstract="true">
     	<property name="nodeService" ref="nodeService"/>
     	<property name="permissionService" ref="permissionService"/>
-    	<property name="recordsManagementService" ref="recordsManagementService"/>
     	<property name="caveatConfigComponent" ref="caveatConfigComponent"/>
     	<property name="filePlanService" ref="filePlanService"/>
     </bean>

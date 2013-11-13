@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Reviewed action.
- * 
+ *
  * @author Neil McErlean
  */
 public class ReviewedAction extends RMActionExecuterAbstractBase
@@ -36,7 +36,7 @@ public class ReviewedAction extends RMActionExecuterAbstractBase
     private static Log logger = LogFactory.getLog(ReviewedAction.class);
 
 	/**
-	 * 
+	 *
 	 * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
 	 *      org.alfresco.service.cmr.repository.NodeRef)
 	 */
@@ -50,19 +50,19 @@ public class ReviewedAction extends RMActionExecuterAbstractBase
     	    {
     	        reviewRecord(actionedUponNodeRef, vrDef);
 	        }
-    	    else if (recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
+    	    else if (recordFolderService.isRecordFolder(actionedUponNodeRef) == true)
     	    {
-    	        for (NodeRef record : recordsManagementService.getRecords(actionedUponNodeRef))
+    	        for (NodeRef record : recordService.getRecords(actionedUponNodeRef))
                 {
                     reviewRecord(record, vrDef);
                 }
     	    }
 	    }
 	}
-	
+
 	/**
 	 * Make record as reviewed.
-	 * 
+	 *
 	 * @param nodeRef
 	 * @param vrDef
 	 */
@@ -82,7 +82,7 @@ public class ReviewedAction extends RMActionExecuterAbstractBase
                        .append(nodeRef);
                  logger.debug(msg.toString());
             }
-            
+
             this.nodeService.setProperty(nodeRef, PROP_REVIEW_AS_OF, reviewAsOf);
             //TODO And record previous review date, time, user
         }

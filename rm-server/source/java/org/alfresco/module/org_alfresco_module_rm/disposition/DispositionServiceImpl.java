@@ -27,18 +27,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -56,91 +57,95 @@ import org.springframework.context.ApplicationContextAware;
 
 /**
  * Disposition service implementation.
- * 
+ *
  * @author Roy Wetherall
  */
-public class DispositionServiceImpl implements 
-                                        DispositionService, 
-                                        RecordsManagementModel, 
+public class DispositionServiceImpl implements
+                                        DispositionService,
+                                        RecordsManagementModel,
                                         ApplicationContextAware,
                                         NodeServicePolicies.OnAddAspectPolicy
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(DispositionServiceImpl.class);
-    
+
     /** Node service */
     private NodeService nodeService;
-    
+
     /** Dictionary service */
     private DictionaryService dictionaryService;
-    
+
     /** Behaviour filter */
     private BehaviourFilter behaviourFilter;
-    
-    /** Records management service */
-    private RecordsManagementService rmService;
-    
+
     /** Records management service registry */
     private RecordsManagementServiceRegistry serviceRegistry;
-    
+
     /** Disposition selection strategy */
     private DispositionSelectionStrategy dispositionSelectionStrategy;
-    
+
     /** File plan service */
     private FilePlanService filePlanService;
-    
+
     /** Application context */
     private ApplicationContext applicationContext;
     
+    /** Record Folder Service */
+    // FIXME
+    //private RecordFolderService recordFolderService;
+
+    /** Record Service */
+    private RecordService recordService;
+
     /** Policy component */
     private PolicyComponent policyComponent;
-    
+
     /** Disposition properties */
     private Map<QName, DispositionProperty> dispositionProperties = new HashMap<QName, DispositionProperty>(4);
-    
+
     /** Behaviours */
     private JavaBehaviour onAddAspect;
-    
+
     /**
      * Set node service
-     * 
+     *
      * @param nodeService   the node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set the dictionary service
-     * 
+     *
      * @param dictionaryServic  the dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Set the behaviour filter.
-     * 
+     *
      * @param behaviourFilter   the behaviour filter
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
     }
-   
+
     /**
      * Set the records management service registry
-     * 
+     *
      * @param serviceRegistry   records management registry service
      */
     public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     /**
      * @param policyComponent   policy component
      */
@@ -148,30 +153,31 @@ public class DispositionServiceImpl implements
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
-    
+
     /**
-     * Get the records management service 
-     * NOTE: have to pull it out of the app context manually to prevent Spring circular dependancy issue
-     * 
-     * @return
+     * @param recordFolderService   record folder service
      */
-    public RecordsManagementService getRmService()
+//    public void setRecordFolderService(RecordFolderService recordFolderService)
+//    {
+//        this.recordFolderService = recordFolderService;
+//    }
+
+    /**
+     * @param recordService     record service
+     */
+    public void setRecordService(RecordService recordService)
     {
-        if (rmService == null)
-        {
-            rmService = (RecordsManagementService)applicationContext.getBean("recordsManagementService");
-        }
-        return rmService;
+        this.recordService =  recordService;
     }
-    
+
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
@@ -180,17 +186,17 @@ public class DispositionServiceImpl implements
     {
         this.applicationContext = applicationContext;
     }
-    
+
     /**
      * Set the dispositionSelectionStrategy bean.
-     * 
+     *
      * @param dispositionSelectionStrategy
      */
     public void setDispositionSelectionStrategy(DispositionSelectionStrategy dispositionSelectionStrategy)
     {
         this.dispositionSelectionStrategy = dispositionSelectionStrategy;
     }
-    
+
     /**
      * Bean initialisation
      */
@@ -199,7 +205,7 @@ public class DispositionServiceImpl implements
         onAddAspect = new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT);
         policyComponent.bindClassBehaviour(NodeServicePolicies.OnAddAspectPolicy.QNAME, ASPECT_DISPOSITION_LIFECYCLE, onAddAspect);
     }
-    
+
     /**
      * Initialises the details of the disposition life cycle
      */
@@ -211,35 +217,35 @@ public class DispositionServiceImpl implements
             refreshDispositionAction(nodeRef);
         }
     }
-    
+
     /**
      * Helper method used to refresh the dispostion action details of the given node.
-     * 
+     *
      * @param nodeRef   node reference
      */
     public void refreshDispositionAction(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         // get this disposition instructions for the node
         DispositionSchedule di = getDispositionSchedule(nodeRef);
         if (di != null)
-        {                       
-            List<DispositionActionDefinition> dispositionActionDefinitions = di.getDispositionActionDefinitions();            
+        {
+            List<DispositionActionDefinition> dispositionActionDefinitions = di.getDispositionActionDefinitions();
             if (dispositionActionDefinitions.isEmpty() == false)
             {
                 // get the first disposition action definition
                 DispositionActionDefinition nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
-                
+
                 // initialise the details of the next disposition action
                 initialiseDispositionAction(nodeRef, nextDispositionActionDefinition);
             }
         }
-        
+
     }
-    
+
     /** ========= Disposition Property Methods ========= */
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#registerDispositionProperty(org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty)
      */
@@ -248,14 +254,14 @@ public class DispositionServiceImpl implements
     {
         dispositionProperties.put(dispositionProperty.getQName(), dispositionProperty);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionProperties(boolean, java.lang.String)
      */
     @Override
     public Collection<DispositionProperty> getDispositionProperties(boolean isRecordLevel, String dispositionAction)
     {
-        Collection<DispositionProperty> values = dispositionProperties.values();        
+        Collection<DispositionProperty> values = dispositionProperties.values();
         List<DispositionProperty> result = new ArrayList<DispositionProperty>(values.size());
         for (DispositionProperty dispositionProperty : values)
         {
@@ -267,7 +273,7 @@ public class DispositionServiceImpl implements
         }
         return result;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionProperties()
      */
@@ -276,20 +282,22 @@ public class DispositionServiceImpl implements
     {
         return dispositionProperties.values();
     }
-    
+
     /** ========= Disposition Schedule Methods ========= */
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef)
      */
     public DispositionSchedule getDispositionSchedule(NodeRef nodeRef)
-    {   
+    {
         DispositionSchedule di = null;
         NodeRef diNodeRef = null;
         if (serviceRegistry.getRecordService().isRecord(nodeRef) == true)
         {
             // Get the record folders for the record
-            List<NodeRef> recordFolders = getRmService().getRecordFolders(nodeRef);
+            // FIXME
+            RecordFolderService recordFolderService = (RecordFolderService)applicationContext.getBean("RecordFolderService");
+            List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);
             // At this point, we may have disposition instruction objects from 1..n folders.
             diNodeRef = dispositionSelectionStrategy.selectDispositionScheduleFrom(recordFolders);
         }
@@ -298,26 +306,26 @@ public class DispositionServiceImpl implements
             // Get the disposition instructions for the node reference provided
             diNodeRef = getDispositionScheduleImpl(nodeRef);
         }
-        
+
         if (diNodeRef != null)
         {
             di = new DispositionScheduleImpl(serviceRegistry, nodeService, diNodeRef);
         }
-        
+
         return di;
     }
-    
+
     /**
      * This method returns a NodeRef
-     * Gets the disposition instructions 
-     * 
+     * Gets the disposition instructions
+     *
      * @param nodeRef
      * @return
      */
     private NodeRef getDispositionScheduleImpl(NodeRef nodeRef)
     {
         NodeRef result = getAssociatedDispositionScheduleImpl(nodeRef);
-        
+
         if (result == null)
         {
             NodeRef parent = this.nodeService.getPrimaryParent(nodeRef).getParentRef();
@@ -328,18 +336,18 @@ public class DispositionServiceImpl implements
         }
         return result;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getAssociatedDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef)
      */
     public DispositionSchedule getAssociatedDispositionSchedule(NodeRef nodeRef)
     {
         DispositionSchedule ds = null;
-        
+
         // Check the noderef parameter
         ParameterCheck.mandatory("nodeRef", nodeRef);
         if (nodeService.exists(nodeRef) == true)
-        {        
+        {
             // Get the associated disposition schedule node reference
             NodeRef dsNodeRef = getAssociatedDispositionScheduleImpl(nodeRef);
             if (dsNodeRef != null)
@@ -348,21 +356,21 @@ public class DispositionServiceImpl implements
                 ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dsNodeRef);
             }
         }
-        
+
         return ds;
     }
-    
+
     /**
      * Gets the node reference of the disposition schedule associated with the container.
-     * 
+     *
      * @param nodeRef   node reference of the container
      * @return {@link NodeRef}  node reference of the disposition schedule, null if none
      */
     private NodeRef getAssociatedDispositionScheduleImpl(NodeRef nodeRef)
     {
-        NodeRef result = null;     
+        NodeRef result = null;
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         // Make sure we are dealing with an RM node
         if (filePlanService.isFilePlanComponent(nodeRef) == false)
         {
@@ -378,10 +386,10 @@ public class DispositionServiceImpl implements
                 result = firstChildAssocRef.getChildRef();
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getAssociatedRecordsManagementContainer(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule)
      */
@@ -390,7 +398,7 @@ public class DispositionServiceImpl implements
     {
         ParameterCheck.mandatory("dispositionSchedule", dispositionSchedule);
         NodeRef result = null;
-        
+
         NodeRef dsNodeRef = dispositionSchedule.getNodeRef();
         if (nodeService.exists(dsNodeRef) == true)
         {
@@ -408,39 +416,39 @@ public class DispositionServiceImpl implements
                         		    "(dispositionScheduleNodeRef=" + dispositionSchedule.getNodeRef().toString() + ")");
                     }
                 }
-                
+
                 // Get the container reference
                 ChildAssociationRef assoc = assocs.get(0);
                 result = assoc.getParentRef();
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#hasDisposableItems(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule)
-     */    
+     */
     @Override
-    public boolean hasDisposableItems(DispositionSchedule dispositionSchdule) 
+    public boolean hasDisposableItems(DispositionSchedule dispositionSchdule)
     {
     	return !getDisposableItems(dispositionSchdule).isEmpty();
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDisposableItems(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule)
      */
     public List<NodeRef> getDisposableItems(DispositionSchedule dispositionSchedule)
     {
         ParameterCheck.mandatory("dispositionSchedule", dispositionSchedule);
-        
+
         // Get the associated container
         NodeRef rmContainer = getAssociatedRecordsManagementContainer(dispositionSchedule);
-        
+
         // Return the disposable items
         return getDisposableItemsImpl(dispositionSchedule.isRecordLevelDisposition(), rmContainer);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#isDisposableItem(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -449,9 +457,9 @@ public class DispositionServiceImpl implements
     {
         return nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE);
     }
-    
+
     /**
-     * 
+     *
      * @param isRecordLevelDisposition
      * @param rmContainer
      * @param root
@@ -461,13 +469,15 @@ public class DispositionServiceImpl implements
     {
         List<NodeRef> items = filePlanService.getAllContained(rmContainer);
         List<NodeRef> result = new ArrayList<NodeRef>(items.size());
+        // FIXME
+        RecordFolderService recordFolderService = (RecordFolderService)applicationContext.getBean("RecordFolderService");
         for (NodeRef item : items)
         {
-            if (getRmService().isRecordFolder(item) == true)
-            {            
+            if (recordFolderService.isRecordFolder(item) == true)
+            {
                 if (isRecordLevelDisposition == true)
                 {
-                    result.addAll(getRmService().getRecords(item));
+                    result.addAll(recordService.getRecords(item));
                 }
                 else
                 {
@@ -484,7 +494,7 @@ public class DispositionServiceImpl implements
         }
         return result;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#createDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef, java.util.Map)
      */
@@ -492,16 +502,16 @@ public class DispositionServiceImpl implements
     public DispositionSchedule createDispositionSchedule(NodeRef nodeRef, Map<QName, Serializable> props)
     {
         NodeRef dsNodeRef = null;
-        
+
         // Check mandatory parameters
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         // Check exists
         if (nodeService.exists(nodeRef) == false)
         {
             throw new AlfrescoRuntimeException("Unable to create disposition schedule, because node does not exist. (nodeRef=" + nodeRef.toString() + ")");
         }
-        
+
         // Check is sub-type of rm:recordCategory
         QName nodeRefType = nodeService.getType(nodeRef);
         if (TYPE_RECORD_CATEGORY.equals(nodeRefType) == false &&
@@ -509,18 +519,18 @@ public class DispositionServiceImpl implements
         {
             throw new AlfrescoRuntimeException("Unable to create disposition schedule on a node that is not a records management container.");
         }
-        
+
         behaviourFilter.disableBehaviour(nodeRef, ASPECT_SCHEDULED);
         try
-        {        
+        {
             // Add the schedules aspect if required
             if (nodeService.hasAspect(nodeRef, ASPECT_SCHEDULED) == false)
             {
                 nodeService.addAspect(nodeRef, ASPECT_SCHEDULED, null);
             }
-             
-            // Check whether there is already a disposition schedule object present            
-            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);            
+
+            // Check whether there is already a disposition schedule object present
+            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
             if (assocs.size() == 0)
             {
             	DispositionSchedule currentDispositionSchdule = getDispositionSchedule(nodeRef);
@@ -532,15 +542,15 @@ public class DispositionServiceImpl implements
             			throw new AlfrescoRuntimeException("Can not create a disposition schedule if there are disposable items already under the control of an other disposition schedule");
             		}
             	}
-            	
+
                 // Create the disposition schedule object
                 dsNodeRef = nodeService.createNode(
-                        nodeRef, 
-                        ASSOC_DISPOSITION_SCHEDULE, 
+                        nodeRef,
+                        ASSOC_DISPOSITION_SCHEDULE,
                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("dispositionSchedule")),
                         TYPE_DISPOSITION_SCHEDULE,
                         props).getChildRef();
-            } 
+            }
             else
             {
                 // Error since the node already has a disposition schedule set
@@ -551,15 +561,15 @@ public class DispositionServiceImpl implements
         {
             behaviourFilter.enableBehaviour(nodeRef, ASPECT_SCHEDULED);
         }
-                
-        // Create the return object        
+
+        // Create the return object
         return new DispositionScheduleImpl(serviceRegistry, nodeService, dsNodeRef);
     }
-    
+
     /** ========= Disposition Action Definition Methods ========= */
-    
+
     /**
-     * 
+     *
      */
     public DispositionActionDefinition addDispositionActionDefinition(
                                             DispositionSchedule schedule,
@@ -571,22 +581,22 @@ public class DispositionServiceImpl implements
         {
             throw new IllegalArgumentException("'name' parameter is mandatory when creating a disposition action definition");
         }
-        
+
         // TODO: also check the action name is valid?
-        
+
         // create the child association from the schedule to the action definition
-        NodeRef actionNodeRef = this.nodeService.createNode(schedule.getNodeRef(), 
-                    RecordsManagementModel.ASSOC_DISPOSITION_ACTION_DEFINITIONS, 
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, 
+        NodeRef actionNodeRef = this.nodeService.createNode(schedule.getNodeRef(),
+                    RecordsManagementModel.ASSOC_DISPOSITION_ACTION_DEFINITIONS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
                     QName.createValidLocalName(name)),
                     RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION, actionDefinitionParams).getChildRef();
-        
+
         // get the updated disposition schedule and retrieve the new action definition
         NodeRef scheduleParent = this.nodeService.getPrimaryParent(schedule.getNodeRef()).getParentRef();
         DispositionSchedule updatedSchedule = this.getDispositionSchedule(scheduleParent);
         return updatedSchedule.getDispositionActionDefinition(actionNodeRef.getId());
-    }    
-    
+    }
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#removeDispositionActionDefinition(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule, org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition)
      */
@@ -595,79 +605,79 @@ public class DispositionServiceImpl implements
         // check first whether action definitions can be removed
         if (hasDisposableItems(schedule) == true)
         {
-            throw new AlfrescoRuntimeException("Can not remove action definitions from schedule '" + 
+            throw new AlfrescoRuntimeException("Can not remove action definitions from schedule '" +
                         schedule.getNodeRef() + "' as one or more record or record folders are present.");
         }
-        
+
         // remove the child node representing the action definition
         this.nodeService.removeChild(schedule.getNodeRef(), actionDefinition.getNodeRef());
     }
-    
+
     /**
      * Updates the given disposition action definition belonging to the given disposition
      * schedule.
-     * 
+     *
      * @param schedule The DispositionSchedule the action belongs to
      * @param actionDefinition The DispositionActionDefinition to update
      * @param actionDefinitionParams Map of parameters to use to update the action definition
      * @return The updated DispositionActionDefinition
      */
     public DispositionActionDefinition updateDispositionActionDefinition(
-                                                DispositionActionDefinition actionDefinition, 
+                                                DispositionActionDefinition actionDefinition,
                                                 Map<QName, Serializable> actionDefinitionParams)
     {
         // update the node with properties
         this.nodeService.addProperties(actionDefinition.getNodeRef(), actionDefinitionParams);
-        
+
         // get the updated disposition schedule and retrieve the updated action definition
         NodeRef ds = this.nodeService.getPrimaryParent(actionDefinition.getNodeRef()).getParentRef();
         DispositionSchedule updatedSchedule = new DispositionScheduleImpl(serviceRegistry, nodeService, ds);
-        return updatedSchedule.getDispositionActionDefinition(actionDefinition.getId());     
-    }    
-    
+        return updatedSchedule.getDispositionActionDefinition(actionDefinition.getId());
+    }
+
     /** ========= Disposition Action Methods ========= */
-    
+
     /**
      * Initialises the details of the next disposition action based on the details of a disposition
      * action definition.
-     * 
+     *
      *  @param  nodeRef node reference
      *  @param  dispositionActionDefinition disposition action definition
      */
     private void initialiseDispositionAction(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition)
-    {        
+    {
         // Create the properties
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(10);
-        
+
         // Calculate the asOf date
         Date asOfDate = null;
         Period period = dispositionActionDefinition.getPeriod();
         if (period != null)
         {
             Date contextDate = null;
-            
+
             // Get the period properties value
             QName periodProperty = dispositionActionDefinition.getPeriodProperty();
             if (periodProperty != null)
             {
                 // doesn't matter if the period property isn't set ... the asOfDate will get updated later
                 // when the value of the period property is set
-                contextDate = (Date)this.nodeService.getProperty(nodeRef, periodProperty);                     
+                contextDate = (Date)this.nodeService.getProperty(nodeRef, periodProperty);
             }
             else
             {
-                // for now use 'NOW' as the default context date 
+                // for now use 'NOW' as the default context date
                 // TODO set the default period property ... cut off date or last disposition date depending on context
                 contextDate = new Date();
             }
-            
+
             // Calculate the as of date
             if (contextDate != null)
             {
                 asOfDate = period.getNextDate(contextDate);
             }
-        }            
-        
+        }
+
         // Set the property values
         props.put(PROP_DISPOSITION_ACTION_ID, dispositionActionDefinition.getId());
         props.put(PROP_DISPOSITION_ACTION, dispositionActionDefinition.getName());
@@ -675,27 +685,27 @@ public class DispositionServiceImpl implements
         {
             props.put(PROP_DISPOSITION_AS_OF, asOfDate);
         }
-        
+
         // Create a new disposition action object
         NodeRef dispositionActionNodeRef = this.nodeService.createNode(
-                nodeRef, 
-                ASSOC_NEXT_DISPOSITION_ACTION, 
-                ASSOC_NEXT_DISPOSITION_ACTION, 
+                nodeRef,
+                ASSOC_NEXT_DISPOSITION_ACTION,
+                ASSOC_NEXT_DISPOSITION_ACTION,
                 TYPE_DISPOSITION_ACTION,
-                props).getChildRef();     
-        
+                props).getChildRef();
+
         // Create the events
         List<RecordsManagementEvent> events = dispositionActionDefinition.getEvents();
         for (RecordsManagementEvent event : events)
         {
             // For every event create an entry on the action
             createEvent(event, dispositionActionNodeRef);
-        }      
+        }
     }
-    
+
     /**
      * Creates the given records management event for the given 'next action'.
-     * 
+     *
      * @param event The event to create
      * @param nextActionNodeRef The next action node
      * @return The created event NodeRef
@@ -703,31 +713,31 @@ public class DispositionServiceImpl implements
     private NodeRef createEvent(RecordsManagementEvent event, NodeRef nextActionNodeRef)
     {
         NodeRef eventNodeRef = null;
-        
+
         Map<QName, Serializable> eventProps = new HashMap<QName, Serializable>(7);
         eventProps.put(PROP_EVENT_EXECUTION_NAME, event.getName());
         // TODO display label
         RecordsManagementEventType eventType = serviceRegistry.getRecordsManagementEventService().getEventType(event.getType());
         eventProps.put(PROP_EVENT_EXECUTION_AUTOMATIC, eventType.isAutomaticEvent());
         eventProps.put(PROP_EVENT_EXECUTION_COMPLETE, false);
-        
+
         // Create the event execution object
-        this.nodeService.createNode(nextActionNodeRef, 
+        this.nodeService.createNode(nextActionNodeRef,
                                     ASSOC_EVENT_EXECUTIONS,
-                                    ASSOC_EVENT_EXECUTIONS, 
-                                    TYPE_EVENT_EXECUTION, 
+                                    ASSOC_EVENT_EXECUTIONS,
+                                    TYPE_EVENT_EXECUTION,
                                     eventProps);
-        
+
         return eventNodeRef;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#isNextDispositionActionEligible(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isNextDispositionActionEligible(NodeRef nodeRef)
     {
         boolean result = false;
-        
+
         // Get the disposition instructions
         DispositionSchedule di = getDispositionSchedule(nodeRef);
         NodeRef nextDa = getNextDispositionActionNodeRef(nodeRef);
@@ -742,7 +752,7 @@ public class DispositionServiceImpl implements
             {
                 result = true;
             }
-            
+
             if (result == false)
             {
                 DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa);
@@ -750,7 +760,7 @@ public class DispositionServiceImpl implements
                 if (dad != null)
                 {
                     boolean firstComplete = dad.eligibleOnFirstCompleteEvent();
-                    
+
                     List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa, ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
                     for (ChildAssociationRef assoc : assocs)
                     {
@@ -760,7 +770,7 @@ public class DispositionServiceImpl implements
                         if (isCompleteValue != null)
                         {
                             isComplete = isCompleteValue.booleanValue();
-                            
+
                             // implement AND and OR combination of event completions
                             if (isComplete == true)
                             {
@@ -783,13 +793,13 @@ public class DispositionServiceImpl implements
                 }
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * Get the next disposition action node.  Null if none present.
-     * 
+     *
      * @param nodeRef       the disposable node reference
      * @return NodeRef      the next disposition action, null if none
      */
@@ -803,7 +813,7 @@ public class DispositionServiceImpl implements
         }
         return result;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getNextDispositionAction(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -818,23 +828,23 @@ public class DispositionServiceImpl implements
         }
         return result;
     }
-     
-    
+
+
     /** ========= Disposition Action History Methods ========= */
-    
-    
+
+
     public List<DispositionAction> getCompletedDispositionActions(NodeRef nodeRef)
     {
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_ACTION_HISTORY, RegexQNamePattern.MATCH_ALL);
-        List<DispositionAction> result = new ArrayList<DispositionAction>(assocs.size());        
+        List<DispositionAction> result = new ArrayList<DispositionAction>(assocs.size());
         for (ChildAssociationRef assoc : assocs)
         {
             NodeRef dispositionActionNodeRef = assoc.getChildRef();
             result.add(new DispositionActionImpl(serviceRegistry, dispositionActionNodeRef));
-        }        
+        }
         return result;
     }
-    
+
     public DispositionAction getLastCompletedDispostionAction(NodeRef nodeRef)
     {
        DispositionAction result = null;
@@ -843,7 +853,17 @@ public class DispositionServiceImpl implements
        {
            // Get the last disposition action in the list
            result = list.get(list.size()-1);
-       }       
+       }
        return result;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#isCutoff(NodeRef)
+     */
+    @Override
+    public boolean isCutoff(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        return nodeService.hasAspect(nodeRef, ASPECT_CUT_OFF);
     }
 }

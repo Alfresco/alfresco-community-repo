@@ -25,53 +25,40 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
  * On reference create event type
- * 
+ *
  * @author Roy Wetherall
  */
 public class OnReferenceCreateEventType extends SimpleRecordsManagementEventTypeImpl
                                         implements RecordsManagementModel,
                                                    OnCreateReference
 {
-    /** Records management service */
-    @SuppressWarnings("unused")
-    private RecordsManagementService recordsManagementService;
-    
     /** Records management action service */
     private RecordsManagementActionService recordsManagementActionService;
-    
+
     /** Disposition service */
     private DispositionService dispositionService;
-    
+
     /** Policy component */
     private PolicyComponent policyComponent;
-    
+
     /** Reference */
     private QName reference;
-    
-    /**
-     * @param recordsManagementService  the records management service to set
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
-    }    
-    
+
     /**
      * @param dispositionService    the disposition service to set
      */
@@ -79,7 +66,7 @@ public class OnReferenceCreateEventType extends SimpleRecordsManagementEventType
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @param recordsManagementActionService the recordsManagementActionService to set
      */
@@ -87,37 +74,37 @@ public class OnReferenceCreateEventType extends SimpleRecordsManagementEventType
     {
         this.recordsManagementActionService = recordsManagementActionService;
     }
-    
+
     /**
      * Set policy components
-     * 
+     *
      * @param policyComponent   policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * Set the reference
-     * 
+     *
      * @param reference
      */
     public void setReferenceName(String reference)
     {
         this.reference = QName.createQName(reference);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.event.SimpleRecordsManagementEventTypeImpl#init()
      */
     public void init()
     {
         super.init();
-        
+
         // Register interest in the on create reference policy
-        policyComponent.bindClassBehaviour(RecordsManagementPolicies.ON_CREATE_REFERENCE, 
-                                           ASPECT_RECORD, 
+        policyComponent.bindClassBehaviour(RecordsManagementPolicies.ON_CREATE_REFERENCE,
+                                           ASPECT_RECORD,
                                            new JavaBehaviour(this, "onCreateReference", NotificationFrequency.TRANSACTION_COMMIT));
     }
 
@@ -129,7 +116,7 @@ public class OnReferenceCreateEventType extends SimpleRecordsManagementEventType
     {
         return true;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference#onCreateReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
@@ -158,18 +145,18 @@ public class OnReferenceCreateEventType extends SimpleRecordsManagementEventType
                                 params.put(CompleteEventAction.PARAM_EVENT_COMPLETED_BY, AuthenticationUtil.getFullyAuthenticatedUser());
                                 params.put(CompleteEventAction.PARAM_EVENT_COMPLETED_AT, new Date());
                                 recordsManagementActionService.executeRecordsManagementAction(toNodeRef, "completeEvent", params);
-                                
+
                                 break;
                             }
                         }
                     }
                 }
-                
+
                 return null;
-            }           
+            }
         };
-        
+
         AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminUserName());
-        
+
     }
 }

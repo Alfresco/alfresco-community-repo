@@ -28,7 +28,7 @@ import org.springframework.extensions.webscripts.GUID;
 
 /**
  * File plan permission service unit test
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -42,16 +42,16 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
     {
         return true;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isRecordTest()
      */
     @Override
     protected boolean isRecordTest()
     {
-        return true;    
+        return true;
     }
-    
+
     /**
      * Helper to create test user
      */
@@ -69,7 +69,7 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * Helper to set permission
      */
@@ -83,9 +83,9 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 filePlanPermissionService.setPermission(nodeRef, userName, permission);
                 return null;
             }
-        });       
+        });
     }
-    
+
     /**
      * Helper to delete permission
      */
@@ -99,17 +99,17 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 filePlanPermissionService.deletePermission(nodeRef, userName, permission);
                 return null;
             }
-        });       
+        });
     }
-    
+
     /**
      * test set/delete permissions on file plan
      */
     public void testSetDeletePermissionFilePlan() throws Exception
     {
         String userName = createTestUser();
-        
-        assertPermissions(userName, 
+
+        assertPermissions(userName,
                           AccessStatus.ALLOWED,     // fileplan read
                           AccessStatus.DENIED,      // fileplan file
                           AccessStatus.DENIED,      // category read
@@ -118,10 +118,10 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                           AccessStatus.DENIED,      // record folder file
                           AccessStatus.DENIED,      // record read
                           AccessStatus.DENIED);     // record file
-        
+
         setPermission(filePlan, userName, RMPermissionModel.FILING);
-        
-        assertPermissions(userName, 
+
+        assertPermissions(userName,
                 AccessStatus.ALLOWED,       // fileplan read
                 AccessStatus.ALLOWED,       // fileplan file
                 AccessStatus.ALLOWED,       // category read
@@ -130,10 +130,10 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 AccessStatus.ALLOWED,       // record folder file
                 AccessStatus.ALLOWED,       // record read
                 AccessStatus.ALLOWED);      // record file
-        
+
         deletePermission(filePlan, userName, RMPermissionModel.FILING);
-        
-        assertPermissions(userName, 
+
+        assertPermissions(userName,
                 AccessStatus.ALLOWED,     // fileplan read
                 AccessStatus.DENIED,      // fileplan file
                 AccessStatus.DENIED,      // category read
@@ -142,12 +142,12 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 AccessStatus.DENIED,      // record folder file
                 AccessStatus.DENIED,      // record read
                 AccessStatus.DENIED);     // record file
-        
+
         //what happens if we try and remove READ for a normal user on the file plan ???
         deletePermission(filePlan, userName, RMPermissionModel.READ_RECORDS);
-        
+
         // nothing .. user still has read on file plan .. only removing the user from all roles will remove read on file plan
-        assertPermissions(userName, 
+        assertPermissions(userName,
                 AccessStatus.ALLOWED,     // fileplan read
                 AccessStatus.DENIED,      // fileplan file
                 AccessStatus.DENIED,      // category read
@@ -157,15 +157,15 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 AccessStatus.DENIED,      // record read
                 AccessStatus.DENIED);     // record file
     }
-    
+
     /**
      * Test set/delete permission on record categorty
      */
     public void testSetDeletePermissionRecordCategory() throws Exception
     {
         String userName = createTestUser();
-        
-        assertPermissions(userName, 
+
+        assertPermissions(userName,
                           AccessStatus.ALLOWED,     // fileplan read
                           AccessStatus.DENIED,      // fileplan file
                           AccessStatus.DENIED,      // category read
@@ -174,10 +174,10 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                           AccessStatus.DENIED,      // record folder file
                           AccessStatus.DENIED,      // record read
                           AccessStatus.DENIED);     // record file
-        
+
         setPermission(rmContainer, userName, RMPermissionModel.FILING);
 
-        assertPermissions(userName, 
+        assertPermissions(userName,
                           AccessStatus.ALLOWED,     // fileplan read
                           AccessStatus.DENIED,      // fileplan file
                           AccessStatus.ALLOWED,      // category read
@@ -186,10 +186,10 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                           AccessStatus.ALLOWED,      // record folder file
                           AccessStatus.ALLOWED,      // record read
                           AccessStatus.ALLOWED);     // record file
-        
+
         deletePermission(rmContainer, userName, RMPermissionModel.FILING);
-        
-        assertPermissions(userName, 
+
+        assertPermissions(userName,
                 AccessStatus.ALLOWED,     // fileplan read
                 AccessStatus.DENIED,      // fileplan file
                 AccessStatus.DENIED,      // category read
@@ -199,15 +199,15 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 AccessStatus.DENIED,      // record read
                 AccessStatus.DENIED);     // record file
     }
-    
+
     /**
      * Test set/delete permission on record folder
      */
     public void testSetDeletePermissionRecordFolder() throws Exception
     {
         String userName = createTestUser();
-        
-        assertPermissions(userName, 
+
+        assertPermissions(userName,
                           AccessStatus.ALLOWED,     // fileplan read
                           AccessStatus.DENIED,      // fileplan file
                           AccessStatus.DENIED,      // category read
@@ -216,10 +216,10 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                           AccessStatus.DENIED,      // record folder file
                           AccessStatus.DENIED,      // record read
                           AccessStatus.DENIED);     // record file
-        
+
         setPermission(rmFolder, userName, RMPermissionModel.FILING);
 
-        assertPermissions(userName, 
+        assertPermissions(userName,
                           AccessStatus.ALLOWED,     // fileplan read
                           AccessStatus.DENIED,      // fileplan file
                           AccessStatus.ALLOWED,      // category read
@@ -228,10 +228,10 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                           AccessStatus.ALLOWED,      // record folder file
                           AccessStatus.ALLOWED,      // record read
                           AccessStatus.ALLOWED);     // record file
-        
+
         deletePermission(rmFolder, userName, RMPermissionModel.FILING);
 
-        assertPermissions(userName, 
+        assertPermissions(userName,
                           AccessStatus.ALLOWED,     // fileplan read
                           AccessStatus.DENIED,      // fileplan file
                           AccessStatus.ALLOWED,     // category read
@@ -241,15 +241,15 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                           AccessStatus.DENIED,      // record read
                           AccessStatus.DENIED);     // record file
     }
-    
+
     /**
      * Test set/delete permission on record
      */
     public void testSetDeletePermissionRecord() throws Exception
     {
         String userName = createTestUser();
-        
-        assertPermissions(userName, 
+
+        assertPermissions(userName,
                           AccessStatus.ALLOWED,     // fileplan read
                           AccessStatus.DENIED,      // fileplan file
                           AccessStatus.DENIED,      // category read
@@ -258,10 +258,10 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                           AccessStatus.DENIED,      // record folder file
                           AccessStatus.DENIED,      // record read
                           AccessStatus.DENIED);     // record file
-        
+
         setPermission(recordOne, userName, RMPermissionModel.FILING);
 
-        assertPermissions(userName, 
+        assertPermissions(userName,
                           AccessStatus.ALLOWED,     // fileplan read
                           AccessStatus.DENIED,      // fileplan file
                           AccessStatus.ALLOWED,      // category read
@@ -270,10 +270,10 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                           AccessStatus.DENIED,      // record folder file
                           AccessStatus.ALLOWED,      // record read
                           AccessStatus.ALLOWED);     // record file
-        
+
         deletePermission(recordOne, userName, RMPermissionModel.FILING);
 
-        assertPermissions(userName, 
+        assertPermissions(userName,
                           AccessStatus.ALLOWED,     // fileplan read
                           AccessStatus.DENIED,      // fileplan file
                           AccessStatus.ALLOWED,      // category read
@@ -283,23 +283,23 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                           AccessStatus.DENIED,      // record read
                           AccessStatus.DENIED);     // record file
     }
-    
+
     public void testMoveRecord() throws Exception
     {
         String userOne = createTestUser();
         String userTwo = createTestUser();
         String userThree = createTestUser();
-        
+
         final NodeRef otherFolder = doTestInTransaction(new Test<NodeRef>()
         {
             @Override
             public NodeRef run()
             {
-                return rmService.createRecordFolder(rmContainer, "otherFolder");                
+                return recordFolderService.createRecordFolder(rmContainer, "otherFolder");
             }
         });
-        
-        assertPermissions(userOne, 
+
+        assertPermissions(userOne,
                 AccessStatus.ALLOWED,     // fileplan read
                 AccessStatus.DENIED,      // fileplan file
                 AccessStatus.DENIED,      // category read
@@ -318,7 +318,7 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userOne);
-        assertPermissions(userTwo, 
+        assertPermissions(userTwo,
                 AccessStatus.ALLOWED,     // fileplan read
                 AccessStatus.DENIED,      // fileplan file
                 AccessStatus.DENIED,      // category read
@@ -337,7 +337,7 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userTwo);
-        assertPermissions(userThree, 
+        assertPermissions(userThree,
                 AccessStatus.ALLOWED,     // fileplan read
                 AccessStatus.DENIED,      // fileplan file
                 AccessStatus.DENIED,      // category read
@@ -356,12 +356,12 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userThree);
-        
+
         setPermission(rmFolder, userOne, RMPermissionModel.FILING);
         setPermission(otherFolder, userTwo, RMPermissionModel.FILING);
         setPermission(recordOne, userThree, RMPermissionModel.FILING);
-        
-        assertPermissions(userOne, 
+
+        assertPermissions(userOne,
                 AccessStatus.ALLOWED,     // fileplan read
                 AccessStatus.DENIED,      // fileplan file
                 AccessStatus.ALLOWED,      // category read
@@ -380,7 +380,7 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userOne);
-        assertPermissions(userTwo, 
+        assertPermissions(userTwo,
                 AccessStatus.ALLOWED,     // fileplan read
                 AccessStatus.DENIED,      // fileplan file
                 AccessStatus.ALLOWED,      // category read
@@ -399,7 +399,7 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userTwo);
-        assertPermissions(userThree, 
+        assertPermissions(userThree,
                 AccessStatus.ALLOWED,     // fileplan read
                 AccessStatus.DENIED,      // fileplan file
                 AccessStatus.ALLOWED,      // category read
@@ -418,7 +418,7 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userThree);
-        
+
         // move the record!
         doTestInTransaction(new Test<Void>()
         {
@@ -429,8 +429,8 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         });
-        
-        assertPermissions(userOne, 
+
+        assertPermissions(userOne,
                 AccessStatus.ALLOWED,     // fileplan read
                 AccessStatus.DENIED,      // fileplan file
                 AccessStatus.ALLOWED,      // category read
@@ -449,7 +449,7 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userOne);
-        assertPermissions(userTwo, 
+        assertPermissions(userTwo,
                 AccessStatus.ALLOWED,     // fileplan read
                 AccessStatus.DENIED,      // fileplan file
                 AccessStatus.ALLOWED,      // category read
@@ -468,7 +468,7 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userTwo);
-        assertPermissions(userThree, 
+        assertPermissions(userThree,
                 AccessStatus.ALLOWED,     // fileplan read
                 AccessStatus.DENIED,      // fileplan file
                 AccessStatus.ALLOWED,      // category read
@@ -487,38 +487,38 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userThree);
-        
+
     }
-   
-    
+
+
     /**
      * Helper to assert permissions for passed user
      */
     private void assertPermissions(final String userName, final AccessStatus ... accessStatus)
     {
         assertEquals(8, accessStatus.length);
-        
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run()
             {
-                assertEquals("Everyone who has a role has read permissions on the file plan", 
+                assertEquals("Everyone who has a role has read permissions on the file plan",
                              accessStatus[0], permissionService.hasPermission(filePlan, RMPermissionModel.READ_RECORDS));
                 assertEquals(accessStatus[1], permissionService.hasPermission(filePlan, RMPermissionModel.FILING));
-                
+
                 assertEquals(accessStatus[2], permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
                 assertEquals(accessStatus[3], permissionService.hasPermission(rmContainer, RMPermissionModel.FILING));
-                
+
                 assertEquals(accessStatus[4], permissionService.hasPermission(rmFolder, RMPermissionModel.READ_RECORDS));
                 assertEquals(accessStatus[5], permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
-                
+
                 assertEquals(accessStatus[6], permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
                 assertEquals(accessStatus[7], permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
-                
+
                 return null;
             }
         }, userName);
     }
-    
+
 }

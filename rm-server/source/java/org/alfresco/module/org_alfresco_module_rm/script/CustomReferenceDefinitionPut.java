@@ -28,21 +28,19 @@ import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminSe
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.namespace.QName;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 /**
  * Implementation for Java backed webscript to update RM custom reference definitions.
  * There is currently only support for updating the label (for bidirectional references) or
  * the source/target (for parent/child references).
- * 
+ *
  * @author Neil McErlean
  */
 public class CustomReferenceDefinitionPut extends AbstractRmWebScript
@@ -53,11 +51,8 @@ public class CustomReferenceDefinitionPut extends AbstractRmWebScript
     private static final String SOURCE = "source";
     private static final String LABEL = "label";
 
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(CustomReferenceDefinitionPut.class);
-    
     private RecordsManagementAdminService rmAdminService;
-    
+
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
         this.rmAdminService = rmAdminService;
@@ -74,7 +69,7 @@ public class CustomReferenceDefinitionPut extends AbstractRmWebScript
         try
         {
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
+
             ftlModel = updateCustomReference(req, json);
         }
         catch (IOException iox)
@@ -92,10 +87,10 @@ public class CustomReferenceDefinitionPut extends AbstractRmWebScript
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                   iae.getMessage(), iae);
         }
-        
+
         return ftlModel;
     }
-    
+
     /**
      * Applies custom properties.
      */
@@ -104,12 +99,12 @@ public class CustomReferenceDefinitionPut extends AbstractRmWebScript
     {
         Map<String, Object> result = new HashMap<String, Object>();
         Map<String, Serializable> params = new HashMap<String, Serializable>();
-        
+
         for (Iterator iter = json.keys(); iter.hasNext(); )
         {
             String nextKeyString = (String)iter.next();
             Serializable nextValue = (Serializable)json.get(nextKeyString);
-            
+
             params.put(nextKeyString, nextValue);
         }
 
@@ -125,11 +120,11 @@ public class CustomReferenceDefinitionPut extends AbstractRmWebScript
             throw new WebScriptException(Status.STATUS_NOT_FOUND,
                     "Could not find reference definition for: " + refId);
         }
-        
+
         String newLabel = (String)params.get(LABEL);
         String newSource = (String)params.get(SOURCE);
         String newTarget = (String)params.get(TARGET);
-        
+
         // Determine whether it's a bidi or a p/c ref
         AssociationDefinition assocDef = rmAdminService.getCustomReferenceDefinitions().get(refQName);
         if (assocDef == null)
@@ -137,7 +132,7 @@ public class CustomReferenceDefinitionPut extends AbstractRmWebScript
             throw new WebScriptException(Status.STATUS_NOT_FOUND,
                     "Could not find reference definition for: " + refId);
         }
-        
+
         if (assocDef instanceof ChildAssociationDefinition)
         {
             if (newSource != null || newTarget != null)
@@ -149,11 +144,11 @@ public class CustomReferenceDefinitionPut extends AbstractRmWebScript
         {
             rmAdminService.updateCustomAssocDefinition(refQName, newLabel);
         }
-        
+
         result.put(URL, req.getServicePath());
         result.put("refId", refQName.getLocalName());
         result.put("success", Boolean.TRUE);
-        
+
         return result;
     }
 }

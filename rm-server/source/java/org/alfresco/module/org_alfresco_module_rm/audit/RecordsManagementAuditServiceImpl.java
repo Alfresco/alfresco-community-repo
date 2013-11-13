@@ -36,7 +36,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
@@ -97,10 +96,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private static Log logger = LogFactory.getLog(RecordsManagementAuditServiceImpl.class);
 
     private static final String KEY_RM_AUDIT_NODE_RECORDS = "RMAUditNodeRecords";
-    
+
     protected static final String RM_AUDIT_EVENT_LOGIN_SUCCESS = "Login.Success";
     protected static final String RM_AUDIT_EVENT_LOGIN_FAILURE = "Login.Failure";
-    
+
     protected static final String RM_AUDIT_APPLICATION_NAME = "RM";
     protected static final String RM_AUDIT_PATH_ROOT = "/RM";
     protected static final String RM_AUDIT_SNIPPET_EVENT = "/event";
@@ -125,7 +124,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     protected static final String RM_AUDIT_DATA_LOGIN_USERNAME = "/RM/login/args/userName/value";
     protected static final String RM_AUDIT_DATA_LOGIN_FULLNAME = "/RM/login/no-error/fullName";
     protected static final String RM_AUDIT_DATA_LOGIN_ERROR = "/RM/login/error/value";
-    
+
     /* Provide Backward compatibility with DOD5015 Audit Events  RM-904*/
     protected static final String DOD5015_AUDIT_APPLICATION_NAME = "DOD5015";
     protected static final String DOD5015_AUDIT_PATH_ROOT = "/DOD5015";
@@ -156,7 +155,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     protected static final String AUDIT_TRAIL_FILE_PREFIX = "audit_";
     protected static final String AUDIT_TRAIL_JSON_FILE_SUFFIX = ".json";
     protected static final String AUDIT_TRAIL_HTML_FILE_SUFFIX = ".html";
-    
+
     /** Audit auditing events */
     private static final String AUDIT_EVENT_START = "audit.start";
     private static final String MSG_AUDIT_START = "rm.audit.audit-start";
@@ -174,7 +173,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private ContentService contentService;
     private AuditComponent auditComponent;
     private AuditService auditService;
-    private RecordsManagementService rmService;
     private RecordsManagementActionService rmActionService;
     private FilePlanService filePlanService;
     private NamespaceService namespaceService;
@@ -247,14 +245,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * Set the  RecordsManagementService
-     */
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
-    }
-
-    /**
      * Sets the RecordsManagementActionService instance
      */
     public void setRecordsManagementActionService(RecordsManagementActionService rmActionService)
@@ -294,7 +284,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         registerAuditEvent(new AuditEvent(name, label));
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#registerAuditEvent(org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent)
      */
@@ -305,7 +295,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         {
             logger.debug("Registering audit event " + auditEvent.getName());
         }
-        
+
         this.auditEvents.put(auditEvent.getName(), auditEvent);
     }
 
@@ -320,11 +310,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "auditComponent", auditComponent);
         PropertyCheck.mandatory(this, "auditService", auditService);
-        PropertyCheck.mandatory(this, "rmService", rmService);
         PropertyCheck.mandatory(this, "rmActionService", rmActionService);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "filePlanService", filePlanService);
-        
+
         // register audit auditing events
         registerAuditEvent(AUDIT_EVENT_CLEAR, MSG_AUDIT_CLEAR);
         registerAuditEvent(AUDIT_EVENT_START, MSG_AUDIT_START);
@@ -385,7 +374,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         {
             logger.info("Started Records Management auditing");
         }
-        
+
         auditEvent(filePlan, AUDIT_EVENT_START, null, null, true);
     }
 
@@ -396,18 +385,18 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
     	ParameterCheck.mandatory("filePlan", filePlan);
     	// TODO use file plan to scope audit log
-    	
+
         auditEvent(filePlan, AUDIT_EVENT_STOP, null, null, true);
 
         auditService.disableAudit(
                 RM_AUDIT_APPLICATION_NAME,
                 RM_AUDIT_PATH_ROOT);
-        
+
         if (logger.isInfoEnabled())
         {
             logger.info("Stopped Records Management auditing");
         }
-    }   
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#clearAuditLog(org.alfresco.service.cmr.repository.NodeRef)
@@ -423,9 +412,9 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         {
             logger.debug("Records Management audit log has been cleared");
         }
-        
+
         auditEvent(filePlan, AUDIT_EVENT_CLEAR, null, null, true);
-    }    
+    }
 
     /**
      * {@inheritDoc}
@@ -451,7 +440,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         // TODO: return proper date, for now it's today's date
         return getEndOfDay(new Date());
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#auditEvent(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
@@ -460,7 +449,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         auditEvent(nodeRef, eventName, null, null, false, false);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#auditEvent(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map, java.util.Map)
      */
@@ -469,16 +458,16 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         auditEvent(nodeRef, eventName, before, after, false, false);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#auditEvent(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map, java.util.Map, boolean)
      */
     @Override
-    public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after, boolean immediate) 
+    public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after, boolean immediate)
     {
     	auditEvent(nodeRef, eventName, before, after, immediate, false);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#auditEvent(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map, java.util.Map, boolean)
      */
@@ -495,7 +484,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         {
             Set<RMAuditNode> auditDetails = TransactionalResourceHelper.getSet(KEY_RM_AUDIT_NODE_RECORDS);
             AlfrescoTransactionSupport.bindListener(txnListener);
-            
+
             // RM-936: Eliminate multiple audit maps from being generated when events with the same name are required to be fired multiple times in the same transaction.
             // Check if auditDetails already contains an auditedNode with the same combination of nodeRef and eventName.
             boolean auditNodeAlreadyExists = false;
@@ -543,14 +532,14 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                         RM_AUDIT_SNIPPET_EVENT,
                         RM_AUDIT_SNIPPET_NAME),
                         eventName);
-        
+
         if (nodeRef != null)
         {
             auditMap.put(
                     AuditApplication.buildPath(
                             RM_AUDIT_SNIPPET_EVENT,
                             RM_AUDIT_SNIPPET_NODE),
-                            nodeRef);            
+                            nodeRef);
         }
 
         // Filter out any properties to be audited if specified in the Spring configuration.
@@ -558,7 +547,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         {
             removeAuditProperties(ignoredAuditProperties, propertiesBefore, propertiesAfter);
         }
-            
+
         // Property changes
         Pair<Map<QName, Serializable>, Map<QName, Serializable>> deltaPair = PropertyMap.getBeforeAndAfterMapsForChanges(propertiesBefore, propertiesAfter);
 
@@ -566,8 +555,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         if (deltaPair.getFirst().isEmpty() && deltaPair.getSecond().isEmpty() && removeOnNoPropertyChange == true)
         {
             auditMap.clear();
-        } 
-        else 
+        }
+        else
         {
             auditMap.put(
                     AuditApplication.buildPath(
@@ -583,13 +572,13 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                             RM_AUDIT_SNIPPET_CHANGES,
                             RM_AUDIT_SNIPPET_AFTER),
                     (Serializable) deltaPair.getSecond());
-        }           
+        }
         return auditMap;
     }
 
     /**
      * Helper method to remove system properties from maps
-     * 
+     *
      * @param properties
      */
     private void removeAuditProperties(List<String> ignoredAuditProperties, Map<QName, Serializable> before, Map<QName, Serializable> after)
@@ -608,7 +597,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      * A <b>stateless</b> transaction listener for RM auditing. This component picks up the data of modified nodes and generates the audit information.
      * <p/>
      * This class is not static so that the instances will have access to the action's implementation.
-     * 
+     *
      * @author Derek Hulley
      * @since 3.2
      */
@@ -649,7 +638,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         private void auditInTxn(Set<RMAuditNode> auditedNodes) throws Throwable
         {
             // Go through all the audit information and audit it
-            boolean auditedSomething = false;                       
+            boolean auditedSomething = false;
             for (RMAuditNode auditedNode : auditedNodes)
             {
                 NodeRef nodeRef = auditedNode.getNodeRef();
@@ -661,9 +650,9 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 }
 
                 // build the audit map
-                Map<String, Serializable> auditMap = buildAuditMap(nodeRef, 
-                                                                   auditedNode.getEventName(), 
-                                                                   auditedNode.getNodePropertiesBefore(), 
+                Map<String, Serializable> auditMap = buildAuditMap(nodeRef,
+                                                                   auditedNode.getEventName(),
+                                                                   auditedNode.getNodePropertiesBefore(),
                                                                    auditedNode.getNodePropertiesAfter(),
                                                                    auditedNode.getRemoveIfNoPropertyChanged());
                 // Audit it
@@ -770,7 +759,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         {
             logger.debug("Retrieving audit trail in '" + reportFormat + "' format using parameters: " + params);
         }
-            
+
         // define the callback
         AuditQueryCallback callback = new AuditQueryCallback()
         {
@@ -853,7 +842,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     namePath = (String) values.get(DOD5015_AUDIT_DATA_NODE_NAMEPATH);
                     beforeProperties = (Map<QName, Serializable>) values.get( DOD5015_AUDIT_DATA_NODE_CHANGES_BEFORE);
                     afterProperties = (Map<QName, Serializable>) values.get(DOD5015_AUDIT_DATA_NODE_CHANGES_AFTER);
-                    
+
                     // Convert some of the values to recognizable forms
                     nodeType = null;
                     if (nodeTypeQname != null)
@@ -998,7 +987,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         {
             dod5015AuditQueryParams.addSearchKey(DOD5015_AUDIT_DATA_NODE_NODEREF, nodeRef);
         }
-        
+
         //
         AuditQueryParameters auditQueryParams = new AuditQueryParameters();
         auditQueryParams.setForward(forward);
@@ -1021,7 +1010,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
         // finish off the audit trail report
         writeAuditTrailFooter(writer, reportFormat);
-        
+
         // audit that the audit has been view'ed
         if (nodeRef == null)
         {
@@ -1177,7 +1166,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         List<AuditEvent> listAuditEvents = new ArrayList<AuditEvent>(this.auditEvents.size());
         listAuditEvents.addAll(this.auditEvents.values());
-        Collections.sort(listAuditEvents, new AuditEvent());        
+        Collections.sort(listAuditEvents, new AuditEvent());
         return listAuditEvents;
     }
 
@@ -1497,7 +1486,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
         return label;
     }
-    
+
     /**
      * A class to carry audit information through the transaction.
      *
@@ -1516,12 +1505,12 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         {
             return nodeRef;
         }
-        
+
         public void setNodeRef(NodeRef nodeRef)
         {
             this.nodeRef = nodeRef;
         }
-        
+
         public String getEventName()
         {
             return eventName;
@@ -1561,13 +1550,13 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         {
             this.removeIfNoPropertyChanged = removeIfNoPropertyChanged;
         }
-    } 
-    
+    }
+
     /** Deprecated Method Implementations **/
-    
+
     /**
      * Helper method to get the default file plan
-     * 
+     *
      * @return  NodRef default file plan
      */
     private NodeRef getDefaultFilePlan()
@@ -1607,7 +1596,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         stopAuditLog(getDefaultFilePlan());
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1633,8 +1622,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     public void clear()
     {
         clearAuditLog(getDefaultFilePlan());
-    }  
-    
+    }
+
     /**
      * {@inheritDoc}
      * @since 3.2

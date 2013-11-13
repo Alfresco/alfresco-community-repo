@@ -35,7 +35,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Transfer complete action
- * 
+ *
  * @author Roy Wetherall
  */
 public class TransferCompleteAction extends RMActionExecuterAbstractBase
@@ -55,7 +55,7 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
         {
             boolean accessionIndicator = ((Boolean)nodeService.getProperty(actionedUponNodeRef, PROP_TRANSFER_ACCESSION_INDICATOR)).booleanValue();
             String transferLocation = nodeService.getProperty(actionedUponNodeRef, PROP_TRANSFER_LOCATION).toString();
-            
+
             List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(actionedUponNodeRef, ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)
             {
@@ -82,7 +82,7 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
 
     /**
      * Marks the node complete
-     * 
+     *
      * @param nodeRef
      *            disposition lifecycle node reference
      */
@@ -95,11 +95,11 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
             nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
             nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
         }
-        
+
         // Remove the transferring indicator aspect
         nodeService.removeAspect(nodeRef, ASPECT_TRANSFERRING);
         nodeService.setProperty(nodeRef, PROP_LOCATION, transferLocation);
-        
+
         // Determine which marker aspect to use
         QName markerAspectQName = null;
         if (accessionIndicator == true)
@@ -110,12 +110,12 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
         {
             markerAspectQName = ASPECT_TRANSFERRED;
         }
-        
+
         // Mark the object and children accordingly
         nodeService.addAspect(nodeRef, markerAspectQName, null);
-        if (recordsManagementService.isRecordFolder(nodeRef) == true)
+        if (recordFolderService.isRecordFolder(nodeRef) == true)
         {
-            List<NodeRef> records = recordsManagementService.getRecords(nodeRef);
+            List<NodeRef> records = recordService.getRecords(nodeRef);
             for (NodeRef record : records)
             {
                 nodeService.addAspect(record, markerAspectQName, null);

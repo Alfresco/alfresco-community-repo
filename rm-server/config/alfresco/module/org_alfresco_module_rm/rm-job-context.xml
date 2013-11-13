@@ -7,37 +7,37 @@
 		<property name="repositoryState" ref="repositoryState" />
         <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
 	</bean>
-	
+
 	<!-- Scheduled actions -->
-    
-    <!-- Notify Of Records Due For Review Job 
-    Sends out emails of records due for review 
+
+    <!-- Notify Of Records Due For Review Job
+    Sends out emails of records due for review
     -->
    <bean id="scheduledNotifyOfRecordsDueForReviewJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
       <property name="jobClass">
          <value>org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob</value>
       </property>
       <property name="jobDataAsMap">
-         <map>            
+         <map>
             <entry key="jobName" value="scheduledNotifyOfRecordsDueForReview"/>
             <entry key="jobLockService">
                <ref bean="jobLockService" />
             </entry>
             <entry key="jobExecuter">
                <ref bean="scheduledNotifyOfRecordsDueForReviewJobExecuter" />
-            </entry>            
+            </entry>
          </map>
       </property>
-   </bean>  
-   
-   <bean id="scheduledNotifyOfRecordsDueForReviewJobExecuter" 
+   </bean>
+
+   <bean id="scheduledNotifyOfRecordsDueForReviewJobExecuter"
          class="org.alfresco.module.org_alfresco_module_rm.job.NotifyOfRecordsDueForReviewJobExecuter"
          parent="baseRMJobExecuter">
       <property name="nodeService" ref="nodeService" />
       <property name="searchService" ref="searchService" />
       <property name="recordsManagementNotificationHelper" ref="recordsManagementNotificationHelper" />
    </bean>
-   
+
    <bean id="scheduledNotifyOfRecordsDueForReviewJobTrigger" class="org.alfresco.util.CronTriggerBean">
       <property name="jobDetail">
          <ref bean="scheduledNotifyOfRecordsDueForReviewJobDetail" />
@@ -47,7 +47,7 @@
       </property>
       <property name="cronExpression">
          <!-- <value>0 30 2 * * ?</value> -->
-         <value>0 0/15 * * * ?</value> 
+         <value>0 0/15 * * * ?</value>
       </property>
    </bean>
 
@@ -57,26 +57,26 @@
          <value>org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob</value>
       </property>
       <property name="jobDataAsMap">
-         <map>            
+         <map>
             <entry key="jobName" value="dispositionLifecycle"/>
             <entry key="jobLockService">
                <ref bean="jobLockService" />
             </entry>
             <entry key="jobExecuter">
                <ref bean="dispositionLifecycleJobExecuter" />
-            </entry>            
+            </entry>
          </map>
       </property>
    </bean>
-   
-   <bean id="dispositionLifecycleJobExecuter" 
+
+   <bean id="dispositionLifecycleJobExecuter"
    		 class="org.alfresco.module.org_alfresco_module_rm.job.DispositionLifecycleJobExecuter"
          parent="baseRMJobExecuter">
       <property name="nodeService" ref="nodeService" />
       <property name="searchService" ref="searchService" />
       <property name="recordsManagementActionService" ref="recordsManagementActionService" />
    </bean>
-   
+
    <bean id="scheduledDispositionLifecyceleJobTrigger" class="org.alfresco.util.CronTriggerBean">
       <property name="jobDetail">
          <ref bean="scheduledDispositionLifecyceleJobDetail" />
@@ -86,37 +86,37 @@
       </property>
       <property name="cronExpression">
          <!-- <value>0 30 3 * * ?</value> -->
-         <value>0 0/15 * * * ?</value>    
+         <value>0 0/15 * * * ?</value>
       </property>
    </bean>
-   
+
 	<bean id="scheduledPublishUpdatesJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
       <property name="jobClass">
          <value>org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob</value>
       </property>
       <property name="jobDataAsMap">
-         <map>            
+         <map>
             <entry key="jobName" value="publishUpdates"/>
             <entry key="jobLockService">
                <ref bean="jobLockService" />
             </entry>
             <entry key="jobExecuter">
                <ref bean="publishUpdatesJobExecuter" />
-            </entry>            
+            </entry>
          </map>
       </property>
    </bean>
-   
+
    <bean id="scheduledPublishUpdatesJobTrigger" class="org.alfresco.util.CronTriggerBean">
       <property name="jobDetail" ref="scheduledPublishUpdatesJobDetail" />
       <property name="scheduler" ref="schedulerFactory" />
       <property name="cronExpression">
          <!-- <value>0 30 3 * * ?</value> -->
-         <value>0/30 * * * * ?</value>         
+         <value>0/30 * * * * ?</value>
       </property>
    </bean>
-   
-   <bean id="publishUpdatesJobExecuter" 
+
+   <bean id="publishUpdatesJobExecuter"
          class="org.alfresco.module.org_alfresco_module_rm.job.PublishUpdatesJobExecuter"
          parent="baseRMJobExecuter">
       <property name="nodeService" ref="nodeService" />
@@ -125,16 +125,15 @@
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
       <property name="dictionaryService" ref="dictionaryService" />
    </bean>
-   
+
    <bean id="publishExecutorRegistry" class="org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutorRegistry"/>
 
-   <bean id="dispositionActionDefintionPublishExecutor" 
+   <bean id="dispositionActionDefintionPublishExecutor"
    	     class="org.alfresco.module.org_alfresco_module_rm.job.publish.DispositionActionDefinitionPublishExecutor"
    	     init-method="init">
    	  <property name="rmActionService"  ref="recordsManagementActionService"/>
 	  <property name="nodeService"  ref="nodeService"/>
-	  <property name="publishExecutorRegistry" ref="publishExecutorRegistry"/>  
-	  <property name="behaviourFilter" ref="policyBehaviourFilter" /> 	     
-   </bean>	
+	  <property name="publishExecutorRegistry" ref="publishExecutorRegistry"/>
+   </bean>
 
 </beans>

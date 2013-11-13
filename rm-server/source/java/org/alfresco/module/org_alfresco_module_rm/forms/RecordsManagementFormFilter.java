@@ -22,9 +22,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldGroup;
@@ -58,7 +57,6 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
     protected NamespaceService namespaceService;
     protected NodeService nodeService;
     protected RecordsManagementServiceRegistry rmServiceRegistry;
-    protected RecordsManagementService rmService;
     protected RecordsManagementAdminService rmAdminService;
     protected RecordService recordService;
     protected DictionaryService dictionaryService;
@@ -91,16 +89,6 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
     public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry rmServiceRegistry)
     {
         this.rmServiceRegistry = rmServiceRegistry;
-    }
-
-    /**
-     * Sets the RecordsManagementService instance
-     *
-     * @param rmService The RecordsManagementService instance
-     */
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
     }
 
     /**

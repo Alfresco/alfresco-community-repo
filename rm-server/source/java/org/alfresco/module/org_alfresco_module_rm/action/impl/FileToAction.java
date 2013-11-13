@@ -20,7 +20,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * File To action implementation.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -28,18 +28,18 @@ public class FileToAction extends RMActionExecuterAbstractBase
 {
     /** action name */
     public static final String NAME = "fileTo";
-    
+
     /** action parameters */
     public static final String PARAM_DESTINATION_RECORD_FOLDER = "destinationRecordFolder";
     public static final String PARAM_PATH = "path";
     public static final String PARAM_CREATE_RECORD_FOLDER = "createRecordFolder";
-    
+
     /** file folder service */
     private FileFolderService fileFolderService;
-    
+
     /** file plan service */
     private FilePlanService filePlanService;
-    
+
     /**
      * @param fileFolderService file folder service
      */
@@ -47,7 +47,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
     {
         this.fileFolderService = fileFolderService;
     }
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -55,7 +55,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
      */
@@ -65,7 +65,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_PATH, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_PATH)));
         paramList.add(new ParameterDefinitionImpl(PARAM_CREATE_RECORD_FOLDER, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_CREATE_RECORD_FOLDER)));
     }
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -84,15 +84,15 @@ public class FileToAction extends RMActionExecuterAbstractBase
                     // get the reference to the record folder based on the relative path
                     recordFolder = createOrResolveRecordFolder(action, actionedUponNodeRef);
                 }
-                
+
                 if (recordFolder == null)
                 {
                     throw new AlfrescoRuntimeException("Unable to execute file to action, because the destination record folder could not be determined.");
                 }
-                 
-                if (recordsManagementService.isRecordFolder(recordFolder) == true)
+
+                if (recordFolderService.isRecordFolder(recordFolder) == true)
                 {
-                    final NodeRef finalRecordFolder = recordFolder;                 
+                    final NodeRef finalRecordFolder = recordFolder;
                     try
                     {
                         fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
@@ -109,9 +109,9 @@ public class FileToAction extends RMActionExecuterAbstractBase
             }
         }
     }
-    
+
     /**
-     * 
+     *
      * @param action
      * @param actionedUponNodeRef
      * @return
@@ -119,8 +119,8 @@ public class FileToAction extends RMActionExecuterAbstractBase
     private NodeRef createOrResolveRecordFolder(Action action, NodeRef actionedUponNodeRef)
     {
         // TODO check the action for a context node reference
-        // the file plan node always provides the context 
-        NodeRef context = filePlanService.getFilePlan(actionedUponNodeRef);        
+        // the file plan node always provides the context
+        NodeRef context = filePlanService.getFilePlan(actionedUponNodeRef);
         if (context == null)
         {
             throw new AlfrescoRuntimeException("Unable to execute fileTo action, because the path resolution context could not be found.");
@@ -129,16 +129,16 @@ public class FileToAction extends RMActionExecuterAbstractBase
         {
             throw new AlfrescoRuntimeException("Unable to execute fileTo action, because the context for the relative path does not exist.");
         }
-        
+
         // look for the path parameter
         String path = (String)action.getParameterValue(PARAM_PATH);
         String[] pathValues = ArrayUtils.EMPTY_STRING_ARRAY;
-        
+
         if (path != null && path.isEmpty() == false)
         {
             pathValues = StringUtils.tokenizeToStringArray(path, "/", false, true);
         }
-        
+
         // look for the creation strategy
         boolean create = false;
         Boolean createValue = (Boolean)action.getParameterValue(PARAM_CREATE_RECORD_FOLDER);
@@ -146,10 +146,10 @@ public class FileToAction extends RMActionExecuterAbstractBase
         {
             create = createValue.booleanValue();
         }
-        
+
         // try and get child
         NodeRef recordFolder = resolvePath(context, pathValues);
-        
+
         if (recordFolder == null)
         {
             if (create == true)
@@ -160,28 +160,28 @@ public class FileToAction extends RMActionExecuterAbstractBase
                 {
                     throw new AlfrescoRuntimeException("Unable to create new record folder, because destination parent could not be found.");
                 }
-                
+
                 // ensure we are trying to create a record folder in a record category
                 if (filePlanService.isRecordCategory(parent) == false)
                 {
                     throw new AlfrescoRuntimeException("Unable to create nre record folder, beacuse the parent is not a record category.");
                 }
-                
+
                 // get the new record folders name
                 String recordFolderName = pathValues[pathValues.length-1];
-                recordFolder = recordsManagementService.createRecordFolder(parent, recordFolderName);
+                recordFolder = recordFolderService.createRecordFolder(parent, recordFolderName);
             }
             else
             {
                 throw new AlfrescoRuntimeException("Unable to execute FileTo action, because the destination record folder does not exist.");
-            }            
+            }
         }
-        
-        return recordFolder;        
+
+        return recordFolder;
     }
-    
+
     /**
-     * 
+     *
      * @param context
      * @param pathValues
      * @return
@@ -197,16 +197,16 @@ public class FileToAction extends RMActionExecuterAbstractBase
         catch (FileNotFoundException e)
         {
             // ignore, checking for null
-        }   
+        }
         if (fileInfo != null)
         {
             result = fileInfo.getNodeRef();
         }
         return result;
     }
-    
+
     /**
-     * 
+     *
      * @param context
      * @param pathValues
      * @return
@@ -214,10 +214,10 @@ public class FileToAction extends RMActionExecuterAbstractBase
     private NodeRef resolveParent(NodeRef context, String[] pathValues)
     {
         NodeRef result = null;
-        
+
         if (ArrayUtils.isEmpty(pathValues) == true)
         {
-            // this should never occur since if the path is empty then the context it the resolution of the 
+            // this should never occur since if the path is empty then the context it the resolution of the
             // path .. the context must already exist
             throw new AlfrescoRuntimeException("Unable to resolve the parent, because no valid path was specified.");
         }
@@ -231,9 +231,9 @@ public class FileToAction extends RMActionExecuterAbstractBase
             pathValues = (String[])ArrayUtils.remove(pathValues, pathValues.length-1);
             result = resolvePath(context, pathValues);
         }
-        
+
         return result;
     }
-    
+
 
 }

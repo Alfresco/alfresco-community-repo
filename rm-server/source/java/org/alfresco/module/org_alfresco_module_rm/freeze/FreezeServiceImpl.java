@@ -28,10 +28,10 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -78,20 +78,20 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     /** Policy Component */
     protected PolicyComponent policyComponent;
 
-    /** Records Management Service */
-    protected RecordsManagementService recordsManagementService;
-
     /** Record service */
     protected RecordService recordService;
-    
+
     /** File Plan Service */
     protected FilePlanService filePlanService;
-    
+
     /** Permission service */
     protected PermissionService permissionService;
-    
-    /** file plan role service */
+
+    /** File plan role service */
     protected FilePlanRoleService filePlanRoleService;
+
+    /** Record folder service */
+    protected RecordFolderService recordFolderService;
 
     /**
      * @param policyComponent policy component
@@ -102,21 +102,13 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @param recordsManagementService records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
-    }
-
-    /**
      * @param recordService record service
      */
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
     }
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -124,22 +116,30 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @param permissionService  permission service
      */
-    public void setPermissionService(PermissionService permissionService) 
+    public void setPermissionService(PermissionService permissionService)
     {
 		this.permissionService = permissionService;
 	}
-    
+
     /**
      * @param filePlanRoleService	file plan role service
      */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService) 
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
 		this.filePlanRoleService = filePlanRoleService;
 	}
+
+    /**
+     * @param recordFolderService record folder service
+     */
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
+    }
 
     /**
      * Init service
@@ -147,8 +147,8 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     public void init()
     {
         policyComponent.bindClassBehaviour(
-        		NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
-        		this, 
+        		NodeServicePolicies.BeforeDeleteNodePolicy.QNAME,
+        		this,
         		new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
     }
 
@@ -271,11 +271,11 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         // node references
         // Check if the actionedUponNodeRef is a valid file plan component
         boolean isRecord = recordService.isRecord(nodeRef);
-        boolean isFolder = recordsManagementService.isRecordFolder(nodeRef);
+        boolean isFolder = recordFolderService.isRecordFolder(nodeRef);
 
-        if (!(isRecord || isFolder)) 
-        { 
-        	throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_FREEZE_ONLY_RECORDS_FOLDERS)); 
+        if (!(isRecord || isFolder))
+        {
+        	throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_FREEZE_ONLY_RECORDS_FOLDERS));
         }
 
         // Log a message about freezing the node with the reason
@@ -328,9 +328,9 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         }
 
         // Mark all the folders contents as frozen
-        if (recordsManagementService.isRecordFolder(nodeRef))
+        if (recordFolderService.isRecordFolder(nodeRef))
         {
-            List<NodeRef> records = recordsManagementService.getRecords(nodeRef);
+            List<NodeRef> records = recordService.getRecords(nodeRef);
             for (NodeRef record : records)
             {
                 // no need to freeze if already frozen!
@@ -394,7 +394,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
 
         if (nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
         {
-            boolean isRecordFolder = recordsManagementService.isRecordFolder(nodeRef);
+            boolean isRecordFolder = recordFolderService.isRecordFolder(nodeRef);
 
             if (logger.isDebugEnabled())
             {
@@ -414,7 +414,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
             // Remove freeze from records if a record folder
             if (isRecordFolder)
             {
-                List<NodeRef> records = recordsManagementService.getRecords(nodeRef);
+                List<NodeRef> records = recordService.getRecords(nodeRef);
                 for (NodeRef record : records)
                 {
                     removeFreeze(record);
@@ -608,7 +608,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         holdProps.put(ContentModel.PROP_NAME, holdName);
         holdProps.put(PROP_HOLD_REASON, reason);
 
-        // create the hold object        
+        // create the hold object
         QName holdQName = QName.createQName(RM_URI, holdName);
         final NodeRef holdNodeRef = nodeService.createNode(holdContainer, ContentModel.ASSOC_CONTAINS, holdQName, TYPE_HOLD, holdProps).getChildRef();
 
@@ -618,7 +618,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
             msg.append("Created hold object '").append(holdNodeRef).append("' with name '").append(holdQName).append("'.");
             logger.debug(msg.toString());
         }
-                
+
         // Bind the hold node reference to the transaction
         AlfrescoTransactionSupport.bindResource(KEY_HOLD_NODEREF, holdNodeRef);
 
@@ -713,7 +713,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         // parents of the folder(s).
         if (recordService.isRecord(nodeRef))
         {
-            List<NodeRef> parentFolders = recordsManagementService.getRecordFolders(nodeRef);
+            List<NodeRef> parentFolders = recordFolderService.getRecordFolders(nodeRef);
             for (NodeRef folder : parentFolders)
             {
                 List<ChildAssociationRef> moreAssocs = nodeService.getParentAssocs(folder, ASSOC_FROZEN_RECORDS,
@@ -755,7 +755,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
 
         // Remove the freezes on the child records as long as there is no other
         // hold referencing them
-        if (recordsManagementService.isRecordFolder(nodeRef) == true)
+        if (recordFolderService.isRecordFolder(nodeRef) == true)
         {
             if (logger.isDebugEnabled())
             {
@@ -763,7 +763,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
                 msg.append(nodeRef).append(" is a record folder");
                 logger.debug(msg.toString());
             }
-            for (NodeRef record : recordsManagementService.getRecords(nodeRef))
+            for (NodeRef record : recordService.getRecords(nodeRef))
             {
                 removeFreeze(record, hold);
             }

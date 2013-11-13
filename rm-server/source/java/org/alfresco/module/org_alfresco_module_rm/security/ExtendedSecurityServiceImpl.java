@@ -45,7 +45,7 @@ import org.alfresco.util.ParameterCheck;
 
 /**
  * Extended security service implementation.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -57,19 +57,19 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /** Ad hoc properties used for reference counting */
     private final static QName PROP_EXTENDED_READER_ROLE = QName.createQName(RM_URI, "extendedReaderRole");
     private final static QName PROP_EXTENDED_WRITER_ROLE = QName.createQName(RM_URI, "extendedWriterRole");
-    
+
     /** Policy component */
     private PolicyComponent policyComponent;
-    
+
     /** Record service */
     private RecordService recordService;
-    
+
     /** File plan service */
     private FilePlanService filePlanService;
-    
+
     /** File plan role service */
     private FilePlanRoleService filePlanRoleService;
-    
+
     /**
      * @param policyComponent   policy component
      */
@@ -77,7 +77,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * @param recordService record service
      */
@@ -85,7 +85,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         this.recordService = recordService;
     }
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -93,7 +93,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @param filePlanRoleService   file plan role service
      */
@@ -101,18 +101,18 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         this.filePlanRoleService = filePlanRoleService;
     }
-    
+
     /**
      * Init method
      */
     public void init()
     {
         policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnMoveNodePolicy.QNAME, 
-                ASPECT_EXTENDED_SECURITY, 
+                NodeServicePolicies.OnMoveNodePolicy.QNAME,
+                ASPECT_EXTENDED_SECURITY,
                 new JavaBehaviour(this, "onMoveNode", NotificationFrequency.TRANSACTION_COMMIT));
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#hasExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -120,7 +120,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         return nodeService.hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getExtendedReaders(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -129,16 +129,16 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     public Set<String> getExtendedReaders(NodeRef nodeRef)
     {
         Set<String> result = null;
-        
+
         Map<String, Integer> readerMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
         if (readerMap != null)
         {
             result = readerMap.keySet();
         }
-        
+
         return result;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#getExtendedWriters(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -147,13 +147,13 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     public Set<String> getExtendedWriters(NodeRef nodeRef)
     {
         Set<String> result = null;
-        
+
         Map<String, Integer> map = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_WRITERS);
         if (map != null)
         {
             result = map.keySet();
         }
-        
+
         return result;
     }
 
@@ -165,7 +165,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         addExtendedSecurity(nodeRef, readers, writers, true);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#addExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set, boolean)
      */
@@ -174,45 +174,45 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("applyToParents", applyToParents);
-        
+
         if (nodeRef != null)
         {
             addExtendedSecurityImpl(nodeRef, readers, writers, applyToParents);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private void addExtendedSecurityImpl(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("applyToParents", applyToParents);
-        
+
         // add the aspect if missing
         if (nodeService.hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY) == false)
         {
             nodeService.addAspect(nodeRef, ASPECT_EXTENDED_SECURITY, null);
         }
-        
+
         // update the readers map
         if (readers != null && readers.size() != 0)
         {
             // get reader map
             Map<String, Integer> readersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
-            
+
             // set the readers property (this will in turn apply the aspect if required)
             nodeService.setProperty(nodeRef, PROP_READERS, (Serializable)addToMap(readersMap, readers));
         }
-        
+
         // update the writers map
         if (writers != null && writers.size() != 0)
         {
             // get writer map
             Map<String, Integer> writersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_WRITERS);
-            
+
             // set the writers property (this will in turn apply the aspect if required)
             nodeService.setProperty(nodeRef, PROP_WRITERS, (Serializable)addToMap(writersMap, writers));
         }
-        
+
         // apply the readers to any renditions of the content
         if (recordService.isRecord(nodeRef) == true)
         {
@@ -223,12 +223,12 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 addExtendedSecurityImpl(child, readers, writers, false);
             }
         }
-        
+
         // add to the extended security roles
         addExtendedSecurityRoles(nodeRef, readers, writers);
-        
+
         if (applyToParents == true)
-        {   
+        {
             // apply the extended readers up the file plan primary hierarchy
             NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
             if (parent != null &&
@@ -237,11 +237,11 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 addExtendedSecurityImpl(parent, readers, null, applyToParents);
                 addExtendedSecurityImpl(parent, writers, null, applyToParents);
             }
-        }      
+        }
     }
-    
+
     /**
-     * 
+     *
      * @param nodeRef
      * @param readers
      * @param writers
@@ -249,13 +249,13 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     private void addExtendedSecurityRoles(NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
         NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
-        
+
         addExtendedSecurityRolesImpl(filePlan, readers, PROP_EXTENDED_READER_ROLE, FilePlanRoleService.ROLE_EXTENDED_READERS);
         addExtendedSecurityRolesImpl(filePlan, writers, PROP_EXTENDED_WRITER_ROLE, FilePlanRoleService.ROLE_EXTENDED_WRITERS);
-    }   
-    
+    }
+
     /**
-     * 
+     *
      * @param filePlan
      * @param authorities
      * @param propertyName
@@ -268,9 +268,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         {
             // get the reference count
             Map<String, Integer> referenceCountMap = (Map<String, Integer>)nodeService.getProperty(filePlan, propertyName);
-            
+
             for (String authority : authorities)
-            {         
+            {
                 if (authority.equals(PermissionService.ALL_AUTHORITIES) == false &&
                     authority.equals(PermissionService.OWNER_AUTHORITY) == false)
                 {
@@ -282,57 +282,55 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                     }
                 }
             }
-            
+
             // update the reference count
             nodeService.setProperty(filePlan, propertyName, (Serializable)addToMap(referenceCountMap, authorities));
-        }        
+        }
     }
-    
-    @SuppressWarnings("unused")
-    private void removeExtendedSecurityRoles(NodeRef nodeRef, Set<String> readers, Set<String> writers)
-    {
-        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
-        
-        removeExtendedSecurityRolesImpl(filePlan, readers, PROP_EXTENDED_READER_ROLE, FilePlanRoleService.ROLE_EXTENDED_READERS);
-        removeExtendedSecurityRolesImpl(filePlan, writers, PROP_EXTENDED_WRITER_ROLE, FilePlanRoleService.ROLE_EXTENDED_WRITERS);
-    } 
-    
-    @SuppressWarnings("unchecked")
-    private void removeExtendedSecurityRolesImpl(NodeRef filePlan, Set<String> authorities, QName propertyName, String roleName)
-    {
-        if (authorities != null)
-        {
-            // get the reference count
-            Map<String, Integer> referenceCountMap = (Map<String, Integer>)nodeService.getProperty(filePlan, propertyName);
-            
-            for (String authority : authorities)
-            {       
-                if (authority.equals(PermissionService.ALL_AUTHORITIES) == false)
-                {
-                    if (referenceCountMap == null)
-                    {
-                        // remove the authority from the role
-                        filePlanRoleService.unassignRoleFromAuthority(filePlan, roleName, authority);
-                    }
-                    else
-                    {
-                        Integer count = referenceCountMap.get(authority);
-                        if (count == null || count == 1)
-                        {
-                            // remove the authority from the role
-                            filePlanRoleService.unassignRoleFromAuthority(filePlan, roleName, authority);
-                        }
-                    }
-                }
-            }
-            
-            // update the reference count
-            nodeService.setProperty(filePlan, propertyName, (Serializable)removeFromMap(referenceCountMap, authorities));
-        }        
-    }
-    
+
+//    private void removeExtendedSecurityRoles(NodeRef nodeRef, Set<String> readers, Set<String> writers)
+//    {
+//        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
+//
+//        removeExtendedSecurityRolesImpl(filePlan, readers, PROP_EXTENDED_READER_ROLE, FilePlanRoleService.ROLE_EXTENDED_READERS);
+//        removeExtendedSecurityRolesImpl(filePlan, writers, PROP_EXTENDED_WRITER_ROLE, FilePlanRoleService.ROLE_EXTENDED_WRITERS);
+//    }
+//
+//    private void removeExtendedSecurityRolesImpl(NodeRef filePlan, Set<String> authorities, QName propertyName, String roleName)
+//    {
+//        if (authorities != null)
+//        {
+//            // get the reference count
+//            Map<String, Integer> referenceCountMap = (Map<String, Integer>)nodeService.getProperty(filePlan, propertyName);
+//
+//            for (String authority : authorities)
+//            {
+//                if (authority.equals(PermissionService.ALL_AUTHORITIES) == false)
+//                {
+//                    if (referenceCountMap == null)
+//                    {
+//                        // remove the authority from the role
+//                        filePlanRoleService.unassignRoleFromAuthority(filePlan, roleName, authority);
+//                    }
+//                    else
+//                    {
+//                        Integer count = referenceCountMap.get(authority);
+//                        if (count == null || count == 1)
+//                        {
+//                            // remove the authority from the role
+//                            filePlanRoleService.unassignRoleFromAuthority(filePlan, roleName, authority);
+//                        }
+//                    }
+//                }
+//            }
+//
+//            // update the reference count
+//            nodeService.setProperty(filePlan, propertyName, (Serializable)removeFromMap(referenceCountMap, authorities));
+//        }
+//    }
+
     /**
-     * 
+     *
      * @param map
      * @param keys
      * @return
@@ -344,7 +342,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             // create map
             map = new HashMap<String, Integer>(7);
         }
-        
+
         for (String key : keys)
         {
             if (key.equals(PermissionService.ALL_AUTHORITIES) == false)
@@ -362,24 +360,24 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 }
             }
         }
-        
+
         return map;
     }
-    
+
 
     @Override
     public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
-        removeExtendedSecurity(nodeRef, readers, writers, true);        
+        removeExtendedSecurity(nodeRef, readers, writers, true);
     }
-    
+
     @Override
     public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String>writers, boolean applyToParents)
     {
         if (hasExtendedSecurity(nodeRef) == true)
         {
             removeExtendedSecurityImpl(nodeRef, readers, writers);
-            
+
             // remove the readers from any renditions of the content
             if (recordService.isRecord(nodeRef) == true)
             {
@@ -390,7 +388,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                     removeExtendedSecurityImpl(child, readers, writers);
                 }
             }
-            
+
             if (applyToParents == true)
             {
                 // apply the extended readers up the file plan primary hierarchy
@@ -400,16 +398,16 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 {
                     removeExtendedSecurity(parent, readers, null, applyToParents);
                     removeExtendedSecurity(parent, writers, null, applyToParents);
-                }                
+                }
             }
         }
     }
-    
+
     /**
      * Removes a set of readers and writers from a node reference.
      * <p>
      * Removes the aspect and resets the property to null if all readers and writers are removed.
-     * 
+     *
      * @param nodeRef   node reference
      * @param readers   {@link Set} of readers
      * @param writers   {@link Set} of writers
@@ -419,17 +417,17 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         Map<String, Integer> readersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
         nodeService.setProperty(nodeRef, PROP_READERS, (Serializable)removeFromMap(readersMap, readers));
-        
+
         Map<String, Integer> writersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_WRITERS);
         nodeService.setProperty(nodeRef, PROP_WRITERS, (Serializable)removeFromMap(writersMap, writers));
-        
+
         if (readersMap == null && writersMap == null)
         {
             // remove the aspect
             nodeService.removeAspect(nodeRef, ASPECT_EXTENDED_SECURITY);
-        }        
+        }
     }
-    
+
     private Map<String, Integer> removeFromMap(Map<String, Integer> map, Set<String> keys)
     {
         if (map != null && keys != null && keys.size() != 0)
@@ -456,29 +454,29 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 }
             }
         }
-        
+
         // reset the map to null if now empty
         if (map != null && map.isEmpty() == true)
         {
             map = null;
         }
-        
+
         return map;
     }
-    
+
     @Override
     public void removeAllExtendedSecurity(NodeRef nodeRef)
     {
         removeAllExtendedSecurity(nodeRef, true);
     }
-    
+
     @Override
     public void removeAllExtendedSecurity(NodeRef nodeRef, boolean applyToParents)
     {
         if (hasExtendedSecurity(nodeRef) == true)
         {
-            removeExtendedSecurity(nodeRef, getExtendedReaders(nodeRef), getExtendedWriters(nodeRef));            
-        }        
+            removeExtendedSecurity(nodeRef, getExtendedReaders(nodeRef), getExtendedWriters(nodeRef));
+        }
     }
 
     /**
@@ -487,7 +485,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     @Override
     public void onMoveNode(final ChildAssociationRef origAssoc, final ChildAssociationRef newAssoc)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() 
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork() throws Exception
@@ -495,13 +493,13 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 NodeRef record = newAssoc.getChildRef();
                 NodeRef newParent = newAssoc.getParentRef();
                 NodeRef oldParent = origAssoc.getParentRef();
-                
+
                 Set<String> readers = getExtendedReaders(record);
                 Set<String> writers = getExtendedWriters(record);
-                
+
                 addExtendedSecurity(newParent, readers, writers);
                 removeExtendedSecurity(oldParent, readers, writers);
-                
+
                 return null;
             }
         });

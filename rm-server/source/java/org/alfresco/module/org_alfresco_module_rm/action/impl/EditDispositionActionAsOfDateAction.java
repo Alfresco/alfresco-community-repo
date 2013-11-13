@@ -25,13 +25,11 @@ import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstrac
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Edit review as of date action.
- * 
+ *
  * @author Roy Wetherall
  */
 public class EditDispositionActionAsOfDateAction extends RMActionExecuterAbstractBase
@@ -39,11 +37,7 @@ public class EditDispositionActionAsOfDateAction extends RMActionExecuterAbstrac
     /** I18N */
     private static final String MSG_VALID_DATE_DISP_ASOF = "rm.action.valid-date-disp-asof";
     private static final String MSG_DISP_ASOF_LIFECYCLE_APPLIED = "rm.action.disp-asof-lifecycle-applied";
-    
-    /** Logger */
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(EditDispositionActionAsOfDateAction.class);
-    
+
     /** Action parameters */
     public static final String PARAM_AS_OF_DATE = "asOfDate";
 
@@ -62,11 +56,11 @@ public class EditDispositionActionAsOfDateAction extends RMActionExecuterAbstrac
             {
                 throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_VALID_DATE_DISP_ASOF));
             }
-            
+
             // Set the dispostion action as of date
             DispositionAction da = dispositionService.getNextDispositionAction(actionedUponNodeRef);
             if (da != null)
-            {                
+            {
                 nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_AS_OF, asOfDate);
             }
         }

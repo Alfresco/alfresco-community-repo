@@ -23,14 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -38,60 +39,55 @@ import org.alfresco.service.namespace.NamespaceService;
 
 /**
  * Base evaluator.
- * 
+ *
  * @author Roy Wetherall
  */
 public abstract class BaseEvaluator implements RecordsManagementModel
 {
     /** Name */
     protected String name;
-    
+
     /** JSON conversion component */
     protected JSONConversionComponent jsonConversionComponent;
-    
-    /** Records management service */
-    protected RecordsManagementService recordsManagementService;
-    
+
     /** Record service */
     protected RecordService recordService;
-    
+
     /** Node service */
     protected NodeService nodeService;
-    
+
     /** Namespace service */
     protected NamespaceService namespaceService;
-    
+
     /** Capability service */
     protected CapabilityService capabilityService;
-    
+
     /** Freeze service */
     protected FreezeService freezeService;
-    
+
     /** File plan component kinds */
-    protected Set<FilePlanComponentKind> kinds;    
-    
+    protected Set<FilePlanComponentKind> kinds;
+
     /** Capabilities */
     protected List<String> capabilities;
-    
+
     /** File plan service */
     protected FilePlanService filePlanService;
-    
+
+    /** Disposition service */
+    protected DispositionService dispositionService;
+
+    /** Record folder service */
+    protected RecordFolderService recordFolderService;
+
     /**
      * @param jsonConversionComponent   json conversion component
      */
     public void setJsonConversionComponent(JSONConversionComponent jsonConversionComponent)
     {
         this.jsonConversionComponent = jsonConversionComponent;
-    }    
-    
-    /**
-     * @param recordsManagementService  records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
     }
-    
+
     /**
      * @param recordService record service
      */
@@ -99,7 +95,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     {
         this.recordService = recordService;
     }
-    
+
     /**
      * @param nodeService   node service
      */
@@ -107,7 +103,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param namespaceService  namespace service
      */
@@ -115,7 +111,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @param capabilityService capability service
      */
@@ -123,7 +119,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     {
         this.capabilityService = capabilityService;
     }
-    
+
     /**
      * @param freezeService freeze service
      */
@@ -131,15 +127,31 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     {
        this.freezeService = freezeService;
     }
-    
+
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
-    
+
+    /**
+     * @param dispositionService    disposition service
+     */
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
+    }
+
+    /**
+     * @param recordFolderService   record folder service
+     */
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
+    }
+
     /**
      * @param name
      */
@@ -147,7 +159,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     {
         this.name = name;
     }
-    
+
     /**
      * @return
      */
@@ -155,7 +167,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     {
         return this.name;
     }
-    
+
     /**
      * @param kinds
      */
@@ -163,7 +175,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     {
         this.kinds = kinds;
     }
-    
+
     /**
      * @param capabilties
      */
@@ -171,10 +183,10 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     {
         this.capabilities = capabilties;
     }
-    
+
     /**
      * Helper method which sets on capability.
-     * 
+     *
      * @param capability    capability name
      */
     public void setCapability(String capability)
@@ -183,7 +195,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
         list.add(capability);
         this.capabilities = list;
     }
-    
+
     /**
      * Registers this instance as an indicator (evaluator)
      */
@@ -191,7 +203,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     {
         jsonConversionComponent.registerIndicator(this);
     }
-    
+
    /**
     * Registers this instance as an action (evaluator)
     */
@@ -199,17 +211,17 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     {
         jsonConversionComponent.registerAction(this);
     }
-    
+
     /**
      * Executes the evaluation.
-     * 
+     *
      * @param nodeRef
      * @return
      */
     public boolean evaluate(NodeRef nodeRef)
     {
         boolean result = false;
-        
+
         // Check that we are dealing with the correct kind of RM object
         if (kinds == null || checkKinds(nodeRef) == true)
         {
@@ -219,13 +231,13 @@ public abstract class BaseEvaluator implements RecordsManagementModel
                 result = evaluateImpl(nodeRef);
             }
         }
-        
+
         return result;
     }
-    
-    /** 
+
+    /**
      * Checks the file plan component kind.
-     * 
+     *
      * @param nodeRef
      * @return
      */
@@ -234,10 +246,10 @@ public abstract class BaseEvaluator implements RecordsManagementModel
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
         return kinds.contains(kind);
     }
-    
+
     /**
      * Checks the capabilities.
-     * 
+     *
      * @param nodeRef
      * @return
      */
@@ -258,10 +270,10 @@ public abstract class BaseEvaluator implements RecordsManagementModel
         }
         return result;
     }
-    
+
     /**
      * Evaluation execution implementation.
-     * 
+     *
      * @param nodeRef
      * @return
      */

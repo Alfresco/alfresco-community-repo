@@ -44,10 +44,10 @@
    </bean>
 
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-model-context.xml"/>
-   
+
    <!-- Import RM Audit -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-audit-context.xml"/>
-   
+
    <!--  Import RM query context -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/query/rm-query-context.xml" />
 
@@ -118,7 +118,6 @@
 
    <bean id="rmEventType.superseded" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferenceCreateEventType" parent="rmEventType">
       <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}supersedes"/>
-      <property name="recordsManagementService" ref="recordsManagementService"/>
       <property name="dispositionService" ref="dispositionService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
       <property name="policyComponent" ref="policyComponent"/>
@@ -126,7 +125,6 @@
 
    <bean id="rmEventType.obsolete" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferenceCreateEventType" parent="rmEventType">
       <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}obsoletes"/>
-      <property name="recordsManagementService" ref="recordsManagementService"/>
       <property name="dispositionService" ref="dispositionService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
       <property name="policyComponent" ref="policyComponent"/>
@@ -136,12 +134,12 @@
       <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}crossreference"/>
       <property name="actionName" value="transferComplete"/>
       <property name="nodeService" ref="nodeService"/>
-      <property name="recordsManagementService" ref="recordsManagementService"/>
       <property name="dispositionService" ref="dispositionService"/>
       <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
       <property name="policyComponent" ref="policyComponent"/>
       <property name="recordService" ref="recordService" />
+      <property name="recordFolderService" ref="RecordFolderService"/>
    </bean>
 
    <!--  Job context -->
@@ -172,7 +170,6 @@
       <property name="namespaceService" ref="NamespaceService"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry" />
-      <property name="recordsManagementService" ref="recordsManagementService"/>
       <property name="recordService" ref="recordService"/>
       <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
       <property name="dictionaryService" ref="DictionaryService" />

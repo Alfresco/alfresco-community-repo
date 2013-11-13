@@ -33,7 +33,7 @@ import org.alfresco.util.GUID;
 
 /**
  * Vital record service implementation unit test.
- * 
+ *
  * @author Roy Wetherall
  */
 public class VitalRecordServiceImplTest extends BaseRMTestCase
@@ -42,31 +42,31 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
     protected static final Period PERIOD_NONE = new Period("none|0");
     protected static final Period PERIOD_WEEK = new Period("week|1");
     protected static final Period PERIOD_MONTH = new Period("month|1");
-    
+
     /** Test records */
     private NodeRef mhRecord51;
     private NodeRef mhRecord52;
     private NodeRef mhRecord53;
     private NodeRef mhRecord54;
     private NodeRef mhRecord55;
-    
-    /** 
-     * Indicate this test uses the collaboration site test data 
+
+    /**
+     * Indicate this test uses the collaboration site test data
      */
     @Override
     protected boolean isCollaborationSiteTest()
     {
         return true;
     }
-    
+
     /** Indicate this is a multi hierarchy test */
     @Override
     protected boolean isMultiHierarchyTest()
     {
         return true;
     }
-    
-    /** vital record multi-hierarchy test data 
+
+    /** vital record multi-hierarchy test data
     *
     *   |--rmRootContainer (no vr def)
     *      |
@@ -77,7 +77,7 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
     *         |  |--mhContainer-2-1 (vr def)
     *         |     |
     *         |     |--mhContainer-3-1 (no vr def)
-    *         |         
+    *         |
     *         |--mhContainer-1-2 (has schedule - folder level) (no vr def)
     *            |
     *            |--mhContainer-2-2 (no vr def)
@@ -85,26 +85,26 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
     *            |  |--mhContainer-3-2 (vr def disabled)
     *            |  |
     *            |  |--mhContainer-3-3 (has schedule - record level) (vr def)
-    *            |  
+    *            |
     *            |--mhContainer-2-3 (has schedule - folder level) (vr def)
     *               |
     *               |--mhContainer-3-4 (no vr def)
-    *               |     
-    *               |--mhContainer-3-5 (has schedule- record level) (vr def)        
-    */    
+    *               |
+    *               |--mhContainer-3-5 (has schedule- record level) (vr def)
+    */
     @Override
     protected void setupMultiHierarchyTestData()
     {
         // Load core test data
         super.setupMultiHierarchyTestData();
-        
+
         // Setup vital record definitions
         setupVitalRecordDefinition(mhContainer21, true, PERIOD_WEEK);
         setupVitalRecordDefinition(mhContainer32, false, PERIOD_WEEK);
         setupVitalRecordDefinition(mhContainer33, true, PERIOD_WEEK);
         setupVitalRecordDefinition(mhContainer23, true, PERIOD_WEEK);
         setupVitalRecordDefinition(mhContainer35, true, PERIOD_MONTH);
-        
+
         // Create records
         retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
@@ -116,15 +116,15 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
                 mhRecord53 = utils.createRecord(mhRecordFolder43, "record53.txt");
                 mhRecord54 = utils.createRecord(mhRecordFolder44, "record54.txt");
                 mhRecord55 = utils.createRecord(mhRecordFolder45, "record55.txt");
-                
+
                 return null;
             }
-        });   
+        });
     }
-    
+
     /**
      * Helper to set up the vital record definition data in a transactional manner.
-     * 
+     *
      * @param nodeRef
      * @param enabled
      * @param period
@@ -142,10 +142,10 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
             }
         });
     }
-     
+
     /**
      * Based on the initial data:
-     *  - check category, folder and record raw values.  
+     *  - check category, folder and record raw values.
      *  - check search aspect values.
      */
     public void testInit()
@@ -154,7 +154,7 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
         {
             @Override
             public Void run()
-            {               
+            {
                 assertHasVitalRecordDefinition(mhContainer, false, null);
                 assertHasVitalRecordDefinition(mhContainer11, false, null);
                 assertHasVitalRecordDefinition(mhContainer12, false, null);
@@ -166,24 +166,24 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
                 assertHasVitalRecordDefinition(mhContainer33, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhContainer34, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhContainer35, true, PERIOD_MONTH);
-                
+
                 assertHasVitalRecordDefinition(mhRecordFolder41, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhRecordFolder42, false, null);
                 assertHasVitalRecordDefinition(mhRecordFolder43, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhRecordFolder44, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhRecordFolder45, true, PERIOD_MONTH);
-                
+
                 assertVitalRecord(mhRecord51, true, PERIOD_WEEK);
                 assertVitalRecord(mhRecord52, false, null);
                 assertVitalRecord(mhRecord53, true, PERIOD_WEEK);
                 assertVitalRecord(mhRecord54, true, PERIOD_WEEK);
                 assertVitalRecord(mhRecord55, true, PERIOD_MONTH);
-                
+
                 return null;
             }
-        }); 
+        });
     }
-    
+
     /**
      * Test that when new record categories and record folders are created in an existing file plan
      * structure that they correctly inherit the correct vital record property values
@@ -195,26 +195,26 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
         {
             @Override
             public NodeRef run()
-            {               
+            {
                 return filePlanService.createRecordCategory(mhContainer35, GUID.generate());
             }
-            
+
             @Override
             public void test(NodeRef result) throws Exception
             {
                 assertHasVitalRecordDefinition(result, true, PERIOD_MONTH);
             }
         });
-        
+
         // Test record folder value inheritance
         doTestInTransaction(new Test<NodeRef>()
         {
             @Override
             public NodeRef run()
-            {               
-                return rmService.createRecordFolder(mhContainer32, GUID.generate());
+            {
+                return recordFolderService.createRecordFolder(mhContainer32, GUID.generate());
             }
-            
+
             @Override
             public void test(NodeRef result) throws Exception
             {
@@ -222,9 +222,9 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
             }
         });
     }
-    
+
     /** Filling tests */
-    
+
     public void testFileNewContent() throws Exception
     {
         doTestInTransaction(new Test<NodeRef>()
@@ -233,23 +233,23 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
             public NodeRef run()
             {
                 NodeRef record = fileFolderService.create(mhRecordFolder41, "test101.txt" , TYPE_CONTENT).getNodeRef();
-                
+
                 ContentWriter writer = contentService.getWriter(record, PROP_CONTENT, true);
                 writer.setEncoding("UTF-8");
                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 writer.putContent("hello world this is some test content");
-                
+
                 return record;
             }
-            
+
             @Override
-            public void test(NodeRef record) throws Exception 
+            public void test(NodeRef record) throws Exception
             {
                 assertVitalRecord(record, true, PERIOD_WEEK);
-            }            
-        });        
+            }
+        });
     }
-    
+
 //    public void testFileUnfiledrecord() throws Exception
 //    {
 //        doTestInTransaction(new Test<NodeRef>()
@@ -257,20 +257,20 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
 //            @Override
 //            public NodeRef run() throws Exception
 //            {
-//                recordService.createRecord(filePlan, dmDocument); 
+//                recordService.createRecord(filePlan, dmDocument);
 //                fileFolderService.move(dmDocument, mhRecordFolder41, "record.txt");
-//                
+//
 //                return dmDocument;
 //            }
-//            
+//
 //            @Override
-//            public void test(NodeRef record) throws Exception 
+//            public void test(NodeRef record) throws Exception
 //            {
 //                assertVitalRecord(record, true, PERIOD_WEEK);
-//            }            
-//        });        
+//            }
+//        });
 //    }
-//    
+//
 //    public void testFileDirectlyFromCollab() throws Exception
 //    {
 //        doTestInTransaction(new Test<NodeRef>()
@@ -281,17 +281,17 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
 //                fileFolderService.move(dmDocument, mhRecordFolder41, "record.txt");
 //                return dmDocument;
 //            }
-//            
+//
 //            @Override
-//            public void test(NodeRef record) throws Exception 
+//            public void test(NodeRef record) throws Exception
 //            {
 //                assertVitalRecord(record, true, PERIOD_WEEK);
-//            }            
-//        }); 
+//            }
+//        });
 //    }
-    
+
     /** Helper Methods */
-    
+
     /**
      * Test to ensure that changes made to vital record definitions are reflected down the hierarchy.
      */
@@ -302,14 +302,14 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
         {
             @Override
             public Void run()
-            {               
+            {
                 setupVitalRecordDefinition(mhContainer31, true, PERIOD_MONTH);
                 return null;
             }
-            
+
             @Override
             public void test(Void result) throws Exception
-            {                
+            {
                 assertHasVitalRecordDefinition(mhContainer, false, null);
                 assertHasVitalRecordDefinition(mhContainer11, false, null);
                 assertHasVitalRecordDefinition(mhContainer12, false, null);
@@ -321,13 +321,13 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
                 assertHasVitalRecordDefinition(mhContainer33, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhContainer34, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhContainer35, true, PERIOD_MONTH);
-                
+
                 assertHasVitalRecordDefinition(mhRecordFolder41, true, PERIOD_MONTH);
                 assertHasVitalRecordDefinition(mhRecordFolder42, false, null);
                 assertHasVitalRecordDefinition(mhRecordFolder43, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhRecordFolder44, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhRecordFolder45, true, PERIOD_MONTH);
-                
+
                 assertVitalRecord(mhRecord51, true, PERIOD_MONTH);
                 assertVitalRecord(mhRecord52, false, null);
                 assertVitalRecord(mhRecord53, true, PERIOD_WEEK);
@@ -335,20 +335,20 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
                 assertVitalRecord(mhRecord55, true, PERIOD_MONTH);
             }
         });
-        
+
         // 'turn off' vital record def
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run()
-            {               
+            {
                 setupVitalRecordDefinition(mhContainer31, false, PERIOD_NONE);
                 return null;
             }
-            
+
             @Override
             public void test(Void result) throws Exception
-            {                
+            {
                 assertHasVitalRecordDefinition(mhContainer, false, null);
                 assertHasVitalRecordDefinition(mhContainer11, false, null);
                 assertHasVitalRecordDefinition(mhContainer12, false, null);
@@ -360,13 +360,13 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
                 assertHasVitalRecordDefinition(mhContainer33, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhContainer34, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhContainer35, true, PERIOD_MONTH);
-                
+
                 assertHasVitalRecordDefinition(mhRecordFolder41, false, null);
                 assertHasVitalRecordDefinition(mhRecordFolder42, false, null);
                 assertHasVitalRecordDefinition(mhRecordFolder43, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhRecordFolder44, true, PERIOD_WEEK);
                 assertHasVitalRecordDefinition(mhRecordFolder45, true, PERIOD_MONTH);
-                
+
                 assertVitalRecord(mhRecord51, false, null);
                 assertVitalRecord(mhRecord52, false, null);
                 assertVitalRecord(mhRecord53, true, PERIOD_WEEK);
@@ -374,20 +374,20 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
                 assertVitalRecord(mhRecord55, true, PERIOD_MONTH);
             }
         });
-        
+
         // Test parent change overrites existing
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run()
-            {               
+            {
                 setupVitalRecordDefinition(mhContainer12, true, PERIOD_MONTH);
                 return null;
             }
-            
+
             @Override
             public void test(Void result) throws Exception
-            {                
+            {
                 assertHasVitalRecordDefinition(mhContainer, false, null);
                 assertHasVitalRecordDefinition(mhContainer11, false, null);
                 assertHasVitalRecordDefinition(mhContainer12, true, PERIOD_MONTH);
@@ -399,13 +399,13 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
                 assertHasVitalRecordDefinition(mhContainer33, true, PERIOD_MONTH);
                 assertHasVitalRecordDefinition(mhContainer34, true, PERIOD_MONTH);
                 assertHasVitalRecordDefinition(mhContainer35, true, PERIOD_MONTH);
-                
+
                 assertHasVitalRecordDefinition(mhRecordFolder41, false, null);
                 assertHasVitalRecordDefinition(mhRecordFolder42, true, PERIOD_MONTH);
                 assertHasVitalRecordDefinition(mhRecordFolder43, true, PERIOD_MONTH);
                 assertHasVitalRecordDefinition(mhRecordFolder44, true, PERIOD_MONTH);
                 assertHasVitalRecordDefinition(mhRecordFolder45, true, PERIOD_MONTH);
-                
+
                 assertVitalRecord(mhRecord51, false, null);
                 assertVitalRecord(mhRecord52, true, PERIOD_MONTH);
                 assertVitalRecord(mhRecord53, true, PERIOD_MONTH);
@@ -413,22 +413,22 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
                 assertVitalRecord(mhRecord55, true, PERIOD_MONTH);
             }
         });
-        
+
     }
-    
+
     @SuppressWarnings("deprecation")
     private void assertHasVitalRecordDefinition(NodeRef nodeRef, boolean enabled, Period period)
     {
         assertTrue(nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD_DEFINITION));
-        
+
         VitalRecordDefinition def = vitalRecordService.getVitalRecordDefinition(nodeRef);
         assertNotNull(def);
-        
+
         Boolean vitalRecordIndicator = (Boolean)nodeService.getProperty(nodeRef, PROP_VITAL_RECORD_INDICATOR);
         assertNotNull(vitalRecordIndicator);
         assertEquals(enabled, vitalRecordIndicator.booleanValue());
         assertEquals(enabled, def.isEnabled());
-        
+
         if (enabled == true)
         {
             Period reviewPeriod = (Period)nodeService.getProperty(nodeRef, PROP_REVIEW_PERIOD);
@@ -438,17 +438,17 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
             assertEquals(period.getNextDate(new Date()).getDate(), def.getNextReviewDate().getDate());
         }
     }
-    
+
     @SuppressWarnings("deprecation")
     private void assertVitalRecord(NodeRef nodeRef, boolean enabled, Period period)
     {
-        assertEquals(enabled, nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD));   
+        assertEquals(enabled, nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD));
         if (enabled == true)
         {
             Date reviewAsOf = (Date)nodeService.getProperty(nodeRef, PROP_REVIEW_AS_OF);
             assertNotNull(reviewAsOf);
             assertEquals(period.getNextDate(new Date()).getDate(), reviewAsOf.getDate());
-            
+
             assertEquals(period.getPeriodType(), nodeService.getProperty(nodeRef, RecordsManagementSearchBehaviour.PROP_RS_VITAL_RECORD_REVIEW_PERIOD));
             assertEquals(period.getExpression(), nodeService.getProperty(nodeRef, RecordsManagementSearchBehaviour.PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION));
         }

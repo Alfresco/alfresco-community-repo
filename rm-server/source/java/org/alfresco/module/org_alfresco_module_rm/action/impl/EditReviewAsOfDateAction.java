@@ -24,14 +24,12 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * 
+ *
  * Edit review as of date action
- * 
+ *
  * @author Roy Wetherall
  */
 public class EditReviewAsOfDateAction extends RMActionExecuterAbstractBase
@@ -39,10 +37,7 @@ public class EditReviewAsOfDateAction extends RMActionExecuterAbstractBase
     /** I18N */
     private static final String MSG_SPECIFY_VALID_DATE = "rm.action.specify-avlid-date";
     private static final String MSG_REVIEW_DETAILS_ONLY = "rm.action.review-details-only";
-    
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(EditReviewAsOfDateAction.class);
-    
+
     public static final String PARAM_AS_OF_DATE = "asOfDate";
 
 	/**
@@ -61,14 +56,14 @@ public class EditReviewAsOfDateAction extends RMActionExecuterAbstractBase
             {
                 throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_SPECIFY_VALID_DATE));
             }
-	        
-	        // Set the as of date    
+
+	        // Set the as of date
 	        this.nodeService.setProperty(actionedUponNodeRef, PROP_REVIEW_AS_OF, reviewAsOf);
-	         
+
 	    }
 	    else
 	    {
-	        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_REVIEW_DETAILS_ONLY));	       
+	        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_REVIEW_DETAILS_ONLY));
 	    }
 	}
 }

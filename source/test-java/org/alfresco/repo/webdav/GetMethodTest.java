@@ -186,4 +186,63 @@ public class GetMethodTest
             assertNull(e.getCause()); // Avoids logging stacking trace
         }
     }
+
+    @Test
+    public void readByteRangeContentDoesNotLogClientAbortException() throws IOException, WebDAVServerException
+    {
+        // getContentService() during range request
+        when(davHelper.getServiceRegistry()).thenReturn(serviceRegistry);
+        when(serviceRegistry.getContentService()).thenReturn(contentService);
+
+        req.addHeader("Range", "bytes=500-1500");
+        getMethod.parseRequestHeaders();
+        IOException caEx = new ClientAbortException();
+        IOException ioEx = new IOException("Wrapping the socket exception.", caEx);
+
+        // Somewhere along the line a client disconnect will happen (IOException)
+        when(resp.getOutputStream()).thenThrow(ioEx);
+
+        try
+        {
+            getMethod.readContent(fileInfo, reader);
+            fail("Exception should have been thrown.");
+        }
+        catch(WebDAVServerException e)
+        {
+            verify(logger, never()).error(anyString(), same(ioEx));
+            verify(logger).debug(anyString(), same(ioEx));
+            assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getHttpStatusCode());
+            assertNull(e.getCause()); // Avoids logging stacking trace
+        }
+    }
+
+    @Test
+    public void readContentDoesNotLogClientAbortException() throws IOException, WebDAVServerException
+    {
+        IOException caEx = new ClientAbortException();
+        ContentIOException contentEx = new ContentIOException("Wrapping the socket exception.", caEx);
+
+        // Reader.getContent() will throw a ContentIOException when a client aborts.
+        doThrow(contentEx).when(reader).getContent(any(OutputStream.class));
+
+        try
+        {
+            getMethod.readContent(fileInfo, reader);
+            fail("Exception should have been thrown.");
+        }
+        catch(WebDAVServerException e)
+        {
+            verify(logger, never()).error(anyString(), same(contentEx));
+            // Error will only be seen when debugging.
+            verify(logger).debug(anyString(), same(contentEx));
+            assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getHttpStatusCode());
+            assertNull(e.getCause()); // Avoids logging stacking trace
+        }
+    }
+
+    // Fake ClientAbortException class - to emulate Tomcat's and JBOSS's ClientAbortException.
+    private static class ClientAbortException extends IOException
+    {
+
+    }
 }

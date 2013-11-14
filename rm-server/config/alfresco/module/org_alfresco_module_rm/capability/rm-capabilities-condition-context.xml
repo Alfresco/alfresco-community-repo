@@ -14,7 +14,7 @@
         <property name="filePlanService" ref="FilePlanService" />
         <!-- FIXME -->
         <property name="dispositionService" ref="dispositionService" />
-        <property name="recordFolderService" ref="RecordFolderService" />
+        <property name="recordFolderService" ref="recordFolderService" />
     </bean>
 
     <bean id="capabilityCondition.frozen"

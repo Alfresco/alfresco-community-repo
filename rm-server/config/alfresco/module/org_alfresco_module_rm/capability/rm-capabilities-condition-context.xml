@@ -12,7 +12,8 @@
         <property name="freezeService" ref="FreezeService" />
         <property name="recordService" ref="RecordService" />
         <property name="filePlanService" ref="FilePlanService" />
-        <property name="dispositionService" ref="DispositionService" />
+        <!-- FIXME -->
+        <property name="dispositionService" ref="dispositionService" />
         <property name="recordFolderService" ref="RecordFolderService" />
     </bean>
 

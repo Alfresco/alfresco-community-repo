@@ -89,7 +89,7 @@ public class DispositionServiceImpl implements
 
     /** Application context */
     private ApplicationContext applicationContext;
-    
+
     /** Record Folder Service */
     // FIXME
     //private RecordFolderService recordFolderService;
@@ -296,7 +296,7 @@ public class DispositionServiceImpl implements
         {
             // Get the record folders for the record
             // FIXME
-            RecordFolderService recordFolderService = (RecordFolderService)applicationContext.getBean("RecordFolderService");
+            RecordFolderService recordFolderService = (RecordFolderService)applicationContext.getBean("recordFolderService");
             List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);
             // At this point, we may have disposition instruction objects from 1..n folders.
             diNodeRef = dispositionSelectionStrategy.selectDispositionScheduleFrom(recordFolders);
@@ -470,7 +470,7 @@ public class DispositionServiceImpl implements
         List<NodeRef> items = filePlanService.getAllContained(rmContainer);
         List<NodeRef> result = new ArrayList<NodeRef>(items.size());
         // FIXME
-        RecordFolderService recordFolderService = (RecordFolderService)applicationContext.getBean("RecordFolderService");
+        RecordFolderService recordFolderService = (RecordFolderService)applicationContext.getBean("recordFolderService");
         for (NodeRef item : items)
         {
             if (recordFolderService.isRecordFolder(item) == true)

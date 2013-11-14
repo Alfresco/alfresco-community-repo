@@ -186,7 +186,7 @@
         <property name="filePlanService" ref="FilePlanService" />
         <!-- FIXME -->
         <!-- <property name="recordFolderService" ref="RecordFolderService"/> -->
-        <property name="recordService" ref="RecordService"/>
+        <property name="recordService" ref="recordService"/>
         <property name="dispositionSelectionStrategy">
            <ref local="org_alfresco_module_rm_dispositionSelectionStrategy" />
         </property>
@@ -975,7 +975,8 @@
         <property name="policyComponent" ref="policyComponent" />
         <property name="nodeService" ref="nodeService" />
         <property name="dictionaryService" ref="dictionaryService" />
-        <property name="recordService" ref="RecordService" />
+        <!-- FIXME -->
+        <property name="recordService" ref="recordService" />
         <property name="filePlanService" ref="FilePlanService" />
         <property name="permissionService" ref="PermissionService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
@@ -1129,6 +1130,7 @@
         <property name="dispositionService" ref="DispositionService" />
         <property name="dictionaryService" ref="DictionaryService" />
         <!-- FIXME -->
+        <!-- <property name="filePlanService" ref="FilePlanService" /> -->
         <!-- <property name="recordService" ref="RecordService" /> -->
     </bean>
 
@@ -1541,7 +1543,8 @@
         <property name="filePlanRoleService" ref="FilePlanRoleService"/>
         <property name="recordsManagementSearchBehaviour" ref="recordsManagementSearchBehaviour"/>
         <property name="dispositionService" ref="DispositionService"/>
-        <property name="recordFolderService" ref="RecordFolderService"/>
+        <!-- FIXME -->
+        <property name="recordFolderService" ref="recordFolderService"/>
     </bean>
 
     <bean id="DataSetService" class="org.springframework.aop.framework.ProxyFactoryBean">

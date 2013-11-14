@@ -14,14 +14,16 @@
    <bean id="jsonConversionComponent.baseEvaluator"
          abstract="true">
       <property name="jsonConversionComponent" ref="jsonConversionComponent"/>
-      <property name="recordService" ref="RecordService"/>
+      <!-- FIXME -->
+      <property name="recordService" ref="recordService"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="namespaceService" ref="NamespaceService"/>
       <property name="capabilityService" ref="CapabilityService"/>
       <property name="freezeService" ref="FreezeService"/>
       <property name="filePlanService" ref="FilePlanService" />
       <property name="dispositionService" ref="DispositionService" />
-      <property name="recordFolderService" ref="RecordFolderService" />
+      <!-- FIXME -->
+      <property name="recordFolderService" ref="recordFolderService" />
    </bean>
 
    <bean id="jsonConversionComponent.baseIndicator"

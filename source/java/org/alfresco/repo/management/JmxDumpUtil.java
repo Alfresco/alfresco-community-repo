@@ -25,6 +25,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -36,6 +37,9 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
+
+import org.alfresco.util.exec.RuntimeExec;
+import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 
 
 /**
@@ -57,6 +61,8 @@ public class JmxDumpUtil
 
     /** Place holder for unreadable values. */
     private static final String UNREADABLE_VALUE = "<not readable>";
+
+    private static final String OS_NAME = "os.name";
 
     /**
      * Dumps a local or remote MBeanServer's entire object tree for support purposes. Nested arrays and CompositeData
@@ -143,7 +149,49 @@ public class JmxDumpUtil
             }
             attributes.put(element.getName(), value);
         }
+        if (objectName.getCanonicalName().equals("Alfresco:Name=SystemProperties"))
+        {
+            String osName = (String) attributes.get(OS_NAME);
+            if (osName != null && osName.toLowerCase().startsWith("linux"))
+            {
+                attributes.put(OS_NAME, updateOSNameAttributeForLinux(osName));
+            }
+        }
         tabulate(JmxDumpUtil.NAME_HEADER, JmxDumpUtil.VALUE_HEADER, attributes, out, 0);
+    }
+
+    /**
+     * Adds a Linux version
+     * 
+     * @param osName os.name attribute
+     * @return
+     */
+    public static String updateOSNameAttributeForLinux(String osName)
+    {
+        RuntimeExec exec = new RuntimeExec();
+        Map<String, String[]> commandMap = new HashMap<String, String[]>(3, 1.0f);
+        commandMap.put("Linux", new String[] { "lsb_release", "-d" });
+        exec.setCommandsAndArguments(commandMap);
+        ExecutionResult ret = exec.execute();
+        if (ret.getSuccess())
+        {
+            osName += " (" + ret.getStdOut().replace("\n", "") + ")";
+        }
+        else
+        {
+            commandMap.put("Linux", new String[] { "uname", "-a" });
+            exec.setCommandsAndArguments(commandMap);
+            ret = exec.execute();
+            if (ret.getSuccess())
+            {
+                osName += " (" + ret.getStdOut().replace("\n", "") + ")";
+            }
+            else
+            {
+                osName += " (Unknown)";
+            }
+        }
+        return osName;
     }
 
     /**

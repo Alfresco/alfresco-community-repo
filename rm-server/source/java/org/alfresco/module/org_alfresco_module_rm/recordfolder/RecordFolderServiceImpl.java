@@ -351,6 +351,9 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         return createRecordFolder(rmContainer, name, TYPE_RECORD_FOLDER, properties);
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#getRecordFolders(org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
     public List<NodeRef> getRecordFolders(NodeRef record)
     {

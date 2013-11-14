@@ -1362,6 +1362,47 @@ public class CalendarHelpersTest
       assertEquals(10*60*60*1000, tz.getOffset(date(2011,5,1).getTime()));
    }
    
+   @Test
+   public void testICalParams()
+   {
+       // Outlook sends 2 POST requests when we are going to update series (one updated occurrence takes place).
+       String icalText = "BEGIN:VCALENDAR\r\nPRODID:-//Microsoft Corporation//Outlook 14.0 MIMEDIR//EN\r\nVERSION:2.0\r\nMETHOD:REQUEST\r\nX-MS-OLK-FORCEINSPECTOROPEN:TRUE\r\n"
+               // timezone info
+               + "BEGIN:VTIMEZONE\r\nTZID:E. Africa Standard Time\r\nBEGIN:STANDARD\r\nDTSTART:16010101T000000\r\nTZOFFSETFROM:+0400\r\nTZOFFSETTO:+0300\r\nEND:STANDARD\r\nEND:VTIMEZONE\r\n"
+               // series event info
+               + "BEGIN:VEVENT\r\nATTENDEE;CN=alfresco@admin.com;RSVP=TRUE:mailto:alfresco@admin.com\r\nCLASS:PUBLIC\r\nCREATED:20131111T115246Z\r\nDTEND;TZID=\"E. Africa Standard Time\":20131111T083000\r\nDTSTAMP:20131111T115246Z\r\nDTSTART;TZID=\"E. Africa Standard Time\":20131111T080000\r\nLAST-MODIFIED:20131111T115246Z\r\nLOCATION:SubjectLocation\r\nORGANIZER;CN=admin:mailto:admin@alfresco.com\r\nPRIORITY:5\r\nRRULE:FREQ=DAILY;COUNT=11\r\nSEQUENCE:2\r\nSUMMARY;LANGUAGE=ru:SeriesSubjectRenamed\r\nTRANSP:OPAQUE\r\nUID:040000008200E00074C5B7101A82E0080000000000E06362E6DECE010000000000000000100000001EEA71ED0E2CAC4DABF45387DD35DE90\r\nX-MICROSOFT-CDO-BUSYSTATUS:BUSY\r\nX-MICROSOFT-CDO-IMPORTANCE:1\r\nX-MICROSOFT-DISALLOW-COUNTER:FALSE\r\nX-MS-OLK-APPTLASTSEQUENCE:2\r\nX-MS-OLK-APPTSEQTIME:20131111T115246Z\r\nX-MS-OLK-AUTOFILLLOCATION:FALSE\r\nX-MS-OLK-CONFTYPE:0\r\nX-MS-OLK-MWSURL:http://localhost:7070/alfresco/hello?calendar=calendar\r\nBEGIN:VALARM\r\nTRIGGER:-PT15M\r\nACTION:DISPLAY\r\nDESCRIPTION:Reminder\r\nEND:VALARM\r\nEND:VEVENT\r\n"
+               // updated occurrence event info
+               + "BEGIN:VEVENT\r\nCLASS:PUBLIC\r\nCREATED:20131111T115246Z\r\nDTEND:20131113T053000Z\r\nDTSTAMP:20131111T114214Z\r\nDTSTART:20131113T050000Z\r\nLAST-MODIFIED:20131111T115246Z\r\nRECURRENCE-ID:20131113T050000Z\r\nSEQUENCE:0\r\nSUMMARY:Occurrencehello\r\nTRANSP:OPAQUE\r\nUID:040000008200E00074C5B7101A82E0080000000000E06362E6DECE010000000000000000100000001EEA71ED0E2CAC4DABF45387DD35DE90\r\nX-MICROSOFT-CDO-BUSYSTATUS:BUSY\r\nX-MS-OLK-APPTSEQTIME:20131111T114214Z\r\nBEGIN:VALARM\r\nTRIGGER:-PT15M\r\nACTION:DISPLAY\r\nDESCRIPTION:Reminder\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
+
+       icalText = icalText.replaceAll("\r\n\t", "");
+       icalText = icalText.replaceAll("\r\n ", "");
+       Map<String, String> icalParams = ICalHelper.getICalParams(icalText);
+
+       // Check that SUMMARY, DTEND, DTSTART parameters were not overridden by occurrence event
+       assertTrue(icalParams.get("SUMMARY").equals("SeriesSubjectRenamed"));
+       assertTrue(icalParams.get("DTEND").equals("20131111T083000"));
+       assertTrue(icalParams.get("DTSTART").equals("20131111T080000"));
+
+       // The second Outlook POST request that updates occurrence, which has been updated before. Outlook sets VTIMEZONE twice, we need the first one.
+       icalText = "BEGIN:VCALENDAR\r\nPRODID:-//Microsoft Corporation//Outlook 14.0 MIMEDIR//EN\r\nVERSION:2.0\r\nMETHOD:REQUEST\r\nX-MS-OLK-FORCEINSPECTOROPEN:TRUE\r\n"
+               + "BEGIN:VTIMEZONE\r\nTZID:E. Africa Standard Time\r\nBEGIN:STANDARD\r\nDTSTART:16010101T000000\r\nTZOFFSETFROM:+0400\r\nTZOFFSETTO:+0300\r\nEND:STANDARD\r\nEND:VTIMEZONE\r\n"
+               + "BEGIN:VTIMEZONE\r\nTZID:Unnamed Time Zone 1\r\nBEGIN:STANDARD\r\nDTSTART:16010101T000000\r\nTZOFFSETFROM:+0300\r\nTZOFFSETTO:+0300\r\nEND:STANDARD\r\nEND:VTIMEZONE\r\n"
+               + "BEGIN:VEVENT\r\nATTENDEE;CN=admin@alfresco.com;RSVP=TRUE:mailto:admin@alfresco.com\r\nCLASS:PUBLIC\r\nCREATED:20131111T135738Z\r\nDTEND;TZID=\"Unnamed Time Zone 1\":20131113T083000\r\nDTSTAMP:20131111T135739Z\r\nDTSTART;TZID=\"Unnamed Time Zone 1\":20131113T080000\r\nLAST-MODIFIED:20131111T135738Z\r\nLOCATION:location\r\nORGANIZER;CN=admin:mailto:admin@alfresco.com\r\nPRIORITY:5\r\nRECURRENCE-ID;TZID=\"E. Africa Standard Time\":20131113T080000\r\nSEQUENCE:9\r\nSUMMARY;LANGUAGE=ru:Occurrencehello\r\nTRANSP:OPAQUE\r\nUID:040000008200E00074C5B7101A82E0080000000000E06362E6DECE010000000000000000100000001EEA71ED0E2CAC4DABF45387DD35DE90\r\nX-MICROSOFT-CDO-BUSYSTATUS:BUSY\r\nX-MICROSOFT-CDO-IMPORTANCE:1\r\nX-MICROSOFT-DISALLOW-COUNTER:FALSE\r\nX-MS-OLK-APPTLASTSEQUENCE:8\r\nX-MS-OLK-APPTSEQTIME:20131111T135739Z\r\nX-MS-OLK-AUTOFILLLOCATION:FALSE\r\nX-MS-OLK-CONFTYPE:0\r\nX-MS-OLK-MWSURL:http://localhost:7070/alfresco/hello?calendar=calendar\r\nBEGIN:VALARM\r\nTRIGGER:-PT15M\r\nACTION:DISPLAY\r\nDESCRIPTION:Reminder\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
+
+       icalText = icalText.replaceAll("\r\n\t", "");
+       icalText = icalText.replaceAll("\r\n ", "");
+       icalParams = ICalHelper.getICalParams(icalText);
+       assertTrue(icalParams.get("TZ-TZID").equals("E. Africa Standard Time"));
+   }
+
+   private static class ICalHelper extends CalendarTimezoneHelper
+   {
+       protected static Map<String,String> getICalParams(String icalText)
+       {
+          return CalendarTimezoneHelper.getICalParams(icalText);
+       }        
+   }
+
    private static class RecurrenceHelper extends CalendarRecurrenceHelper
    {
       protected static void buildDailyRecurrences(Calendar currentDate, List<Date> dates, 

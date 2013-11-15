@@ -737,15 +737,7 @@
         <property name="serviceName"        value="cmis" />
         <property name="baseUrlGenerator"   ref="baseUrlGenerator" />
         <property name="version"            value="1.0"/>
-    </bean>
-
-    <bean   id="cmisAtomPubDispatcher1" class="org.alfresco.opencmis.PublicApiAtomPubCMISDispatcher" init-method="init">
-        <property name="descriptorService"  ref="DescriptorService"/>
-        <property name="cmisServiceFactory" ref="publicApiCMISServiceFactory"/>
-        <property name="registry"           ref="cmisDispatcherRegistry" />
-        <property name="serviceName"        value="cmis" />
-        <property name="baseUrlGenerator"   ref="baseUrlGenerator" />
-        <property name="version"            value="1"/>
+        <property name="cmisVersion"        value="1.0"/>
     </bean>
 
     <bean   id="cmisAtomPubDispatcher1.1" class="org.alfresco.opencmis.PublicApiAtomPubCMISDispatcher" init-method="init">
@@ -755,6 +747,7 @@
         <property name="serviceName"        value="cmis" />
         <property name="baseUrlGenerator"   ref="baseUrlGenerator" />
         <property name="version"            value="1.1"/>
+        <property name="cmisVersion"        value="1.1"/>
     </bean>
 
     <bean   id="cmisBrowserDispatcher1.1" class="org.alfresco.opencmis.PublicApiBrowserCMISDispatcher" init-method="init">
@@ -764,6 +757,7 @@
         <property name="registry"           ref="cmisDispatcherRegistry" />
         <property name="serviceName"        value="cmis" />
         <property name="version"            value="1.1"/>
+        <property name="cmisVersion"        value="1.1"/>
     </bean>
 
     <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.get" 

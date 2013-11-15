@@ -41,6 +41,7 @@ import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Endpoint;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
 import org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener;
 import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
@@ -64,6 +65,7 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 	protected String serviceName;
 	protected BaseUrlGenerator baseUrlGenerator;
 	protected String version;
+	protected CmisVersion cmisVersion;
 	
 	public void setDescriptorService(DescriptorService descriptorService)
 	{
@@ -100,7 +102,12 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 		return serviceName;
 	}
 	
-	protected synchronized Descriptor getCurrentDescriptor()
+	public void setCmisVersion(String cmisVersion)
+    {
+        this.cmisVersion = CmisVersion.fromValue(cmisVersion);
+    }
+
+    protected synchronized Descriptor getCurrentDescriptor()
 	{
 		if(this.currentDescriptor == null)
 		{
@@ -205,7 +212,7 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 			}
 			else if(arg0.equals(CmisAtomPubServlet.PARAM_CMIS_VERSION))
 			{
-				return version;
+				return (cmisVersion != null ? cmisVersion.value() : CmisVersion.CMIS_1_0.value());
 			}
 			return null;
 		}

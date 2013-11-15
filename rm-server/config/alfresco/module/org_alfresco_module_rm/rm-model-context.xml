@@ -91,7 +91,6 @@
       <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
       <property name="vitalRecordService" ref="VitalRecordService"/>
       <property name="nodeService" ref="nodeService"/>
-      <!-- FIXME -->
       <property name="recordService" ref="recordService"/>
       <property name="recordFolderService" ref="RecordFolderService"/>
    </bean>

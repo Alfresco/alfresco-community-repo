@@ -137,8 +137,7 @@
       <property name="recordService" ref="recordService"/>
       <property name="parameterProcessorComponent" ref="parameterProcessorComponent"/>
       <property name="modelSecurityService" ref="modelSecurityService" />
-      <!-- FIXME -->
-      <property name="recordFolderService" ref="recordFolderService" />
+      <property name="recordFolderService" ref="RecordFolderService" />
    </bean>
 
    <bean id="rmProxyAction"

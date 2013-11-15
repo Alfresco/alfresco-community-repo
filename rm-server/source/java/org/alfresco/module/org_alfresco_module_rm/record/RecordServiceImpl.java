@@ -163,8 +163,7 @@ public class RecordServiceImpl implements RecordService,
     private ExtendedSecurityService extendedSecurityService;
 
     /** Disposition service */
-    // FIXME
-    //private DispositionService dispositionService;
+    private DispositionService dispositionService;
 
     /** File plan service */
     private FilePlanService filePlanService;
@@ -188,8 +187,7 @@ public class RecordServiceImpl implements RecordService,
     private FileFolderService fileFolderService;
 
     /** Record folder service */
-    // FIXME
-    //private RecordFolderService recordFolderService;
+    private RecordFolderService recordFolderService;
 
     /** List of available record meta-data aspects */
     private Set<QName> recordMetaDataAspects;
@@ -257,10 +255,10 @@ public class RecordServiceImpl implements RecordService,
     /**
      * @param dispositionService    disposition service
      */
-//    public void setDispositionService(DispositionService dispositionService)
-//    {
-//        this.dispositionService = dispositionService;
-//    }
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
+    }
 
     /**
      * @param filePlanService   file plan service
@@ -321,10 +319,10 @@ public class RecordServiceImpl implements RecordService,
     /**
      * @param recordFolderService record folder service
      */
-//    public void setRecordFolderService(RecordFolderService recordFolderService)
-//    {
-//        this.recordFolderService = recordFolderService;
-//    }
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
+    }
 
     /**
      * Init method
@@ -860,8 +858,6 @@ public class RecordServiceImpl implements RecordService,
             if (childAssocRef != null)
             {
                 NodeRef parent = childAssocRef.getParentRef();
-                //FIXME
-                RecordFolderService recordFolderService = (RecordFolderService) applicationContext.getBean("RecordFolderService");
                 if (parent != null && recordFolderService.isRecordFolder(parent) == true)
                 {
                     result = true;
@@ -913,8 +909,6 @@ public class RecordServiceImpl implements RecordService,
             // initialise disposition details
             if (nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE) == false)
             {
-                //FIXME
-                DispositionService dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
                 DispositionSchedule di = dispositionService.getDispositionSchedule(record);
                 if (di != null && di.isRecordLevelDisposition() == true)
                 {
@@ -1295,8 +1289,6 @@ public class RecordServiceImpl implements RecordService,
         ParameterCheck.mandatory("recordFolder", recordFolder);
 
         List<NodeRef> result = new ArrayList<NodeRef>(1);
-        //FIXME
-        RecordFolderService recordFolderService = (RecordFolderService) applicationContext.getBean("RecordFolderService");
         if (recordFolderService.isRecordFolder(recordFolder) == true)
         {
             List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(recordFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);

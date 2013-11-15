@@ -51,9 +51,6 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Disposition service implementation.
@@ -63,7 +60,6 @@ import org.springframework.context.ApplicationContextAware;
 public class DispositionServiceImpl implements
                                         DispositionService,
                                         RecordsManagementModel,
-                                        ApplicationContextAware,
                                         NodeServicePolicies.OnAddAspectPolicy
 {
     /** Logger */
@@ -87,12 +83,8 @@ public class DispositionServiceImpl implements
     /** File plan service */
     private FilePlanService filePlanService;
 
-    /** Application context */
-    private ApplicationContext applicationContext;
-
     /** Record Folder Service */
-    // FIXME
-    //private RecordFolderService recordFolderService;
+    private RecordFolderService recordFolderService;
 
     /** Record Service */
     private RecordService recordService;
@@ -165,10 +157,10 @@ public class DispositionServiceImpl implements
     /**
      * @param recordFolderService   record folder service
      */
-//    public void setRecordFolderService(RecordFolderService recordFolderService)
-//    {
-//        this.recordFolderService = recordFolderService;
-//    }
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
+    }
 
     /**
      * @param recordService     record service
@@ -176,15 +168,6 @@ public class DispositionServiceImpl implements
     public void setRecordService(RecordService recordService)
     {
         this.recordService =  recordService;
-    }
-
-    /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
     }
 
     /**
@@ -295,8 +278,6 @@ public class DispositionServiceImpl implements
         if (serviceRegistry.getRecordService().isRecord(nodeRef) == true)
         {
             // Get the record folders for the record
-            // FIXME
-            RecordFolderService recordFolderService = (RecordFolderService)applicationContext.getBean("recordFolderService");
             List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);
             // At this point, we may have disposition instruction objects from 1..n folders.
             diNodeRef = dispositionSelectionStrategy.selectDispositionScheduleFrom(recordFolders);
@@ -469,8 +450,6 @@ public class DispositionServiceImpl implements
     {
         List<NodeRef> items = filePlanService.getAllContained(rmContainer);
         List<NodeRef> result = new ArrayList<NodeRef>(items.size());
-        // FIXME
-        RecordFolderService recordFolderService = (RecordFolderService)applicationContext.getBean("recordFolderService");
         for (NodeRef item : items)
         {
             if (recordFolderService.isRecordFolder(item) == true)

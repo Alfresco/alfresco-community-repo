@@ -42,9 +42,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -56,7 +53,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class RecordFolderServiceImpl extends    ServiceBaseImpl
                                      implements RecordFolderService,
                                                 RecordsManagementModel,
-                                                ApplicationContextAware,
                                                 NodeServicePolicies.OnCreateChildAssociationPolicy
 {
     /** I18N */
@@ -65,9 +61,6 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     private final static String MSG_PARENT_RECORD_FOLDER_TYPE = "rm.service.parent-record-folder-type";
     private final static String MSG_RECORD_FOLDER_TYPE = "rm.service.record-folder-type";
 
-    /** Application context */
-    private ApplicationContext applicationContext;
-
     /** Policy component */
     private PolicyComponent policyComponent;
 
@@ -75,10 +68,10 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     private DispositionService dispositionService;
 
     /** Record Service */
-//    private RecordService recordService;
+    private RecordService recordService;
 
     /** File Plan Service */
-//    private FilePlanService filePlanService;
+    private FilePlanService filePlanService;
 
     /** Behaviours */
     private JavaBehaviour onCreateChildAssociation
@@ -109,26 +102,17 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     /**
      * @param recordService     record service
      */
-//    public void setRecordService(RecordService recordService)
-//    {
-//        this.recordService = recordService;
-//    }
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
 
     /**
      * @param filePlanService   file plan service
      */
-//    public void setFilePlanService(FilePlanService filePlanService)
-//    {
-//        this.filePlanService = filePlanService;
-//    }
-
-    /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    public void setFilePlanService(FilePlanService filePlanService)
     {
-        this.applicationContext = applicationContext;
+        this.filePlanService = filePlanService;
     }
 
    /**
@@ -230,9 +214,6 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         boolean result = true;
 
         // Check that each record in the record folder in declared
-
-        // FIXME
-        RecordService recordService = (RecordService) applicationContext.getBean("recordService");
         List<NodeRef> records = recordService.getRecords(nodeRef);
         for (NodeRef record : records)
         {
@@ -287,8 +268,6 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         // "properties" is not mandatory
 
         // Check that we are not trying to create a record folder in a root container
-        // FIXME
-        FilePlanService filePlanService = (FilePlanService) applicationContext.getBean("FilePlanService");
         if (filePlanService.isFilePlan(rmContainer) == true)
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PARENT_RECORD_FOLDER_ROOT));
@@ -360,8 +339,6 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("record", record);
 
         List<NodeRef> result = new ArrayList<NodeRef>(1);
-        // FIXME
-        RecordService recordService = (RecordService) applicationContext.getBean("RecordService");
         if (recordService.isRecord(record) == true)
         {
             List<ChildAssociationRef> assocs = this.nodeService.getParentAssocs(record, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);

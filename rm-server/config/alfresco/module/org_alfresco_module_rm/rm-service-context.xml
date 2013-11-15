@@ -184,9 +184,8 @@
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="policyComponent" ref="policyComponent" />
         <property name="filePlanService" ref="FilePlanService" />
-        <!-- FIXME -->
-        <!-- <property name="recordFolderService" ref="RecordFolderService"/> -->
-        <property name="recordService" ref="recordService"/>
+        <property name="recordFolderService" ref="RecordFolderService"/>
+        <property name="recordService" ref="RecordService"/>
         <property name="dispositionSelectionStrategy">
            <ref local="org_alfresco_module_rm_dispositionSelectionStrategy" />
         </property>
@@ -196,8 +195,12 @@
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService</value>
         </property>
-        <property name="target">
-            <ref bean="dispositionService"/>
+        <property name="targetSource">
+            <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
+                <property name="targetBeanName">
+                   <idref bean="dispositionService"/>
+                </property>
+            </bean>
         </property>
         <property name="interceptorNames">
             <list>
@@ -975,9 +978,8 @@
     <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl" init-method="init">
         <property name="policyComponent" ref="policyComponent" />
         <property name="nodeService" ref="nodeService" />
-        <property name="dictionaryService" ref="dictionaryService" />
-        <!-- FIXME -->
-        <property name="recordService" ref="recordService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="recordService" ref="RecordService" />
         <property name="filePlanService" ref="FilePlanService" />
         <property name="permissionService" ref="PermissionService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
@@ -1130,9 +1132,8 @@
         <property name="policyComponent" ref="policyComponent" />
         <property name="dispositionService" ref="DispositionService" />
         <property name="dictionaryService" ref="DictionaryService" />
-        <!-- FIXME -->
-        <!-- <property name="filePlanService" ref="FilePlanService" /> -->
-        <!-- <property name="recordService" ref="RecordService" /> -->
+        <property name="filePlanService" ref="FilePlanService" />
+        <property name="recordService" ref="RecordService" />
     </bean>
 
     <bean id="RecordFolderService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1180,6 +1181,7 @@
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolderClosed=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.createRecordFolder=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.getRecordFolders=RM.Read.0,AFTER_RM.FilterNode
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.initialiseRecordFolder=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.*=RM_DENY
                 ]]>
             </value>
@@ -1195,24 +1197,26 @@
         <property name="permissionService" ref="ExtendedPermissionService"/>
         <property name="extendedSecurityService" ref="ExtendedSecurityService" />
         <property name="policyComponent" ref="policyComponent" />
-        <!-- FIXME -->
-        <!-- <property name="dispositionService" ref="DispositionService" /> -->
+        <property name="dispositionService" ref="DispositionService" />
         <property name="filePlanService" ref="FilePlanService" />
         <property name="ownableService" ref="OwnableService" />
         <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
         <property name="capabilityService" ref="CapabilityService" />
         <property name="ruleService" ref="RuleService" />
         <property name="fileFolderService" ref="FileFolderService" />
-        <!-- FIXME -->
-        <!-- <property name="recordFolderService" ref="RecordFolderService" /> -->
+        <property name="recordFolderService" ref="RecordFolderService" />
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.record.RecordService</value>
         </property>
-        <property name="target">
-            <ref bean="recordService"/>
+        <property name="targetSource">
+            <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
+                <property name="targetBeanName">
+                   <idref bean="recordService"/>
+                </property>
+            </bean>
         </property>
         <property name="interceptorNames">
             <list>
@@ -1255,6 +1259,7 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.hideRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isPropertyEditable=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isMetadataStub=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecords=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>
@@ -1545,8 +1550,7 @@
         <property name="filePlanRoleService" ref="FilePlanRoleService"/>
         <property name="recordsManagementSearchBehaviour" ref="recordsManagementSearchBehaviour"/>
         <property name="dispositionService" ref="DispositionService"/>
-        <!-- FIXME -->
-        <property name="recordFolderService" ref="recordFolderService"/>
+        <property name="recordFolderService" ref="RecordFolderService"/>
     </bean>
 
     <bean id="DataSetService" class="org.springframework.aop.framework.ProxyFactoryBean">

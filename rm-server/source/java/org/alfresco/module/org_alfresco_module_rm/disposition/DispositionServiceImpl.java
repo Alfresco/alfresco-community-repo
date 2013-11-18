@@ -275,7 +275,7 @@ public class DispositionServiceImpl implements
     {
         DispositionSchedule di = null;
         NodeRef diNodeRef = null;
-        if (serviceRegistry.getRecordService().isRecord(nodeRef) == true)
+        if (recordService.isRecord(nodeRef) == true)
         {
             // Get the record folders for the record
             List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);

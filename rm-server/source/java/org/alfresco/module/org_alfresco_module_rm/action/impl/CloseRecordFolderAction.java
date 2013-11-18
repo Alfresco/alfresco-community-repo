@@ -20,11 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Action to close the records folder
@@ -33,12 +29,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
 {
-    /** Logger */
-    private static Log logger = LogFactory.getLog(CloseRecordFolderAction.class);
-
-    /** I18N */
-    private static final String MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER = "rm.action.close-record-folder-not-folder";
-
     /** Parameter names */
     public static final String PARAM_CLOSE_PARENT = "closeParent";
 
@@ -49,31 +39,29 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) == true &&
-            freezeService.isFrozen(actionedUponNodeRef) == false)
+        if (eligibleForAction(actionedUponNodeRef) == true)
         {
-            if (recordService.isRecord(actionedUponNodeRef))
-            {
-                ChildAssociationRef assocRef = nodeService.getPrimaryParent(actionedUponNodeRef);
-                if (assocRef != null)
-                {
-                    actionedUponNodeRef = assocRef.getParentRef();
-                }
-            }
-
-            if (recordFolderService.isRecordFolder(actionedUponNodeRef) == true)
-            {
-                Boolean isClosed = (Boolean) nodeService.getProperty(actionedUponNodeRef, PROP_IS_CLOSED);
-                if (Boolean.FALSE.equals(isClosed) == true)
-                {
-                    nodeService.setProperty(actionedUponNodeRef, PROP_IS_CLOSED, true);
-                }
-            }
-            else
-            {
-                if (logger.isWarnEnabled())
-                    logger.warn(I18NUtil.getMessage(MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER, actionedUponNodeRef.toString()));
-            }
+            recordFolderService.closeFolder(actionedUponNodeRef);
         }
+    }
+
+    /**
+     * Helper method to check the actioned upon node reference to decide to execute the action
+     * The preconditions are:
+     *  - The node must exist
+     *  - The node must not be frozen
+     *
+     * @param actionedUponNodeRef node reference
+     * @return Return true if the node reference passes all the preconditions for executing the action, false otherwise
+     */
+    private boolean eligibleForAction(NodeRef actionedUponNodeRef)
+    {
+        boolean result = false;
+        if (nodeService.exists(actionedUponNodeRef) == true &&
+                freezeService.isFrozen(actionedUponNodeRef) == false)
+        {
+            result = true;
+        }
+        return result;
     }
 }

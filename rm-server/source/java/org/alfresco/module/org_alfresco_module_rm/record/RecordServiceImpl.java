@@ -88,6 +88,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Record service implementation.
@@ -106,6 +107,9 @@ public class RecordServiceImpl implements RecordService,
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
+
+    /** I18N */
+    private static final String MSG_NODE_HAS_ASPECT = "rm.service.node-has-aspect";
 
     /** Always edit property array */
     private static final QName[] ALWAYS_EDIT_PROPERTIES = new QName[]
@@ -1291,7 +1295,7 @@ public class RecordServiceImpl implements RecordService,
         List<NodeRef> result = new ArrayList<NodeRef>(1);
         if (recordFolderService.isRecordFolder(recordFolder) == true)
         {
-            List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(recordFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(recordFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)
             {
                 NodeRef child = assoc.getChildRef();
@@ -1302,5 +1306,24 @@ public class RecordServiceImpl implements RecordService,
             }
         }
         return result;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#addRecordType(NodeRef, QName)
+     */
+    @Override
+    public void addRecordType(NodeRef nodeRef, QName typeQName)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("typeQName", typeQName);
+
+        if (nodeService.hasAspect(nodeRef, typeQName) == false)
+        {
+            nodeService.addAspect(nodeRef, typeQName, null);
+        }
+        else
+        {
+            logger.info(I18NUtil.getMessage(MSG_NODE_HAS_ASPECT, nodeRef.toString(), typeQName.toString()));
+        }
     }
 }

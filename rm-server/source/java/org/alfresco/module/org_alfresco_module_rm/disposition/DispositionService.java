@@ -209,4 +209,11 @@ public interface DispositionService
      * @since 2.0
      */
     boolean isCutoff(NodeRef nodeRef);
+
+    /**
+     * Updates the next disposition action
+     *
+     * @param nodeRef   node reference
+     */
+    void updateNextDispositionAction(NodeRef nodeRef);
 }

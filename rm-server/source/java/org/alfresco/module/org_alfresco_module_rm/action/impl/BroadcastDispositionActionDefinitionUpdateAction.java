@@ -43,19 +43,19 @@ import org.apache.commons.logging.LogFactory;
  * Action to implement the consequences of a change to the value of the DispositionActionDefinition
  * properties. When these properties are changed on a disposition schedule, then any associated
  * disposition actions may need to be updated as a consequence.
- * 
+ *
  * @author Neil McErlean
  */
 public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionExecuterAbstractBase
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(BroadcastDispositionActionDefinitionUpdateAction.class);
-    
+
     public static final String NAME = "broadcastDispositionActionDefinitionUpdate";
     public static final String CHANGED_PROPERTIES = "changedProperties";
-    
+
     private BehaviourFilter behaviourFilter;
-    
+
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
@@ -73,14 +73,14 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         {
             return;
         }
-        
+
         List<QName> changedProps = (List<QName>)action.getParameterValue(CHANGED_PROPERTIES);
 
         // Navigate up the containment hierarchy to get the record category grandparent and schedule.
         NodeRef dispositionScheduleNode = nodeService.getPrimaryParent(actionedUponNodeRef).getParentRef();
         NodeRef rmContainer = nodeService.getPrimaryParent(dispositionScheduleNode).getParentRef();
         DispositionSchedule dispositionSchedule = dispositionService.getAssociatedDispositionSchedule(rmContainer);
-        
+
         behaviourFilter.disableBehaviour();
         try
         {
@@ -95,9 +95,9 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             behaviourFilter.enableBehaviour();
         }
     }
-    
+
     /**
-     * 
+     *
      * @param ds
      * @param disposableItem
      * @param dispositionActionDefinition
@@ -111,7 +111,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         if (itemDs != null &&
             itemDs.getNodeRef().equals(ds.getNodeRef()) == true)
         {
-            if (this.nodeService.hasAspect(disposableItem, ASPECT_DISPOSITION_LIFECYCLE))
+            if (nodeService.hasAspect(disposableItem, ASPECT_DISPOSITION_LIFECYCLE))
             {
                 // disposition lifecycle already exists for node so process changes
                 processActionDefinitionChanges(dispositionActionDefinition, changedProps, disposableItem);
@@ -119,43 +119,43 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             else
             {
                 // disposition lifecycle does not exist on the node so setup disposition
-                updateNextDispositionAction(disposableItem);
+                dispositionService.updateNextDispositionAction(disposableItem);
             }
-            
+
             // update rolled up search information
             rollupSearchProperties(disposableItem);
         }
     }
-    
+
     /**
      * Manually update the rolled up search properties
-     * 
+     *
      * @param disposableItem    disposable item
      */
     private void rollupSearchProperties(NodeRef disposableItem)
     {
         DispositionAction da = dispositionService.getNextDispositionAction(disposableItem);
         if (da != null)
-        {        
+        {
             Map<QName, Serializable> props = nodeService.getProperties(disposableItem);
-            
-            props.put(PROP_RS_DISPOSITION_ACTION_NAME, da.getName()); 
-            props.put(PROP_RS_DISPOSITION_ACTION_AS_OF, da.getAsOfDate()); 
-            props.put(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE, this.nodeService.getProperty(da.getNodeRef(), PROP_DISPOSITION_EVENTS_ELIGIBLE));
-            
-            DispositionActionDefinition daDefinition = da.getDispositionActionDefinition();        
+
+            props.put(PROP_RS_DISPOSITION_ACTION_NAME, da.getName());
+            props.put(PROP_RS_DISPOSITION_ACTION_AS_OF, da.getAsOfDate());
+            props.put(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE, nodeService.getProperty(da.getNodeRef(), PROP_DISPOSITION_EVENTS_ELIGIBLE));
+
+            DispositionActionDefinition daDefinition = da.getDispositionActionDefinition();
             Period period = daDefinition.getPeriod();
             if (period != null)
             {
                 props.put(PROP_RS_DISPOSITION_PERIOD, period.getPeriodType());
-                props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, period.getExpression());            
+                props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, period.getExpression());
             }
             else
             {
                 props.put(PROP_RS_DISPOSITION_PERIOD, null);
                 props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, null);
             }
-            
+
             List<EventCompletionDetails> events = da.getEventCompletionDetails();
             List<String> list = new ArrayList<String>(events.size());
             for (EventCompletionDetails event : events)
@@ -163,7 +163,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
                 list.add(event.getEventName());
             }
             props.put(PROP_RS_DISPOSITION_EVENTS, (Serializable)list);
-            
+
             nodeService.setProperties(disposableItem, props);
         }
     }
@@ -171,7 +171,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     /**
      * Processes all the changes applied to the given disposition
      * action definition node for the given record or folder node.
-     * 
+     *
      * @param dispositionActionDef The disposition action definition node
      * @param changedProps The set of properties changed on the action definition
      * @param recordOrFolder The record or folder the changes potentially need to be applied to
@@ -189,12 +189,12 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             {
                 persistPeriodChanges(dispositionActionDef, nextAction);
             }
-            
+
             if (changedProps.contains(PROP_DISPOSITION_EVENT) || changedProps.contains(PROP_DISPOSITION_EVENT_COMBINATION))
             {
                 persistEventChanges(dispositionActionDef, nextAction);
             }
-            
+
             if (changedProps.contains(PROP_DISPOSITION_ACTION_NAME))
             {
                 String action = (String)nodeService.getProperty(dispositionActionDef, PROP_DISPOSITION_ACTION_NAME);
@@ -202,20 +202,20 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             }
         }
     }
-    
+
     /**
      * Determines whether the disposition action definition (step) being
      * updated has any effect on the given next action
-     *  
+     *
      * @param dispositionActionDef The disposition action definition node
-     * @param nextAction The next disposition action 
+     * @param nextAction The next disposition action
      * @return true if the step change affects the next action
      */
-    private boolean doesChangedStepAffectNextAction(NodeRef dispositionActionDef, 
+    private boolean doesChangedStepAffectNextAction(NodeRef dispositionActionDef,
                 DispositionAction nextAction)
     {
         boolean affectsNextAction = false;
-        
+
         if (dispositionActionDef != null && nextAction != null)
         {
             // check whether the id of the action definition node being changed
@@ -226,10 +226,10 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
                 affectsNextAction = true;
             }
         }
-        
+
         return affectsNextAction;
     }
-    
+
     /**
      * Persists any changes made to the period on the given disposition action
      * definition on the given next action.
@@ -240,24 +240,24 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     private void persistPeriodChanges(NodeRef dispositionActionDef, DispositionAction nextAction)
     {
         Date newAsOfDate = null;
-        Period dispositionPeriod = (Period)nodeService.getProperty(dispositionActionDef, PROP_DISPOSITION_PERIOD);
-        
+        Period dispositionPeriod = (Period) nodeService.getProperty(dispositionActionDef, PROP_DISPOSITION_PERIOD);
+
         if (dispositionPeriod != null)
         {
             // calculate the new as of date as we have been provided a new period
             Date now = new Date();
             newAsOfDate = dispositionPeriod.getNextDate(now);
         }
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("Set disposition as of date for next action '" + nextAction.getName() + 
+            logger.debug("Set disposition as of date for next action '" + nextAction.getName() +
                         "' (" + nextAction.getNodeRef() + ") to: " + newAsOfDate);
         }
-        
-        this.nodeService.setProperty(nextAction.getNodeRef(), PROP_DISPOSITION_AS_OF, newAsOfDate);
+
+        nodeService.setProperty(nextAction.getNodeRef(), PROP_DISPOSITION_AS_OF, newAsOfDate);
     }
-    
+
     /**
      * Persists any changes made to the events on the given disposition action
      * definition on the given next action.
@@ -269,7 +269,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     private void persistEventChanges(NodeRef dispositionActionDef, DispositionAction nextAction)
     {
         // go through the current events on the next action and remove any that are not present any more
-        List<String> stepEvents = (List<String>)nodeService.getProperty(dispositionActionDef, PROP_DISPOSITION_EVENT);
+        List<String> stepEvents = (List<String>) nodeService.getProperty(dispositionActionDef, PROP_DISPOSITION_EVENT);
         List<EventCompletionDetails> eventsList = nextAction.getEventCompletionDetails();
         List<String> nextActionEvents = new ArrayList<String>(eventsList.size());
         for (EventCompletionDetails event : eventsList)
@@ -277,19 +277,19 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             // take note of the event names present on the next action
             String eventName = event.getEventName();
             nextActionEvents.add(eventName);
-            
+
             // if the event has been removed delete from next action
             if (stepEvents != null && stepEvents.contains(event.getEventName()) == false)
             {
                 // remove the child association representing the event
                 nodeService.removeChild(nextAction.getNodeRef(), event.getNodeRef());
-                
+
                 if (logger.isDebugEnabled())
-                    logger.debug("Removed '" + eventName + "' from next action '" + nextAction.getName() + 
+                    logger.debug("Removed '" + eventName + "' from next action '" + nextAction.getName() +
                                 "' (" + nextAction.getNodeRef() + ")");
             }
         }
-        
+
         // go through the disposition action definition step events and add any new ones
         if (stepEvents != null)
         {
@@ -298,29 +298,29 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
 	            if (!nextActionEvents.contains(eventName))
 	            {
 	                createEvent(recordsManagementEventService.getEvent(eventName), nextAction.getNodeRef());
-	                
+
 	                if (logger.isDebugEnabled())
 	                {
-	                    logger.debug("Added '" + eventName + "' to next action '" + nextAction.getName() + 
+	                    logger.debug("Added '" + eventName + "' to next action '" + nextAction.getName() +
 	                                "' (" + nextAction.getNodeRef() + ")");
 	                }
 	            }
 	        }
         }
-        
+
         // NOTE: eventsList contains all the events that have been updated!
         // TODO: manually update the search properties for the parent node!
-        
+
         // finally since events may have changed re-calculate the events eligible flag
         boolean eligible = updateEventEligible(nextAction);
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("Set events eligible flag to '" + eligible + "' for next action '" + nextAction.getName() + 
+            logger.debug("Set events eligible flag to '" + eligible + "' for next action '" + nextAction.getName() +
                         "' (" + nextAction.getNodeRef() + ")");
         }
     }
-    
+
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {

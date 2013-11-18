@@ -699,7 +699,7 @@
    </bean>
 
    <bean id="transfer" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction" parent="rmAction">
-      <property name="filePlanService" ref="FilePlanService" />
+      <property name="transferService" ref="RmTransferService" />
       <property name="isAccession" value="false"/>
    </bean>
 
@@ -717,6 +717,7 @@
    </bean>
 
    <bean id="transferComplete" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction" parent="rmAction" >
+      <property name="transferService" ref="RmTransferService" />
       <property name="auditedImmediately" value="true"/>
    </bean>
 
@@ -744,7 +745,7 @@
    </bean>
 
    <bean id="accession" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction" parent="rmAction">
-      <property name="filePlanService" ref="FilePlanService" />
+      <property name="transferService" ref="RmTransferService" />
       <property name="isAccession" value="true"/>
    </bean>
 
@@ -762,6 +763,7 @@
    </bean>
 
    <bean id="accessionComplete" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction" parent="rmAction">
+      <property name="transferService" ref="RmTransferService" />
       <property name="auditedImmediately" value="true"/>
    </bean>
 

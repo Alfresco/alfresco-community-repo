@@ -187,7 +187,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
                 if (nodeService.exists(actionedUponNodeRef) == true && getSetDispositionActionComplete() == true)
                 {
                     // Update the disposition schedule
-                    updateNextDispositionAction(actionedUponNodeRef);
+                    dispositionService.updateNextDispositionAction(actionedUponNodeRef);
                 }
             }
             else

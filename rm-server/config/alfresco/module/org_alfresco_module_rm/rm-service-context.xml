@@ -3,9 +3,9 @@
 
 <beans>
 
-	<!--  Helper beans -->
+   <!--  Helper beans -->
 
-	<bean id="baseTransaction" abstract="true" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+   <bean id="baseTransaction" abstract="true" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
         </property>
@@ -26,12 +26,12 @@
         <property name="afterInvocationManager">
             <ref bean="afterInvocationManager"/>
         </property>
-  	</bean>
+     </bean>
 
-  	<bean id="baseService" abstract="true">
-  	   <property name="nodeService" ref="NodeService"/>
-  	   <property name="dictionaryService" ref="DictionaryService"/>
-  	</bean>
+     <bean id="baseService" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="dictionaryService" ref="DictionaryService"/>
+     </bean>
 
     <!-- Records Management Service Registry -->
 
@@ -259,7 +259,12 @@
     </bean>
 
     <!--  Transfer Service -->
-    <bean id="rmTransferService" class="org.alfresco.module.org_alfresco_module_rm.transfer.TransferServiceImpl" parent="baseService" />
+    <bean id="rmTransferService" class="org.alfresco.module.org_alfresco_module_rm.transfer.TransferServiceImpl" parent="baseService">
+        <property name="filePlanService" ref="FilePlanService" />
+        <property name="dispositionService" ref="DispositionService" />
+        <property name="recordService" ref="RecordService" />
+        <property name="recordFolderService" ref="RecordFolderService" />
+    </bean>
 
     <bean id="RmTransferService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
@@ -367,74 +372,74 @@
         <property name="namespaceService" ref="NamespaceService" />
         <property name="searchService" ref="SearchService" />
         <property name="reportsJSON">
-        	<value>
+           <value>
                 <![CDATA[
                 [
-                	{
-                		"name" : "rm.savedsearch.vitalRecordsName",
-                		"description" : "rm.savedsearch.vitalRecordsDesc",
-                		"search" : "rma:reviewAsOf:[MIN TO TODAY]",
-                		"searchparams" :
-                		{
-                			"records" : true,
-                			"vitalrecords" : true
-                		}
-                	},
-                	{
-                		"name" : "rm.savedsearch.incompleteRecordsName",
-                		"description" : "rm.savedsearch.incompleteRecordsDesc",
-                		"search" : "ISNODE:T AND NOT ASPECT:\"rma:declaredRecord\"",
-                		"searchparams" :
-                		{
-                			"records" : true,
-                			"recordfolders" : false,
-                			"undeclaredrecords" : true
-                		}
-                	},
-                	{
-                		"name" : "rm.savedsearch.cutoffRecordsName",
-                		"description" : "rm.savedsearch.cutoffRecordsDesc",
-                		"search" : "dispositionActionName:\"cutoff\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY]) AND NOT ASPECT:\"rma:cutoff\"",
-                		"searchparams" :
-                		{
-                			"records" : true,
-                			"recordfolders" : true
-                		}
-                	},
-                	{
-                		"name" : "rm.savedsearch.transferRecordsName",
-                		"description" : "rm.savedsearch.transferRecordsDesc",
-                		"search" : "dispositionActionName:\"transfer\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY]) AND NOT ASPECT:\"rma:transferred\" AND NOT ASPECT:\"rma:transferring\"",
-                		"searchparams" :
-                		{
-                			"records" : true,
-                			"recordfolders" : true,
-                			"cutoff" : true
-                		}
-                	},
-                	{
-                		"name" : "rm.savedsearch.destructionRecordsName",
-                		"description" : "rm.savedsearch.destructionRecordsDesc",
-                		"search" : "dispositionActionName:\"destroy\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY]) AND NOT ASPECT:\"rma:ghosted\"",
-                		"searchparams" :
-                		{
-                			"records" : true,
-                			"recordfolders" : true,
-                			"cutoff" : true
-                		}
-                	},
-                	{
-                		"name" : "rm.savedsearch.frozenRecordsName",
-                		"description" : "rm.savedsearch.frozenRecordsDesc",
-                		"search" : "ISNODE:T",
-                		"searchparams" :
-                		{
-                			"records" : true,
-                			"recordfolders" : true,
-                			"frozen" : true,
-                			"undeclaredrecords" : true
-                		}
-                	}
+                   {
+                      "name" : "rm.savedsearch.vitalRecordsName",
+                      "description" : "rm.savedsearch.vitalRecordsDesc",
+                      "search" : "rma:reviewAsOf:[MIN TO TODAY]",
+                      "searchparams" :
+                      {
+                         "records" : true,
+                         "vitalrecords" : true
+                      }
+                   },
+                   {
+                      "name" : "rm.savedsearch.incompleteRecordsName",
+                      "description" : "rm.savedsearch.incompleteRecordsDesc",
+                      "search" : "ISNODE:T AND NOT ASPECT:\"rma:declaredRecord\"",
+                      "searchparams" :
+                      {
+                         "records" : true,
+                         "recordfolders" : false,
+                         "undeclaredrecords" : true
+                      }
+                   },
+                   {
+                      "name" : "rm.savedsearch.cutoffRecordsName",
+                      "description" : "rm.savedsearch.cutoffRecordsDesc",
+                      "search" : "dispositionActionName:\"cutoff\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY]) AND NOT ASPECT:\"rma:cutoff\"",
+                      "searchparams" :
+                      {
+                         "records" : true,
+                         "recordfolders" : true
+                      }
+                   },
+                   {
+                      "name" : "rm.savedsearch.transferRecordsName",
+                      "description" : "rm.savedsearch.transferRecordsDesc",
+                      "search" : "dispositionActionName:\"transfer\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY]) AND NOT ASPECT:\"rma:transferred\" AND NOT ASPECT:\"rma:transferring\"",
+                      "searchparams" :
+                      {
+                         "records" : true,
+                         "recordfolders" : true,
+                         "cutoff" : true
+                      }
+                   },
+                   {
+                      "name" : "rm.savedsearch.destructionRecordsName",
+                      "description" : "rm.savedsearch.destructionRecordsDesc",
+                      "search" : "dispositionActionName:\"destroy\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY]) AND NOT ASPECT:\"rma:ghosted\"",
+                      "searchparams" :
+                      {
+                         "records" : true,
+                         "recordfolders" : true,
+                         "cutoff" : true
+                      }
+                   },
+                   {
+                      "name" : "rm.savedsearch.frozenRecordsName",
+                      "description" : "rm.savedsearch.frozenRecordsDesc",
+                      "search" : "ISNODE:T",
+                      "searchparams" :
+                      {
+                         "records" : true,
+                         "recordfolders" : true,
+                         "frozen" : true,
+                         "undeclaredrecords" : true
+                      }
+                   }
                 ]
                 ]]>
             </value>
@@ -495,8 +500,8 @@
 
     <!--  File Plan Service -->
 
-	<bean id="filePlanService"
-	      parent="baseService"
+   <bean id="filePlanService"
+         parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
         <!--  NOTE:  for some reason we need to grab these references within the class to avoid cyclic Spring issues! -->
         <!-- <property name="permissionService" ref="permissionService"/> -->
@@ -555,10 +560,10 @@
         </property>
     </bean>
 
-	<!--  File Plan Permission Service -->
+   <!--  File Plan Permission Service -->
 
-	<bean id="filePlanPermissionService"
-	      parent="baseService"
+   <bean id="filePlanPermissionService"
+         parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionServiceImpl"
           init-method="init">
         <property name="permissionService" ref="PermissionService"/>
@@ -610,7 +615,7 @@
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.setPermission=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.deletePermission=RM_ALLOW
-    			org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.*=RM_DENY
+             org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.*=RM_DENY
                 ]]>
             </value>
         </property>
@@ -690,7 +695,7 @@
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.assignRoleToAuthority=RM_CAP.0.rma:filePlanComponent.CreateModifyDestroyUsersAndGroups
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.unassignRoleFromAuthority=RM_CAP.0.rma:filePlanComponent.CreateModifyDestroyUsersAndGroups
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getAllRolesContainerGroup=RM_ALLOW
-    			org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.*=RM_DENY
+             org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.*=RM_DENY
                 ]]>
             </value>
         </property>
@@ -732,7 +737,7 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-    			org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService.*=RM_ALLOW
+             org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService.*=RM_ALLOW
                 ]]>
             </value>
         </property>
@@ -744,10 +749,10 @@
           class="org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityServiceImpl"
           init-method="init">
         <property name="enabled" value="true" />
-    	<property name="policyComponent" ref="policyComponent" />
-    	<property name="nodeService" ref="NodeService" />
-    	<property name="namespaceService" ref="namespaceService" />
-    	<property name="filePlanService" ref="FilePlanService" />
+       <property name="policyComponent" ref="policyComponent" />
+       <property name="nodeService" ref="NodeService" />
+       <property name="namespaceService" ref="namespaceService" />
+       <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
     <bean id="ModelSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -790,7 +795,7 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-    			org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService.*=RM_ALLOW
+             org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService.*=RM_ALLOW
                 ]]>
             </value>
         </property>
@@ -936,12 +941,12 @@
         <property name="contentService" ref="contentService"/>
         <property name="dictionaryRepositoryBootstrap" ref="dictionaryRepositoryBootstrap"/>
         <property name="customisableTypes">
-        	<list>
-        	    <value>rma:recordCategory</value>
-        		<value>rma:recordFolder</value>
-        		<value>rma:record</value>
-        		<value>rma:nonElectronicDocument</value>
-        	</list>
+           <list>
+               <value>rma:recordCategory</value>
+              <value>rma:recordFolder</value>
+              <value>rma:record</value>
+              <value>rma:nonElectronicDocument</value>
+           </list>
         </property>
     </bean>
 
@@ -1320,7 +1325,7 @@
 
     <bean id="filePlanAuthenticationService"
           class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl">
-     	<property name="rmAdminUserName" value="${bootstrap.rmadmin.name}" />
+        <property name="rmAdminUserName" value="${bootstrap.rmadmin.name}" />
         <property name="tenantService">
             <ref bean="tenantService"/>
         </property>
@@ -1348,7 +1353,7 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-    			org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService.*=RM_ALLOW
+             org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService.*=RM_ALLOW
                 ]]>
             </value>
         </property>
@@ -1433,15 +1438,15 @@
     <!--  RM Notification Helper -->
     <bean id="recordsManagementNotificationHelper" class="org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper" >
         <property name="filePlanRoleService" ref="FilePlanRoleService"/>
-    	<property name="notificationService" ref="NotificationService"/>
-    	<property name="filePlanService" ref="FilePlanService"/>
-  		<property name="nodeService" ref="nodeService"/>
-  		<property name="tenantAdminService" ref="tenantAdminService"/>
+       <property name="notificationService" ref="NotificationService"/>
+       <property name="filePlanService" ref="FilePlanService"/>
+        <property name="nodeService" ref="nodeService"/>
+        <property name="tenantAdminService" ref="tenantAdminService"/>
         <property name="namespaceService" ref="namespaceService"/>
         <property name="searchService" ref="searchService"/>
         <property name="siteService" ref="SiteService" />
         <property name="authorityService" ref="authorityService" />
-    	<property name="notificationRole" value="${rm.notification.role}"/>
+       <property name="notificationRole" value="${rm.notification.role}"/>
     </bean>
 
     <!-- RM caveats -->
@@ -1470,12 +1475,12 @@
     </bean>
 
      <!-- ===================================== -->
- 	 <!-- Record Management Caveat Config Cache -->
- 	 <!-- ===================================== -->
+     <!-- Record Management Caveat Config Cache -->
+     <!-- ===================================== -->
 
- 	 <!-- The cross-transaction shared cache for in-memory CaveatConfig -->
+     <!-- The cross-transaction shared cache for in-memory CaveatConfig -->
 
- 	 <bean name="caveatConfigSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache"/>
+     <bean name="caveatConfigSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache"/>
 
     <!-- The transactional cache for in-memory CaveatConfig -->
 

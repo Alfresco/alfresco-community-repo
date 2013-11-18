@@ -1182,7 +1182,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      */
     private InputStream getScriptInputStream(Class<?> dialectClazz, String scriptUrl) throws Exception
     {
-        return getDialectResource(dialectClazz, scriptUrl).getInputStream();
+        Resource resource = getDialectResource(dialectClazz, scriptUrl);
+        if (resource == null)
+        {
+            throw new AlfrescoRuntimeException("Script [ " + scriptUrl + " ] can't be found for " + dialectClazz);
+        }
+        return resource.getInputStream();
     }
     
     /**

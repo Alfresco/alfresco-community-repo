@@ -38,6 +38,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.transfer.TransferService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -180,6 +181,14 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     private NamespaceService getNamespaceService()
     {
         return serviceRegistry.getNamespaceService();
+    }
+
+    /**
+     * @return Transfer service
+     */
+    private TransferService getTransferService()
+    {
+        return serviceRegistry.getTransferService();
     }
 
     /**
@@ -599,12 +608,12 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isTransfer(org.alfresco.service.cmr.repository.NodeRef)
+     * @deprecated As of 2.2, see {@link TransferService#isTransfer(NodeRef)}
      */
     @Override
     public boolean isTransfer(NodeRef nodeRef)
     {
-        return instanceOf(nodeRef, TYPE_TRANSFER);
+        return getTransferService().isTransfer(nodeRef);
     }
 
     /**

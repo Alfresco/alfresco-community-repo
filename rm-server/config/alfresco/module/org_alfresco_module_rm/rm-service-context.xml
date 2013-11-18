@@ -1240,6 +1240,7 @@
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.createRecordFolder=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.getRecordFolders=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.initialiseRecordFolder=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.closeFolder=RM_CAP.0.rma:filePlanComponent.CloseFolders
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.*=RM_DENY
                 ]]>
             </value>

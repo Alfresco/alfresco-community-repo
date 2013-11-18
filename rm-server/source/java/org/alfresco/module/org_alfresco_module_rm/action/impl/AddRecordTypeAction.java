@@ -44,7 +44,9 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
 
     /** I18N */
     private static final String MSG_ACTIONED_UPON_NOT_RECORD = "rm.action.actioned-upon-not-record";
-    private static final String MSG_ACTIONED_UPON_HAS_ASPECT = "rm.action.actioned-upon-has-aspect";
+
+    /** Constant */
+    private static final String DELIMITER = ",";
 
     /** Parameter names */
     public static final String PARAM_ADD_RECORD_TYPES = "recordTypes";
@@ -59,30 +61,53 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) == true &&
-            freezeService.isFrozen(actionedUponNodeRef) == false &&
-            recordService.isRecord(actionedUponNodeRef) == true &&
-            recordService.isDeclared(actionedUponNodeRef) == false)
+        if (eligibleForAction(actionedUponNodeRef) == true)
         {
-            String recordTypes = (String) action.getParameterValue(PARAM_ADD_RECORD_TYPES);
-            String[] types = recordTypes.split(",");
-            for (String type : types)
+            for (String type : getRecordTypes(action))
             {
-                QName aspectTypeQName = QName.createQName(type, namespaceService);
-                if (nodeService.hasAspect(actionedUponNodeRef, aspectTypeQName) == false)
-                {
-                    nodeService.addAspect(actionedUponNodeRef, aspectTypeQName, null);
-                }
-                else
-                {
-                    logger.info(I18NUtil.getMessage(MSG_ACTIONED_UPON_HAS_ASPECT, actionedUponNodeRef.toString(), aspectTypeQName.toString()));
-                }
+                recordService.addRecordType(actionedUponNodeRef, QName.createQName(type, namespaceService));
             }
         }
         else if (logger.isWarnEnabled() == true)
         {
             logger.warn(I18NUtil.getMessage(MSG_ACTIONED_UPON_NOT_RECORD, this.getClass().getSimpleName(), actionedUponNodeRef.toString()));
         }
+    }
+
+    /**
+     * Helper method to check the actioned upon node reference to decide to execute the action
+     * The preconditions are:
+     *  - The node must exist
+     *  - The node must not be frozen
+     *  - The node must be record
+     *  - The node must not be declared
+     *
+     * @param actionedUponNodeRef node reference
+     * @return Return true if the node reference passes all the preconditions for executing the action, false otherwise
+     */
+    private boolean eligibleForAction(NodeRef actionedUponNodeRef)
+    {
+        boolean result = false;
+        if (nodeService.exists(actionedUponNodeRef) == true &&
+                freezeService.isFrozen(actionedUponNodeRef) == false &&
+                recordService.isRecord(actionedUponNodeRef) == true &&
+                recordService.isDeclared(actionedUponNodeRef) == false)
+        {
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Helper method to get the record types from the action
+     *
+     * @param action The action
+     * @return An array of record types
+     */
+    private String[] getRecordTypes(Action action)
+    {
+        String recordTypes = (String) action.getParameterValue(PARAM_ADD_RECORD_TYPES);
+        return recordTypes.split(DELIMITER);
     }
 
     /**

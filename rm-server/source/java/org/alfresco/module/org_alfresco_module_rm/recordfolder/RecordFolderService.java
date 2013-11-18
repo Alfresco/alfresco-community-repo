@@ -35,9 +35,9 @@ public interface RecordFolderService
 {
     /**
      * Initialises the a record folder from a standard folder.
-     * 
+     *
      * @param nodeRef   node reference of the folder to initialise
-     * 
+     *
      * @since 2.2
      */
     void initialiseRecordFolder(NodeRef nodeRef);
@@ -47,7 +47,7 @@ public interface RecordFolderService
      *
      * @param nodeRef   node reference
      * @return boolean  true if record folder, false otherwise
-     * 
+     *
      * @since 2.2
      */
     boolean isRecordFolder(NodeRef nodeRef);
@@ -57,7 +57,7 @@ public interface RecordFolderService
      *
      * @param nodeRef   node reference (record folder)
      * @return boolean  true if record folder contents are declared, false otherwise
-     * 
+     *
      * @since 2.2
      */
     boolean isRecordFolderDeclared(NodeRef nodeRef);
@@ -80,7 +80,7 @@ public interface RecordFolderService
      * @param  name          name
      * @param  type          type
      * @return NodeRef       node reference of record folder
-     * 
+     *
      * @since 2.2
      */
     NodeRef createRecordFolder(NodeRef rmContainer, String name, QName type);
@@ -94,7 +94,7 @@ public interface RecordFolderService
      * @param type          type
      * @param properties    properties
      * @return NodeRef      node reference of record folder
-     * 
+     *
      * @since 2.2
      */
     NodeRef createRecordFolder(NodeRef rmContainer, String name, QName type, Map<QName, Serializable> properties);
@@ -106,7 +106,7 @@ public interface RecordFolderService
      * @param  rmContainer   records management container
      * @param  name          name
      * @return NodeRef       node reference of record folder
-     * 
+     *
      * @since 2.2
      */
     NodeRef createRecordFolder(NodeRef rmContainer, String name);
@@ -119,7 +119,7 @@ public interface RecordFolderService
      * @param name          name
      * @param properties    properties
      * @return NodeRef      node reference of record folder
-     * 
+     *
      * @since 2.2
      */
     NodeRef createRecordFolder(NodeRef rmContainer, String name, Map<QName, Serializable> properties);
@@ -129,7 +129,7 @@ public interface RecordFolderService
      *
      * @param record        the record node reference
      * @return List         list of folder record node references
-     * 
+     *
      * @since 2.2
      */
     // TODO rename to List<NodeRef> getParentRecordFolders(NodeRef record);
@@ -146,4 +146,13 @@ public interface RecordFolderService
     // TODO List<NodeRef> getParentRecordsManagementContainers(NodeRef container); // also applicable to record folders
 
     // TODO rename to getContainedRecords(NodeRef recordFolder);
+
+    /**
+     * Closes the folder. If the given node reference is a record the parent will be retrieved and processed.
+     *
+     * @param nodeRef   the record folder node reference
+     * 
+     * @since 2.2
+     */
+    void closeFolder(NodeRef nodeRef);
 }

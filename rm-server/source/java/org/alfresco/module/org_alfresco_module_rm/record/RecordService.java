@@ -152,4 +152,12 @@ public interface RecordService
     * @return List<NodeRef>    list of records in the record folder
     */
    List<NodeRef> getRecords(NodeRef recordFolder);
+
+   /**
+    * Adds the specified type to the record
+    *
+    * @param nodeRef    Record node reference
+    * @param typeQName  Type to add
+    */
+   void addRecordType(NodeRef nodeRef, QName typeQName);
 }

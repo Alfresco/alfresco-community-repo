@@ -42,6 +42,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -55,11 +57,15 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
                                                 RecordsManagementModel,
                                                 NodeServicePolicies.OnCreateChildAssociationPolicy
 {
+    /** Logger */
+    private static Log logger = LogFactory.getLog(RecordFolderServiceImpl.class);
+
     /** I18N */
     private final static String MSG_RECORD_FOLDER_EXPECTED = "rm.service.record-folder-expected";
     private final static String MSG_PARENT_RECORD_FOLDER_ROOT = "rm.service.parent-record-folder-root";
     private final static String MSG_PARENT_RECORD_FOLDER_TYPE = "rm.service.parent-record-folder-type";
     private final static String MSG_RECORD_FOLDER_TYPE = "rm.service.record-folder-type";
+    private final static String MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER = "rm.service.close-record-folder-not-folder";
 
     /** Policy component */
     private PolicyComponent policyComponent;
@@ -352,5 +358,37 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
             }
         }
         return result;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#closeFolder(NodeRef)
+     */
+    @Override
+    public void closeFolder(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+
+        if (recordService.isRecord(nodeRef))
+        {
+            ChildAssociationRef assocRef = nodeService.getPrimaryParent(nodeRef);
+            if (assocRef != null)
+            {
+                nodeRef = assocRef.getParentRef();
+            }
+        }
+
+        if (isRecordFolder(nodeRef) == true)
+        {
+            Boolean isClosed = (Boolean) nodeService.getProperty(nodeRef, PROP_IS_CLOSED);
+            if (Boolean.FALSE.equals(isClosed) == true)
+            {
+                nodeService.setProperty(nodeRef, PROP_IS_CLOSED, true);
+            }
+        }
+        else
+        {
+            if (logger.isWarnEnabled())
+                logger.warn(I18NUtil.getMessage(MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER, nodeRef.toString()));
+        }
     }
 }

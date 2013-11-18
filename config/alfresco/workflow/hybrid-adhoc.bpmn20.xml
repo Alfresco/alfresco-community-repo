@@ -19,7 +19,7 @@
             sourceRef='start'
             targetRef='adhocTask' />
 
-        <userTask id="adhocTask" name="Review Task"
+        <userTask id="adhocTask" name="Adhoc Task"
             activiti:formKey="wf:adhocTask">
            <extensionElements>
                <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">

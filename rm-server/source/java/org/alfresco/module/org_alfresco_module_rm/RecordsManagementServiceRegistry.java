@@ -34,6 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServi
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.transfer.TransferService;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.namespace.NamespaceService;
@@ -63,9 +64,10 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     static final QName FILE_PLAN_PERMISSION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FilePlanPermissionService");
     static final QName FILE_PLAN_AUTHENTICATION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FilePlanAuthenticationService");
     static final QName IDENTIFIER_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "recordsManagementIdentifierService");
+    static final QName RECORD_FOLDER_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordFolderService");
+    static final QName TRANSFER_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "TransferService");
     @Deprecated
     static final QName RECORDS_MANAGEMENT_SECURITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementSecurityService");
-    static final QName RECORD_FOLDER_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordFolderService");
 
 
     /**
@@ -179,4 +181,11 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
      */
     @NotAuditable
     RecordFolderService getRecordFolderService();
+
+    /**
+     * @return  transfer service
+     * @since 2.2
+     */
+    @NotAuditable
+    TransferService getTransferService();
 }

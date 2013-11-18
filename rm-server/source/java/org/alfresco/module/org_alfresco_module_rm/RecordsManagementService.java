@@ -29,6 +29,7 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.transfer.TransferService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -86,14 +87,11 @@ public interface RecordsManagementService
     boolean isRecordFolder(NodeRef nodeRef);
 
     /**
-     * Indicates whether the given node is a transfer (container) or not.
-     *
-     * @param nodeRef   node reference
-     * @return boolean  true if transfer, false otherwise
-     *
      * @since 2.0
+     * @deprecated As of 2.2, see {@link TransferService#isTransfer(NodeRef)}
      */
-    boolean isTransfer(NodeRef nodeRef);	// transfer service
+    @Deprecated
+    boolean isTransfer(NodeRef nodeRef);
 
     /**
      * @since 2.0

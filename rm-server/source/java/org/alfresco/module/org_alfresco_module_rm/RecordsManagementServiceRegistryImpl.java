@@ -33,6 +33,7 @@ import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServi
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.transfer.TransferService;
 import org.alfresco.repo.service.ServiceDescriptorRegistry;
 
 /**
@@ -195,5 +196,14 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
     public RecordFolderService getRecordFolderService()
     {
         return (RecordFolderService) getService(RECORD_FOLDER_SERVICE);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getTransferService()
+     */
+    @Override
+    public TransferService getTransferService()
+    {
+        return (TransferService) getService(TRANSFER_SERVICE);
     }
 }

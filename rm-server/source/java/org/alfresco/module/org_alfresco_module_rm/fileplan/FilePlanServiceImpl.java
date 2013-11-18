@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -38,6 +37,7 @@ import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServi
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
+import org.alfresco.module.org_alfresco_module_rm.transfer.TransferService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -166,11 +166,11 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @return	records management service
+     * @return	transfer service
      */
-    protected RecordsManagementService getRecordsManagementService()
+    protected TransferService getTransferService()
     {
-    	return (RecordsManagementService)applicationContext.getBean("RecordsManagementService");
+    	return (TransferService)applicationContext.getBean("RmTransferService");
     }
 
     /**
@@ -218,7 +218,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             {
                 result = FilePlanComponentKind.HOLD;
             }
-            else if (getRecordsManagementService().isTransfer(nodeRef) == true)
+            else if (getTransferService().isTransfer(nodeRef) == true)
             {
                 result = FilePlanComponentKind.TRANSFER;
             }

@@ -218,10 +218,10 @@ public class TransferServiceImpl extends ServiceBaseImpl implements TransferServ
    }
 
    /**
-    * @see org.alfresco.module.org_alfresco_module_rm.transfer.TransferService#complete(NodeRef)
+    * @see org.alfresco.module.org_alfresco_module_rm.transfer.TransferService#completeTransfer(NodeRef)
     */
     @Override
-    public void complete(NodeRef nodeRef)
+    public void completeTransfer(NodeRef nodeRef)
     {
         boolean accessionIndicator = ((Boolean)nodeService.getProperty(nodeRef, PROP_TRANSFER_ACCESSION_INDICATOR)).booleanValue();
         String transferLocation = nodeService.getProperty(nodeRef, PROP_TRANSFER_LOCATION).toString();

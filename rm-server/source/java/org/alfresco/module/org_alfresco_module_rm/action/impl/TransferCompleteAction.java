@@ -55,7 +55,7 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         checkTransferSubClass(actionedUponNodeRef);
-        transferService.complete(actionedUponNodeRef);
+        transferService.completeTransfer(actionedUponNodeRef);
     }
 
     /**

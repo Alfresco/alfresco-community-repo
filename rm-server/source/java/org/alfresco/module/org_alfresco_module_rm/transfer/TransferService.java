@@ -56,5 +56,5 @@ public interface TransferService
      * 
      * @since 2.2
      */
-    void complete(NodeRef nodeRef);
+    void completeTransfer(NodeRef nodeRef);
 }

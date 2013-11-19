@@ -309,7 +309,7 @@
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.transfer.TransferService.isTransfer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.transfer.TransferService.transfer=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.transfer.TransferService.complete=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.transfer.TransferService.completeTransfer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.transfer.TransferService.*=RM_DENY
                 ]]>
             </value>

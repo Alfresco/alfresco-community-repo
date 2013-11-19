@@ -148,11 +148,11 @@ public interface RecordFolderService
     // TODO rename to getContainedRecords(NodeRef recordFolder);
 
     /**
-     * Closes the folder. If the given node reference is a record the parent will be retrieved and processed.
+     * Closes the record folder. If the given node reference is a record the parent will be retrieved and processed.
      *
      * @param nodeRef   the record folder node reference
-     * 
+     *
      * @since 2.2
      */
-    void closeFolder(NodeRef nodeRef);
+    void closeRecordFolder(NodeRef nodeRef);
 }

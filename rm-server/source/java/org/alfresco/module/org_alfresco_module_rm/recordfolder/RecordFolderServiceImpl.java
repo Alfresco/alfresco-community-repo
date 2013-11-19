@@ -168,7 +168,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
 
             // ensure nothing is being added to a closed record folder
             NodeRef recordFolder = childAssocRef.getParentRef();
-            Boolean isClosed = (Boolean) this.nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
+            Boolean isClosed = (Boolean) nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
             if (isClosed != null && Boolean.TRUE.equals(isClosed) == true)
             {
                 throw new AlfrescoRuntimeException("You can't add new items to a closed record folder.");
@@ -247,7 +247,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_EXPECTED));
         }
 
-        return ((Boolean)this.nodeService.getProperty(nodeRef, PROP_IS_CLOSED)).booleanValue();
+        return ((Boolean) nodeService.getProperty(nodeRef, PROP_IS_CLOSED)).booleanValue();
     }
 
     @Override
@@ -347,7 +347,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         List<NodeRef> result = new ArrayList<NodeRef>(1);
         if (recordService.isRecord(record) == true)
         {
-            List<ChildAssociationRef> assocs = this.nodeService.getParentAssocs(record, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            List<ChildAssociationRef> assocs = nodeService.getParentAssocs(record, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)
             {
                 NodeRef parent = assoc.getParentRef();
@@ -361,10 +361,10 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#closeFolder(NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#closeRecordFolder(NodeRef)
      */
     @Override
-    public void closeFolder(NodeRef nodeRef)
+    public void closeRecordFolder(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
@@ -379,8 +379,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
 
         if (isRecordFolder(nodeRef) == true)
         {
-            Boolean isClosed = (Boolean) nodeService.getProperty(nodeRef, PROP_IS_CLOSED);
-            if (Boolean.FALSE.equals(isClosed) == true)
+            if (isRecordFolderClosed(nodeRef) == false)
             {
                 nodeService.setProperty(nodeRef, PROP_IS_CLOSED, true);
             }

@@ -41,7 +41,7 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
     {
         if (eligibleForAction(actionedUponNodeRef) == true)
         {
-            recordFolderService.closeFolder(actionedUponNodeRef);
+            recordFolderService.closeRecordFolder(actionedUponNodeRef);
         }
     }
 

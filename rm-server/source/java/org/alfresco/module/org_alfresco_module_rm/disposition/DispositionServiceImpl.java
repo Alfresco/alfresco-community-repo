@@ -837,10 +837,10 @@ public class DispositionServiceImpl implements
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#isCutoff(NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#isDisposableItemCutoff(NodeRef)
      */
     @Override
-    public boolean isCutoff(NodeRef nodeRef)
+    public boolean isDisposableItemCutoff(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         return nodeService.hasAspect(nodeRef, ASPECT_CUT_OFF);
@@ -967,6 +967,23 @@ public class DispositionServiceImpl implements
                     createEvent(event, dispositionActionNodeRef);
                 }
             }
+        }
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#cutoffDisposableItem(NodeRef)
+     */
+    @Override
+    public void cutoffDisposableItem(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+
+        if (isDisposableItemCutoff(nodeRef) == false)
+        {
+            // Apply the cut off aspect and set cut off date
+            Map<QName, Serializable> cutOffProps = new HashMap<QName, Serializable>(1);
+            cutOffProps.put(PROP_CUT_OFF_DATE, new Date());
+            nodeService.addAspect(nodeRef, ASPECT_CUT_OFF, cutOffProps);
         }
     }
 }

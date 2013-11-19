@@ -18,16 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Cut off disposition action
@@ -45,21 +38,16 @@ public class CutOffAction extends RMDispositionActionExecuterAbstractBase
     @Override
     protected void executeRecordFolderLevelDisposition(Action action, NodeRef recordFolder)
     {
-        // Close folder
-        Boolean isClosed = (Boolean)nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
-        if (Boolean.FALSE.equals(isClosed) == true)
-        {
-            nodeService.setProperty(recordFolder, PROP_IS_CLOSED, true);
-        }
+        // Close the record folder
+        recordFolderService.closeRecordFolder(recordFolder);
 
         // Mark the folder as cut off
-        doCutOff(recordFolder);
+        dispositionService.cutoffDisposableItem(recordFolder);
 
         // Mark all the declared children of the folder as cut off
-        List<NodeRef> records = recordService.getRecords(recordFolder);
-        for (NodeRef record : records)
+        for (NodeRef record : recordService.getRecords(recordFolder))
         {
-            doCutOff(record);
+            dispositionService.cutoffDisposableItem(record);
         }
     }
 
@@ -70,22 +58,6 @@ public class CutOffAction extends RMDispositionActionExecuterAbstractBase
     protected void executeRecordLevelDisposition(Action action, NodeRef record)
     {
         // Mark the record as cut off
-        doCutOff(record);
-    }
-
-    /**
-     * Marks the record or record folder as cut off, calculating the cut off date.
-     *
-     * @param nodeRef   node reference
-     */
-    private void doCutOff(NodeRef nodeRef)
-    {
-        if (nodeService.hasAspect(nodeRef, ASPECT_CUT_OFF) == false)
-        {
-            // Apply the cut off aspect and set cut off date
-            Map<QName, Serializable> cutOffProps = new HashMap<QName, Serializable>(1);
-            cutOffProps.put(PROP_CUT_OFF_DATE, new Date());
-            nodeService.addAspect(nodeRef, ASPECT_CUT_OFF, cutOffProps);
-        }
+        dispositionService.cutoffDisposableItem(record);
     }
  }

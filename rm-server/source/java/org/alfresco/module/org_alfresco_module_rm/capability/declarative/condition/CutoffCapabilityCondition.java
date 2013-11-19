@@ -32,7 +32,7 @@ public class CutoffCapabilityCondition extends AbstractCapabilityCondition
     @Override
     public boolean evaluate(NodeRef nodeRef)
     {
-        return dispositionService.isCutoff(nodeRef);
+        return dispositionService.isDisposableItemCutoff(nodeRef);
     }
 
 }

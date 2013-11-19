@@ -201,14 +201,23 @@ public interface DispositionService
     DispositionAction getLastCompletedDispostionAction(NodeRef nodeRef);
 
     /**
-     * Indicates whether the item is cutoff or not.
+     * Indicates whether the disposable item (records, record folders) is cutoff or not.
      *
      * @param nodeRef   node reference
-     * @return boolean  true if the item is cutoff, false otherwise
+     * @return boolean  true if the disposable item is cutoff, false otherwise
      *
      * @since 2.0
      */
-    boolean isCutoff(NodeRef nodeRef);
+    boolean isDisposableItemCutoff(NodeRef nodeRef);
+
+    /**
+     * Marks the disposable item (record or record folder) as cut off, calculating the cut off date
+     *
+     * @param nodeRef   node reference
+     *
+     * @since 2.2
+     */
+    void cutoffDisposableItem(NodeRef nodeRef);
 
     /**
      * Updates the next disposition action

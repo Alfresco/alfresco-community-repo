@@ -626,12 +626,12 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @deprecated As of 2.2, see {@link DispositionService#isCutoff(NodeRef)}
+     * @deprecated As of 2.2, see {@link DispositionService#isDisposableItemCutoff(NodeRef)}
      */
     @Override
     public boolean isCutoff(NodeRef nodeRef)
     {
-        return getDispositionService().isCutoff(nodeRef);
+        return getDispositionService().isDisposableItemCutoff(nodeRef);
     }
 
     /**

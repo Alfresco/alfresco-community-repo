@@ -38,6 +38,6 @@ public class CutoffEvaluator extends BaseEvaluator
     @Override
     protected boolean evaluateImpl(NodeRef nodeRef)
     {
-        return (dispositionService.isCutoff(nodeRef) == isCutoff);
+        return (dispositionService.isDisposableItemCutoff(nodeRef) == isCutoff);
     }
 }

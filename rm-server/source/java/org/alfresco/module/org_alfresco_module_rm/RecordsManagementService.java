@@ -102,7 +102,7 @@ public interface RecordsManagementService
 
     /**
      * @since 2.0
-     * @deprecated As of 2.2, see {@link DispositionService#isCutoff(NodeRef)}
+     * @deprecated As of 2.2, see {@link DispositionService#isDisposableItemCutoff(NodeRef)}
      */
     boolean isCutoff(NodeRef nodeRef);
 

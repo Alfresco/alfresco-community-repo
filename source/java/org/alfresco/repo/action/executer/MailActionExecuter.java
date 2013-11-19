@@ -649,6 +649,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                 {
                                     if (personService.personExists(userAuth) == true)
                                     {
+                                        if (!personService.isEnabled(userAuth))
+                                        {
+                                            continue;
+                                        }
                                         NodeRef person = personService.getPerson(userAuth);
                                         String address = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
                                         if (address != null && address.length() != 0)

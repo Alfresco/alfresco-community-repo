@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
+import javax.mail.Address;
+import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
@@ -36,8 +38,13 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.preference.PreferenceService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyMap;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.junit.Assert;
@@ -72,6 +79,8 @@ public abstract class AbstractMailActionExecuterTest
     protected static MailActionExecuter ACTION_EXECUTER;
     protected static PreferenceService PREFERENCE_SERVICE;
     protected static PersonService PERSON_SERVICE;
+    protected static AuthorityService AUTHORITY_SERVICE;
+    protected static NodeService NODE_SERVICE;
 
     protected static boolean WAS_IN_TEST_MODE;
 
@@ -81,6 +90,8 @@ public abstract class AbstractMailActionExecuterTest
         ACTION_EXECUTER = appCtx.getBean("OutboundSMTP", ApplicationContextFactory.class).getApplicationContext().getBean("mail", MailActionExecuter.class);
         PREFERENCE_SERVICE = appCtx.getBean("PreferenceService", PreferenceService.class);
         PERSON_SERVICE = appCtx.getBean("PersonService", PersonService.class);
+        NODE_SERVICE = appCtx.getBean("NodeService", NodeService.class);
+        AUTHORITY_SERVICE = appCtx.getBean("AuthorityService", AuthorityService.class);
 
         WAS_IN_TEST_MODE = ACTION_EXECUTER.isTestMode();
         ACTION_EXECUTER.setTestMode(true);
@@ -302,6 +313,51 @@ public abstract class AbstractMailActionExecuterTest
             // restore system user as current user
             AuthenticationUtil.setRunAsUserSystem();
         }
+    }
+
+    @Test
+    public void testPrepareEmailForDisabledUsers() throws MessagingException
+    {
+        final String USER1 = "test_user1";
+        final String USER2 = "test_user2";
+        createUser(USER1);
+        NodeRef userNode = createUser(USER2);
+        String groupName = AUTHORITY_SERVICE.createAuthority(AuthorityType.GROUP, "testgroup1");
+        AUTHORITY_SERVICE.addAuthority(groupName, USER1);
+        AUTHORITY_SERVICE.addAuthority(groupName, USER2);
+        NODE_SERVICE.addAspect(userNode, ContentModel.ASPECT_PERSON_DISABLED, null);
+        final Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+        mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TO_MANY, groupName);
+
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, "Testing");
+
+        RetryingTransactionHelper txHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+
+        MimeMessage mm = txHelper.doInTransaction(new RetryingTransactionCallback<MimeMessage>()
+        {
+            @Override
+            public MimeMessage execute() throws Throwable
+            {
+                return ACTION_EXECUTER.prepareEmail(mailAction, null, null, null).getMimeMessage();
+            }
+        }, true);
+
+        Address[] addresses = mm.getRecipients(Message.RecipientType.TO);
+        Assert.assertEquals(1, addresses.length);
+        Assert.assertEquals(USER1 + "@email.com", addresses[0].toString());
+    }
+
+    private NodeRef createUser(String userName)
+    {
+        PropertyMap personProps = new PropertyMap();
+        personProps.put(ContentModel.PROP_USERNAME, userName);
+        personProps.put(ContentModel.PROP_FIRSTNAME, userName);
+        personProps.put(ContentModel.PROP_LASTNAME, userName);
+        personProps.put(ContentModel.PROP_EMAIL, userName + "@email.com");
+
+        return PERSON_SERVICE.createPerson(personProps);
     }
 
 }

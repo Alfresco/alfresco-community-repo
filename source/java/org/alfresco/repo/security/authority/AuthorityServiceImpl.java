@@ -606,13 +606,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         checkTypeIsMutable(type);
         String name = getName(type, shortName);
-
-        //MNT-9794 fix. If authority with 'name' doesn't exist it will be created
-        if (!authorityDAO.authorityExists(name))
-        {
-            authorityDAO.createAuthority(name, authorityDisplayName, authorityZones);
-        }
-
+        authorityDAO.createAuthority(name, authorityDisplayName, authorityZones);
         return name;
     }
     

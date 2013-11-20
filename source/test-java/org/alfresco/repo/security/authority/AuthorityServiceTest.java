@@ -591,34 +591,6 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.deleteAuthority(auth1);
         assertEquals(0, getAllAuthorities(AuthorityType.ROLE).size());
         assertEquals(0, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
-
-        // Testing MNT-9794 fix.  Creates authority 'DUPLICATEDGROUP' twice. Only one authority with such name should be created.
-        String dublicatedAuthorityShortName = "DUPLICATEDGROUP";
-        AuthorityType dublicatedAuthorityType = AuthorityType.GROUP;
-
-        //Creates authority twice with duplicated name
-        pubAuthorityService.createAuthority(dublicatedAuthorityType, dublicatedAuthorityShortName);
-        pubAuthorityService.createAuthority(dublicatedAuthorityType, dublicatedAuthorityShortName);
-
-        List<String> duplicatedGroupAuthorities = getAuthorityByTypeAndShortName(dublicatedAuthorityType, dublicatedAuthorityShortName);
-
-        //Only one authority should be created with duplicated name
-        assertEquals(1, duplicatedGroupAuthorities.size());
-
-        pubAuthorityService.deleteAuthority("GROUP_DUPLICATEDGROUP");
-        List<String> duplicatedAuthoritiesAfterDelete = getAuthorityByTypeAndShortName(dublicatedAuthorityType, dublicatedAuthorityShortName);
-        assertEquals(0, duplicatedAuthoritiesAfterDelete.size());
-    }
-
-    /**
-     * Returns the list of authorities according the authority type and authority short name
-     * @param type authority type
-     * @param shortName authority short name
-     * @return List of String authorities
-     */
-    private List<String> getAuthorityByTypeAndShortName(AuthorityType type, String shortName)
-    {
-        return  pubAuthorityService.getAuthorities(type, null, shortName, false, true, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
     }
 
     private void checkAuthorityCollectionSize(int expected, List<String> actual, AuthorityType type)

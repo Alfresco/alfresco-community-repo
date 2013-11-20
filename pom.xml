@@ -310,6 +310,35 @@
                 </executions>
             </plugin>
 
+            <!-- CLOUD-2182 Bring activity-list*.properties from slingshot -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>fetch-slingshot-messages</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                              <copy todir="${project.build.outputDirectory}/alfresco/messages" overwrite="true">
+                                 <!-- for activity messages based on activity type -->
+                                 <fileset dir="${basedir}/../slingshot/config/alfresco/site-webscripts/org/alfresco/components/dashlets"
+                                          includes="activity-list.get*.properties" />
+                                 <!-- note: remove ".get" since it seems to confuse java.util.ResourceBundle.getBundle -->
+                                 <mapper type="regexp" from="^(activity-list).get(.*\.properties)$$" to="\1\2"/>
+                              </copy>
+                              <copy todir="${project.build.outputDirectory}/alfresco/messages" overwrite="true">
+                                 <!-- for role.* messages -->
+                                 <fileset dir="${basedir}/../slingshot/config/alfresco/messages" includes="slingshot*.properties" />
+                              </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>

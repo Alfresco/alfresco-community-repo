@@ -1254,7 +1254,7 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="dictionaryService" ref="DictionaryService"/>
         <property name="identifierService" ref="recordsManagementIdentifierService"/>
-        <property name="permissionService" ref="ExtendedPermissionService"/>
+        <property name="extendedPermissionService" ref="ExtendedPermissionService"/>
         <property name="extendedSecurityService" ref="ExtendedSecurityService" />
         <property name="policyComponent" ref="policyComponent" />
         <property name="dispositionService" ref="DispositionService" />
@@ -1267,6 +1267,7 @@
         <property name="recordFolderService" ref="RecordFolderService" />
         <property name="vitalRecordService" ref="VitalRecordService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
+        <property name="permissionService" ref="permissionService" />
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">

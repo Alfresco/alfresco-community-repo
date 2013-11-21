@@ -153,8 +153,8 @@ public class RecordServiceImpl implements RecordService,
     /** Dictionary service */
     private DictionaryService dictionaryService;
 
-    /** Permission service */
-    private ExtendedPermissionService permissionService;
+    /** Extended permission service */
+    private ExtendedPermissionService extendedPermissionService;
 
     /** Extended security service */
     private ExtendedSecurityService extendedSecurityService;
@@ -191,6 +191,9 @@ public class RecordServiceImpl implements RecordService,
 
     /** File plan role service */
     private FilePlanRoleService filePlanRoleService;
+
+    /** Permission service */
+    private PermissionService permissionService;
 
     /** List of available record meta-data aspects */
     private Set<QName> recordMetaDataAspects;
@@ -234,11 +237,11 @@ public class RecordServiceImpl implements RecordService,
     }
 
     /**
-     * @param permissionService permission service
+     * @param extendedPermissionService extended permission service
      */
-    public void setPermissionService(ExtendedPermissionService permissionService)
+    public void setExtendedPermissionService(ExtendedPermissionService extendedPermissionService)
     {
-        this.permissionService = permissionService;
+        this.extendedPermissionService = extendedPermissionService;
     }
 
     /**
@@ -335,6 +338,14 @@ public class RecordServiceImpl implements RecordService,
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
         this.filePlanRoleService = filePlanRoleService;
+    }
+
+    /**
+     * @param permissionService permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
 
     /**
@@ -667,7 +678,7 @@ public class RecordServiceImpl implements RecordService,
         ParameterCheck.mandatory("isLinked", isLinked);
 
         // first we do a sanity check to ensure that the user has at least write permissions on the document
-        if (permissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
+        if (extendedPermissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
         {
             throw new AccessDeniedException("Can not create record from document, because the user " +
                                             AuthenticationUtil.getFullyAuthenticatedUser() +
@@ -699,8 +710,8 @@ public class RecordServiceImpl implements RecordService,
 
                         // get the documents readers
                         Long aclId = nodeService.getNodeAclId(nodeRef);
-                        Set<String> readers = permissionService.getReaders(aclId);
-                        Set<String> writers = permissionService.getWriters(aclId);
+                        Set<String> readers = extendedPermissionService.getReaders(aclId);
+                        Set<String> writers = extendedPermissionService.getWriters(aclId);
 
                         // add the current owner to the list of extended writers
                         String owner = ownableService.getOwner(nodeRef);

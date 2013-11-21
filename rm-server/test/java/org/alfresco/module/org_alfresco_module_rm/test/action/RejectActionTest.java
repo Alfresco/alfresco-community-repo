@@ -20,10 +20,8 @@ package org.alfresco.module.org_alfresco_module_rm.test.action;
 
 import org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.RejectAction;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
 
 /**
  * Reject Action Unit Test
@@ -33,21 +31,8 @@ import org.alfresco.service.cmr.action.ActionService;
  */
 public class RejectActionTest extends BaseRMTestCase
 {
-    /** Services */
-    protected ActionService rmActionService;
-    protected ExtendedSecurityService extendedSecurityService;
-
     /** Reject reason */
     private final String REJECT_REASON = "rejectReason:Not valid!£$%^&*()_+";
-
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
-
-        rmActionService = (ActionService) applicationContext.getBean("ActionService");
-        extendedSecurityService = (ExtendedSecurityService) applicationContext.getBean("ExtendedSecurityService");
-    }
 
     @Override
     protected boolean isUserTest()
@@ -68,9 +53,9 @@ public class RejectActionTest extends BaseRMTestCase
             public Void run()
             {
                 // Create a record from the document
-                Action createAction = rmActionService.createAction(CreateRecordAction.NAME);
+                Action createAction = actionService.createAction(CreateRecordAction.NAME);
                 createAction.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
-                rmActionService.executeAction(createAction, dmDocument);
+                actionService.executeAction(createAction, dmDocument);
 
                 // Check if the document is a record now
                 assertTrue(recordService.isRecord(dmDocument));
@@ -91,8 +76,8 @@ public class RejectActionTest extends BaseRMTestCase
             public void run()
             {
                 // The test should fail if the reject reason is not supplied
-                Action rejectAction = rmActionService.createAction(RejectAction.NAME);
-                rmActionService.executeAction(rejectAction, dmDocument);
+                Action rejectAction = actionService.createAction(RejectAction.NAME);
+                actionService.executeAction(rejectAction, dmDocument);
             }
         },
         dmCollaborator);
@@ -102,9 +87,9 @@ public class RejectActionTest extends BaseRMTestCase
             public Void run()
             {
                 // Create the reject action and add the reject reason
-                Action rejectAction = rmActionService.createAction(RejectAction.NAME);
+                Action rejectAction = actionService.createAction(RejectAction.NAME);
                 rejectAction.setParameterValue(RejectAction.PARAM_REASON, REJECT_REASON);
-                rmActionService.executeAction(rejectAction, dmDocument);
+                actionService.executeAction(rejectAction, dmDocument);
 
                 // The "record" aspect should be removed
                 assertFalse(nodeService.hasAspect(dmDocument, ASPECT_RECORD));

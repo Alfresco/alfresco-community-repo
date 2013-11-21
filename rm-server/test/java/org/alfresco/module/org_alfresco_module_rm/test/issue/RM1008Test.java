@@ -49,12 +49,6 @@ public class RM1008Test extends BaseRMTestCase
     private String myUser;
 
     @Override
-    protected void initServices()
-    {
-        super.initServices();
-    }
-
-    @Override
     protected boolean isRecordTest()
     {
         return true;
@@ -260,8 +254,8 @@ public class RM1008Test extends BaseRMTestCase
             @Override
             public NodeRef run()
             {
-                actionService.executeRecordsManagementAction(transferFolder, "cutoff");
-                actionService.executeRecordsManagementAction(transferFolder, "transfer");
+                rmActionService.executeRecordsManagementAction(transferFolder, "cutoff");
+                rmActionService.executeRecordsManagementAction(transferFolder, "transfer");
 
                 NodeRef transferContainer = filePlanService.getTransferContainer(filePlan);
                 List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(transferContainer, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);

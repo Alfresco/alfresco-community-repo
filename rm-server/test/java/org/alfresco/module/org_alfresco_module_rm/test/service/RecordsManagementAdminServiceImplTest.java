@@ -78,9 +78,9 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
     @Override
     protected void setUp() throws Exception
     {
-    	createdCustomProperties = new ArrayList<QName>();
-    	madeCustomisable = new ArrayList<QName>();
-    	super.setUp();
+        createdCustomProperties = new ArrayList<QName>();
+        madeCustomisable = new ArrayList<QName>();
+        super.setUp();
     }
 
     /**
@@ -89,7 +89,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
     @Override
     protected void setupTestData()
     {
-    	super.setupTestData();
+        super.setupTestData();
     }
 
     /**
@@ -98,7 +98,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
     @Override
     protected void tearDown() throws Exception
     {
-    	retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
             @Override
             public Object execute() throws Throwable
@@ -108,13 +108,13 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
 
                 for (QName createdCustomProperty : createdCustomProperties)
                 {
-                	adminService.removeCustomPropertyDefinition(createdCustomProperty);
-				}
+                    rmAdminService.removeCustomPropertyDefinition(createdCustomProperty);
+                }
 
                 for (QName customisable : madeCustomisable)
                 {
-					adminService.unmakeCustomisable(customisable);
-				}
+                    rmAdminService.unmakeCustomisable(customisable);
+                }
 
                 return null;
             }
@@ -128,24 +128,24 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
      */
     public void testGetCustomisable() throws Exception
     {
-    	// Get the customisable types
-    	doTestInTransaction(new Test<Void>()
+        // Get the customisable types
+        doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run() throws Exception
             {
-            	Set<QName> list = adminService.getCustomisable();
-            	assertNotNull(list);
-            	assertTrue(list.containsAll(
-        			CollectionUtils.arrayToList(new QName[]
-        			{
-        				ASPECT_RECORD,
-        				TYPE_RECORD_FOLDER,
-        				TYPE_NON_ELECTRONIC_DOCUMENT,
-        				TYPE_RECORD_CATEGORY
-        			})));
+                Set<QName> list = rmAdminService.getCustomisable();
+                assertNotNull(list);
+                assertTrue(list.containsAll(
+                    CollectionUtils.arrayToList(new QName[]
+                    {
+                        ASPECT_RECORD,
+                        TYPE_RECORD_FOLDER,
+                        TYPE_NON_ELECTRONIC_DOCUMENT,
+                        TYPE_RECORD_CATEGORY
+                    })));
 
-            	return null;
+                return null;
             }
         });
     }
@@ -153,17 +153,17 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
     /**
      * @see RecordsManagementAdminService#isCustomisable(QName)
      */
-	public void testIsCustomisable() throws Exception
-	{
-		doTestInTransaction(new Test<Void>()
+    public void testIsCustomisable() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run() throws Exception
             {
-            	assertFalse(adminService.isCustomisable(TYPE_CONTENT));
-            	assertFalse(adminService.isCustomisable(ASPECT_DUBLINCORE));
-            	assertTrue(adminService.isCustomisable(TYPE_RECORD_FOLDER));
-            	assertTrue(adminService.isCustomisable(ASPECT_RECORD));
+                assertFalse(rmAdminService.isCustomisable(TYPE_CONTENT));
+                assertFalse(rmAdminService.isCustomisable(ASPECT_DUBLINCORE));
+                assertTrue(rmAdminService.isCustomisable(TYPE_RECORD_FOLDER));
+                assertTrue(rmAdminService.isCustomisable(ASPECT_RECORD));
 
             	return null;
             }
@@ -177,192 +177,192 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
 	 */
     public void testAddCustomPropertyDefinition() throws Exception
     {
-    	// Add property to Record (id specified, short version)
-    	doTestInTransaction(new Test<QName>()
+        // Add property to Record (id specified, short version)
+        doTestInTransaction(new Test<QName>()
         {
             @Override
             public QName run() throws Exception
             {
-            	// Check the property does not exist
-            	assertFalse(adminService.existsCustomProperty(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myRecordProp1")));
+                // Check the property does not exist
+                assertFalse(rmAdminService.existsCustomProperty(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myRecordProp1")));
 
-            	return adminService.addCustomPropertyDefinition(
-				            			QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myRecordProp1"),
-				            			ASPECT_RECORD,
-				            			"Label1",
-				            			DataTypeDefinition.TEXT,
-				            			"Title",
-				            			"Description");
+                return rmAdminService.addCustomPropertyDefinition(
+                                        QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myRecordProp1"),
+                                        ASPECT_RECORD,
+                                        "Label1",
+                                        DataTypeDefinition.TEXT,
+                                        "Title",
+                                        "Description");
             }
 
             @Override
             public void test(QName result) throws Exception
             {
-            	try
-            	{
-            		// Check the property QName is correct
-	            	assertNotNull(result);
-	            	assertEquals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myRecordProp1"), result);
-	            	assertTrue(adminService.existsCustomProperty(result));
+                try
+                {
+                    // Check the property QName is correct
+                    assertNotNull(result);
+                    assertEquals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myRecordProp1"), result);
+                    assertTrue(rmAdminService.existsCustomProperty(result));
 
-	            	// Check that property is available as a custom property
-	            	Map<QName, PropertyDefinition> propDefs = adminService.getCustomPropertyDefinitions(ASPECT_RECORD);
-	            	assertNotNull(propDefs);
-	            	assertTrue(propDefs.containsKey(result));
+                    // Check that property is available as a custom property
+                    Map<QName, PropertyDefinition> propDefs = rmAdminService.getCustomPropertyDefinitions(ASPECT_RECORD);
+                    assertNotNull(propDefs);
+                    assertTrue(propDefs.containsKey(result));
 
-	            	// Check the property definition
-	            	PropertyDefinition propDef = propDefs.get(result);
-	            	assertNotNull(propDef);
-	            	assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
-	            	assertEquals("Description", propDef.getDescription(dictionaryService));
-	            	assertEquals("Label1", propDef.getTitle(dictionaryService));
-            	}
-            	finally
-            	{
-            		// Store the created property for cleanup later
-            		createdCustomProperties.add(result);
-            	}
+                    // Check the property definition
+                    PropertyDefinition propDef = propDefs.get(result);
+                    assertNotNull(propDef);
+                    assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
+                    assertEquals("Description", propDef.getDescription(dictionaryService));
+                    assertEquals("Label1", propDef.getTitle(dictionaryService));
+                }
+                finally
+                {
+                    // Store the created property for cleanup later
+                    createdCustomProperties.add(result);
+                }
             }
         });
 
-    	// Add property to record (no id, short version)
-    	doTestInTransaction(new Test<QName>()
+        // Add property to record (no id, short version)
+        doTestInTransaction(new Test<QName>()
         {
             @Override
             public QName run() throws Exception
             {
-            	return adminService.addCustomPropertyDefinition(
-				            			null,
-				            			ASPECT_RECORD,
-				            			"Label2",
-				            			DataTypeDefinition.TEXT,
-				            			"Title",
-				            			"Description");
+                return rmAdminService.addCustomPropertyDefinition(
+                                        null,
+                                        ASPECT_RECORD,
+                                        "Label2",
+                                        DataTypeDefinition.TEXT,
+                                        "Title",
+                                        "Description");
             }
 
             @Override
             public void test(QName result) throws Exception
             {
-            	try
-            	{
-            		// Check the property QName is correct
-	            	assertNotNull(result);
-	            	assertEquals(RecordsManagementCustomModel.RM_CUSTOM_URI, result.getNamespaceURI());
-	            	assertTrue(adminService.existsCustomProperty(result));
+                try
+                {
+                    // Check the property QName is correct
+                    assertNotNull(result);
+                    assertEquals(RecordsManagementCustomModel.RM_CUSTOM_URI, result.getNamespaceURI());
+                    assertTrue(rmAdminService.existsCustomProperty(result));
 
-	            	// Check that property is available as a custom property
-	            	Map<QName, PropertyDefinition> propDefs = adminService.getCustomPropertyDefinitions(ASPECT_RECORD);
-	            	assertNotNull(propDefs);
-	            	assertTrue(propDefs.containsKey(result));
+                    // Check that property is available as a custom property
+                    Map<QName, PropertyDefinition> propDefs = rmAdminService.getCustomPropertyDefinitions(ASPECT_RECORD);
+                    assertNotNull(propDefs);
+                    assertTrue(propDefs.containsKey(result));
 
-	            	// Check the property definition
-	            	PropertyDefinition propDef = propDefs.get(result);
-	            	assertNotNull(propDef);
-	            	assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
-	            	assertEquals("Description", propDef.getDescription(dictionaryService));
-	            	assertEquals("Label2", propDef.getTitle(dictionaryService));
-            	}
-            	finally
-            	{
-            		// Store the created property for cleanup later
-            		createdCustomProperties.add(result);
-            	}
+                    // Check the property definition
+                    PropertyDefinition propDef = propDefs.get(result);
+                    assertNotNull(propDef);
+                    assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
+                    assertEquals("Description", propDef.getDescription(dictionaryService));
+                    assertEquals("Label2", propDef.getTitle(dictionaryService));
+                }
+                finally
+                {
+                    // Store the created property for cleanup later
+                    createdCustomProperties.add(result);
+                }
             }
         });
 
-    	// Add property to record (long version)
-    	doTestInTransaction(new Test<QName>()
+        // Add property to record (long version)
+        doTestInTransaction(new Test<QName>()
         {
             @Override
             public QName run() throws Exception
             {
-            	return adminService.addCustomPropertyDefinition(
-				            			null,
-				            			ASPECT_RECORD,
-				            			"Label3",
-				            			DataTypeDefinition.TEXT,
-				            			"Title",
-				            			"Description",
-				            			"default",
-				            			false,
-				            			false,
-				            			false,
-				            			null);
+                return rmAdminService.addCustomPropertyDefinition(
+                                        null,
+                                        ASPECT_RECORD,
+                                        "Label3",
+                                        DataTypeDefinition.TEXT,
+                                        "Title",
+                                        "Description",
+                                        "default",
+                                        false,
+                                        false,
+                                        false,
+                                        null);
             }
 
             @Override
             public void test(QName result) throws Exception
             {
-            	try
-            	{
-            		// Check the property QName is correct
-	            	assertNotNull(result);
-	            	assertEquals(RecordsManagementCustomModel.RM_CUSTOM_URI, result.getNamespaceURI());
-	            	assertTrue(adminService.existsCustomProperty(result));
+                try
+                {
+                    // Check the property QName is correct
+                    assertNotNull(result);
+                    assertEquals(RecordsManagementCustomModel.RM_CUSTOM_URI, result.getNamespaceURI());
+                    assertTrue(rmAdminService.existsCustomProperty(result));
 
-	            	// Check that property is available as a custom property
-	            	Map<QName, PropertyDefinition> propDefs = adminService.getCustomPropertyDefinitions(ASPECT_RECORD);
-	            	assertNotNull(propDefs);
-	            	//assertEquals(3, propDefs.size());
-	            	assertTrue(propDefs.containsKey(result));
+                    // Check that property is available as a custom property
+                    Map<QName, PropertyDefinition> propDefs = rmAdminService.getCustomPropertyDefinitions(ASPECT_RECORD);
+                    assertNotNull(propDefs);
+                    //assertEquals(3, propDefs.size());
+                    assertTrue(propDefs.containsKey(result));
 
-	            	// Check the property definition
-	            	PropertyDefinition propDef = propDefs.get(result);
-	            	assertNotNull(propDef);
-	            	assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
-	            	assertEquals("Description", propDef.getDescription(dictionaryService));
-	            	assertEquals("Label3", propDef.getTitle(dictionaryService));
-	            	assertEquals("default", propDef.getDefaultValue());
-	            	assertFalse(propDef.isMandatory());
-	            	assertFalse(propDef.isMultiValued());
-	            	assertFalse(propDef.isProtected());
+                    // Check the property definition
+                    PropertyDefinition propDef = propDefs.get(result);
+                    assertNotNull(propDef);
+                    assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
+                    assertEquals("Description", propDef.getDescription(dictionaryService));
+                    assertEquals("Label3", propDef.getTitle(dictionaryService));
+                    assertEquals("default", propDef.getDefaultValue());
+                    assertFalse(propDef.isMandatory());
+                    assertFalse(propDef.isMultiValued());
+                    assertFalse(propDef.isProtected());
 
-            	}
-            	finally
-            	{
-            		// Store the created property for cleanup later
-            		createdCustomProperties.add(result);
-            	}
+                }
+                finally
+                {
+                    // Store the created property for cleanup later
+                    createdCustomProperties.add(result);
+                }
             }
         });
 
-    	// Failure: Add a property with the same name twice
-    	doTestInTransaction(new FailureTest
+        // Failure: Add a property with the same name twice
+        doTestInTransaction(new FailureTest
         (
-        	"Can not create a property with the same id twice",
-        	CustomMetadataException.class
-        )
-        {
-            @Override
-            public void run() throws Exception
-            {
-                adminService.addCustomPropertyDefinition(
-                		QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myRecordProp1"),
-                		ASPECT_RECORD,
-                		"Label1",
-                		DataTypeDefinition.TEXT,
-                		"Title",
-                		"Description");
-            }
-        });
-
-    	// Failure: Try and add a property to a type that isn't customisable
-    	doTestInTransaction(new FailureTest
-        (
-        	"Can not add a custom property to a type that isn't registered as customisable",
+            "Can not create a property with the same id twice",
             CustomMetadataException.class
         )
         {
             @Override
             public void run() throws Exception
             {
-            	adminService.addCustomPropertyDefinition(
-            			QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myContentProp"),
-            			TYPE_CONTENT,
-            			"Label1",
-            			DataTypeDefinition.TEXT,
-            			"Title",
-            			"Description");
+                rmAdminService.addCustomPropertyDefinition(
+                        QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myRecordProp1"),
+                        ASPECT_RECORD,
+                        "Label1",
+                        DataTypeDefinition.TEXT,
+                        "Title",
+                        "Description");
+            }
+        });
+
+        // Failure: Try and add a property to a type that isn't customisable
+        doTestInTransaction(new FailureTest
+        (
+            "Can not add a custom property to a type that isn't registered as customisable",
+            CustomMetadataException.class
+        )
+        {
+            @Override
+            public void run() throws Exception
+            {
+                rmAdminService.addCustomPropertyDefinition(
+                        QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myContentProp"),
+                        TYPE_CONTENT,
+                        "Label1",
+                        DataTypeDefinition.TEXT,
+                        "Title",
+                        "Description");
             }
         });
     }
@@ -372,47 +372,47 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
      */
     public void testMakeCustomisable() throws Exception
     {
-    	doTestInTransaction(new Test<QName>()
+        doTestInTransaction(new Test<QName>()
         {
             @Override
             public QName run() throws Exception
             {
-            	// Make a type customisable
-            	assertFalse(adminService.isCustomisable(TYPE_CUSTOM_TYPE));
-            	adminService.makeCustomisable(TYPE_CUSTOM_TYPE);
-            	madeCustomisable.add(TYPE_CUSTOM_TYPE);
-            	assertTrue(adminService.isCustomisable(TYPE_CUSTOM_TYPE));
+                // Make a type customisable
+                assertFalse(rmAdminService.isCustomisable(TYPE_CUSTOM_TYPE));
+                rmAdminService.makeCustomisable(TYPE_CUSTOM_TYPE);
+                madeCustomisable.add(TYPE_CUSTOM_TYPE);
+                assertTrue(rmAdminService.isCustomisable(TYPE_CUSTOM_TYPE));
 
-		    	// Add a custom property
-            	return adminService.addCustomPropertyDefinition(
-            			QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myNewProperty"),
-            			TYPE_CUSTOM_TYPE,
-            			"Label",
-            			DataTypeDefinition.TEXT,
-            			"Title",
-            			"Description");
+                // Add a custom property
+                return rmAdminService.addCustomPropertyDefinition(
+                        QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myNewProperty"),
+                        TYPE_CUSTOM_TYPE,
+                        "Label",
+                        DataTypeDefinition.TEXT,
+                        "Title",
+                        "Description");
             }
 
             @Override
             public void test(QName result) throws Exception
             {
-        		// Check the property QName is correct
-            	assertNotNull(result);
-            	assertEquals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myNewProperty"), result);
-            	assertTrue(adminService.existsCustomProperty(result));
+                // Check the property QName is correct
+                assertNotNull(result);
+                assertEquals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myNewProperty"), result);
+                assertTrue(rmAdminService.existsCustomProperty(result));
 
-            	// Check that property is available as a custom property
-            	Map<QName, PropertyDefinition> propDefs = adminService.getCustomPropertyDefinitions(TYPE_CUSTOM_TYPE);
-            	assertNotNull(propDefs);
-            	assertEquals(1, propDefs.size());
-            	assertTrue(propDefs.containsKey(result));
+                // Check that property is available as a custom property
+                Map<QName, PropertyDefinition> propDefs = rmAdminService.getCustomPropertyDefinitions(TYPE_CUSTOM_TYPE);
+                assertNotNull(propDefs);
+                assertEquals(1, propDefs.size());
+                assertTrue(propDefs.containsKey(result));
 
-            	// Check the property definition
-            	PropertyDefinition propDef = propDefs.get(result);
-            	assertNotNull(propDef);
-            	assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
-            	assertEquals("Description", propDef.getDescription(dictionaryService));
-            	assertEquals("Label", propDef.getTitle(dictionaryService));
+                // Check the property definition
+                PropertyDefinition propDef = propDefs.get(result);
+                assertNotNull(propDef);
+                assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
+                assertEquals("Description", propDef.getDescription(dictionaryService));
+                assertEquals("Label", propDef.getTitle(dictionaryService));
 
             }
         });
@@ -422,42 +422,42 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
             @Override
             public QName run() throws Exception
             {
-		    	// Make an aspect customisable
-            	assertFalse(adminService.isCustomisable(ASPECT_CUSTOM_ASPECT));
-            	adminService.makeCustomisable(ASPECT_CUSTOM_ASPECT);
-            	madeCustomisable.add(ASPECT_CUSTOM_ASPECT);
-            	assertTrue(adminService.isCustomisable(ASPECT_CUSTOM_ASPECT));
+                // Make an aspect customisable
+                assertFalse(rmAdminService.isCustomisable(ASPECT_CUSTOM_ASPECT));
+                rmAdminService.makeCustomisable(ASPECT_CUSTOM_ASPECT);
+                madeCustomisable.add(ASPECT_CUSTOM_ASPECT);
+                assertTrue(rmAdminService.isCustomisable(ASPECT_CUSTOM_ASPECT));
 
-		    	// Add a custom property
-            	return adminService.addCustomPropertyDefinition(
-            			QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myNewAspectProperty"),
-            			ASPECT_CUSTOM_ASPECT,
-            			"Label",
-            			DataTypeDefinition.TEXT,
-            			"Title",
-            			"Description");
+                // Add a custom property
+                return rmAdminService.addCustomPropertyDefinition(
+                        QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myNewAspectProperty"),
+                        ASPECT_CUSTOM_ASPECT,
+                        "Label",
+                        DataTypeDefinition.TEXT,
+                        "Title",
+                        "Description");
             }
 
             @Override
             public void test(QName result) throws Exception
             {
-            	// Check the property QName is correct
-            	assertNotNull(result);
-            	assertEquals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myNewAspectProperty"), result);
-            	assertTrue(adminService.existsCustomProperty(result));
+                // Check the property QName is correct
+                assertNotNull(result);
+                assertEquals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myNewAspectProperty"), result);
+                assertTrue(rmAdminService.existsCustomProperty(result));
 
-            	// Check that property is available as a custom property
-            	Map<QName, PropertyDefinition> propDefs = adminService.getCustomPropertyDefinitions(ASPECT_CUSTOM_ASPECT);
-            	assertNotNull(propDefs);
-            	assertEquals(1, propDefs.size());
-            	assertTrue(propDefs.containsKey(result));
+                // Check that property is available as a custom property
+                Map<QName, PropertyDefinition> propDefs = rmAdminService.getCustomPropertyDefinitions(ASPECT_CUSTOM_ASPECT);
+                assertNotNull(propDefs);
+                assertEquals(1, propDefs.size());
+                assertTrue(propDefs.containsKey(result));
 
-            	// Check the property definition
-            	PropertyDefinition propDef = propDefs.get(result);
-            	assertNotNull(propDef);
-            	assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
-            	assertEquals("Description", propDef.getDescription(dictionaryService));
-            	assertEquals("Label", propDef.getTitle(dictionaryService));
+                // Check the property definition
+                PropertyDefinition propDef = propDefs.get(result);
+                assertNotNull(propDef);
+                assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
+                assertEquals("Description", propDef.getDescription(dictionaryService));
+                assertEquals("Label", propDef.getTitle(dictionaryService));
             }
         });
     }
@@ -470,18 +470,18 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
             @Override
             public QName run() throws Exception
             {
-                adminService.makeCustomisable(TYPE_CUSTOM_TYPE);
+                rmAdminService.makeCustomisable(TYPE_CUSTOM_TYPE);
                 madeCustomisable.add(TYPE_CUSTOM_TYPE);
-                adminService.addCustomPropertyDefinition(
+                rmAdminService.addCustomPropertyDefinition(
                         QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myNewProperty"),
                         TYPE_CUSTOM_TYPE,
                         "Label",
                         DataTypeDefinition.TEXT,
                         "Title",
                         "Description");
-                adminService.makeCustomisable(ASPECT_CUSTOM_ASPECT);
+                rmAdminService.makeCustomisable(ASPECT_CUSTOM_ASPECT);
                 madeCustomisable.add(ASPECT_CUSTOM_ASPECT);
-                adminService.addCustomPropertyDefinition(
+                rmAdminService.addCustomPropertyDefinition(
                         QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myNewAspectProperty"),
                         ASPECT_CUSTOM_ASPECT,
                         "Label",
@@ -530,18 +530,18 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
 
     public void testCreateAndUseCustomChildReference() throws Exception
     {
-    	long now = System.currentTimeMillis();
+        long now = System.currentTimeMillis();
         createAndUseCustomReference(CustomReferenceType.PARENT_CHILD, null, "superseded" + now, "superseding" + now);
     }
 
     public void testCreateAndUseCustomNonChildReference() throws Exception
     {
         long now = System.currentTimeMillis();
-    	createAndUseCustomReference(CustomReferenceType.BIDIRECTIONAL, "supporting" + now, null, null);
+        createAndUseCustomReference(CustomReferenceType.BIDIRECTIONAL, "supporting" + now, null, null);
     }
 
-	private void createAndUseCustomReference(final CustomReferenceType refType, final String label, final String source, final String target) throws Exception
-	{
+    private void createAndUseCustomReference(final CustomReferenceType refType, final String label, final String source, final String target) throws Exception
+    {
         final NodeRef testRecord1 = retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
         {
             public NodeRef execute() throws Throwable
@@ -577,12 +577,12 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         if (label != null)
                         {
                             // A bidirectional reference
-                            qNameResult = adminService.addCustomAssocDefinition(label);
+                            qNameResult = rmAdminService.addCustomAssocDefinition(label);
                         }
                         else
                         {
                             // A parent/child reference
-                            qNameResult = adminService.addCustomChildAssocDefinition(source, target);
+                            qNameResult = rmAdminService.addCustomChildAssocDefinition(source, target);
                         }
                         System.out.println("Creating new " + refType + " reference definition: " + qNameResult);
                         System.out.println("  params- label: '" + label + "' source: '" + source + "' target: '" + target + "'");
@@ -596,7 +596,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                     public Void execute() throws Throwable
                     {
                         // Confirm the custom reference is included in the list from adminService.
-                        Map<QName, AssociationDefinition> customRefDefinitions = adminService.getCustomReferenceDefinitions();
+                        Map<QName, AssociationDefinition> customRefDefinitions = rmAdminService.getCustomReferenceDefinitions();
                         AssociationDefinition retrievedRefDefn = customRefDefinitions.get(generatedQName);
                         assertNotNull("Custom reference definition from adminService was null.", retrievedRefDefn);
                         assertEquals(generatedQName, retrievedRefDefn.getName());
@@ -674,7 +674,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                     {
                         // Just dump them out for visual inspection
                         System.out.println("Available custom properties:");
-                        Map<QName, PropertyDefinition> props = adminService.getCustomPropertyDefinitions();
+                        Map<QName, PropertyDefinition> props = rmAdminService.getCustomPropertyDefinitions();
                         for (QName prop : props.keySet())
                         {
                             System.out.println("   - " + prop.toString());
@@ -697,7 +697,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                     {
                         // Just dump them out for visual inspection
                         System.out.println("Available custom references:");
-                        Map<QName, AssociationDefinition> references = adminService.getCustomReferenceDefinitions();
+                        Map<QName, AssociationDefinition> references = rmAdminService.getCustomReferenceDefinitions();
                         for (QName reference : references.keySet())
                         {
                             System.out.println("    - " + reference.toString());
@@ -716,7 +716,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                     {
                         // Just dump them out for visual inspection
                         System.out.println("Available custom constraints:");
-                        List<ConstraintDefinition> constraints = adminService.getCustomConstraintDefinitions(RecordsManagementCustomModel.RM_CUSTOM_MODEL);
+                        List<ConstraintDefinition> constraints = rmAdminService.getCustomConstraintDefinitions(RecordsManagementCustomModel.RM_CUSTOM_MODEL);
                         for (ConstraintDefinition constraint : constraints)
                         {
                             System.out.println("   - " + constraint.getName());
@@ -755,8 +755,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                     {
                         public Void execute() throws Throwable
                         {
-                        	utils.declareRecord(testRecord1);
-                        	utils.declareRecord(testRecord2);
+                            utils.declareRecord(testRecord1);
+                            utils.declareRecord(testRecord2);
 
                             policyComponent.bindClassBehaviour(
                                     RecordsManagementPolicies.BEFORE_CREATE_REFERENCE,
@@ -770,7 +770,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                             assertFalse(beforeMarker);
                             assertFalse(onMarker);
 
-                            adminService.addCustomReference(testRecord1, testRecord2, CUSTOM_REF_VERSIONS);
+                            rmAdminService.addCustomReference(testRecord1, testRecord2, CUSTOM_REF_VERSIONS);
 
                             assertTrue(beforeMarker);
                             assertTrue(onMarker);
@@ -782,7 +782,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
         {
             inTest = false;
         }
-	}
+    }
 
 	public void beforeCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
@@ -801,7 +801,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                 {
                     public Integer execute() throws Throwable
                     {
-                        List<ConstraintDefinition> result = adminService.getCustomConstraintDefinitions(RecordsManagementCustomModel.RM_CUSTOM_MODEL);
+                        List<ConstraintDefinition> result = rmAdminService.getCustomConstraintDefinitions(RecordsManagementCustomModel.RM_CUSTOM_MODEL);
                         assertNotNull(result);
                         return result.size();
                     }
@@ -821,7 +821,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
 
                         final QName result = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, conLocalName);
 
-                        adminService.addCustomConstraintDefinition(result, conTitle, true, allowedValues, MatchLogic.AND);
+                        rmAdminService.addCustomConstraintDefinition(result, conTitle, true, allowedValues, MatchLogic.AND);
                         return result;
                     }
                 });
@@ -834,7 +834,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                 {
                     public Void execute() throws Throwable
                     {
-                        List<ConstraintDefinition> customConstraintDefs = adminService.getCustomConstraintDefinitions(RecordsManagementCustomModel.RM_CUSTOM_MODEL);
+                        List<ConstraintDefinition> customConstraintDefs = rmAdminService.getCustomConstraintDefinitions(RecordsManagementCustomModel.RM_CUSTOM_MODEL);
                         assertEquals(beforeCnt+1, customConstraintDefs.size());
 
                         boolean found = false;
@@ -871,7 +871,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         allowedValues.add("RED");
                         allowedValues.add("YELLOW");
 
-                        adminService.changeCustomConstraintValues(testCon, allowedValues);
+                        rmAdminService.changeCustomConstraintValues(testCon, allowedValues);
                         return null;
                     }
                 });
@@ -883,7 +883,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                 {
                     public Void execute() throws Throwable
                     {
-                        List<ConstraintDefinition> customConstraintDefs = adminService.getCustomConstraintDefinitions(RecordsManagementCustomModel.RM_CUSTOM_MODEL);
+                        List<ConstraintDefinition> customConstraintDefs = rmAdminService.getCustomConstraintDefinitions(RecordsManagementCustomModel.RM_CUSTOM_MODEL);
                         assertEquals(beforeCnt+1, customConstraintDefs.size());
 
                         boolean found = false;
@@ -927,7 +927,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                 boolean mandatory = false;
                 boolean isProtected = false;
 
-                QName propName = adminService.addCustomPropertyDefinition(null, ASPECT_RECORD, propLocalName, dataType, propTitle, description, defaultValue, multiValued, mandatory, isProtected, testCon);
+                QName propName = rmAdminService.addCustomPropertyDefinition(null, ASPECT_RECORD, propLocalName, dataType, propTitle, description, defaultValue, multiValued, mandatory, isProtected, testCon);
                 createdCustomProperties.add(propName);
                 return null;
             }

@@ -31,53 +31,30 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 
 /**
  * Records Service Implementation Test
- * 
+ *
  * @author Roy Wetherall
  * @author Tuna Aksoy
  * @since 2.1
  */
 public class RecordServiceImplTest extends BaseRMTestCase
 {
-    /** Services */
-    protected ActionService dmActionService;
-
-    protected PermissionService dmPermissionService;
-
-    protected ExtendedSecurityService extendedSecurityService;
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
-     */
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
-
-        dmActionService = (ActionService) applicationContext.getBean("ActionService");
-        dmPermissionService = (PermissionService) applicationContext.getBean("PermissionService");
-        extendedSecurityService = (ExtendedSecurityService) applicationContext.getBean("ExtendedSecurityService");
-    }
-
     /**
      * This is a user test
-     * 
+     *
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isUserTest()
      */
     @Override
@@ -88,7 +65,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
     /**
      * This is a record test
-     * 
+     *
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isRecordTest()
      */
     @Override
@@ -126,7 +103,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
             /**
              * Helper method for getting a list of record meta data aspects
-             * 
+             *
              * @return Record meta data aspects as list
              */
             private List<QName> getAspectList()
@@ -193,85 +170,85 @@ public class RecordServiceImplTest extends BaseRMTestCase
             }
         });
     }
-    
+
     public void testExtendedWriters() throws Exception
     {
         final ExtendedReaderDynamicAuthority readerDy = (ExtendedReaderDynamicAuthority)applicationContext.getBean("extendedReaderDynamicAuthority");
         final ExtendedWriterDynamicAuthority writerDy = (ExtendedWriterDynamicAuthority)applicationContext.getBean("extendedWriterDynamicAuthority");
-        
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run()
-            {   
+            {
                 assertNull(extendedSecurityService.getExtendedReaders(recordOne));
                 assertNull(extendedSecurityService.getExtendedWriters(recordOne));
-                
+
                 assertFalse(readerDy.hasAuthority(recordOne, dmCollaborator));
                 assertFalse(writerDy.hasAuthority(recordOne, dmCollaborator));
-                
+
                 assertFalse(readerDy.hasAuthority(filePlan, dmCollaborator));
                 assertFalse(writerDy.hasAuthority(filePlan, dmCollaborator));
-                                
+
                 return null;
             }
         }, dmCollaborator);
-        
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run()
-            {   
+            {
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
-                                
+
                 assertFalse(readerDy.hasAuthority(recordOne, dmCollaborator));
                 assertFalse(writerDy.hasAuthority(recordOne, dmCollaborator));
-                
+
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA));
-                
+
                 assertFalse(readerDy.hasAuthority(filePlan, dmCollaborator));
                 assertFalse(writerDy.hasAuthority(filePlan, dmCollaborator));
-                                
+
                 return null;
             }
         }, dmCollaborator);
-        
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run()
-            {   
+            {
                 Set<String> writers = new HashSet<String>(1);
                 writers.add(dmCollaborator);
                 extendedSecurityService.addExtendedSecurity(recordOne, null, writers);
-                   
+
                 assertNull(extendedSecurityService.getExtendedReaders(recordOne));
                 assertFalse(extendedSecurityService.getExtendedWriters(recordOne).isEmpty());
-                
+
                 return null;
             }
         });
-        
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run()
-            {   
+            {
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
-                
+
                 assertFalse(readerDy.hasAuthority(recordOne, dmCollaborator));
                 assertTrue(writerDy.hasAuthority(recordOne, dmCollaborator));
-                
+
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA));
-                
+
                 return null;
             }
         }, dmCollaborator);
-        
+
     }
 
     /**
@@ -308,7 +285,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
                         AccessStatus.DENIED, // record folder
                         AccessStatus.DENIED); // doc/record
 
-                assertEquals(AccessStatus.DENIED, dmPermissionService.hasPermission(filePlan,
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan,
                         RMPermissionModel.VIEW_RECORDS));
 
                 checkPermissions(FILING, AccessStatus.DENIED, // file plan
@@ -325,10 +302,10 @@ public class RecordServiceImplTest extends BaseRMTestCase
                         AccessStatus.DENIED, // record category
                         AccessStatus.DENIED, // record folder
                         AccessStatus.ALLOWED); // doc/record
-                
+
                 permissionReport();
 
-                assertEquals(AccessStatus.ALLOWED, dmPermissionService.hasPermission(filePlan,
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan,
                         RMPermissionModel.VIEW_RECORDS));
 
                 checkPermissions(FILING, AccessStatus.DENIED, // file plan
@@ -353,9 +330,9 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 // ****
                 // Capability Tests
                 // ****
-                               
+
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan,
-                        RMPermissionModel.VIEW_RECORDS));                
+                        RMPermissionModel.VIEW_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan,
                         RMPermissionModel.EDIT_NON_RECORD_METADATA));
 
@@ -410,7 +387,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
             }
         }, dmConsumer);
     }
-    
+
     private void permissionReport()
     {
         Set<String> writers = extendedSecurityService.getExtendedWriters(dmDocument);
@@ -418,30 +395,28 @@ public class RecordServiceImplTest extends BaseRMTestCase
         {
             System.out.println("writer: " + writer);
         }
-        
+
         System.out.println("Users assigned to extended writers role:");
         Set<String> assignedUsers = filePlanRoleService.getUsersAssignedToRole(filePlan, FilePlanRoleService.ROLE_EXTENDED_WRITERS);
         for (String assignedUser : assignedUsers)
         {
-           System.out.println(" ... " + assignedUser);   
+           System.out.println(" ... " + assignedUser);
         }
 
-        PermissionService ps = (PermissionService)applicationContext.getBean("permissionService");
-        
-        Set<AccessPermission> perms = ps.getAllSetPermissions(filePlan);
+        Set<AccessPermission> perms = permissionService.getAllSetPermissions(filePlan);
         for (AccessPermission perm : perms)
         {
             if (perm.getPermission().contains(RMPermissionModel.EDIT_NON_RECORD_METADATA))
             {
                 System.out.println("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
-            }           
+            }
         }
         for (AccessPermission perm : perms)
         {
             if (perm.getPermission().contains(RMPermissionModel.VIEW_RECORDS))
             {
                 System.out.println("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
-            }           
+            }
         }
     }
 
@@ -475,7 +450,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
                         AccessStatus.DENIED, // record folder
                         AccessStatus.DENIED); // doc/record
 
-                assertEquals(AccessStatus.DENIED, dmPermissionService.hasPermission(filePlan,
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan,
                         RMPermissionModel.VIEW_RECORDS));
 
                 checkPermissions(FILING, AccessStatus.DENIED, // file plan
@@ -492,7 +467,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
                         AccessStatus.DENIED, // record folder
                         AccessStatus.DENIED); // doc/record
 
-                assertEquals(AccessStatus.DENIED, dmPermissionService.hasPermission(filePlan,
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan,
                         RMPermissionModel.VIEW_RECORDS));
 
                 checkPermissions(FILING, AccessStatus.DENIED, // file plan
@@ -614,11 +589,11 @@ public class RecordServiceImplTest extends BaseRMTestCase
     private void checkPermissions(String permission, AccessStatus filePlanExpected, AccessStatus unfiledExpected,
             AccessStatus recordCatExpected, AccessStatus recordFolderExpected, AccessStatus recordExpected)
     {
-        assertEquals(filePlanExpected, dmPermissionService.hasPermission(filePlan, permission));
-        assertEquals(unfiledExpected, dmPermissionService.hasPermission(unfiledContainer, permission));
-        assertEquals(recordCatExpected, dmPermissionService.hasPermission(rmContainer, permission));
-        assertEquals(recordFolderExpected, dmPermissionService.hasPermission(rmFolder, permission));
-        assertEquals(recordExpected, dmPermissionService.hasPermission(dmDocument, permission));
+        assertEquals(filePlanExpected, permissionService.hasPermission(filePlan, permission));
+        assertEquals(unfiledExpected, permissionService.hasPermission(unfiledContainer, permission));
+        assertEquals(recordCatExpected, permissionService.hasPermission(rmContainer, permission));
+        assertEquals(recordFolderExpected, permissionService.hasPermission(rmFolder, permission));
+        assertEquals(recordExpected, permissionService.hasPermission(dmDocument, permission));
     }
 
     private String createUserWithCapabilties(final String... capabiltyNames)
@@ -680,14 +655,14 @@ public class RecordServiceImplTest extends BaseRMTestCase
             }
         });
 
-        // test normal user        
+        // test normal user
         doTestInTransaction(new VoidTest()
         {
             @Override
             public void runImpl() throws Exception
             {
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
-                
+
                 assertFalse(recordService.isPropertyEditable(recordOne, PROP_ORIGINATING_ORGANIZATION));
                 assertFalse(recordService.isPropertyEditable(recordOne, PROP_DESCRIPTION));
                 assertFalse(recordService.isPropertyEditable(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION));
@@ -705,7 +680,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 assertFalse(recordService.isPropertyEditable(recordOne, PROP_ORIGINATING_ORGANIZATION));
                 assertTrue(recordService.isPropertyEditable(recordOne, PROP_DESCRIPTION));
                 assertFalse(recordService.isPropertyEditable(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION));
-                assertFalse(recordService.isPropertyEditable(recordDeclaredOne, PROP_DESCRIPTION));                
+                assertFalse(recordService.isPropertyEditable(recordDeclaredOne, PROP_DESCRIPTION));
             }
         }, nonRecordMetadata);
 
@@ -737,7 +712,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
             }
         }, declaredRecordMetadata);
     }
-    
+
     public void testRecordPropertiesUpdate() throws Exception
     {
         final String nonRecordMetadata = createUserWithCapabilties(
@@ -761,42 +736,42 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 filePlanPermissionService.setPermission(rmFolder, declaredRecordMetadata, RMPermissionModel.FILING);
             }
         });
-        
+
         // test rmadmin
         canEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, rmAdminName);
         canEditProperty(recordOne, PROP_ORIGINATING_ORGANIZATION, rmAdminName);
         cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, rmAdminName);
         canEditProperty(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION, rmAdminName);
-        
+
         // test normal user
         cantEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, rmUserName);
         cantEditProperty(recordOne, PROP_ORIGINATING_ORGANIZATION, rmUserName);
         cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, rmUserName);
         cantEditProperty(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION, rmUserName);
-        
+
         // test undeclared record with edit non-record metadata capability
         canEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, nonRecordMetadata);
         cantEditProperty(recordOne, PROP_ORIGINATING_ORGANIZATION, nonRecordMetadata);
         // test declared record with edit non-record metadata capability
         cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, nonRecordMetadata);
         cantEditProperty(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION, nonRecordMetadata);
-        
+
         // test undeclared record with edit record metadata capability
         cantEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, recordMetadata);
         canEditProperty(recordOne, PROP_ORIGINATING_ORGANIZATION, recordMetadata);
         // test declared record with edit record metadata capability
         cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, recordMetadata);
         cantEditProperty(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION, recordMetadata);
-        
+
         // test undeclared record with edit declared record metadata capability
         cantEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, declaredRecordMetadata);
         cantEditProperty(recordOne, PROP_ORIGINATING_ORGANIZATION, declaredRecordMetadata);
         // test declared record with edit declared record metadata capability
         cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, declaredRecordMetadata);
         canEditProperty(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION, declaredRecordMetadata);
-        
+
     }
-    
+
     private void cantEditProperty(final NodeRef nodeRef, final QName property, String user) throws Exception
     {
         boolean failure = false;
@@ -809,7 +784,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 {
                     nodeService.setProperty(nodeRef, property, GUID.generate());
                 }
-            
+
             }, user);
         }
         catch (Throwable exception)
@@ -817,14 +792,14 @@ public class RecordServiceImplTest extends BaseRMTestCase
             // expected
             failure = true;
         }
-        
+
         // assert fail not failure
         if (failure == false)
         {
             fail("Property should not have been editable.");
         }
     }
-    
+
     private void canEditProperty(final NodeRef nodeRef, final QName property, String user) throws Exception
     {
         doTestInTransaction(new VoidTest()

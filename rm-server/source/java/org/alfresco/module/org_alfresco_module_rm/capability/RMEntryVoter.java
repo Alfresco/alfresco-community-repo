@@ -34,54 +34,31 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Records managment entry voter.
- * 
+ *
  * @author Roy Wetherall, Andy Hind
  */
 public class RMEntryVoter extends RMSecurityCommon
-                          implements AccessDecisionVoter, InitializingBean, ApplicationContextAware, PolicyRegister
+                          implements AccessDecisionVoter, InitializingBean, PolicyRegister
 {
 	/** Logger */
     private static Log logger = LogFactory.getLog(RMEntryVoter.class);
 
     /** Namespace resolver */
     private NamespacePrefixResolver nspr;
-    
-    /** Search service */
-    private SearchService searchService;
-    
-    /** Ownable service */
-    private OwnableService ownableService;
-    
+
     /** Capability Service */
     private CapabilityService capabilityService;
-    
+
     /** Policy map */
     private HashMap<String, Policy> policies = new HashMap<String, Policy>();
-    
-    /** Application context */
-    private ApplicationContext applicationContext;
-    
-    /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;        
-    }
 
     /**
      * @param capabilityService     capability service
@@ -90,31 +67,7 @@ public class RMEntryVoter extends RMSecurityCommon
     {
         this.capabilityService = capabilityService;
     }
-    
-    /**
-     * @return  search service
-     */
-    public SearchService getSearchService()
-    {
-        if (searchService == null)
-        {
-            searchService = (SearchService)applicationContext.getBean("SearchService");
-        }
-        return searchService;
-    }
-    
-    /**
-     * @return	ownable service
-     */
-    public OwnableService getOwnableService() 
-    {
-    	if (ownableService == null)
-        {
-    		ownableService = (OwnableService)applicationContext.getBean("ownableService");
-        }
-		return ownableService;
-	}
-    
+
     /**
      * @param nspr	namespace prefix resolver
      */
@@ -122,10 +75,10 @@ public class RMEntryVoter extends RMSecurityCommon
     {
         this.nspr = nspr;
     }
-    
+
     /**
      * Register a policy the voter
-     * 
+     *
      * @param policy    policy
      */
     public void registerPolicy(Policy policy)
@@ -141,10 +94,10 @@ public class RMEntryVoter extends RMSecurityCommon
     {
         if ((attribute.getAttribute() != null) &&
             (attribute.getAttribute().equals(ConfigAttributeDefinition.RM_ABSTAIN) ||
-             attribute.getAttribute().equals(ConfigAttributeDefinition.RM_QUERY) || 
-             attribute.getAttribute().equals(ConfigAttributeDefinition.RM_ALLOW) || 
+             attribute.getAttribute().equals(ConfigAttributeDefinition.RM_QUERY) ||
+             attribute.getAttribute().equals(ConfigAttributeDefinition.RM_ALLOW) ||
              attribute.getAttribute().equals(ConfigAttributeDefinition.RM_DENY) ||
-             attribute.getAttribute().startsWith(ConfigAttributeDefinition.RM_CAP) || 
+             attribute.getAttribute().startsWith(ConfigAttributeDefinition.RM_CAP) ||
              attribute.getAttribute().startsWith(ConfigAttributeDefinition.RM)))
         {
             return true;
@@ -171,24 +124,24 @@ public class RMEntryVoter extends RMSecurityCommon
 	public int vote(Authentication authentication, Object object, net.sf.acegisecurity.ConfigAttributeDefinition config)
     {
     	MethodInvocation mi = (MethodInvocation)object;
-    	
+
     	if (TransactionalResourceHelper.isResourcePresent("voting") == true)
     	{
     		if (logger.isDebugEnabled())
             {
                 logger.debug(" .. grant access already voting: " + mi.getMethod().getDeclaringClass().getName() + "." + mi.getMethod().getName());
             }
-    		return AccessDecisionVoter.ACCESS_GRANTED;    		
+    		return AccessDecisionVoter.ACCESS_GRANTED;
     	}
-    	
+
     	if (logger.isDebugEnabled())
-        {        	
+        {
             logger.debug("Method: " + mi.getMethod().getDeclaringClass().getName() + "." + mi.getMethod().getName());
         }
-    	
+
     	AlfrescoTransactionSupport.bindResource("voting", true);
     	try
-    	{	        
+    	{
 	        // The system user can do anything
 	        if (AuthenticationUtil.isRunAsUserTheSystemUser())
 	        {
@@ -198,24 +151,24 @@ public class RMEntryVoter extends RMSecurityCommon
 	            }
 	            return AccessDecisionVoter.ACCESS_GRANTED;
 	        }
-	
+
 	        List<ConfigAttributeDefinition> supportedDefinitions = extractSupportedDefinitions(config);
-	
+
 	        // No RM definitions so we do not vote
 	        if (supportedDefinitions.size() == 0)
 	        {
 	            return AccessDecisionVoter.ACCESS_ABSTAIN;
 	        }
-	
+
 	        MethodInvocation invocation = (MethodInvocation) object;
-	
+
 	        Method method = invocation.getMethod();
 	        Class[] params = method.getParameterTypes();
-	
-	        // If there are only capability (RM_CAP) and policy (RM) entries non must deny 
+
+	        // If there are only capability (RM_CAP) and policy (RM) entries non must deny
 	        // If any abstain we deny
 	        // All present must vote to allow unless an explicit direction comes first (e.g. RM_ALLOW)
-	       
+
 	        for (ConfigAttributeDefinition cad : supportedDefinitions)
 	        {
 	            // Whatever is found first takes precedence
@@ -240,7 +193,7 @@ public class RMEntryVoter extends RMSecurityCommon
 	            // Ignore config that references method arguments that do not exist
 	            // Arguably we should deny here but that requires a full impact analysis
 	            // These entries effectively abstain
-	            else if (((cad.getParameters().get(0) != null) && (cad.getParameters().get(0) >= invocation.getArguments().length)) ||            		                                      
+	            else if (((cad.getParameters().get(0) != null) && (cad.getParameters().get(0) >= invocation.getArguments().length)) ||
 	                     ((cad.getParameters().get(1) != null) && (cad.getParameters().get(1) >= invocation.getArguments().length)))
 	            {
 	                continue;
@@ -311,13 +264,13 @@ public class RMEntryVoter extends RMSecurityCommon
     	{
     		AlfrescoTransactionSupport.unbindResource("voting");
     	}
-        
+
         // all voted to allow
         return AccessDecisionVoter.ACCESS_GRANTED;
     }
 
     /**
-     * 
+     *
      * @param invocation
      * @param params
      * @param cad
@@ -341,7 +294,7 @@ public class RMEntryVoter extends RMSecurityCommon
     }
 
     /**
-     * 
+     *
      * @param invocation
      * @param params
      * @param cad
@@ -365,11 +318,11 @@ public class RMEntryVoter extends RMSecurityCommon
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
     public void afterPropertiesSet() throws Exception
-    {       
+    {
     }
 
     /**
-     * 
+     *
      * @param config
      * @return
      */
@@ -390,5 +343,5 @@ public class RMEntryVoter extends RMSecurityCommon
 
         }
         return definitions;
-    }    
+    }
 }

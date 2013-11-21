@@ -26,6 +26,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
+import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
@@ -38,8 +39,10 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
@@ -51,6 +54,7 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -122,12 +126,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected FileFolderService fileFolderService;
     protected PermissionService permissionService;
     protected TaggingService taggingService;
+    protected ActionService actionService;
 
     /** RM Services */
     protected DispositionService dispositionService;
-    protected RecordsManagementEventService eventService;
-    protected RecordsManagementAdminService adminService;
-    protected RecordsManagementActionService actionService;
+    protected RecordsManagementEventService rmEventService;
+    protected RecordsManagementAdminService rmAdminService;
+    protected RecordsManagementActionService rmActionService;
     protected RecordsManagementSearchService rmSearchService;
     protected FilePlanRoleService filePlanRoleService;
     protected FilePlanPermissionService filePlanPermissionService;
@@ -139,6 +144,9 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected FilePlanService filePlanService;
     protected FilePlanAuthenticationService filePlanAuthenticationService;
     protected RecordFolderService recordFolderService;
+    protected ExtendedSecurityService extendedSecurityService;
+    protected ReportService reportService;
+    protected RecordsManagementAuditService rmAuditService;
 
     /** test data */
     protected String siteId;
@@ -356,12 +364,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         fileFolderService = (FileFolderService)applicationContext.getBean("FileFolderService");
         permissionService = (PermissionService)applicationContext.getBean("PermissionService");
         taggingService = (TaggingService)applicationContext.getBean("TaggingService");
+        actionService = (ActionService)applicationContext.getBean("ActionService");
 
         // Get RM services
         dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
-        eventService = (RecordsManagementEventService)applicationContext.getBean("RecordsManagementEventService");
-        adminService = (RecordsManagementAdminService)applicationContext.getBean("RecordsManagementAdminService");
-        actionService = (RecordsManagementActionService)this.applicationContext.getBean("RecordsManagementActionService");
+        rmEventService = (RecordsManagementEventService)applicationContext.getBean("RecordsManagementEventService");
+        rmAdminService = (RecordsManagementAdminService)applicationContext.getBean("RecordsManagementAdminService");
+        rmActionService = (RecordsManagementActionService)this.applicationContext.getBean("RecordsManagementActionService");
         rmSearchService = (RecordsManagementSearchService)this.applicationContext.getBean("RecordsManagementSearchService");
         filePlanRoleService = (FilePlanRoleService)this.applicationContext.getBean("FilePlanRoleService");
         filePlanPermissionService = (FilePlanPermissionService)this.applicationContext.getBean("FilePlanPermissionService");
@@ -373,6 +382,9 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         filePlanService = (FilePlanService) applicationContext.getBean("FilePlanService");
         filePlanAuthenticationService = (FilePlanAuthenticationService) applicationContext.getBean("FilePlanAuthenticationService");
         recordFolderService = (RecordFolderService) applicationContext.getBean("RecordFolderService");
+        extendedSecurityService = (ExtendedSecurityService) applicationContext.getBean("ExtendedSecurityService");
+        reportService = (ReportService) applicationContext.getBean("ReportService");
+        rmAuditService = (RecordsManagementAuditService) applicationContext.getBean("RecordsManagementAuditService");
     }
 
     /**

@@ -25,7 +25,6 @@ import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -36,17 +35,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class HideRecordActionTest extends BaseRMTestCase
 {
-    /** Services */
-    protected ActionService dmActionService;
-
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
-
-        dmActionService = (ActionService) applicationContext.getBean("ActionService");
-    }
-
     @Override
     protected boolean isUserTest()
     {
@@ -82,9 +70,9 @@ public class HideRecordActionTest extends BaseRMTestCase
                 NodeRef doc = fileFolderService.create(dmFolder, "testfile.txt", ContentModel.TYPE_CONTENT).getNodeRef();
 
                 // Create a record from that document
-                Action createAction = dmActionService.createAction(CreateRecordAction.NAME);
+                Action createAction = actionService.createAction(CreateRecordAction.NAME);
                 createAction.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
-                dmActionService.executeAction(createAction, doc);
+                actionService.executeAction(createAction, doc);
 
                 // Check if the document is a record now
                 assertTrue(recordService.isRecord(doc));
@@ -96,8 +84,8 @@ public class HideRecordActionTest extends BaseRMTestCase
                 assertTrue(nodeService.getParentAssocs(doc).size() == 2);
 
                 // Hide the document. The user has the write permissions so he should be able to hide it
-                Action hideAction = dmActionService.createAction(HideRecordAction.NAME);
-                dmActionService.executeAction(hideAction, doc);
+                Action hideAction = actionService.createAction(HideRecordAction.NAME);
+                actionService.executeAction(hideAction, doc);
 
                 // The document should be removed from the collaboration site
                 assertTrue(nodeService.getParentAssocs(doc).size() == 1);

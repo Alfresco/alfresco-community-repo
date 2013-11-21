@@ -45,20 +45,10 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 @SuppressWarnings("unused")
 public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 {
-    private RMCaveatConfigService caveatConfigService;
-
     protected final static String RM_LIST          = "rmc:smListTest";
     protected final static String RM_LIST_URI_ELEM = "rmc_smListTest";
 
     private static final String URL_RM_CONSTRAINTS = "/api/rma/admin/rmconstraints";
-
-    @Override
-    protected void initServices()
-    {
-    	super.initServices();
-
-    	this.caveatConfigService = (RMCaveatConfigService)getServer().getApplicationContext().getBean("CaveatConfigService");
-    }
 
     public void testGetRMConstraints() throws Exception
     {

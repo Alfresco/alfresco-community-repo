@@ -29,7 +29,6 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.FileToAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -49,15 +48,6 @@ public class FileToActionTest extends BaseRMTestCase
     private static final String PATH_CREATE = "rmcontainer/newrmfolder";
 
     private static final String PATH_SUB1 = "rmcontainer/${node.cm:title}";
-
-    protected ActionService dmActionService;
-
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
-        dmActionService = (ActionService) applicationContext.getBean("ActionService");
-    }
 
     @Override
     protected boolean isCollaborationSiteTest()
@@ -92,7 +82,7 @@ public class FileToActionTest extends BaseRMTestCase
                 params.put(FileToAction.PARAM_DESTINATION_RECORD_FOLDER, rmFolder);
 
                 // execute file-to action
-                actionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
 
                 // check things have gone according to plan
                 assertTrue(recordService.isRecord(dmDocument));
@@ -114,7 +104,7 @@ public class FileToActionTest extends BaseRMTestCase
             public Void run()
             {
                 nodeService.setProperty(dmDocument, ContentModel.PROP_TITLE, "mytestvalue");
-                
+
                 // create record from document
                 recordService.createRecord(filePlan, dmDocument);
 
@@ -144,7 +134,7 @@ public class FileToActionTest extends BaseRMTestCase
                 params.put(FileToAction.PARAM_PATH, PATH);
 
                 // execute file-to action
-                actionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
 
                 // check things have gone according to plan
                 assertTrue(recordService.isRecord(dmDocument));
@@ -172,7 +162,7 @@ public class FileToActionTest extends BaseRMTestCase
                 params.put(FileToAction.PARAM_PATH, PATH2);
 
                 // execute file-to action
-                actionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
 
                 // check things have gone according to plan
                 assertTrue(recordService.isRecord(dmDocument));
@@ -222,7 +212,7 @@ public class FileToActionTest extends BaseRMTestCase
                 params.put(FileToAction.PARAM_CREATE_RECORD_FOLDER, true);
 
                 // execute file-to action
-                actionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
 
                 // show the folder has now been created
                 createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<String>(Arrays.asList(pathValues)), false);
@@ -277,7 +267,7 @@ public class FileToActionTest extends BaseRMTestCase
                 params.put(FileToAction.PARAM_PATH, PATH_BAD);
 
                 // execute file-to action
-                actionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
 
             }
         });
@@ -295,7 +285,7 @@ public class FileToActionTest extends BaseRMTestCase
                 params.put(FileToAction.PARAM_PATH, PATH_CREATE);
 
                 // execute file-to action
-                actionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
 
             }
         });

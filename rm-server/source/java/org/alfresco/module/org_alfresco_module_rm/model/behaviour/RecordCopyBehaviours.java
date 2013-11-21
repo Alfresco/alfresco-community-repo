@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -43,17 +43,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Class containing behaviour for the vitalRecordDefinition aspect.
  *
  * @author neilm
  */
-public class RecordCopyBehaviours implements RecordsManagementModel,
-                                             ApplicationContextAware
+public class RecordCopyBehaviours implements RecordsManagementModel
 {
     /** The policy component */
     private PolicyComponent policyComponent;
@@ -66,18 +62,6 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
 
     /** List of aspects to remove during move and copy */
     private List<QName> unwantedAspects = new ArrayList<QName>(5);
-
-    /** Application context */
-    private ApplicationContext applicationContext;
-
-    /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-       this.applicationContext = applicationContext;
-    }
 
     /**
      * Set the policy component
@@ -218,7 +202,7 @@ public class RecordCopyBehaviours implements RecordsManagementModel,
                     {
                         final RecordService rmRecordService = rmServiceRegistry.getRecordService();
                         final RecordFolderService recordFolderService = rmServiceRegistry.getRecordFolderService();
-                        final DispositionServiceImpl dispositionService = (DispositionServiceImpl)applicationContext.getBean("dispositionService");
+                        final DispositionService dispositionService = rmServiceRegistry.getDispositionService();
 
                         behaviourFilter.disableBehaviour();
                         try

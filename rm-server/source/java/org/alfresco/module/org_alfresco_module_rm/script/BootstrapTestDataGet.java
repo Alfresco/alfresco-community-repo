@@ -38,7 +38,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.Role;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -57,9 +57,6 @@ import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -70,7 +67,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 @Deprecated
 public class BootstrapTestDataGet extends DeclarativeWebScript
-                                  implements RecordsManagementModel, ApplicationContextAware
+                                  implements RecordsManagementModel
 {
     private static Log logger = LogFactory.getLog(BootstrapTestDataGet.class);
 
@@ -93,13 +90,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
     private AuthorityService authorityService;
     private RecordsManagementSearchBehaviour recordsManagementSearchBehaviour;
     private DispositionService dispositionService;
-    private ApplicationContext applicationContext;
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
+    private RecordFolderService recordFolderService;
 
     public void setNodeService(NodeService nodeService)
     {
@@ -156,6 +147,11 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
         this.recordsManagementSearchBehaviour = searchBehaviour;
     }
 
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
+    }
+
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -208,11 +204,11 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
         }
 
         // Patch data
-        BootstrapTestDataGet.patchLoadedData(applicationContext, searchService, nodeService, recordsManagementService,
+        BootstrapTestDataGet.patchLoadedData(searchService, nodeService, recordsManagementService,
                                              recordsManagementActionService, permissionService,
                                              authorityService, recordsManagementSecurityService,
                                              recordsManagementSearchBehaviour,
-                                             dispositionService);
+                                             dispositionService, recordFolderService);
 
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
     	model.put("success", true);
@@ -228,8 +224,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
      * @param recordsManagementService
      * @param recordsManagementActionService
      */
-    public static void patchLoadedData( final ApplicationContext applicationContext,
-                                        final SearchService searchService,
+    public static void patchLoadedData( final SearchService searchService,
                                         final NodeService nodeService,
                                         final RecordsManagementService recordsManagementService,
                                         final RecordsManagementActionService recordsManagementActionService,
@@ -237,7 +232,8 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                                         final AuthorityService authorityService,
                                         final RecordsManagementSecurityService recordsManagementSecurityService,
                                         final RecordsManagementSearchBehaviour recordManagementSearchBehaviour,
-                                        final DispositionService dispositionService)
+                                        final DispositionService dispositionService,
+                                        final RecordFolderService recordFolderService)
     {
         AuthenticationUtil.RunAsWork<Object> runAsWork = new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -327,8 +323,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                             {
                                 // Fire action to "set-up" the folder correctly
                                 logger.info("Setting up bootstraped record folder: " + folderName);
-                                RecordFolderServiceImpl recordService = (RecordFolderServiceImpl)applicationContext.getBean("RecordFolderService");
-                                recordService.initialiseRecordFolder(recordFolder);
+                                recordFolderService.initialiseRecordFolder(recordFolder);
                             }
                         }
 

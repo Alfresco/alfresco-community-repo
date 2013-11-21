@@ -406,6 +406,7 @@
       <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
       <property name="recordsManagementSearchBehaviour" ref="recordsManagementSearchBehaviour" />
       <property name="dispositionService" ref="dispositionService" />
+      <property name="recordFolderService" ref="RecordFolderService" />
    </bean>
 
    <!-- REST impl for GET applydodcertmodelfixes -->

@@ -21,7 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.test.service;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
-import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -38,7 +37,6 @@ public class RecordsManagementEventServiceImplTest extends BaseRMTestCase implem
 {
     protected static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
-    private RecordsManagementEventService rmEventService;
     private RetryingTransactionHelper transactionHelper;
 
     @Override
@@ -47,7 +45,6 @@ public class RecordsManagementEventServiceImplTest extends BaseRMTestCase implem
         super.setUp();
 
         // Get the service required in the tests
-        this.rmEventService = (RecordsManagementEventService)this.applicationContext.getBean("RecordsManagementEventService");
         this.transactionHelper = (RetryingTransactionHelper)this.applicationContext.getBean("retryingTransactionHelper");
 
         // Set the current security context as admin

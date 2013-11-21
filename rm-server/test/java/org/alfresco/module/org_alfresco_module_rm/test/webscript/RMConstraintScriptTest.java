@@ -21,7 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.test.webscript;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.json.JSONObject;
@@ -36,20 +35,10 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  */
 public class RMConstraintScriptTest extends BaseRMWebScriptTestCase
 {
-    private RMCaveatConfigService caveatConfigService;
-
     protected final static String RM_LIST          = "rmc:smListTest";
     protected final static String RM_LIST_URI_ELEM = "rmc_smListTest";
 
     private static final String URL_RM_CONSTRAINTS = "/api/rma/rmconstraints";
-
-    @Override
-    protected void initServices()
-    {
-    	super.initServices();
-
-        this.caveatConfigService = (RMCaveatConfigService)getServer().getApplicationContext().getBean("CaveatConfigService");
-    }
 
     /**
      *

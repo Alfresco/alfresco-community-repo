@@ -24,8 +24,6 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestActionPropertySubs;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
-import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.security.PermissionService;
 
 /**
  * Extended action service test.
@@ -35,10 +33,6 @@ import org.alfresco.service.cmr.security.PermissionService;
  */
 public class ExtendedActionServiceTest extends BaseRMTestCase
 {
-    /** Services */
-    protected ActionService dmActionService;
-    protected PermissionService dmPermissionService;
-
     /** Action names */
     public static final String TEST_ACTION = "testAction";
     public static final String TEST_ACTION_2 = "testAction2";
@@ -46,14 +40,6 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
     public static final String RECORD_ONLY_ACTION = "recordOnlyAction";
     public static final String RECORD_AND_FOLDER_ONLY_ACTION = "recordandFolderOnlyAction";
     public static final String DELEGATE_ACTION = "rmDelegateAction";
-
-
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
-        dmActionService = (ActionService) applicationContext.getBean("ActionService");
-    }
 
     @Override
     protected boolean isUserTest()
@@ -81,7 +67,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
         {
             public Void run()
             {
-                List<ActionDefinition> result = dmActionService.getActionDefinitions(recordOne);
+                List<ActionDefinition> result = actionService.getActionDefinitions(recordOne);
                 assertNotNull(result);
                 assertFalse(containsAction(result, TEST_ACTION));
                 assertTrue(containsAction(result, TEST_ACTION_2));
@@ -90,7 +76,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
                 assertTrue(containsAction(result, RECORD_AND_FOLDER_ONLY_ACTION));
                 assertTrue(containsAction(result, DELEGATE_ACTION));
 
-                result = dmActionService.getActionDefinitions(rmFolder);
+                result = actionService.getActionDefinitions(rmFolder);
                 assertNotNull(result);
                 assertFalse(containsAction(result, TEST_ACTION));
                 assertTrue(containsAction(result, TEST_ACTION_2));
@@ -99,7 +85,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
                 assertTrue(containsAction(result, RECORD_AND_FOLDER_ONLY_ACTION));
                 assertFalse(containsAction(result, DELEGATE_ACTION));
 
-                result = dmActionService.getActionDefinitions(rmContainer);
+                result = actionService.getActionDefinitions(rmContainer);
                 assertNotNull(result);
                 assertFalse(containsAction(result, TEST_ACTION));
                 assertTrue(containsAction(result, TEST_ACTION_2));
@@ -108,7 +94,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
                 assertFalse(containsAction(result, RECORD_AND_FOLDER_ONLY_ACTION));
                 assertFalse(containsAction(result, DELEGATE_ACTION));
 
-                result = dmActionService.getActionDefinitions(dmDocument);
+                result = actionService.getActionDefinitions(dmDocument);
                 assertNotNull(result);
                 assertFalse(containsAction(result, TEST_ACTION));
                 assertFalse(containsAction(result, TEST_ACTION_2));
@@ -117,7 +103,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
                 assertFalse(containsAction(result, RECORD_AND_FOLDER_ONLY_ACTION));
                 assertFalse(containsAction(result, DELEGATE_ACTION));
 
-                result = dmActionService.getActionDefinitions(dmFolder);
+                result = actionService.getActionDefinitions(dmFolder);
                 assertNotNull(result);
                 assertFalse(containsAction(result, TEST_ACTION));
                 assertFalse(containsAction(result, TEST_ACTION_2));
@@ -153,7 +139,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
         {
             public Void run()
             {
-                Action action = dmActionService.createAction(TestActionPropertySubs.NAME);
+                Action action = actionService.createAction(TestActionPropertySubs.NAME);
 
                 action.setParameterValue("dayShort", "${date.day.short}");
                 action.setParameterValue("dayShort2", "${date.day}");
@@ -177,7 +163,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
 
                 action.setParameterValue("combo", "${date.year.long}/${date.month.short}/${node.cm:name}-${message.test.company}.txt");
 
-                dmActionService.executeAction(action, rmFolder);
+                actionService.executeAction(action, rmFolder);
 
                 return null;
             }

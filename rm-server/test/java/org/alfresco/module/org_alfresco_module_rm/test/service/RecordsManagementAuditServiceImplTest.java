@@ -50,9 +50,6 @@ import org.alfresco.util.Pair;
 public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
                                                    implements RMPermissionModel
 {
-    /** Records management audit service */
-    private RecordsManagementAuditService auditService;
-
     /** Test record */
     private NodeRef record;
 
@@ -76,28 +73,16 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 		        testStartTime = new Date();
 
 		        // Stop and clear the log
-		        auditService.stopAuditLog(filePlan);
-		        auditService.clearAuditLog(filePlan);
-		        auditService.startAuditLog(filePlan);
+		        rmAuditService.stopAuditLog(filePlan);
+		        rmAuditService.clearAuditLog(filePlan);
+		        rmAuditService.startAuditLog(filePlan);
 
 		        // check that audit service is started
-		        assertTrue(auditService.isAuditLogEnabled(filePlan));
+		        assertTrue(rmAuditService.isAuditLogEnabled(filePlan));
 
 		        return null;
             }
         });
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
-     */
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
-
-        // get the audit service
-        auditService = (RecordsManagementAuditService)applicationContext.getBean("RecordsManagementAuditService");
     }
 
     /**
@@ -143,7 +128,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             @Override
             public Void run() throws Exception
             {
-                List<AuditEvent> events = auditService.getAuditEvents();
+                List<AuditEvent> events = rmAuditService.getAuditEvents();
 
                 System.out.println("Found audit events:");
                 for (AuditEvent event : events)
@@ -271,7 +256,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     public void testAdminMethods() throws InterruptedException
     {
         // Stop the audit
-        auditService.stopAuditLog(filePlan);
+        rmAuditService.stopAuditLog(filePlan);
 
         Thread.sleep(5000);
 
@@ -291,7 +276,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
                 result1.size(), result2.size());
 
         // repeat with a start
-        auditService.startAuditLog(filePlan);
+        rmAuditService.startAuditLog(filePlan);
         updateTitle(filePlan, rmAdminName);
 
         Thread.sleep(5000);
@@ -305,8 +290,8 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         Thread.sleep(5000);
 
         // Stop and delete all entries
-        auditService.stopAuditLog(filePlan);
-        auditService.clearAuditLog(filePlan);
+        rmAuditService.stopAuditLog(filePlan);
+        rmAuditService.clearAuditLog(filePlan);
 
         // There should be no entries
         List<RecordsManagementAuditEntry> result4 = getAuditTrail(rmAdminName);
@@ -324,9 +309,9 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
     public void xtestAuditAuthentication()
     {
-        auditService.stopAuditLog(filePlan);
-        auditService.clearAuditLog(filePlan);
-        auditService.startAuditLog(filePlan);
+        rmAuditService.stopAuditLog(filePlan);
+        rmAuditService.clearAuditLog(filePlan);
+        rmAuditService.startAuditLog(filePlan);
 
         //MutableAuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
         //PersonService personService = serviceRegistry.getPersonService();
@@ -356,7 +341,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         {
             AuthenticationUtil.popAuthentication();
         }
-        auditService.stopAuditLog(filePlan);
+        rmAuditService.stopAuditLog(filePlan);
         List<RecordsManagementAuditEntry> result1 = getAuditTrail(rmAdminName);
         // Check that the username is reflected correctly in the results
         assertFalse("No audit results were generated for the failed login.", result1.isEmpty());
@@ -389,8 +374,8 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         personProperties.put(ContentModel.PROP_LASTNAME, "Dickons");
         personService.createPerson(personProperties);
 
-        auditService.clearAuditLog(filePlan);
-        auditService.startAuditLog(filePlan);
+        rmAuditService.clearAuditLog(filePlan);
+        rmAuditService.startAuditLog(filePlan);
         try
         {
             AuthenticationUtil.pushAuthentication();
@@ -400,7 +385,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         {
             AuthenticationUtil.popAuthentication();
         }
-        auditService.stopAuditLog(filePlan);
+        rmAuditService.stopAuditLog(filePlan);
         List<RecordsManagementAuditEntry> result2 = getAuditTrail(rmAdminName);
         found = false;
         for (RecordsManagementAuditEntry entry : result2)
@@ -435,7 +420,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             @Override
             public List<RecordsManagementAuditEntry> run() throws Exception
             {
-                return auditService.getAuditTrail(params);
+                return rmAuditService.getAuditTrail(params);
             }
 
             @Override

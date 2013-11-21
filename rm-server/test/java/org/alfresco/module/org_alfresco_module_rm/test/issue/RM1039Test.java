@@ -156,10 +156,10 @@ public class RM1039Test extends BaseRMTestCase
                 // complete event
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
-                actionService.executeRecordsManagementAction(testFolder, CompleteEventAction.NAME, params);
+                rmActionService.executeRecordsManagementAction(testFolder, CompleteEventAction.NAME, params);
 
                 // cutoff folder
-                actionService.executeRecordsManagementAction(testFolder, CutOffAction.NAME);
+                rmActionService.executeRecordsManagementAction(testFolder, CutOffAction.NAME);
 
                 // take a look at the move capability
                 Capability moveCapability = capabilityService.getCapability("Move");

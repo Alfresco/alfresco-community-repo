@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -36,8 +35,6 @@ import org.alfresco.util.GUID;
  */
 public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
 {
-    private ExtendedSecurityService extendedSecurityService;
-
     private NodeRef record;
     private NodeRef recordToo;
     private NodeRef moveRecordCategory;
@@ -47,14 +44,6 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
     protected boolean isUserTest()
     {
         return true;
-    }
-
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
-
-        extendedSecurityService = (ExtendedSecurityService)applicationContext.getBean("ExtendedSecurityService");
     }
 
     @Override

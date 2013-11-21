@@ -238,11 +238,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     }
 
     /**
-     * Helper method used by services with access to the private bean to initialise vital record details.
-     *
-     * TODO consider what (if any of this) should be on the public interface
-     *
-     * @param nodeRef   node reference to initialise with vital record details
+     * @see VitalRecordService#initialiseVitalRecord(NodeRef)
      */
     public void initialiseVitalRecord(NodeRef nodeRef)
     {

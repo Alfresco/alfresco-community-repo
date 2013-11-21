@@ -47,7 +47,7 @@ import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServi
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -85,9 +85,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -101,7 +98,6 @@ public class RecordServiceImpl implements RecordService,
                                           RecordsManagementCustomModel,
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
                                           NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                          ApplicationContextAware,
                                           NodeServicePolicies.OnAddAspectPolicy,
                                           NodeServicePolicies.OnRemoveAspectPolicy
 {
@@ -148,9 +144,6 @@ public class RecordServiceImpl implements RecordService,
 
     };
 
-    /** Application context */
-    private ApplicationContext applicationContext;
-
     /** Node service **/
     private NodeService nodeService;
 
@@ -193,6 +186,12 @@ public class RecordServiceImpl implements RecordService,
     /** Record folder service */
     private RecordFolderService recordFolderService;
 
+    /** Vital record service */
+    private VitalRecordService vitalRecordService;
+
+    /** File plan role service */
+    private FilePlanRoleService filePlanRoleService;
+
     /** List of available record meta-data aspects */
     private Set<QName> recordMetaDataAspects;
 
@@ -209,12 +208,6 @@ public class RecordServiceImpl implements RecordService,
                                                             this,
                                                             "onDeleteDeclaredRecordLink",
                                                             NotificationFrequency.FIRST_EVENT);
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
 
     /**
      * @param nodeService node service
@@ -326,6 +319,22 @@ public class RecordServiceImpl implements RecordService,
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
+    }
+
+    /**
+     * @param vitalRecordService vital record service
+     */
+    public void setVitalRecordService(VitalRecordService vitalRecordService)
+    {
+        this.vitalRecordService = vitalRecordService;
+    }
+
+    /**
+     * @param filePlanRoleService file plan role service
+     */
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
+    {
+        this.filePlanRoleService = filePlanRoleService;
     }
 
     /**
@@ -907,7 +916,6 @@ public class RecordServiceImpl implements RecordService,
 
             // initialise vital record details
             // TODO .. change this to add the aspect which will trigger the init behaviour
-            VitalRecordServiceImpl vitalRecordService = (VitalRecordServiceImpl)applicationContext.getBean("vitalRecordService");
             vitalRecordService.initialiseVitalRecord(record);
 
             // initialise disposition details
@@ -1072,12 +1080,8 @@ public class RecordServiceImpl implements RecordService,
         }
 
         // DEBUG ...
-        FilePlanService fps = (FilePlanService)applicationContext.getBean("filePlanService");
-        FilePlanRoleService fprs = (FilePlanRoleService)applicationContext.getBean("filePlanRoleService");
-        PermissionService ps = (PermissionService)applicationContext.getBean("permissionService");
-
-        NodeRef filePlan = fps.getFilePlan(record);
-        Set<Role> roles = fprs.getRolesByUser(filePlan, AuthenticationUtil.getRunAsUser());
+        NodeRef filePlan = filePlanService.getFilePlan(record);
+        Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, AuthenticationUtil.getRunAsUser());
 
         if (logger.isDebugEnabled() == true)
         {
@@ -1104,7 +1108,7 @@ public class RecordServiceImpl implements RecordService,
         {
             logger.debug(" ... user has the following set permissions on the file plan");
         }
-        Set<AccessPermission> perms = ps.getAllSetPermissions(filePlan);
+        Set<AccessPermission> perms = permissionService.getAllSetPermissions(filePlan);
         for (AccessPermission perm : perms)
         {
             if (logger.isDebugEnabled() == true &&
@@ -1115,7 +1119,7 @@ public class RecordServiceImpl implements RecordService,
             }
         }
 
-        if (ps.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA).equals(AccessStatus.ALLOWED))
+        if (permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA).equals(AccessStatus.ALLOWED))
         {
             if (logger.isDebugEnabled() == true)
             {

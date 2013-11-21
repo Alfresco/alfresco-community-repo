@@ -225,4 +225,11 @@ public interface DispositionService
      * @param nodeRef   node reference
      */
     void updateNextDispositionAction(NodeRef nodeRef);
+
+    /**
+     * Refreshes the disposition action details of the given node.
+     *
+     * @param nodeRef   node reference
+     */
+    void refreshDispositionAction(NodeRef nodeRef);
 }

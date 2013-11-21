@@ -202,10 +202,9 @@ public class DispositionServiceImpl implements
     }
 
     /**
-     * Helper method used to refresh the dispostion action details of the given node.
-     *
-     * @param nodeRef   node reference
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#refreshDispositionAction(NodeRef)
      */
+    @Override
     public void refreshDispositionAction(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
@@ -224,7 +223,6 @@ public class DispositionServiceImpl implements
                 initialiseDispositionAction(nodeRef, nextDispositionActionDefinition);
             }
         }
-
     }
 
     /** ========= Disposition Property Methods ========= */

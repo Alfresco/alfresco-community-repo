@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
+import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -646,6 +647,45 @@ public class SearchContext implements Serializable
    public void setMode(int mode)
    {
       this.mode = mode;
+   }
+   
+   public String getSearchText()
+   {
+       if (this.text != null && this.text.trim().length() > 0)
+       {
+           return getText();
+       }
+       StringBuilder res = new StringBuilder();
+       for (QName attrName : this.queryAttributes.keySet())
+       {
+           if (ContentModel.PROP_TITLE.isMatch(attrName))
+           {
+               res.append(res.length() > 0 ? ", " : "");
+               res.append(Application.getMessage(FacesContext.getCurrentInstance(), "title"));
+               res.append(": ");
+               res.append(this.queryAttributes.get(attrName));
+           } 
+           else if (ContentModel.PROP_DESCRIPTION.isMatch(attrName))
+           {
+               res.append(res.length() > 0 ? ", " : "");
+               res.append(Application.getMessage(FacesContext.getCurrentInstance(), "description"));
+               res.append(": ");
+               res.append(this.queryAttributes.get(attrName));
+           } 
+           else if (ContentModel.PROP_AUTHOR.isMatch(attrName))
+           {
+               res.append(res.length() > 0 ? ", " : "");
+               res.append(Application.getMessage(FacesContext.getCurrentInstance(), "author"));
+               res.append(": ");
+               res.append(this.queryAttributes.get(attrName));
+           }
+           else
+           {
+               res.append(res.length() > 0 ? ", " : "");
+               res.append(this.queryAttributes.get(attrName));
+           }
+       }
+       return res.toString();
    }
    
    /**

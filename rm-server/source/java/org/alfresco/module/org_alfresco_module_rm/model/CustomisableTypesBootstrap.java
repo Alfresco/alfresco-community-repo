@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,8 +26,10 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Bootstrap bean that indicates that the specified types or aspects are
+ * customizable.
  * 
  * @author Roy Wetherall
+ * @since 2.0
  */
 public class CustomisableTypesBootstrap 
 {

@@ -28,12 +28,10 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -45,7 +43,6 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -61,12 +58,11 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class RecordsManagementServiceImpl extends ServiceBaseImpl
                                           implements RecordsManagementService,
-                                                     RecordsManagementModel,
-                                                     RecordsManagementPolicies.OnCreateReference,
-                                                     RecordsManagementPolicies.OnRemoveReference
+                                                     RecordsManagementModel //,
+                                                     //RecordsManagementPolicies.OnCreateReference,
+                                                     //RecordsManagementPolicies.OnRemoveReference
 {
     /** I18N */
-    private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
     private final static String MSG_UPDATE_DISP_ACT_DEF = "rm.service.update-disposition-action-def";
     private final static String MSG_SET_ID = "rm.service.set-id";
 
@@ -81,7 +77,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     /** Policy component */
     private PolicyComponent policyComponent;
 
-    /** Well-known location of the scripts folder. */
+    ///** Well-known location of the scripts folder. */
     private NodeRef scriptsFolderNodeRef = new NodeRef("workspace", "SpacesStore", "rm_behavior_scripts");
 
     /** Java behaviour */
@@ -196,26 +192,6 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
      */
     public void init()
     {
-        // Register the association behaviours
-        policyComponent.bindAssociationBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"),
-                TYPE_FILE_PLAN,
-                ContentModel.ASSOC_CONTAINS,
-                new JavaBehaviour(this, "onAddContentToContainer", NotificationFrequency.EVERY_EVENT));
-        policyComponent.bindAssociationBehaviour(
-                  QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"),
-                  TYPE_RECORD_CATEGORY,
-                  ContentModel.ASSOC_CONTAINS,
-                  new JavaBehaviour(this, "onAddContentToContainer", NotificationFrequency.EVERY_EVENT));
-
-        // TODO move this into the record service
-        policyComponent.bindAssociationBehaviour(
-               QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"),
-               ASPECT_RECORD,
-               RenditionModel.ASSOC_RENDITION,
-               new JavaBehaviour(this, "onAddRecordThumbnail", NotificationFrequency.TRANSACTION_COMMIT)
-               );
-
         // Register script execution behaviour on RM property update.
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 ASPECT_FILE_PLAN_COMPONENT,
@@ -227,79 +203,10 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
                 TYPE_DISPOSITION_ACTION_DEFINITION,
                 onChangeToDispositionActionDefinition);
 
-        // Reference behaviours
-        policyComponent.bindClassBehaviour(RecordsManagementPolicies.ON_CREATE_REFERENCE,
-                                           ASPECT_RECORD,
-                                           new JavaBehaviour(this, "onCreateReference", NotificationFrequency.TRANSACTION_COMMIT));
-
-        policyComponent.bindClassBehaviour(RecordsManagementPolicies.ON_REMOVE_REFERENCE,
-                                           ASPECT_RECORD,
-                                           new JavaBehaviour(this, "onRemoveReference", NotificationFrequency.TRANSACTION_COMMIT));
-
         // Identifier behaviours
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                                            ASPECT_RECORD_COMPONENT_ID,
                                            new JavaBehaviour(this, "onIdentifierUpdate", NotificationFrequency.TRANSACTION_COMMIT));
-    }
-
-    /**
-     * On add content to container
-     *
-     * Prevents content nodes being added to record series and record category folders
-     * by imap, cifs etc.
-     *
-     * @param childAssocRef
-     * @param bNew
-     */
-    public void onAddContentToContainer(ChildAssociationRef childAssocRef, boolean bNew)
-    {
-        NodeRef parent = childAssocRef.getParentRef();
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true)
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER));
-        }
-        if (isFilePlan(parent) == true && isRecordFolder(nodeRef) == true)
-        {
-            throw new AlfrescoRuntimeException("Operation failed, because you can not place a record folder in the root of the file plan.");
-        }
-    }
-
-    /**
-     * Make sure the thumbnails of records are marked as file plan components as are therefore subject to the same
-     * permission restrictions.
-     *
-     * @param childAssocRef
-     * @param bNew
-     */
-    public void onAddRecordThumbnail(final ChildAssociationRef childAssocRef, final boolean bNew)
-    {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                NodeRef thumbnail = childAssocRef.getChildRef();
-
-                if (nodeService.exists(thumbnail) == true)
-                {
-                    // apply file plan component aspect to thumbnail
-                    nodeService.addAspect(thumbnail, ASPECT_FILE_PLAN_COMPONENT, null);
-
-                    // manage any extended readers
-                    NodeRef parent = childAssocRef.getParentRef();
-                    ExtendedSecurityService extendedSecurityService = getExtendedSecurityService();
-                    Set<String> readers = extendedSecurityService.getExtendedReaders(parent);
-                    Set<String> writers = extendedSecurityService.getExtendedWriters(parent);
-                    if (readers != null && readers.size() != 0)
-                    {
-                        extendedSecurityService.addExtendedSecurity(thumbnail, readers, writers, false);
-                    }
-                }
-
-                return null;
-            }
-        });
     }
 
     /**
@@ -481,67 +388,6 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
                }
            }
        }
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference#onCreateReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
-    public void onCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
-    {
-        // Deal with versioned records
-        if (reference.equals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions")) == true)
-        {
-            // Apply the versioned aspect to the from node
-            this.nodeService.addAspect(fromNodeRef, ASPECT_VERSIONED_RECORD, null);
-        }
-
-        // Execute script if for the reference event
-        executeReferenceScript("onCreate", reference, fromNodeRef, toNodeRef);
-    }
-
-    /**
-     * Executes a reference script if present
-     *
-     * @param policy
-     * @param reference
-     * @param from
-     * @param to
-     */
-    private void executeReferenceScript(String policy, QName reference, NodeRef from, NodeRef to)
-    {
-        String referenceId = reference.getLocalName();
-
-        // This is the filename pattern which is assumed.
-        // e.g. a script file onCreate_superceded.js for the creation of a superseded reference
-        String expectedScriptName = policy + "_" + referenceId + ".js";
-
-        NodeRef scriptNodeRef = nodeService.getChildByName(scriptsFolderNodeRef, ContentModel.ASSOC_CONTAINS, expectedScriptName);
-        if (scriptNodeRef != null)
-        {
-            Map<String, Object> objectModel = new HashMap<String, Object>(1);
-            objectModel.put("node", from);
-            objectModel.put("toNode", to);
-            objectModel.put("policy", policy);
-            objectModel.put("reference", referenceId);
-
-            getScriptService().executeScript(scriptNodeRef, null, objectModel);
-        }
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRemoveReference#onRemoveReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
-    public void onRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
-    {
-        // Deal with versioned records
-        if (reference.equals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions")) == true)
-        {
-            // Apply the versioned aspect to the from node
-            this.nodeService.removeAspect(fromNodeRef, ASPECT_VERSIONED_RECORD);
-        }
-
-        // Execute script if for the reference event
-        executeReferenceScript("onRemove", reference, fromNodeRef, toNodeRef);
     }
 
     /**

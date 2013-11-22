@@ -42,13 +42,8 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
-import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.RMAuthority;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -94,9 +89,6 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
     /** Permission service */
     private PermissionService permissionService;
-
-    /** Policy component */
-    private PolicyComponent policyComponent;
 
     /** File plan service */
     private FilePlanService filePlanService;
@@ -151,14 +143,6 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * @param policyComponent   policy component
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
-
-    /**
      * @param nodeService   node service
      */
     public void setNodeService(NodeService nodeService)
@@ -208,39 +192,21 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * Initialisation method
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#initialiseFilePlan(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public void init()
+    @Override
+    public void setupFilePlanRoles(final NodeRef filePlan)
     {
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnCreateNodePolicy.QNAME,
-                TYPE_FILE_PLAN,
-                new JavaBehaviour(this, "onCreateRootNode", NotificationFrequency.TRANSACTION_COMMIT));
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnDeleteNodePolicy.QNAME,
-                TYPE_FILE_PLAN,
-                new JavaBehaviour(this, "onDeleteRootNode", NotificationFrequency.TRANSACTION_COMMIT));
-    }
-
-    /**
-     * Create root node behaviour
-     *
-     * @param childAssocRef
-     */
-    public void onCreateRootNode(ChildAssociationRef childAssocRef)
-    {
-        final NodeRef rmRootNode = childAssocRef.getChildRef();
-
         // Do not execute behaviour if this has been created in the archive store
-        if(rmRootNode.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE) == true)
+        if(filePlan.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE) == true)
         {
             // This is not the spaces store - probably the archive store
             return;
         }
         
-        if (nodeService.exists(rmRootNode) == true)
+        if (nodeService.exists(filePlan) == true)
         {
-            List<NodeRef> systemContainers = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<List<NodeRef>>()
+            List<NodeRef> systemContainers = AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<List<NodeRef>>()
             {
                 public List<NodeRef> doWork()
                 {
@@ -256,50 +222,44 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     // Create "all" role group for root node
                     String allRoles = authorityService.createAuthority(
                     						AuthorityType.GROUP, 
-                    						getAllRolesGroupShortName(rmRootNode), 
+                    						getAllRolesGroupShortName(filePlan), 
                     						I18NUtil.getMessage(MSG_ALL_ROLES), 
                     						new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                     // Set the permissions
-                    permissionService.setInheritParentPermissions(rmRootNode, false);
-                    permissionService.setPermission(rmRootNode, allRoles, RMPermissionModel.READ_RECORDS, true);
-                    permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-                    permissionService.setPermission(rmRootNode, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+                    permissionService.setInheritParentPermissions(filePlan, false);
+                    permissionService.setPermission(filePlan, allRoles, RMPermissionModel.READ_RECORDS, true);
+                    permissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+                    permissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
 
                     // Create the transfer and hold containers
-                    systemContainers.add(filePlanService.createHoldContainer(rmRootNode));
-                    systemContainers.add(filePlanService.createTransferContainer(rmRootNode));
+                    systemContainers.add(filePlanService.createHoldContainer(filePlan));
+                    systemContainers.add(filePlanService.createTransferContainer(filePlan));
                     
                     // Create the unfiled record container
-                    systemContainers.add(filePlanService.createUnfiledContainer(rmRootNode));
+                    systemContainers.add(filePlanService.createUnfiledContainer(filePlan));
                     
                     return systemContainers;
                 }
-            }, AuthenticationUtil.getSystemUserName());
+            });
 
             // Bootstrap in the default set of roles for the newly created root node
-            bootstrapDefaultRoles(rmRootNode, systemContainers);
+            bootstrapDefaultRoles(filePlan, systemContainers);
         }
     }
 
     /**
-     * Delete root node behaviour
-     *
-     * @param childAssocRef
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#tearDownFilePlanRoles(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public void onDeleteRootNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
+    @Override
+    public void tearDownFilePlanRoles(final NodeRef filePlan)
     {
-        logger.debug("onDeleteRootNode called");
-
-        // get the deleted node
-        final NodeRef rmRootNode = childAssocRef.getChildRef();
-
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Object doWork()
             {
                 // cascade delete the 'all' roles group for the site
-                String allRolesGroup = authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(rmRootNode));
+                String allRolesGroup = authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(filePlan));
                 Set<String> groups = authorityService.getContainedAuthorities(AuthorityType.GROUP, allRolesGroup, true);
                 for (String group : groups)
                 {
@@ -310,7 +270,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName());
+        });
     }
 
     /**

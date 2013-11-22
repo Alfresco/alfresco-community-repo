@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -79,10 +80,6 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      */
     public void init()
     {
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnCreateNodePolicy.QNAME,
-                TYPE_RECORD_CATEGORY,
-                new JavaBehaviour(this, "onCreateRMContainer", NotificationFrequency.TRANSACTION_COMMIT));
         policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnCreateNodePolicy.QNAME,
                 TYPE_RECORD_FOLDER,
@@ -152,28 +149,33 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         this.recordFolderService = recordFolderService;
     }
-
+    
     /**
-     * @param childAssocRef
+     * @see org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService#setupRecordCategoryPermissions(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public void onCreateRMContainer(ChildAssociationRef childAssocRef)
+    @Override
+    public void setupRecordCategoryPermissions(final NodeRef recordCategory)
     {
-        final NodeRef recordCategory = childAssocRef.getChildRef();
-        setUpPermissions(recordCategory);
+        ParameterCheck.mandatory("recordCategory", recordCategory);
+        
+        // assert that we have a record category in our hands
+        if (instanceOf(recordCategory, TYPE_RECORD_CATEGORY) == false)
+        {
+            throw new AlfrescoRuntimeException("Unable to setup record category permissions, because node is not a record category.");
+        }
+        
+        // init permissions
+        initPermissions(recordCategory);
 
         // Pull any permissions found on the parent (ie the record category)
-        final NodeRef parentNodeRef = childAssocRef.getParentRef();
+        final NodeRef parentNodeRef = nodeService.getPrimaryParent(recordCategory).getParentRef();
         if (parentNodeRef != null && nodeService.exists(parentNodeRef) == true)
         {
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
             {
                 public Object doWork()
                 {
-                    boolean fillingOnly = false;
-                    if (filePlanService.isFilePlan(parentNodeRef) == true)
-                    {
-                        fillingOnly = true;
-                    }
+                    boolean fillingOnly = filePlanService.isFilePlan(parentNodeRef);
 
                     // since this is not a root category, inherit from parent
                     Set<AccessPermission> perms = permissionService.getAllSetPermissions(parentNodeRef);
@@ -198,7 +200,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
                     return null;
                 }
-            }, AuthenticationUtil.getSystemUserName());
+            });
         }
     }
 
@@ -210,7 +212,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         final NodeRef folderNodeRef = childAssocRef.getChildRef();
 
         // initialise the permissions
-        setUpPermissions(folderNodeRef);
+        initPermissions(folderNodeRef);
 
         // Pull any permissions found on the parent (ie the record category)
         final NodeRef catNodeRef = childAssocRef.getParentRef();
@@ -285,7 +287,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 NodeRef nodeRef = childAssocRef.getChildRef();
                 if (nodeService.exists(nodeRef) == true)
                 {
-                    setUpPermissions(nodeRef);
+                    initPermissions(nodeRef);
 
                     NodeRef parent = childAssocRef.getParentRef();
                     Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
@@ -324,7 +326,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      */
     public void initialiseRecordPermissions(NodeRef record, NodeRef parent)
     {
-        setUpPermissions(record);
+        initPermissions(record);
 
         Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
         for (AccessPermission perm : perms)
@@ -402,10 +404,11 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     *
-     * @param nodeRef
+     * Initiliase the permissions for the given node.
+     * 
+     * @param nodeRef   node reference
      */
-    public void setUpPermissions(final NodeRef nodeRef)
+    private void initPermissions(final NodeRef nodeRef)
     {
         if (nodeService.exists(nodeRef) == true)
         {

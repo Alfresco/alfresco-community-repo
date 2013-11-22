@@ -212,7 +212,10 @@
    <!-- Import the RM webscript's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-webscript-context.xml"/>
 
-   <!-- Import of installed demos -->
-   <import resource="classpath*:alfresco/module/org_alfresco_module_rm/demo/*/demo-context.xml"/>
+   <!--  Annotated behaviour bean post processor -->
+   <bean id="annotatedBehaviourBeanPostProcessor" class="org.alfresco.repo.policy.annotation.AnnotatedBehaviourPostProcessor">
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="namespaceService" ref="namespaceService" />
+   </bean>
 
 </beans>

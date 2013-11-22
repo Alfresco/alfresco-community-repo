@@ -129,11 +129,6 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                 TYPE_RECORD_FOLDER,
                 ContentModel.ASSOC_CONTAINS,
                 onCreateChildAssociation);
-        policyComponent.bindAssociationBehaviour(
-                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
-                TYPE_RECORD_CATEGORY,
-                ContentModel.ASSOC_CONTAINS,
-                onCreateChildAssociation);
     }
 
     /**
@@ -185,7 +180,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                           if (filePlanService.isRecordCategory(nodeRef) == true ||
                               recordFolderService.isRecordFolder(nodeRef) == true)
                           {
-                              inheritVitalRecordDefinition(nodeRef);
+                              setupVitalRecordDefinition(nodeRef);
                           }
 
                           return null;
@@ -202,11 +197,10 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     }
 
     /**
-     * Helper method to set the inherited vital record definition details.
-     *
-     * @param nodeRef   node reference
+     * @see org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService#setupVitalRecordDefinition(org.alfresco.service.cmr.repository.NodeRef)
      */
-    private void inheritVitalRecordDefinition(NodeRef nodeRef)
+    @Override
+    public void setupVitalRecordDefinition(NodeRef nodeRef)
     {
         // get the current review period value
         Period currentReviewPeriod = (Period)nodeService.getProperty(nodeRef, PROP_REVIEW_PERIOD);

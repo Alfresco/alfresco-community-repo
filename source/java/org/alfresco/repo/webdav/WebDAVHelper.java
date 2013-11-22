@@ -785,15 +785,20 @@ public class WebDAVHelper
     
     public String determineSiteId(WebDAVMethod method)
     {
+        return determineSiteId(method.getRootNodeRef(), method.getPath());
+    }
+    
+    public String determineSiteId(NodeRef rootNodeRef, String path)
+    {
         SiteService siteService = getServiceRegistry().getSiteService();
         String siteId;
         try
         {
-            FileInfo fileInfo = getNodeForPath(method.getRootNodeRef(), method.getPath());
+            FileInfo fileInfo = getNodeForPath(rootNodeRef, path);
             siteId = siteService.getSiteShortName(fileInfo.getNodeRef());
             if (siteId == null)
             {
-                throw new RuntimeException("Node is not contained by a site: " + method.getPath());
+                throw new RuntimeException("Node is not contained by a site: " + path);
             }
         }
         catch (Exception error)
@@ -803,7 +808,13 @@ public class WebDAVHelper
         return siteId;
     }
     
+    @Deprecated
     public String determineTenantDomain(WebDAVMethod method)
+    {
+        return determineTenantDomain();
+    }
+    
+    public String determineTenantDomain()
     {
         TenantService tenantService = getTenantService();
         String tenantDomain = tenantService.getCurrentUserDomain();

@@ -22,6 +22,7 @@
         <property name="jobDetail" ref="feedCleanerJobDetail" />
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.feed.cleaner.cronExpression}" />
+        <property name="enabled" value="${activities.feed.cleaner.enabled}" />
     </bean>
     
     <!-- Activities Feed Generator -->
@@ -43,6 +44,7 @@
         <property name="jobDetail" ref="feedGeneratorJobDetail" />
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.feed.generator.cronExpression}" />
+        <property name="enabled" value="${activities.feed.generator.enabled}" />
     </bean>
     
     <!-- Activities Post Lookup (for secondary lookup) -->
@@ -63,6 +65,7 @@
         <property name="jobDetail" ref="postLookupJobDetail" />
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.post.lookup.cronExpression}" />
+        <property name="enabled" value="${activities.post.lookup.enabled}" />
     </bean>
     
     <!-- Activities Post Cleaner -->
@@ -84,6 +87,7 @@
         <property name="jobDetail" ref="postCleanerJobDetail" />
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.post.cleaner.cronExpression}" />
+        <property name="enabled" value="${activities.post.cleaner.enabled}" />
     </bean>
     
      <!-- Activities Email Notifier -->

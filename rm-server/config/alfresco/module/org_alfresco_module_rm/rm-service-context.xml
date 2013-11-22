@@ -617,9 +617,10 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.setupRecordCategoryPermissions=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.setPermission=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.deletePermission=RM_ALLOW
-             org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.*=RM_DENY
+                org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.*=RM_DENY
                 ]]>
             </value>
         </property>
@@ -629,12 +630,11 @@
 
     <bean id="filePlanRoleService"
           class="org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleServiceImpl"
-          init-method="init" depends-on="org_alfresco_module_rm_dictionaryBootstrap">
+          depends-on="org_alfresco_module_rm_dictionaryBootstrap">
         <property name="capabilityService" ref="CapabilityService"/>
         <property name="authorityService" ref="AuthorityService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="nodeService" ref="NodeService"/>
-        <property name="policyComponent" ref="policyComponent"/>
         <property name="filePlanService" ref="FilePlanService" />
         <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
         <property name="authenticationService" ref="AuthenticationService" />
@@ -685,6 +685,8 @@
         <property name="objectDefinitionSource">
             <value>
                <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.setupFilePlanRoles=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.tearDownFilePlanRoles=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRoles=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRolesByUser=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRole=RM_ALLOW
@@ -699,7 +701,7 @@
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.assignRoleToAuthority=RM_CAP.0.rma:filePlanComponent.CreateModifyDestroyUsersAndGroups
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.unassignRoleFromAuthority=RM_CAP.0.rma:filePlanComponent.CreateModifyDestroyUsersAndGroups
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getAllRolesContainerGroup=RM_ALLOW
-             org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.*=RM_DENY
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.*=RM_DENY
                 ]]>
             </value>
         </property>

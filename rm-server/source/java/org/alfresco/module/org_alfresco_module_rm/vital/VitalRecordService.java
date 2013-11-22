@@ -33,8 +33,15 @@ public interface VitalRecordService
     static final Period PERIOD_NONE = new Period("none|0");
 
     /**
-     * Gets the vital record definition details for the node.
-     *
+     * Setup the vital record definition for the given node.
+     * 
+     * @param nodeRef   node reference
+     */
+    void setupVitalRecordDefinition(NodeRef nodeRef);
+    
+    /**
+     * Gets the vital record definition details for the node.  
+     * 
      * @param nodeRef                   node reference
      * @return VitalRecordDefinition    vital record definition details
      */

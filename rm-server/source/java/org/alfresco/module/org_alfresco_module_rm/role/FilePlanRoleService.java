@@ -47,7 +47,21 @@ public interface FilePlanRoleService
         ROLE_EXTENDED_READERS,
         ROLE_EXTENDED_WRITERS
     );
+    
+    /**
+     * Sets up the roles on a new file plan.
+     * 
+     * @param filePlan  file plan
+     */
+    void setupFilePlanRoles(NodeRef filePlan);
 
+    /**
+     * Tears down the roles on a file plan.
+     * 
+     * @param filePlan  file plan
+     */
+    void tearDownFilePlanRoles(NodeRef filePlan);
+    
     /**
      * Returns the name of the container group for all roles of a specified file
      * plan.

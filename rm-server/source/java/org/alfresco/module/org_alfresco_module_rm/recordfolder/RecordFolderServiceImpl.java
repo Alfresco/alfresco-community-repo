@@ -84,6 +84,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
                                     = new JavaBehaviour(this,
                                                         "onCreateChildAssociation",
                                                         NotificationFrequency.FIRST_EVENT);
+    
     private JavaBehaviour onCreateChildAssociationInRecordFolderFolder
                                     = new JavaBehaviour(this,
                                                         "onCreateChildAssociationInRecordFolder",
@@ -126,6 +127,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     */
    public void init()
    {
+       
        policyComponent.bindAssociationBehaviour(
                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
                TYPE_RECORD_CATEGORY,

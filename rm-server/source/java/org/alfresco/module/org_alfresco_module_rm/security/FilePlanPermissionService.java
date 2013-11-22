@@ -29,6 +29,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface FilePlanPermissionService
 {
     /**
+     * 
+     * @param nodeRef
+     */
+    void setupRecordCategoryPermissions(NodeRef recordCategory);
+    
+    /**
      * Sets a permission on a file plan object.  Assumes allow is true.  Cascades permission down to record folder.  
      * Cascades ReadRecord up to file plan.
      * 

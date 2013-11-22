@@ -50,14 +50,6 @@
       <property name="dispositionService" ref="dispositionService"/>
    </bean>
 
-   <!--  RM container type behaviour bean -->
-   <bean id="org_alfresco_module_rm_RecordContainerType"
-      class="org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordContainerType"
-      parent="org_alfresco_module_rm_BaseBehaviour">
-      <property name="dictionaryService" ref="DictionaryService"/>
-      <property name="recordsManagementIdentifierService" ref="recordsManagementIdentifierService"/>
-   </bean>
-
    <bean id="org_alfresco_module_rm_RmSiteType"
       class="org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType"
       parent="org_alfresco_module_rm_BaseBehaviour">
@@ -94,6 +86,37 @@
       <property name="recordService" ref="recordService"/>
       <property name="recordFolderService" ref="RecordFolderService"/>
    </bean>
+   
+   <!-- NEW BEHAVIOUR BEANS -->
+   
+   <bean id="rm.baseBehaviour" abstract="true">
+   	  <property name="nodeService" ref="NodeService" />
+      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
+   </bean>
+   
+   <bean id="rma.recordsManagementContainer" class="org.alfresco.module.org_alfresco_module_rm.model.rma.RecordsManagementContainerType" parent="rm.baseBehaviour">
+      <property name="identifierService" ref="recordsManagementIdentifierService"/>
+   </bean>
+   
+   <bean id="rma.filePlan" class="org.alfresco.module.org_alfresco_module_rm.model.rma.FilePlanType" parent="rm.baseBehaviour">
+      <property name="identifierService" ref="recordsManagementIdentifierService"/>
+   	  <property name="filePlanService" ref="FilePlanService" />
+   	  <property name="recordFolderService" ref="RecordFolderService" />
+   	  <property name="filePlanRoleService" ref="FilePlanRoleService" />
+   </bean>
+   
+   <bean id="rma.recordCategory" class="org.alfresco.module.org_alfresco_module_rm.model.rma.RecordCategoryType" parent="rm.baseBehaviour">
+   	  <property name="vitalRecordService" ref="VitalRecordService" />
+   	  <property name="filePlanPermissionService" ref="FilePlanPermissionService" />
+   </bean>
+   
+   <bean id="rma.record" class="org.alfresco.module.org_alfresco_module_rm.model.rma.RecordAspect" parent="rm.baseBehaviour">
+   	  <property name="extendedSecurityService" ref="ExtendedSecurityService" />
+   </bean>
+   
+   
+   <!-- END -->
 
    <!--  Base bean definition for customisable types bootstrap -->
    <bean id="customisableTypesBootstrap"

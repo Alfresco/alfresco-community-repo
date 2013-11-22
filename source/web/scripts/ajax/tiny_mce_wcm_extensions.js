@@ -61,14 +61,11 @@ function alfresco_TinyMCE_urlconverter_callback(href, element, onsave)
       result = href;
     }
   
-    // handle URL issue with IE (WCM-1134)
-    if (navigator.appName == "Microsoft Internet Explorer" || tinyMCE.isMSIE)
+    // handle URL issues(see WCM-1134 and MNT-9749)
+    var server = document.location.protocol + "//" + document.location.host;
+    if (href.startsWith(server))
     {
-      var server = document.location.protocol + "//" + document.location.host;
-      if (href.startsWith(server))
-      {
-        result = href.substring(server.length);
-      }
+      result = href.substring(server.length);
     }
   }
   

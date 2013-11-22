@@ -121,14 +121,14 @@ public class TaskNotificationListener implements TaskListener
             TypeDefinition typeDefinition = propertyConverter.getWorkflowObjectFactory().getTaskTypeDefinition(taskFormKey, false);
             taskFormKey = typeDefinition.getName().toPrefixString();
             
-            if(taskFormKey != null) 
+            if (taskFormKey != null) 
             {
                 String processDefinitionKey = ((ProcessDefinition) ((TaskEntity)task).getExecution().getProcessDefinition()).getKey();
                 String defName = propertyConverter.getWorkflowObjectFactory().buildGlobalId(processDefinitionKey);
                 title = propertyConverter.getWorkflowObjectFactory().getTaskTitle(typeDefinition, defName, task.getName(), taskFormKey.replace(":", "_"));
             }
             
-            if(title == null)
+            if (title == null)
             {
                 if (task.getName() != null)
                 {
@@ -139,12 +139,20 @@ public class TaskNotificationListener implements TaskListener
                     title = taskFormKey.replace(":", "_");
                 }
             }
+            
+            // Make sure a description is present
+            String description = task.getDescription();
+            if (description == null || description.length() == 0)
+            {
+            	// use the task title as the description
+            	description = title;
+            }
 
             // Send email notification
             workflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
                     ActivitiConstants.ENGINE_ID + "$" + task.getId(),
                     title,
-                    task.getDescription(),
+                    description,
                     task.getDueDate(),
                     Integer.valueOf(task.getPriority()),
                     workflowPackage,

@@ -66,6 +66,7 @@
    	<bean id="activitiUserTaskParseHandler" class="org.alfresco.repo.workflow.activiti.AlfrescoUserTaskBpmnParseHandler">
 		<property name="createTaskListener" ref="activitiCreateTaskListener" />
 		<property name="completeTaskListener" ref="activitiCompleteTaskListener" />
+		<property name="notificationTaskListener" ref="activitiTaskNotificationListener" />
 	</bean>
 
     <!-- -->
@@ -225,6 +226,11 @@
         class="org.alfresco.repo.workflow.activiti.tasklistener.TaskCreateListener"
         depends-on="activitiWorkflowManager">
         <property name="propertyConverter" ref="activitiPropertyConverter" />
+    </bean>
+    
+    <bean id="activitiTaskNotificationListener"
+        class="org.alfresco.repo.workflow.activiti.tasklistener.TaskNotificationListener"
+        depends-on="activitiWorkflowManager">
         <property name="workflowNotification" ref="workflowNotification" />
     </bean>
 

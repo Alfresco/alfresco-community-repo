@@ -38,6 +38,7 @@ public class AlfrescoUserTaskBpmnParseHandler extends AbstractBpmnParseHandler<U
 {
     private TaskListener      completeTaskListener;
     private TaskListener      createTaskListener;
+    private TaskListener      notificationTaskListener;
 
     protected Class<? extends BaseElement> getHandledType()
     {
@@ -72,6 +73,10 @@ public class AlfrescoUserTaskBpmnParseHandler extends AbstractBpmnParseHandler<U
         {
             addTaskListenerAsFirst(completeTaskListener, TaskListener.EVENTNAME_COMPLETE, activityBehavior);
         }
+        if(notificationTaskListener != null)
+        {
+            addTaskListenerAsLast(notificationTaskListener, TaskListener.EVENTNAME_CREATE, activityBehavior);
+        }
     }
     
     public void setCompleteTaskListener(TaskListener completeTaskListener)
@@ -84,13 +89,28 @@ public class AlfrescoUserTaskBpmnParseHandler extends AbstractBpmnParseHandler<U
         this.createTaskListener = createTaskListener;
     }
     
+    public void setNotificationTaskListener(TaskListener notificationTaskListener)
+    {
+        this.notificationTaskListener = notificationTaskListener;
+    }
+    
     protected void addTaskListenerAsFirst(TaskListener taskListener, String eventName, UserTaskActivityBehavior userTask) 
+    {
+        getOrCreateListenerList(eventName, userTask).add(0, taskListener);
+    }
+    
+    protected void addTaskListenerAsLast(TaskListener taskListener, String eventName, UserTaskActivityBehavior userTask) 
+    {
+        getOrCreateListenerList(eventName, userTask).add(taskListener);
+    }
+    
+    protected List<TaskListener> getOrCreateListenerList(String eventName, UserTaskActivityBehavior userTask) 
     {
         List<TaskListener> taskEventListeners = userTask.getTaskDefinition().getTaskListeners().get(eventName);
         if (taskEventListeners == null) {
           taskEventListeners = new ArrayList<TaskListener>();
           userTask.getTaskDefinition().getTaskListeners().put(eventName, taskEventListeners);
         }
-        taskEventListeners.add(0, taskListener);
+        return taskEventListeners;
     }
 }

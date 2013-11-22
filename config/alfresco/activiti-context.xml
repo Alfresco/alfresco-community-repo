@@ -231,6 +231,7 @@
     <bean id="activitiTaskNotificationListener"
         class="org.alfresco.repo.workflow.activiti.tasklistener.TaskNotificationListener"
         depends-on="activitiWorkflowManager">
+        <property name="propertyConverter" ref="activitiPropertyConverter" />
         <property name="workflowNotification" ref="workflowNotification" />
     </bean>
 

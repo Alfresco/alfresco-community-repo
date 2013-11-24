@@ -153,6 +153,10 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
             allowedValues = new ArrayList<String>(0);
         }
         int valueCount = allowedValues.size();
+        if (valueCount > 0)
+        {
+            super.setAllowedValues(allowedValues);
+        }
         this.allowedValues = Collections.unmodifiableList(allowedValues);
         
         // make the upper case versions

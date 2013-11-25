@@ -35,7 +35,6 @@ import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.transfer.TransferService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -153,14 +152,6 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     private DispositionService getDispositionService()
     {
         return serviceRegistry.getDispositionService();
-    }
-
-    /**
-     * @return Extended Security Service
-     */
-    private ExtendedSecurityService getExtendedSecurityService()
-    {
-        return serviceRegistry.getExtendedSecurityService();
     }
 
     /**

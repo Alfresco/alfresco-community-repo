@@ -310,7 +310,7 @@ alfresco.xforms.Widget = new Class({
   /** Returns the value contained by the widget, or null if none is set */
   getValue: function()
   {
-    return null;
+    return this.widget.getValue().length != 0 ? this.widget.getValue() : null;
   },
 
   /** Sets the widget's initial value. */

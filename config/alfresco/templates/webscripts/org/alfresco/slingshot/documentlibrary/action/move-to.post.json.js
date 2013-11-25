@@ -77,6 +77,15 @@ function runAction(p_params)
          result.id = file;
          result.nodeRef = nodeRef;
          result.success = false;
+
+         //MNT-7514 Uninformational error message on move when file name conflicts
+	 result.fileExist = false;
+		 
+	 error = e.toString();
+	 if (error.indexOf("FileExistsException") != -1)
+	 {
+	    result.fileExist = true;
+	 }
       }
       
       results.push(result);

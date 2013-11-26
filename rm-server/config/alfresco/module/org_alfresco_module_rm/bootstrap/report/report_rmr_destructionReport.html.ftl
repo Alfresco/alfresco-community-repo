@@ -14,7 +14,6 @@
       }
       --></style>
    </head>
-
    <body bgcolor="#dddddd">
       <table width="100%" cellpadding="20" cellspacing="0" border="0" bgcolor="#dddddd">
          <tr>
@@ -35,6 +34,7 @@
                                                 </td>
                                                 <td>
                                                    <div style="font-size: 22px; padding-bottom: 4px;">
+                                                      <#-- FIXME!!! -->
                                                       Destruction Report
                                                    </div>
                                                 </td>
@@ -43,72 +43,65 @@
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
                                           <table cellpadding="2" cellspacing="3" border="0">
                                              <tr>
+                                                <#-- FIXME!!! -->
                                                 <td><i>Destroyed <#if node.hasAspect("rma:record")>Record<#else>Record Folder</#if>:</i></td>
                                                 <td>${node.properties["rma:identifier"]} <b>${node.properties.name}</b></td>
-											 </tr>   
+                                             </tr>
                                              <tr>
+                                                <#-- FIXME!!! -->
                                                 <td><i>Disposition Authority:</i></td>
                                                 <td>${node.properties["rma:recordSearchDispositionAuthority"]}</td>
-                                             </tr>  
+                                             </tr>
                                              <tr>
+                                                <#-- FIXME!!! -->
                                                 <td><i>Disposition Instructions:</i></td>
                                                 <td>${node.properties["rma:recordSearchDispositionInstructions"]}</td>
-                                             </tr> 
-                                          </table>                                            
-                                             
+                                             </tr>
+                                          </table>
                                           <#if  node.childAssociations["cm:contains"]??>
-                                             
                                              <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
-                                            
                                              <table cellpadding="2" cellspacing="3" border="0">
                                                 <tr>
+                                                   <#-- FIXME!!! -->
                                                    <td><i>Destroyed Records:</i></td>
                                                    <td></td>
                                                 </tr>
-										     </table>
-			
+                                             </table>
                                              <table cellpadding="0" callspacing="0" border="0" bgcolor="#eeeeee" style="padding:10px; border: 1px solid #aaaaaa;">
                                                 <tr>
                                                    <td>
                                                       <table cellpadding="0" cellspacing="0" border="0">
-                                                      
-                                                      	<#list node.childAssociations["cm:contains"] as child>
-                                                           
-	                                                         <tr>
-	                                                            <td valign="top">
-	                                                               <img src="${url}/${child.icon32}" alt="" width="32" height="32" border="0" style="padding-right: 10px;" />
-	                                                            </td>
-	                                                            <td>
-	                                                               <table cellpadding="2" cellspacing="0" border="0">
-	                                                                  <tr>
-	                                                                     <td>${child.properties["rma:identifier"]} <b>${child.properties.name}</b></td>
-	                                                                  </tr>
-	                                                               </table>
-	                                                            </td>
-	                                                         </tr>
-
+                                                         <#list node.childAssociations["cm:contains"] as child>
+                                                            <tr>
+                                                               <td valign="top">
+                                                                  <img src="${url}/${child.icon32}" alt="" width="32" height="32" border="0" style="padding-right: 10px;" />
+                                                               </td>
+                                                               <td>
+                                                                  <table cellpadding="2" cellspacing="0" border="0">
+                                                                     <tr>
+                                                                        <td>${child.properties["rma:identifier"]} <b>${child.properties.name}</b></td>
+                                                                     </tr>
+                                                                  </table>
+                                                               </td>
+                                                            </tr>
                                                          </#list>
-                                                         
                                                       </table>
-                                                    </td>
+                                                   </td>
                                                 </tr>
-                                             </table>                                             
-
-                                           </#if>
-                                           
-                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
-                                             
+                                             </table>
+                                          </#if>
+                                          <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
                                           </div>
                                        </td>
                                     </tr>
                                  </table>
                               </td>
-                           </tr> 
+                           </tr>
                            <tr>
                               <td style="padding: 10px 30px;">
                                  <img src="${shareUrl}/themes/default/images/app-logo.png" alt="" width="117" height="48" border="0" />
                               </td>
-                           </tr>                      
+                           </tr>
                         </table>
                      </td>
                   </tr>

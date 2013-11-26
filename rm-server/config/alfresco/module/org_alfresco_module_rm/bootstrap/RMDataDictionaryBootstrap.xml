@@ -182,37 +182,54 @@
                   </cm:contains>
                </view:associations>
             </cm:folder>
-            
-               <cm:folder view:childName="cm:rm_report_templates">
-				   <view:properties>
-				      	<sys:store-protocol>workspace</sys:store-protocol>
-				      	<sys:store-identifier>SpacesStore</sys:store-identifier>
-				      	<sys:node-uuid>rm_report_templates</sys:node-uuid>
-				    	<cm:name>Records Management Report Templates</cm:name>
-				    	<cm:title>Records Management Report Templates</cm:title>
-				      	<cm:description>Records management report templates.</cm:description>
-				   </view:properties>
-				   <view:associations>
-				       <cm:contains>
-				       		<cm:content view:childName="cm:report_rmr_destructionReport.html.ftl">
-			                	<view:aspects>
-			                    	<cm:titled></cm:titled>
-			                        <cm:author></cm:author>
-			                 	</view:aspects>
-			                    <view:properties>
-			                    	<sys:store-protocol>workspace</sys:store-protocol>
-			                        <sys:store-identifier>SpacesStore</sys:store-identifier>
-			                        <sys:node-uuid>rmr_destructionReport</sys:node-uuid>
-			                        <cm:description>Desruction report template.</cm:description>
-			                        <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/report/report_rmr_destructionReport.html.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
-			                        <cm:title>Destruction Report Template</cm:title>
-			                        <cm:name>report_rmr_destructionReport.html.ftl</cm:name>
-			                  	</view:properties>
-			            	</cm:content>
-			       		</cm:contains>
-			  		</view:associations>
-				</cm:folder>
-         	</cm:contains>
+
+            <cm:folder view:childName="cm:rm_report_templates">
+               <view:properties>
+                  <sys:store-protocol>workspace</sys:store-protocol>
+                  <sys:store-identifier>SpacesStore</sys:store-identifier>
+                  <sys:node-uuid>rm_report_templates</sys:node-uuid>
+                  <cm:name>Records Management Report Templates</cm:name>
+                  <cm:title>Records Management Report Templates</cm:title>
+                  <cm:description>Records management report templates.</cm:description>
+               </view:properties>
+               <view:associations>
+                   <cm:contains>
+                      <cm:content view:childName="cm:report_rmr_destructionReport.html.ftl">
+                         <view:aspects>
+                            <cm:titled></cm:titled>
+                            <cm:author></cm:author>
+                         </view:aspects>
+                         <view:properties>
+                           <sys:store-protocol>workspace</sys:store-protocol>
+                           <sys:store-identifier>SpacesStore</sys:store-identifier>
+                           <sys:node-uuid>rmr_destructionReport</sys:node-uuid>
+                           <cm:description>Desruction report template.</cm:description>
+                           <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/report/report_rmr_destructionReport.html.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
+                           <cm:title>Destruction Report Template</cm:title>
+                           <cm:name>report_rmr_destructionReport.html.ftl</cm:name>
+                        </view:properties>
+                     </cm:content>
+                  </cm:contains>
+                  <cm:contains>
+                     <cm:content view:childName="cm:report_rmr_transferReport.html.ftl">
+                        <view:aspects>
+                           <cm:titled></cm:titled>
+                           <cm:author></cm:author>
+                        </view:aspects>
+                        <view:properties>
+                           <sys:store-protocol>workspace</sys:store-protocol>
+                           <sys:store-identifier>SpacesStore</sys:store-identifier>
+                           <sys:node-uuid>rmr_transferReport</sys:node-uuid>
+                           <cm:description>Transfer report template.</cm:description>
+                           <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/report/report_rmr_transferReport.html.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
+                           <cm:title>Transfer Report Template</cm:title>
+                           <cm:name>report_rmr_transfer.html.ftl</cm:name>
+                        </view:properties>
+                     </cm:content>
+                  </cm:contains>
+               </view:associations>
+            </cm:folder>
+         </cm:contains>
       </view:associations>
 
    </cm:folder>

@@ -20,14 +20,10 @@ package org.alfresco.module.org_alfresco_module_rm;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -37,50 +33,27 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.transfer.TransferService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.PropertyMap;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Records management service implementation.
  *
  * @author Roy Wetherall
+ * @deprecated as of 2.2
  */
 public class RecordsManagementServiceImpl extends ServiceBaseImpl
                                           implements RecordsManagementService,
-                                                     RecordsManagementModel //,
-                                                     //RecordsManagementPolicies.OnCreateReference,
-                                                     //RecordsManagementPolicies.OnRemoveReference
+                                                     RecordsManagementModel 
 {
-    /** I18N */
-    private final static String MSG_UPDATE_DISP_ACT_DEF = "rm.service.update-disposition-action-def";
-    private final static String MSG_SET_ID = "rm.service.set-id";
-
-    /** Store that the RM roots are contained within */
+   /** Store that the RM roots are contained within */
     @SuppressWarnings("unused")
     @Deprecated
     private StoreRef defaultStoreRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 
     /** Service registry */
     private RecordsManagementServiceRegistry serviceRegistry;
-
-    /** Policy component */
-    private PolicyComponent policyComponent;
-
-    ///** Well-known location of the scripts folder. */
-    private NodeRef scriptsFolderNodeRef = new NodeRef("workspace", "SpacesStore", "rm_behavior_scripts");
-
-    /** Java behaviour */
-    private JavaBehaviour onChangeToDispositionActionDefinition;
 
     /**
      * Set the service registry service
@@ -92,16 +65,6 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
         // Internal ops use the unprotected services from the voter (e.g. nodeService)
         this.serviceRegistry = serviceRegistry;
         this.dictionaryService = serviceRegistry.getDictionaryService();
-    }
-
-    /**
-     * Set policy component
-     *
-     * @param policyComponent   policy component
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
     }
 
     /**
@@ -155,230 +118,11 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @return Script Service
-     */
-    private ScriptService getScriptService()
-    {
-        return serviceRegistry.getScriptService();
-    }
-
-    /**
-     * @return Namespace service
-     */
-    private NamespaceService getNamespaceService()
-    {
-        return serviceRegistry.getNamespaceService();
-    }
-
-    /**
      * @return Transfer service
      */
     private TransferService getTransferService()
     {
         return serviceRegistry.getTransferService();
-    }
-
-    /**
-     * Init method.  Registered behaviours.
-     */
-    public void init()
-    {
-        // Register script execution behaviour on RM property update.
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
-                ASPECT_FILE_PLAN_COMPONENT,
-                new JavaBehaviour(this, "onChangeToAnyRmProperty", NotificationFrequency.TRANSACTION_COMMIT));
-
-        // Disposition behaviours
-        onChangeToDispositionActionDefinition = new JavaBehaviour(this, "onChangeToDispositionActionDefinition", NotificationFrequency.TRANSACTION_COMMIT);
-        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
-                TYPE_DISPOSITION_ACTION_DEFINITION,
-                onChangeToDispositionActionDefinition);
-
-        // Identifier behaviours
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
-                                           ASPECT_RECORD_COMPONENT_ID,
-                                           new JavaBehaviour(this, "onIdentifierUpdate", NotificationFrequency.TRANSACTION_COMMIT));
-    }
-
-    /**
-     * Called after a DispositionActionDefinition property has been updated.
-     */
-    public void onChangeToDispositionActionDefinition(NodeRef node, Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
-    {
-        if (nodeService.exists(node) == true)
-        {
-            onChangeToDispositionActionDefinition.disable();
-            try
-            {
-                // Determine the properties that have changed
-                Set<QName> changedProps = this.determineChangedProps(oldProps, newProps);
-
-                if (nodeService.hasAspect(node, ASPECT_UNPUBLISHED_UPDATE) == false)
-                {
-                    // Apply the unpublished aspect
-                    Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-                    props.put(PROP_UPDATE_TO, UPDATE_TO_DISPOSITION_ACTION_DEFINITION);
-                    props.put(PROP_UPDATED_PROPERTIES, (Serializable)changedProps);
-                    nodeService.addAspect(node, ASPECT_UNPUBLISHED_UPDATE, props);
-                }
-                else
-                {
-                    Map<QName, Serializable> props = nodeService.getProperties(node);
-
-                    // Check that there isn't a update currently being published
-                    if ((Boolean)props.get(PROP_PUBLISH_IN_PROGRESS).equals(Boolean.TRUE) == true)
-                    {
-                        // Can not update the disposition schedule since there is an outstanding update being published
-                        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UPDATE_DISP_ACT_DEF));
-                    }
-
-                    // Update the update information
-                    props.put(PROP_UPDATE_TO, UPDATE_TO_DISPOSITION_ACTION_DEFINITION);
-                    props.put(PROP_UPDATED_PROPERTIES, (Serializable)changedProps);
-                    nodeService.setProperties(node, props);
-                }
-            }
-            finally
-            {
-                onChangeToDispositionActionDefinition.enable();
-            }
-        }
-    }
-
-    /**
-     * This method compares the oldProps map against the newProps map and returns
-     * a set of QNames of the properties that have changed. Changed here means one of
-     * <ul>
-     * <li>the property has been removed</li>
-     * <li>the property has had its value changed</li>
-     * <li>the property has been added</li>
-     * </ul>
-     */
-    private Set<QName> determineChangedProps(Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
-    {
-        Set<QName> result = new HashSet<QName>();
-        for (QName qn : oldProps.keySet())
-        {
-            if (newProps.get(qn) == null ||
-                newProps.get(qn).equals(oldProps.get(qn)) == false)
-            {
-                result.add(qn);
-            }
-        }
-        for (QName qn : newProps.keySet())
-        {
-            if (oldProps.get(qn) == null)
-            {
-                result.add(qn);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Called after any Records Management property has been updated.
-     */
-    public void onChangeToAnyRmProperty(final NodeRef node, final Map<QName, Serializable> oldProps, final Map<QName, Serializable> newProps)
-    {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                if (nodeService.exists(node) == true)
-                {
-                    RecordsManagementServiceImpl.this.lookupAndExecuteScripts(node, oldProps, newProps);
-                }
-
-                return null;
-            }
-        }, AuthenticationUtil.getAdminUserName());
-    }
-
-    /**
-     * This method examines the old and new property sets and for those properties which
-     * have changed, looks for script resources corresponding to those properties.
-     * Those scripts are then called via the ScriptService.
-     *
-     * @param nodeWithChangedProperties the node whose properties have changed.
-     * @param oldProps the old properties and their values.
-     * @param newProps the new properties and their values.
-     *
-     * @see #lookupScripts(Map<QName, Serializable>, Map<QName, Serializable>)
-     */
-    private void lookupAndExecuteScripts(NodeRef nodeWithChangedProperties,
-            Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
-    {
-        List<NodeRef> scriptRefs = lookupScripts(oldProps, newProps);
-
-        Map<String, Object> objectModel = new HashMap<String, Object>(1);
-        objectModel.put("node", nodeWithChangedProperties);
-        objectModel.put("oldProperties", oldProps);
-        objectModel.put("newProperties", newProps);
-
-        ScriptService scriptService = getScriptService();
-        for (NodeRef scriptRef : scriptRefs)
-        {
-            scriptService.executeScript(scriptRef, null, objectModel);
-        }
-    }
-
-    /**
-     * This method determines which properties have changed and for each such property
-     * looks for a script resource in a well-known location.
-     *
-     * @param oldProps the old properties and their values.
-     * @param newProps the new properties and their values.
-     * @return A list of nodeRefs corresponding to the Script resources.
-     *
-     * @see #determineChangedProps(Map<QName, Serializable>, Map<QName, Serializable>)
-     */
-    private List<NodeRef> lookupScripts(Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
-    {
-        List<NodeRef> result = new ArrayList<NodeRef>();
-
-        Map<QName, Serializable> changedProps = PropertyMap.getChangedProperties(oldProps, newProps);
-        for (QName propQName : changedProps.keySet())
-        {
-            QName prefixedQName = propQName.getPrefixedQName(getNamespaceService());
-
-            String [] splitQName = QName.splitPrefixedQName(prefixedQName.toPrefixString());
-            final String shortPrefix = splitQName[0];
-            final String localName = splitQName[1];
-
-            // This is the filename pattern which is assumed.
-            // e.g. a script file cm_name.js would be called for changed to cm:name
-            String expectedScriptName = shortPrefix + "_" + localName + ".js";
-
-            NodeRef nextElement = nodeService.getChildByName(scriptsFolderNodeRef, ContentModel.ASSOC_CONTAINS, expectedScriptName);
-            if (nextElement != null) result.add(nextElement);
-        }
-
-        return result;
-    }
-
-    /**
-     * Property update behaviour implementation
-     *
-     * @param node
-     * @param oldProps
-     * @param newProps
-     */
-    public void onIdentifierUpdate(NodeRef node, Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
-    {
-       if (nodeService.exists(node) == true)
-       {
-           String newIdValue = (String)newProps.get(PROP_IDENTIFIER);
-           if (newIdValue != null)
-           {
-               String oldIdValue = (String)oldProps.get(PROP_IDENTIFIER);
-               if (oldIdValue != null && oldIdValue.equals(newIdValue) == false)
-               {
-                   throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_SET_ID, node.toString()));
-               }
-           }
-       }
     }
 
     /**

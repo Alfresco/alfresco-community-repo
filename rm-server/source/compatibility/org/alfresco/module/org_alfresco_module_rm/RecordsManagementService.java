@@ -39,6 +39,7 @@ import org.alfresco.service.namespace.QName;
  * Allows simple creation, manipulation and querying of records management components.
  *
  * @author Roy Wetherall
+ * @deprecated as of 2.2
  */
 public interface RecordsManagementService
 {

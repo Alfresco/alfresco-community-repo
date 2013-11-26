@@ -114,6 +114,7 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
     }
     
     /**
+     * Register behaviour with the policy.
      * 
      * @param bean
      * @param beanName

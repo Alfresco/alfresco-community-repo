@@ -95,26 +95,41 @@
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
    </bean>
    
-   <bean id="rma.recordsManagementContainer" class="org.alfresco.module.org_alfresco_module_rm.model.rma.RecordsManagementContainerType" parent="rm.baseBehaviour">
+   <!--  rma model types -->
+   
+   <bean id="rma.recordsManagementContainer" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.RecordsManagementContainerType" parent="rm.baseBehaviour">
       <property name="identifierService" ref="recordsManagementIdentifierService"/>
    </bean>
    
-   <bean id="rma.filePlan" class="org.alfresco.module.org_alfresco_module_rm.model.rma.FilePlanType" parent="rm.baseBehaviour">
+   <bean id="rma.filePlan" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.FilePlanType" parent="rm.baseBehaviour">
       <property name="identifierService" ref="recordsManagementIdentifierService"/>
    	  <property name="filePlanService" ref="FilePlanService" />
    	  <property name="recordFolderService" ref="RecordFolderService" />
    	  <property name="filePlanRoleService" ref="FilePlanRoleService" />
    </bean>
    
-   <bean id="rma.recordCategory" class="org.alfresco.module.org_alfresco_module_rm.model.rma.RecordCategoryType" parent="rm.baseBehaviour">
+   <bean id="rma.recordCategory" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.RecordCategoryType" parent="rm.baseBehaviour">
    	  <property name="vitalRecordService" ref="VitalRecordService" />
    	  <property name="filePlanPermissionService" ref="FilePlanPermissionService" />
    </bean>
-   
-   <bean id="rma.record" class="org.alfresco.module.org_alfresco_module_rm.model.rma.RecordAspect" parent="rm.baseBehaviour">
-   	  <property name="extendedSecurityService" ref="ExtendedSecurityService" />
+
+   <bean id="rma.dispositionActionDefinition" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.DispositionActionDefinitionType" parent="rm.baseBehaviour">
    </bean>
    
+   <!-- rma model aspects -->
+   
+   <bean id="rma.filePlanComponent" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.FilePlanComponentAspect" parent="rm.baseBehaviour">
+   	  <property name="scriptService" ref="ScriptService" />
+   	  <property name="namespaceService" ref="NamespaceService" />
+   </bean>
+   
+   <bean id="rma.record" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.RecordAspect" parent="rm.baseBehaviour">
+   	  <property name="scriptService" ref="ScriptService" />
+   	  <property name="extendedSecurityService" ref="ExtendedSecurityService" />
+   </bean>
+      
+   <bean id="rma.recordComponentIdentifier" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.RecordComponentIdentifierAspect" parent="rm.baseBehaviour">
+   </bean>
    
    <!-- END -->
 

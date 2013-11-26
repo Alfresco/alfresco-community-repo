@@ -1,9 +1,8 @@
 /**
  * 
  */
-package org.alfresco.module.org_alfresco_module_rm.model.rma;
+package org.alfresco.module.org_alfresco_module_rm.model;
 
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;

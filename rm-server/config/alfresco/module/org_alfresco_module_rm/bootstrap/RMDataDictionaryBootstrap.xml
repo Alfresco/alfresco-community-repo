@@ -223,7 +223,7 @@
                            <cm:description>Transfer report template.</cm:description>
                            <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/report/report_rmr_transferReport.html.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
                            <cm:title>Transfer Report Template</cm:title>
-                           <cm:name>report_rmr_transfer.html.ftl</cm:name>
+                           <cm:name>report_rmr_transferReport.html.ftl</cm:name>
                         </view:properties>
                      </cm:content>
                   </cm:contains>

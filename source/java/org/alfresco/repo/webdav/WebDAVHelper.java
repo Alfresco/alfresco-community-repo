@@ -519,6 +519,13 @@ public class WebDAVHelper
         // find it
         FileInfo fileInfo = m_fileFolderService.resolveNamePath(rootNodeRef, splitPath);
         
+        String fileName = splitPath.get(splitPath.size() - 1);
+        if (!fileInfo.getName().equals(fileName))
+        {
+            throw new FileNotFoundException("Requested filename " + fileName +
+                        " does not match case of " + fileInfo.getName());
+        }
+        
         // done
         if (logger.isDebugEnabled())
         {

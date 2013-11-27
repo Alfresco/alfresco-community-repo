@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-   <#assign isAccession=node.property["rma:transferAccessionIndicator"]>
+   <#assign isAccession=node.properties["rma:transferAccessionIndicator"]>
    <head>
       <#if isAccession>
          <#-- FIXME: Label -->
@@ -31,7 +31,7 @@
             <#-- FIXME: Label -->
             <td class="label">Transfer Date:</td>
             <#-- FIXME: Escape, toString -->
-            <td>${node.property["cm:created"]}</td>
+            <td><#--${node.properties["cm:created"]}--></td>
          </tr>
          <tr>
             <#-- FIXME: Label -->
@@ -42,7 +42,7 @@
                NARA
                <#else>
                <#-- FIXME: String, Escape -->
-               ${node.property["rma:transferLocation"]}
+               ${node.properties["rma:transferLocation"]}
                </#if>
             </td>
          </tr>
@@ -50,7 +50,7 @@
             <#-- FIXME: Label -->
             <td class="label">Performed By:</td>
             <#-- FIXME: String, Escape -->
-            <td> ${node.property["cm:creator"]}</td>
+            <td> ${node.properties["cm:creator"]}</td>
          </tr>
          <tr>
             <#-- FIXME: Label -->

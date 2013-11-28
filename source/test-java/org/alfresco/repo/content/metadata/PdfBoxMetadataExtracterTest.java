@@ -84,7 +84,7 @@ public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
          Map<QName, Serializable> properties) {
        assertEquals(
              "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
-             "2005-05-26T20:52:58.000+01:00",
+             "2005-05-26T19:52:58.000Z",
              DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
     }
     

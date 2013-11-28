@@ -87,7 +87,7 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
         long now = System.currentTimeMillis();
         TempFileProvider.TempFileCleanerJob.removeFiles(now);
         
-        TimeZone tz = TimeZone.getTimeZone("Europe/London");
+        TimeZone tz = TimeZone.getTimeZone("GMT");
         TimeZone.setDefault(tz);
         // Joda time has already grabbed the JVM zone so re-set it here
         DateTimeZone.setDefault(DateTimeZone.forTimeZone(tz));

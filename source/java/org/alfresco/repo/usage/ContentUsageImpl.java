@@ -450,7 +450,7 @@ public class ContentUsageImpl implements ContentUsageService,
                                   ", usage=" + currentSize +
                                   ", quota=" + quotaSize);
                 }
-                throw new ContentQuotaException("User quota exceeded", newSize, quotaSize, ContentModel.TYPE_CONTENT);
+                throw new ContentQuotaException("User quota exceeded");
             }
             
             NodeRef personNodeRef = getPerson(userName);

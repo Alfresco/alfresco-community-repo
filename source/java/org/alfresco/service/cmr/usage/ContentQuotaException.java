@@ -18,32 +18,22 @@
  */
 package org.alfresco.service.cmr.usage;
 
-import org.alfresco.service.namespace.QName;
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * 
  */
-public class ContentQuotaException extends QuotaViolationException
+public class ContentQuotaException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = 1346806021547860709L;
     
     public ContentQuotaException(String msg)
     {
-        this(msg, null, -1L, -1L, null);
+        super(msg);
     }
     
     public ContentQuotaException(String msg, Throwable cause)
     {
-        this(msg, cause, -1L, -1L, null);
-    }
-    
-    public ContentQuotaException(String msg, long usage, long quotaLimit, QName quotaRestrictedType)
-    {
-        this(msg, null, usage, quotaLimit, quotaRestrictedType);
-    }
-    
-    public ContentQuotaException(String msg, Throwable cause, long usage, long quotaLimit, QName quotaRestrictedType)
-    {
-        super(msg, cause, usage, quotaLimit, quotaRestrictedType);
+        super(msg, cause);
     }
 }

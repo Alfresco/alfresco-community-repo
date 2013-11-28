@@ -87,7 +87,6 @@
       <property name="reportTypeName" value="rmr:destructionReport" />
    </bean>
 
-   <!-- FIXME -->
    <bean id="transferReportGenerator" parent="declarativeReportGenerator">
       <property name="reportTypeName" value="rmr:transferReport" />
    </bean>
@@ -116,7 +115,7 @@
    </bean>
 
    <bean id="fileDestructionReport"
-         class="org.alfresco.module.org_alfresco_module_rm.report.action.FileReportAction"
+         class="org.alfresco.module.org_alfresco_module_rm.report.action.FileDestructionReportAction"
          parent="rmAction">
       <property name="reportService" ref="ReportService" />
       <property name="filePlanService" ref="FilePlanService" />
@@ -147,7 +146,7 @@
    </bean>
 
    <bean id="fileReport"
-         class="org.alfresco.module.org_alfresco_module_rm.report.action.FileTransferAction"
+         class="org.alfresco.module.org_alfresco_module_rm.report.action.FileReportAction"
          parent="rmAction">
       <property name="reportService" ref="ReportService" />
    </bean>

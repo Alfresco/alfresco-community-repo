@@ -87,6 +87,7 @@
       <property name="reportTypeName" value="rmr:destructionReport" />
    </bean>
 
+   <!-- FIXME -->
    <bean id="transferReportGenerator" parent="declarativeReportGenerator">
       <property name="reportTypeName" value="rmr:transferReport" />
    </bean>
@@ -122,18 +123,18 @@
       <property name="reportType" value="rmr:destructionReport" />
    </bean>
 
-   <bean id="fileTransferReport_proxy" parent="rmProxyAction" >
+   <bean id="fileReport_proxy" parent="rmProxyAction" >
       <property name="target">
-         <ref bean="fileTransferReport"/>
+         <ref bean="fileReport"/>
       </property>
       <property name="interceptorNames">
          <list>
-            <idref bean="fileTransferReport_security"/>
+            <idref bean="fileReport_security"/>
          </list>
       </property>
    </bean>
 
-   <bean id="fileTransferReport_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="fileReport_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             <!-- FIXME -->
@@ -145,7 +146,7 @@
       </property>
    </bean>
 
-   <bean id="fileTransferReport"
+   <bean id="fileReport"
          class="org.alfresco.module.org_alfresco_module_rm.report.action.FileTransferAction"
          parent="rmAction">
       <property name="reportService" ref="ReportService" />

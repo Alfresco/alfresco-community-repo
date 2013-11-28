@@ -37,7 +37,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class FileReportAction extends RMActionExecuterAbstractBase implements ReportModel
 {
-    /** Constants for the parameters passed from UI */
+    /** Constants for the parameters passed from the UI */
     private static final String REPORT_TYPE = "reportType";
     private static final String DESTINATION = "destination";
 

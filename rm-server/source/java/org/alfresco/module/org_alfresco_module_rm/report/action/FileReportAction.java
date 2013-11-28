@@ -38,8 +38,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class FileReportAction extends RMActionExecuterAbstractBase implements ReportModel
 {
     /** Constants for the parameters passed from the UI */
-    private static final String REPORT_TYPE = "reportType";
-    private static final String DESTINATION = "destination";
+    public static final String REPORT_TYPE = "reportType";
+    public static final String DESTINATION = "destination";
 
     /** I18N */
     private static final String MSG_PARAM_NOT_SUPPLIED = "rm.action.parameter-not-supplied";

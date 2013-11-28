@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.domain.permissions.ibatis;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.alfresco.repo.domain.permissions.AceEntity;
 import org.alfresco.repo.domain.permissions.AclChangeSetEntity;
 import org.alfresco.repo.domain.permissions.AclEntity;
 import org.alfresco.repo.domain.permissions.AclMemberEntity;
+import org.alfresco.repo.domain.permissions.Authority;
 import org.alfresco.repo.domain.permissions.AuthorityAliasEntity;
 import org.alfresco.repo.domain.permissions.AuthorityEntity;
 import org.alfresco.repo.domain.permissions.PermissionEntity;
@@ -56,6 +58,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     
     private static final String INSERT_ACL_MEMBER = "alfresco.permissions.insert.insert_AclMember";
     private static final String SELECT_ACL_MEMBERS_BY_ACL = "alfresco.permissions.select_AclMembersByAclId";
+    private static final String SELECT_ACL_MEMBER = "alfresco.permissions.select_AclMember";
     private static final String SELECT_ACL_MEMBERS_BY_AUTHORITY = "alfresco.permissions.select_AclMembersByAuthorityName";
     private static final String UPDATE_ACL_MEMBER = "alfresco.permissions.update_AclMember";
     private static final String DELETE_ACL_MEMBERS_LIST = "alfresco.permissions.delete_AclMembersList";
@@ -72,6 +75,7 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     private static final String SELECT_ACES_AND_AUTHORIES_BY_ACL = "alfresco.permissions.select_AcesAndAuthoritiesByAclId";
     private static final String SELECT_ACE_WITH_NO_CONTEXT = "alfresco.permissions.select_AceWithNoContext";
     private static final String DELETE_ACES_LIST = "alfresco.permissions.delete_AcesList";
+    private static final String UPDATE_ACE = "alfresco.permissions.update_Ace";
     
     private static final String INSERT_ACE_CONTEXT = "alfresco.permissions.insert.insert_AceContext";
     private static final String SELECT_ACE_CONTEXT_BY_ID = "alfresco.permissions.select_AceContextById";
@@ -181,6 +185,25 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     }
     
     @Override
+    protected int updateAceEntity(AceEntity updatedAceEntity)
+    {   
+        AceEntity existingAceEntity = getAceEntity(updatedAceEntity.getPermissionId(), updatedAceEntity.getAuthorityId(), updatedAceEntity.isAllowed(), updatedAceEntity.getAceType());
+        if(existingAceEntity != null)
+        {
+            for(AclMemberEntity aclMemberEntity : getAclMemberEntitiesByAuthority(getAuthority(updatedAceEntity.getAuthorityId()).getAuthority()))
+            {
+                aclMemberEntity.setAceId(updatedAceEntity.getId());
+                updateAclMember(aclMemberEntity);
+            }
+            deleteAceEntities(Collections.singletonList(existingAceEntity.getId()));
+        }
+        
+        updatedAceEntity.incrementVersion();
+        
+        return template.update(UPDATE_ACE, updatedAceEntity);
+    }
+    
+    @Override
     protected int deleteAclEntity(long aclEntityId)
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
@@ -220,8 +243,13 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     @Override
     protected int updateAclMemberEntity(AclMemberEntity updatedAclMemberEntity)
     {
-        updatedAclMemberEntity.incrementVersion();
+        AclMemberEntity existingAclMemberEntity = getAclMemberEntity(updatedAclMemberEntity.getAclId(), updatedAclMemberEntity.getAceId(), updatedAclMemberEntity.getPos());
+        if(existingAclMemberEntity != null)
+        {
+            deleteAclMemberEntities(Collections.singletonList(existingAclMemberEntity.getId()));
+        }
         
+        updatedAclMemberEntity.incrementVersion();
         return template.update(UPDATE_ACL_MEMBER, updatedAclMemberEntity);
     }
     
@@ -304,6 +332,18 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         params.put("int", type.getId());
         
         return (AceEntity)template.selectOne(SELECT_ACE_WITH_NO_CONTEXT, params);
+    }
+    
+    
+    @Override
+    protected AclMemberEntity getAclMemberEntity(long aclId, long aceId, int pos)
+    {
+        Map<String, Object> params = new HashMap<String, Object>(4);
+        params.put("id1", aclId);
+        params.put("id2", aceId);
+        params.put("int", pos);
+        
+        return (AclMemberEntity)template.selectOne(SELECT_ACL_MEMBER, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -445,6 +485,18 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     @Override
     protected int updateAuthorityEntity(AuthorityEntity authorityEntity)
     {
+        Authority existingAuthorityEntity = getAuthority(authorityEntity.getAuthority());
+        if(existingAuthorityEntity != null)
+        {
+            for(Ace ace : getAceEntitiesByAuthority(existingAuthorityEntity.getId()))
+            {
+                AceEntity aceEntity = getAceEntity(ace.getId());
+                aceEntity.setAuthorityId(authorityEntity.getId());
+                updateAceEntity(aceEntity);
+            }
+            deleteAuthority(existingAuthorityEntity.getId());
+        }
+        
         authorityEntity.incrementVersion();
         
         return template.update(UPDATE_AUTHORITY, authorityEntity);

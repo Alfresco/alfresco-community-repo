@@ -361,6 +361,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     protected abstract List<Long> getAclEntitiesThatInheritFromAcl(long idOfAcl);
     protected abstract Long getLatestAclEntityByGuid(String aclGuid);
     protected abstract int updateAclEntity(AclEntity entity);
+    protected abstract int updateAceEntity(AceEntity updatedAceEntity);
     protected abstract int deleteAclEntity(long id);
     
     protected abstract List<Long> getADMNodeEntityIdsByAcl(long aclEntityId, int maxResults);
@@ -505,6 +506,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     protected abstract int updateAclMemberEntity(AclMemberEntity entity);
     protected abstract int deleteAclMemberEntities(List<Long> aclMemberIds);
     protected abstract int deleteAclMemberEntitiesByAcl(long idOfAcl);
+    protected abstract AclMemberEntity getAclMemberEntity(long aclId, long aceId, int pos);
     
     //
     // ACL Change Set

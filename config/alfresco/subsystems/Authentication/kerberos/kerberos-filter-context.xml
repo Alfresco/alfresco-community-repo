@@ -120,6 +120,9 @@
       <property name="stripKerberosUsernameSuffix">
          <value>${kerberos.authentication.stripUsernameSuffix}</value>
       </property>
+      <property name="remoteUserMapper">
+         <ref bean="RemoteUserMapper" />
+      </property>
    </bean>
    
    <bean id="sharepointAuthenticationHandler" class="org.alfresco.web.sharepoint.auth.kerberos.KerberosAuthenticationHandler">

@@ -307,6 +307,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             public Void doWork() throws Exception
             {
                 if (nodeService.exists(nodeRef) == true &&
+                    dictionaryService.getAllModels().contains(RM_CUSTOM_MODEL) == true &&
                     isCustomisable(aspectTypeQName) == true)
                 {
                     QName customPropertyAspect = getCustomAspect(aspectTypeQName);
@@ -366,24 +367,27 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             @Override
             public Void doWork() throws Exception
             {
-                NodeRef nodeRef = childAssocRef.getChildRef();
-                QName type = nodeService.getType(nodeRef);
-                while (type != null && ContentModel.TYPE_CMOBJECT.equals(type) == false)
-                {
-                    if (isCustomisable(type) == true)
+                if (dictionaryService.getAllModels().contains(RecordsManagementCustomModel.RM_CUSTOM_MODEL) == true)
+                {                              
+                    NodeRef nodeRef = childAssocRef.getChildRef();
+                    QName type = nodeService.getType(nodeRef);
+                    while (type != null && ContentModel.TYPE_CMOBJECT.equals(type) == false)
                     {
-                        QName customPropertyAspect = getCustomAspect(type);
-                        nodeService.addAspect(nodeRef, customPropertyAspect, null);
-                    }
-
-                    TypeDefinition def = dictionaryService.getType(type);
-                    if (def != null)
-                    {
-                        type = def.getParentName();
-                    }
-                    else
-                    {
-                        type = null;
+                        if (isCustomisable(type) == true)
+                        {
+                            QName customPropertyAspect = getCustomAspect(type);
+                            nodeService.addAspect(nodeRef, customPropertyAspect, null);
+                        }
+    
+                        TypeDefinition def = dictionaryService.getType(type);
+                        if (def != null)
+                        {
+                            type = def.getParentName();
+                        }
+                        else
+                        {
+                            type = null;
+                        }
                     }
                 }
 

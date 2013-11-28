@@ -35,7 +35,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Report service implementation.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -44,16 +44,16 @@ public class ReportServiceImpl extends ServiceBaseImpl
 {
     /** file folder service */
     protected FileFolderService fileFolderService;
-    
+
     /** file plan service */
     protected FilePlanService filePlanService;
-    
+
     /** content service */
     protected ContentService contentService;
-    
+
     /** record service */
     protected RecordService recordService;
-    
+
     /** report generator registry */
     private Map<QName, ReportGenerator> registry = new HashMap<QName, ReportGenerator>();
 
@@ -64,7 +64,7 @@ public class ReportServiceImpl extends ServiceBaseImpl
     {
         this.fileFolderService = fileFolderService;
     }
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -72,7 +72,7 @@ public class ReportServiceImpl extends ServiceBaseImpl
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @param contentService    content service
      */
@@ -80,7 +80,7 @@ public class ReportServiceImpl extends ServiceBaseImpl
     {
         this.contentService = contentService;
     }
-    
+
     /**
      * @param recordService record service
      */
@@ -88,17 +88,17 @@ public class ReportServiceImpl extends ServiceBaseImpl
     {
         this.recordService = recordService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.report.ReportService#registerReportGenerator(org.alfresco.module.org_alfresco_module_rm.report.ReportGenerator)
      */
     @Override
     public void registerReportGenerator(ReportGenerator reportGenerator)
     {
-        ParameterCheck.mandatory("reportGenerator", reportGenerator);        
+        ParameterCheck.mandatory("reportGenerator", reportGenerator);
         registry.put(reportGenerator.getReportType(), reportGenerator);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.report.ReportService#getReportTypes()
      */
@@ -116,7 +116,7 @@ public class ReportServiceImpl extends ServiceBaseImpl
     {
         return generateReport(reportType, reportedUponNodeRef, MimetypeMap.MIMETYPE_HTML);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.report.ReportService#generateReport(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -126,39 +126,33 @@ public class ReportServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("reportType", reportType);
         ParameterCheck.mandatory("reportedUponNodeRef", reportedUponNodeRef);
         ParameterCheck.mandatory("mimetype", mimetype);
-        
+
         // get the generator
         ReportGenerator generator = registry.get(reportType);
-        
+
         // error is generator not found in registry
         if (generator == null)
         {
             throw new AlfrescoRuntimeException("Unable to generate report, because report type " + reportType.toString() + " does not correspond to a registered report type.");
         }
-        
+
         // generate the report
-        return generator.generateReport(reportedUponNodeRef, mimetype);        
+        return generator.generateReport(reportedUponNodeRef, mimetype);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.report.ReportService#fileReport(org.alfresco.module.org_alfresco_module_rm.report.Report)
      */
     @Override
-    public NodeRef fileReport(NodeRef filePlan, Report report)
+    public NodeRef fileReport(NodeRef nodeRef, Report report)
     {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("report", report);
-        ParameterCheck.mandatory("filePlan", filePlan);
-        
-        // check that the passed node reference is a file plan
-        if (filePlanService.isFilePlan(filePlan) == false)
-        {
-            throw new AlfrescoRuntimeException("Unable to file report, because " + filePlan.toString() + " is not a file plan.");
-        }
-        
-        return recordService.createRecord(filePlan, 
-                                          report.getReportName(), 
-                                          report.getReportType(), 
-                                          report.getReportProperties(), 
+
+        return recordService.createRecord(nodeRef,
+                                          report.getReportName(),
+                                          report.getReportType(),
+                                          report.getReportProperties(),
                                           report.getReportContent());
     }
 }

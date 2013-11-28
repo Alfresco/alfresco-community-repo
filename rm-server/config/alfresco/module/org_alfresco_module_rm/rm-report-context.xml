@@ -149,8 +149,6 @@
          class="org.alfresco.module.org_alfresco_module_rm.report.action.FileTransferAction"
          parent="rmAction">
       <property name="reportService" ref="ReportService" />
-      <property name="filePlanService" ref="FilePlanService" />
-      <property name="reportType" value="rmr:transferReport" />
    </bean>
 
 </beans>

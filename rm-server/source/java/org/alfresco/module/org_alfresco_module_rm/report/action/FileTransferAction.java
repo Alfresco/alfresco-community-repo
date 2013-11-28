@@ -20,31 +20,32 @@ package org.alfresco.module.org_alfresco_module_rm.report.action;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.report.Report;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * FIXME!!!
+ * File transfer action
  *
  * @author Tuna Aksoy
  * @since 2.2
  */
 public class FileTransferAction extends RMActionExecuterAbstractBase implements ReportModel
 {
+    /** Constants for the parameters passed from UI */
+    private static final String REPORT_TYPE = "reportType";
+    private static final String DESTINATION = "destination";
+
+    /** I18N */
+    private static final String MSG_PARAM_NOT_SUPPLIED = "rm.action.parameter-not-supplied";
+
     /** report service */
     protected ReportService reportService;
-
-    /** file plan service */
-    protected FilePlanService filePlanService;
-
-    /** report type string value */
-    private String reportType;
 
     /**
      * @param reportService report service
@@ -52,31 +53,6 @@ public class FileTransferAction extends RMActionExecuterAbstractBase implements 
     public void setReportService(ReportService reportService)
     {
         this.reportService = reportService;
-    }
-
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
-
-    /**
-     * @param reportType    report type string value
-     */
-    public void setReportType(String reportType)
-    {
-        this.reportType = reportType;
-    }
-
-    /**
-     * @return  QName   report type
-     */
-    protected QName getReportType()
-    {
-        ParameterCheck.mandatory("this.reportType", reportType);
-        return QName.createQName(reportType, namespaceService);
     }
 
     /**
@@ -90,13 +66,51 @@ public class FileTransferAction extends RMActionExecuterAbstractBase implements 
 
         // TODO allow the mimetype of the report to be specified as a parameter
 
-        NodeRef filePlan = filePlanService.getFilePlan(actionedUponNodeRef);
-        if (filePlan == null)
-        {
-            throw new AlfrescoRuntimeException("Unable to file destruction report, because file plan could not be resolved.");
-        }
+        QName reportType = getReportType(action);
+        Report report = reportService.generateReport(reportType, actionedUponNodeRef);
 
-        Report report = reportService.generateReport(getReportType(), actionedUponNodeRef);
-        reportService.fileReport(filePlan, report);
+        NodeRef destination = getDestination(action);
+        reportService.fileReport(destination, report);
+    }
+
+    /**
+     * Retrieves the value of the given parameter. If the parameter has not been passed from the UI an error will be thrown
+     *
+     * @param action        The action
+     * @param parameter     The parameter for which the value should be retrieved
+     * @return The value of the given parameter
+     */
+    private String getParameterValue(Action action, String parameter)
+    {
+        String paramValue = (String) action.getParameterValue(parameter);
+        if (StringUtils.isBlank(paramValue) == true)
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PARAM_NOT_SUPPLIED, parameter));
+        }
+        return paramValue;
+    }
+
+    /**
+     * Helper method for getting the destination.
+     *
+     * @param action    The action
+     * @return The file plan node reference
+     */
+    private NodeRef getDestination(Action action)
+    {
+        String destination = getParameterValue(action, DESTINATION);
+        return new NodeRef(destination);
+    }
+
+    /**
+     * Helper method for getting the report type.
+     *
+     * @param action    The action
+     * @return The report type
+     */
+    private QName getReportType(Action action)
+    {
+        String reportType = getParameterValue(action, REPORT_TYPE);
+        return QName.createQName(reportType, namespaceService);
     }
 }

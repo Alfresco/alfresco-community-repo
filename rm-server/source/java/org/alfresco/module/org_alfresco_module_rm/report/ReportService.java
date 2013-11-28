@@ -25,37 +25,37 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Report service.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
-public interface ReportService 
+public interface ReportService
 {
     /**
      * Register a report generator with the report service.
-     * 
+     *
      * @param reportGenerator   report generator
      */
     void registerReportGenerator(ReportGenerator reportGenerator);
-    
+
     /**
      * Get a list of the available report types.
-     * 
-     * @return  
+     *
+     * @return
      */
     Set<QName> getReportTypes();
-    
+
     /**
-     * 
-     * 
+     *
+     *
      * @param reportType
      * @param reportedUponNodeRef
      * @return
      */
     Report generateReport(QName reportType, NodeRef reportedUponNodeRef);
-    
+
     /**
-     * 
+     *
      * @param reportType
      * @param reportedUponNodeRef
      * @return
@@ -63,11 +63,12 @@ public interface ReportService
     Report generateReport(QName reportType, NodeRef reportedUponNodeRef, String mimetype);
 
     /**
-     * File report as unfiled record in a file plan.
-     * 
-     * @param filePlan  file plan
+     * File report in the given destination. If the given node reference is a file plan node
+     * reference the report will be filed in the unfiled records container.
+     *
+     * @param nodeRef   node reference
      * @param report    report
-     * @return NodeRef  node reference of unfiled record
+     * @return NodeRef  node reference of the filed report
      */
-    NodeRef fileReport(NodeRef filePlan, Report report);
+    NodeRef fileReport(NodeRef nodeRef, Report report);
 }

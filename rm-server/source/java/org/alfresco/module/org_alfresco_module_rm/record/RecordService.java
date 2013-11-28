@@ -89,14 +89,15 @@ public interface RecordService
    void createRecord(NodeRef filePlan, NodeRef nodeRef);
 
    /**
-    * Creates a new document as a unfiled record.
+    * Creates a new document in the unfiled records container if the given node reference is a file plan
+    * node reference otherwise the node reference will be used as the destination for the new record.
     *
-    * @param filePlan
+    * @param nodeRef
     * @param name
     * @param type
     * @param properties
     */
-   NodeRef createRecord(NodeRef filePlan, String name, QName type, Map<QName, Serializable> properties, ContentReader reader);
+   NodeRef createRecord(NodeRef nodeRef, String name, QName type, Map<QName, Serializable> properties, ContentReader reader);
 
    /**
     * Indicates whether the record is filed or not

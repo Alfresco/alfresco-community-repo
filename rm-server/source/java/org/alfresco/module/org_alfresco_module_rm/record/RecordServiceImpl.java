@@ -772,10 +772,21 @@ public class RecordServiceImpl implements RecordService,
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map, org.alfresco.service.cmr.repository.ContentReader)
      */
     @Override
-    public NodeRef createRecord(NodeRef filePlan, String name, QName type, Map<QName, Serializable> properties, ContentReader reader)
+    public NodeRef createRecord(NodeRef nodeRef, String name, QName type, Map<QName, Serializable> properties, ContentReader reader)
     {
-        ParameterCheck.mandatory("filePlan", filePlan);
+        ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("name", name);
+
+        NodeRef destination = nodeRef;
+        if (filePlanService.isFilePlan(nodeRef) == true)
+        {
+            // get the unfiled record container for the file plan
+            destination = filePlanService.getUnfiledContainer(nodeRef);
+            if (destination == null)
+            {
+                throw new AlfrescoRuntimeException("Unable to create record, because unfiled container could not be found.");
+            }
+        }
 
         // if none set the default record type is cm:content
         if (type == null)
@@ -784,15 +795,8 @@ public class RecordServiceImpl implements RecordService,
         }
         // TODO ensure that the type is a sub-type of cm:content
 
-        // get the unfiled record container for the file plan
-        NodeRef unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
-        if (unfiledContainer == null)
-        {
-            throw new AlfrescoRuntimeException("Unable to create record, because unfiled container could not be found.");
-        }
-
         // create the new record
-        NodeRef record = fileFolderService.create(unfiledContainer, name, type).getNodeRef();
+        NodeRef record = fileFolderService.create(destination, name, type).getNodeRef();
 
         // set the properties
         if (properties != null)

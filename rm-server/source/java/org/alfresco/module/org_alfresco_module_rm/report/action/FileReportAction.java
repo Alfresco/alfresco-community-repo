@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,33 +20,33 @@ package org.alfresco.module.org_alfresco_module_rm.report.action;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.report.Report;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * File Report Action
- * 
- * @author Roy Wetherall
- * @since 2.1
+ * File report action
+ *
+ * @author Tuna Aksoy
+ * @since 2.2
  */
-public class FileReportAction extends RMActionExecuterAbstractBase
-                              implements ReportModel
+public class FileReportAction extends RMActionExecuterAbstractBase implements ReportModel
 {
+    /** Constants for the parameters passed from UI */
+    private static final String REPORT_TYPE = "reportType";
+    private static final String DESTINATION = "destination";
+
+    /** I18N */
+    private static final String MSG_PARAM_NOT_SUPPLIED = "rm.action.parameter-not-supplied";
+
     /** report service */
     protected ReportService reportService;
-    
-    /** file plan service */
-    protected FilePlanService filePlanService;
-    
-    /** report type string value */
-    private String reportType;
-    
+
     /**
      * @param reportService report service
      */
@@ -54,32 +54,7 @@ public class FileReportAction extends RMActionExecuterAbstractBase
     {
         this.reportService = reportService;
     }
-     
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
-    
-    /**
-     * @param reportType    report type string value
-     */
-    public void setReportType(String reportType)
-    {
-        this.reportType = reportType;
-    }
-    
-    /**
-     * @return  QName   report type
-     */
-    protected QName getReportType()
-    {
-        ParameterCheck.mandatory("this.reportType", reportType);        
-        return QName.createQName(reportType, namespaceService);
-    }
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -88,17 +63,54 @@ public class FileReportAction extends RMActionExecuterAbstractBase
     {
         // TODO check that the actionedUponNodeRef is in a state to generate a destruction report
         //      ie: is it eligable for destruction .. use fileDestructionReport capability!
-       
+
         // TODO allow the mimetype of the report to be specified as a parameter
-       
-        NodeRef filePlan = filePlanService.getFilePlan(actionedUponNodeRef);
-        if (filePlan == null)
+
+        QName reportType = getReportType(action);
+        Report report = reportService.generateReport(reportType, actionedUponNodeRef);
+
+        NodeRef destination = getDestination(action);
+        reportService.fileReport(destination, report);
+    }
+
+    /**
+     * Retrieves the value of the given parameter. If the parameter has not been passed from the UI an error will be thrown
+     *
+     * @param action        The action
+     * @param parameter     The parameter for which the value should be retrieved
+     * @return The value of the given parameter
+     */
+    private String getParameterValue(Action action, String parameter)
+    {
+        String paramValue = (String) action.getParameterValue(parameter);
+        if (StringUtils.isBlank(paramValue) == true)
         {
-            throw new AlfrescoRuntimeException("Unable to file destruction report, because file plan could not be resolved.");
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PARAM_NOT_SUPPLIED, parameter));
         }
-        
-        Report report = reportService.generateReport(getReportType(), actionedUponNodeRef);
-        reportService.fileReport(filePlan, report);
-        
-    }    
+        return paramValue;
+    }
+
+    /**
+     * Helper method for getting the destination.
+     *
+     * @param action    The action
+     * @return The file plan node reference
+     */
+    private NodeRef getDestination(Action action)
+    {
+        String destination = getParameterValue(action, DESTINATION);
+        return new NodeRef(destination);
+    }
+
+    /**
+     * Helper method for getting the report type.
+     *
+     * @param action    The action
+     * @return The report type
+     */
+    private QName getReportType(Action action)
+    {
+        String reportType = getParameterValue(action, REPORT_TYPE);
+        return QName.createQName(reportType, namespaceService);
+    }
 }

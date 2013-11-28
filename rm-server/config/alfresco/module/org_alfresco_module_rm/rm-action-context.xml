@@ -255,7 +255,6 @@
 
    <bean id="destroy" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction" parent="rmAction"
          depends-on="rmDestroyRecordsScheduledForDestructionCapability">
-      <property name="policyComponent" ref="policyComponent"/>
       <property name="capabilityService" ref="CapabilityService" />
       <property name="eagerContentStoreCleaner" ref="eagerContentStoreCleaner"/>
       <property name="ghostingEnabled">

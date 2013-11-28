@@ -73,6 +73,7 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
         // register annotated behavior methods
         registerBehaviours(bean, beanName);
         
+        // return the bean
         return bean;
     }
 
@@ -114,52 +115,82 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
     }
     
     /**
-     * Register behaviour with the policy.
      * 
+     * @param behaviourBean
      * @param bean
      * @param beanName
      * @param method
-     * @param classBehaviour
      */
     private void registerBehaviour(BehaviourBean behaviourBean, Object bean, String beanName, Method method)
     {
         Behaviour behaviour = method.getAnnotation(Behaviour.class);
         QName policy = resolvePolicy(behaviour.policy(), method);
-        QName type = resolveType(behaviourBean, behaviour.type());
+        QName type = resolveType(behaviourBean, behaviour);
         
         // assert that the policy and type have been set!!
         ParameterCheck.mandatory("policy", policy);
-        ParameterCheck.mandatory("type", type);
+        if (behaviour.isService() == false)
+        {
+            ParameterCheck.mandatory("type", type);
+        }
         
         if (logger.isDebugEnabled() == true)
         {
-            logger.debug("   ... registering " + behaviour.kind() + " behaviour for " + beanName + "." + method.getName() + 
-                               " for policy " + policy.toString() + 
-                               " and type " + type.toString());
+            if (behaviour.isService() == false)
+            {                
+                logger.debug("   ... registering " + behaviour.kind() + " behaviour for " + beanName + "." + method.getName() + 
+                                   " for policy " + policy.toString() + 
+                                   " and type " + type.toString());
+            }
+            else
+            {
+                logger.debug("   ... registering " + behaviour.kind() + " service behaviour for " + beanName + "." + method.getName() + 
+                                   " for policy " + policy.toString());
+            }
         }
         
+        // create java behaviour object
         JavaBehaviour javaBehaviour = new JavaBehaviour(bean, method.getName(), behaviour.notificationFrequency());
         
+        // deal with class behaviours
         if (BehaviourKind.CLASS.equals(behaviour.kind()) == true)
         {
-            policyComponent.bindClassBehaviour(policy, 
-                                               type, 
-                                               javaBehaviour);
+            if (behaviour.isService() == false)
+            {
+                // bind class behaviour for given type
+                policyComponent.bindClassBehaviour(policy, type, javaBehaviour);
+            }
+            else
+            {
+                // bind class service behaviour
+                policyComponent.bindClassBehaviour(policy, bean, javaBehaviour);
+            }
         }
+        // deal with association behaviours
         else if (BehaviourKind.ASSOCIATION.equals(behaviour.kind()) == true)
         {
-            policyComponent.bindAssociationBehaviour(policy, 
-                                                     type, 
-                                                     toQName(behaviour.assocType()),
-                                                     javaBehaviour);           
+            if (behaviour.isService() == false)
+            {                
+                // bind association behaviour for given type and assoc type
+                policyComponent.bindAssociationBehaviour(policy, 
+                                                         type, 
+                                                         toQName(behaviour.assocType()),
+                                                         javaBehaviour);     
+            }
+            else
+            {                
+                // bind association service behaviour
+                policyComponent.bindAssociationBehaviour(policy, bean, javaBehaviour);                  
+            }
         }           
     }
     
     /**
+     * Resolve the policy qname, defaulting to the qualified name of the method if none specified.
      * 
-     * @param policyName
-     * @param method
-     * @return
+     * @param policyName     policy name
+     * @param method         method
+     * @return {@link QName} qualified name of the policy
      */
     private QName resolvePolicy(String policyName, Method method)
     {
@@ -182,18 +213,21 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
      * @param typeName
      * @return
      */
-    private QName resolveType(BehaviourBean behaviourBean, String typeName)
+    private QName resolveType(BehaviourBean behaviourBean, Behaviour behaviour)
     {
         QName type = null;
-        if (typeName.isEmpty() == true)
+        if (behaviour.isService() == false)
         {
-            // get default
-            type = toQName(behaviourBean.defaultType());
-        }
-        else
-        {
-            // convert set
-            type = toQName(typeName);
+            if (behaviour.type().isEmpty() == true)
+            {
+                // get default
+                type = toQName(behaviourBean.defaultType());
+            }
+            else
+            {
+                // convert set
+                type = toQName(behaviour.type());
+            }
         }
         return type;
     }

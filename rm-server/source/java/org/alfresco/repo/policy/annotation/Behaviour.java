@@ -40,6 +40,9 @@ public @interface Behaviour
     /** qualified name of policy */
     String policy() default "";
     
+    /** indicates whether this is a service behaviour or not */
+    boolean isService() default false;
+    
     /** qualified name of type/aspect */
     String type() default "";
     

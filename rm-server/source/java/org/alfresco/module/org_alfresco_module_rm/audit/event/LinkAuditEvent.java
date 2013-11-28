@@ -18,39 +18,30 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
-import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourBean;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 
 /**
  * Link audit event.
  * 
  * @author Roy Wetherall
+ * @since 2.1
  */
+@BehaviourBean
 public class LinkAuditEvent extends AuditEvent implements OnCreateChildAssociationPolicy
 {
-    /**
-     * (non-Javadoc)
-     * @see org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent#init()
-     */
-    @Override
-    public void init()
-    {
-        super.init();
-        
-        policyComponent.bindAssociationBehaviour(
-                OnCreateChildAssociationPolicy.QNAME,
-                RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT,
-                ContentModel.ASSOC_CONTAINS,
-                new JavaBehaviour(this, "onCreateChildAssociation"));
-    }
-    
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.ASSOCIATION,
+            type = "rma:filePlanComponent"
+    )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
         // only care about linking child associations

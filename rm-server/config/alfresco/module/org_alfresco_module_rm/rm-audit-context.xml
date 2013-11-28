@@ -33,7 +33,6 @@
    
    <bean id="audit-event" abstract="true" init-method="init">
       <property name="recordsManagementAuditService" ref="recordsManagementAuditService"/>
-      <property name="policyComponent" ref="policyComponent" />
    </bean> 
    
    <bean id="audit-event.create-object" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.CreateObjectAuditEvent">

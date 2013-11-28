@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.report.Report;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
+import org.alfresco.module.org_alfresco_module_rm.report.action.FileReportAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -105,6 +106,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
         });
     }
 
+    // FIXME!!! FileDestructionReport vs FileReport
     public void testFileDestructionReportAction() throws Exception
     {
         doTestInTransaction(new Test<Void>()
@@ -117,7 +119,10 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
                 rmActionService.executeRecordsManagementAction(rmFolder, CompleteEventAction.NAME, params);
                 rmActionService.executeRecordsManagementAction(rmFolder, CutOffAction.NAME);
                 rmActionService.executeRecordsManagementAction(rmFolder, DestroyAction.NAME);
-                rmActionService.executeRecordsManagementAction(rmFolder, "fileDestructionReport");
+                Map<String, Serializable> fileReportParams = new HashMap<String, Serializable>(2);
+                fileReportParams.put(FileReportAction.REPORT_TYPE, "rmr:destructionReport");
+                fileReportParams.put(FileReportAction.DESTINATION, filePlan.toString());
+                rmActionService.executeRecordsManagementAction(rmFolder, "fileReport", fileReportParams);
                 return null;
             }
         });

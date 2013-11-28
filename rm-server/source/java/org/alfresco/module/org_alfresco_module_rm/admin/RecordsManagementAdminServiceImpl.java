@@ -55,10 +55,12 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Namespace;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.ClassPolicyDelegate;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.policy.ClassPolicyDelegate;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourBean;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -93,6 +95,7 @@ import org.springframework.extensions.surf.util.URLDecoder;
  *
  * @author Neil McErlean, janv
  */
+@BehaviourBean
 public class RecordsManagementAdminServiceImpl implements RecordsManagementAdminService,
 														  RecordsManagementCustomModel,
 														  NodeServicePolicies.OnAddAspectPolicy,
@@ -221,7 +224,14 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         beforeRemoveReferenceDelegate = policyComponent.registerClassPolicy(BeforeRemoveReference.class);
         onRemoveReferenceDelegate = policyComponent.registerClassPolicy(OnRemoveReference.class);
     }
-
+    
+	/**
+     * Invoke before create reference policy
+     * 
+     * @param fromNodeRef
+     * @param toNodeRef
+     * @param reference
+     */
     protected void invokeBeforeCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // get qnames to invoke against
@@ -231,6 +241,13 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         policy.beforeCreateReference(fromNodeRef, toNodeRef, reference);
     }
 
+    /**
+     * Invoke on create reference policy
+     * 
+     * @param fromNodeRef
+     * @param toNodeRef
+     * @param reference
+     */
     protected void invokeOnCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // get qnames to invoke against
@@ -240,6 +257,13 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         policy.onCreateReference(fromNodeRef, toNodeRef, reference);
     }
 
+    /**
+     * Invoke before remove reference policy
+     * 
+     * @param fromNodeRef
+     * @param toNodeRef
+     * @param reference
+     */
     protected void invokeBeforeRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // get qnames to invoke against
@@ -250,6 +274,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     }
 
     /**
+     * Invoke on remove reference policy
      *
      * @param fromNodeRef
      * @param toNodeRef
@@ -268,6 +293,12 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            isService = true,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
     public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -291,6 +322,12 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
      * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            isService = true,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
     public void onRemoveAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -316,6 +353,12 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            isService = true,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
     public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -354,20 +397,6 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
      */
     public void initialiseCustomModel()
     {
-        // Bind class behaviours
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnAddAspectPolicy.QNAME,
-                this,
-                new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT));
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnRemoveAspectPolicy.QNAME,
-                this,
-                new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.FIRST_EVENT));
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnCreateNodePolicy.QNAME,
-                this,
-                new JavaBehaviour(this, "onCreateNode", NotificationFrequency.FIRST_EVENT));
-
         // Initialise the map
         getCustomisableMap();
     }

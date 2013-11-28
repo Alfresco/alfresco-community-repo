@@ -41,8 +41,9 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourBean;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.version.VersionModel;
@@ -73,14 +74,14 @@ import org.json.JSONObject;
  *
  * @author janv
  */
+@BehaviourBean(defaultType = "rma:caveatConfig")
 public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnContentUpdatePolicy,
-                                           NodeServicePolicies.BeforeDeleteNodePolicy,
-                                           NodeServicePolicies.OnCreateNodePolicy,
-                                           RMCaveatConfigComponent
+                                                    NodeServicePolicies.BeforeDeleteNodePolicy,
+                                                    NodeServicePolicies.OnCreateNodePolicy,
+                                                    RMCaveatConfigComponent
 {
     private static Log logger = LogFactory.getLog(RMCaveatConfigComponentImpl.class);
 
-    private PolicyComponent policyComponent;
     private ContentService contentService;
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
@@ -119,11 +120,6 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
     public void setCaveatConfig(SimpleCache<String, Map<String, List<String>>> caveatConfig)
     {
         this.caveatConfig = caveatConfig;
-    }
-
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
     }
 
     public void setNodeService(NodeService nodeService)
@@ -176,24 +172,6 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
      */
     public void init()
     {
-        // Register interest in the onContentUpdate policy
-        policyComponent.bindClassBehaviour(
-                ContentServicePolicies.OnContentUpdatePolicy.QNAME,
-                RecordsManagementModel.TYPE_CAVEAT_CONFIG,
-                new JavaBehaviour(this, "onContentUpdate"));
-
-        // Register interest in the beforeDeleteNode policy
-        policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
-                RecordsManagementModel.TYPE_CAVEAT_CONFIG,
-                new JavaBehaviour(this, "beforeDeleteNode"));
-
-        // Register interest in the onCreateNode policy
-        policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
-                RecordsManagementModel.TYPE_CAVEAT_CONFIG,
-                new JavaBehaviour(this, "onCreateNode"));
-
         if (caveatAspectURINames.size() > 0)
         {
             for (String caveatAspectURIName : caveatAspectURINames)
@@ -234,7 +212,12 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             validateAndReset(caveatConfigNodeRef);
         }
     }
-
+    
+    /**
+     * @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    @Behaviour(kind = BehaviourKind.CLASS)
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
         if (logger.isInfoEnabled())
@@ -245,6 +228,11 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         validateAndReset(nodeRef);
     }
 
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    @Behaviour(kind = BehaviourKind.CLASS)    
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         if (logger.isInfoEnabled())
@@ -255,6 +243,11 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         validateAndReset(nodeRef);
     }
 
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    @Override
+    @Behaviour(kind = BehaviourKind.CLASS)    
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         if (logger.isInfoEnabled())

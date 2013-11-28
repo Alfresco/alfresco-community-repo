@@ -1395,20 +1395,18 @@
         <property name="recordsManagementAdminService" ref = "recordsManagementAdminService"/>
     </bean>
 
-    <bean id="caveatConfigComponent" class="org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponentImpl">
-        <property name="policyComponent" ref="policyComponent"/>
+    <bean id="caveatConfigComponent" 
+          class="org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponentImpl" 
+          depends-on="org_alfresco_module_rm_dictionaryBootstrap">
         <property name="contentService" ref="contentService"/>
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="namespaceService" ref="namespaceService"/>
         <property name="authorityService" ref="authorityService"/>
         <property name="personService" ref="personService"/>
         <property name="nodeService" ref="nodeService"/>
-
         <property name="caveatAspects" ref="caveatAspects"/>
         <property name="caveatModels" ref="caveatModels"/>
-
         <property name="caveatConfig" ref="caveatConfigCache"/>
-
     </bean>
 
      <!-- ===================================== -->

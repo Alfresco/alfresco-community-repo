@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,28 +18,32 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
-import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourBean;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 
+/**
+ * Audits person creation.
+ * 
+ * @author Roy Wetherall
+ * @since 2.1
+ */
+@BehaviourBean
 public class CreatePersonAuditEvent extends AuditEvent implements OnCreateNodePolicy
 {
-    
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
     @Override
-    public void init()
-    {
-        super.init();
-        
-        policyComponent.bindClassBehaviour(
-                OnCreateNodePolicy.QNAME,
-                ContentModel.TYPE_PERSON,
-                new JavaBehaviour(this, "onCreateNode"));
-    }
-    
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            type = "cm:person"
+    )
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), name);
     }
-
 }

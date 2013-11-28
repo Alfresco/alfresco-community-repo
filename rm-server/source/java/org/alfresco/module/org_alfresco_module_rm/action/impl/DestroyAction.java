@@ -23,15 +23,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -39,8 +35,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Destroy action.
@@ -48,17 +42,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  */
 public class DestroyAction extends RMDispositionActionExecuterAbstractBase
-                           implements ContentServicePolicies.OnContentUpdatePolicy,
-                                      InitializingBean
 {
     /** Action name */
     public static final String NAME = "destroy";
-
-    /** I18N */
-    private static final String MSG_GHOSTED_PROP_UPDATE = "rm.action.ghosted-prop-update";
-
-    /** Policy component */
-    private PolicyComponent policyComponent;
 
     /** Eager content store cleaner */
     private EagerContentStoreCleaner eagerContentStoreCleaner;
@@ -68,14 +54,6 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
 
     /** Indicates if ghosting is enabled or not */
     private boolean ghostingEnabled = true;
-
-    /**
-     * @param policyComponent   policy component
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
 
     /**
      * @param eagerContentStoreCleaner eager content store cleaner
@@ -258,25 +236,5 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
         {
             eagerContentStoreCleaner.registerOrphanedContentUrl(contentData.getContentUrl(), true);
         }
-    }
-
-    /**
-     * @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean)
-     */
-    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
-    {
-        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_GHOSTED_PROP_UPDATE));
-    }
-
-    /**
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
-    public void afterPropertiesSet() throws Exception
-    {
-        // Register interest in the onContentUpdate policy
-        policyComponent.bindClassBehaviour(
-                ContentServicePolicies.OnContentUpdatePolicy.QNAME,
-                ASPECT_GHOSTED,
-                new JavaBehaviour(this, "onContentUpdate"));
     }
 }

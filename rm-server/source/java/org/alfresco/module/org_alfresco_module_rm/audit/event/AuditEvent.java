@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,7 +22,6 @@ import java.util.Comparator;
 
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 
@@ -44,7 +43,7 @@ public class AuditEvent implements RecordsManagementModel, Comparator<AuditEvent
     protected RecordsManagementAuditService recordsManagementAuditService;    
     
     /** Policy component */
-    protected PolicyComponent policyComponent;
+    //protected PolicyComponent policyComponent;
     
     /**
      * @param recordsManagementAuditService     records management audit service
@@ -57,10 +56,10 @@ public class AuditEvent implements RecordsManagementModel, Comparator<AuditEvent
     /**
      * @param policyComponent   policy component
      */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
+   // public void setPolicyComponent(PolicyComponent policyComponent)
+  //  {
+  //      this.policyComponent = policyComponent;
+   // }
  
     /**
      * Init method

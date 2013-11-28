@@ -93,35 +93,6 @@
 
    <!--  Report Actions -->
 
-   <bean id="fileDestructionReport_proxy" parent="rmProxyAction" >
-      <property name="target">
-         <ref bean="fileDestructionReport"/>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref bean="fileDestructionReport_security"/>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="fileDestructionReport_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.FileDestructionReport
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
-            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
-         </value>
-      </property>
-   </bean>
-
-   <bean id="fileDestructionReport"
-         class="org.alfresco.module.org_alfresco_module_rm.report.action.FileDestructionReportAction"
-         parent="rmAction">
-      <property name="reportService" ref="ReportService" />
-      <property name="filePlanService" ref="FilePlanService" />
-      <property name="reportType" value="rmr:destructionReport" />
-   </bean>
-
    <bean id="fileReport_proxy" parent="rmProxyAction" >
       <property name="target">
          <ref bean="fileReport"/>
@@ -136,7 +107,7 @@
    <bean id="fileReport_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
-            <!-- FIXME -->
+            <!-- FIXME: Find a way to check the capabilities. Do we really need several classes or can we use one class -->
             <!-- org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.FileDestructionReport -->
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW

@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.report;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -109,23 +110,40 @@ public class ReportServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.report.ReportService#generateReport(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.report.ReportService#generateReport(QName, NodeRef)
      */
     @Override
     public Report generateReport(QName reportType, NodeRef reportedUponNodeRef)
     {
+        ParameterCheck.mandatory("reportType", reportType);
+        ParameterCheck.mandatory("reportedUponNodeRef", reportedUponNodeRef);
+
         return generateReport(reportType, reportedUponNodeRef, MimetypeMap.MIMETYPE_HTML);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.report.ReportService#generateReport(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.report.ReportService#generateReport(QName, NodeRef, String)
      */
     @Override
     public Report generateReport(QName reportType, NodeRef reportedUponNodeRef, String mimetype)
     {
         ParameterCheck.mandatory("reportType", reportType);
         ParameterCheck.mandatory("reportedUponNodeRef", reportedUponNodeRef);
-        ParameterCheck.mandatory("mimetype", mimetype);
+        ParameterCheck.mandatoryString("mimetype", mimetype);
+
+        return generateReport(reportType, reportedUponNodeRef, mimetype, new HashMap<String, Serializable>(1));
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.report.ReportService#generateReport(QName, NodeRef, String, Map)
+     */
+    @Override
+    public Report generateReport(QName reportType, NodeRef reportedUponNodeRef, String mimetype, Map<String, Serializable> properties)
+    {
+        ParameterCheck.mandatory("reportType", reportType);
+        ParameterCheck.mandatory("reportedUponNodeRef", reportedUponNodeRef);
+        ParameterCheck.mandatoryString("mimetype", mimetype);
+        ParameterCheck.mandatory("properties", properties);
 
         // get the generator
         ReportGenerator generator = registry.get(reportType);
@@ -137,7 +155,7 @@ public class ReportServiceImpl extends ServiceBaseImpl
         }
 
         // generate the report
-        return generator.generateReport(reportedUponNodeRef, mimetype);
+        return generator.generateReport(reportedUponNodeRef, mimetype, properties);
     }
 
     /**

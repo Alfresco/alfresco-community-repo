@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.report;
 
+import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,6 +63,15 @@ public interface ReportService
      * @return
      */
     Report generateReport(QName reportType, NodeRef reportedUponNodeRef, String mimetype);
+
+    /**
+     * @param reportType
+     * @param reportedUponNodeRef
+     * @param mimetype
+     * @param properties
+     * @return
+     */
+    Report generateReport(QName reportType, NodeRef reportedUponNodeRef, String mimetype, Map<String, Serializable> properties);
 
     /**
      * File report in the given destination. If the given node reference is a file plan node

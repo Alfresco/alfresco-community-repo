@@ -34,8 +34,7 @@
                                                 </td>
                                                 <td>
                                                    <div style="font-size: 22px; padding-bottom: 4px;">
-                                                      <#-- FIXME!!! -->
-                                                      Destruction Report
+                                                      ${message("file.report.destruction.report")}
                                                    </div>
                                                 </td>
                                              </tr>
@@ -43,18 +42,15 @@
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
                                           <table cellpadding="2" cellspacing="3" border="0">
                                              <tr>
-                                                <#-- FIXME!!! -->
-                                                <td><i>Destroyed <#if node.hasAspect("rma:record")>Record<#else>Record Folder</#if>:</i></td>
+                                                <td><i>${message("file.report.destroyed")} <#if node.hasAspect("rma:record")>${message("file.report.record")}<#else>${message("file.report.record.folder")}</#if>:</i></td>
                                                 <td>${node.properties["rma:identifier"]} <b>${node.properties.name}</b></td>
                                              </tr>
                                              <tr>
-                                                <#-- FIXME!!! -->
-                                                <td><i>Disposition Authority:</i></td>
+                                                <td><i>${message("file.report.disposition.authority")}:</i></td>
                                                 <td>${node.properties["rma:recordSearchDispositionAuthority"]}</td>
                                              </tr>
                                              <tr>
-                                                <#-- FIXME!!! -->
-                                                <td><i>Disposition Instructions:</i></td>
+                                                <td><i>${message("file.report.disposition.instructions")}:</i></td>
                                                 <td>${node.properties["rma:recordSearchDispositionInstructions"]}</td>
                                              </tr>
                                           </table>
@@ -62,8 +58,7 @@
                                              <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
                                              <table cellpadding="2" cellspacing="3" border="0">
                                                 <tr>
-                                                   <#-- FIXME!!! -->
-                                                   <td><i>Destroyed Records:</i></td>
+                                                   <td><i>${message("file.report.destroyed.records")}:</i></td>
                                                    <td></td>
                                                 </tr>
                                              </table>

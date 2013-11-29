@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * @author Roy Wetherall
@@ -37,60 +38,73 @@ import org.alfresco.service.namespace.QName;
 public abstract class BaseReportGenerator implements ReportGenerator
 {
     protected ReportService reportService;
- 
+
     protected NamespaceService namespaceService;
-    
+
     protected String reportTypeName;
+
     protected QName reportType;
-    
+
     public void setReportService(ReportService reportService)
     {
         this.reportService = reportService;
     }
-    
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     public void setReportTypeName(String reportTypeName)
     {
         this.reportTypeName = reportTypeName;
     }
-    
+
     @Override
     public QName getReportType()
     {
         return reportType;
     }
-    
+
     public void init()
     {
         // convert type name to QName
         reportType = QName.createQName(reportTypeName, namespaceService);
-        
+
         // register report generator
         reportService.registerReportGenerator(this);
     }
-    
+
     @Override
     public Report generateReport(NodeRef reportedUponNodeRef, String mimetype)
     {
+        ParameterCheck.mandatory("reportedUponNodeRef", reportedUponNodeRef);
+        ParameterCheck.mandatoryString("mimetype", mimetype);
+
+        return generateReport(reportedUponNodeRef, mimetype, new HashMap<String, Serializable>(1));
+    }
+
+    @Override
+    public Report generateReport(NodeRef reportedUponNodeRef, String mimetype, Map<String, Serializable> properties)
+    {
+        ParameterCheck.mandatory("reportedUponNodeRef", reportedUponNodeRef);
+        ParameterCheck.mandatoryString("mimetype", mimetype);
+        ParameterCheck.mandatory("properties", properties);
+
         String reportName = generateReportName(reportedUponNodeRef);
         Map<QName, Serializable> reportProperties = generateReportProperties(reportedUponNodeRef);
-        ContentReader contentReader = generateReportContent(reportedUponNodeRef, mimetype);
-        return new ReportInfo(reportType, reportName, reportProperties, contentReader);        
+        ContentReader contentReader = generateReportContent(reportedUponNodeRef, mimetype, properties);
+        return new ReportInfo(reportType, reportName, reportProperties, contentReader);
     }
-    
+
     protected abstract String generateReportName(NodeRef reportedUponNodeRef);
-    
-    
+
     protected Map<QName, Serializable> generateReportProperties(NodeRef reportedUponNodeRef)
     {
         // default implementation
         return new HashMap<QName, Serializable>(0);
     }
-    
-    protected abstract ContentReader generateReportContent(NodeRef reportedUponNodeRef, String mimetype);
+
+    protected abstract ContentReader generateReportContent(NodeRef reportedUponNodeRef, String mimetype, Map<String, Serializable> properties);
 
 }

@@ -18,6 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.report;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -28,7 +31,8 @@ import org.alfresco.service.namespace.QName;
 public interface ReportGenerator
 {
     QName getReportType();
-    
+
     Report generateReport(NodeRef reportedUponNodeRef, String mimetype);
 
+    Report generateReport(NodeRef reportedUponNodeRef, String mimetype, Map<String, Serializable> properties);
 }

@@ -1,0 +1,291 @@
+<!-- ********************************************************* -->
+<!-- **              Alfresco Parent POM                    ** -->
+<!-- **                                                     ** -->
+<!-- ** This Maven build is NOT usable to build Alfresco RM ** -->
+<!-- ** you should use the standard Gradle build for that.  ** -->
+<!-- ** This POM is instead used to produce POMs to develop ** -->
+<!-- ** against Alfresco with Maven. POMs, dependencies and ** -->
+<!-- ** projects information are up to date and released    ** -->
+<!-- ** together with the official Alfresco artifacts at    ** -->
+<!---**          https://artifacts.alfresco.com.            ** -->  
+<!---** Fox the SDK and Maven project samples check         ** -->
+<!---** http://code.google.com/p/maven-alfresco-archetypes/ ** -->  
+<!-- ********************************************************* -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.alfresco</groupId>
+  <artifactId>alfresco-rm-parent</artifactId>
+  <packaging>pom</packaging>
+  <version>2.2-SNAPSHOT</version>
+  <name>Alfresco Records Management</name>
+
+  <url>http://www.alfresco.org/</url>
+  <inceptionYear>2005</inceptionYear>
+  <organization>
+    <name>Alfresco Software</name>
+    <url>http://www.alfresco.org/</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>LGPL 3</name>
+    </license>
+  </licenses>
+  <scm>
+    <connection>https://svn.alfresco.com/repos/alfresco-open-mirror/modules/recordsmanagement/HEAD</connection>
+    <developerConnection>https://svn.alfresco.com/repos/alfresco-enterprise/modules/recordsmanagement/HEAD</developerConnection>
+  </scm>
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.alfresco.com/jira/browse/RM</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Bamboo</system>
+    <url>https://bamboo.alfresco.com/bamboo/browse/RM</url>
+  </ciManagement>
+
+  <prerequisites>
+    <maven>3.0.3</maven>
+  </prerequisites>
+
+  <repositories>
+    <!-- Pointing to Alfresco repository group. Value is switched between community and enterprise -->
+    <repository>
+      <id>alfresco-public</id>
+      <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+    </repository>
+  </repositories>
+
+  <distributionManagement>
+      <!-- For now internal releases repositories -->
+      <repository>
+          <id>alfresco-internal</id>
+          <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-releases/</url>
+      </repository>
+      <!-- For now internal snapshot repositories -->
+      <snapshotRepository>
+          <id>alfresco-internal-snapshots</id>
+          <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-snapshots/</url>
+      </snapshotRepository>      
+      <site>
+          <id>alfresco-site</id>
+          <name>Alfresco Maven site</name>
+          <url>http://localhost/</url>
+      </site>      
+  </distributionManagement>
+
+  <modules>
+    <module>rm-server</module>
+    <module>rm-share</module>
+  </modules>
+
+  <properties>
+    <alfresco.base.version>4.2.0</alfresco.base.version>
+
+    <!-- Database properties - default values to be overridden in settings.xml -->
+    <db.driver>org.postgresql.Driver</db.driver>
+    <db.name>alfresco</db.name>
+    <db.url>jdbc:postgresql:${db.name}</db.url>
+    <db.master.url>jdbc:postgresql:template1</db.master.url>
+    <db.username>alfresco</db.username>
+    <db.password>alfresco</db.password>
+
+    <!-- Maven specific build properties -->
+    <maven.build.sourceVersion>1.7</maven.build.sourceVersion>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- Sonar specific properties -->
+    <sonar.jacoco.reportPath>${project.build.directory}/jacoco.exec</sonar.jacoco.reportPath>
+  </properties>
+
+  <build>                  
+    <!-- Non standard folder layout -->
+    <sourceDirectory>source/java</sourceDirectory>
+    <testSourceDirectory>test/java</testSourceDirectory>
+    <resources>
+        <resource>
+            <directory>config</directory>
+        </resource>
+    </resources>
+    <testResources>
+        <testResource>
+             <directory>test/resources</directory> 
+        </testResource>
+    </testResources>
+
+	<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-enforcer-plugin</artifactId>
+			<version>1.3.1</version>
+			<executions>
+				<execution>
+					<id>enforce-java</id>
+					<goals>
+						<goal>enforce</goal>
+					</goals>
+					<configuration>
+						<rules>
+							<requireJavaVersion>
+								<version>1.7.0</version>
+							</requireJavaVersion>
+						</rules>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
+	</plugins>
+
+    <!-- Defining version and some configuration of Maven plugins -->
+    <pluginManagement>
+        <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.5</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>${maven.build.sourceVersion}</source>
+                    <target>${maven.build.sourceVersion}</target>
+                </configuration>        
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.7</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.3</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.8</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-help-plugin</artifactId>
+                <version>2.2</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.4.1</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.16</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.16</version>
+                <configuration>
+                    <!-- To prevent tests alfresco.log to be created in project roots and bother while synchronizing with SCM -->
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <runOrder>alphabetical</runOrder>
+                    <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
+                    <systemPropertyVariables>
+                        <!-- Database related properties -->
+                        <db.url>${db.url}</db.url>
+                        <db.driver>${db.driver}</db.driver>
+                        <db.name>${db.name}</db.name>
+                        <db.username>${db.username}</db.username>
+                        <db.password>${db.password}</db.password>
+                        <dir.root>${basedir}/target/alf_test_data</dir.root>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <version>2.9</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <warSourceDirectory>source/web</warSourceDirectory>
+                    <useCache>true</useCache>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>8.1.13.v20130916</version>
+                <configuration>
+                    <webAppSourceDirectory>source/web</webAppSourceDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.plexus</groupId>
+                        <artifactId>plexus-archiver</artifactId>
+                        <version>2.3</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr3-maven-plugin</artifactId>
+                <version>${dependency.antlr.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>sql-maven-plugin</artifactId>
+                <version>1.5</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>rpm-maven-plugin</artifactId>
+                <version>2.1-alpha-3</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.8</version>
+            </plugin>
+			<plugin>
+				<groupId>com.google.code.maven-replacer-plugin</groupId>
+				<artifactId>replacer</artifactId>
+				<version>1.5.2</version>
+			</plugin>
+        </plugins>
+    </pluginManagement>
+  </build>
+
+</project>

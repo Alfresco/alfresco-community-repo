@@ -3,11 +3,9 @@
    <#assign isAccession=node.properties["rma:transferAccessionIndicator"]>
    <head>
       <#if isAccession>
-         <#-- FIXME: Label -->
-         <title>Transfer Report</title>
+         <title>${message("file.report.acession.report")}</title>
       <#else>
-         <#-- FIXME: Label -->
-         <title>Transfer Report</title>
+         <title>${message("file.report.transfer.report")}</title>
       </#if>
       <style>
          body { font-family: arial,verdana; font-size: 81%; color: #333; }
@@ -20,49 +18,38 @@
    </head>
    <body>
       <#if isAccession>
-         <#-- FIXME: Label -->
-         <h1>Accession Report</h1>
+         <h1>${message("file.report.acession.report")}</h1>
       <#else>
-         <#-- FIXME: Label -->
-         <h1>Transfer Report</h1>
+         <h1>${message("file.report.transfer.report")}</h1>
       </#if>
       <table cellpadding="3" cellspacing="3">
          <tr>
-            <#-- FIXME: Label -->
-            <td class="label">Transfer Date:</td>
-            <#-- FIXME: Escape, toString -->
-            <td><#--${node.properties["cm:created"]}--></td>
+            <td class="label">${message("file.report.transfer.date")}:</td>
+            <td>${node.properties["cm:created"]?string(message("file.report.date.format"))?html}</td>
          </tr>
          <tr>
-            <#-- FIXME: Label -->
-            <td class="label">Transfer Location:</td>
+            <td class="label">${message("file.report.transfer.location")}:</td>
             <td>
                <#if isAccession>
-               <#-- FIXME: Label -->
-               NARA
+               ${message("file.report.nara")}
                <#else>
-               <#-- FIXME: String, Escape -->
-               ${node.properties["rma:transferLocation"]}
+               ${node.properties["rma:transferLocation"]?html}
                </#if>
             </td>
          </tr>
          <tr>
-            <#-- FIXME: Label -->
-            <td class="label">Performed By:</td>
-            <#-- FIXME: String, Escape -->
-            <td> ${node.properties["cm:creator"]}</td>
+            <td class="label">${message("file.report.performed.by")}:</td>
+            <td> ${node.properties["cm:creator"]?html}</td>
          </tr>
          <tr>
-            <#-- FIXME: Label -->
-            <td class="label">Disposition Authority:</td>
+            <td class="label">${message("file.report.disposition.authority")}:</td>
             <#-- FIXME: Disposition Authority - Check, escape -->
             <td></td>
          </tr>
       </table>
-      <#-- FIXME: Label -->
-      <h2>Transferred Items</h2>
+      <h2>${message("file.report.transferred.items")}</h2>
       <div class="transferred-item">
-         <#--
+         <#-- FIXME
          <span class="nodeName">folder</span>&nbsp;(Unique Folder Identifier:&nbsp;2013-1385393610833)
          <div class="records">
          </div>

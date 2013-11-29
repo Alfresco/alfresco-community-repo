@@ -94,7 +94,7 @@ public class OpenDocumentMetadataExtracterTest extends AbstractMetadataExtracter
           {
              assertEquals(
                    "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
-                   DATE_FORMAT.parse("2005-09-06T23:34:00.000+0100"),
+                   DATE_FORMAT.parse("2005-09-06T23:34:00.000+0000"),
                    DefaultTypeConverter.INSTANCE.convert(Date.class, properties.get(ContentModel.PROP_CREATED)));
           } 
           else if(mimetype.equals("application/vnd.oasis.opendocument.graphics")) 

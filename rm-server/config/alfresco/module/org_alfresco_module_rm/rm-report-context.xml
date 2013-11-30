@@ -93,22 +93,29 @@
 
    <!--  Report Actions -->
 
-   <bean id="fileReport_proxy" parent="rmProxyAction" >
+   <bean id="baseReportAction" abstract="true" parent="rmAction">
+      <property name="reportService" ref="reportService" />
+   </bean>
+
+   <bean id="transferReportAction"
+         class="org.alfresco.module.org_alfresco_module_rm.report.action.TransferReportAction"
+         parent="baseReportAction" />
+
+   <bean id="transferReportAction_proxy" parent="rmProxyAction" >
       <property name="target">
-         <ref bean="fileReport"/>
+         <ref bean="transferReportAction"/>
       </property>
       <property name="interceptorNames">
          <list>
-            <idref bean="fileReport_security"/>
+            <idref bean="transferReportAction_security"/>
          </list>
       </property>
    </bean>
 
-   <bean id="fileReport_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="transferReportAction_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
-            <!-- FIXME: Find a way to check the capabilities. Do we really need several classes or can we use one class -->
-            <!-- org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.FileDestructionReport -->
+            <!-- FIXME: Which capability do we need to check? -->
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
             org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
@@ -116,10 +123,29 @@
       </property>
    </bean>
 
-   <bean id="fileReport"
-         class="org.alfresco.module.org_alfresco_module_rm.report.action.FileReportAction"
-         parent="rmAction">
-      <property name="reportService" ref="ReportService" />
+   <bean id="destructionReportAction"
+         class="org.alfresco.module.org_alfresco_module_rm.report.action.DestructionReportAction"
+         parent="baseReportAction" />
+
+   <bean id="destructionReportAction_proxy" parent="rmProxyAction" >
+      <property name="target">
+         <ref bean="destructionReportAction"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="destructionReportAction_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="destructionReportAction_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.FileDestructionReport
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
    </bean>
 
 </beans>

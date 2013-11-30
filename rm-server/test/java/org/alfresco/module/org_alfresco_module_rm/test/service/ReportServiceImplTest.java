@@ -122,7 +122,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
                 Map<String, Serializable> fileReportParams = new HashMap<String, Serializable>(2);
                 fileReportParams.put(DestructionReportAction.REPORT_TYPE, "rmr:destructionReport");
                 fileReportParams.put(DestructionReportAction.DESTINATION, filePlan.toString());
-                rmActionService.executeRecordsManagementAction(rmFolder, "fileReport", fileReportParams);
+                rmActionService.executeRecordsManagementAction(rmFolder, "destructionReport", fileReportParams);
                 return null;
             }
         });

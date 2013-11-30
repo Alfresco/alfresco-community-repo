@@ -18,11 +18,15 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.report.action;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.report.Report;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -30,12 +34,12 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * File report action
+ * Base class for the report action classes
  *
  * @author Tuna Aksoy
  * @since 2.2
  */
-public class FileReportAction extends RMActionExecuterAbstractBase implements ReportModel
+public abstract class BaseReportAction extends RMActionExecuterAbstractBase implements ReportModel
 {
     /** Constants for the parameters passed from the UI */
     public static final String REPORT_TYPE = "reportType";
@@ -67,11 +71,18 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
         // TODO allow the mimetype of the report to be specified as a parameter
 
         QName reportType = getReportType(action);
-        Report report = reportService.generateReport(reportType, actionedUponNodeRef);
+        Report report = reportService.generateReport(reportType, actionedUponNodeRef, MimetypeMap.MIMETYPE_HTML, addProperties(actionedUponNodeRef));
 
         NodeRef destination = getDestination(action);
         reportService.fileReport(destination, report);
     }
+
+    /**
+     * Gives other action classes to pass additional properties for the template model
+     *
+     * @return Properties which are passed to the template model
+     */
+    protected abstract Map<String, Serializable> addProperties(NodeRef nodeRef);
 
     /**
      * Retrieves the value of the given parameter. If the parameter has not been passed from the UI an error will be thrown

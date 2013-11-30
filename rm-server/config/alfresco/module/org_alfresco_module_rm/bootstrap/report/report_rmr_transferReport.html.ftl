@@ -39,12 +39,11 @@
          </tr>
          <tr>
             <td class="label">${message("file.report.performed.by")}:</td>
-            <td> ${node.properties["cm:creator"]?html}</td>
+            <td>${node.properties["cm:creator"]?html}</td>
          </tr>
          <tr>
             <td class="label">${message("file.report.disposition.authority")}:</td>
-            <#-- FIXME: Disposition Authority - Check, escape -->
-            <td></td>
+            <td>${properties["dispositionAuthority"]?html}</td>
          </tr>
       </table>
       <h2>${message("file.report.transferred.items")}</h2>

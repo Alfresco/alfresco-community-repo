@@ -221,6 +221,17 @@ public class MoveMethod extends HierarchicalMethod
         // If this is a copy then the source is just copied to destination.
         else if (!isMove)
         {
+            // MNT-9939 - check overwrite
+            if (hasOverWrite() && destFileInfo != null)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Destination exists and overwrite is allowed");
+                }
+                
+                fileFolderService.delete(destFileInfo.getNodeRef());
+            }
+            
             fileFolderService.copy(sourceNodeRef, destParentNodeRef, name);
         }
         // If this is a move and the destination looks like the start of a shuffle operation, then the source is just
@@ -239,6 +250,17 @@ public class MoveMethod extends HierarchicalMethod
            // It is a simple rename operation
            try
            {
+               // MNT-9939 - check overwrite
+               if (hasOverWrite() && destFileInfo != null && !sourceFileInfo.equals(destFileInfo))
+               {
+                   if (logger.isDebugEnabled())
+                   {
+                       logger.debug("Destination exists and overwrite is allowed");
+                   }
+                   
+                   fileFolderService.delete(destFileInfo.getNodeRef());
+               }
+               
                fileFolderService.rename(sourceNodeRef, name);
                // As per the WebDAV spec, we make sure the node is unlocked once moved
                getDAVHelper().getLockService().unlock(sourceNodeRef);
@@ -260,6 +282,17 @@ public class MoveMethod extends HierarchicalMethod
         else
         {
             // It is a simple move operation 
+            // MNT-9939 - check overwrite
+            if (hasOverWrite() && destFileInfo != null)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Destination exists and overwrite is allowed");
+                }
+                
+                fileFolderService.delete(destFileInfo.getNodeRef());
+            }
+            
             fileFolderService.moveFrom(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, name);  
 
             // As per the WebDAV spec, we make sure the node is unlocked once moved

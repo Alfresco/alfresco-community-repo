@@ -34,13 +34,13 @@ import org.alfresco.service.namespace.QName;
 public interface RecordFolderService
 {
     /**
-     * Initialises the a record folder from a standard folder.
+     * Sets up the a record folder from a standard folder.
      *
-     * @param nodeRef   node reference of the folder to initialise
+     * @param nodeRef   node reference of the folder to setup
      *
      * @since 2.2
      */
-    void initialiseRecordFolder(NodeRef nodeRef);
+    void setupRecordFolder(NodeRef nodeRef);
 
     /**
      * Indicates whether the given node is a record folder or not.

@@ -33,7 +33,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;

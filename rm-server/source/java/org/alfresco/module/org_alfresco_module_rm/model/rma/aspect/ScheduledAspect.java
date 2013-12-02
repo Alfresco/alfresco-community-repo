@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,72 +16,51 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
+package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourBean;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
  * Behaviour associated with the scheduled aspect
  * 
  * @author Roy Wetherall
+ * @since 2.2
  */
-public class ScheduledAspect implements RecordsManagementModel,
-                                        NodeServicePolicies.OnAddAspectPolicy
+@BehaviourBean
+(
+        defaultType = "rma:scheduled"
+)
+public class ScheduledAspect extends    BaseBehaviourBean 
+                             implements NodeServicePolicies.OnAddAspectPolicy
 {
-    /** Policy component */
-    private PolicyComponent policyComponent;
-    
+    /** disposition service */
     private DispositionService dispositionService;
     
-    /** Node service */
-    private NodeService nodeService;
-    
     /**
-     * Set the policy component
-     * @param policyComponent   policy component
+     * @param dispositionService    disposition service
      */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
-    
     public void setDispositionService(DispositionService dispositionService)
     {
         this.dispositionService = dispositionService;
-    }
-    
-    /**
-     * Set node service
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-    
-    /**
-     * Bean initialisation method
-     */
-    public void init()
-    {
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnAddAspectPolicy.QNAME,
-                ASPECT_SCHEDULED,
-                new JavaBehaviour(this, "onAddAspect", NotificationFrequency.TRANSACTION_COMMIT));
     }
 
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
         if (nodeService.exists(nodeRef) == true && 

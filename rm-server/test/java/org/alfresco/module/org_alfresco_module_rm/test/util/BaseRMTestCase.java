@@ -36,7 +36,7 @@ import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventSe
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;

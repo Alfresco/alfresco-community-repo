@@ -25,7 +25,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
+import org.alfresco.repo.copy.AbstractCopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -33,6 +37,7 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -50,7 +55,10 @@ import org.alfresco.util.PropertyMap;
    defaultType = "rma:filePlanComponent"
 )
 public class FilePlanComponentAspect extends    BaseBehaviourBean
-                                     implements NodeServicePolicies.OnUpdatePropertiesPolicy
+                                     implements NodeServicePolicies.OnUpdatePropertiesPolicy,
+                                                NodeServicePolicies.OnAddAspectPolicy,
+                                                NodeServicePolicies.OnMoveNodePolicy
+                                                
                                
 {
     /** Well-known location of the scripts folder. */
@@ -61,6 +69,9 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     
     /** namespace service */
     private NamespaceService namespaceService;
+    
+    /** file plan service */
+    private FilePlanService filePlanService;
     
     /**
      * @param scriptService set script service
@@ -77,6 +88,14 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     {
         this.namespaceService = namespaceService;
     }    
+    
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
     
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
@@ -165,5 +184,122 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
 
         return result;
     }
+    
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    @Override
+    @Behaviour
+    (
+       kind = BehaviourKind.CLASS,
+       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                if (nodeService.exists(nodeRef) == true)
+                {                   
+                    // Look up the root and set on the aspect if found
+                    NodeRef root = filePlanService.getFilePlan(nodeRef);
+                    if (root != null)
+                    {
+                        nodeService.setProperty(nodeRef, PROP_ROOT_NODEREF, root);
+                    }
+                }
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());        
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    @Override
+    @Behaviour
+    (
+       kind = BehaviourKind.CLASS,
+       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onMoveNode(final ChildAssociationRef oldChildAssocRef, final ChildAssociationRef newChildAssocRef)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                if (nodeService.exists(newChildAssocRef.getParentRef()) == true && 
+                    nodeService.exists(newChildAssocRef.getChildRef()) == true)
+                {
+                    // Look up the root and re-set the value currently stored on the aspect
+                    NodeRef root = filePlanService.getFilePlan(newChildAssocRef.getParentRef());
+                    // NOTE: set the null value if no root found
+                    nodeService.setProperty(newChildAssocRef.getChildRef(), PROP_ROOT_NODEREF, root);
+                }
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());        
+    }
+    
+    /**
+     * Copy behaviour call back
+     * 
+     * @param   classRef    class reference
+     * @param   copyDetail  details of the information being copied
+     * @return  CopyBehaviourCallback
+     */
+    @Behaviour
+    (
+       kind = BehaviourKind.CLASS,
+       policy = "alf:getCopyCallback"
+    )
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
+    {
+        return new AbstractCopyBehaviourCallback()
+        {
+            /**
+             * @see org.alfresco.repo.copy.CopyBehaviourCallback#getChildAssociationCopyAction(org.alfresco.service.namespace.QName, org.alfresco.repo.copy.CopyDetails, org.alfresco.repo.copy.CopyBehaviourCallback.CopyChildAssociationDetails)
+             */
+            public ChildAssocCopyAction getChildAssociationCopyAction(
+                    QName classQName,
+                    CopyDetails copyDetails,
+                    CopyChildAssociationDetails childAssocCopyDetails)
+            {
+                // Do not copy the associations
+                return null;
+            }
+            
+            /**
+             * @see org.alfresco.repo.copy.CopyBehaviourCallback#getCopyProperties(org.alfresco.service.namespace.QName, org.alfresco.repo.copy.CopyDetails, java.util.Map)
+             */
+            public Map<QName, Serializable> getCopyProperties(
+                    QName classQName,
+                    CopyDetails copyDetails,
+                    Map<QName, Serializable> properties)
+            {
+                // Only copy the root node reference if the new value can be looked up via the parent
+                NodeRef root = filePlanService.getFilePlan(copyDetails.getTargetParentNodeRef());
+                if (root != null)
+                {
+                    properties.put(PROP_ROOT_NODEREF, root);
+                }
+                return properties;
+            }
+
+            /**
+             * @see org.alfresco.repo.copy.CopyBehaviourCallback#getMustCopy(org.alfresco.service.namespace.QName, org.alfresco.repo.copy.CopyDetails)
+             */
+            public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
+            {
+                // Ensure the aspect is copied
+                return true;
+            }            
+        };
+    }   
     
 }

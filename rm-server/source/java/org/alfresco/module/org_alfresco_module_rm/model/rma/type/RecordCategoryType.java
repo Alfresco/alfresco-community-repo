@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
@@ -57,6 +58,9 @@ public class RecordCategoryType extends    BaseBehaviourBean
     /** file plan permission service */
     protected FilePlanPermissionService filePlanPermissionService;
     
+    /** record folder service */
+    private RecordFolderService recordFolderService;
+    
     /**
      * @param vitalRecordService    vital record service
      */
@@ -71,6 +75,14 @@ public class RecordCategoryType extends    BaseBehaviourBean
     public void setFilePlanPermissionService(FilePlanPermissionService filePlanPermissionService)
     {
         this.filePlanPermissionService = filePlanPermissionService;
+    }
+    
+    /**
+     * @param recordFolderService   record folder service
+     */
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
     }
     
     /**
@@ -90,7 +102,11 @@ public class RecordCategoryType extends    BaseBehaviourBean
         if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true)
         {
             throw new AlfrescoRuntimeException("Operation failed, because you can't place content directly into a record category.");
-        }       
+        }  
+        
+        // setup the record folder
+        // TODO review
+        recordFolderService.setupRecordFolder(nodeRef);
     }
     
     /**

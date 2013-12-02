@@ -37,7 +37,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedul
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
-import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.Role;
@@ -323,7 +323,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                             {
                                 // Fire action to "set-up" the folder correctly
                                 logger.info("Setting up bootstraped record folder: " + folderName);
-                                recordFolderService.initialiseRecordFolder(recordFolder);
+                                recordFolderService.setupRecordFolder(recordFolder);
                             }
                         }
 

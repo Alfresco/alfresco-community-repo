@@ -74,6 +74,12 @@
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.chemistry</groupId>
+      <artifactId>chemistry-tck-atompub</artifactId>
+      <version>0.1-incubating-unreleased</version>
+      <scope>test</scope>
+    </dependency>
     <!-- Database drivers -->
     <dependency>
       <groupId>postgresql</groupId>

@@ -19,14 +19,17 @@
 package org.alfresco.module.org_alfresco_module_rm.report.action;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.lang.StringUtils;
 
@@ -42,51 +45,77 @@ public class TransferReportAction extends BaseReportAction
     protected Map<String, Serializable> addProperties(NodeRef nodeRef)
     {
         // Get all 'transferred' nodes
-        NodeRef[] transferNodes = getTransferNodes(nodeRef);
+        List<TransferNode> transferNodes = getTransferNodes(nodeRef);
 
         // Get the disposition authority
         String dispositionAuthority = getDispositionAuthority(transferNodes);
 
         // Save to the properties map
         Map<String, Serializable> properties = new HashMap<String, Serializable>(2);
-        properties.put("transferNodes", transferNodes);
+        properties.put("transferNodes", (ArrayList<TransferNode>) transferNodes);
         properties.put("dispositionAuthority", dispositionAuthority);
 
         return properties;
     }
 
     /**
-     * Returns an array of NodeRefs representing the items to be transferred.
+     * Returns a list of transfer nodes
      *
-     * @param transferNode The transfer object
-     * @return Array of NodeRefs
+     * @param nodeRef The transfer object
+     * @return Transfer node list
      */
-    private NodeRef[] getTransferNodes(NodeRef transferNode)
+    private List<TransferNode> getTransferNodes(NodeRef nodeRef)
     {
-        List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(transferNode,
-                    RecordsManagementModel.ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
-        NodeRef[] itemsToTransfer = new NodeRef[assocs.size()];
-        for (int idx = 0; idx < assocs.size(); idx++)
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, RecordsManagementModel.ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
+        List<TransferNode> transferNodes = new ArrayList<TransferNode>(assocs.size());
+        for (ChildAssociationRef assoc : assocs)
         {
-            itemsToTransfer[idx] = assocs.get(idx).getChildRef();
+            NodeRef childRef = assoc.getChildRef();
+            boolean isFolder = dictionaryService.isSubClass(nodeService.getType(childRef), ContentModel.TYPE_FOLDER);
+            Map<String, Serializable> properties = getTransferNodeProperties(childRef, isFolder);
+            transferNodes.add(new TransferNode(childRef, isFolder, properties));
         }
-        return itemsToTransfer;
+        return transferNodes;
     }
 
     /**
-     * Gets the disposition authority from the array of the transfer objects
+     * Helper method to get the properties of a transfer node
      *
-     * @param itemsToTransfer   The transfer objects
-     * @return  Disposition authority
+     * @param childRef  Node reference
+     * @param isFolder  Type of the transfer node
+     * @return Transfer node properties
      */
-    private String getDispositionAuthority(NodeRef[] itemsToTransfer)
+    private Map<String, Serializable> getTransferNodeProperties(NodeRef childRef, boolean isFolder)
+    {
+        Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(2);
+        if (isFolder)
+        {
+            Map<QName, Serializable> properties = nodeService.getProperties(childRef);
+            transferNodeProperties.put("name", properties.get(ContentModel.PROP_NAME));
+            transferNodeProperties.put("identifier", properties.get(RecordsManagementModel.PROP_IDENTIFIER));
+        }
+        else
+        {
+            // FIXME: Record
+        }
+        return transferNodeProperties;
+    }
+
+    /**
+     * Gets the disposition authority from the list of the transfer nodes
+     *
+     * @param transferNodes   The transfer nodes
+     * @return Disposition authority
+     */
+    private String getDispositionAuthority(List<TransferNode> transferNodes)
     {
         // use RMService to get disposition authority
         String dispositionAuthority = null;
-        if (itemsToTransfer.length > 0)
+        if (transferNodes.size() > 0)
         {
             // use the first transfer item to get to disposition schedule
-            DispositionSchedule ds = dispositionService.getDispositionSchedule(itemsToTransfer[0]);
+            NodeRef nodeRef = transferNodes.iterator().next().getNodeRef();
+            DispositionSchedule ds = dispositionService.getDispositionSchedule(nodeRef);
             if (ds != null)
             {
                 dispositionAuthority = ds.getDispositionAuthority();

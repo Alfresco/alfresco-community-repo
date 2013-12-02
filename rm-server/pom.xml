@@ -109,6 +109,14 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/AllTestSuite.class</include>
+          </includes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 

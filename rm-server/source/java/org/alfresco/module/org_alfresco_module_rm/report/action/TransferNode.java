@@ -34,21 +34,16 @@ public class TransferNode
     /** Transfer node reference */
     private NodeRef nodeRef;
 
-    /** Transfer node type */
-    private boolean folder;
-
     /** Transfer node properties */
     private Map<String, Serializable> properties;
 
     /**
      * @param nodeRef
-     * @param folder
      * @param properties
      */
-    public TransferNode(NodeRef nodeRef, boolean folder, Map<String, Serializable> properties)
+    public TransferNode(NodeRef nodeRef, Map<String, Serializable> properties)
     {
         this.nodeRef = nodeRef;
-        this.folder = folder;
         this.properties = properties;
     }
 
@@ -58,14 +53,6 @@ public class TransferNode
     public NodeRef getNodeRef()
     {
         return this.nodeRef;
-    }
-
-    /**
-     * @return transfer node type
-     */
-    public boolean isFolder()
-    {
-        return this.folder;
     }
 
     /**

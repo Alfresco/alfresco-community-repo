@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.report.action;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,9 +72,8 @@ public class TransferReportAction extends BaseReportAction
         for (ChildAssociationRef assoc : assocs)
         {
             NodeRef childRef = assoc.getChildRef();
-            boolean isFolder = dictionaryService.isSubClass(nodeService.getType(childRef), ContentModel.TYPE_FOLDER);
-            Map<String, Serializable> properties = getTransferNodeProperties(childRef, isFolder);
-            transferNodes.add(new TransferNode(childRef, isFolder, properties));
+            Map<String, Serializable> properties = getTransferNodeProperties(childRef);
+            transferNodes.add(new TransferNode(childRef, properties));
         }
         return transferNodes;
     }
@@ -82,22 +82,29 @@ public class TransferReportAction extends BaseReportAction
      * Helper method to get the properties of a transfer node
      *
      * @param childRef  Node reference
-     * @param isFolder  Type of the transfer node
      * @return Transfer node properties
      */
-    private Map<String, Serializable> getTransferNodeProperties(NodeRef childRef, boolean isFolder)
+    private Map<String, Serializable> getTransferNodeProperties(NodeRef childRef)
     {
-        Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(2);
-        if (isFolder)
+        Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(3);
+
+        Map<QName, Serializable> properties = nodeService.getProperties(childRef);
+        transferNodeProperties.put("name", properties.get(ContentModel.PROP_NAME));
+        transferNodeProperties.put("identifier", properties.get(RecordsManagementModel.PROP_IDENTIFIER));
+
+        boolean isFolder = dictionaryService.isSubClass(nodeService.getType(childRef), ContentModel.TYPE_FOLDER);
+        transferNodeProperties.put("isFolder", isFolder);
+
+        if (isFolder == false)
         {
-            Map<QName, Serializable> properties = nodeService.getProperties(childRef);
-            transferNodeProperties.put("name", properties.get(ContentModel.PROP_NAME));
-            transferNodeProperties.put("identifier", properties.get(RecordsManagementModel.PROP_IDENTIFIER));
+            boolean isDeclared = nodeService.hasAspect(childRef, RecordsManagementModel.ASPECT_DECLARED_RECORD);
+            String declaredBy = (String) properties.get(RecordsManagementModel.PROP_DECLARED_BY);
+            Date declaredOn = (Date) properties.get(RecordsManagementModel.PROP_DECLARED_AT);
+            transferNodeProperties.put("isDeclared", isDeclared);
+            transferNodeProperties.put("declaredBy", declaredBy);
+            transferNodeProperties.put("declaredOn", declaredOn);
         }
-        else
-        {
-            // FIXME: Record
-        }
+
         return transferNodeProperties;
     }
 

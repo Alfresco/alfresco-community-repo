@@ -48,11 +48,19 @@
       </table>
       <h2>${message("file.report.transferred.items")}</h2>
       <div class="transferred-item">
-         <#-- FIXME
-         <span class="nodeName">folder</span>&nbsp;(Unique Folder Identifier:&nbsp;2013-1385393610833)
-         <div class="records">
-         </div>
-         -->
+         <#list properties.transferNodes as transferNode>
+            <#if transferNode.folder>
+               <span class="nodeName">
+                  ${transferNode.properties["name"]?html}
+               </span>
+               (${message("file.report.unique.folder.identifier")}: ${transferNode.properties["identifier"]?html})
+               <div class="records">
+                  <#-- FIXME: Records -->
+               </div>
+            <#else>
+               <#-- FIXME: Records -->
+            </#if>
+         </#list>
       </div>
    </body>
 </html>

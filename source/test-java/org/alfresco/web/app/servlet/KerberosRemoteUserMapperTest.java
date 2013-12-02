@@ -39,6 +39,7 @@ import org.alfresco.repo.security.authentication.TicketComponent;
 import org.alfresco.repo.security.authentication.AuthenticationServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.jaas.JAASAuthenticationComponent;
+import org.alfresco.repo.web.auth.NoopAuthenticationListener;
 import org.alfresco.repo.webdav.auth.KerberosAuthenticationFilter;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -82,6 +83,7 @@ public class KerberosRemoteUserMapperTest
         webDavAuthFilter.setActive(true);
         webDavAuthFilter.setTicketLogons(true);
         webDavAuthFilter.setServerConfiguration((ExtendedServerConfigurationAccessor) ctx.getBean("fileServerConfiguration"));
+        webDavAuthFilter.setAuthenticationListener(new NoopAuthenticationListener());
 
         // kerberos authenticationComponent
         JAASAuthenticationComponent krbAuthComponent = new JAASAuthenticationComponent();

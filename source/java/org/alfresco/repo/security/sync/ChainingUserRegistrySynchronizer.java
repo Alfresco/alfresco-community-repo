@@ -1469,8 +1469,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             private void processGroups(UserRegistry userRegistry, boolean isFullSync, boolean splitTxns)
             {
                // If we got back some groups, we have to cross reference them with the set of known authorities
-               if (isFullSync || !this.groupParentAssocsToDelete.isEmpty()
-                     || !this.groupParentAssocsToDelete.isEmpty())
+               // MNT-9711 fix. If allowDeletions is false, there is no need to pull all users and all groups from LDAP during the full synchronization.
+               if (allowDeletions && (isFullSync || !this.groupParentAssocsToDelete.isEmpty()
+                     || !this.groupParentAssocsToDelete.isEmpty()))
                {
                     final Set<String> allZonePersons = newPersonSet();
                     final Set<String> allZoneGroups = new TreeSet<String>();

@@ -49,7 +49,7 @@
       <h2>${message("file.report.transferred.items")}</h2>
       <div class="transferred-item">
          <#list properties.transferNodes as transferNode>
-            <#if transferNode.folder>
+            <#if transferNode.properties["isFolder"]>
                <span class="nodeName">
                   ${transferNode.properties["name"]?html}
                </span>
@@ -58,7 +58,18 @@
                   <#-- FIXME: Records -->
                </div>
             <#else>
-               <#-- FIXME: Records -->
+               <div class="record">
+                  <span class="nodeName">
+                     ${transferNode.properties["name"]?html}
+                  </span>
+                  (${message("file.report.unique.record.identifier")}: ${transferNode.properties["identifier"]?html})
+                  <#if transferNode.properties["isDeclared"]>
+                     ${message("file.report.declared.by")}
+                     ${transferNode.properties["declaredBy"]?html}
+                     ${message("file.report.declared.on")}
+                     ${transferNode.properties["declaredOn"]?string(message("file.report.date.format"))?html}
+                  </#if>
+               </div>
             </#if>
          </#list>
       </div>

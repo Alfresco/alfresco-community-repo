@@ -18,43 +18,37 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
-import org.alfresco.repo.content.ContentServicePolicies;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.I18NUtil;
+import org.alfresco.service.namespace.QName;
 
 /**
- * rma:ghosted behaviour bean
+ * rma:recordSearch behaviour bean
  * 
  * @author Roy Wetherall
  * @since 2.2
  */
 @BehaviourBean
 (
-   defaultType = "rma:ghosted"
+   defaultType = "rma:recordSearch"
 )
-public class GhostedAspect extends    BaseBehaviourBean
-                           implements ContentServicePolicies.OnContentUpdatePolicy
+public class RecordSearchAspect extends BaseBehaviourBean
 {
-    /** I18N */
-    private static final String MSG_GHOSTED_PROP_UPDATE = "rm.action.ghosted-prop-update";
-    
     /**
-     * Ensure that the content of a ghosted node can not be updated.
-     * 
-     * @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     * Copy callback for record search
      */
-    @Override
     @Behaviour
     (
-       kind = BehaviourKind.CLASS
+            kind = BehaviourKind.CLASS,
+            policy = "alf:getCopyCallback"
     )
-    public void onContentUpdate(NodeRef Content, boolean bNew)
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
-        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_GHOSTED_PROP_UPDATE));  
+        return new DoNothingCopyBehaviourCallback();
     }   
 }

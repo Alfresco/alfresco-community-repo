@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +27,11 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
+import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -52,7 +57,8 @@ import org.alfresco.service.namespace.QName;
 public class RecordAspect extends    BaseBehaviourBean
                           implements NodeServicePolicies.OnCreateChildAssociationPolicy,
                                      RecordsManagementPolicies.OnCreateReference,
-                                     RecordsManagementPolicies.OnRemoveReference
+                                     RecordsManagementPolicies.OnRemoveReference,
+                                     NodeServicePolicies.OnMoveNodePolicy
 {
     /** Well-known location of the scripts folder. */
     // TODO make configurable
@@ -163,6 +169,71 @@ public class RecordAspect extends    BaseBehaviourBean
 
         // Execute script if for the reference event
         executeReferenceScript("onRemove", reference, fromNodeRef, toNodeRef);        
+    }
+    
+    /**
+     * Record copy callback
+     */
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            policy = "alf:getCopyCallback"
+    )
+    public CopyBehaviourCallback getCopyCallback(final QName classRef, final CopyDetails copyDetails)
+    {
+        return new DefaultCopyBehaviourCallback()
+        {
+
+            @Override
+            public Map<QName, Serializable> getCopyProperties(QName classRef, CopyDetails copyDetails,
+                    Map<QName, Serializable> properties)
+            {
+                Map<QName, Serializable> sourceProperties = super.getCopyProperties(classRef, copyDetails, properties);
+
+                // Remove the Date Filed property from record properties on copy.
+                // It will be generated for the copy
+                if (sourceProperties.containsKey(PROP_DATE_FILED))
+                {
+                    sourceProperties.remove(PROP_DATE_FILED);
+                }
+
+                return sourceProperties;
+            }
+
+        };
+    }
+
+    /**
+     * Record move behaviour
+     * 
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    {
+        // check the records parent has actually changed
+        if (oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()) == false)
+        {
+            final NodeRef newNodeRef = newChildAssocRef.getChildRef();
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    if (nodeService.exists(newNodeRef) == true)
+                    {
+                        // only remove the search details .. the rest will be resolved automatically
+                        nodeService.removeAspect(newNodeRef, RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH);
+                    }
+
+                    return null;
+                }
+            }, AuthenticationUtil.getAdminUserName());
+        }
     }
     
     /**

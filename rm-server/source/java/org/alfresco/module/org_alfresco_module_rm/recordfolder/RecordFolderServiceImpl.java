@@ -32,10 +32,6 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
-import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -54,8 +50,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class RecordFolderServiceImpl extends    ServiceBaseImpl
                                      implements RecordFolderService,
-                                                RecordsManagementModel,
-                                                NodeServicePolicies.OnCreateChildAssociationPolicy
+                                                RecordsManagementModel//,
+                                                //NodeServicePolicies.OnCreateChildAssociationPolicy
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordFolderServiceImpl.class);
@@ -67,9 +63,6 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     private final static String MSG_RECORD_FOLDER_TYPE = "rm.service.record-folder-type";
     private final static String MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER = "rm.service.close-record-folder-not-folder";
 
-    /** Policy component */
-    private PolicyComponent policyComponent;
-
     /** Disposition service */
     private DispositionService dispositionService;
 
@@ -78,25 +71,6 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
 
     /** File Plan Service */
     private FilePlanService filePlanService;
-
-    /** Behaviours */
-    private JavaBehaviour onCreateChildAssociation
-                                    = new JavaBehaviour(this,
-                                                        "onCreateChildAssociation",
-                                                        NotificationFrequency.FIRST_EVENT);
-    
-    private JavaBehaviour onCreateChildAssociationInRecordFolderFolder
-                                    = new JavaBehaviour(this,
-                                                        "onCreateChildAssociationInRecordFolder",
-                                                        NotificationFrequency.FIRST_EVENT);
-
-    /**
-     * @param policyComponent   policy component
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
 
     /**
      * @param dispositionService    disposition service
@@ -122,67 +96,11 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         this.filePlanService = filePlanService;
     }
 
-   /**
-    * Init method
-    */
-   public void init()
-   {
-       
-       policyComponent.bindAssociationBehaviour(
-               NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
-               TYPE_RECORD_CATEGORY,
-               ContentModel.ASSOC_CONTAINS,
-               onCreateChildAssociation);
-
-       policyComponent.bindAssociationBehaviour(
-               NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
-               TYPE_RECORD_FOLDER,
-               ContentModel.ASSOC_CONTAINS,
-               onCreateChildAssociationInRecordFolderFolder);
-   }
-
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#setupRecordFolder(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
-    {
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeService.exists(nodeRef) == true)
-        {
-            initialiseRecordFolder(nodeRef);
-        }
-    }
-
-    /**
-     * Prevent folders being created within existing record folders.
-     */
-    public void onCreateChildAssociationInRecordFolder(ChildAssociationRef childAssocRef, boolean bNew)
-    {
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeService.exists(nodeRef) == true)
-        {
-            // ensure folders are never added to a record folder
-            if (instanceOf(nodeRef, ContentModel.TYPE_FOLDER) == true)
-            {
-                throw new AlfrescoRuntimeException("You can't create a folder within an exisiting record folder.");
-            }
-
-            // ensure nothing is being added to a closed record folder
-            NodeRef recordFolder = childAssocRef.getParentRef();
-            Boolean isClosed = (Boolean) nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
-            if (isClosed != null && Boolean.TRUE.equals(isClosed) == true)
-            {
-                throw new AlfrescoRuntimeException("You can't add new items to a closed record folder.");
-            }
-        }
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#initialiseRecordFolder(NodeRef)
-     */
-    @Override
-    public void initialiseRecordFolder(NodeRef nodeRef)
+    public void setupRecordFolder(NodeRef nodeRef)
     {
         // initialise disposition details
         if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == false)

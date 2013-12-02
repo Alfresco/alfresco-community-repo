@@ -438,7 +438,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
                             {
                                 // Fire action to "set-up" the folder correctly
                                 logger.info("Setting up bootstraped record folder: " + folderName);
-                                recordFolderService.initialiseRecordFolder(recordFolder);
+                                recordFolderService.setupRecordFolder(recordFolder);
                             }
                         }
 

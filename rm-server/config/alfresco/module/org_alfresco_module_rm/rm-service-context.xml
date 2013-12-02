@@ -1115,9 +1115,8 @@
 
     <!--  Record Folder Service -->
 
-    <bean id="recordFolderService" class="org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl" init-method="init">
+    <bean id="recordFolderService" class="org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl">
         <property name="nodeService" ref="NodeService"/>
-        <property name="policyComponent" ref="policyComponent" />
         <property name="dispositionService" ref="DispositionService" />
         <property name="dictionaryService" ref="DictionaryService" />
         <property name="filePlanService" ref="FilePlanService" />
@@ -1169,7 +1168,7 @@
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolderClosed=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.createRecordFolder=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.getRecordFolders=RM.Read.0,AFTER_RM.FilterNode
-                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.initialiseRecordFolder=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.setupRecordFolder=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.closeRecordFolder=RM_CAP.0.rma:filePlanComponent.CloseFolders
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.*=RM_DENY
                 ]]>

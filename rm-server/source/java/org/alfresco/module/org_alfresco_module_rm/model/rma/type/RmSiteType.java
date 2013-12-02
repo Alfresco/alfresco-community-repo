@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,25 +16,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
+package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourBean;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -47,9 +48,14 @@ import org.alfresco.util.PropertyMap;
  * Behaviour associated with the RM Site type
  * 
  * @author Roy Wetherall
+ * @since 2.2
  */
-public class RmSiteType implements RecordsManagementModel,
-                                   NodeServicePolicies.OnCreateNodePolicy,
+@BehaviourBean
+(
+        defaultType = "rma:rmsite"
+)
+public class RmSiteType extends    BaseBehaviourBean
+                        implements NodeServicePolicies.OnCreateNodePolicy,
                                    NodeServicePolicies.OnUpdatePropertiesPolicy,
                                    NodeServicePolicies.BeforeDeleteNodePolicy
 {
@@ -63,19 +69,11 @@ public class RmSiteType implements RecordsManagementModel,
     /** Site service */
     protected SiteService siteService;
     
-    /** Node service */
-    protected NodeService nodeService;
-    
     /** Record Management Search Service */
     protected RecordsManagementSearchService recordsManagementSearchService;
     
     /** Capability service */
     protected CapabilityService capabilityService;
-    
-    /** Behaviour */
-    JavaBehaviour onCreateNode = new JavaBehaviour(this, "onCreateNode", NotificationFrequency.FIRST_EVENT);
-    JavaBehaviour onUpdateProperties = new JavaBehaviour(this, "onUpdateProperties", NotificationFrequency.FIRST_EVENT);
-    JavaBehaviour beforeDelete = new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT);
     
     /**
      * Set the policy component
@@ -96,15 +94,6 @@ public class RmSiteType implements RecordsManagementModel,
 	}
     
     /**
-     * Set node service
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-    
-    /**
      * @param recordsManagementSearchService    records management search service
      */
     public void setRecordsManagementSearchService(RecordsManagementSearchService recordsManagementSearchService)
@@ -119,67 +108,46 @@ public class RmSiteType implements RecordsManagementModel,
     {
         this.capabilityService = capabilityService;
     }
-    
-    /**
-     * Bean initialisation method
-     */
-    public void init()
-    {
-        policyComponent.bindClassBehaviour(NodeServicePolicies.OnCreateNodePolicy.QNAME,
-                                           TYPE_RM_SITE,
-                                           onCreateNode);
-        
-        policyComponent.bindClassBehaviour(NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME, 
-                                           TYPE_RM_SITE, 
-                                           onUpdateProperties);
-        
-        policyComponent.bindClassBehaviour(NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
-                                           TYPE_RM_SITE, 
-                                           beforeDelete);
-    }
 
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
 	@Override
+	@Behaviour
+	(
+	        kind = BehaviourKind.CLASS,
+	        notificationFrequency = NotificationFrequency.FIRST_EVENT
+	)
 	public void onCreateNode(ChildAssociationRef childAssocRef) 
-	{
-	    onCreateNode.disable();
-	    try
-	    {	    
-    		final NodeRef rmSite = childAssocRef.getChildRef();
-            
-            // Do not execute behaviour if this has been created in the archive store
-            if(rmSite.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE) == true)
+	{    
+		final NodeRef rmSite = childAssocRef.getChildRef();
+        
+        // Do not execute behaviour if this has been created in the archive store
+        if(rmSite.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE) == true)
+        {
+            // This is not the spaces store - probably the archive store
+            return;
+        }
+        
+        if (nodeService.exists(rmSite) == true)
+        {
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
-                // This is not the spaces store - probably the archive store
-                return;
-            }
-            
-            if (nodeService.exists(rmSite) == true)
-            {
-                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                public Object doWork()
                 {
-                    public Object doWork()
-                    {
-                    	SiteInfo siteInfo = siteService.getSite(rmSite);
-                    	if (siteInfo != null)
-                    	{	                
-    	                	// Create the file plan component
-    	                	siteService.createContainer(siteInfo.getShortName(), COMPONENT_DOCUMENT_LIBRARY, TYPE_FILE_PLAN, null);
-    	                	
-    	                	// Add the reports
-    	                	recordsManagementSearchService.addReports(siteInfo.getShortName());
-                    	}
-                        return null;
-                    }
-                }, AuthenticationUtil.getAdminUserName());
-            }
-	    }
-	    finally
-	    {
-	        onCreateNode.enable();
-	    }
+                	SiteInfo siteInfo = siteService.getSite(rmSite);
+                	if (siteInfo != null)
+                	{	                
+	                	// Create the file plan component
+	                	siteService.createContainer(siteInfo.getShortName(), COMPONENT_DOCUMENT_LIBRARY, TYPE_FILE_PLAN, null);
+	                	
+	                	// Add the reports
+	                	recordsManagementSearchService.addReports(siteInfo.getShortName());
+                	}
+                    return null;
+                }
+            }, AuthenticationUtil.getAdminUserName());
+        }
 	}
 
 	/**
@@ -189,7 +157,11 @@ public class RmSiteType implements RecordsManagementModel,
 	 * 
 	 * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
 	 */
-    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         if (nodeService.exists(nodeRef) == true)
@@ -208,7 +180,11 @@ public class RmSiteType implements RecordsManagementModel,
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
-    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         final SiteInfo siteInfo = siteService.getSite(nodeRef);

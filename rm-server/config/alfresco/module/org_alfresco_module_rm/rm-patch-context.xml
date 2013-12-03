@@ -3,8 +3,8 @@
 
 <beans>
 
-   <bean id="rm.baseModulePatch" abstract="true" parent="module.baseComponent">	
-      <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>      
+   <bean id="rm.baseModulePatch" abstract="true" parent="module.baseComponent">
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
    </bean>
 
@@ -53,8 +53,8 @@
        <property name="nodeDAO" ref="nodeDAO" />
        <property name="qnameDAO" ref="qnameDAO"/>
    </bean>
-   
-   <bean id="org_alfresco_module_rm_RMv2FilePlanNodeRefPatch" 
+
+   <bean id="org_alfresco_module_rm_RMv2FilePlanNodeRefPatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2FilePlanNodeRefPatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
@@ -70,8 +70,8 @@
        <property name="filePlanService" ref="FilePlanService" />
        <property name="filePlanRoleService" ref="filePlanRoleService" />
    </bean>
-   
-   <bean id="org_alfresco_module_rm_RMv2SavedSearchPatch" 
+
+   <bean id="org_alfresco_module_rm_RMv2SavedSearchPatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2SavedSearchPatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
@@ -155,7 +155,7 @@
        <property name="filePlanRoleService" ref="FilePlanRoleService"/>
        <property name="authorityService" ref="AuthorityService"></property>
    </bean>
-   
+
    <bean id="org_alfresco_module_rm_RMv21ReportServicePatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21ReportServicePatch">
@@ -177,7 +177,24 @@
        <property name="sinceVersion" value="2.1"/>
        <property name="appliesFromVersion" value="2.1"/>
        <property name="fileFolderService" ref="FileFolderService"/>
-       <property name="nodeService" ref="NodeService"/>        
+       <property name="nodeService" ref="NodeService"/>
    </bean>
-   
+
+   <bean id="org_alfresco_module_rm_RMv22ReportTemplatePatch"
+         parent="rm.baseModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.RMv22ReportTemplatePatch">
+       <property name="moduleId" value="org_alfresco_module_rm"/>
+       <property name="name" value="org_alfresco_module_rm_RMv22ReportTemplatePatch"/>
+       <property name="description" value="Patches new versions of the report templates."/>
+       <property name="sinceVersion" value="2.2"/>
+       <property name="appliesFromVersion" value="2.2"/>
+       <property name="dependsOn">
+          <list>
+             <ref bean="org_alfresco_module_rm_RMv21ReportServicePatch" />
+          </list>
+       </property>
+       <property name="nodeService" ref="NodeService"/>
+       <property name="contentService" ref="ContentService"/>
+   </bean>
+
 </beans>

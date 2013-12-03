@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -35,35 +34,25 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Adds a new email template for rejected records to the existing templates
+ * Adds a new transfer/accession report template to the existing report templates
  *
  * @author Tuna Aksoy
- * @since 2.1
+ * @since 2.2
  */
-public class NotificationTemplatePatch_v21 extends ModulePatchComponent
+public class RMv22ReportTemplatePatch extends ModulePatchComponent
 {
-    /** Email template path */
-    private static final String PATH_REJECTED = "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-rejected-email.ftl";
+    /** Report template path */
+    private static final String REPORT_TEMPLATE_PATH = "alfresco/module/org_alfresco_module_rm/bootstrap/report/report_rmr_transferReport.html.ftl";
 
-    /** Reject template config node id*/
-    private static final String CONFIG_NODEID = "record_rejected_template";
-
-    /** Records management notification helper */
-    private RecordsManagementNotificationHelper notificationHelper;
+    /** Report template config node IDs */
+    private static final String TRANSFER_REPORT = "rmr_transferReport";
+    private static final String DESTRUCTION_REPORT = "rmr_destructionReport";
 
     /** Node service */
     private NodeService nodeService;
 
     /** Content service */
     private ContentService contentService;
-
-    /**
-     * @param notificationHelper    notification helper
-     */
-    public void setNotificationHelper(RecordsManagementNotificationHelper notificationHelper)
-    {
-        this.notificationHelper = notificationHelper;
-    }
 
     /**
      * @param nodeService   node service
@@ -84,22 +73,21 @@ public class NotificationTemplatePatch_v21 extends ModulePatchComponent
     @Override
     protected void executePatch() throws Throwable
     {
-        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
-        // get the parent node
-        NodeRef supersededTemplate = notificationHelper.getSupersededTemplate();
-        if (nodeService.exists(nodeRef) == false && nodeService.exists(supersededTemplate) == true)
+        NodeRef transferReport = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TRANSFER_REPORT);
+        NodeRef destructionReport = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DESTRUCTION_REPORT);
+        if (nodeService.exists(transferReport) == false && nodeService.exists(destructionReport) == true)
         {
-            NodeRef parent = nodeService.getPrimaryParent(supersededTemplate).getParentRef();
+            NodeRef parent = nodeService.getPrimaryParent(destructionReport).getParentRef();
+
+            // get the assoc qname
+            QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("report_rmr_transferReport.html.ftl"));
 
             // build the node properties
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(4);
-            props.put(ContentModel.PROP_DESCRIPTION, "Record superseded email template.");
-            props.put(ContentModel.PROP_TITLE, "record-rejected-email.ftl");
-            props.put(ContentModel.PROP_NAME, "record-rejected-email.ftl");
-            props.put(ContentModel.PROP_NODE_UUID, "record_rejected_template");
-
-            // get the assoc qname
-            QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("record-rejected-email.ftl"));
+            props.put(ContentModel.PROP_DESCRIPTION, "Transfer report template.");
+            props.put(ContentModel.PROP_TITLE, "Transfer Report Template");
+            props.put(ContentModel.PROP_NAME, "report_rmr_transferReport.html.ftl");
+            props.put(ContentModel.PROP_NODE_UUID, "rmr_transferReport");
 
             // create the node
             ChildAssociationRef node = nodeService.createNode(parent,
@@ -110,7 +98,7 @@ public class NotificationTemplatePatch_v21 extends ModulePatchComponent
 
             // put the content
             ContentWriter writer = contentService.getWriter(node.getChildRef(), ContentModel.PROP_CONTENT, true);
-            InputStream is = getClass().getClassLoader().getResourceAsStream(PATH_REJECTED);
+            InputStream is = getClass().getClassLoader().getResourceAsStream(REPORT_TEMPLATE_PATH);
             writer.putContent(is);
         }
     }

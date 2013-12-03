@@ -210,7 +210,6 @@
                         </view:properties>
                      </cm:content>
                   </cm:contains>
-                  <!-- FIXME -->
                   <cm:contains>
                      <cm:content view:childName="cm:report_rmr_transferReport.html.ftl">
                         <view:aspects>

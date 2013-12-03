@@ -88,28 +88,18 @@ public class TransferReportAction extends BaseReportAction
     {
         Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(6);
 
-        Map<QName, Serializable> properties = nodeService.getProperties(childRef);
-        String name = (String) properties.get(ContentModel.PROP_NAME);
-        String identifier = (String) properties.get(RecordsManagementModel.PROP_IDENTIFIER);
         boolean isFolder = dictionaryService.isSubClass(nodeService.getType(childRef), ContentModel.TYPE_FOLDER);
-
-        transferNodeProperties.put("name", name);
-        transferNodeProperties.put("identifier", identifier);
         transferNodeProperties.put("isFolder", isFolder);
 
         if (isFolder == true)
         {
-            transferNodeProperties.put("records", (ArrayList<TransferNode>) getRecords(childRef));
+            Map<String, Serializable> folderProperties = getFolderProperties(childRef);
+            transferNodeProperties.putAll(folderProperties);
         }
         else
         {
-            String declaredBy = (String) properties.get(RecordsManagementModel.PROP_DECLARED_BY);
-            Date declaredOn = (Date) properties.get(RecordsManagementModel.PROP_DECLARED_AT);
-            boolean isDeclared = nodeService.hasAspect(childRef, RecordsManagementModel.ASPECT_DECLARED_RECORD);
-
-            transferNodeProperties.put("declaredBy", declaredBy);
-            transferNodeProperties.put("declaredOn", declaredOn);
-            transferNodeProperties.put("isDeclared", isDeclared);
+            Map<String, Serializable> recordProperties = getRecordProperties(childRef);
+            transferNodeProperties.putAll(recordProperties);
         }
 
         return transferNodeProperties;
@@ -128,27 +118,76 @@ public class TransferReportAction extends BaseReportAction
         for (ChildAssociationRef child : assocs)
         {
             NodeRef record = child.getChildRef();
-            if (nodeService.hasAspect(record, RecordsManagementModel.ASPECT_RECORD))
+            if (nodeService.hasAspect(record, RecordsManagementModel.ASPECT_RECORD) == true)
             {
-                Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(6);
-
-                Map<QName, Serializable> properties = nodeService.getProperties(record);
-                String name = (String) properties.get(ContentModel.PROP_NAME);
-                String identifier = (String) properties.get(RecordsManagementModel.PROP_IDENTIFIER);
-                String declaredBy = (String) properties.get(RecordsManagementModel.PROP_DECLARED_BY);
-                Date declaredOn = (Date) properties.get(RecordsManagementModel.PROP_DECLARED_AT);
-                boolean isDeclared = nodeService.hasAspect(record, RecordsManagementModel.ASPECT_DECLARED_RECORD);
-
-                transferNodeProperties.put("name", name);
-                transferNodeProperties.put("identifier", identifier);
-                transferNodeProperties.put("declaredBy", declaredBy);
-                transferNodeProperties.put("declaredOn", declaredOn);
-                transferNodeProperties.put("isDeclared", isDeclared);
-
-                records.add(new TransferNode(record, transferNodeProperties));
+                Map<String, Serializable> recordProperties = getRecordProperties(record);
+                TransferNode transferNode = new TransferNode(record, recordProperties);
+                records.add(transferNode);
             }
         }
         return records;
+    }
+
+    /**
+     * Helper method to get the common transfer node properties
+     *
+     * @param nodeRef   Node reference of the transfer node
+     * @return  Map of the common transfer node properties
+     */
+    private Map<String, Serializable> getCommonProperties(NodeRef nodeRef)
+    {
+        Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(3);
+
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        String name = (String) properties.get(ContentModel.PROP_NAME);
+        String identifier = (String) properties.get(RecordsManagementModel.PROP_IDENTIFIER);
+
+        transferNodeProperties.put("name", name);
+        transferNodeProperties.put("identifier", identifier);
+
+        return transferNodeProperties;
+    }
+
+    /**
+     * Helper method to get the folder specific properties
+     *
+     * @param folder Node reference of the folder
+     * @return Map of the folder specific properties
+     */
+    private Map<String, Serializable> getFolderProperties(NodeRef folder)
+    {
+        Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(3);
+
+        Map<String, Serializable> commonProperties = getCommonProperties(folder);
+        ArrayList<TransferNode> records = (ArrayList<TransferNode>) getRecords(folder);
+        transferNodeProperties.putAll(commonProperties);
+        transferNodeProperties.put("records", records);
+
+        return transferNodeProperties;
+    }
+
+    /**
+     * Helper method to get the record folder properties
+     *
+     * @param record Node reference of the record
+     * @return Map of the record specific properties
+     */
+    private Map<String, Serializable> getRecordProperties(NodeRef record)
+    {
+        Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(5);
+
+        Map<QName, Serializable> properties = nodeService.getProperties(record);
+        String declaredBy = (String) properties.get(RecordsManagementModel.PROP_DECLARED_BY);
+        Date declaredOn = (Date) properties.get(RecordsManagementModel.PROP_DECLARED_AT);
+        boolean isDeclared = nodeService.hasAspect(record, RecordsManagementModel.ASPECT_DECLARED_RECORD);
+
+        Map<String, Serializable> commonProperties = getCommonProperties(record);
+        transferNodeProperties.putAll(commonProperties);
+        transferNodeProperties.put("declaredBy", declaredBy);
+        transferNodeProperties.put("declaredOn", declaredOn);
+        transferNodeProperties.put("isDeclared", isDeclared);
+
+        return transferNodeProperties;
     }
 
     /**

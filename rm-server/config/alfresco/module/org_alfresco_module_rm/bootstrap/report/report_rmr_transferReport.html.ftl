@@ -50,28 +50,36 @@
       <div class="transferred-item">
          <#list properties.transferNodes as transferNode>
             <#if transferNode.properties["isFolder"]>
-               <span class="nodeName">
-                  ${transferNode.properties["name"]?html}
-               </span>
-               (${message("file.report.unique.folder.identifier")}: ${transferNode.properties["identifier"]?html})
-               <div class="records">
-                  <#-- FIXME: Records -->
-               </div>
+               <@generateTransferFolderHTML transferNode/>
             <#else>
-               <div class="record">
-                  <span class="nodeName">
-                     ${transferNode.properties["name"]?html}
-                  </span>
-                  (${message("file.report.unique.record.identifier")}: ${transferNode.properties["identifier"]?html})
-                  <#if transferNode.properties["isDeclared"]>
-                     ${message("file.report.declared.by")}
-                     ${transferNode.properties["declaredBy"]?html}
-                     ${message("file.report.declared.on")}
-                     ${transferNode.properties["declaredOn"]?string(message("file.report.date.format"))?html}
-                  </#if>
-               </div>
+               <@generateTransferRecordHTML transferNode/>
             </#if>
          </#list>
       </div>
    </body>
 </html>
+<#macro generateTransferFolderHTML transferNode>
+   <span class="nodeName">
+      ${transferNode.properties["name"]?html}
+   </span>
+   (${message("file.report.unique.folder.identifier")}: ${transferNode.properties["identifier"]?html})
+   <div class="records">
+      <#list transferNode.properties["records"] as record>
+         <@generateTransferRecordHTML record/>
+      </#list>
+   </div>
+</#macro>
+<#macro generateTransferRecordHTML transferNode>
+   <div class="record">
+      <span class="nodeName">
+         ${transferNode.properties["name"]?html}
+      </span>
+      (${message("file.report.unique.record.identifier")}: ${transferNode.properties["identifier"]?html})
+      <#if transferNode.properties["isDeclared"]>
+         ${message("file.report.declared.by")}
+         ${transferNode.properties["declaredBy"]?html}
+         ${message("file.report.declared.on")}
+         ${transferNode.properties["declaredOn"]?string(message("file.report.date.format"))?html}
+      </#if>
+   </div>
+</#macro>

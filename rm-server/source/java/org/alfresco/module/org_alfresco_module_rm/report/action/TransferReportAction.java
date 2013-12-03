@@ -86,26 +86,69 @@ public class TransferReportAction extends BaseReportAction
      */
     private Map<String, Serializable> getTransferNodeProperties(NodeRef childRef)
     {
-        Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(3);
+        Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(6);
 
         Map<QName, Serializable> properties = nodeService.getProperties(childRef);
-        transferNodeProperties.put("name", properties.get(ContentModel.PROP_NAME));
-        transferNodeProperties.put("identifier", properties.get(RecordsManagementModel.PROP_IDENTIFIER));
-
+        String name = (String) properties.get(ContentModel.PROP_NAME);
+        String identifier = (String) properties.get(RecordsManagementModel.PROP_IDENTIFIER);
         boolean isFolder = dictionaryService.isSubClass(nodeService.getType(childRef), ContentModel.TYPE_FOLDER);
+
+        transferNodeProperties.put("name", name);
+        transferNodeProperties.put("identifier", identifier);
         transferNodeProperties.put("isFolder", isFolder);
 
-        if (isFolder == false)
+        if (isFolder == true)
         {
-            boolean isDeclared = nodeService.hasAspect(childRef, RecordsManagementModel.ASPECT_DECLARED_RECORD);
+            transferNodeProperties.put("records", (ArrayList<TransferNode>) getRecords(childRef));
+        }
+        else
+        {
             String declaredBy = (String) properties.get(RecordsManagementModel.PROP_DECLARED_BY);
             Date declaredOn = (Date) properties.get(RecordsManagementModel.PROP_DECLARED_AT);
-            transferNodeProperties.put("isDeclared", isDeclared);
+            boolean isDeclared = nodeService.hasAspect(childRef, RecordsManagementModel.ASPECT_DECLARED_RECORD);
+
             transferNodeProperties.put("declaredBy", declaredBy);
             transferNodeProperties.put("declaredOn", declaredOn);
+            transferNodeProperties.put("isDeclared", isDeclared);
         }
 
         return transferNodeProperties;
+    }
+
+    /**
+     * Helper method to get the list of records (with their properties) within a folder
+     *
+     * @param childRef  Node reference of the folder
+     * @return List of records within the specified folder
+     */
+    private List<TransferNode> getRecords(NodeRef childRef)
+    {
+        List<TransferNode> records = new ArrayList<TransferNode>(4);
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(childRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+        for (ChildAssociationRef child : assocs)
+        {
+            NodeRef record = child.getChildRef();
+            if (nodeService.hasAspect(record, RecordsManagementModel.ASPECT_RECORD))
+            {
+                Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(6);
+
+                Map<QName, Serializable> properties = nodeService.getProperties(record);
+                String name = (String) properties.get(ContentModel.PROP_NAME);
+                String identifier = (String) properties.get(RecordsManagementModel.PROP_IDENTIFIER);
+                String declaredBy = (String) properties.get(RecordsManagementModel.PROP_DECLARED_BY);
+                Date declaredOn = (Date) properties.get(RecordsManagementModel.PROP_DECLARED_AT);
+                boolean isDeclared = nodeService.hasAspect(record, RecordsManagementModel.ASPECT_DECLARED_RECORD);
+
+                transferNodeProperties.put("name", name);
+                transferNodeProperties.put("identifier", identifier);
+                transferNodeProperties.put("declaredBy", declaredBy);
+                transferNodeProperties.put("declaredOn", declaredOn);
+                transferNodeProperties.put("isDeclared", isDeclared);
+
+                records.add(new TransferNode(record, transferNodeProperties));
+            }
+        }
+        return records;
     }
 
     /**

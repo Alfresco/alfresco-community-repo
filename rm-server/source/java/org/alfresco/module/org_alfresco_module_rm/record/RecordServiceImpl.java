@@ -813,8 +813,15 @@ public class RecordServiceImpl implements RecordService,
             writer.putContent(reader);
         }
 
-        // make record
-        makeRecord(record);
+        // Check if the "record" aspect has been applied already.
+        // In case of filing a report the created node will be made
+        // a record within the "onCreateChildAssociation" method if
+        // a destination for the report has been selected.
+        if (nodeService.hasAspect(record, ASPECT_RECORD) == false)
+        {
+            // make record
+            makeRecord(record);
+        }
 
         return record;
     }

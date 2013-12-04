@@ -22,10 +22,12 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.report.Report;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
+import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -74,7 +76,10 @@ public abstract class BaseReportAction extends RMActionExecuterAbstractBase impl
         Report report = reportService.generateReport(reportType, actionedUponNodeRef, MimetypeMap.MIMETYPE_HTML, addProperties(actionedUponNodeRef));
 
         NodeRef destination = getDestination(action);
-        reportService.fileReport(destination, report);
+        NodeRef filedReport = reportService.fileReport(destination, report);
+
+        String filedReportName = (String) nodeService.getProperty(filedReport, ContentModel.PROP_NAME);
+        action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, filedReportName);
     }
 
     /**

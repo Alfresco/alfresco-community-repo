@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
@@ -37,6 +38,7 @@ import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -74,6 +76,9 @@ public class RecordFolderType extends    BaseBehaviourBean
     /** disposition service */
     private DispositionService dispositionService;
     
+    /** vital record service */
+    protected VitalRecordService vitalRecordService;
+    
     /**
      * @param recordService record service
      */
@@ -96,6 +101,14 @@ public class RecordFolderType extends    BaseBehaviourBean
     public void setDispositionService(DispositionService dispositionService)
     {
         this.dispositionService = dispositionService;
+    }
+    
+    /**
+     * @param vitalRecordService    vital record service
+     */
+    public void setVitalRecordService(VitalRecordService vitalRecordService)
+    {
+        this.vitalRecordService = vitalRecordService;
     }
     
     /**
@@ -240,6 +253,42 @@ public class RecordFolderType extends    BaseBehaviourBean
                 throw new AlfrescoRuntimeException("You can't add new items to a closed record folder.");
             }
         }
+    }
+    
+    /**
+     * On transaction commit
+     * 
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+     */
+    @Behaviour
+    (
+       kind = BehaviourKind.ASSOCIATION,
+       policy = "alf:onCreateChildAssociation",
+       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
+    {
+        final NodeRef recordFolder = childAssocRef.getChildRef();
+        
+        behaviourFilter.disableBehaviour();
+        try
+        {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    // setup vital record definition
+                    vitalRecordService.setupVitalRecordDefinition(recordFolder);
+
+                    return null;
+                }
+            });
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour();
+        }    
     }
     
     /**

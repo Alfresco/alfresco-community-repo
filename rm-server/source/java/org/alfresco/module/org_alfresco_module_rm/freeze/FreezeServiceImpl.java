@@ -34,13 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
-import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -62,8 +56,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class FreezeServiceImpl extends    ServiceBaseImpl
                                implements FreezeService,
-                                          RecordsManagementModel,
-                                          NodeServicePolicies.BeforeDeleteNodePolicy
+                                          RecordsManagementModel
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(FreezeServiceImpl.class);
@@ -74,9 +67,6 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
 
     /** Hold node reference key */
     private static final String KEY_HOLD_NODEREF = "holdNodeRef";
-
-    /** Policy Component */
-    protected PolicyComponent policyComponent;
 
     /** Record service */
     protected RecordService recordService;
@@ -92,15 +82,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
 
     /** Record folder service */
     protected RecordFolderService recordFolderService;
-
-    /**
-     * @param policyComponent policy component
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
-
+    
     /**
      * @param recordService record service
      */
@@ -139,71 +121,6 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
-    }
-
-    /**
-     * Init service
-     */
-    public void init()
-    {
-        policyComponent.bindClassBehaviour(
-        		NodeServicePolicies.BeforeDeleteNodePolicy.QNAME,
-        		this,
-        		new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
-    }
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public void beforeDeleteNode(final NodeRef nodeRef)
-    {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                if (nodeService.exists(nodeRef) == true &&
-                    filePlanService.isFilePlanComponent(nodeRef) == true)
-                {
-                    if (isFrozen(nodeRef) == true)
-                    {
-                        // never allowed to delete a frozen node
-                        throw new AccessDeniedException("Frozen nodes can not be deleted.");
-                    }
-
-                    // check children
-                    checkChildren(nodeService.getChildAssocs(nodeRef));
-                }
-                return null;
-            }
-        });
-    }
-
-    /**
-     * Checks the children for frozen nodes. Throws security error if any are
-     * found.
-     *
-     * @param assocs
-     */
-    private void checkChildren(List<ChildAssociationRef> assocs)
-    {
-        for (ChildAssociationRef assoc : assocs)
-        {
-            // we only care about primary children
-            if (assoc.isPrimary() == true)
-            {
-                NodeRef nodeRef = assoc.getChildRef();
-                if (isFrozen(nodeRef) == true)
-                {
-                    // never allowed to delete a node with a frozen child
-                    throw new AccessDeniedException("Can not delete node, because it contains a frozen child node.");
-                }
-
-                // check children
-                checkChildren(nodeService.getChildAssocs(nodeRef));
-            }
-        }
     }
 
     /**

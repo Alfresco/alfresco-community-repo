@@ -77,7 +77,8 @@
    <bean id="rma.recordFolder" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.RecordFolderType" parent="rm.baseBehaviour">
    	  <property name="recordService" ref="RecordService" />   	  
    	  <property name="recordFolderService" ref="RecordFolderService" />
-   	  <property name="dispositionService" ref="DispositionService" />    
+   	  <property name="dispositionService" ref="DispositionService" />  
+   	  <property name="vitalRecordService" ref="VitalRecordService" />  
    </bean>
 
    <bean id="rma.dispositionActionDefinition" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.DispositionActionDefinitionType" parent="rm.baseBehaviour">
@@ -114,12 +115,23 @@
    </bean>
    
    <bean id="rma.dispositionLifecycle" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.DispositionLifecycleAspect" parent="rm.baseBehaviour">
+      <property name="dispositionService" ref="DispositionService"/>
    </bean>
    
    <bean id="rma.recordSearch" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.RecordSearchAspect" parent="rm.baseBehaviour">
    </bean>
    
    <bean id="rma.vitalRecord" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.VitalRecordAspect" parent="rm.baseBehaviour">
+   </bean>
+   
+   <bean id="rma.freeze" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.FrozenAspect" parent="rm.baseBehaviour">
+      <property name="filePlanService" ref="FilePlanService" />
+      <property name="freezeService" ref="FreezeService" />
+   </bean>
+   
+   <bean id="rma.vitalRecordDefinition" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.VitalRecordDefinitionAspect" parent="rm.baseBehaviour">
+      <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
+   	  <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
    </bean>
 
    <!--  Base bean definition for customisable types bootstrap -->

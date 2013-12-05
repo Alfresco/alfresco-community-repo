@@ -18,13 +18,19 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -38,7 +44,19 @@ import org.alfresco.service.namespace.QName;
    defaultType = "rma:dispositionLifecycle"
 )
 public class DispositionLifecycleAspect extends BaseBehaviourBean
+                                        implements NodeServicePolicies.OnAddAspectPolicy
 {
+    /** disposition service */
+    protected DispositionService dispositionService;
+    
+    /**
+     * @param dispositionService    disposition service
+     */
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
+    }
+    
     /**
      * Copy callback for disposition lifecycle
      */
@@ -50,5 +68,30 @@ public class DispositionLifecycleAspect extends BaseBehaviourBean
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
         return new DoNothingCopyBehaviourCallback();
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
+    public void onAddAspect(final NodeRef nodeRef, final QName aspect)
+    {
+        if (nodeService.exists(nodeRef) == true)
+        {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    dispositionService.refreshDispositionAction(nodeRef);
+                    return null;
+                }
+            });
+        }
     }   
 }

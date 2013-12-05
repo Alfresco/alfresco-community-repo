@@ -47,11 +47,19 @@
                                              </tr>
                                              <tr>
                                                 <td><i>${message("file.report.disposition.authority")}:</i></td>
-                                                <td>${node.properties["rma:recordSearchDispositionAuthority"]}</td>
+                                                <td>
+                                                   <#if node.properties["rma:recordSearchDispositionAuthority"]??>
+                                                   ${node.properties["rma:recordSearchDispositionAuthority"]}
+                                                   </#if>
+                                                </td>
                                              </tr>
                                              <tr>
                                                 <td><i>${message("file.report.disposition.instructions")}:</i></td>
-                                                <td>${node.properties["rma:recordSearchDispositionInstructions"]}</td>
+                                                <td>
+                                                   <#if node.properties["rma:recordSearchDispositionInstructions"]??>
+                                                   ${node.properties["rma:recordSearchDispositionInstructions"]}
+                                                   </#if>
+                                                </td>
                                              </tr>
                                           </table>
                                           <#if  node.childAssociations["cm:contains"]??>

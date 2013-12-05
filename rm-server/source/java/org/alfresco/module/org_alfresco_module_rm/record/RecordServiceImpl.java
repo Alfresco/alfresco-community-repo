@@ -41,7 +41,7 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.model.security.ModelAccessDeniedException;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.RecordAspect;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -52,6 +52,9 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourBean;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -79,7 +82,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -93,11 +95,11 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 2.1
  */
+@BehaviourBean
 public class RecordServiceImpl implements RecordService,
                                           RecordsManagementModel,
                                           RecordsManagementCustomModel,
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                          NodeServicePolicies.OnUpdatePropertiesPolicy,
                                           NodeServicePolicies.OnAddAspectPolicy,
                                           NodeServicePolicies.OnRemoveAspectPolicy
 {
@@ -194,6 +196,9 @@ public class RecordServiceImpl implements RecordService,
 
     /** Permission service */
     private PermissionService permissionService;
+    
+    /** Record aspect */
+    private RecordAspect recordAspect;
 
     /** List of available record meta-data aspects */
     private Set<QName> recordMetaDataAspects;
@@ -203,10 +208,6 @@ public class RecordServiceImpl implements RecordService,
                                                             this,
                                                             "onCreateChildAssociation",
                                                             NotificationFrequency.FIRST_EVENT);
-    private JavaBehaviour onUpdateProperties = new JavaBehaviour(
-                                                            this,
-                                                            "onUpdateProperties",
-                                                            NotificationFrequency.EVERY_EVENT);
     private JavaBehaviour onDeleteDeclaredRecordLink = new JavaBehaviour(
                                                             this,
                                                             "onDeleteDeclaredRecordLink",
@@ -347,6 +348,14 @@ public class RecordServiceImpl implements RecordService,
     {
         this.permissionService = permissionService;
     }
+    
+    /**
+     * @param recordAspect  record aspect
+     */
+    public void setRecordAspect(RecordAspect recordAspect)
+    {
+        this.recordAspect = recordAspect;
+    }
 
     /**
      * Init method
@@ -358,31 +367,23 @@ public class RecordServiceImpl implements RecordService,
                 TYPE_RECORD_FOLDER,
                 ContentModel.ASSOC_CONTAINS,
                 onCreateChildAssociation);
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
-                ASPECT_RECORD,
-                onUpdateProperties);
+        
         policyComponent.bindAssociationBehaviour(
                 NodeServicePolicies.BeforeDeleteChildAssociationPolicy.QNAME,
                 ContentModel.TYPE_FOLDER,
                 ContentModel.ASSOC_CONTAINS,
                 onDeleteDeclaredRecordLink);
-
-        // Handle the special case when we are dealing with new records that are being added via a file protocol
-        policyComponent.bindClassBehaviour(
-		        NodeServicePolicies.OnAddAspectPolicy.QNAME,
-		        ContentModel.ASPECT_NO_CONTENT,
-		        new JavaBehaviour(this, "onAddAspect", NotificationFrequency.EVERY_EVENT));
-		policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnRemoveAspectPolicy.QNAME,
-                ContentModel.ASPECT_NO_CONTENT,
-                new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.EVERY_EVENT));
     }
 
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            type = "sys:noContent"
+    )
     public void onRemoveAspect(NodeRef nodeRef, QName aspect)
     {
 
@@ -411,6 +412,11 @@ public class RecordServiceImpl implements RecordService,
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            type = "sys:noContent"
+    )
     public void onAddAspect(NodeRef nodeRef, QName aspect)
     {
         switchNames(nodeRef);
@@ -510,69 +516,6 @@ public class RecordServiceImpl implements RecordService,
     }
 
     /**
-     * Ensure that the user only updates record properties that they have permission to.
-     *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
-     */
-    @Override
-    public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
-    {
-        onUpdateProperties.disable();
-        try
-        {
-            if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
-                AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
-                nodeService.exists(nodeRef) == true)
-            {
-                if (isRecord(nodeRef) == true)
-                {
-                    for (QName property : after.keySet())
-                    {
-                        Serializable beforeValue = null;
-                        if (before != null)
-                        {
-                            beforeValue = before.get(property);
-                        }
-
-                        Serializable afterValue = null;
-                        if (after != null)
-                        {
-                            afterValue = after.get(property);
-                        }
-
-                        boolean propertyUnchanged = false;
-                        if (beforeValue != null && afterValue != null &&
-                            beforeValue instanceof Date && afterValue instanceof Date)
-                        {
-                            // deal with date values
-                            propertyUnchanged = (((Date)beforeValue).compareTo((Date)afterValue) == 0);
-                        }
-                        else
-                        {
-                            // otherwise
-                            propertyUnchanged = EqualsHelper.nullSafeEquals(beforeValue, afterValue);
-                        }
-
-                        if (propertyUnchanged == false &&
-                            isPropertyEditable(nodeRef, property) == false)
-                        {
-                            // the user can't edit the record property
-                            throw new ModelAccessDeniedException(
-                                "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
-                                " does not have the permission to edit the record property " + property.toString() +
-                                " on the node " + nodeRef.toString());
-                        }
-                    }
-                }
-            }
-        }
-        finally
-        {
-            onUpdateProperties.enable();
-        }
-    }
-
-    /**
      * Looking specifically at linked content that was declared a record from a non-rm site.
      * When the site or the folder that the link was declared in is deleted we need to remove
      * the extended security property accounts in the tree
@@ -599,7 +542,7 @@ public class RecordServiceImpl implements RecordService,
     @Override
     public void disablePropertyEditableCheck()
     {
-        onUpdateProperties.disable();
+        recordAspect.getBehaviour("onUpdateProperties").disable();
     }
 
     /**
@@ -608,7 +551,7 @@ public class RecordServiceImpl implements RecordService,
     @Override
     public void enablePropertyEditableCheck()
     {
-        onUpdateProperties.enable();
+        recordAspect.getBehaviour("onUpdateProperties").enable();
     }
 
     /**

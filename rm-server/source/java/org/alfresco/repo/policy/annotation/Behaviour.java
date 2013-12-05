@@ -34,6 +34,9 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface Behaviour
 {
+    /** lookup name of the behaviour, if none specified behaviour is not recorded in the registry */
+    String name() default "";
+    
     /** kind of behaviour */
     BehaviourKind kind();
     

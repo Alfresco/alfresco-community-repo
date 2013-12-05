@@ -88,9 +88,10 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
     }
     
     /**
+     * Register behaviours.
      * 
-     * @param bean
-     * @param beanName
+     * @param bean      bean
+     * @param beanName  bean name
      */
     private void registerBehaviours(Object bean, String beanName)
     {   
@@ -115,11 +116,12 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
     }
     
     /**
+     * Register behaviour.
      * 
-     * @param behaviourBean
-     * @param bean
-     * @param beanName
-     * @param method
+     * @param behaviourBean behaviour bean annotation
+     * @param bean          bean
+     * @param beanName      bean name
+     * @param method        method
      */
     private void registerBehaviour(BehaviourBean behaviourBean, Object bean, String beanName, Method method)
     {
@@ -138,19 +140,30 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
         {
             if (behaviour.isService() == false)
             {                
-                logger.debug("   ... registering " + behaviour.kind() + " behaviour for " + beanName + "." + method.getName() + 
+                logger.debug("   ... binding " + behaviour.kind() + " behaviour for " + beanName + "." + method.getName() + 
                                    " for policy " + policy.toString() + 
                                    " and type " + type.toString());
             }
             else
             {
-                logger.debug("   ... registering " + behaviour.kind() + " service behaviour for " + beanName + "." + method.getName() + 
+                logger.debug("   ... binding " + behaviour.kind() + " service behaviour for " + beanName + "." + method.getName() + 
                                    " for policy " + policy.toString());
             }
         }
         
         // create java behaviour object
         JavaBehaviour javaBehaviour = new JavaBehaviour(bean, method.getName(), behaviour.notificationFrequency());
+        
+        // determine whether we should register the behaviour
+        if (bean instanceof BehaviourRegistry && behaviour.name().isEmpty() == false)
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("   ... adding behaviour to registry with name " + behaviour.name());
+            }
+            
+            ((BehaviourRegistry)bean).registerBehaviour(behaviour.name(), javaBehaviour);
+        }
         
         // deal with class behaviours
         if (BehaviourKind.CLASS.equals(behaviour.kind()) == true)

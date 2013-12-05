@@ -11,8 +11,8 @@
 	   <property name="namespaceService" ref="NamespaceService" />
 	   <property name="dictionaryService" ref="DictionaryService" />
 	   <property name="nodeService" ref="NodeService" />
-	   <property name="policyComponent" ref="policyComponent" />
 	   <property name="dispositionService" ref="dispositionService" />
+	   <property name="behaviourFilter" ref="policyBehaviourFilter" />
 	</bean>
 	
 	<bean id="disposition.properties.cutoffdate" parent="disposition.properties.base">

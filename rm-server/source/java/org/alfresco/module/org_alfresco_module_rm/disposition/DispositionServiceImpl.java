@@ -35,11 +35,7 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
-import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -59,8 +55,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DispositionServiceImpl implements
                                         DispositionService,
-                                        RecordsManagementModel,
-                                        NodeServicePolicies.OnAddAspectPolicy
+                                        RecordsManagementModel
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(DispositionServiceImpl.class);
@@ -89,14 +84,8 @@ public class DispositionServiceImpl implements
     /** Record Service */
     private RecordService recordService;
 
-    /** Policy component */
-    private PolicyComponent policyComponent;
-
     /** Disposition properties */
     private Map<QName, DispositionProperty> dispositionProperties = new HashMap<QName, DispositionProperty>(4);
-
-    /** Behaviours */
-    private JavaBehaviour onAddAspect;
 
     /**
      * Set node service
@@ -139,14 +128,6 @@ public class DispositionServiceImpl implements
     }
 
     /**
-     * @param policyComponent   policy component
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
-
-    /**
      * @param filePlanService	file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
@@ -178,27 +159,6 @@ public class DispositionServiceImpl implements
     public void setDispositionSelectionStrategy(DispositionSelectionStrategy dispositionSelectionStrategy)
     {
         this.dispositionSelectionStrategy = dispositionSelectionStrategy;
-    }
-
-    /**
-     * Bean initialisation
-     */
-    public void init()
-    {
-        onAddAspect = new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT);
-        policyComponent.bindClassBehaviour(NodeServicePolicies.OnAddAspectPolicy.QNAME, ASPECT_DISPOSITION_LIFECYCLE, onAddAspect);
-    }
-
-    /**
-     * Initialises the details of the disposition life cycle
-     */
-    @Override
-    public void onAddAspect(NodeRef nodeRef, QName aspect)
-    {
-        if (nodeService.exists(nodeRef) == true)
-        {
-            refreshDispositionAction(nodeRef);
-        }
     }
 
     /**

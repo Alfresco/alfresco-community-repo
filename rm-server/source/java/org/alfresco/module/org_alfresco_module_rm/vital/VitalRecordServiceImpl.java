@@ -23,26 +23,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
-import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.alfresco.util.PropertyMap;
 
 /**
  * Vital record service interface implementation.
@@ -51,21 +39,11 @@ import org.alfresco.util.PropertyMap;
  * @since 2.0
  */
 public class VitalRecordServiceImpl implements VitalRecordService,
-                                               RecordsManagementModel,
-                                               NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                               NodeServicePolicies.OnCreateChildAssociationPolicy
+                                               RecordsManagementModel
 {
     /** Services */
     private NodeService nodeService;
-    private PolicyComponent policyComponent;
-    private RecordsManagementActionService rmActionService;
-    private FilePlanAuthenticationService filePlanAuthenticationService;
     private FilePlanService filePlanService;
-    private RecordFolderService recordFolderService;
-
-    /** Behaviours */
-    private JavaBehaviour onUpdateProperties;
-    private JavaBehaviour onCreateChildAssociation;
 
     /**
      * @param nodeService   node service
@@ -76,125 +54,12 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     }
 
     /**
-     * @param policyComponent   policy component
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
-
-    /**
-     * @param rmActionService   records management action service
-     */
-    public void setRecordsManagementActionService(RecordsManagementActionService rmActionService)
-    {
-        this.rmActionService = rmActionService;
-    }
-
-    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
-    {
-        this.filePlanAuthenticationService = filePlanAuthenticationService;
-    }
-
-    /**
      * @param filePlanService	file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
-
-    /**
-     * @param recordFolderService
-     */
-    public void setRecordFolderService(RecordFolderService recordFolderService)
-    {
-        this.recordFolderService = recordFolderService;
-    }
-
-    /**
-     * Init method.
-     */
-    public void init()
-    {
-        onUpdateProperties = new JavaBehaviour(this, "onUpdateProperties", NotificationFrequency.TRANSACTION_COMMIT);
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
-                ASPECT_VITAL_RECORD_DEFINITION,
-                onUpdateProperties);
-
-        onCreateChildAssociation = new JavaBehaviour(this, "onCreateChildAssociation", NotificationFrequency.TRANSACTION_COMMIT);
-        policyComponent.bindAssociationBehaviour(
-                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
-                TYPE_RECORD_FOLDER,
-                ContentModel.ASSOC_CONTAINS,
-                onCreateChildAssociation);
-    }
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
-     */
-    @Override
-    public void onUpdateProperties(final NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
-    {
-        if (nodeService.exists(nodeRef) == true &&
-            nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
-        {
-            // check that vital record definition has been changed in the first place
-            Map<QName, Serializable> changedProps = PropertyMap.getChangedProperties(before, after);
-            if (changedProps.containsKey(PROP_VITAL_RECORD_INDICATOR) == true ||
-                changedProps.containsKey(PROP_REVIEW_PERIOD) == true)
-            {
-                filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>()
-                {
-                    @Override
-                    public Void doWork() throws Exception
-                    {
-                        rmActionService.executeRecordsManagementAction(nodeRef, "broadcastVitalRecordDefinition");
-                        return null;
-                    }}
-                );
-            }
-        }
-    }
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
-     */
-    public void onCreateChildAssociation(ChildAssociationRef childAssociationRef, boolean bNew)
-    {
-        if (childAssociationRef != null)
-        {
-           final NodeRef nodeRef = childAssociationRef.getChildRef();
-           if (nodeService.exists(nodeRef) == true)
-           {
-              onCreateChildAssociation.disable();
-              onUpdateProperties.disable();
-              try
-              {
-                  AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-                  {
-                      @Override
-                      public Void doWork() throws Exception
-                      {
-                          if (filePlanService.isRecordCategory(nodeRef) == true ||
-                              recordFolderService.isRecordFolder(nodeRef) == true)
-                          {
-                              setupVitalRecordDefinition(nodeRef);
-                          }
-
-                          return null;
-                      }
-                  });
-              }
-              finally
-              {
-                  onCreateChildAssociation.enable();
-                  onUpdateProperties.enable();
-              }
-           }
-        }
-    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService#setupVitalRecordDefinition(org.alfresco.service.cmr.repository.NodeRef)

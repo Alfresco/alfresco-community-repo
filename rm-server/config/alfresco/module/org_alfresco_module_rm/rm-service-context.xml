@@ -44,17 +44,11 @@
         <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
     </bean>
 
-    
-
     <!--  Vital Record Service -->
 
-    <bean id="vitalRecordService" class="org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl" init-method="init">
-        <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
+    <bean id="vitalRecordService" class="org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl">
         <property name="nodeService" ref="NodeService"/>
-        <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
-        <property name="policyComponent" ref="policyComponent"/>
         <property name="filePlanService" ref="FilePlanService" />
-        <property name="recordFolderService" ref="RecordFolderService" />
     </bean>
 
     <bean id="VitalRecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -104,12 +98,11 @@
     </bean>
 
     <!--  Disposition Service -->
-    <bean id="dispositionService" class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl" init-method="init">
+    <bean id="dispositionService" class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl">
         <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="dictionaryService" ref="DictionaryService"/>
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
-        <property name="policyComponent" ref="policyComponent" />
         <property name="filePlanService" ref="FilePlanService" />
         <property name="recordFolderService" ref="RecordFolderService"/>
         <property name="recordService" ref="RecordService"/>
@@ -963,8 +956,7 @@
 
     <!--  Freeze Service  -->
 
-    <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl" init-method="init">
-        <property name="policyComponent" ref="policyComponent" />
+    <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl">
         <property name="nodeService" ref="nodeService" />
         <property name="dictionaryService" ref="DictionaryService" />
         <property name="recordService" ref="RecordService" />

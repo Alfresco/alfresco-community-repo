@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
@@ -15,7 +15,10 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -47,7 +50,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 	private ModelSecurityService modelSecurityService;
 	private FilePlanRoleService filePlanRoleService;
 	private CapabilityService capabilityService;
-	
+
     /** test values */
     public static final String DEFAULT_DISPOSITION_AUTHORITY = "disposition authority";
     public static final String DEFAULT_DISPOSITION_INSTRUCTIONS = "disposition instructions";
@@ -55,7 +58,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
     public static final String DEFAULT_EVENT_NAME = "case_closed";
     public static final String PERIOD_NONE = "none|0";
     public static final String PERIOD_IMMEDIATELY = "immediately|0";
-	
+
 	public CommonRMTestUtils(ApplicationContext applicationContext)
 	{
 		dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
@@ -66,9 +69,9 @@ public class CommonRMTestUtils implements RecordsManagementModel
 		filePlanRoleService = (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");
 		capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
 	}
-	
+
     /**
-     * 
+     *
      * @param container
      * @return
      */
@@ -76,62 +79,95 @@ public class CommonRMTestUtils implements RecordsManagementModel
     {
         return createBasicDispositionSchedule(container, DEFAULT_DISPOSITION_INSTRUCTIONS, DEFAULT_DISPOSITION_AUTHORITY, false, true);
     }
-    
+
     /**
-     * 
+    *
+    * @param container
+    * @param dispositionInstructions
+    * @param dispositionAuthority
+    * @param isRecordLevel
+    * @param defaultDispositionActions
+    * @return
+    */
+   public DispositionSchedule createBasicDispositionSchedule(
+                                   NodeRef container,
+                                   String dispositionInstructions,
+                                   String dispositionAuthority,
+                                   boolean isRecordLevel,
+                                   boolean defaultDispositionActions)
+   {
+       return createDispositionSchedule(container, dispositionInstructions, dispositionAuthority, isRecordLevel, defaultDispositionActions, false);
+   }
+
+    /**
+     *
      * @param container
+     * @param dispositionInstructions
+     * @param dispositionAuthority
      * @param isRecordLevel
      * @param defaultDispositionActions
+     * @param extendedDispositionSchedule
      * @return
      */
-    public DispositionSchedule createBasicDispositionSchedule(
-                                    NodeRef container, 
+    public DispositionSchedule createDispositionSchedule(
+                                    NodeRef container,
                                     String dispositionInstructions,
                                     String dispositionAuthority,
-                                    boolean isRecordLevel, 
-                                    boolean defaultDispositionActions)
+                                    boolean isRecordLevel,
+                                    boolean defaultDispositionActions,
+                                    boolean extendedDispositionSchedule)
     {
         Map<QName, Serializable> dsProps = new HashMap<QName, Serializable>(3);
         dsProps.put(PROP_DISPOSITION_AUTHORITY, dispositionAuthority);
         dsProps.put(PROP_DISPOSITION_INSTRUCTIONS, dispositionInstructions);
         dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, isRecordLevel);
-        DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(container, dsProps);                
-        
+        DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(container, dsProps);
+
         if (defaultDispositionActions == true)
         {
             Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
-            adParams.put(PROP_DISPOSITION_ACTION_NAME, "cutoff");
+            adParams.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
             adParams.put(PROP_DISPOSITION_DESCRIPTION, DEFAULT_DISPOSITION_DESCRIPTION);
-            
+
             List<String> events = new ArrayList<String>(1);
             events.add(DEFAULT_EVENT_NAME);
             adParams.put(PROP_DISPOSITION_EVENT, (Serializable)events);
-            
+
             dispositionService.addDispositionActionDefinition(dispositionSchedule, adParams);
-            
+
+            if (extendedDispositionSchedule == true)
+            {
+                adParams = new HashMap<QName, Serializable>(3);
+                adParams.put(PROP_DISPOSITION_ACTION_NAME, TransferAction.NAME);
+                adParams.put(PROP_DISPOSITION_DESCRIPTION, DEFAULT_DISPOSITION_DESCRIPTION);
+                adParams.put(PROP_DISPOSITION_PERIOD, PERIOD_IMMEDIATELY);
+
+                dispositionService.addDispositionActionDefinition(dispositionSchedule, adParams);
+            }
+
             adParams = new HashMap<QName, Serializable>(3);
-            adParams.put(PROP_DISPOSITION_ACTION_NAME, "destroy");
+            adParams.put(PROP_DISPOSITION_ACTION_NAME, DestroyAction.NAME);
             adParams.put(PROP_DISPOSITION_DESCRIPTION, DEFAULT_DISPOSITION_DESCRIPTION);
-            adParams.put(PROP_DISPOSITION_PERIOD, "immediately|0");            
-            
+            adParams.put(PROP_DISPOSITION_PERIOD, PERIOD_IMMEDIATELY);
+
             dispositionService.addDispositionActionDefinition(dispositionSchedule, adParams);
         }
-        
+
         return dispositionSchedule;
     }
-    
+
     public NodeRef createRecord(NodeRef recordFolder, String name)
     {
         return createRecord(recordFolder, name, null, "Some test content");
     }
-    
+
     public NodeRef createRecord(NodeRef recordFolder, String name, String title)
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
         props.put(ContentModel.PROP_TITLE, title);
         return createRecord(recordFolder, name, props, "Some test content");
     }
-    
+
     public NodeRef createRecord(NodeRef recordFolder, String name, Map<QName, Serializable> properties, String content)
 	{
     	// Create the document
@@ -143,21 +179,21 @@ public class CommonRMTestUtils implements RecordsManagementModel
         {
             properties.put(ContentModel.PROP_NAME, name);
         }
-        NodeRef recordOne = nodeService.createNode(recordFolder, 
-                                                        ContentModel.ASSOC_CONTAINS, 
-                                                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
+        NodeRef recordOne = nodeService.createNode(recordFolder,
+                                                        ContentModel.ASSOC_CONTAINS,
+                                                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
                                                         ContentModel.TYPE_CONTENT,
-                                                        properties).getChildRef();       
-        
+                                                        properties).getChildRef();
+
         // Set the content
         ContentWriter writer = contentService.getWriter(recordOne, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
         writer.putContent(content);
-        
+
         return recordOne;
-	}   
-      
+	}
+
     public void declareRecord(final NodeRef record)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -170,8 +206,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
                 {
                     // Declare record
                     nodeService.setProperty(record, RecordsManagementModel.PROP_PUBLICATION_DATE, new Date());
-                    nodeService.setProperty(record, RecordsManagementModel.PROP_MEDIA_TYPE, "mediaTypeValue"); 
-                    nodeService.setProperty(record, RecordsManagementModel.PROP_FORMAT, "formatValue"); 
+                    nodeService.setProperty(record, RecordsManagementModel.PROP_MEDIA_TYPE, "mediaTypeValue");
+                    nodeService.setProperty(record, RecordsManagementModel.PROP_FORMAT, "formatValue");
                     nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_RECEIVED, new Date());
                     nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_FILED, new Date());
                     nodeService.setProperty(record, RecordsManagementModel.PROP_ORIGINATOR, "origValue");
@@ -183,14 +219,14 @@ public class CommonRMTestUtils implements RecordsManagementModel
                 {
                     modelSecurityService.setEnabled(true);
                 }
-                
+
                 return null;
             }
-            
+
         }, AuthenticationUtil.getAdminUserName());
-        
+
 	}
-    
+
     public void closeFolder(final NodeRef recordFolder)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -211,7 +247,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
             }
         }, AuthenticationUtil.getAdminUserName());
     }
-    
+
     public void freeze(final NodeRef nodeRef)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -222,13 +258,13 @@ public class CommonRMTestUtils implements RecordsManagementModel
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
                 params.put(FreezeAction.PARAM_REASON, "Freeze reason.");
                 actionService.executeRecordsManagementAction(nodeRef, "freeze", params);
-                
+
                 return null;
             }
-            
+
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     public void unfreeze(final NodeRef nodeRef)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -236,13 +272,13 @@ public class CommonRMTestUtils implements RecordsManagementModel
             @Override
             public Void doWork() throws Exception
             {
-                actionService.executeRecordsManagementAction(nodeRef, "unfreeze");                
+                actionService.executeRecordsManagementAction(nodeRef, "unfreeze");
                 return null;
             }
-            
+
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     public Role createRole(NodeRef filePlan, String roleName, String ... capabilityNames)
     {
         Set<Capability> capabilities = new HashSet<Capability>(capabilityNames.length);
@@ -255,7 +291,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
             }
             capabilities.add(capability);
         }
-        
+
         return filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
     }
 }

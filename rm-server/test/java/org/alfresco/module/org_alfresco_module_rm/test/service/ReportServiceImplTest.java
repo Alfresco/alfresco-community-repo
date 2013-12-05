@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.test.service;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -26,13 +27,19 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
 import org.alfresco.module.org_alfresco_module_rm.report.Report;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.report.action.DestructionReportAction;
+import org.alfresco.module.org_alfresco_module_rm.report.action.TransferNode;
+import org.alfresco.module.org_alfresco_module_rm.report.action.TransferReportAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Report service implementation unit test.
@@ -41,12 +48,6 @@ import org.alfresco.service.namespace.QName;
  */
 public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
 {
-    @Override
-    protected boolean isRecordTest()
-    {
-        return false;
-    }
-
     public void testGetReportTypes() throws Exception
     {
         doTestInTransaction(new Test<Void>()
@@ -76,10 +77,15 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
             @Override
             public Void run() throws Exception
             {
-                Report report = reportService.generateReport(TYPE_DESTRUCTION_REPORT, rmFolder);
+                // Destruction Report
+                Report destructionReport = generateDestructionReport();
+                System.out.println(destructionReport.getReportName());
+                System.out.println(destructionReport.getReportContent().getContentString());
 
-                System.out.println(report.getReportName());
-                System.out.println(report.getReportContent().getContentString());
+                // Transfer Report
+                Report transferReport = generateTransfertReport();
+                System.out.println(transferReport.getReportName());
+                System.out.println(transferReport.getReportContent().getContentString());
 
                 return null;
             }
@@ -93,20 +99,74 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
             @Override
             public Void run() throws Exception
             {
-                Report report = reportService.generateReport(TYPE_DESTRUCTION_REPORT, rmFolder);
-                NodeRef reportNodeRef =  reportService.fileReport(filePlan, report);
+                // Destruction Report
+                NodeRef destructionReportNodeRef = fileDestructionReport();
+                assertNotNull(destructionReportNodeRef);
+                assertTrue(recordService.isRecord(destructionReportNodeRef));
+                assertFalse(recordService.isFiled(destructionReportNodeRef));
+                assertEquals(TYPE_DESTRUCTION_REPORT, nodeService.getType(destructionReportNodeRef));
 
-                assertNotNull(reportNodeRef);
-                assertTrue(recordService.isRecord(reportNodeRef));
-                assertFalse(recordService.isFiled(reportNodeRef));
-                assertEquals(TYPE_DESTRUCTION_REPORT, nodeService.getType(reportNodeRef));
+                // Transfer Report
+                NodeRef transferReportNodeRef = fileTransferReport();
+                assertNotNull(transferReportNodeRef);
+                assertTrue(recordService.isRecord(transferReportNodeRef));
+                assertFalse(recordService.isFiled(transferReportNodeRef));
+                assertEquals(TYPE_TRANSFER_REPORT, nodeService.getType(transferReportNodeRef));
 
                 return null;
             }
         });
     }
 
-    // FIXME!!! FileDestructionReport vs FileReport
+    /**
+     * Helper method to generate a destruction report
+     *
+     * @return Destruction report
+     */
+    private Report generateDestructionReport()
+    {
+        return reportService.generateReport(TYPE_DESTRUCTION_REPORT, rmFolder);
+    }
+
+    /**
+     * Helper method to generate a transfer report
+     *
+     * @return Transfer report
+     */
+    private Report generateTransfertReport()
+    {
+        nodeService.setProperty(rmFolder, PROP_TRANSFER_ACCESSION_INDICATOR, false);
+        nodeService.setProperty(rmFolder, PROP_TRANSFER_LOCATION, filePlan.toString());
+        Map<String, Serializable> properties = new HashMap<String, Serializable>(2);
+        ArrayList<TransferNode> transferNodes = new ArrayList<TransferNode>(1);
+        String dispositionAuthority = StringUtils.EMPTY;
+        properties.put("transferNodes", transferNodes);
+        properties.put("dispositionAuthority", dispositionAuthority);
+        return reportService.generateReport(TYPE_TRANSFER_REPORT, rmFolder, MimetypeMap.MIMETYPE_HTML, properties);
+    }
+
+    /**
+     * Helper method to file a destruction report
+     *
+     * @return Node reference of the destruction report
+     */
+    private NodeRef fileDestructionReport()
+    {
+        Report destructionReport = generateDestructionReport();
+        return reportService.fileReport(filePlan, destructionReport);
+    }
+
+    /**
+     * Helper method to file a transfer report
+     *
+     * @return Node reference of the transfer report
+     */
+    private NodeRef fileTransferReport()
+    {
+        Report transferReport = generateTransfertReport();
+        return reportService.fileReport(filePlan, transferReport);
+    }
+
     public void testFileDestructionReportAction() throws Exception
     {
         doTestInTransaction(new Test<Void>()
@@ -122,7 +182,41 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
                 Map<String, Serializable> fileReportParams = new HashMap<String, Serializable>(2);
                 fileReportParams.put(DestructionReportAction.REPORT_TYPE, "rmr:destructionReport");
                 fileReportParams.put(DestructionReportAction.DESTINATION, filePlan.toString());
-                rmActionService.executeRecordsManagementAction(rmFolder, "destructionReport", fileReportParams);
+                rmActionService.executeRecordsManagementAction(rmFolder, DestructionReportAction.NAME, fileReportParams);
+                return null;
+            }
+        });
+    }
+
+    public void testFileTransferReportAction() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                NodeRef recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                utils.createDispositionSchedule(
+                                    recordCategory,
+                                    CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
+                                    CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
+                                    false,  // record level
+                                    true,   // set the default actions
+                                    true);  // extended disposition schedule
+                NodeRef recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
+
+                nodeService.setProperty(recordFolder, PROP_TRANSFER_ACCESSION_INDICATOR, false);
+                nodeService.setProperty(recordFolder, PROP_TRANSFER_LOCATION, filePlan.toString());
+
+                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
+                rmActionService.executeRecordsManagementAction(recordFolder, CompleteEventAction.NAME, params);
+                rmActionService.executeRecordsManagementAction(recordFolder, CutOffAction.NAME);
+                rmActionService.executeRecordsManagementAction(recordFolder, TransferAction.NAME);
+                Map<String, Serializable> fileReportParams = new HashMap<String, Serializable>(2);
+                fileReportParams.put(TransferReportAction.REPORT_TYPE, "rmr:transferReport");
+                fileReportParams.put(TransferReportAction.DESTINATION, filePlan.toString());
+                rmActionService.executeRecordsManagementAction(recordFolder, TransferReportAction.NAME, fileReportParams);
                 return null;
             }
         });

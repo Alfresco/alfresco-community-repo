@@ -31,6 +31,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class TransferAction extends RMDispositionActionExecuterAbstractBase
 {
+    /** Action name */
+    public static final String NAME = "transfer";
+
     /** Indicates whether the transfer is an accession or not */
     private boolean isAccession = false;
 

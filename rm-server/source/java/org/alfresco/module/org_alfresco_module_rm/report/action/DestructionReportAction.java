@@ -32,6 +32,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class DestructionReportAction extends BaseReportAction
 {
+    /** Action name */
+    public static final String NAME = "destructionReport";
+
     @Override
     protected Map<String, Serializable> addProperties(NodeRef nodeRef)
     {

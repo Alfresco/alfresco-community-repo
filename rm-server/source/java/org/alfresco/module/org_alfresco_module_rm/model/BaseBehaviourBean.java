@@ -3,7 +3,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.policy.annotation.BehaviourRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -18,7 +23,8 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  * @since 2.2
  */
-public abstract class BaseBehaviourBean implements RecordsManagementModel
+public abstract class BaseBehaviourBean implements RecordsManagementModel,
+                                           BehaviourRegistry
 {
     /** Logger */
     protected static Log logger = LogFactory.getLog(BaseBehaviourBean.class);
@@ -31,6 +37,9 @@ public abstract class BaseBehaviourBean implements RecordsManagementModel
     
     /** behaviour filter */
     protected BehaviourFilter behaviourFilter;
+    
+    /** behaviour map */
+    protected Map<String, org.alfresco.repo.policy.Behaviour> behaviours = new HashMap<String, org.alfresco.repo.policy.Behaviour>(7);
     
     /**
      * @param nodeService   node service
@@ -74,6 +83,29 @@ public abstract class BaseBehaviourBean implements RecordsManagementModel
             result = true;
         }    
         return result;
+    }
+
+    /**
+     * @see org.alfresco.repo.policy.annotation.BehaviourRegistry#registerBehaviour(java.lang.String, org.alfresco.repo.policy.Behaviour)
+     */
+    @Override
+    public void registerBehaviour(String name, org.alfresco.repo.policy.Behaviour behaviour)
+    {
+        if (behaviours.containsKey(name) == true)
+        {
+            throw new AlfrescoRuntimeException("Can not register behaviour, because name " + name + "has already been used.");
+        }
+        
+        behaviours.put(name, behaviour);
+    }
+
+    /**
+     * @see org.alfresco.repo.policy.annotation.BehaviourRegistry#getBehaviour(java.lang.String)
+     */
+    @Override
+    public org.alfresco.repo.policy.Behaviour getBehaviour(String name)
+    {
+        return behaviours.get(name);
     }
 
 }

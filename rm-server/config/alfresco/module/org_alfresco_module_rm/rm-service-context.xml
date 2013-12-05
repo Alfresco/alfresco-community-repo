@@ -1196,6 +1196,7 @@
         <property name="vitalRecordService" ref="VitalRecordService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
         <property name="permissionService" ref="permissionService" />
+        <property name="recordAspect" ref="rma.record" />
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">

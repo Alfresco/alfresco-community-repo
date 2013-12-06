@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
@@ -34,8 +33,9 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourBean;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -49,6 +49,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  *
  * @author Roy Wetherall
  */
+@BehaviourBean
 public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEventTypeImpl
                                             implements RecordsManagementModel
 
@@ -64,9 +65,6 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
 
     /** Node service */
     private NodeService nodeService;
-
-    /** Policy component */
-    private PolicyComponent policyComponent;
 
     /** Record service */
     private RecordService recordService;
@@ -129,14 +127,6 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     }
 
     /**
-     * @param policyComponent   policy component
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
-
-    /**
      * @param reference reference name
      */
     public void setReferenceName(String reference)
@@ -150,19 +140,6 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     public void setActionName(String actionName)
     {
         this.actionName = actionName;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.SimpleRecordsManagementEventTypeImpl#init()
-     */
-    public void init()
-    {
-        super.init();
-
-        // Register interest in the on create reference policy
-        policyComponent.bindClassBehaviour(RecordsManagementPolicies.BEFORE_RM_ACTION_EXECUTION,
-                                           ASPECT_FILE_PLAN_COMPONENT,
-                                           new JavaBehaviour(this, "beforeActionExecution", NotificationFrequency.FIRST_EVENT));
     }
 
     /**
@@ -181,6 +158,12 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
      * @param name
      * @param parameters
      */
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            type = "rma:filePlanComponent",
+            notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
     public void beforeActionExecution(final NodeRef nodeRef, final String name, final Map<String, Serializable> parameters)
     {
         AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>()

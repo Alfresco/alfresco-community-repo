@@ -632,9 +632,7 @@
 
     <bean id="extendedSecurityService"
           class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl"
-          init-method="init"
           parent="baseService">
-        <property name="policyComponent" ref="policyComponent"/>
         <property name="recordService" ref="recordService"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="filePlanService" ref="filePlanService" />
@@ -673,12 +671,10 @@
 
     <bean id="modelSecurityService"
           class="org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityServiceImpl"
-          init-method="init">
+          parent = "rm.baseBehaviour">
         <property name="enabled" value="true" />
-       <property name="policyComponent" ref="policyComponent" />
-       <property name="nodeService" ref="NodeService" />
-       <property name="namespaceService" ref="namespaceService" />
-       <property name="filePlanService" ref="FilePlanService" />
+        <property name="namespaceService" ref="namespaceService" />
+        <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
     <bean id="ModelSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">

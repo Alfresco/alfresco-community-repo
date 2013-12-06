@@ -26,14 +26,13 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourBean;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -48,20 +47,15 @@ import org.alfresco.util.EqualsHelper;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class ModelSecurityServiceImpl implements ModelSecurityService,
-                                                 RecordsManagementModel,
+@BehaviourBean
+public class ModelSecurityServiceImpl extends    BaseBehaviourBean
+                                      implements ModelSecurityService,
                                                  NodeServicePolicies.BeforeAddAspectPolicy,
                                                  NodeServicePolicies.BeforeRemoveAspectPolicy,
                                                  NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     /** Indicates whether model security is enabled or not */
     private boolean enabled = true;
-
-    /** Policy component */
-    private PolicyComponent policyComponent;
-
-    /** Node service */
-    private NodeService nodeService;
 
     /** Namespace service */
     private NamespaceService namespaceService;
@@ -74,17 +68,6 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
 
     /** Map of protected aspects keyed by name */
     private Map<QName, ProtectedAspect> protectedAspects= new HashMap<QName, ProtectedAspect>(21);
-
-    /** Behaviour instances */
-    private JavaBehaviour beforeAddAspectBehaviour = new JavaBehaviour(this,
-                                                                       "beforeAddAspect",
-                                                                       NotificationFrequency.EVERY_EVENT);
-    private JavaBehaviour beforeRemoveAspectBehaviour = new JavaBehaviour(this,
-                                                                          "beforeRemoveAspect",
-                                                                          NotificationFrequency.EVERY_EVENT);
-    private JavaBehaviour onUpdatePropertiesBehaviour = new JavaBehaviour(this,
-                                                                          "onUpdateProperties",
-                                                                          NotificationFrequency.EVERY_EVENT);
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService#setEnabled(boolean)
@@ -103,22 +86,6 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     }
 
     /**
-     * @param policyComponent   policy component
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
-
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    /**
      * @param namespaceService  namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
@@ -133,26 +100,6 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     {
         this.filePlanService = filePlanService;
     }
-
-    /**
-     * Init method
-     */
-    public void init()
-    {
-        // bind model security behaviours to all records management artifacts components
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.BeforeAddAspectPolicy.QNAME,
-                this,
-                beforeAddAspectBehaviour);
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.BeforeRemoveAspectPolicy.QNAME,
-                this,
-                beforeRemoveAspectBehaviour);
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
-                this,
-                onUpdatePropertiesBehaviour);
-    }
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService#disable()
@@ -160,9 +107,9 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     @Override
     public void disable() 
     {
-    	beforeAddAspectBehaviour.disable();
-    	beforeRemoveAspectBehaviour.disable();
-    	onUpdatePropertiesBehaviour.disable();
+    	getBehaviour("beforeAddAspect").disable();
+    	getBehaviour("beforeRemoveAspect").disable();
+    	getBehaviour("onUpdateProperties").disable();
     }
     
     /**
@@ -171,9 +118,9 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     @Override
     public void enable() 
     {
-    	beforeAddAspectBehaviour.enable();
-    	beforeRemoveAspectBehaviour.enable();
-    	onUpdatePropertiesBehaviour.enable();	
+        getBehaviour("beforeAddAspect").enable();
+        getBehaviour("beforeRemoveAspect").enable();
+        getBehaviour("onUpdateProperties").enable();	
     }
 
     /**
@@ -322,6 +269,12 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            isService = true,
+            name = "beforeAddAspect"
+    )
     public void beforeAddAspect(NodeRef nodeRef, QName aspect)
     {
         if (enabled == true)
@@ -345,6 +298,12 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeRemoveAspectPolicy#beforeRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            isService = true,
+            name = "beforeRemoveAspect"
+    )
     public void beforeRemoveAspect(NodeRef nodeRef, QName aspect)
     {
         if (enabled == true)
@@ -368,6 +327,12 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            isService = true,
+            name = "onUpdateProperties"
+    )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         if (enabled == true)

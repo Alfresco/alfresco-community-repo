@@ -121,14 +121,12 @@
       <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}supersedes"/>
       <property name="dispositionService" ref="dispositionService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
-      <property name="policyComponent" ref="policyComponent"/>
    </bean>
 
    <bean id="rmEventType.obsolete" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferenceCreateEventType" parent="rmEventType">
       <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}obsoletes"/>
       <property name="dispositionService" ref="dispositionService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
-      <property name="policyComponent" ref="policyComponent"/>
    </bean>
 
    <bean id="rmEventType.crossReferencedRecordTransfered" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferencedRecordActionedUpon" parent="rmEventType">
@@ -138,7 +136,6 @@
       <property name="dispositionService" ref="dispositionService"/>
       <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
-      <property name="policyComponent" ref="policyComponent"/>
       <property name="recordService" ref="recordService" />
       <property name="recordFolderService" ref="RecordFolderService"/>
    </bean>

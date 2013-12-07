@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -43,13 +44,13 @@ import org.springframework.context.ApplicationContext;
  */
 public class CommonRMTestUtils implements RecordsManagementModel
 {
-	private DispositionService dispositionService;
-	private NodeService nodeService;
-	private ContentService contentService;
-	private RecordsManagementActionService actionService;
-	private ModelSecurityService modelSecurityService;
-	private FilePlanRoleService filePlanRoleService;
-	private CapabilityService capabilityService;
+    private DispositionService dispositionService;
+    private NodeService nodeService;
+    private ContentService contentService;
+    private RecordsManagementActionService actionService;
+    private ModelSecurityService modelSecurityService;
+    private FilePlanRoleService filePlanRoleService;
+    private CapabilityService capabilityService;
 
     /** test values */
     public static final String DEFAULT_DISPOSITION_AUTHORITY = "disposition authority";
@@ -59,16 +60,16 @@ public class CommonRMTestUtils implements RecordsManagementModel
     public static final String PERIOD_NONE = "none|0";
     public static final String PERIOD_IMMEDIATELY = "immediately|0";
 
-	public CommonRMTestUtils(ApplicationContext applicationContext)
-	{
-		dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
-		nodeService = (NodeService)applicationContext.getBean("NodeService");
-		contentService = (ContentService)applicationContext.getBean("ContentService");
-		actionService = (RecordsManagementActionService)applicationContext.getBean("RecordsManagementActionService");
-		modelSecurityService = (ModelSecurityService)applicationContext.getBean("ModelSecurityService");
-		filePlanRoleService = (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");
-		capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
-	}
+    public CommonRMTestUtils(ApplicationContext applicationContext)
+    {
+        dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
+        nodeService = (NodeService)applicationContext.getBean("NodeService");
+        contentService = (ContentService)applicationContext.getBean("ContentService");
+        actionService = (RecordsManagementActionService)applicationContext.getBean("RecordsManagementActionService");
+        modelSecurityService = (ModelSecurityService)applicationContext.getBean("ModelSecurityService");
+        filePlanRoleService = (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");
+        capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
+    }
 
     /**
      *
@@ -137,10 +138,11 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
             if (extendedDispositionSchedule == true)
             {
-                adParams = new HashMap<QName, Serializable>(3);
+                adParams = new HashMap<QName, Serializable>(4);
                 adParams.put(PROP_DISPOSITION_ACTION_NAME, TransferAction.NAME);
                 adParams.put(PROP_DISPOSITION_DESCRIPTION, DEFAULT_DISPOSITION_DESCRIPTION);
                 adParams.put(PROP_DISPOSITION_PERIOD, PERIOD_IMMEDIATELY);
+                adParams.put(PROP_DISPOSITION_LOCATION, StringUtils.EMPTY);
 
                 dispositionService.addDispositionActionDefinition(dispositionSchedule, adParams);
             }
@@ -169,12 +171,12 @@ public class CommonRMTestUtils implements RecordsManagementModel
     }
 
     public NodeRef createRecord(NodeRef recordFolder, String name, Map<QName, Serializable> properties, String content)
-	{
-    	// Create the document
-	    if (properties == null)
-	    {
-	        properties = new HashMap<QName, Serializable>(1);
-	    }
+    {
+        // Create the document
+        if (properties == null)
+        {
+            properties = new HashMap<QName, Serializable>(1);
+        }
         if (properties.containsKey(ContentModel.PROP_NAME) == false)
         {
             properties.put(ContentModel.PROP_NAME, name);
@@ -192,7 +194,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
         writer.putContent(content);
 
         return recordOne;
-	}
+    }
 
     public void declareRecord(final NodeRef record)
     {

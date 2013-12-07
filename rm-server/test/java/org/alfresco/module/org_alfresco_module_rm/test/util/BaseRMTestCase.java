@@ -35,6 +35,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
+import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -147,6 +148,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected ExtendedSecurityService extendedSecurityService;
     protected ReportService reportService;
     protected RecordsManagementAuditService rmAuditService;
+    protected IdentifierService identifierService;
 
     /** test data */
     protected String siteId;
@@ -385,6 +387,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         extendedSecurityService = (ExtendedSecurityService) applicationContext.getBean("ExtendedSecurityService");
         reportService = (ReportService) applicationContext.getBean("ReportService");
         rmAuditService = (RecordsManagementAuditService) applicationContext.getBean("RecordsManagementAuditService");
+        identifierService = (IdentifierService) applicationContext.getBean("recordsManagementIdentifierService");
     }
 
     /**

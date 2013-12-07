@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionResult;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
@@ -135,14 +136,12 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
      */
     private Report generateTransfertReport()
     {
-        nodeService.setProperty(rmFolder, PROP_TRANSFER_ACCESSION_INDICATOR, false);
-        nodeService.setProperty(rmFolder, PROP_TRANSFER_LOCATION, filePlan.toString());
         Map<String, Serializable> properties = new HashMap<String, Serializable>(2);
         ArrayList<TransferNode> transferNodes = new ArrayList<TransferNode>(1);
         String dispositionAuthority = StringUtils.EMPTY;
         properties.put("transferNodes", transferNodes);
         properties.put("dispositionAuthority", dispositionAuthority);
-        return reportService.generateReport(TYPE_TRANSFER_REPORT, rmFolder, MimetypeMap.MIMETYPE_HTML, properties);
+        return reportService.generateReport(TYPE_TRANSFER_REPORT, getTransferObject(), MimetypeMap.MIMETYPE_HTML, properties);
     }
 
     /**
@@ -195,30 +194,54 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
             @Override
             public Void run() throws Exception
             {
-                NodeRef recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                utils.createDispositionSchedule(
-                                    recordCategory,
-                                    CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
-                                    CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
-                                    false,  // record level
-                                    true,   // set the default actions
-                                    true);  // extended disposition schedule
-                NodeRef recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
-
-                nodeService.setProperty(recordFolder, PROP_TRANSFER_ACCESSION_INDICATOR, false);
-                nodeService.setProperty(recordFolder, PROP_TRANSFER_LOCATION, filePlan.toString());
-
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
-                params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
-                rmActionService.executeRecordsManagementAction(recordFolder, CompleteEventAction.NAME, params);
-                rmActionService.executeRecordsManagementAction(recordFolder, CutOffAction.NAME);
-                rmActionService.executeRecordsManagementAction(recordFolder, TransferAction.NAME);
-                Map<String, Serializable> fileReportParams = new HashMap<String, Serializable>(2);
-                fileReportParams.put(TransferReportAction.REPORT_TYPE, "rmr:transferReport");
-                fileReportParams.put(TransferReportAction.DESTINATION, filePlan.toString());
-                rmActionService.executeRecordsManagementAction(recordFolder, TransferReportAction.NAME, fileReportParams);
+                // Create transfer report for the transfer object
+                Map<String, Serializable> params = new HashMap<String, Serializable>(2);
+                params.put(TransferReportAction.REPORT_TYPE, "rmr:transferReport");
+                params.put(TransferReportAction.DESTINATION, filePlan.toString());
+                RecordsManagementActionResult transferReportAction = rmActionService.executeRecordsManagementAction(getTransferObject(), TransferReportAction.NAME, params);
+                // Check transfer report result
+                String transferReportName = (String) transferReportAction.getValue();
+                assertFalse(StringUtils.isBlank(transferReportName));
                 return null;
             }
         });
+    }
+
+    /**
+     * Helper method for creating a transfer object
+     *
+     * @return Node reference of the transfer object
+     */
+    private NodeRef getTransferObject()
+    {
+        NodeRef recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+        utils.createDispositionSchedule(
+                            recordCategory,
+                            CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
+                            CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
+                            false,  // record level
+                            true,   // set the default actions
+                            true);  // extended disposition schedule
+
+        NodeRef recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
+
+        // Set the record folder identifier
+        String identifier = identifierService.generateIdentifier(TYPE_RECORD_FOLDER, recordCategory);
+        nodeService.setProperty(recordFolder, PROP_IDENTIFIER, identifier);
+
+        // Complete event
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
+        rmActionService.executeRecordsManagementAction(recordFolder, CompleteEventAction.NAME, params);
+
+        // Cut off folder
+        rmActionService.executeRecordsManagementAction(recordFolder, CutOffAction.NAME);
+
+        // Transfer folder
+        RecordsManagementActionResult transferAction = rmActionService.executeRecordsManagementAction(recordFolder, TransferAction.NAME);
+        NodeRef transferObject = (NodeRef) transferAction.getValue();
+        assertTrue(transferObject != null);
+
+        return transferObject;
     }
 }

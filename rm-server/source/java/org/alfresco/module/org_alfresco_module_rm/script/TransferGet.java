@@ -43,6 +43,7 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  *
  * @author Gavin Cornwell
  */
+@Deprecated
 public class TransferGet extends BaseTransferWebScript
 {
     /** Logger */
@@ -59,7 +60,6 @@ public class TransferGet extends BaseTransferWebScript
         this.contentStreamer = contentStreamer;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     protected File executeTransfer(NodeRef transferNode,
                 WebScriptRequest req, WebScriptResponse res,

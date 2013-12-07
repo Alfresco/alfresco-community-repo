@@ -3,198 +3,219 @@
 
 <beans>
 
+   <!-- Base bean definitions -->
+
    <bean id="rm.baseModulePatch" abstract="true" parent="module.baseComponent">
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
    </bean>
 
+   <bean id="rm.baseCapabilityPatch" abstract="true" parent="rm.baseModulePatch">
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+      <property name="capabilityService" ref="CapabilityService"/>
+   </bean>
+
+   <!-- RM v2.0 Patches -->
+
    <bean id="org_alfresco_module_rm_notificationTemplatePatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.NotificationTemplatePatch">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_notificationTemplatePatch"/>
-       <property name="description" value="Patches new versions of the notification templates."/>
-       <property name="sinceVersion" value="2.0"/>
-       <property name="appliesFromVersion" value="2.0"/>
-       <property name="nodeService" ref="NodeService"/>
-       <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
-       <property name="contentService" ref="ContentService"/>
-       <property name="versionService" ref="VersionService"/>
-       <property name="auditService" ref="AuditService"/>
-   </bean>
-
-   <bean id="org_alfresco_module_rm_notificationTemplatePatch_v21"
-         parent="rm.baseModulePatch"
-         class="org.alfresco.module.org_alfresco_module_rm.patch.NotificationTemplatePatch_v21">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_notificationTemplatePatch_v21"/>
-       <property name="description" value="Patches new versions of the notification templates."/>
-       <property name="sinceVersion" value="2.1"/>
-       <property name="appliesFromVersion" value="2.1"/>
-       <property name="dependsOn">
-          <list>
-             <ref bean="org_alfresco_module_rm_bootstrapData" />
-          </list>
-       </property>
-       <property name="nodeService" ref="NodeService"/>
-       <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
-       <property name="contentService" ref="ContentService"/>
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_notificationTemplatePatch"/>
+      <property name="description" value="Patches new versions of the notification templates."/>
+      <property name="sinceVersion" value="2.0"/>
+      <property name="appliesFromVersion" value="2.0"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
+      <property name="contentService" ref="ContentService"/>
+      <property name="versionService" ref="VersionService"/>
+      <property name="auditService" ref="AuditService"/>
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv2ModelPatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2ModelPatch">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_RMv2ModelPatch"/>
-       <property name="description" value="Patches the existing RM data for the RM v2.0 model updates."/>
-       <property name="sinceVersion" value="2.0"/>
-       <property name="appliesFromVersion" value="2.0"/>
-       <property name="patchDAO" ref="patchDAO"/>
-       <property name="nodeDAO" ref="nodeDAO" />
-       <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_RMv2ModelPatch"/>
+      <property name="description" value="Patches the existing RM data for the RM v2.0 model updates."/>
+      <property name="sinceVersion" value="2.0"/>
+      <property name="appliesFromVersion" value="2.0"/>
+      <property name="patchDAO" ref="patchDAO"/>
+      <property name="nodeDAO" ref="nodeDAO" />
+      <property name="qnameDAO" ref="qnameDAO"/>
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv2FilePlanNodeRefPatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2FilePlanNodeRefPatch">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_RMv2FilePlanNodeRefPatch"/>
-       <property name="description" value="Patches the existing RM data with the root file plan values."/>
-       <property name="sinceVersion" value="2.0"/>
-       <property name="appliesFromVersion" value="2.0"/>
-       <property name="patchDAO" ref="patchDAO"/>
-       <property name="nodeDAO" ref="nodeDAO" />
-       <property name="qnameDAO" ref="qnameDAO"/>
-       <property name="nodeService" ref="NodeService"/>
-       <property name="permissionService" ref="PermissionService"/>
-       <property name="filePlanService" ref="FilePlanService" />
-       <property name="filePlanRoleService" ref="filePlanRoleService" />
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_RMv2FilePlanNodeRefPatch"/>
+      <property name="description" value="Patches the existing RM data with the root file plan values."/>
+      <property name="sinceVersion" value="2.0"/>
+      <property name="appliesFromVersion" value="2.0"/>
+      <property name="patchDAO" ref="patchDAO"/>
+      <property name="nodeDAO" ref="nodeDAO" />
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="permissionService" ref="PermissionService"/>
+      <property name="filePlanService" ref="FilePlanService" />
+      <property name="filePlanRoleService" ref="filePlanRoleService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv2SavedSearchPatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2SavedSearchPatch">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_RMv2SavedSearchPatch"/>
-       <property name="description" value="Patches the existing saved seaches."/>
-       <property name="sinceVersion" value="2.0"/>
-       <property name="appliesFromVersion" value="2.0"/>
-       <property name="recordsManagementSearchService" ref="RecordsManagementSearchService" />
-       <property name="siteService" ref="SiteService" />
-       <property name="contentService" ref="ContentService"/>
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_RMv2SavedSearchPatch"/>
+      <property name="description" value="Patches the existing saved seaches."/>
+      <property name="sinceVersion" value="2.0"/>
+      <property name="appliesFromVersion" value="2.0"/>
+      <property name="recordsManagementSearchService" ref="RecordsManagementSearchService" />
+      <property name="siteService" ref="SiteService" />
+      <property name="contentService" ref="ContentService"/>
+   </bean>
+
+   <!-- RM v2.1 Patches -->
+
+   <bean id="org_alfresco_module_rm_notificationTemplatePatch_v21"
+         parent="rm.baseModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.NotificationTemplatePatch_v21">
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_notificationTemplatePatch_v21"/>
+      <property name="description" value="Patches new versions of the notification templates."/>
+      <property name="sinceVersion" value="2.1"/>
+      <property name="appliesFromVersion" value="2.1"/>
+      <property name="dependsOn">
+         <list>
+            <ref bean="org_alfresco_module_rm_bootstrapData" />
+         </list>
+      </property>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
+      <property name="contentService" ref="ContentService"/>
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21InPlacePatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21InPlacePatch">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_RMv21InPlacePatch"/>
-       <property name="description" value="Patches the existing RM data for the RM v2.1 InPlace features."/>
-       <property name="sinceVersion" value="2.1"/>
-       <property name="appliesFromVersion" value="2.1"/>
-	   <property name="filePlanRoleService" ref="FilePlanRoleService"/>
-       <property name="filePlanPermissionService" ref="FilePlanPermissionService"/>
-       <property name="filePlanService" ref="FilePlanService"/>
-       <property name="capabilityService" ref="CapabilityService"/>
-       <property name="ruleService" ref="RuleService" />
-       <property name="nodeService" ref="NodeService" />
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_RMv21InPlacePatch"/>
+      <property name="description" value="Patches the existing RM data for the RM v2.1 InPlace features."/>
+      <property name="sinceVersion" value="2.1"/>
+      <property name="appliesFromVersion" value="2.1"/>
+      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+      <property name="filePlanPermissionService" ref="FilePlanPermissionService"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="capabilityService" ref="CapabilityService"/>
+      <property name="ruleService" ref="RuleService" />
+      <property name="nodeService" ref="NodeService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21CapabilityPatch"
-         parent="rm.baseModulePatch"
+         parent="rm.baseCapabilityPatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21CapabilityPatch">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_RMv21CapabilityPatch"/>
-       <property name="description" value="Patches the existing RM data for the RM v2.1 updated capabilities."/>
-       <property name="sinceVersion" value="2.1"/>
-       <property name="appliesFromVersion" value="2.1"/>
-       <property name="filePlanService" ref="FilePlanService"/>
-       <property name="filePlanRoleService" ref="FilePlanRoleService"/>
-       <property name="capabilityService" ref="CapabilityService"/>
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_RMv21CapabilityPatch"/>
+      <property name="description" value="Patches the existing RM data for the RM v2.1 updated capabilities."/>
+      <property name="sinceVersion" value="2.1"/>
+      <property name="appliesFromVersion" value="2.1"/>
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv2RMAdminUserPatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2RMAdminUserPatch">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_RMv2RMAdminUserPatch"/>
-       <property name="description" value="Adds the global RM admin user to all existing file plans."/>
-       <property name="sinceVersion" value="2.1"/>
-       <property name="appliesFromVersion" value="2.1"/>
-       <property name="filePlanService" ref="FilePlanService"/>
-       <property name="filePlanRoleService" ref="FilePlanRoleService"/>
-       <property name="authenticationService" ref="AuthenticationService" />
-       <property name="personService" ref="PersonService" />
-       <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_RMv2RMAdminUserPatch"/>
+      <property name="description" value="Adds the global RM admin user to all existing file plans."/>
+      <property name="sinceVersion" value="2.1"/>
+      <property name="appliesFromVersion" value="2.1"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+      <property name="authenticationService" ref="AuthenticationService" />
+      <property name="personService" ref="PersonService" />
+      <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21RecordInheritancePatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21RecordInheritancePatch">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_RMv21RecordInheritancePatch"/>
-       <property name="description" value="Adjust record permission inheritance."/>
-       <property name="sinceVersion" value="2.1"/>
-       <property name="appliesFromVersion" value="2.1"/>
-       <property name="patchDAO" ref="patchDAO"/>
-       <property name="nodeDAO" ref="nodeDAO" />
-       <property name="qnameDAO" ref="qnameDAO"/>
-       <property name="nodeService" ref="nodeService"/>
-       <property name="filePlanPermissionServiceImpl" ref="filePlanPermissionService"/>
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_RMv21RecordInheritancePatch"/>
+      <property name="description" value="Adjust record permission inheritance."/>
+      <property name="sinceVersion" value="2.1"/>
+      <property name="appliesFromVersion" value="2.1"/>
+      <property name="patchDAO" ref="patchDAO"/>
+      <property name="nodeDAO" ref="nodeDAO" />
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="filePlanPermissionServiceImpl" ref="filePlanPermissionService"/>
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21RolesPatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21RolesPatch">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_RMv21RolesPatch"/>
-       <property name="description" value="Add existing roles to the rm zone."/>
-       <property name="sinceVersion" value="2.1"/>
-       <property name="appliesFromVersion" value="2.1"/>
-       <property name="filePlanService" ref="FilePlanService"/>
-       <property name="filePlanRoleService" ref="FilePlanRoleService"/>
-       <property name="authorityService" ref="AuthorityService"></property>
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_RMv21RolesPatch"/>
+      <property name="description" value="Add existing roles to the rm zone."/>
+      <property name="sinceVersion" value="2.1"/>
+      <property name="appliesFromVersion" value="2.1"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+      <property name="authorityService" ref="AuthorityService"></property>
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21ReportServicePatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21ReportServicePatch">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_RMv21ReportServicePatch"/>
-       <property name="description" value="Add report service templates."/>
-       <property name="sinceVersion" value="2.1"/>
-       <property name="appliesFromVersion" value="2.1"/>
-	   <property name="contentService" ref="ContentService" />
-	   <property name="nodeService" ref="NodeService" />
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_RMv21ReportServicePatch"/>
+      <property name="description" value="Add report service templates."/>
+      <property name="sinceVersion" value="2.1"/>
+      <property name="appliesFromVersion" value="2.1"/>
+      <property name="contentService" ref="ContentService" />
+      <property name="nodeService" ref="NodeService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21BehaviorScriptsPatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21BehaviorScriptsPatch">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_RMv21BehaviorScriptsPatch"/>
-       <property name="description" value="Move existing behavior scripts to their dedicated behavior folder, freeing existing scripts folder up for non-behavior RM scripts."/>
-       <property name="sinceVersion" value="2.1"/>
-       <property name="appliesFromVersion" value="2.1"/>
-       <property name="fileFolderService" ref="FileFolderService"/>
-       <property name="nodeService" ref="NodeService"/>
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_RMv21BehaviorScriptsPatch"/>
+      <property name="description" value="Move existing behavior scripts to their dedicated behavior folder, freeing existing scripts folder up for non-behavior RM scripts."/>
+      <property name="sinceVersion" value="2.1"/>
+      <property name="appliesFromVersion" value="2.1"/>
+      <property name="fileFolderService" ref="FileFolderService"/>
+      <property name="nodeService" ref="NodeService"/>
    </bean>
+
+   <!-- RM v2.2 Patches -->
 
    <bean id="org_alfresco_module_rm_RMv22ReportTemplatePatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv22ReportTemplatePatch">
-       <property name="moduleId" value="org_alfresco_module_rm"/>
-       <property name="name" value="org_alfresco_module_rm_RMv22ReportTemplatePatch"/>
-       <property name="description" value="Patches new versions of the report templates."/>
-       <property name="sinceVersion" value="2.2"/>
-       <property name="appliesFromVersion" value="2.2"/>
-       <property name="dependsOn">
-          <list>
-             <ref bean="org_alfresco_module_rm_RMv21ReportServicePatch" />
-          </list>
-       </property>
-       <property name="nodeService" ref="NodeService"/>
-       <property name="contentService" ref="ContentService"/>
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_RMv22ReportTemplatePatch"/>
+      <property name="description" value="Patches new versions of the report templates."/>
+      <property name="sinceVersion" value="2.2"/>
+      <property name="appliesFromVersion" value="2.2"/>
+      <property name="dependsOn">
+         <list>
+            <ref bean="org_alfresco_module_rm_RMv21ReportServicePatch" />
+         </list>
+      </property>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="contentService" ref="ContentService"/>
+   </bean>
+
+   <bean id="org_alfresco_module_rm_RMv22CapabilityPatch"
+         parent="rm.baseCapabilityPatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.RMv22CapabilityPatch">
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="name" value="org_alfresco_module_rm_RMv22CapabilityPatch"/>
+      <property name="description" value="Patches the existing RM data for the RM v2.2 updated capabilities."/>
+      <property name="sinceVersion" value="2.2"/>
+      <property name="appliesFromVersion" value="2.2"/>
    </bean>
 
 </beans>

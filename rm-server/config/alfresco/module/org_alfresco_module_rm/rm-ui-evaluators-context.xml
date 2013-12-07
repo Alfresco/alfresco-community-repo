@@ -426,6 +426,17 @@
       <property name="capability" value ="FileDestructionReport"/>
    </bean>
 
+   <bean id="jsonConversionComponent.fileTransferReportAction"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="fileTransferReport"/>
+      <property name="kinds">
+         <set>
+            <value>TRANSFER</value>
+         </set>
+      </property>
+      <property name="capability" value ="FileTransferReport"/>
+   </bean>
+
    <bean id="jsonConversionComponent.transferAction"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="transfer"/>
@@ -611,11 +622,6 @@
    <bean id="jsonConversionComponent.downloadZip"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="downloadZip"/>
-   </bean>
-
-   <bean id="jsonConversionComponent.fileReport"
-         parent="jsonConversionComponent.baseAction">
-      <property name="name" value="fileReport"/>
    </bean>
 
    <bean id="jsonConversionComponent.transferComplete"

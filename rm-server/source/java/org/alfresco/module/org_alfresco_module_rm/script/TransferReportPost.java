@@ -62,6 +62,7 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  *
  * @author Gavin Cornwell
  */
+@Deprecated
 public class TransferReportPost extends BaseTransferWebScript
 {
     /** Logger */

@@ -3,17 +3,17 @@
 <!-- PUBLIC '-//ALFRECSO//DTD PERMISSIONS//EN' 'permissionSchema.dtd' -->
 
 <permissions>
-    
+
     <!-- Namespaces used in type references -->
-    
+
     <namespaces>
         <namespace uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
         <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
         <namespace uri="http://www.alfresco.org/model/recordsmanagement/1.0" prefix="rma"/>
     </namespaces>
-    
+
     <permissionSet expose="selected" type="rma:filePlanComponent">
-        
+
         <!-- An RM administrator does not have admin rights to the full DM repo -->
         <!-- On no account should allowFullControl="true" be set here -->
         <!-- In addition, the admin role is editable and may not have all permissions - as defined -->
@@ -78,7 +78,7 @@
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="MapClassificationGuideMetadata"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ManageAccessControls"/>
             <!-- Administrator has filing rights to all records - no other role does -->
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="Filing"/>            
+            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="Filing"/>
             <!--  Since V2.1 -->
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateRecords"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ManageRules"/>
@@ -87,16 +87,18 @@
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="FileUnfiledRecords"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="RejectRecords"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="LinkToRecords"/>
+            <!-- Since V2.2 -->
+            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="FileTransferReport"/>
         </permissionGroup>
-        
+
         <permissionGroup name="Filing" allowFullControl="false" expose="true">
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ReadRecords"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="FileRecords"/>
         </permissionGroup>
-        
+
         <permissionGroup name="ReadRecords" expose="false" allowFullControl="false"/>
         <permissionGroup name="FileRecords" expose="false" allowFullControl="false"/>
-        
+
         <permissionGroup name="DeclareRecords" expose="false" allowFullControl="false"/>
         <permissionGroup name="ViewRecords" expose="false" allowFullControl="false"/>
         <permissionGroup name="CreateModifyDestroyFolders" expose="false" allowFullControl="false"/>
@@ -156,9 +158,9 @@
         <permissionGroup name="UpdateExemptionCategories" expose="false" allowFullControl="false"/>
         <permissionGroup name="MapClassificationGuideMetadata" expose="false" allowFullControl="false"/>
         <permissionGroup name="ManageAccessControls" expose="false" allowFullControl="false"/>
-        
+
         <!--  Added since V2.1 -->
-        
+
         <permissionGroup name="CreateRecords" expose="false" allowFullControl="false"/>
         <permissionGroup name="ManageRules" expose="false" allowFullControl="false"/>
         <permissionGroup name="RequestRecordInformation" expose="false" allowFullControl="false"/>
@@ -166,279 +168,286 @@
         <permissionGroup name="RejectRecords" expose="false" allowFullControl="false"/>
         <permissionGroup name="FileUnfiledRecords" expose="false" allowFullControl="false"/>
         <permissionGroup name="LinkToRecords" expose="false" allowFullControl="false"/>
-        
+
+        <!--  Added since V2.2 -->
+        <permissionGroup name="FileTransferReport" expose="false" allowFullControl="false"/>
+
         <!--  End -->
-        
+
         <permission name="_ReadRecords" expose="false">
             <grantedToGroup permissionGroup="ReadRecords"/>
         </permission>
-        
+
          <permission name="_FileRecords" expose="false">
             <grantedToGroup permissionGroup="FileRecords"/>
         </permission>
-        
+
         <permission name="_DeclareRecords" expose="false">
             <grantedToGroup permissionGroup="DeclareRecords"/>
         </permission>
-        
+
         <permission name="_ViewRecords" expose="false">
             <grantedToGroup permissionGroup="ViewRecords"/>
         </permission>
-        
+
         <permission name="_CreateModifyDestroyFolders" expose="false">
             <grantedToGroup permissionGroup="CreateModifyDestroyFolders"/>
         </permission>
-        
+
         <permission name="_EditRecordMetadata" expose="false">
             <grantedToGroup permissionGroup="EditRecordMetadata"/>
         </permission>
-        
+
         <permission name="_EditNonRecordMetadata" expose="false">
             <grantedToGroup permissionGroup="EditNonRecordMetadata"/>
         </permission>
-        
+
         <permission name="_AddModifyEventDates" expose="false">
             <grantedToGroup permissionGroup="AddModifyEventDates"/>
         </permission>
-        
+
         <permission name="_CloseFolders" expose="false">
             <grantedToGroup permissionGroup="CloseFolders"/>
         </permission>
-        
+
         <permission name="_DeclareRecordsInClosedFolders" expose="false">
             <grantedToGroup permissionGroup="DeclareRecordsInClosedFolders"/>
         </permission>
-        
+
         <permission name="_ReOpenFolders" expose="false">
             <grantedToGroup permissionGroup="ReOpenFolders"/>
         </permission>
-        
+
         <permission name="_CycleVitalRecords" expose="false">
             <grantedToGroup permissionGroup="CycleVitalRecords"/>
         </permission>
-        
+
         <permission name="_PlanningReviewCycles" expose="false">
             <grantedToGroup permissionGroup="PlanningReviewCycles"/>
         </permission>
-        
+
         <permission name="_UpdateTriggerDates" expose="false">
             <grantedToGroup permissionGroup="UpdateTriggerDates"/>
         </permission>
-        
+
         <permission name="_CreateModifyDestroyEvents" expose="false">
             <grantedToGroup permissionGroup="CreateModifyDestroyEvents"/>
         </permission>
-        
+
         <permission name="_ManageAccessRights" expose="false">
             <grantedToGroup permissionGroup="ManageAccessRights"/>
         </permission>
-        
+
         <permission name="_MoveRecords" expose="false">
             <grantedToGroup permissionGroup="MoveRecords"/>
         </permission>
-        
+
         <permission name="_ChangeOrDeleteReferences" expose="false">
             <grantedToGroup permissionGroup="ChangeOrDeleteReferences"/>
         </permission>
-        
+
         <permission name="_DeleteLinks" expose="false">
             <grantedToGroup permissionGroup="DeleteLinks"/>
         </permission>
-        
+
         <permission name="_EditDeclaredRecordMetadata" expose="false">
             <grantedToGroup permissionGroup="EditDeclaredRecordMetadata"/>
         </permission>
-        
+
         <permission name="_ManuallyChangeDispositionDates" expose="false">
             <grantedToGroup permissionGroup="ManuallyChangeDispositionDates"/>
         </permission>
-        
+
         <permission name="_ApproveRecordsScheduledForCutoff" expose="false">
             <grantedToGroup permissionGroup="ApproveRecordsScheduledForCutoff"/>
         </permission>
-        
+
         <permission name="_CreateModifyRecordsInCutoffFolders" expose="false">
             <grantedToGroup permissionGroup="CreateModifyRecordsInCutoffFolders"/>
         </permission>
-        
+
         <permission name="_ExtendRetentionPeriodOrFreeze" expose="false">
             <grantedToGroup permissionGroup="ExtendRetentionPeriodOrFreeze"/>
         </permission>
-        
+
         <permission name="_Unfreeze" expose="false">
             <grantedToGroup permissionGroup="Unfreeze"/>
         </permission>
-        
+
         <permission name="_ViewUpdateReasonsForFreeze" expose="false">
             <grantedToGroup permissionGroup="ViewUpdateReasonsForFreeze"/>
         </permission>
-        
+
         <permission name="_DestroyRecordsScheduledForDestruction" expose="false">
             <grantedToGroup permissionGroup="DestroyRecordsScheduledForDestruction"/>
         </permission>
-        
+
         <permission name="_DestroyRecords" expose="false">
             <grantedToGroup permissionGroup="DestroyRecords"/>
         </permission>
-        
+
         <permission name="_UpdateVitalRecordCycleInformation" expose="false">
             <grantedToGroup permissionGroup="UpdateVitalRecordCycleInformation"/>
         </permission>
-        
+
         <permission name="_UndeclareRecords" expose="false">
             <grantedToGroup permissionGroup="UndeclareRecords"/>
         </permission>
-        
+
         <permission name="_DeclareAuditAsRecord" expose="false">
             <grantedToGroup permissionGroup="DeclareAuditAsRecord"/>
         </permission>
-        
+
         <permission name="_DeleteAudit" expose="false">
             <grantedToGroup permissionGroup="DeleteAudit"/>
         </permission>
-        
+
         <permission name="_CreateModifyDestroyTimeframes" expose="false">
             <grantedToGroup permissionGroup="CreateModifyDestroyTimeframes"/>
         </permission>
-        
+
         <permission name="_AuthorizeNominatedTransfers" expose="false">
             <grantedToGroup permissionGroup="AuthorizeNominatedTransfers"/>
         </permission>
-        
+
         <permission name="_EditSelectionLists" expose="false">
             <grantedToGroup permissionGroup="EditSelectionLists"/>
         </permission>
-        
+
         <permission name="_AuthorizeAllTransfers" expose="false">
             <grantedToGroup permissionGroup="AuthorizeAllTransfers"/>
         </permission>
-        
+
         <permission name="_CreateModifyDestroyFileplanMetadata" expose="false">
             <grantedToGroup permissionGroup="CreateModifyDestroyFileplanMetadata"/>
         </permission>
-        
+
         <permission name="_CreateAndAssociateSelectionLists" expose="false">
             <grantedToGroup permissionGroup="CreateAndAssociateSelectionLists"/>
         </permission>
-        
+
         <permission name="_AttachRulesToMetadataProperties" expose="false">
             <grantedToGroup permissionGroup="AttachRulesToMetadataProperties"/>
         </permission>
-        
+
         <permission name="_CreateModifyDestroyFileplanTypes" expose="false">
             <grantedToGroup permissionGroup="CreateModifyDestroyFileplanTypes"/>
         </permission>
-        
+
         <permission name="_CreateModifyDestroyRecordTypes" expose="false">
             <grantedToGroup permissionGroup="CreateModifyDestroyRecordTypes"/>
         </permission>
-        
+
         <permission name="_MakeOptionalParametersMandatory" expose="false">
             <grantedToGroup permissionGroup="MakeOptionalParametersMandatory"/>
         </permission>
-        
+
         <permission name="_MapEmailMetadata" expose="false">
             <grantedToGroup permissionGroup="MapEmailMetadata"/>
         </permission>
-        
+
         <permission name="_DeleteRecords" expose="false">
             <grantedToGroup permissionGroup="DeleteRecords"/>
         </permission>
-        
+
         <permission name="_TriggerAnEvent" expose="false">
             <grantedToGroup permissionGroup="TriggerAnEvent"/>
         </permission>
-        
+
         <permission name="_CreateModifyDestroyRoles" expose="false">
             <grantedToGroup permissionGroup="CreateModifyDestroyRoles"/>
         </permission>
-        
+
         <permission name="_CreateModifyDestroyUsersAndGroups" expose="false">
             <grantedToGroup permissionGroup="CreateModifyDestroyUsersAndGroups"/>
         </permission>
-        
+
         <permission name="_PasswordControl" expose="false">
             <grantedToGroup permissionGroup="PasswordControl"/>
         </permission>
-        
+
         <permission name="_EnableDisableAuditByTypes" expose="false">
             <grantedToGroup permissionGroup="EnableDisableAuditByTypes"/>
         </permission>
-        
+
         <permission name="_SelectAuditMetadata" expose="false">
             <grantedToGroup permissionGroup="SelectAuditMetadata"/>
         </permission>
-        
+
         <permission name="_DisplayRightsReport" expose="false">
             <grantedToGroup permissionGroup="DisplayRightsReport"/>
         </permission>
-        
+
         <permission name="_AccessAudit" expose="false">
             <grantedToGroup permissionGroup="AccessAudit"/>
         </permission>
-        
+
         <permission name="_ExportAudit" expose="false">
             <grantedToGroup permissionGroup="ExportAudit"/>
         </permission>
-        
+
         <permission name="_CreateModifyDestroyReferenceTypes" expose="false">
             <grantedToGroup permissionGroup="CreateModifyDestroyReferenceTypes"/>
         </permission>
-        
+
         <permission name="_UpdateClassificationDates" expose="false">
             <grantedToGroup permissionGroup="UpdateClassificationDates"/>
         </permission>
-        
+
         <permission name="_CreateModifyDestroyClassificationGuides" expose="false">
             <grantedToGroup permissionGroup="CreateModifyDestroyClassificationGuides"/>
         </permission>
-        
+
         <permission name="_UpgradeDowngradeAndDeclassifyRecords" expose="false">
             <grantedToGroup permissionGroup="UpgradeDowngradeAndDeclassifyRecords"/>
         </permission>
-        
+
         <permission name="_UpdateExemptionCategories" expose="false">
             <grantedToGroup permissionGroup="UpdateExemptionCategories"/>
         </permission>
-        
+
         <permission name="_MapClassificationGuideMetadata" expose="false">
             <grantedToGroup permissionGroup="MapClassificationGuideMetadata"/>
         </permission>
-        
+
         <permission name="_ManageAccessControls" expose="false">
             <grantedToGroup permissionGroup="ManageAccessControls"/>
         </permission>
-        
+
         <!--  Added since V2.1 -->
-        
+
         <permission name="_CreateRecords" expose="false">
             <grantedToGroup permissionGroup="CreateRecords"/>
         </permission>
-        
+
         <permission name="_ManageRules" expose="false">
             <grantedToGroup permissionGroup="ManageRules"/>
         </permission>
-        
+
         <permission name="_RequestRecordInformation" expose="false">
             <grantedToGroup permissionGroup="RequestRecordInformation"/>
         </permission>
-        
+
         <permission name="_FileDestructionReport" expose="false">
             <grantedToGroup permissionGroup="FileDestructionReport"/>
         </permission>
-        
+
+        <permission name="_FileTransferReport" expose="false">
+            <grantedToGroup permissionGroup="FileTransferReport"/>
+        </permission>
+
         <permission name="_FileUnfiledRecords" expose="false">
             <grantedToGroup permissionGroup="FileUnfiledRecords"/>
         </permission>
-        
+
         <permission name="_RejectRecords" expose="false">
             <grantedToGroup permissionGroup="RejectRecords"/>
         </permission>
-        
+
         <permission name="_LinkToRecords" expose="false">
             <grantedToGroup permissionGroup="LinkToRecords"/>
         </permission>
-        
+
     </permissionSet>
-    
+
 </permissions>

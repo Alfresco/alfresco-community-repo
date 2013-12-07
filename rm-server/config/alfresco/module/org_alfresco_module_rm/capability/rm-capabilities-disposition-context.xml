@@ -3,7 +3,7 @@
 
 <beans>
    <!--  Assignable Capabilities -->
-   
+
    <!--  Cut off -->
    <bean id="rmApproveRecordsScheduledForCutoffCapability"
       parent="declarativeCapability">
@@ -82,7 +82,7 @@
    <bean id="rmDestroyRecordsCapability"
       parent="declarativeCapability">
       <property name="name" value="DestroyRecords"/>
-      <property name="permission" value="DestroyRecords"/>      
+      <property name="permission" value="DestroyRecords"/>
       <property name="private" value="true"/>
       <property name="conditions">
          <map>
@@ -135,6 +135,26 @@
       </property>
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>      <!--  Part of the disposition group of capabilities -->
       <property name="index" value="110" />
+   </bean>
+
+   <!--  file transfer report capability -->
+   <bean id="rmFileTransferReportCapability"
+         parent="declarativeCapability">
+      <property name="name" value="FileTransferReport" />
+      <property name="permission" value="FileTransferReport" />
+      <property name="kinds">
+         <list>
+            <value>TRANSFER</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.frozen" value="false"/>
+         </map>
+      </property>
+      <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
+      <property name="index" value="120" />
    </bean>
 
    <!--  Non-assignable Capabilities -->
@@ -265,7 +285,7 @@
          </list>
       </property>
    </bean>
-   
+
    <!--  End Rentention -->
    <bean id="rmEndRetentionCapability"
       parent="declarativeCapability">

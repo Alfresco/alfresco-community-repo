@@ -83,7 +83,7 @@
       "capabilities" :
       [
           "DeclareRecords",
-          "ViewRecords",          
+          "ViewRecords",
           "CreateRecords",
           "CreateModifyDestroyFolders",
           "EditRecordMetadata",
@@ -137,13 +137,14 @@
           "FileDestructionReport",
           "FileUnfiledRecords",
           "RejectRecords",
-          "LinkToRecords"
+          "LinkToRecords",
+          "FileTransferReport"
       ]
    },
    {
       "name" : "Administrator",
       "displayLabel" : "rm.role.administrator",
-      "isAdmin" : true, 
+      "isAdmin" : true,
       "capabilities" :
       [
           "DeclareRecords",
@@ -203,7 +204,8 @@
           "FileDestructionReport",
           "FileUnfiledRecords",
           "RejectRecords",
-          "LinkToRecords"
+          "LinkToRecords",
+          "FileTransferReport"
       ]
    }
 ]

@@ -22,9 +22,5 @@
          </bean>
       </property>
    </bean>
-   
-   <!-- Moved from main context, as it's a test bean -->
-   <bean id="webscript.org.alfresco.cmis.test.post" class="org.alfresco.repo.cmis.rest.test.CMISTestRunnerWebScript" parent="webscript" />
-   
- 
+
 </beans>

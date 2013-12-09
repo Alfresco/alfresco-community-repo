@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -61,14 +61,14 @@ public class MultiFileDumperTest
     public void exceptionThrownWhenZeroPrefixesUsed()
     {
         // Shouldn't be able to construct a dumper with no prefixes to dump.
-        new MultiFileDumper(new String[] {}, TempFileProvider.getTempDir(), "", dbToXMLFactory);
+        new MultiFileDumper(new String[] {}, TempFileProvider.getTempDir(), "", dbToXMLFactory, null);
     }
 
     @Test(expected=IllegalArgumentException.class)
     public void exceptionThrownWhenNullPrefixListUsed()
     {
         // Shouldn't be able to construct a dumper with no prefixes to dump.
-        new MultiFileDumper(null, TempFileProvider.getTempDir(), "", dbToXMLFactory);
+        new MultiFileDumper(null, TempFileProvider.getTempDir(), "", dbToXMLFactory, null);
     }
     
     
@@ -79,7 +79,7 @@ public class MultiFileDumperTest
         File directory = TempFileProvider.getTempDir();
         String fileNamePattern = "SchemaDump-MySQL-{0}-";
         
-        MultiFileDumper dumper = new MultiFileDumper(prefixes, directory, fileNamePattern, dbToXMLFactory);
+        MultiFileDumper dumper = new MultiFileDumper(prefixes, directory, fileNamePattern, dbToXMLFactory, null);
         
         when(dbToXMLFactory.create(argThat(isFileNameStartingWith("SchemaDump-MySQL-a_-")), eq("a_"))).
             thenReturn(dbToXMLForA);
@@ -106,7 +106,7 @@ public class MultiFileDumperTest
         File directory = TempFileProvider.getTempDir();
         String fileNamePattern = "SchemaDump-MySQL-{0}-";
         
-        MultiFileDumper dumper = new MultiFileDumper(directory, fileNamePattern, dbToXMLFactory);
+        MultiFileDumper dumper = new MultiFileDumper(directory, fileNamePattern, dbToXMLFactory, null);
         
         Map<String, DbToXML> xmlExporters = new HashMap<String, DbToXML>(MultiFileDumper.DEFAULT_PREFIXES.length);
         

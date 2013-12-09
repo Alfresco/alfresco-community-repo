@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -41,7 +41,8 @@ public class DbToXML
     private ApplicationContext context;
     private File outputFile;
     private String namePrefix = "alf_";
-    
+    private String dbSchemaName;
+
     /**
      * Constructor. Uses a default name prefix of 'alf_' during the export.
      */
@@ -61,12 +62,22 @@ public class DbToXML
         this(context, outputFile);
         this.namePrefix = namePrefix;
     }
-    
+
+    /**
+     * Set an optional default schema name
+     *
+     * @param dbSchemaName
+     */
+    public void setDbSchemaName(String dbSchemaName)
+    {
+        this.dbSchemaName = dbSchemaName;
+    }
     
     public void execute()
     {
         ExportDb exporter = new ExportDb(context);
         exporter.setNamePrefix(namePrefix);
+        exporter.setDbSchemaName(dbSchemaName);
         exporter.execute();
         Schema schema = exporter.getSchema();
         // Write to a string buffer and then write the results to a file

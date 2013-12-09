@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -75,10 +75,10 @@ import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect;
 import org.alfresco.repo.domain.patch.AppliedPatchDAO;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.DatabaseMetaDataHelper;
 import org.alfresco.util.LogUtil;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.schemacomp.ExportDb;
 import org.alfresco.util.schemacomp.MultiFileDumper;
@@ -259,7 +259,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private int schemaUpdateLockRetryWaitSeconds = DEFAULT_LOCK_RETRY_WAIT_SECONDS;
     private int maximumStringLength;
     private Properties globalProperties;
-    
+    private String dbSchemaName;
+
     private ThreadLocal<StringBuilder> executedStatementsThreadLocal = new ThreadLocal<StringBuilder>();
 
     public SchemaBootstrap()
@@ -406,8 +407,18 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     {
         ActionQueue.setMAX_EXECUTIONS_SIZE(hibernateMaxExecutions);
     }
-    
-    
+
+    /**
+     * Set db.schema.name to be used
+     */
+    public void setDbSchemaName(String dbSchemaName)
+    {
+        if (PropertyCheck.isValidPropertyString(dbSchemaName))
+        {
+            this.dbSchemaName = dbSchemaName;
+        }
+    }
+
     /**
      * Sets the properties map from which we look up some configuration settings.
      * 
@@ -552,7 +563,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      */
     private int countAppliedPatches(Configuration cfg, Connection connection) throws Exception
     {
-        String defaultSchema = DatabaseMetaDataHelper.getSchema(connection);
+        String defaultSchema = dbSchemaName != null ? dbSchemaName : DatabaseMetaDataHelper.getSchema(connection);
+
         if (defaultSchema != null && defaultSchema.length() == 0)
         {
             defaultSchema = null;
@@ -1008,9 +1020,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 setHistory("full").
                 setJobExecutorActivate(false).
                 buildProcessEngine();
-        
+
+            String schemaName = dbSchemaName != null ? dbSchemaName : DatabaseMetaDataHelper.getSchema(connection);
             // create or upgrade the DB schema
-            engine.getManagementService().databaseSchemaUpgrade(connection, null, DatabaseMetaDataHelper.getSchema(connection));
+            engine.getManagementService().databaseSchemaUpgrade(connection, null, schemaName);
         }
         finally
         {
@@ -1853,8 +1866,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         XMLToSchema xmlToSchema = new XMLToSchema(is);
         xmlToSchema.parse();
         Schema reference = xmlToSchema.getSchema();
-        
         ExportDb exporter = new ExportDb(dataSource, dialect, descriptorService);
+        exporter.setDbSchemaName(dbSchemaName);
         // Ensure that the database objects we're validating are filtered
         // by the same prefix as the reference file.  
         exporter.setNamePrefix(reference.getDbPrefix());
@@ -2030,11 +2043,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         
         if (dbPrefixes == null)
         {
-            dumper = new MultiFileDumper(outputDir, fileNameTemplate, dbToXMLFactory);
+            dumper = new MultiFileDumper(outputDir, fileNameTemplate, dbToXMLFactory, dbSchemaName);
         }
         else
         {
-            dumper = new MultiFileDumper(dbPrefixes, outputDir, fileNameTemplate, dbToXMLFactory);            
+            dumper = new MultiFileDumper(dbPrefixes, outputDir, fileNameTemplate, dbToXMLFactory, dbSchemaName);
         }
         List<File> files = dumper.dumpFiles();
         

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -47,6 +47,7 @@ public class MultiFileDumper
     private final DbToXMLFactory dbToXMLFactory;
     private final static String fileNameSuffix = ".xml";
     public final static String[] DEFAULT_PREFIXES = new String[] { "alf_", "avm_", "jbpm_", "act_" };
+    private String defaultSchemaName;
     
     
     /**
@@ -56,8 +57,9 @@ public class MultiFileDumper
      * @param directory
      * @param fileNameTemplate
      * @param dbToXMLFactory
+     * @param defaultSchemaName
      */
-    public MultiFileDumper(String[] dbPrefixes, File directory, String fileNameTemplate, DbToXMLFactory dbToXMLFactory)
+    public MultiFileDumper(String[] dbPrefixes, File directory, String fileNameTemplate, DbToXMLFactory dbToXMLFactory, String defaultSchemaName)
     {
         ParameterCheck.mandatory("dbPrefixes", dbPrefixes);
         ParameterCheck.mandatory("directory", directory);
@@ -72,6 +74,7 @@ public class MultiFileDumper
         this.directory = directory;
         this.fileNameTemplate = fileNameTemplate;
         this.dbToXMLFactory = dbToXMLFactory;
+        this.defaultSchemaName = defaultSchemaName;
     }
     
     
@@ -82,10 +85,11 @@ public class MultiFileDumper
      * @param directory
      * @param fileNameTemplate
      * @param dbToXMLFactory
+     * @param defaultSchemaName can be null
      */
-    public MultiFileDumper(File directory, String fileNameTemplate, DbToXMLFactory dbToXMLFactory)
+    public MultiFileDumper(File directory, String fileNameTemplate, DbToXMLFactory dbToXMLFactory, String defaultSchemaName)
     {
-        this(DEFAULT_PREFIXES, directory, fileNameTemplate, dbToXMLFactory);
+        this(DEFAULT_PREFIXES, directory, fileNameTemplate, dbToXMLFactory, defaultSchemaName);
     }
 
 
@@ -99,6 +103,7 @@ public class MultiFileDumper
             File outputFile = TempFileProvider.createTempFile(fileNamePrefix, fileNameSuffix, directory);
             files.add(outputFile);
             DbToXML dbToXML = dbToXMLFactory.create(outputFile, dbPrefix);
+            dbToXML.setDbSchemaName(defaultSchemaName);
             dbToXML.execute();
         }
         

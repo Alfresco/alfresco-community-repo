@@ -10,7 +10,7 @@
       <artifactId>alfresco-rm-parent</artifactId>
       <version>2.2-SNAPSHOT</version>
    </parent>
-   <artifactId>alfresco-rm</artifactId>
+   <artifactId>rm-server</artifactId>
    <name>Alfresco RM</name>
    <properties>
       <app.filtering.enabled>true</app.filtering.enabled>

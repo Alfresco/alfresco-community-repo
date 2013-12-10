@@ -59,14 +59,14 @@
       <property name="name" value="AuditAdmin"/>
       <property name="private" value="true"/>
       <property name="capabilities">
-         <list>
+         <set>
             <ref bean="rmAccessAuditCapability"/>
             <ref bean="rmDeclareAuditAsRecordCapability"/>
             <ref bean="rmDeleteAuditCapability"/>
             <ref bean="rmEnableDisableAuditByTypesCapability"/>
             <ref bean="rmExportAuditCapability"/>
             <ref bean="rmSelectAuditMetadataCapability"/>
-         </list>
+         </set>
       </property>
    </bean>
 

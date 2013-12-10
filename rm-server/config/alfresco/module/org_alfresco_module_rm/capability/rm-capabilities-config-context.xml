@@ -84,10 +84,10 @@
         <property name="name" value="ListAdmin"/>
         <property name="private" value="true"/>
         <property name="capabilities">
-            <list>
+            <set>
                 <ref bean="rmCreateAndAssociateSelectionListsCapability"/>
                 <ref bean="rmEditSelectionListsCapability"/>
-            </list>
+            </set>
         </property>
     </bean>
 

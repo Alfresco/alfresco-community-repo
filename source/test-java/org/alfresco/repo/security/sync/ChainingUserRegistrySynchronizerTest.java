@@ -18,22 +18,6 @@
  */
 package org.alfresco.repo.security.sync;
 
-import java.util.AbstractCollection;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeMap;
-
 import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -59,6 +43,8 @@ import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
+
+import java.util.*;
 
 /**
  * Tests the {@link ChainingUserRegistrySynchronizer} using a simulated {@link UserRegistry}.
@@ -444,15 +430,15 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
             public Object execute() throws Throwable
             {
-                assertExists("Z0", "U2");
-                assertExists("Z0", "U3");
-                assertExists("Z0", "U4");
+                // MNT-9711 fix. User U6 already exists in zone "Z0". According ChainingUserRegistrySynchronizercurrent
+                // implementation when allowDeletions==false person that exists in a different zone with higher
+                // precedence  will be ignored
+                assertExists("Z0", "U6");
+                assertExists("Z1", "U1");
+                assertExists("Z1", "U7");
+                assertExists("Z1", "G5");
+                assertExists("Z2", "G6", "U3", "U4", "G7");
                 assertExists("Z1", "U5");
-                assertExists("Z1", "u6");
-                assertExists(null, "U1");
-                assertExists(null, "U7");
-                assertExists(null, "G5");
-                assertExists(null, "G6");
                 return null;
             }
         }, false, true);

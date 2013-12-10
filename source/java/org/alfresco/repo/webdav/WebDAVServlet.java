@@ -126,8 +126,11 @@ public class WebDAVServlet extends HttpServlet
             }
             else if (method.getRootNodeRef() == null)
             {
-                if ( logger.isErrorEnabled())
-                    logger.error("No root node for request");
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("No root node for request [" +
+                                 request.getMethod() + " " + request.getRequestURI() + "]");
+                }
                 
                 // Return an error status
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

@@ -25,7 +25,7 @@
    <bean id="compositeCapability"
       abstract="true"
       parent="rmBaseCapability"
-      class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.CompositeCapability" />
+      class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCompositeCapability" />
 
    <bean id="rmCycleVitalRecordsCapability"
       parent="declarativeCapability">

@@ -21,7 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.capability.declarative.CompositeCapability;
+import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCompositeCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -30,7 +30,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author andyh
  */
-public class UpdateCapability extends CompositeCapability
+public class UpdateCapability extends DeclarativeCompositeCapability
 {
     /**
      * 

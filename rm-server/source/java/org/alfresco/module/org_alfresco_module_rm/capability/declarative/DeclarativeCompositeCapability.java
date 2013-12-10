@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,11 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
 
-import java.util.List;
+import java.util.Set;
 
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.capability.CompositeCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -30,17 +31,27 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Roy Wetherall
  */
-public class CompositeCapability extends DeclarativeCapability
+public class DeclarativeCompositeCapability extends DeclarativeCapability 
+                                            implements CompositeCapability
 {
-    /** List of capabilities */
-    private List<Capability> capabilities;
+    /** set of capabilities */
+    private Set<Capability> capabilities;
     
     /**
-     * @param capabilites   list of capabilities
+     * @param capabilites   set of capabilities
      */
-    public void setCapabilities(List<Capability> capabilities)
+    public void setCapabilities(Set<Capability> capabilities)
     {
         this.capabilities = capabilities;
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CompositeCapability#getCapabilities()
+     */
+    @Override
+    public Set<Capability> getCapabilities()
+    {
+        return this.capabilities;
     }
     
     /**

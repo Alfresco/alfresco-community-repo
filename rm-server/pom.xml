@@ -1,21 +1,14 @@
-<!-- ****************************************************** -->
-<!-- ** Experimental Maven build - use at your own risk! ** -->
-<!-- ****************************************************** -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-   <modelVersion>4.0.0</modelVersion>
+<?xml version="1.0"?><project xmlns="http://maven.apache.org/POM/4.0.0"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-rm-parent</artifactId>
       <version>2.2-SNAPSHOT</version>
    </parent>
-   <artifactId>rm-server</artifactId>
-   <name>Alfresco RM</name>
-   <properties>
-      <app.filtering.enabled>true</app.filtering.enabled>
-      <maven.alfresco.version>1.1.1</maven.alfresco.version>
-   </properties>
+   <modelVersion>4.0.0</modelVersion>
+   <artifactId>alfresco-rm-server</artifactId>
+   <name>Alfresco RM Server</name>
    <build>
       <resources>
          <resource>
@@ -67,6 +60,29 @@
             <artifactId>alfresco-maven-plugin</artifactId>
             <version>${maven.alfresco.version}</version>
             <extensions>true</extensions>
+            <configuration>
+               <backup>true</backup>
+               <ampLocation>${project.build.directory}/${project.build.finalName}.amp</ampLocation>
+               <!-- FIXME -->
+               <warLocation>${project.build.directory}/../../../software/tomcat/webapps/alfresco.war</warLocation>
+            </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-war-plugin</artifactId>
+            <configuration>
+               <overlays>
+                  <overlay>
+                     <groupId>org.alfresco</groupId>
+                     <artifactId>alfresco</artifactId>
+                     <type>war</type>
+                  </overlay>
+                  <overlay>
+                     <groupId>org.alfresco</groupId>
+                     <artifactId>alfresco-rm-server</artifactId>
+                     <type>amp</type>
+                  </overlay>
+               </overlays>
+            </configuration>
          </plugin>
       </plugins>
    </build>
@@ -126,6 +142,12 @@
       </profile>
    </profiles>
    <dependencies>
+      <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>alfresco</artifactId>
+         <version>${alfresco.base.version}</version>
+         <type>war</type>
+      </dependency>
       <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-remote-api</artifactId>

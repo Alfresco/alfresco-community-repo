@@ -821,6 +821,7 @@ public class LockServiceImpl implements LockService,
     public LockState getLockState(NodeRef nodeRef)
     {
         // Check in-memory for ephemeral locks first.
+        nodeRef = tenantService.getName(nodeRef);
         LockState lockState = lockStore.get(nodeRef);
         
         //ALF-20361: It is possible that a rollback has resulted in a "non-lock" lock state being added to 

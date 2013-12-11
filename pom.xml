@@ -81,6 +81,7 @@
 
    <properties>
       <alfresco.base.version>4.2.0</alfresco.base.version>
+      <app.filtering.enabled>true</app.filtering.enabled>
 
       <!-- Database properties - default values to be overridden in settings.xml -->
       <db.driver>org.postgresql.Driver</db.driver>

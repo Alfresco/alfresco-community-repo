@@ -10,6 +10,8 @@
    <artifactId>alfresco-rm-server</artifactId>
    <name>Alfresco RM Server</name>
    <build>
+      <sourceDirectory>source/java</sourceDirectory>
+      <testSourceDirectory>test/java</testSourceDirectory>
       <resources>
          <resource>
             <directory>config</directory>
@@ -28,6 +30,11 @@
             <filtering>${app.filtering.enabled}</filtering>
          </resource>
       </resources>
+      <testResources>
+         <testResource>
+            <directory>test/resources</directory>
+         </testResource>
+      </testResources>
       <plugins>
          <!-- Additional source folder to be added: source/compatibility -->
          <plugin>
@@ -122,7 +129,7 @@
                            <goal>execute</goal>
                         </goals>
                         <configuration>
-                           <sqlCommand>drop database if exists alfresco</sqlCommand>
+                           <sqlCommand>drop database if exists ${db.name}</sqlCommand>
                         </configuration>
                      </execution>
                      <execution>
@@ -132,7 +139,7 @@
                            <goal>execute</goal>
                         </goals>
                         <configuration>
-                           <sqlCommand>create database alfresco</sqlCommand>
+                           <sqlCommand>create database ${db.name}</sqlCommand>
                         </configuration>
                      </execution>
                   </executions>

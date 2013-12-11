@@ -25,4 +25,7 @@
         <property name="cache" ref="contentCache"/>
         <property name="cacheOnInbound" value="true"/>
     </bean>
+    
+    <!-- Override the usual fileContentStore so that the CachingContentStore is used in its place -->
+    <alias name="cachingContentStore" alias="fileContentStore"/>
 </beans>

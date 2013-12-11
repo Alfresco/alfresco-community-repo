@@ -20,11 +20,22 @@ package org.alfresco.repo.content.caching;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import java.util.UUID;
+
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.filestore.FileContentStore;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -108,6 +119,33 @@ public class FullTest
         assertEquals("Reader should get correct content", content, reader.getContentString());
     }
     
+    // CLOUD-2214: Mime type is removed during uploading file via WebDav
+    @Test
+    public void canGuessMimeType()
+    {
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        
+        ContentService contentService = (ContentService) ctx.getBean("ContentService");
+        NodeService nodeService = (NodeService) ctx.getBean("NodeService");
+        StoreRef storeRef = nodeService.createStore("workspace", getClass().getName()+UUID.randomUUID());
+        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+        NodeRef nodeRef = nodeService.createNode(
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, getClass().getSimpleName()),
+                    ContentModel.TYPE_CONTENT).getChildRef();
+
+        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        // Pre-condition of test is that we're testing with a potentially problematic BackingStoreAwareCacheWriter
+        // rather than a FileContentWriter, which we would expect to work.
+        assertTrue(writer instanceof BackingStoreAwareCacheWriter);
+        
+        String content = "This is some content";
+        writer.putContent(content);
+        writer.guessMimetype("myfile.txt");
+        
+        assertEquals("text/plain", writer.getMimetype());
+    }
        
     private String makeContent()
     {

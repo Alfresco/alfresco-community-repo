@@ -57,6 +57,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.MimetypeServiceAware;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -540,9 +541,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         }
         
         // supply the writer with a copy of the mimetype service if needed
-        if (writer instanceof AbstractContentWriter)
+        if (writer instanceof MimetypeServiceAware)
         {
-            ((AbstractContentWriter)writer).setMimetypeService(mimetypeService);
+            ((MimetypeServiceAware)writer).setMimetypeService(mimetypeService);
         }
         
         // give back to the client

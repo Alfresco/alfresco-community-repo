@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.MimetypeServiceAware;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,7 +59,7 @@ import org.springframework.aop.framework.ProxyFactory;
  * 
  * @author Derek Hulley
  */
-public abstract class AbstractContentWriter extends AbstractContentAccessor implements ContentWriter
+public abstract class AbstractContentWriter extends AbstractContentAccessor implements ContentWriter, MimetypeServiceAware
 {
     private static final Log logger = LogFactory.getLog(AbstractContentWriter.class);
     

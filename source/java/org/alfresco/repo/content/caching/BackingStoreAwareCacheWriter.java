@@ -30,6 +30,8 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.MimetypeServiceAware;
 
 /**
  * Wrapper for cache writer that is aware of backing store
@@ -41,7 +43,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
  * @author Viachaslau Tsikhanovich
  *
  */
-public class BackingStoreAwareCacheWriter implements ContentWriter
+public class BackingStoreAwareCacheWriter implements ContentWriter, MimetypeServiceAware
 {
     /** Cache writer **/
     private ContentWriter cacheWriter;
@@ -195,4 +197,9 @@ public class BackingStoreAwareCacheWriter implements ContentWriter
         this.cacheWriter.guessEncoding();
     }
 
+    @Override
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        ((MimetypeServiceAware) cacheWriter).setMimetypeService(mimetypeService);
+    }
 }

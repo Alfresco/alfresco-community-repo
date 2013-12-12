@@ -1,0 +1,22 @@
+<webscript>
+  <shortname>Add a Custom Reference Definition to the custom model</shortname>
+  <description><![CDATA[
+  Adds a custom reference definition to the custom model. Custom references are many-to-many by default.<br/>
+  <br/>
+  The body of the post should be in the form, e.g.<br/>
+  {<br/>
+  &nbsp;&nbsp;&nbsp;"referenceType" : ""parentchild" OR "bidirectional",<br/>
+  &nbsp;&nbsp;&nbsp;"label" : "bar"<br/>
+  &nbsp;&nbsp;&nbsp;"source" : "foo",<br/>
+  &nbsp;&nbsp;&nbsp;"target" : "bar"<br/>
+  }<br/>
+  For parentchild references, source and target must be provided. For bidirectional references,
+  a label is required.<br/>
+  ]]>
+  </description>
+  <url>/api/rma/admin/customreferencedefinitions</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

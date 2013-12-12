@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+	
+	<!-- Bootstrap Records Management Models -->   
+    <bean id="org_alfresco_module_dod5015_dod5015dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/module/org_alfresco_module_rm/dod5015/dod5015Model.xml</value>
+            </list>
+        </property>
+	    <property name="labels">
+	            <list>
+	                <value>alfresco/module/org_alfresco_module_rm/dod5015/dod5015-model</value>
+	           </list>
+	    </property>        
+    </bean>
+    
+    <!--  Bootstap the message property files -->
+   <bean id="org_alfresco_module_rm_resourceBundles.dod5015" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <value>alfresco.module.org_alfresco_module_rm.dod5015.dod5015</value>
+         </list>
+      </property>
+   </bean>
+   
+   <!--  Include classification capabilities, deprecated for now -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/dod5015/dod5015-capabilities-classification-context.xml"/>
+
+</beans>

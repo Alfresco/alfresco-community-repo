@@ -1,0 +1,14 @@
+<webscript>
+  <shortname>Gets the records management event types</shortname>
+  <description>
+  <![CDATA[
+
+
+  ]]>
+  </description>
+  <url>/api/rma/admin/rmeventtypes</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

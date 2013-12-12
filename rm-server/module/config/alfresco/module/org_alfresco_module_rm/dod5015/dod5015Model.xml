@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Definition of DOD 5015 Model -->
+
+<model name="dod:dod5015" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- Meta-data about the model -->   
+   <description>DOD 5015 Model</description>
+   <author>Roy Wetherall</author>
+   <version>1.0</version>
+
+   <!-- Imports are required to allow references to definitions in other models -->   
+   <imports>
+      <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+      <!-- Import Alfresco Records Management Model Definitions -->
+      <import uri="http://www.alfresco.org/model/recordsmanagement/1.0" prefix="rma" />
+   </imports>
+
+   <!-- Records Management Namespace -->
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/dod5015/1.0" prefix="dod"/>
+   </namespaces>
+   
+   <constraints>
+      <constraint name="dod:imageFormatList" type="LIST">
+         <title>Image Formats</title>
+         <parameter name="allowedValues">
+            <list>
+               <value>Binary Image Interchange Format (BIIF)</value>
+               <value>GIF 89a</value>
+               <value>Graphic Image Format (GIF) 87a</value>
+               <value>Joint Photographic Experts Group (JPEG) (all versions)</value>
+               <value>Portable Network Graphics (PNG) 1.0</value>
+               <value>Tagged Image Interchange Format (TIFF) 4.0</value>
+               <value>TIFF 5.0</value>
+               <value>TIFF 6.0</value>
+            </list>
+         </parameter>
+         <parameter name="caseSensitive"><value>true</value></parameter>
+      </constraint>
+   </constraints>
+      
+   <types>
+   	
+   	  <!--  Deprecated since 2.0 -->
+      <type name="dod:recordSeries">      
+         <title>Record Series</title>
+         <parent>rma:recordCategory</parent>         
+      </type>	
+   
+   </types>
+   
+   <aspects>
+     
+      <aspect name="dod:scannedRecord">
+        <title>Scanned Record</title>
+        <parent>rma:recordMetaData</parent>
+        <properties>
+            <property name="dod:scannedFormat">
+                <title>Image Format</title>
+                <type>d:text</type>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>
+            <property name="dod:scannedFormatVersion">
+                <title>Image Format and Version</title>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+                <constraints>
+                    <constraint ref="dod:imageFormatList" />
+                </constraints>
+            </property>
+            <property name="dod:resolutionX">
+                <title>Image Resolution X</title>
+                <type>d:int</type>
+                <mandatory>true</mandatory>
+            </property>
+            <property name="dod:resolutionY">
+                <title>Image Resolution Y</title>
+                <type>d:int</type>
+                <mandatory>true</mandatory>
+            </property>
+            <property name="dod:scannedBitDepth">
+                <title>Scanned Bit Depth</title>
+                <type>d:int</type>
+                <mandatory>false</mandatory>
+            </property>
+        </properties>
+        <mandatory-aspects>
+            <aspect>rma:filePlanComponent</aspect>
+        </mandatory-aspects>
+      </aspect>
+   
+      <aspect name="dod:pdfRecord">
+        <title>PDF Record</title>
+        <parent>rma:recordMetaData</parent>
+        <properties>            
+            <property name="dod:producingApplication">
+                <title>Producing Application</title>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>         
+            <property name="dod:producingApplicationVersion">
+                <title>Producing Application Version</title>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+            </property>         
+            <property name="dod:pdfVersion">
+                <title>PDF Version</title>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>         
+            <property name="dod:creatingApplication">
+                <title>Creating Application</title>
+                <type>d:text</type>
+                <mandatory>false</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>         
+            <property name="dod:documentSecuritySettings">
+                <title>Document Security Settings</title>
+                <type>d:text</type>
+                <mandatory>false</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>
+        </properties>
+        <mandatory-aspects>
+            <aspect>rma:filePlanComponent</aspect>
+        </mandatory-aspects>
+      </aspect>
+   
+      <aspect name="dod:digitalPhotographRecord">
+        <title>Digital Photograph Record</title>
+        <parent>rma:recordMetaData</parent>
+        <properties>        
+            <property name="dod:caption">
+                <title>Caption</title>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+            </property>         
+            <property name="dod:photographer">
+                <title>Photographer</title>
+                <type>d:text</type>
+                <mandatory>false</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>         
+            <property name="dod:copyright">
+                <title>Copyright</title>
+                <type>d:text</type>
+                <mandatory>false</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>         
+            <property name="dod:bitDepth">
+                <title>Bit Depth</title>
+                <type>d:text</type>
+                <mandatory>false</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>         
+            <property name="dod:imageSizeX">
+                <title>Image Size X</title>
+                <type>d:int</type>
+                <mandatory>false</mandatory>
+            </property>         
+            <property name="dod:imageSizeY">
+                <title>Image Size Y</title>
+                <type>d:int</type>
+                <mandatory>false</mandatory>
+            </property>         
+            <property name="dod:imageSource">
+                <title>Image Source</title>
+                <type>d:text</type>
+                <mandatory>false</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>         
+            <property name="dod:compression">
+                <title>Compression</title>
+                <type>d:text</type>
+                <mandatory>false</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>         
+            <property name="dod:iccIcmProfile">
+                <title>ICC/ICM Profile</title>
+                <type>d:text</type>
+                <mandatory>false</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>         
+            <property name="dod:exifInformation">
+                <title>EXIF Information</title>
+                <type>d:text</type>
+                <mandatory>false</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>
+        </properties>
+        <mandatory-aspects>
+            <aspect>rma:filePlanComponent</aspect>
+        </mandatory-aspects>
+      </aspect>     
+      
+      <aspect name="dod:webRecord">
+        <title>Web Record</title>
+        <parent>rma:recordMetaData</parent>
+        <properties>        
+            <property name="dod:webFileName">
+                <title>Web File Name</title>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property> 
+            <property name="dod:webPlatform">
+                <title>Web Platform</title>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property> 
+            <property name="dod:webSiteName">
+                <title>Web Site Name</title>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property> 
+            <property name="dod:webSiteURL">
+                <title>Web Site URL</title>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property> 
+            <property name="dod:captureMethod">
+                <title>Capture Method</title>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property> 
+            <property name="dod:captureDate">
+                <title>Capture Date</title>
+                <type>d:date</type>
+                <mandatory>true</mandatory>
+            </property> 
+            <property name="dod:contact">
+                <title>Contact</title>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property> 
+            <property name="dod:contentManagementSystem">
+                <title>Content Management System</title>
+                <type>d:text</type>
+                <mandatory>false</mandatory>
+                <index enabled="true">
+			        <atomic>true</atomic>
+			        <stored>false</stored>
+			        <tokenised>false</tokenised>
+			    </index>
+            </property>
+        </properties>
+        <mandatory-aspects>
+            <aspect>rma:filePlanComponent</aspect>
+        </mandatory-aspects>  
+      </aspect>
+      
+   </aspects>
+   
+</model>

@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- I18N -->
+   <bean id="rmActionResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <value>alfresco.module.org_alfresco_module_rm.messages.actions</value>
+         </list>
+      </property>
+   </bean>
+
+   <!--  Create record action -->
+   <bean id="create-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction">
+      <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
+      <property name="recordService" ref="RecordService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="filePlanService" ref="FilePlanService" />
+      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="applicableTypes">
+         <list>
+            <value>{http://www.alfresco.org/model/content/1.0}content</value>
+         </list>
+      </property>
+   </bean>
+
+   <!--  Hide record action -->
+   <bean id="hide-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.HideRecordAction">
+      <property name="nodeService" ref="NodeService" />
+      <property name="recordService" ref="RecordService" />
+      <property name="publicAction" value="false"/>
+   </bean>
+
+</beans>

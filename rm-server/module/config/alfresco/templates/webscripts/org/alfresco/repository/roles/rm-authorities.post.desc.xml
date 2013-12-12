@@ -1,0 +1,12 @@
+<webscript>
+   <shortname>Add a group or a user to a role</shortname>
+   <description><![CDATA[
+      Adds a group or a user to a role.
+   ]]>
+   </description>
+   <url>/api/rm/roles/{roleId}/authorities/{authorityName}</url>
+   <url>/api/rm/{store_type}/{store_id}/{id}/roles/{roleId}/authorities/{authorityName}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

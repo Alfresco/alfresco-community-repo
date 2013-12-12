@@ -12,29 +12,20 @@
    <build>
       <sourceDirectory>source/java</sourceDirectory>
       <testSourceDirectory>test/java</testSourceDirectory>
-      <resources>
-         <resource>
-            <directory>config</directory>
-            <targetPath>../${project.build.finalName}/config</targetPath>
-            <filtering>${app.filtering.enabled}</filtering>
-            <excludes>
-               <exclude>alfresco/extension/dev-context.xml</exclude>
-            </excludes>
-         </resource>
-         <resource>
-            <directory>config/alfresco/module/org_alfresco_module_rm</directory>
-            <targetPath>../${project.build.finalName}</targetPath>
-            <includes>
-               <include>module.properties</include>
-            </includes>
-            <filtering>${app.filtering.enabled}</filtering>
-         </resource>
-      </resources>
       <testResources>
          <testResource>
             <directory>test/resources</directory>
          </testResource>
       </testResources>
+      <resources>
+         <resource>
+            <directory>module</directory>
+            <targetPath>../${project.build.finalName}</targetPath>
+            <excludes>
+               <exclude>config/alfresco/extension/dev-context.xml</exclude>
+            </excludes>
+         </resource>
+      </resources>
       <plugins>
          <!-- Additional source folder to be added: source/compatibility -->
          <plugin>

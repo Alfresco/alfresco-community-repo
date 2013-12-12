@@ -207,6 +207,7 @@ public class CachingContentStoreTest
         when(cache.getWriter("url")).thenReturn(cacheWriter);
         ContentReader readerFromCacheWriter = mock(ContentReader.class);
         when(cacheWriter.getReader()).thenReturn(readerFromCacheWriter);
+        when(readerFromCacheWriter.exists()).thenReturn(true);
         when(cacheWriter.getSize()).thenReturn(54321L);
         QuotaManagerStrategy quota = mock(QuotaManagerStrategy.class);
         cachingStore.setQuota(quota);
@@ -260,6 +261,7 @@ public class CachingContentStoreTest
         when(cache.getWriter("url")).thenReturn(cacheWriter);
         ContentReader readerFromCacheWriter = mock(ContentReader.class);
         when(cacheWriter.getReader()).thenReturn(readerFromCacheWriter);
+        when(readerFromCacheWriter.exists()).thenReturn(true);
         when(cacheWriter.getSize()).thenReturn(54321L);
         QuotaManagerStrategy quota = mock(QuotaManagerStrategy.class);
         cachingStore.setQuota(quota);

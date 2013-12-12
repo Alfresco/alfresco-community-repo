@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="groupBase"
+      abstract="true"
+      init-method="init"
+      class="org.alfresco.module.org_alfresco_module_rm.capability.GroupImpl">
+      <property name="capabilityService" ref="CapabilityService"/>
+    </bean>
+
+   <bean id="recordsGroup"
+      parent="groupBase">
+      <property name="id" value="records"/>
+      <property name="index" value="5"/>
+   </bean>
+
+   <bean id="auditGroup"
+      parent="groupBase">
+      <property name="id" value="audit"/>
+      <property name="index" value="10" />
+   </bean>
+
+   <bean id="cutoffGroup"
+      parent="groupBase">
+      <property name="id" value="cutoff"/>
+      <property name="index" value="30"/>
+   </bean>
+
+   <bean id="dispositionAndTransfersGroup"
+      parent="groupBase">
+      <property name="id" value="dispositionAndTransfers"/>
+      <property name="index" value="40"/>
+   </bean>
+
+   <bean id="eventsGroup"
+      parent="groupBase">
+      <property name="id" value="events"/>
+      <property name="index" value="50"/>
+   </bean>
+
+   <bean id="configGroup"
+      parent="groupBase">
+      <property name="id" value="config"/>
+      <property name="index" value="60"/>
+   </bean>
+
+   <bean id="folderControlGroup"
+      parent="groupBase">
+      <property name="id" value="folderControl"/>
+      <property name="index" value="70"/>
+   </bean>
+
+   <bean id="holdControlsGroup"
+      parent="groupBase">
+      <property name="id" value="holdControls"/>
+      <property name="index" value="80"/>
+   </bean>
+
+   <bean id="referencesGroup"
+      parent="groupBase">
+      <property name="id" value="references"/>
+      <property name="index" value="110"/>
+   </bean>
+
+   <bean id="securityGroup"
+      parent="groupBase">
+      <property name="id" value="security"/>
+      <property name="index" value="120"/>
+   </bean>
+
+   <bean id="vitalRecordsGroup"
+      parent="groupBase">
+      <property name="id" value="vitalRecords"/>
+      <property name="index" value="130"/>
+   </bean>
+   
+   <bean id="rulesGroup"
+      parent="groupBase">
+      <property name="id" value="rules"/>
+      <property name="index" value="140"/>
+   </bean>
+
+</beans>

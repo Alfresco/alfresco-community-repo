@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Records Management Permissions</shortname>
+   <description>Retrieve the Permissions set against a Records Management node.</description>
+   <url>/api/node/{store_type}/{store_id}/{id}/rmpermissions</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

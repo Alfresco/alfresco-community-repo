@@ -1,0 +1,164 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+	
+	<!--  Helper abstract bean definitions -->
+	
+	<bean id="protectedArtifact"
+	      abstract="true"
+	      init-method="init">	      
+		<property name="modelSecurityService" ref="modelSecurityService" />
+		<property name="namespaceService" ref="namespaceService" />	
+	</bean>
+	
+	<bean id="protectedProperty" 
+		  abstract="true" 
+		  parent="protectedArtifact"
+		  class="org.alfresco.module.org_alfresco_module_rm.model.security.ProtectedProperty">
+	</bean>
+	
+	<bean id="protectedAspect" 
+		  abstract="true" 
+		  parent="protectedArtifact"
+		  class="org.alfresco.module.org_alfresco_module_rm.model.security.ProtectedAspect">
+	</bean>	
+	
+	<!--  Protected Aspects -->
+	
+	<bean id="rm.protectedAspect.rma_cutOff" parent="protectedAspect">
+	    <property name="name" value="rma:cutOff"/>
+		<property name="capabilities">
+			<set>
+				<ref bean="rmCutOffCapability" />
+				<ref bean="rmUndoCutOffCapability" />
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="rm.protectedAspect.rma_declaredRecord" parent="protectedAspect">
+	    <property name="name" value="rma:declaredRecord"/>
+	    <property name="capabilities">
+			<set>
+				<ref bean="rmDeclare" />
+				<ref bean="rmUndeclareRecordsCapability" />
+			</set>
+		</property>
+	</bean>
+
+	
+	<bean id="rm.protectedAspect.rma_frozen" parent="protectedAspect">
+	    <property name="name" value="rma:frozen" />
+	    <property name="capabilities">
+			<set>
+				<ref bean="rmExtendRetentionPeriodOrFreezeCapability" />
+				<ref bean="rmUnfreezeCapability" />
+			</set>
+		</property>
+	</bean>
+
+	<!--  Protected Properties -->
+	
+	<bean id="rm.protectedProperty.rma_cutoffDate" parent="protectedProperty">
+		<property name="name" value="rma:cutOffDate"/>
+		<property name="capabilities">
+			<set>
+				<ref bean="rmCutOffCapability" />
+				<ref bean="rmUndoCutOffCapability" />
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="rm.protectedProperty.rma_isClosed" parent="protectedProperty">
+		<property name="name" value="rma:isClosed"/>
+		<property name="capabilities">
+			<set>
+				<ref bean="rmCloseFoldersCapability" />
+				<ref bean="rmReOpenFoldersCapability" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="rm.protectedProperty.rma_declaredAt" parent="protectedProperty">
+		<property name="name" value="rma:declaredAt"/>
+		<property name="capabilities">
+			<set>
+				<ref bean="rmDeclare" />
+				<ref bean="rmUndeclareRecordsCapability" />
+			</set>
+		</property>
+	</bean>
+	
+    <bean id="rm.protectedProperty.rma_declaredBy" parent="protectedProperty">
+		<property name="name" value="rma:declaredBy"/>
+		<property name="capabilities">
+			<set>
+				<ref bean="rmDeclare" />
+				<ref bean="rmUndeclareRecordsCapability" />
+			</set>
+		</property>
+	</bean>
+    
+    <bean id="rm.protectedProperty.rma_dateFiled" parent="protectedProperty">
+		<property name="name" value="rma:dateFiled"/>
+		<property name="capabilities">
+			<set>
+				<ref bean="rmFileRecordsCapability" />
+			</set>
+		</property>
+	</bean>
+    
+    <bean id="rm.protectedProperty.rma_reviewAsOf" parent="protectedProperty">
+		<property name="name" value="rma:reviewAsOf"/>
+		<property name="allwaysAllowNew" value = "true" />
+		<property name="capabilities">
+			<set>
+				<ref bean="rmCycleVitalRecordsCapability" />
+				<ref bean="rmPlanningReviewCyclesCapability" />
+			</set>
+		</property>
+	</bean>
+    
+    <bean id="rm.protectedProperty.rma_dispositionAsOf" parent="protectedProperty">
+		<property name="name" value="rma:dispositionAsOf"/>
+		<property name="capabilities">
+			<set>
+				<ref bean="rmManuallyChangeDispositionDatesCapability" />
+			</set>
+		</property>
+	</bean>
+    
+    <bean id="rm.protectedProperty.rma_holdReason" parent="protectedProperty">
+		<property name="name" value="rma:holdReason"/>
+		<property name="capabilities">
+			<set>
+				<ref bean="rmViewUpdateReasonsForFreezeCapability" />
+				<ref bean="rmExtendRetentionPeriodOrFreezeCapability" />
+				<ref bean="rmUnfreezeCapability" />
+			</set>
+		</property>
+	</bean>
+
+    <bean id="rm.protectedProperty.rma_frozenAt" parent="protectedProperty">
+		<property name="name" value="rma:frozenAt"/>
+		<property name="capabilities">
+			<set>
+				<ref bean="rmViewUpdateReasonsForFreezeCapability" />
+				<ref bean="rmExtendRetentionPeriodOrFreezeCapability" />
+				<ref bean="rmUnfreezeCapability" />
+			</set>
+		</property>
+	</bean>
+	
+    <bean id="rm.protectedProperty.rma_frozenBy" parent="protectedProperty">
+		<property name="name" value="rma:frozenBy"/>
+		<property name="capabilities">
+			<set>
+				<ref bean="rmViewUpdateReasonsForFreezeCapability" />
+				<ref bean="rmExtendRetentionPeriodOrFreezeCapability" />
+				<ref bean="rmUnfreezeCapability" />
+			</set>
+		</property>
+	</bean>
+
+</beans>

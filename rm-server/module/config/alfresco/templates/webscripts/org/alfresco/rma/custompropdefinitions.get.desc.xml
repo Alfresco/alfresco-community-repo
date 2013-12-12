@@ -1,0 +1,14 @@
+<webscript>
+   <shortname>Records Management Custom Model Property Definitions</shortname>
+   <description><![CDATA[
+   Gets the list of existing custom property types.<br/>
+   If a propId is specified within the URL, only that specific property definition is returned.</br>
+   ]]>
+   </description>
+   <url>/api/rma/admin/custompropertydefinitions?element={element}</url>
+   <url>/api/rma/admin/custompropertydefinitions/{propId}</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

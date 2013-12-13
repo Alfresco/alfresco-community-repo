@@ -170,6 +170,7 @@ public class PublishingTestHelper
         {
             channelType = mock(AbstractChannelType.class);
             when(channelType.getId()).thenReturn(channelTypeId);
+            when(channelType.getTitle()).thenReturn(channelTypeId);
             channelService.register(channelType);
         }
         when(channelType.getChannelNodeType()).thenReturn(TYPE_DELIVERY_CHANNEL);

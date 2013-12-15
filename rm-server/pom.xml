@@ -19,11 +19,7 @@
       </testResources>
       <resources>
          <resource>
-            <directory>module</directory>
-            <targetPath>../${project.build.finalName}</targetPath>
-            <excludes>
-               <exclude>config/alfresco/extension/dev-context.xml</exclude>
-            </excludes>
+            <directory>config</directory>
          </resource>
       </resources>
       <plugins>
@@ -42,6 +38,28 @@
                           <source>source/compatibility</source>
                        </sources>
                    </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>test</phase>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+                  <configuration>
+                     <tasks>
+                        <copy todir="${project.build.directory}/${project.build.finalName}/config">
+                           <fileset dir="${basedir}/config">
+                              <exclude name="alfresco/extension/dev-context.xml"/>
+                           </fileset>
+                        </copy>
+                        <move file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties"
+                              todir="${project.build.directory}/${project.build.finalName}"/>
+                     </tasks>
+                  </configuration>
                </execution>
             </executions>
          </plugin>

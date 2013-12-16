@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
+import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
@@ -194,6 +195,28 @@ public class PersonServiceTest extends BaseWebScriptTest
     {
         // Test basic GET people with no filters ==
         Response response = sendRequest(new GetRequest(URL_PEOPLE), 200);        
+    }
+    
+    public void testJobWithSpace() throws Exception
+    {
+        String userName  = RandomStringUtils.randomNumeric(6);
+        String userJob = "myJob" + RandomStringUtils.randomNumeric(2) + " myJob" + RandomStringUtils.randomNumeric(3);
+        
+        //we need to ecape a spaces for search
+        String jobSearchString = userJob.replace(" ", "\\ ");
+        
+        createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                userJob, "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
+                Status.STATUS_OK);  
+        
+        // Get a person 
+        Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + URLEncoder.encode("jobtitle:" + jobSearchString)), 200);
+        JSONObject res = new JSONObject(response.getContentAsString());
+        assertEquals(1, res.getJSONArray("people").length());
+        
+        response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + URLEncoder.encode("jobtitle:" + userJob)), 200);
+        res = new JSONObject(response.getContentAsString());
+        assertEquals(0, res.getJSONArray("people").length());
     }
     
     @SuppressWarnings("unused")

@@ -19,12 +19,14 @@
 package org.alfresco.repo.tenant;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
-import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.AbstractRoutingContentStore;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
@@ -34,6 +36,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.transaction.TransactionService;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -51,15 +55,22 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     private TenantAdminDAO tenantAdminDAO;
     protected TenantService tenantService;
     private ApplicationContext applicationContext;
-    
+    private TransactionService transactionService;
     
     private final ReentrantReadWriteLock tenantContentStoreLock = new ReentrantReadWriteLock();
     private final WriteLock tenantContentStoreWriteLock = tenantContentStoreLock.writeLock();
     private final ReadLock tenantContentStoreReadLock = tenantContentStoreLock.readLock();
     
-    // note: cache is tenant-aware (if using TransctionalCache impl)
-    private SimpleCache<String, ContentStore> singletonCache; // eg. for contentStore
-    private final String KEY_CONTENT_STORE = "key.tenant.routing.content.store";
+    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    private final Map<String, ContentStore> cache;
+    
+    /**
+     * Default constructor
+     */
+    protected AbstractTenantRoutingContentStore()
+    {
+        this.cache = new HashMap<String, ContentStore>(1024);
+    }
     
     public void setRootLocation(String defaultRootDirectory)
     {
@@ -76,20 +87,16 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
         this.tenantAdminDAO = tenantAdminDAO;
     }
     
-    public void setSingletonCache(SimpleCache<String, ContentStore> singletonCache)
-    {
-        this.singletonCache = singletonCache;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.
-     * ApplicationContext)
-     */
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;
     }
     
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
     @Override
     public String getRootLocation()
     {
@@ -99,111 +106,103 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     @Override
     protected ContentStore selectWriteStore(ContentContext ctx)
     {
-        return getTenantContentStore();
+        RetryingTransactionCallback<ContentStore> callback = new RetryingTransactionCallback<ContentStore>()
+        {
+            @Override
+            public ContentStore execute() throws Throwable
+            {
+                return getTenantContentStore();
+            }
+        };
+        return transactionService.getRetryingTransactionHelper().doInTransaction(callback, true, false);
+        
     }
     
     @Override
     public List<ContentStore> getAllStores()
     {
-        final List<ContentStore> allEnabledStores = new ArrayList<ContentStore>();
-        
-        if (tenantService.isEnabled())
+        RetryingTransactionCallback<List<ContentStore>> callback = new RetryingTransactionCallback<List<ContentStore>>()
         {
-            String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-            if ((currentUser == null) || (tenantService.getBaseNameUser(currentUser).equals(AuthenticationUtil.getSystemUserName())))
+            @Override
+            public List<ContentStore> execute() throws Throwable
             {
-                // return enabled stores across all tenants, if running as system/null user, for example, ContentStoreCleaner scheduled job
-                List<TenantEntity> tenants = tenantAdminDAO.listTenants(false);
-                for (TenantEntity tenant : tenants)
-                {
-                    if (tenant.getEnabled())
-                    {
-                        String tenantDomain = tenant.getTenantDomain();
-                        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-                        {
-                            public Void doWork() throws Exception
-                            {
-                                allEnabledStores.add(getTenantContentStore()); // note: cache should only contain enabled stores
-                                return null;
-                            }
-                        }, tenantDomain);
-                    }
-                }
-                
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("getAllStores called without tenant ctx ("+tenants.size()+" tenants)");
-                }
-                
-                // drop through to ensure default content store has been init'ed
+                return getAllStoresImpl();
             }
+        };
+        return transactionService.getRetryingTransactionHelper().doInTransaction(callback, true, false);
+    }
+    /**
+     * Work method to build a list of stores and <b>must always be called from withing an active transaction</b>.
+     */
+    private List<ContentStore> getAllStoresImpl()
+    {
+        ContentStore cs = getTenantContentStore();
+
+        // Bypass everything if MT is disabled
+        if (!tenantService.isEnabled())
+        {
+            return Collections.singletonList(cs);
         }
         
-        allEnabledStores.add(getTenantContentStore());
+        final List<ContentStore> allEnabledStores = new ArrayList<ContentStore>();
+        allEnabledStores.add(cs);
         
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        if ((currentUser == null) || (tenantService.getBaseNameUser(currentUser).equals(AuthenticationUtil.getSystemUserName())))
+        {
+            // return enabled stores across all tenants, if running as system/null user, for example, ContentStoreCleaner scheduled job
+            List<TenantEntity> tenants = tenantAdminDAO.listTenants(false);
+            for (TenantEntity tenant : tenants)
+            {
+                if (tenant.getEnabled())
+                {
+                    String tenantDomain = tenant.getTenantDomain();
+                    TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
+                    {
+                        public Void doWork() throws Exception
+                        {
+                            allEnabledStores.add(getTenantContentStore()); // note: cache should only contain enabled stores
+                            return null;
+                        }
+                    }, tenantDomain);
+                }
+            }
+        }
         return allEnabledStores;
     }
     
     private ContentStore getTenantContentStore()
     {
+        String tenantDomain = tenantService.getCurrentUserDomain();
         ContentStore cs = null;
         
         tenantContentStoreReadLock.lock();
         try
         {
-            cs = getTenantContentStoreImpl();
+            cs = cache.get(tenantDomain);
+            if (cs != null)
+            {
+                return cs;
+            }
         }
         finally
         {
             tenantContentStoreReadLock.unlock();
         }
         
-        if (cs == null)
-        {
-            synchronized (this) 
-            {
-                cs = getTenantContentStoreImpl();
-                if (cs == null)
-                {
-                    init();
-                    cs = getTenantContentStoreImpl();
-                }
-            }
-        }
-        return cs;
-    }
-    
-    private ContentStore getTenantContentStoreImpl()
-    {
-        return (ContentStore)singletonCache.get(KEY_CONTENT_STORE);
-    }
-    
-    private void putTenantContentStoreImpl(ContentStore contentStore)
-    {
-        singletonCache.put(KEY_CONTENT_STORE, contentStore);
-    }
-    
-    private void removeTenantContentStoreImpl()
-    {
-        singletonCache.remove(KEY_CONTENT_STORE);
-    }
-    
-    public void init()
-    {
+        // It was not found, so go and initialize it
         tenantContentStoreWriteLock.lock();
         try
         {
             String rootDir = getRootLocation();
-            Tenant tenant = tenantService.getTenant(tenantService.getCurrentUserDomain());
-            if (tenant != null)
+            Tenant tenant = tenantService.getTenant(tenantDomain);
+            if (tenant != null && tenant.getRootContentStoreDir() != null)
             {
-                if (tenant.getRootContentStoreDir() != null)
-                {
-                   rootDir = tenant.getRootContentStoreDir();
-                }
+                rootDir = tenant.getRootContentStoreDir();
             }
-            
-            putTenantContentStoreImpl(initContentStore(this.applicationContext, rootDir));
+            cs = initContentStore(applicationContext, rootDir);
+            cache.put(tenantDomain, cs);
+            return cs;
         }
         finally
         {
@@ -211,12 +210,19 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
         }
     }
     
+    @Override
+    public void init()
+    {
+        getTenantContentStore();
+    }
+    
     public void destroy()
     {
+        String tenantDomain = tenantService.getCurrentUserDomain();
         tenantContentStoreWriteLock.lock();
         try
         {
-            removeTenantContentStoreImpl();
+            cache.remove(tenantDomain);
         }
         finally
         {

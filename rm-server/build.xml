@@ -3,4 +3,28 @@
    <property name="artifactId" value="alfresco"/>
    <property name="tomcat" value="tomcat" />
    <import file="../build.xml"/>
+
+   <property name="dbGroupId" value="postgresql"/>
+   <property name="dbArtifactId" value="${dbGroupId}"/>
+   <property name="dbVersion" value="9.1-901.jdbc4"/>
+   <property name="dbPackaging" value="jar"/>
+
+   <target name="copyDBDriver">
+      <exec executable="${mvn}">
+         <arg value="dependency:get" />
+         <arg value="-DgroupId=${dbGroupId}" />
+         <arg value="-DartifactId=${dbArtifactId}" />
+         <arg value="-Dversion=${dbVersion}" />
+         <arg value="-Dpackaging=${dbPackaging}" />
+         <arg value="-Ddest=${tomcat.folder}/lib" />
+      </exec>
+   </target>
+
+   <target name="copyDevContextFile">
+      <property name="devContextFile" value="../root/projects/repository/config/alfresco/extension/dev-context.xml" />
+      <copy file="${devContextFile}" todir="${tomcat.folder}/shared/classes/alfresco/extension"/>
+      <copy file="${devContextFile}" todir="config/alfresco/extension"/>
+   </target>
+
+   <target name="prepareEnv" depends="updateClassPath, copyDBDriver, copyDevContextFile" description="" />
 </project>

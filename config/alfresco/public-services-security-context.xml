@@ -58,22 +58,7 @@
     
     <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.PermissionServiceImpl" init-method="init">
         <property name="nodeService">
-            <!-- ALF-19732: added lockableAspectInterceptor -->
-            <bean class="org.springframework.aop.framework.ProxyFactoryBean" >
-                <property name="targetName">
-                    <value>mtAwareNodeService</value>
-                </property>
-                <property name="proxyInterfaces">
-                    <list>
-                        <value>org.alfresco.service.cmr.repository.NodeService</value>
-                    </list>
-                </property>
-                <property name="interceptorNames">
-                    <list>
-                        <value>lockableAspectInterceptor</value> 
-                    </list>
-                </property>
-           </bean>
+            <ref bean="mtAwareNodeService"/>
         </property>
         <property name="tenantService">
             <ref bean="tenantService"/>

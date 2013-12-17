@@ -59,7 +59,6 @@
       <property name="interceptorNames">
          <list>
             <value>nodeRefPropertyInterceptor</value>
-            <value>lockableAspectInterceptor</value>
             <value>mlPropertyInterceptor</value>
             <value>tagscopeSummaryPropertyInterceptor</value> 
          </list>
@@ -93,11 +92,12 @@
       </property>
       <property name="interceptorNames">
          <list>
+            <value>lockableAspectInterceptor</value> 
             <value>multiTNodeServiceInterceptor</value>
          </list>
       </property>
    </bean>
-
+   
    <!-- Map stores to archive stores -->
    <bean id="storeArchiveMap" class="org.alfresco.repo.node.StoreArchiveMap">
       <property name="archiveMap">

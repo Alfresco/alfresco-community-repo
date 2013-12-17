@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<project name="rm-parent" basedir=".">
+   <!-- The properties 'artifactId' and 'tomcat' are defined in the modules -->
+   <property name="groupId" value="org.alfresco"/>
+   <property name="version" value="4.2.0"/>
+   <property name="packaging" value="war"/>
+   <property environment="env" />
+   <property name="mvn" value="${env.MAVEN_HOME}/bin/mvn.bat" />
+   <property name="bash" value="${env.CYGWIN_HOME}/bin/bash" />
+   <property name="target" location="target" />
+   <property name="tomcat.folder" location="${target}/../../../software/${tomcat}" />
+   <property name="catalina" value="${tomcat.folder}/bin/catalina.sh" />
+   <property name="webapps" value="${tomcat.folder}/webapps" />
+   <property name="app.folder" location="${webapps}/${artifactId}" />
+   <property name="app.package" value="${artifactId}.${packaging}" />
+   <property name="app.package.path" location="${webapps}/${app.package}" />
+
+   <target name="clean">
+      <delete dir="${target}" />
+   </target>
+
+   <target name="install" depends="clean">
+      <exec executable="${mvn}">
+         <arg value="install" />
+         <arg value="-DskipTests" />
+      </exec>
+   </target>
+
+   <target name="updateClassPath">
+      <exec executable="${mvn}">
+         <arg value="eclipse:eclipse" />
+      </exec>
+   </target>
+
+   <target name="fetchWarFile">
+      <exec executable="${mvn}">
+         <arg value="dependency:get" />
+         <arg value="-DgroupId=${groupId}" />
+         <arg value="-DartifactId=${artifactId}" />
+         <arg value="-Dversion=${version}" />
+         <arg value="-Dpackaging=${packaging}" />
+         <arg value="-Ddest=${app.package}" />
+      </exec>
+   </target>
+
+   <target name="copyWarFileToTarget">
+      <copy file="${app.package}" todir="${target}"/>
+   </target>
+
+   <target name="deleteWarFile">
+      <delete file="${app.package.path}" />
+   </target>
+
+   <target name="deleteExplodedWar">
+      <delete dir="${app.folder}"/>
+   </target>
+
+   <target name="alfresco:amp" depends="install">
+      <exec executable="${mvn}">
+         <arg value="alfresco:amp" />
+      </exec>
+   </target>
+
+   <target name="alfresco:install" depends="deleteWarFile, deleteExplodedWar, alfresco:amp, copyWarFileToTarget">
+      <exec executable="${mvn}">
+         <arg value="alfresco:install" />
+      </exec>
+   </target>
+
+   <target name="buildAndDeploy" depends="fetchWarFile, alfresco:install" description="">
+      <copy file="${target}/${app.package}" todir="${webapps}"/>
+   </target>
+
+   <target name="tomcat-start" description="">
+      <exec executable="${bash}">
+         <arg value="${catalina}"/>
+         <arg value="run"/>
+      </exec>
+   </target>
+
+   <target name="tomcat-start-debug" description="">
+      <exec executable="${bash}">
+         <arg value="${catalina}"/>
+         <arg value="jpda"/>
+         <arg value="run"/>
+      </exec>
+   </target>
+
+   <target name="tomcat-stop" description="">
+      <exec executable="${bash}">
+         <arg value="${catalina}"/>
+         <arg value="stop"/>
+      </exec>
+   </target>
+</project>

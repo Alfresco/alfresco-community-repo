@@ -331,7 +331,7 @@ public class RetryingTransactionHelperTest extends TestCase
     /**
      * Checks nesting of two transactions with <code>requiresNew == false</code>
      */
-    public void testNestedWithPropogation()
+    public void testNestedWithPropagation()
     {
         RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
         {
@@ -359,7 +359,7 @@ public class RetryingTransactionHelperTest extends TestCase
     /**
      * Checks nesting of two transactions with <code>requiresNew == true</code>
      */
-    public void testNestedWithoutPropogation()
+    public void testNestedWithoutPropagation()
     {
         RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
         {
@@ -387,17 +387,18 @@ public class RetryingTransactionHelperTest extends TestCase
     /**
      * Checks nesting of two transactions with <code>requiresNew == true</code>,
      * but where the two transactions get involved in a concurrency struggle.
-     * 
+     * <p/>
      * Note: skip test for non-MySQL
      */
-    public void testNestedWithoutPropogationConcurrentUntilFailureMySQL() throws InterruptedException
+    public void testNestedWithoutPropagationConcurrentUntilFailureMySQL() throws InterruptedException
     {
         final RetryingTransactionHelper txnHelperForTest = transactionService.getRetryingTransactionHelper();
         txnHelperForTest.setMaxRetries(1);
         
         if (! (dialect instanceof MySQLInnoDBDialect))
         {
-            // NOOP - skip test for non-MySQL DB dialects to avoid hang if concurrently "nested" (in terms of Spring) since the initial transaction does not complete
+            // NOOP - skip test for non-MySQL DB dialects to avoid hang if concurrently "nested" (in terms of Spring)
+            // since the initial transaction does not complete
             // see testConcurrencyRetryingNoFailure instead
             logger.warn("NOTE: Skipping testNestedWithoutPropogationConcurrentUntilFailureMySQLOnly for dialect: "+dialect);
         }
@@ -553,6 +554,7 @@ public class RetryingTransactionHelperTest extends TestCase
         assertEquals("Should have been called exactly once", 1, callCount.intValue());
     }
     
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testTimeLimit()
     {
         final RetryingTransactionHelper txnHelper = new RetryingTransactionHelper();
@@ -614,7 +616,39 @@ public class RetryingTransactionHelperTest extends TestCase
         assertEquals("Should have been called tree times", 3, callCount.intValue());
         
     }
-    
+
+    public void testStartNewTransaction() throws Exception
+    {
+        // MNT-10096
+        class CustomListenerAdapter extends TransactionListenerAdapter
+        {
+            private String newTxnId;
+
+            @Override
+            public void afterRollback()
+            {
+                newTxnId = txnHelper.doInTransaction(new RetryingTransactionCallback<String>()
+                {
+                    @Override
+                    public String execute() throws Throwable
+                    {
+                        return AlfrescoTransactionSupport.getTransactionId();
+                    }
+                }, true, false);
+            }
+        }
+
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        String txnId = AlfrescoTransactionSupport.getTransactionId();
+        CustomListenerAdapter listener = new CustomListenerAdapter();
+
+        AlfrescoTransactionSupport.bindListener(listener);
+        txn.rollback();
+
+        assertFalse("New transaction has not started", txnId.equals(listener.newTxnId));
+    }
+
     private void runThreads(final RetryingTransactionHelper txnHelper, final List<Throwable> caughtExceptions,
             Pair<Integer, Integer>... startDurationPairs)
     {

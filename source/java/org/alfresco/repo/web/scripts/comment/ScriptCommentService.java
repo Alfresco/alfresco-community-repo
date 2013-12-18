@@ -29,10 +29,13 @@ import org.alfresco.repo.jscript.Scopeable;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -51,11 +54,13 @@ public class ScriptCommentService extends BaseScopableProcessorExtension
     private ServiceRegistry serviceRegistry;
     private NodeService nodeService;
     private BehaviourFilter behaviourFilter;
+    private PermissionService permissionService;
     
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
         this.nodeService = serviceRegistry.getNodeService();
+        this.permissionService = serviceRegistry.getPermissionService();
     }
     
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
@@ -66,7 +71,12 @@ public class ScriptCommentService extends BaseScopableProcessorExtension
     public ScriptNode createCommentsFolder(ScriptNode node)
     {
         final NodeRef nodeRef = node.getNodeRef();
+        if (permissionService.hasPermission(nodeRef, PermissionService.ADD_CHILDREN) == AccessStatus.DENIED)
+        {
+            throw new AccessDeniedException("User '" + AuthenticationUtil.getFullyAuthenticatedUser() + "' doesn't have permission to create discussion on node '" + nodeRef + "'");
+        }
         
+        //Run as system user to allow Contributor create discussions
         NodeRef commentsFolder = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
         {
             public NodeRef doWork() throws Exception

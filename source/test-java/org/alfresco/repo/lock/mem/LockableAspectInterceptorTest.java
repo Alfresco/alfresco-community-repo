@@ -62,7 +62,7 @@ public class LockableAspectInterceptorTest
         userName = AuthenticationUtil.getAdminUserName();
         AuthenticationUtil.setFullyAuthenticatedUser(userName);
         nodeService = (NodeService) appCtx.getBean("NodeService");
-        rawNodeService = (NodeService) appCtx.getBean("mlAwareNodeService");
+        rawNodeService = (NodeService) appCtx.getBean("dbNodeService");
         lockStore = (LockStore) appCtx.getBean("lockStore");
         rootNode = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         interceptor = (LockableAspectInterceptor) appCtx.getBean("lockableAspectInterceptor");

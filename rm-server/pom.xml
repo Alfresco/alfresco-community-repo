@@ -8,7 +8,7 @@
       <version>2.2-SNAPSHOT</version>
    </parent>
    <modelVersion>4.0.0</modelVersion>
-   <artifactId>alfresco-rm-server</artifactId>
+   <artifactId>alfresco-rm-server-test</artifactId>
    <name>Alfresco RM Server</name>
    <build>
       <sourceDirectory>source/java</sourceDirectory>

@@ -21,10 +21,6 @@
       <resources>
          <resource>
             <directory>config</directory>
-            <targetPath>../${project.build.finalName}/config</targetPath>
-            <excludes>
-               <exclude>alfresco/extension/dev-context.xml</exclude>
-            </excludes>
          </resource>
       </resources>
       <plugins>
@@ -50,12 +46,16 @@
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
                <execution>
-                  <phase>test</phase>
+                  <phase>prepare-package</phase>
                   <goals>
                      <goal>run</goal>
                   </goals>
                   <configuration>
                      <tasks>
+                        <delete file="${project.build.outputDirectory}/alfresco/extension/dev-context.xml"/>
+                        <move todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
+                           <fileset dir="${project.build.outputDirectory}/alfresco"/>
+                        </move>
                         <move file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties"
                               todir="${project.build.directory}/${project.build.finalName}"/>
                      </tasks>

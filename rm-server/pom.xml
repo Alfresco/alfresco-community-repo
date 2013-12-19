@@ -76,6 +76,13 @@
             <artifactId>alfresco-maven-plugin</artifactId>
             <version>${maven.alfresco.version}</version>
             <extensions>true</extensions>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>amp</goal>
+                  </goals>
+               </execution>
+            </executions>
             <configuration>
                <backup>true</backup>
                <ampLocation>${project.build.directory}/${project.build.finalName}.amp</ampLocation>

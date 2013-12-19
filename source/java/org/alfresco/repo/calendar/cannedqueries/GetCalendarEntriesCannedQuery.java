@@ -19,15 +19,16 @@
 package org.alfresco.repo.calendar.cannedqueries;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.ForumModel;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
@@ -46,6 +47,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -103,8 +105,29 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
         {
             boolean nextNodeIsAcceptable = true;
             
-            Date fromDate = DefaultTypeConverter.INSTANCE.convert(Date.class, result.getFromDate()); 
-            Date toDate = DefaultTypeConverter.INSTANCE.convert(Date.class, result.getToDate());
+            Date fromDate = null; 
+            Date toDate = null;
+            
+            String strFromDate = result.getFromDate();
+            String strToDate = result.getToDate();
+            if (strFromDate != null && strFromDate.equals(strToDate))
+            {
+                // it is all day event and should conform with current server's timezone
+                fromDate = ISO8601DateFormat.parseDayOnly(strFromDate, TimeZone.getDefault());
+                // all day event should be from midnight till next midnight
+                Calendar defaultCalendar = ISO8601DateFormat.getCalendar();
+                defaultCalendar.setTime(fromDate);
+                // add one day to toDate
+                defaultCalendar.add(Calendar.DATE, 1);
+                toDate = defaultCalendar.getTime();
+            }
+            else
+            {
+                fromDate = DefaultTypeConverter.INSTANCE.convert(Date.class, strFromDate); 
+                toDate = DefaultTypeConverter.INSTANCE.convert(Date.class, strToDate);
+            }
+            
+            
             if (toDate == null)
             {
                toDate = fromDate;

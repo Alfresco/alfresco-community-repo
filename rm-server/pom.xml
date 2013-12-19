@@ -40,6 +40,21 @@
                        </sources>
                    </configuration>
                </execution>
+               <execution>
+                  <id>attach-distribution</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>attach-artifact</goal>
+                  </goals>
+                  <configuration>
+                     <artifacts>
+                        <artifact>
+                           <file>${project.build.directory}/${project.build.finalName}.amp</file>
+                           <type>amp</type>
+                        </artifact>
+                     </artifacts>
+                  </configuration>
+               </execution>
             </executions>
          </plugin>
          <plugin>

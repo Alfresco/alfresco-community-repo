@@ -100,7 +100,7 @@
       <!-- Sonar specific properties -->
       <sonar.jacoco.reportPath>${project.build.directory}/jacoco.exec</sonar.jacoco.reportPath>
    </properties>
-
+   
    <build>
       <plugins>
          <plugin>
@@ -119,6 +119,28 @@
                            <version>1.7.0</version>
                         </requireJavaVersion>
                      </rules>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>1.8</version>
+            <executions>
+               <execution>
+                  <id>attach-distribution</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>attach-artifact</goal>
+                  </goals>
+                  <configuration>
+                     <artifacts>
+                        <artifact>
+                           <file>${project.build.directory}/${project.build.finalName}.amp</file>
+                           <type>amp</type>
+                        </artifact>
+                     </artifacts>
                   </configuration>
                </execution>
             </executions>
@@ -262,28 +284,6 @@
                <groupId>org.codehaus.mojo</groupId>
                <artifactId>versions-maven-plugin</artifactId>
                <version>2.1</version>
-            </plugin>
-            <plugin>
-               <groupId>org.codehaus.mojo</groupId>
-               <artifactId>build-helper-maven-plugin</artifactId>
-               <version>1.8</version>
-               <executions>
-                  <execution>
-                     <id>attach-distribution</id>
-                     <phase>package</phase>
-                     <goals>
-                        <goal>attach-artifact</goal>
-                     </goals>
-                     <configuration>
-                        <artifacts>
-                           <artifact>
-                              <file>${project.build.directory}/${project.build.finalName}.amp</file>
-                              <type>amp</type>
-                           </artifact>
-                        </artifacts>
-                     </configuration>
-                  </execution>
-               </executions>
             </plugin>
             <plugin>
                <groupId>com.google.code.maven-replacer-plugin</groupId>

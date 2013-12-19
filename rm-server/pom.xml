@@ -21,6 +21,10 @@
       <resources>
          <resource>
             <directory>config</directory>
+            <targetPath>../${project.build.finalName}/config</targetPath>
+            <excludes>
+               <exclude>alfresco/extension/dev-context.xml</exclude>
+            </excludes>
          </resource>
       </resources>
       <plugins>
@@ -52,11 +56,6 @@
                   </goals>
                   <configuration>
                      <tasks>
-                        <copy todir="${project.build.directory}/${project.build.finalName}/config">
-                           <fileset dir="${basedir}/config">
-                              <exclude name="alfresco/extension/dev-context.xml"/>
-                           </fileset>
-                        </copy>
                         <move file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties"
                               todir="${project.build.directory}/${project.build.finalName}"/>
                      </tasks>

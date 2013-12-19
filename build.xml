@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <project name="rm-parent" basedir=".">
+   <property file="local.build.properties" />
+   <property file="build.properties" />
    <!-- The properties 'artifactId' and 'tomcat' are defined in the modules -->
    <property name="groupId" value="org.alfresco"/>
    <property name="version" value="4.2.0"/>
@@ -67,9 +69,11 @@
       </exec>
    </target>
 
-   <target name="buildAndDeploy" depends="fetchWarFile, alfresco:install" description="">
+   <target name="copyWarFileToTomcat">
       <copy file="${target}/${app.package}" todir="${webapps}"/>
    </target>
+   
+   <target name="buildAndDeploy" depends="fetchWarFile, alfresco:install, copyWarFileToTomcat" description=""/>
 
    <target name="tomcat-start" description="">
       <exec executable="${bash}">

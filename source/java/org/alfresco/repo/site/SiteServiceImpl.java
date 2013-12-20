@@ -1463,6 +1463,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         {
             throw new SiteServiceException(MSG_CAN_NOT_DELETE, new Object[]{shortName});
         }
+        final QName siteType = this.directNodeService.getType(siteNodeRef);
 
         // Delete the cached reference
         siteNodeRefCache.remove(shortName);

@@ -548,6 +548,13 @@ public class SiteServiceTest extends BaseWebScriptTest
         	JSONObject grp = getResult.getJSONObject("authority");
         	assertEquals("full name not correct", testGroupName, grp.getString("fullName"));
         }
+        
+        // cleanup
+        if(authorityService.authorityExists(testGroupName))
+        {
+            this.authenticationComponent.setSystemUserAsCurrentUser();
+            authorityService.deleteAuthority(testGroupName);
+        }    
     }
     
     public void testDeleteMembership() throws Exception
@@ -1156,6 +1163,13 @@ public class SiteServiceTest extends BaseWebScriptTest
                     assertEquals("user two is member of a SiteServiceTestGroupA group", true, json.get("isMemberOfGroup"));
                 }
             }
+        }
+        
+        // cleanup
+        if (authorityService.authorityExists(testGroupName))
+        {
+            this.authenticationComponent.setSystemUserAsCurrentUser();
+            this.authorityService.deleteAuthority(testGroupName);
         }
     }
 }

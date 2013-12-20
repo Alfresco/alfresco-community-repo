@@ -23,6 +23,7 @@ import java.util.Date;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -70,6 +71,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
     private NodeService internalNodeService;
     private SiteService siteService;
     private WikiService wikiService;
+    private NodeArchiveService nodeArchiveService;
     
     private static final String USER_ONE = "UserOneSecondToo";
     private static final String USER_TWO = "UserTwoSecondToo";
@@ -110,6 +112,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         this.wikiService = (WikiService)getServer().getApplicationContext().getBean("WikiService");
         this.internalNodeService = (NodeService)getServer().getApplicationContext().getBean("nodeService");
+        this.nodeArchiveService = (NodeArchiveService)getServer().getApplicationContext().getBean("nodeArchiveService");
         
         // Authenticate as user
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -144,8 +147,13 @@ public class WikiRestApiTest extends BaseWebScriptTest
         // admin user required to delete user
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
-        // delete the site
-        siteService.deleteSite(SITE_SHORT_NAME_WIKI);
+        SiteInfo siteInfo = this.siteService.getSite(SITE_SHORT_NAME_WIKI);
+        if (siteInfo != null)
+        {
+            // delete the site
+            siteService.deleteSite(SITE_SHORT_NAME_WIKI);
+            nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteInfo.getNodeRef()));
+        }
         
         // delete the users
         if(personService.personExists(USER_ONE))

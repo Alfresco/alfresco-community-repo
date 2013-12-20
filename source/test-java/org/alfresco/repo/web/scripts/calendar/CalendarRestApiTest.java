@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.calendar.CalendarServiceImpl;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
@@ -67,6 +68,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
     private PersonService personService;
     private NodeService nodeService;
     private SiteService siteService;
+    private NodeArchiveService nodeArchiveService;
     
     private static final String USER_ONE = "UserOneSecondToo";
     private static final String USER_TWO = "UserTwoSecondToo";
@@ -100,6 +102,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
+        this.nodeArchiveService = (NodeArchiveService)getServer().getApplicationContext().getBean("nodeArchiveService");
         
         // Authenticate as user
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -136,8 +139,13 @@ public class CalendarRestApiTest extends BaseWebScriptTest
         // admin user required to delete user
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
-        // delete invite site
-        siteService.deleteSite(SITE_SHORT_NAME_CALENDAR);
+        SiteInfo siteInfo = this.siteService.getSite(SITE_SHORT_NAME_CALENDAR);
+        if (siteInfo != null)
+        {
+            // delete invite site
+            siteService.deleteSite(SITE_SHORT_NAME_CALENDAR);
+            nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteInfo.getNodeRef()));
+        }
         
         // delete the users
         deleteUser(USER_ONE);

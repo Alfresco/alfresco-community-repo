@@ -1016,7 +1016,7 @@ public abstract class WebDAVMethod
         NodeRef nodeRef = fileInfo.getNodeRef();
 
         // Regardless of WebDAV locks, if we can't write to this node, then it's locked!
-        if (getDAVHelper().isLockedAndNotLockOwner(nodeRef))
+        if (getDAVHelper().isLockedAndReadOnly(nodeRef))
         {
             throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
         }

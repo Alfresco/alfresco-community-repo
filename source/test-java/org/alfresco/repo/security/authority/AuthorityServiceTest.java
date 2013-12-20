@@ -39,6 +39,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.domain.permissions.AclDAO;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -48,6 +49,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -75,6 +77,7 @@ public class AuthorityServiceTest extends TestCase
     private AclDAO aclDaoComponent;
     private NodeService nodeService;
     private AuthorityBridgeTableAsynchronouslyRefreshedCache authorityBridgeTableCache;
+    private NodeArchiveService nodeArchiveService;
     
     public AuthorityServiceTest()
     {
@@ -107,9 +110,13 @@ public class AuthorityServiceTest extends TestCase
         aclDaoComponent = (AclDAO) ctx.getBean("aclDAO");
         nodeService = (NodeService) ctx.getBean("nodeService");
         authorityBridgeTableCache = (AuthorityBridgeTableAsynchronouslyRefreshedCache) ctx.getBean("authorityBridgeTableCache");
+        nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         
         String defaultAdminUser = AuthenticationUtil.getAdminUserName();
         AuthenticationUtil.setFullyAuthenticatedUser(defaultAdminUser);
+        
+        // cleanup trashcan
+        nodeArchiveService.purgeAllArchivedNodes(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         
         // note: currently depends on any existing (and/or bootstrap) group data - eg. default site "swsdp" (Sample Web Site Design Project)
         SiteService siteService = (SiteService) ctx.getBean("SiteService");

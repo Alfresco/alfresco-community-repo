@@ -465,7 +465,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         
     	// Check to see if we already have a site of this name
     	NodeRef existingSite = getSiteNodeRef(shortName, false);
-    	if (existingSite != null)
+    	if (existingSite != null || authorityService.authorityExists(getSiteGroup(shortName, true)))
     	{
     		// Throw an exception since we have a duplicate site name
     		throw new SiteServiceException(MSG_UNABLE_TO_CREATE, new Object[]{shortName});
@@ -1463,7 +1463,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         {
             throw new SiteServiceException(MSG_CAN_NOT_DELETE, new Object[]{shortName});
         }
-        final QName siteType = this.directNodeService.getType(siteNodeRef);
 
         // Delete the cached reference
         siteNodeRefCache.remove(shortName);

@@ -40,22 +40,6 @@
                        </sources>
                    </configuration>
                </execution>
-               <execution>
-                  <id>attach-distribution</id>
-                  <phase>package</phase>
-                  <goals>
-                     <goal>attach-artifact</goal>
-                  </goals>
-                  <configuration>
-                     <artifacts>
-                        <artifact>
-                           <file>${project.build.directory}/${project.build.finalName}.amp</file>
-                           <type>amp</type>
-                           <classifier>amp</classifier>
-                        </artifact>
-                     </artifacts>
-                  </configuration>
-               </execution>
             </executions>
          </plugin>
          <plugin>
@@ -88,17 +72,6 @@
             </configuration>
          </plugin>
          <plugin>
-            <artifactId>maven-surefire-report-plugin</artifactId>
-            <executions>
-               <execution>
-                  <phase>test</phase>
-                  <goals>
-                     <goal>report</goal>
-                  </goals>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
             <groupId>org.alfresco.maven.plugin</groupId>
             <artifactId>alfresco-maven-plugin</artifactId>
             <version>${maven.alfresco.version}</version>
@@ -114,6 +87,7 @@
                <backup>true</backup>
                <ampLocation>${project.build.directory}/${project.build.finalName}.amp</ampLocation>
                <warLocation>${project.build.directory}/alfresco.war</warLocation>
+               <classifier>amp</classifier>
             </configuration>
          </plugin>
          <plugin>

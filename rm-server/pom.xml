@@ -51,6 +51,7 @@
                         <artifact>
                            <file>${project.build.directory}/${project.build.finalName}.amp</file>
                            <type>amp</type>
+                           <classifier>amp</classifier>
                         </artifact>
                      </artifacts>
                   </configuration>
@@ -85,6 +86,17 @@
                   <include>**/AllTestSuite.class</include>
                </includes>
             </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-surefire-report-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>test</phase>
+                  <goals>
+                     <goal>report</goal>
+                  </goals>
+               </execution>
+            </executions>
          </plugin>
          <plugin>
             <groupId>org.alfresco.maven.plugin</groupId>

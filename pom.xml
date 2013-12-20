@@ -123,6 +123,42 @@
                </execution>
             </executions>
          </plugin>
+         <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <includes>
+                  <include>**/AllTestSuite.class</include>
+               </includes>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.alfresco.maven.plugin</groupId>
+            <artifactId>alfresco-maven-plugin</artifactId>
+            <version>${maven.alfresco.version}</version>
+            <extensions>true</extensions>
+            <configuration>
+               <backup>true</backup>
+               <ampLocation>${project.build.directory}/${project.build.finalName}.amp</ampLocation>
+               <warLocation>${project.build.directory}/${app.id}.war</warLocation>
+            </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-war-plugin</artifactId>
+            <configuration>
+               <overlays>
+                  <overlay>
+                     <groupId>org.alfresco</groupId>
+                     <artifactId>alfresco</artifactId>
+                     <type>war</type>
+                  </overlay>
+                  <overlay>
+                     <groupId>org.alfresco</groupId>
+                     <artifactId>${artifact.id}</artifactId>
+                     <type>amp</type>
+                  </overlay>
+               </overlays>
+            </configuration>
+         </plugin>
       </plugins>
 
       <!-- Defining version and some configuration of Maven plugins -->

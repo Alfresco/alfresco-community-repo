@@ -68,6 +68,8 @@ public class WebDAVMethodTest
 
     private @Mock LockMethod lockMethod;
     private @Mock PutMethod putMethod;
+    private @Mock DeleteMethod deleteMethod;
+    private @Mock UnlockMethod unlockMethod;
 
     public static final String TEST_RUN = System.currentTimeMillis()+"";
     public static final String TEST_TENANT_DOMAIN = TEST_RUN+".my.test";
@@ -201,6 +203,155 @@ public class WebDAVMethodTest
         {
             fail("Failed to lock and put content as tenant admin with error: " + e.getCause());
         }
+    }
+    
+    private void checkLockedNodeTestTenantWork() throws WebDAVServerException
+    {
+        req = new MockHttpServletRequest();
+        resp = new MockHttpServletResponse();
+
+        String rootPath = "/app:company_home";
+        String storeName = "workspace://SpacesStore";
+        StoreRef storeRef = new StoreRef(storeName);
+        NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
+        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, rootPath, null, namespaceService, false);
+        NodeRef defaultRootNode = nodeRefs.get(0);
+
+        lockMethod = new LockMethod();
+        NodeRef rootNodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, rootPath, defaultRootNode);
+        String strPath = "/" + "testLockedNode" + GUID.generate();
+
+        lockMethod.createExclusive = true;
+        lockMethod.setDetails(req, resp, webDAVHelper, rootNodeRef);
+        lockMethod.m_strPath = strPath;
+
+        // Lock the node (will create a new one).
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable {
+                lockMethod.executeImpl();
+                return null;
+            }
+        });
+
+        // Prepare for DELETE
+        String corruptedLockToken = lockMethod.lockToken + "corr";
+        req.addHeader(WebDAV.HEADER_IF, "(<" + corruptedLockToken + ">)");
+        deleteMethod = new DeleteMethod();
+        deleteMethod.setDetails(req, resp, webDAVHelper, rootNodeRef);
+        deleteMethod.parseRequestHeaders();
+        deleteMethod.m_strPath = strPath;
+
+        // can't be deleted with corrupted lockTocken
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+            {
+                @Override
+                public Object execute() throws Throwable
+                {
+                    deleteMethod.executeImpl();
+                    return null;
+                }
+            });
+            fail("Locked node shouldn't be deleted");
+        }
+        catch(Exception e)
+        {
+            if (!(e.getCause() instanceof WebDAVServerException))
+            {
+                throw e;
+            }
+        }
+        
+        req = new MockHttpServletRequest();
+        req.addHeader(WebDAV.HEADER_LOCK_TOKEN, lockMethod.lockToken);
+        
+        unlockMethod = new UnlockMethod();
+        unlockMethod.setDetails(req, resp, webDAVHelper, rootNodeRef);
+        unlockMethod.parseRequestHeaders();
+        unlockMethod.m_strPath = strPath;
+        // unlock the node
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+            {
+                @Override
+                public Object execute() throws Throwable
+                {
+                    unlockMethod.executeImpl();
+                    return null;
+                }
+            });
+        }
+        catch(Exception e)
+        {
+            fail("Locked node should be unlocked with correct lockTocken " + e.getCause());
+        }
+        
+        // Lock it again
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable {
+                lockMethod.executeImpl();
+                return null;
+            }
+        });
+        
+        req.addHeader(WebDAV.HEADER_IF, "(<" + lockMethod.lockToken + ">)");
+        deleteMethod = new DeleteMethod();
+        deleteMethod.setDetails(req, resp, webDAVHelper, rootNodeRef);
+        deleteMethod.parseRequestHeaders();
+        deleteMethod.m_strPath = strPath;
+
+        // can be deleted with correct lockTocken
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+            {
+                @Override
+                public Object execute() throws Throwable
+                {
+                    deleteMethod.executeImpl();
+                    return null;
+                }
+            });
+        }
+        catch(Exception e)
+        {
+            fail("Locked node should be deleted with correct lockTocken " + e.getCause());
+        }
+        
+    }
+    
+    /* CLOUD-2204 Test */
+    @Test
+    public void checkLockedNodeTenantTest()
+    {
+        setUpApplicationContext();
+
+        // Create a tenant domain
+        TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Object>() {
+            public Object doWork() throws Exception {
+                if (!tenantAdminService.existsTenant(TEST_TENANT_DOMAIN))
+                {
+                    tenantAdminService.createTenant(TEST_TENANT_DOMAIN, (DEFAULT_ADMIN_PW + " " + TEST_TENANT_DOMAIN).toCharArray(), null);
+                }
+                return null;
+            }
+        }, TenantService.DEFAULT_DOMAIN);
+        
+        TenantUtil.runAsUserTenant(new TenantUtil.TenantRunAsWork<Object>()
+        {
+            @Override
+            public Object doWork() throws Exception
+            {
+                checkLockedNodeTestTenantWork();
+                return null;
+            }
+        }, AuthenticationUtil.getAdminUserName(), TEST_TENANT_DOMAIN);
     }
 
     @Test

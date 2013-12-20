@@ -18,12 +18,13 @@
  */
 package org.alfresco.service.cmr.calendar;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 
 /**
  * Tests for the {@link CalendarRecurrenceHelper} class.
@@ -69,7 +70,43 @@ public class CalendarRecurrenceHelperTest
         // Double check we're not just comparing in with itself.
         assertNotSame(in, out);
     }
-    
+
+    // MNT-10006 fix. Validates the patterns 'weekday', 'weekend day', 'day'
+    @Test
+    public void fixOutLookRecurrenceQuirks_weekdayRecurrenceRule()
+    {
+        Map<String, String> recurrenceRule = Params.fromKVPs("FREQ=MONTHLY", "BYDAY=MO,TU,WE,TH,FR", "INTERVAL=1", "BYSETPOS=1");
+        Map<String, String> fixedRecurrenceRule = CalendarRecurrenceHelper.fixOutlookRecurrenceQuirks(Params.fromMap(recurrenceRule));
+
+        assertEquals(null, fixedRecurrenceRule.get("BYDAY"));
+        assertEquals(null, fixedRecurrenceRule.get("BYSETPOS"));
+        assertEquals("1", fixedRecurrenceRule.get("BYWEEKDAY"));
+        assertEquals("MO,TU,WE,TH,FR", fixedRecurrenceRule.get("WEEKDAYS"));
+    }
+
+    @Test
+    public void fixOutLookRecurrenceQuirks_weekendDayRecurrenceRule()
+    {
+        Map<String, String> recurrenceRule = Params.fromKVPs("FREQ=MONTHLY", "BYDAY=SU,SA", "INTERVAL=1", "BYSETPOS=1");
+        Map<String, String> fixedRecurrenceRule = CalendarRecurrenceHelper.fixOutlookRecurrenceQuirks(Params.fromMap(recurrenceRule));
+
+        assertEquals(null, fixedRecurrenceRule.get("BYDAY"));
+        assertEquals(null, fixedRecurrenceRule.get("BYSETPOS"));
+        assertEquals("1", fixedRecurrenceRule.get("BYWEEKENDDAY"));
+        assertEquals("SU,SA", fixedRecurrenceRule.get("WEEKENDS"));
+    }
+
+    @Test
+    public void fixOutLookRecurrenceQuirks_dayRecurrenceRule()
+    {
+        Map<String, String> recurrenceRule = Params.fromKVPs("FREQ=MONTHLY", "BYDAY=SU,MO,TU,WE,TH,FR,SA", "INTERVAL=1", "BYSETPOS=1");
+        Map<String, String> fixedRecurrenceRule = CalendarRecurrenceHelper.fixOutlookRecurrenceQuirks(Params.fromMap(recurrenceRule));
+
+        assertEquals("1", fixedRecurrenceRule.get("BYANYDAY"));
+        assertEquals(null, fixedRecurrenceRule.get("BYSETPOS"));
+        assertEquals(null, fixedRecurrenceRule.get("BYMONTHDAY"));
+        assertEquals("SU,MO,TU,WE,TH,FR,SA", fixedRecurrenceRule.get("DAY"));
+    }
 
     /**
      * Inner class just here to make the tests more readable.

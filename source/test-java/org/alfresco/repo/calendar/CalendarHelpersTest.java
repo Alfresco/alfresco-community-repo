@@ -18,26 +18,17 @@
  */
 package org.alfresco.repo.calendar;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SimpleTimeZone;
-import java.util.TimeZone;
-
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.calendar.CalendarTimezoneHelper;
 import org.junit.Test;
+
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test cases for the helpers relating to the {@link CalendarService},
@@ -52,6 +43,7 @@ public class CalendarHelpersTest
    private final static long TWO_DAYS_MS = 2 * 24 * ONE_HOUR_MS;
    
    private static SimpleDateFormat dateFmt = new SimpleDateFormat("yyyy-MM-dd");
+   private static SimpleDateFormat fullDayFmt = new SimpleDateFormat("EEEE");
    
    /**
     * UTC+10, no daylight savings
@@ -922,6 +914,803 @@ public class CalendarHelpersTest
 
        // TODO Add tests for this case, ALF-13287
    }
+
+    /**
+     * Testing the monthly recurrence rule for the first day of every first month
+     */
+    @Test
+    public void monthlyRecurrenceByFirstDayOfEveryFirstMonth()
+    {
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Setting the recurrence rule fo the first day of every 1 month
+        // FREQ=MONTHLY;INTERVAL=1;BYDAY=SA,MO,TU,WE,TH,FR,SU;BYSETPOS=1
+        Map<String, String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("INTERVAL", "1");
+        params.put("BYDAY", "SA,MO,TU,WE,TH,FR,SU");
+        params.put("BYSETPOS", "1");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals(null, paramsFixed.get("BYDAY"));
+        assertEquals(null, paramsFixed.get("BYSETPOS"));
+        assertEquals("1", paramsFixed.get("BYANYDAY"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2013,12, 30);
+        //Until the 1st of April
+        Date until = date(2014, 4, 1);
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildMonthlyRecurrences(currentDate, dates, params, onOrAfter, until, false, interval);
+        assertEquals(3, dates.size());
+        assertEquals("2014-01-01", dateFmt.format(dates.get(0)));
+        assertEquals("2014-02-01", dateFmt.format(dates.get(1)));
+        assertEquals("2014-03-01", dateFmt.format(dates.get(2)));
+    }
+
+    /**
+     * Testing the monthly recurrence rule for the first weekday of every first month
+     */
+    @Test
+    public void monthlyRecurrenceByFirstWeekdayEveryFirstMonth()
+    {
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Setting the recurrence rule fo the first weekday of every 1 month
+        // FREQ=MONTHLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=1
+        Map<String, String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("INTERVAL", "1");
+        params.put("BYDAY", "MO,TU,WE,TH,FR");
+        params.put("BYSETPOS", "1");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals(null, paramsFixed.get("BYDAY"));
+        assertEquals(null, paramsFixed.get("BYSETPOS"));
+        assertEquals("1", paramsFixed.get("BYWEEKDAY"));
+        assertEquals("MO,TU,WE,TH,FR", paramsFixed.get("WEEKDAYS"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2013,12, 30);
+        //Until the 1st of April
+        Date until = date(2014, 4, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildMonthlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+        assertEquals(3, dates.size());
+        assertEquals("2014-01-01", dateFmt.format(dates.get(0)));
+        assertEquals("2014-02-03", dateFmt.format(dates.get(1)));
+        assertEquals("2014-03-03", dateFmt.format(dates.get(2)));
+    }
+
+    /**
+     * Testing the monthly recurrence rule for the first day of every first month
+     */
+    @Test
+    public void monthlyRecurrenceByFirstWeekendDayEveryFirstMonth()
+    {
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Setting the recurrence rule fo the last day of every 1 month
+        // FREQ=MONTHLY;INTERVAL=1;BYDAY=SA,SU;BYSETPOS=1
+        Map<String, String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("INTERVAL", "1");
+        params.put("BYDAY", "SA,SU");
+        params.put("BYSETPOS", "1");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals(null, paramsFixed.get("BYDAY"));
+        assertEquals(null, paramsFixed.get("BYSETPOS"));
+        assertEquals("1", paramsFixed.get("BYWEEKENDDAY"));
+        assertEquals("SA,SU", paramsFixed.get("WEEKENDS"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2013,12, 30);
+        //Until the 1st of April
+        Date until = date(2014, 4, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildMonthlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+        assertEquals(3, dates.size());
+        assertEquals("2014-01-04", dateFmt.format(dates.get(0)));
+        assertEquals("2014-02-01", dateFmt.format(dates.get(1)));
+        assertEquals("2014-03-01", dateFmt.format(dates.get(2)));
+    }
+
+    /**
+     * Testing the monthly recurrence rule for the second day of every first month
+     */
+    @Test
+    public void monthlyRecurrenceBySecondDayOfEveryFirstMonth()
+    {
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Setting the recurrence rule fo the second day of every 1 month
+        // FREQ=MONTHLY;INTERVAL=1;BYDAY=SA,MO,TU,WE,TH,FR,SU;BYSETPOS=-1
+        Map<String, String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("INTERVAL", "1");
+        params.put("BYDAY", "SA,MO,TU,WE,TH,FR,SU");
+        params.put("BYSETPOS", "2");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals(null, paramsFixed.get("BYDAY"));
+        assertEquals(null, paramsFixed.get("BYSETPOS"));
+        assertEquals("2", paramsFixed.get("BYANYDAY"));
+        assertEquals("SA,MO,TU,WE,TH,FR,SU", paramsFixed.get("DAY"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 1st of April
+        Date until = date(2014, 4, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildMonthlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+        assertEquals(3, dates.size());
+        assertEquals("2014-01-02", dateFmt.format(dates.get(0)));
+        assertEquals("2014-02-02", dateFmt.format(dates.get(1)));
+        assertEquals("2014-03-02", dateFmt.format(dates.get(2)));
+    }
+
+    /**
+     * Testing the monthly recurrence rule for the second weekday of every first month
+     */
+    @Test
+    public void monthlyRecurrenceBySecondWeekdayOfEveryFirstMonth()
+    {
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Setting the recurrence rule fo the second weekday of every 1 month
+        // FREQ=MONTHLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1
+        Map<String, String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("INTERVAL", "1");
+        params.put("BYDAY", "MO,TU,WE,TH,FR");
+        params.put("BYSETPOS", "2");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals(null, paramsFixed.get("BYDAY"));
+        assertEquals(null, paramsFixed.get("BYSETPOS"));
+        assertEquals("2", paramsFixed.get("BYWEEKDAY"));
+        assertEquals("MO,TU,WE,TH,FR", paramsFixed.get("WEEKDAYS"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 1st of April
+        Date until = date(2014, 4, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildMonthlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+
+        assertEquals(3, dates.size());
+
+        assertEquals("2014-01-02", dateFmt.format(dates.get(0)));
+        assertEquals("Thursday", fullDayFmt.format(dates.get(0)));
+
+        assertEquals("2014-02-04", dateFmt.format(dates.get(1)));
+        assertEquals("Tuesday", fullDayFmt.format(dates.get(1)));
+
+        assertEquals("2014-03-04", dateFmt.format(dates.get(2)));
+        assertEquals("Tuesday", fullDayFmt.format(dates.get(2)));
+    }
+
+    /**
+     * Testing the monthly recurrence rule for the second weekend day of every first month
+     */
+    @Test
+    public void monthlyRecurrenceBySecondWeekendDayOfEveryFirstMonth()
+    {
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Setting the recurrence rule fo the second weekday of every 1 month
+        // FREQ=MONTHLY;INTERVAL=1;BYDAY=SU,SA;BYSETPOS=-1
+        Map<String, String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("INTERVAL", "1");
+        params.put("BYDAY", "SU,SA");
+        params.put("BYSETPOS", "2");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals(null, paramsFixed.get("BYDAY"));
+        assertEquals(null, paramsFixed.get("BYSETPOS"));
+        assertEquals("2", paramsFixed.get("BYWEEKENDDAY"));
+        assertEquals("SU,SA", paramsFixed.get("WEEKENDS"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 1st of April
+        Date until = date(2014, 4, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildMonthlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+
+        assertEquals(3, dates.size());
+
+        assertEquals("2014-01-05", dateFmt.format(dates.get(0)));
+        assertEquals("Sunday", fullDayFmt.format(dates.get(0)));
+
+        assertEquals("2014-02-02", dateFmt.format(dates.get(1)));
+        assertEquals("Sunday", fullDayFmt.format(dates.get(1)));
+
+        assertEquals("2014-03-02", dateFmt.format(dates.get(2)));
+        assertEquals("Sunday", fullDayFmt.format(dates.get(2)));
+    }
+
+    /**
+     * Testing the monthly recurrence rule for the last day of every first month
+     */
+    @Test
+    public void monthlyRecurrenceByLastDayOfEveryFirstMonth()
+    {
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Setting the recurrence rule fo the last day of every 1 month
+        // FREQ=MONTHLY;INTERVAL=1;BYDAY=SA,MO,TU,WE,TH,FR,SU;BYSETPOS=-1
+        Map<String, String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("INTERVAL", "1");
+        params.put("BYDAY", "SU,MO,TU,WE,TH,FR,SA");
+        params.put("BYSETPOS", "-1");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals(null, paramsFixed.get("BYDAY"));
+        assertEquals(null, paramsFixed.get("BYSETPOS"));
+        assertEquals("-1", paramsFixed.get("BYANYDAY"));
+        assertEquals("SU,MO,TU,WE,TH,FR,SA", paramsFixed.get("DAY"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 4th of April
+        Date until = date(2014, 4, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildMonthlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+        assertEquals(3, dates.size());
+        assertEquals("2014-01-31", dateFmt.format(dates.get(0)));
+        assertEquals("2014-02-28", dateFmt.format(dates.get(1)));
+        assertEquals("2014-03-31", dateFmt.format(dates.get(2)));
+    }
+
+    /**
+     * Testing the monthly recurrence rule for the last weekday of every first month
+     */
+    @Test
+    public void monthlyRecurrenceByLastWeekdayOfEveryFirstMonth()
+    {
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Setting the recurrence rule fo the last day of every 1 month
+        // FREQ=MONTHLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1
+        Map<String, String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("INTERVAL", "1");
+        params.put("BYDAY", "MO,TU,WE,TH,FR");
+        params.put("BYSETPOS", "-1");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals(null, paramsFixed.get("BYDAY"));
+        assertEquals(null, paramsFixed.get("BYSETPOS"));
+        assertEquals("-1", paramsFixed.get("BYWEEKDAY"));
+        assertEquals("MO,TU,WE,TH,FR", paramsFixed.get("WEEKDAYS"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 4th of April
+        Date until = date(2014, 4, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildMonthlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+        assertEquals(3, dates.size());
+        assertEquals("2014-01-31", dateFmt.format(dates.get(0)));
+        assertEquals("2014-02-28", dateFmt.format(dates.get(1)));
+        assertEquals("2014-03-31", dateFmt.format(dates.get(2)));
+    }
+
+    /**
+     * Testing the monthly recurrence rule for the last weekend day of every first month
+     */
+    @Test
+    public void monthlyRecurrenceByLastWeekendDayOfEveryFirstMonth()
+    {
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Setting the recurrence rule fo the last day of every 1 month
+        // FREQ=MONTHLY;INTERVAL=1;BYDAY=SU,SA;BYSETPOS=-1
+        Map<String, String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("INTERVAL", "1");
+        params.put("BYDAY", "SU,SA");
+        params.put("BYSETPOS", "-1");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals(null, paramsFixed.get("BYDAY"));
+        assertEquals(null, paramsFixed.get("BYSETPOS"));
+        assertEquals("-1", paramsFixed.get("BYWEEKENDDAY"));
+        assertEquals("SU,SA", paramsFixed.get("WEEKENDS"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 4th of April
+        Date until = date(2014, 4, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildMonthlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+        assertEquals(3, dates.size());
+        assertEquals("2014-01-26", dateFmt.format(dates.get(0)));
+        assertEquals("2014-02-23", dateFmt.format(dates.get(1)));
+        assertEquals("2014-03-30", dateFmt.format(dates.get(2)));
+    }
+
+    /**
+     * Testing the yearly recurrence rule for the first day of every January
+     */
+    @Test
+    public void yearlyRecurrenceByFirstDayMonth()
+    {
+        // Setting the yearly recurrence rule fo the first day of every January
+        //FREQ=MONTHLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;BYMONTH=1;BYSETPOS=1;INTERVAL=12
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Recurrecne rule
+        Map<String,String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("BYDAY", "SU,MO,TU,WE,TH,FR,SA");
+        params.put("BYMONTH", "1");
+        params.put("BYSETPOS", "1");
+        params.put("INTERVAL", "12");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals("YEARLY", paramsFixed.get("FREQ"));
+        assertEquals("1", paramsFixed.get("BYMONTHDAY"));
+        assertEquals("1", paramsFixed.get("INTERVAL"));
+        assertEquals("1", paramsFixed.get("BYMONTH"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 4th of April
+        Date until = date(2018, 1, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildYearlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+
+        assertEquals(4, dates.size());
+        assertEquals("2014-01-01", dateFmt.format(dates.get(0)));
+        assertEquals("2015-01-01", dateFmt.format(dates.get(1)));
+        assertEquals("2016-01-01", dateFmt.format(dates.get(2)));
+        assertEquals("2017-01-01", dateFmt.format(dates.get(3)));
+
+    }
+
+    /**
+     * Testing the yearly recurrence rule for the first weekday day of every January
+     */
+    @Test
+    public void yearlyRecurrenceByFirstWeekdayMonth()
+    {
+        // Setting the yearly recurrence rule fo the first weekday of every January
+        //FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYMONTH=1;BYSETPOS=1;INTERVAL=12
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Recurrecne rule
+        Map<String,String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("BYDAY", "MO,TU,WE,TH,FR");
+        params.put("BYMONTH", "1");
+        params.put("BYSETPOS", "1");
+        params.put("INTERVAL", "12");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals("YEARLY", paramsFixed.get("FREQ"));
+        assertEquals("1", paramsFixed.get("BYWEEKDAY"));
+        assertEquals("1", paramsFixed.get("INTERVAL"));
+        assertEquals("1", paramsFixed.get("BYMONTH"));
+        assertEquals("MO,TU,WE,TH,FR", paramsFixed.get("WEEKDAYS"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 4th of April
+        Date until = date(2018, 1, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildYearlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+
+        assertEquals(4, dates.size());
+        assertEquals("2014-01-01", dateFmt.format(dates.get(0)));
+        assertEquals("2015-01-01", dateFmt.format(dates.get(1)));
+        assertEquals("2016-01-01", dateFmt.format(dates.get(2)));
+        assertEquals("2017-01-02", dateFmt.format(dates.get(3)));
+
+    }
+
+    /**
+     * Testing the yearly recurrence rule for the first weekend day of every January
+     */
+    @Test
+    public void yearlyRecurrenceByFirstWeekendDayMonth()
+    {
+        // Setting the yearly recurrence rule fo the first weekend day of every January
+        //FREQ=MONTHLY;BYDAY=SU,SA;BYMONTH=1;BYSETPOS=1;INTERVAL=12
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Recurrecne rule
+        Map<String,String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("BYDAY", "SU,SA");
+        params.put("BYMONTH", "1");
+        params.put("BYSETPOS", "1");
+        params.put("INTERVAL", "12");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals("YEARLY", paramsFixed.get("FREQ"));
+        assertEquals("1", paramsFixed.get("BYWEEKENDDAY"));
+        assertEquals("1", paramsFixed.get("INTERVAL"));
+        assertEquals("1", paramsFixed.get("BYMONTH"));
+        assertEquals("SU,SA", paramsFixed.get("WEEKENDS"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 4th of April
+        Date until = date(2018, 1, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildYearlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+
+        assertEquals(4, dates.size());
+        assertEquals("2014-01-04", dateFmt.format(dates.get(0)));
+        assertEquals("2015-01-03", dateFmt.format(dates.get(1)));
+        assertEquals("2016-01-02", dateFmt.format(dates.get(2)));
+        assertEquals("2017-01-01", dateFmt.format(dates.get(3)));
+
+    }
+
+    /**
+     * Testing the yearly recurrence rule for the second weekday of every January
+     */
+    @Test
+    public void yearlyRecurrenceBySecondWeekdayMonth()
+    {
+        // Setting the yearly recurrence rule fo the second weekend day of every January
+        //FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYMONTH=1;BYSETPOS=2;INTERVAL=12
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Recurrecne rule
+        Map<String,String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("BYDAY", "MO,TU,WE,TH,FR");
+        params.put("BYMONTH", "1");
+        params.put("BYSETPOS", "2");
+        params.put("INTERVAL", "12");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals("YEARLY", paramsFixed.get("FREQ"));
+        assertEquals("2", paramsFixed.get("BYWEEKDAY"));
+        assertEquals("1", paramsFixed.get("INTERVAL"));
+        assertEquals("1", paramsFixed.get("BYMONTH"));
+        assertEquals("MO,TU,WE,TH,FR", paramsFixed.get("WEEKDAYS"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 4th of April
+        Date until = date(2018, 1, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildYearlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+
+        assertEquals(4, dates.size());
+        assertEquals("2014-01-02", dateFmt.format(dates.get(0)));
+        assertEquals("Thursday", fullDayFmt.format(dates.get(0)));
+
+        assertEquals("2015-01-02", dateFmt.format(dates.get(1)));
+        assertEquals("Friday", fullDayFmt.format(dates.get(1)));
+
+        assertEquals("2016-01-04", dateFmt.format(dates.get(2)));
+        assertEquals("Monday", fullDayFmt.format(dates.get(2)));
+
+        assertEquals("2017-01-03", dateFmt.format(dates.get(3)));
+        assertEquals("Tuesday", fullDayFmt.format(dates.get(3)));
+    }
+
+    /**
+     * Testing the yearly recurrence rule for the second weekend day of every January
+     */
+    @Test
+    public void yearlyRecurrenceBySecondWeekendDayMonth()
+    {
+        // Setting the yearly recurrence rule fo the second weekend day of every January
+        //FREQ=MONTHLY;BYDAY=SU,SA;BYMONTH=1;BYSETPOS=2;INTERVAL=12
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Recurrecne rule
+        Map<String,String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("BYDAY", "SU,SA");
+        params.put("BYMONTH", "1");
+        params.put("BYSETPOS", "2");
+        params.put("INTERVAL", "12");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals("YEARLY", paramsFixed.get("FREQ"));
+        assertEquals("2", paramsFixed.get("BYWEEKENDDAY"));
+        assertEquals("1", paramsFixed.get("INTERVAL"));
+        assertEquals("1", paramsFixed.get("BYMONTH"));
+        assertEquals("SU,SA", paramsFixed.get("WEEKENDS"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 4th of April
+        Date until = date(2018, 1, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildYearlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+
+        assertEquals(4, dates.size());
+        assertEquals("2014-01-05", dateFmt.format(dates.get(0)));
+        assertEquals("Sunday", fullDayFmt.format(dates.get(0)));
+
+        assertEquals("2015-01-04", dateFmt.format(dates.get(1)));
+        assertEquals("Sunday", fullDayFmt.format(dates.get(1)));
+
+        assertEquals("2016-01-03", dateFmt.format(dates.get(2)));
+        assertEquals("Sunday", fullDayFmt.format(dates.get(2)));
+
+        assertEquals("2017-01-07", dateFmt.format(dates.get(3)));
+        assertEquals("Saturday", fullDayFmt.format(dates.get(3)));
+    }
+
+    /**
+     * Testing the yearly recurrence rule for the last day of every January
+     */
+    @Test
+    public void yearlyRecurrenceByLastDayMonth()
+    {
+        // Setting the yearly recurrence rule fo the last day of every January
+        //FREQ=MONTHLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;BYMONTH=1;BYSETPOS=-1;INTERVAL=12
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Recurrecne rule
+        Map<String,String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("BYDAY", "SU,MO,TU,WE,TH,FR,SA");
+        params.put("BYMONTH", "1");
+        params.put("BYSETPOS", "-1");
+        params.put("INTERVAL", "12");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals("YEARLY", paramsFixed.get("FREQ"));
+        assertEquals("-1", paramsFixed.get("BYANYDAY"));
+        assertEquals("1", paramsFixed.get("INTERVAL"));
+        assertEquals("1", paramsFixed.get("BYMONTH"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 4th of April
+        Date until = date(2018, 1, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildYearlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+
+        assertEquals(4, dates.size());
+        assertEquals("2014-01-31", dateFmt.format(dates.get(0)));
+        assertEquals("2015-01-31", dateFmt.format(dates.get(1)));
+        assertEquals("2016-01-31", dateFmt.format(dates.get(2)));
+        assertEquals("2017-01-31", dateFmt.format(dates.get(3)));
+
+    }
+
+    /**
+     * Testing the yearly recurrence rule for the last weekday of every January
+     */
+    @Test
+    public void yearlyRecurrenceByLastWeekdayMonth()
+    {
+        // Setting the yearly recurrence rule fo the last weekday of every January
+        //FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYMONTH=1;BYSETPOS=-1;INTERVAL=12
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Recurrecne rule
+        Map<String,String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("BYDAY", "MO,TU,WE,TH,FR");
+        params.put("BYMONTH", "1");
+        params.put("BYSETPOS", "-1");
+        params.put("INTERVAL", "12");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals("YEARLY", paramsFixed.get("FREQ"));
+        assertEquals("-1", paramsFixed.get("BYWEEKDAY"));
+        assertEquals("1", paramsFixed.get("INTERVAL"));
+        assertEquals("1", paramsFixed.get("BYMONTH"));
+        assertEquals("MO,TU,WE,TH,FR", paramsFixed.get("WEEKDAYS"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 4th of April
+        Date until = date(2018, 1, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildYearlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+
+        assertEquals(4, dates.size());
+        assertEquals("2014-01-31", dateFmt.format(dates.get(0)));
+        assertEquals("Friday", fullDayFmt.format(dates.get(0)));
+
+        assertEquals("2015-01-30", dateFmt.format(dates.get(1)));
+        assertEquals("Friday", fullDayFmt.format(dates.get(1)));
+
+        assertEquals("2016-01-29", dateFmt.format(dates.get(2)));
+        assertEquals("Friday", fullDayFmt.format(dates.get(2)));
+
+        assertEquals("2017-01-31", dateFmt.format(dates.get(3)));
+        assertEquals("Tuesday", fullDayFmt.format(dates.get(3)));
+    }
+
+    /**
+     * Testing the yearly recurrence rule for the last weekend day of every January
+     */
+    @Test
+    public void yearlyRecurrenceByLastWeekendDayMonth()
+    {
+        // Setting the yearly recurrence rule fo the last weekday of every January
+        //FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYMONTH=1;BYSETPOS=-1;INTERVAL=12
+        List<Date> dates = new ArrayList<>();
+        Calendar currentDate = Calendar.getInstance();
+
+        // Recurrecne rule
+        Map<String,String> params = new HashMap<>();
+        params.put("FREQ", "MONTHLY");
+        params.put("BYDAY", "SU,SA");
+        params.put("BYMONTH", "1");
+        params.put("BYSETPOS", "-1");
+        params.put("INTERVAL", "12");
+
+        Map<String, String> paramsFixed = RecurrenceHelper.fixOutlookRecurrenceQuirks(params);
+        assertEquals("YEARLY", paramsFixed.get("FREQ"));
+        assertEquals("-1", paramsFixed.get("BYWEEKENDDAY"));
+        assertEquals("1", paramsFixed.get("INTERVAL"));
+        assertEquals("1", paramsFixed.get("BYMONTH"));
+        assertEquals("SU,SA", paramsFixed.get("WEEKENDS"));
+
+        dates.clear();
+        currentDate.set(2014, Calendar.JANUARY, 1, 10, 30);
+
+        // on or after the 30 of December
+        Date onOrAfter = date(2014,1, 1);
+        //Until the 4th of April
+        Date until = date(2018, 1, 1);
+        boolean firstOnly = false;
+        int interval = Integer.parseInt(paramsFixed.get("INTERVAL"));
+
+        assertEquals(1, interval);
+
+        RecurrenceHelper.buildYearlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+
+        assertEquals(4, dates.size());
+        assertEquals("2014-01-26", dateFmt.format(dates.get(0)));
+        assertEquals("Sunday", fullDayFmt.format(dates.get(0)));
+
+        assertEquals("2015-01-31", dateFmt.format(dates.get(1)));
+        assertEquals("Saturday", fullDayFmt.format(dates.get(1)));
+
+        assertEquals("2016-01-31", dateFmt.format(dates.get(2)));
+        assertEquals("Sunday", fullDayFmt.format(dates.get(2)));
+
+        assertEquals("2017-01-29", dateFmt.format(dates.get(3)));
+        assertEquals("Sunday", fullDayFmt.format(dates.get(3)));
+    }
+
    
    /**
     * eg every 21st of February

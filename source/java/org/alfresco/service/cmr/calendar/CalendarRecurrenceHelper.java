@@ -18,27 +18,13 @@
  */
 package org.alfresco.service.cmr.calendar;
 
-import java.text.DateFormatSymbols;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import org.alfresco.repo.calendar.CalendarModel;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * This class provides helper functions for when working 
@@ -189,21 +175,67 @@ public class CalendarRecurrenceHelper
              if (params.containsKey("BYDAY") && params.containsKey("BYSETPOS"))
              {
                  int days = params.get("BYDAY").split(",").length;
-                 if (days == 7)
+
+                 if (days == 7 && !"-1".equals(params.get("BYSETPOS")))
                  {
                      // Make it normal
                      params.put("BYMONTHDAY", params.get("BYSETPOS"));
                      params.remove("BYDAY");
                      params.remove("BYSETPOS");
                  }
+                 else
+                 {
+                     buildParams(params, days);
+                 }
              }
-         }                 
+         }
+         // MNT-10006 fix. Added the support for recurrences rule "WEEKDAY", "WEEKEND DAY"
+          else if ("MONTHLY".equals(params.get("FREQ")) &&
+                 (params.containsKey("BYDAY") && params.containsKey("BYSETPOS")))
+         {
+                 int days = params.get("BYDAY").split(",").length;
+                 buildParams(params, days);
+         }
       }
       return params;
    }
-   
-   
-   /**
+
+    /**
+     * Builds correct params for recurrences 'weekday', 'weekend day'
+     * @param params the recurrence rule
+     * @param days the appropriate amount of days for recurrences 'day', 'weekday' weekend day'
+     */
+    private static void buildParams(Map<String, String> params, int days)
+    {
+        // building recurrence rule for recurrence pattern 'day'
+        if (days == 7)
+        {
+            // Make it normal
+            params.put("BYANYDAY", params.get("BYSETPOS"));
+            params.put("DAY", params.get("BYDAY"));
+            params.remove("BYDAY");
+            params.remove("BYSETPOS");
+        }
+        // building recurrence rule for recurrence pattern 'weekday'
+        else if (days == 5)
+        {
+            params.put("BYWEEKDAY", params.get("BYSETPOS"));
+            params.put("WEEKDAYS", params.get("BYDAY"));
+            params.remove("BYDAY");
+            params.remove("BYSETPOS");
+        }
+        // building recurrence rule for recurrence pattern 'weekend day'
+        else if (days == 2)
+        {
+            params.put("BYWEEKENDDAY", params.get("BYSETPOS"));
+            params.put("WEEKENDS", params.get("BYDAY"));
+            params.remove("BYDAY");
+            params.remove("BYSETPOS");
+        }
+    }
+
+
+    /**
     * For the given Calendar Entry, return its subsequent Recurrence on or after
     *  the specified date, until the given limit. If it doesn't have any recurrences 
     *  on or after the start date (either no recurrence rules, or the last recurrence 
@@ -597,9 +629,138 @@ public class CalendarRecurrenceHelper
             toDayOfWeekInMonth(currentDate, dayOfWeek, instanceInMonth);
          }
       }
+      // MNT-10006 fix. Added the support for recurrences rule "WEEKDAY", "WEEKEND DAY"
+      if (params.get("BYWEEKDAY") != null || params.get("BYWEEKENDDAY") != null || params.get("BYANYDAY") != null)
+      {
+          buildWeekdayAndWeekEndRecurence(currentDate, dates, params, until, monthInterval);
+      }
    }
-   
-   protected static void buildYearlyRecurrences(Calendar currentDate, long duration, List<Date> dates, 
+
+    /**
+     * Build the recurrences for recurrence rules 'weekday', 'weekend day'
+     * @param currentDate the Calendar for current event
+     * @param dates  Map for recurrence events dates
+     * @param params recurrence rules
+     * @param until  date when the current event ends
+     */
+    private static void buildWeekdayAndWeekEndRecurence(Calendar currentDate, List<Date> dates, Map<String, String> params, Date until, int intervalInMonths)
+    {
+        String dayPosStr;
+        String dayWeekType;
+
+        // founds which of the recurrence pattern is used "weekday" or "weekend day"
+        if (params.get("BYWEEKDAY") != null)
+        {
+            dayPosStr = params.get("BYWEEKDAY");
+            dayWeekType = "WEEKDAYS";
+        }
+        else if (params.get("BYWEEKENDDAY") != null)
+        {
+            dayPosStr = params.get("BYWEEKENDDAY");
+            dayWeekType = "WEEKENDS";
+        }
+        else
+        {
+            dayPosStr = params.get("BYANYDAY");
+            dayWeekType = "DAY";
+        }
+
+        List<Integer> daysOfWeek = getDaysOfWeek(params, dayWeekType);
+
+        boolean isCurrentDateAfterUntil = false;
+        int firstMonthDay = 1;
+
+        while (!isCurrentDateAfterUntil)
+        {
+            // Setting the current date to the first day of month
+            currentDate.set(Calendar.DAY_OF_MONTH, firstMonthDay);
+            if (currentDate.getTime().before(until))
+            {
+                int currentDayOfWeek;
+
+                // The sequence number for "BYSETPOS" parameter from recurrence rule for current date.
+                int dayCount = 0;
+                // week day position, e.q.: first, second. third, forth, last. If the weekday position is 'last' the weekDayPos
+                // value will less then '0'
+                int weekDayPos = Integer.parseInt(dayPosStr);
+
+                if (weekDayPos > 0)
+                {
+                    // Setting the current date to the first day of month
+                    currentDate.set(Calendar.DAY_OF_MONTH, firstMonthDay);
+                    // Walk forward from the first day of the month to the required day position according the recurrence
+                    // rule, skipping the unnecessary  days. F.ex, if we need only weekdays then weekends days should be skipped.
+                    while (dayCount != weekDayPos)
+                    {
+                        currentDayOfWeek = currentDate.get(Calendar.DAY_OF_WEEK);
+
+                        if (daysOfWeek.contains(currentDayOfWeek))
+                        {
+                            dayCount++;
+                        }
+
+                        // If dayCount is not what we need go to the next day of the current month
+                        if (dayCount != weekDayPos)
+                        {
+                            currentDate.add(Calendar.DAY_OF_MONTH, 1);
+                        }
+                    }
+                }
+                //when weekday position is 'last'
+                else
+                {
+                    // Sets the last day of moth and retrieves the weekday number
+                    currentDate.set(Calendar.DAY_OF_MONTH, currentDate.getActualMaximum(Calendar.DAY_OF_MONTH));
+                    currentDayOfWeek = currentDate.get(Calendar.DAY_OF_WEEK);
+
+                    // walk back from the last day of the month to last weekend day
+                    while (!daysOfWeek.contains(currentDayOfWeek))
+                    {
+                        currentDate.add(Calendar.DAY_OF_MONTH, -1);
+                        currentDayOfWeek = currentDate.get(Calendar.DAY_OF_WEEK);
+                    }
+                }
+                dates.add(currentDate.getTime());
+                currentDate.add(Calendar.MONTH, intervalInMonths);
+            }
+            else
+            {
+                // The currentDate is after 'until' date.
+                isCurrentDateAfterUntil = true;
+            }
+        }
+    }
+
+    /**
+     * Returns the sorted List of weekdays by numbers
+     * @param params recurrence rule
+     * @param dayWeekType "WEEKDAY" or "WEEKEND" day
+     */
+    private static List<Integer> getDaysOfWeek(Map<String, String> params, String dayWeekType)
+    {
+        String[] weekDays = params.get(dayWeekType).split(",");
+        List<Integer> daysOfWeek = new ArrayList<>();
+
+        for (String day : weekDays)
+        {
+            Integer dayNumber = DAY_NAMES_TO_CALENDAR_DAYS.get(day);
+
+            if (dayNumber == null)
+            {
+                logger.warn("Invalid day " + day);
+            }
+            else
+            {
+                daysOfWeek.add(dayNumber);
+            }
+        }
+
+        Collections.sort(daysOfWeek);
+
+        return daysOfWeek;
+    }
+
+    protected static void buildYearlyRecurrences(Calendar currentDate, long duration, List<Date> dates,
          Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
    {
       if (onOrAfter.before(currentDate.getTime()))
@@ -665,6 +826,12 @@ public class CalendarRecurrenceHelper
             currentDate.set(Calendar.MONTH, month);
             currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
          }
+      }
+      // MNT-10006 fix. Added the support for recurrences rule "WEEKDAY", "WEEKEND DAY"
+      else if (null != params.get("BYWEEKDAY")  || null != params.get("BYWEEKENDDAY") || null != params.get("BYANYDAY"))
+      {
+          int intervalInMonths = interval * 12;
+          buildWeekdayAndWeekEndRecurence(currentDate, dates, params, until, intervalInMonths);
       }
       else
       {

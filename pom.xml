@@ -81,7 +81,6 @@
 
    <properties>
       <alfresco.base.version>4.2.0</alfresco.base.version>
-      <app.filtering.enabled>true</app.filtering.enabled>
 
       <!-- Database properties - default values to be overridden in settings.xml -->
       <db.driver>org.postgresql.Driver</db.driver>
@@ -102,6 +101,18 @@
    </properties>
    
    <build>
+      <sourceDirectory>source/java</sourceDirectory>
+      <testSourceDirectory>test/java</testSourceDirectory>
+      <testResources>
+         <testResource>
+            <directory>test/resources</directory>
+         </testResource>
+      </testResources>
+      <resources>
+         <resource>
+            <directory>config</directory>
+         </resource>
+      </resources>
       <plugins>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -139,7 +150,7 @@
             <configuration>
                <backup>true</backup>
                <ampLocation>${project.build.directory}/${project.build.finalName}.amp</ampLocation>
-               <warLocation>${project.build.directory}/${app.id}.war</warLocation>
+               <warLocation>${project.build.directory}/${webapp.id}.war</warLocation>
             </configuration>
          </plugin>
          <plugin>
@@ -148,12 +159,12 @@
                <overlays>
                   <overlay>
                      <groupId>org.alfresco</groupId>
-                     <artifactId>alfresco</artifactId>
+                     <artifactId>${webapp.id}</artifactId>
                      <type>war</type>
                   </overlay>
                   <overlay>
                      <groupId>org.alfresco</groupId>
-                     <artifactId>${artifact.id}</artifactId>
+                     <artifactId>${project.artifactId}</artifactId>
                      <type>amp</type>
                   </overlay>
                </overlays>
@@ -312,5 +323,4 @@
          </plugins>
       </pluginManagement>
    </build>
-
 </project>

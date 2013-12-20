@@ -12,22 +12,9 @@
    <name>Alfresco RM Server</name>
    <packaging>amp</packaging>
    <properties>
-      <app.id>alfresco</app.id>
-      <artifact.id>alfresco-rm-server</artifact.id>
+      <webapp.id>alfresco</webapp.id>
    </properties>
    <build>
-      <sourceDirectory>source/java</sourceDirectory>
-      <testSourceDirectory>test/java</testSourceDirectory>
-      <testResources>
-         <testResource>
-            <directory>test/resources</directory>
-         </testResource>
-      </testResources>
-      <resources>
-         <resource>
-            <directory>config</directory>
-         </resource>
-      </resources>
       <plugins>
          <!-- Additional source folder to be added: source/compatibility -->
          <plugin>

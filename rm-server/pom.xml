@@ -10,10 +10,6 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>alfresco-rm-server-test</artifactId>
    <name>Alfresco RM Server</name>
-   <properties>
-      <app.id>alfresco</app.id>
-      <artifact.id>alfresco-rm-server</artifact.id>
-   </properties>
    <build>
       <sourceDirectory>source/java</sourceDirectory>
       <testSourceDirectory>test/java</testSourceDirectory>
@@ -73,6 +69,42 @@
                <includes>
                   <include>**/AllTestSuite.class</include>
                </includes>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.alfresco.maven.plugin</groupId>
+            <artifactId>alfresco-maven-plugin</artifactId>
+            <version>${maven.alfresco.version}</version>
+            <extensions>true</extensions>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>amp</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <configuration>
+               <backup>true</backup>
+               <ampLocation>${project.build.directory}/${project.build.finalName}.amp</ampLocation>
+               <warLocation>${project.build.directory}/alfresco.war</warLocation>
+               <classifier>amp</classifier>
+            </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-war-plugin</artifactId>
+            <configuration>
+               <overlays>
+                  <overlay>
+                     <groupId>org.alfresco</groupId>
+                     <artifactId>alfresco</artifactId>
+                     <type>war</type>
+                  </overlay>
+                  <overlay>
+                     <groupId>org.alfresco</groupId>
+                     <artifactId>alfresco-rm-server</artifactId>
+                     <type>amp</type>
+                  </overlay>
+               </overlays>
             </configuration>
          </plugin>
       </plugins>

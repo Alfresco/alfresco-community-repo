@@ -149,8 +149,9 @@
             <extensions>true</extensions>
             <configuration>
                <backup>true</backup>
-               <ampLocation>${project.build.directory}/${project.build.finalName}.amp</ampLocation>
+               <ampLocation>${project.build.directory}/${project.build.finalName}-amp.amp</ampLocation>
                <warLocation>${project.build.directory}/${webapp.id}.war</warLocation>
+               <classifier>amp</classifier>
             </configuration>
          </plugin>
          <plugin>

@@ -10,12 +10,22 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>alfresco-rm-server-test</artifactId>
    <name>Alfresco RM Server</name>
-   <packaging>amp</packaging>
    <properties>
       <webapp.id>alfresco</webapp.id>
    </properties>
    <build>
       <plugins>
+         <plugin>
+            <groupId>org.alfresco.maven.plugin</groupId>
+            <artifactId>alfresco-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>amp</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
          <!-- Additional source folder to be added: source/compatibility -->
          <plugin>
             <groupId>org.codehaus.mojo</groupId>

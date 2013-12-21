@@ -8,6 +8,7 @@
       <version>2.2-SNAPSHOT</version>
    </parent>
    <modelVersion>4.0.0</modelVersion>
+   <!-- FIXME: Remove the "-test" suffix form the artifact id -->
    <artifactId>alfresco-rm-server-test</artifactId>
    <name>Alfresco RM Server</name>
    <properties>

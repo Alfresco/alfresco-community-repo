@@ -84,7 +84,6 @@
 
       <!-- Database properties - default values to be overridden in settings.xml -->
       <db.driver>org.postgresql.Driver</db.driver>
-      <db.name>alfresco</db.name>
       <db.url>jdbc:postgresql:${db.name}</db.url>
       <db.master.url>jdbc:postgresql:template1</db.master.url>
       <db.username>alfresco</db.username>

@@ -47,8 +47,8 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy;
+import org.alfresco.repo.node.NodeArchiveServicePolicies;
+import org.alfresco.repo.node.NodeArchiveServicePolicies.BeforePurgeNodePolicy;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.node.getchildren.FilterPropString;
 import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
@@ -115,7 +115,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * 
  * @author Roy Wetherall
  */
-public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServiceInternal, SiteModel, NodeServicePolicies.OnRestoreNodePolicy
+public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServiceInternal, SiteModel, NodeArchiveServicePolicies.BeforePurgeNodePolicy
 {
     /** Logger */
     protected static Log logger = LogFactory.getLog(SiteServiceImpl.class);
@@ -390,9 +390,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     protected void onBootstrap(ApplicationEvent event)
     {
         this.policyComponent.bindClassBehaviour(
-                OnRestoreNodePolicy.QNAME,
+                BeforePurgeNodePolicy.QNAME,
                 SiteModel.TYPE_SITE,
-                new JavaBehaviour(this, "onRestoreNode"));
+                new JavaBehaviour(this, "beforePurgeNode"));
     }
 
     /* (non-Javadoc)
@@ -465,7 +465,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         
     	// Check to see if we already have a site of this name
     	NodeRef existingSite = getSiteNodeRef(shortName, false);
-    	if (existingSite != null)
+    	if (existingSite != null || authorityService.authorityExists(getSiteGroup(shortName, true)))
     	{
     		// Throw an exception since we have a duplicate site name
     		throw new SiteServiceException(MSG_UNABLE_TO_CREATE, new Object[]{shortName});
@@ -1463,40 +1463,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         {
             throw new SiteServiceException(MSG_CAN_NOT_DELETE, new Object[]{shortName});
         }
-        final QName siteType = this.directNodeService.getType(siteNodeRef);
 
         // Delete the cached reference
         siteNodeRefCache.remove(shortName);
         
-        // Get and retain the membership of the site we're deleting. We do this to support restoration of a site node from the trashcan.
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-        {
-            public Void doWork() throws Exception
-            {
-                final String siteGroup = getSiteGroup(shortName, true);
-                if (authorityService.authorityExists(siteGroup))
-                {
-                    // Collection for recording the group memberships present on the site 
-                    final Map<String, Set<String>> groupsMemberships = new HashMap<String, Set<String>>();
-                    
-                    // Iterate over the role related groups and delete then
-                    Set<String> permissions = permissionService.getSettablePermissions(siteType);
-                    for (String permission : permissions)
-                    {
-                        String siteRoleGroup = getSiteRoleGroup(shortName, permission, true);
-                        
-                        // Collect up the memberships so we can potentially restore them later
-                        Set<String> groupUsers = authorityService.getContainedAuthorities(null, siteRoleGroup, true);
-                        groupsMemberships.put(siteRoleGroup, groupUsers);
-                    }
-                    
-                    // Save the group memberships so we can use them later
-                    nodeService.setProperty(siteNodeRef, QName.createQName(null, "memberships"), (Serializable)groupsMemberships);
-                }
-                
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
+        // no need to retain the membership of the site as we postpone delete of authorities until purge from the trashcan 
         
         // The default behaviour is that sites cannot be deleted. But we disable that behaviour here
         // in order to allow site deletion only via this service. Share calls this service for deletion.
@@ -1517,6 +1488,18 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             this.behaviourFilter.enableBehaviour(siteParent, ContentModel.ASPECT_AUDITABLE);
         }
         
+        // Postpone delete of associated groups to the time when NodeArchiveService purges site node 
+        // because in case of recover ACLs and ACEs are needed which were set for documents
+        
+        logger.debug("site deleted :" + shortName);
+    }
+    
+    @Override
+    public void beforePurgeNode(NodeRef nodeRef)
+    {
+        final QName siteType = this.directNodeService.getType(nodeRef);
+        final String shortName = getSite(nodeRef).getShortName();
+        
         // Delete the associated groups
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -1527,39 +1510,22 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 if (authorityService.authorityExists(siteGroup))
                 {
                     authorityService.deleteAuthority(siteGroup, false);
-                    
+
                     // Iterate over the role related groups and delete then
                     Set<String> permissions = permissionService.getSettablePermissions(siteType);
                     for (String permission : permissions)
                     {
                         String siteRoleGroup = getSiteRoleGroup(shortName, permission, true);
-                        
+
                         // Delete the site role group
                         authorityService.deleteAuthority(siteRoleGroup);
                     }
                 }
-                
+
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-        
-        logger.debug("site deleted :" + shortName);
-    }
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy#onRestoreNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public void onRestoreNode(ChildAssociationRef childAssocRef)
-    {
-        // regenerate the groups for the site when it is restored from the Archive store
-        NodeRef siteRef = childAssocRef.getChildRef();
-        setupSitePermissions(
-                siteRef,
-                (String)directNodeService.getProperty(siteRef, ContentModel.PROP_NAME),
-                getSiteVisibility(siteRef),
-                (Map<String, Set<String>>)directNodeService.getProperty(siteRef, QName.createQName(null, "memberships")));
+    
     }
 
     public void listMembers(String shortName, final String nameFilter, final String roleFilter, final boolean collapseGroups, final SiteMembersCallback callback)
@@ -2998,4 +2964,5 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         
         this.permissionService.setInheritParentPermissions(containerNodeRef, false);
     }
+
 }

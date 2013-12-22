@@ -26,6 +26,7 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
@@ -74,6 +75,7 @@ public class TemporarySites extends AbstractPersonRule
         final RetryingTransactionHelper transactionHelper = (RetryingTransactionHelper) appContextRule.getApplicationContext().getBean("retryingTransactionHelper");
         final SiteService siteService = appContextRule.getApplicationContext().getBean("siteService", SiteService.class);
         final ActivityPostDAO postDAO = appContextRule.getApplicationContext().getBean("postDAO", ActivityPostDAO.class);
+        final NodeArchiveService nodeArchiveService = (NodeArchiveService)appContextRule.getApplicationContext().getBean("nodeArchiveService");
         
         // Run as admin to ensure all sites can be deleted irrespective of which user created them.
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -112,6 +114,20 @@ public class TemporarySites extends AbstractPersonRule
                         return null;
                     }
                 });
+                transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        for (SiteInfo site : temporarySites)
+                        {
+                            log.debug("Purging temporary site from trashcan: " + site.getShortName());
+                            nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(site.getNodeRef()));
+                        }
+                        
+                        return null;
+                    }
+                });
+                
                 return null;
             }
         }, AuthenticationUtil.getAdminUserName());

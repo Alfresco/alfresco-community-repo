@@ -21,7 +21,6 @@ package org.alfresco.repo.web.scripts.nodelocator;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.nodelocator.AncestorNodeLocator;
 import org.alfresco.repo.nodelocator.CompanyHomeNodeLocator;
 import org.alfresco.repo.nodelocator.SitesHomeNodeLocator;
@@ -59,7 +58,6 @@ public class NodeLocatorWebScriptTest extends BaseWebScriptTest
     private Repository repositoryHelper;
     private NodeRef companyHome;
     private NamespaceService namespaceService;
-    private NodeArchiveService nodeArchiveService;
 
     public void testCompanyHomeNodeLocator() throws Exception
     {
@@ -112,7 +110,6 @@ public class NodeLocatorWebScriptTest extends BaseWebScriptTest
             if (site != null)
             {
                 siteService.deleteSite(site.getShortName());
-                nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(site.getNodeRef()));
             }
         }
     }
@@ -279,6 +276,5 @@ public class NodeLocatorWebScriptTest extends BaseWebScriptTest
         this.namespaceService= (NamespaceService) appContext.getBean("NamespaceService");
         this.repositoryHelper = (Repository) appContext.getBean("repositoryHelper");
         this.companyHome = repositoryHelper.getCompanyHome();
-        this.nodeArchiveService = (NodeArchiveService) appContext.getBean("nodeArchiveService");
     }
 }

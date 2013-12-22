@@ -465,7 +465,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         
     	// Check to see if we already have a site of this name
     	NodeRef existingSite = getSiteNodeRef(shortName, false);
-    	if (existingSite != null || authorityService.authorityExists(getSiteGroup(shortName, true)))
+    	if (existingSite != null)
     	{
     		// Throw an exception since we have a duplicate site name
     		throw new SiteServiceException(MSG_UNABLE_TO_CREATE, new Object[]{shortName});

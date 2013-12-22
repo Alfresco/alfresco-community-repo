@@ -30,13 +30,11 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.lock.JobLockService;
-import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.ApplicationContextHelper;
@@ -63,8 +61,7 @@ public abstract class AbstractFeedCleanerTest
     private SiteService siteService;
     private PersonService personService;
     protected RetryingTransactionHelper transactionHelper;
-    private NodeArchiveService nodeArchiveService;
-    
+
     private static final String TEST_SITE = "testSite";
     
     private static final String TEST_SITE_1 = TEST_SITE+"1";
@@ -94,8 +91,7 @@ public abstract class AbstractFeedCleanerTest
         personService = (PersonService) ctx.getBean("PersonService");
         feedDAO = (ActivityFeedDAO) ctx.getBean("feedDAO");
         transactionHelper = (RetryingTransactionHelper)ctx.getBean("retryingTransactionHelper");
-        nodeArchiveService = (NodeArchiveService)ctx.getBean("nodeArchiveService");
-        
+
         // Let's shut down the scheduler so that we aren't competing with the scheduled versions of jobs (ie. feed cleaner)
         Scheduler scheduler = (Scheduler) ctx.getBean("schedulerFactory");
         scheduler.shutdown();
@@ -128,11 +124,9 @@ public abstract class AbstractFeedCleanerTest
         
         for (int i = 1; i <= 7; i++)
         {
-            SiteInfo site = siteService.getSite("testSite"+i); 
-            if (site != null)
+            if (siteService.getSite("testSite"+i) != null)
             {
                 siteService.deleteSite("testSite"+i);
-                nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(site.getNodeRef()));
             }
         }
         
@@ -378,10 +372,8 @@ public abstract class AbstractFeedCleanerTest
         assertEquals(site4FeedCnt, feedDAO.selectSiteFeedEntries(TEST_SITE_4, -1).size());
         assertEquals(site4FeedCnt+site5FeedCnt, feedDAO.selectUserFeedEntries(TEST_USER_D, null, false, false,-1L, -1).size());
         
-        SiteInfo site = siteService.getSite(TEST_SITE_4);
         // delete the site
         siteService.deleteSite(TEST_SITE_4); 
-        nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(site.getNodeRef()));
         
         // note: site feed cleanup is done in separate txn after commit
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project name="rm-parent" basedir=".">
-   <property file="local.build.properties" />
+   <property file="build.local.properties" />
    <property file="build.properties" />
    <!-- The properties 'artifactId' and 'tomcat' are defined in the modules -->
    <property name="groupId" value="org.alfresco"/>
@@ -17,11 +17,11 @@
    <property name="app.package" value="${artifactId}.${packaging}" />
    <property name="app.package.path" location="${webapps}/${app.package}" />
 
-   <target name="clean">
+   <target name="cleanTarget">
       <delete dir="${target}" />
    </target>
 
-   <target name="install" depends="clean">
+   <target name="install" depends="cleanTarget, updateClassPath">
       <exec executable="${mvn}">
          <arg value="install" />
          <arg value="-DskipTests" />
@@ -41,12 +41,8 @@
          <arg value="-DartifactId=${artifactId}" />
          <arg value="-Dversion=${version}" />
          <arg value="-Dpackaging=${packaging}" />
-         <arg value="-Ddest=${app.package}" />
+         <arg value="-Ddest=${target}/${app.package}" />
       </exec>
-   </target>
-
-   <target name="copyWarFileToTarget">
-      <copy file="${app.package}" todir="${target}"/>
    </target>
 
    <target name="deleteWarFile">
@@ -63,7 +59,7 @@
       </exec>
    </target>
 
-   <target name="alfresco:install" depends="deleteWarFile, deleteExplodedWar, alfresco:amp, copyWarFileToTarget">
+   <target name="alfresco:install" depends="deleteWarFile, deleteExplodedWar, alfresco:amp, fetchWarFile">
       <exec executable="${mvn}">
          <arg value="alfresco:install" />
       </exec>
@@ -73,7 +69,7 @@
       <copy file="${target}/${app.package}" todir="${webapps}"/>
    </target>
    
-   <target name="buildAndDeploy" depends="fetchWarFile, alfresco:install, copyWarFileToTomcat" description=""/>
+   <target name="buildAndDeploy" depends="alfresco:install, copyWarFileToTomcat" description=""/>
 
    <target name="tomcat-start" description="">
       <exec executable="${bash}">

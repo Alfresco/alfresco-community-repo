@@ -27,7 +27,7 @@
                </execution>
             </executions>
          </plugin>
-         <!-- Additional source folder to be added: source/compatibility -->
+         <!-- Additional source folder to be added: src/main/compatibility -->
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
@@ -39,7 +39,7 @@
                    </goals>
                    <configuration>
                        <sources>
-                          <source>source/compatibility</source>
+                          <source>src/main/compatibility</source>
                        </sources>
                    </configuration>
                </execution>
@@ -67,6 +67,35 @@
             </executions>
          </plugin>
       </plugins>
+      <pluginManagement>
+         <plugins>
+            <!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
+            <plugin>
+               <groupId>org.eclipse.m2e</groupId>
+               <artifactId>lifecycle-mapping</artifactId>
+               <version>1.0.0</version>
+               <configuration>
+                  <lifecycleMappingMetadata>
+                     <pluginExecutions>
+                        <pluginExecution>
+                           <pluginExecutionFilter>
+                              <groupId>org.codehaus.mojo</groupId>
+                              <artifactId>build-helper-maven-plugin</artifactId>
+                              <versionRange>[1.8,)</versionRange>
+                              <goals>
+                                 <goal>add-source</goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore />
+                           </action>
+                        </pluginExecution>
+                     </pluginExecutions>
+                  </lifecycleMappingMetadata>
+               </configuration>
+            </plugin>
+         </plugins>
+      </pluginManagement>
    </build>
    <profiles>
       <profile>

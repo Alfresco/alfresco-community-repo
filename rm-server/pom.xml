@@ -17,14 +17,6 @@
    <build>
       <plugins>
          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-               <includes>
-                  <include>**/AllTestSuite.class</include>
-               </includes>
-            </configuration>
-         </plugin>
-         <plugin>
             <groupId>org.alfresco.maven.plugin</groupId>
             <artifactId>alfresco-maven-plugin</artifactId>
             <executions>
@@ -242,6 +234,18 @@
          <groupId>mysql</groupId>
          <artifactId>mysql-connector-java</artifactId>
          <version>5.1.14</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.uncommons</groupId>
+         <artifactId>reportng</artifactId>
+         <version>1.1.4</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.google.inject</groupId>
+         <artifactId>guice</artifactId>
+         <version>3.0</version>
          <scope>test</scope>
       </dependency>
    </dependencies>

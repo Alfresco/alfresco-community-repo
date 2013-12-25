@@ -17,6 +17,14 @@
    <build>
       <plugins>
          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <includes>
+                  <include>**/AllTestSuite.class</include>
+               </includes>
+            </configuration>
+         </plugin>
+         <plugin>
             <groupId>org.alfresco.maven.plugin</groupId>
             <artifactId>alfresco-maven-plugin</artifactId>
             <executions>

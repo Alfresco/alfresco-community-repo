@@ -98,7 +98,7 @@
       <!-- Sonar specific properties -->
       <sonar.jacoco.reportPath>${project.build.directory}/jacoco.exec</sonar.jacoco.reportPath>
    </properties>
-   
+
    <build>
       <plugins>
          <plugin>
@@ -120,14 +120,6 @@
                   </configuration>
                </execution>
             </executions>
-         </plugin>
-         <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-               <includes>
-                  <include>**/AllTestSuite.class</include>
-               </includes>
-            </configuration>
          </plugin>
          <plugin>
             <groupId>org.alfresco.maven.plugin</groupId>

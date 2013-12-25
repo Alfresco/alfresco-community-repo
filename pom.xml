@@ -273,7 +273,7 @@
             <plugin>
                <groupId>org.antlr</groupId>
                <artifactId>antlr3-maven-plugin</artifactId>
-               <version>${dependency.antlr.version}</version>
+               <version>3.4</version>
             </plugin>
             <plugin>
                <groupId>org.codehaus.mojo</groupId>

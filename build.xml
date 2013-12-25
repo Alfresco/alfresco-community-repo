@@ -1,47 +1,40 @@
 <?xml version="1.0"?>
 <project name="rm-parent" basedir=".">
+
+   <!-- The properties 'app.war.artifactId' and 'app.tomcat' are defined in the modules -->
+
    <property file="build.local.properties" />
    <property file="build.properties" />
-   <!-- The properties 'artifactId' and 'tomcat' are defined in the modules -->
-   <property name="groupId" value="org.alfresco"/>
-   <property name="version" value="4.2.0"/>
-   <property name="packaging" value="war"/>
+
    <property environment="env" />
-   <property name="mvn" value="${env.MAVEN_HOME}/bin/mvn.bat" />
-   <property name="bash" value="${env.CYGWIN_HOME}/bin/bash" />
-   <property name="target" location="target" />
-   <property name="tomcat.folder" location="${target}/../../../software/${tomcat}" />
-   <property name="catalina" value="${tomcat.folder}/bin/catalina.sh" />
-   <property name="webapps" value="${tomcat.folder}/webapps" />
-   <property name="app.folder" location="${webapps}/${artifactId}" />
-   <property name="app.package" value="${artifactId}.${packaging}" />
-   <property name="app.package.path" location="${webapps}/${app.package}" />
 
    <target name="cleanTarget">
-      <delete dir="${target}" />
+      <delete dir="${mvn.build.directory}" />
    </target>
 
    <target name="install" depends="cleanTarget, updateClassPath">
-      <exec executable="${mvn}">
+      <exec executable="${mvn.exec}">
          <arg value="install" />
          <arg value="-DskipTests" />
       </exec>
    </target>
 
    <target name="updateClassPath">
-      <exec executable="${mvn}">
+      <exec executable="${mvn.exec}">
          <arg value="eclipse:eclipse" />
       </exec>
    </target>
 
+   <target name="prepareEnv" depends="updateClassPath" description="" />
+
    <target name="fetchWarFile">
-      <exec executable="${mvn}">
+      <exec executable="${mvn.exec}">
          <arg value="dependency:get" />
-         <arg value="-DgroupId=${groupId}" />
-         <arg value="-DartifactId=${artifactId}" />
-         <arg value="-Dversion=${version}" />
-         <arg value="-Dpackaging=${packaging}" />
-         <arg value="-Ddest=${target}/${app.package}" />
+         <arg value="-DgroupId=${app.war.groupId}" />
+         <arg value="-DartifactId=${app.war.artifactId}" />
+         <arg value="-Dversion=${app.war.version}" />
+         <arg value="-Dpackaging=${app.war.packaging}" />
+         <arg value="-Ddest=${mvn.build.directory}/${app.package}" />
       </exec>
    </target>
 
@@ -54,41 +47,41 @@
    </target>
 
    <target name="alfresco:amp" depends="install">
-      <exec executable="${mvn}">
+      <exec executable="${mvn.exec}">
          <arg value="alfresco:amp" />
       </exec>
    </target>
 
    <target name="alfresco:install" depends="deleteWarFile, deleteExplodedWar, alfresco:amp, fetchWarFile">
-      <exec executable="${mvn}">
+      <exec executable="${mvn.exec}">
          <arg value="alfresco:install" />
       </exec>
    </target>
 
    <target name="copyWarFileToTomcat">
-      <copy file="${target}/${app.package}" todir="${webapps}"/>
+      <copy file="${mvn.build.directory}/${app.package}" todir="${app.tomcat.webapps}"/>
    </target>
-   
+
    <target name="buildAndDeploy" depends="alfresco:install, copyWarFileToTomcat" description=""/>
 
    <target name="tomcat-start" description="">
-      <exec executable="${bash}">
-         <arg value="${catalina}"/>
+      <exec executable="${bash.exec}">
+         <arg value="${catalina.exec}"/>
          <arg value="run"/>
       </exec>
    </target>
 
    <target name="tomcat-start-debug" description="">
-      <exec executable="${bash}">
-         <arg value="${catalina}"/>
+      <exec executable="${bash.exec}">
+         <arg value="${catalina.exec}"/>
          <arg value="jpda"/>
          <arg value="run"/>
       </exec>
    </target>
 
    <target name="tomcat-stop" description="">
-      <exec executable="${bash}">
-         <arg value="${catalina}"/>
+      <exec executable="${bash.exec}">
+         <arg value="${catalina.exec}"/>
          <arg value="stop"/>
       </exec>
    </target>

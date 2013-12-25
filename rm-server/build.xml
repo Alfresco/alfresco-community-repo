@@ -1,28 +1,26 @@
 <?xml version="1.0"?>
 <project name="rm-server" basedir=".">
-   <property name="artifactId" value="alfresco"/>
-   <property name="tomcat" value="tomcat" />
-   <import file="../build.xml"/>
+   <import file="../build.xml" />
 
-   <property name="dbGroupId" value="postgresql"/>
-   <property name="dbArtifactId" value="${dbGroupId}"/>
-   <property name="dbVersion" value="9.1-901.jdbc4"/>
-   <property name="dbPackaging" value="jar"/>
+   <property file="../build.local.properties" />
+   <property file="../build.properties" />
+   <property file="build.local.properties" />
+   <property file="build.properties" />
 
    <target name="copyDBDriver">
-      <exec executable="${mvn}">
+      <exec executable="${mvn.exec}">
          <arg value="dependency:get" />
-         <arg value="-DgroupId=${dbGroupId}" />
-         <arg value="-DartifactId=${dbArtifactId}" />
-         <arg value="-Dversion=${dbVersion}" />
-         <arg value="-Dpackaging=${dbPackaging}" />
-         <arg value="-Ddest=${tomcat.folder}/lib" />
+         <arg value="-DgroupId=${db.driver.groupId}" />
+         <arg value="-DartifactId=${db.driver.artifactId}" />
+         <arg value="-Dversion=${db.driver.version}" />
+         <arg value="-Dpackaging=${db.driver.packaging}" />
+         <arg value="-Ddest=${app.tomcat.folder}/lib" />
       </exec>
    </target>
 
    <target name="copyDevContextFile">
       <property name="devContextFile" value="../root/projects/repository/config/alfresco/extension/dev-context.xml" />
-      <copy file="${devContextFile}" todir="${tomcat.folder}/shared/classes/alfresco/extension"/>
+      <copy file="${devContextFile}" todir="${app.tomcat.folder}/shared/classes/alfresco/extension"/>
       <copy file="${devContextFile}" todir="src/main/resources/alfresco/extension"/>
    </target>
 

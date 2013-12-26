@@ -25,8 +25,6 @@
       </exec>
    </target>
 
-   <target name="prepareEnv" depends="updateClassPath" description="" />
-
    <target name="fetchWarFile">
       <exec executable="${mvn.exec}">
          <arg value="dependency:get" />
@@ -84,5 +82,27 @@
          <arg value="${catalina.exec}"/>
          <arg value="stop"/>
       </exec>
+   </target>
+
+   <target name="assembleLocalisationPackage" description="">
+      <copy todir="${mvn.build.directory}/i18n/${ant.project.name}/${mvn.resources.directory}">
+         <fileset dir="${mvn.resources.directory}">
+            <include name="**/*.properties" />
+            <exclude name="**/*_*.properties" />
+            <exclude name="**/rm-method-security.properties" />
+            <exclude name="**/alfresco-global.properties" />
+            <exclude name="**/log4j.properties" />
+            <exclude name="**/module.properties" />
+            <exclude name="**/file-mapping.properties" />
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="assembleIconPackage" description="">
+      <copy todir="${mvn.build.directory}/icons/${ant.project.name}/${mvn.resources.directory}">
+         <fileset dir="${mvn.resources.directory}">
+            <include name="**/*.png"/>
+         </fileset>
+      </copy>
    </target>
 </project>

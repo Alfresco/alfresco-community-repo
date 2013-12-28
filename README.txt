@@ -15,7 +15,7 @@ Initial Setup
 
 Using Eclipse
  - Import projects as Maven projects ("Import > Maven > Existing Maven Projects")
- - Browse to the code directory of your project and DO NOT select the parent pom.xml (Select just "rm-server/pom.xml" and "rm-share/pom.xml")
+ - Browse to the code directory of your project and select "rm-server/pom.xml" and "rm-share/pom.xml". DO NOT select the parent "/pom.xml"
  - Open the Ant view and add the build files for both modules ("build.xml")
  - Run the "prepareEnv" targets for both modules which will prepare the development environment. This target must be run just once.
  - Now "buildAndDeploy" target can be run which will create the amp file, apply it to the war file and copy the war file to webapps folder.

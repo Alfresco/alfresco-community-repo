@@ -162,6 +162,7 @@
          <language locale="it_IT">Italian</language>
          <language locale="ja_JP">Japanese</language>
          <language locale="nl_NL">Dutch</language>
+         <language locale="nb">Norwegian</language>
          <language locale="ru_RU">Russian</language>
          <language locale="zh_CN">Chinese (Simplified)</language>
          <language locale="pt_BR">Portuguese (Brazilian)</language>

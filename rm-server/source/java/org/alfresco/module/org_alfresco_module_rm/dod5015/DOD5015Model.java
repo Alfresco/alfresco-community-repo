@@ -32,7 +32,16 @@ public interface DOD5015Model
 	public static final String DOD_URI = "http://www.alfresco.org/model/dod5015/1.0";
 	public static final String DOD_PREFIX = "dod";
 	
-    // DOD 5015 Custom Type aspects and their properties
+    // DOD Record
+	
+	public static final QName ASPECT_DOD_5015_RECORD = QName.createQName(DOD_URI, "dod5015record");
+	public static final QName PROP_ORIGINATOR = QName.createQName(DOD_URI, "originator");
+	public static final QName PROP_ORIGINATING_ORGANIZATION = QName.createQName(DOD_URI, "originatingOrganization");
+	public static final QName PROP_PUBLICATION_DATE = QName.createQName(DOD_URI, "publicationDate");
+	public static final QName PROP_MEDIA_TYPE = QName.createQName(DOD_URI, "mediaType");
+	public static final QName PROP_FORMAT = QName.createQName(DOD_URI, "format");
+	public static final QName PROP_DATE_RECEIVED = QName.createQName(DOD_URI, "dateReceived");
+		
     // Scanned Record
     public static final QName ASPECT_SCANNED_RECORD = QName.createQName(DOD_URI, "scannedRecord");
     public static final QName PROP_SCANNED_FORMAT = QName.createQName(DOD_URI, "scannedFormat");

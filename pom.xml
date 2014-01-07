@@ -1,16 +1,3 @@
-<!-- ********************************************************* -->
-<!-- **              Alfresco Parent POM                    ** -->
-<!-- **                                                     ** -->
-<!-- ** This Maven build is NOT usable to build Alfresco RM ** -->
-<!-- ** you should use the standard Gradle build for that.  ** -->
-<!-- ** This POM is instead used to produce POMs to develop ** -->
-<!-- ** against Alfresco with Maven. POMs, dependencies and ** -->
-<!-- ** projects information are up to date and released    ** -->
-<!-- ** together with the official Alfresco artifacts at    ** -->
-<!---**          https://artifacts.alfresco.com.            ** -->
-<!---** Fox the SDK and Maven project samples check         ** -->
-<!---** http://code.google.com/p/maven-alfresco-archetypes/ ** -->
-<!-- ********************************************************* -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <modelVersion>4.0.0</modelVersion>
@@ -45,33 +32,31 @@
    </ciManagement>
 
    <prerequisites>
-      <maven>3.0.3</maven>
+      <maven>3.0.4</maven>
    </prerequisites>
 
    <repositories>
-      <!-- Pointing to Alfresco repository group. Value is switched between community and enterprise -->
       <repository>
-         <id>alfresco-public</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+         <id>alfresco-internal</id>
+         <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
       </repository>
    </repositories>
+   <pluginRepositories>
+      <pluginRepository>
+         <id>alfresco-public</id>
+         <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+      </pluginRepository>
+   </pluginRepositories>
 
    <distributionManagement>
-      <!-- For now internal releases repositories -->
       <repository>
          <id>alfresco-internal</id>
          <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-releases/</url>
       </repository>
-      <!-- For now internal snapshot repositories -->
       <snapshotRepository>
          <id>alfresco-internal-snapshots</id>
          <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-snapshots/</url>
       </snapshotRepository>
-      <site>
-         <id>alfresco-site</id>
-         <name>Alfresco Maven site</name>
-         <url>http://localhost/</url>
-      </site>
    </distributionManagement>
 
    <modules>
@@ -187,11 +172,11 @@
             </plugin>
             <plugin>
                <artifactId>maven-deploy-plugin</artifactId>
-               <version>2.7</version>
+               <version>2.8.1</version>
             </plugin>
             <plugin>
                <artifactId>maven-install-plugin</artifactId>
-               <version>2.5</version>
+               <version>2.5.1</version>
             </plugin>
             <plugin>
                <artifactId>maven-resources-plugin</artifactId>
@@ -215,7 +200,7 @@
             </plugin>
             <plugin>
                <artifactId>maven-release-plugin</artifactId>
-               <version>2.4.1</version>
+               <version>2.4.2</version>
             </plugin>
             <plugin>
                <artifactId>maven-source-plugin</artifactId>
@@ -271,7 +256,7 @@
             <plugin>
                <groupId>org.mortbay.jetty</groupId>
                <artifactId>jetty-maven-plugin</artifactId>
-               <version>8.1.13.v20130916</version>
+               <version>8.1.14.v20131031</version>
                <configuration>
                   <webAppSourceDirectory>source/web</webAppSourceDirectory>
                </configuration>
@@ -279,7 +264,7 @@
             <plugin>
                <groupId>org.apache.tomcat.maven</groupId>
                <artifactId>tomcat7-maven-plugin</artifactId>
-               <version>2.1</version>
+               <version>2.2</version>
                <dependencies>
                   <dependency>
                      <groupId>org.codehaus.plexus</groupId>
@@ -289,19 +274,9 @@
                </dependencies>
             </plugin>
             <plugin>
-               <groupId>org.antlr</groupId>
-               <artifactId>antlr3-maven-plugin</artifactId>
-               <version>3.4</version>
-            </plugin>
-            <plugin>
                <groupId>org.codehaus.mojo</groupId>
                <artifactId>sql-maven-plugin</artifactId>
                <version>1.5</version>
-            </plugin>
-            <plugin>
-               <groupId>org.codehaus.mojo</groupId>
-               <artifactId>rpm-maven-plugin</artifactId>
-               <version>2.1-alpha-3</version>
             </plugin>
             <plugin>
                <groupId>org.codehaus.mojo</groupId>
@@ -314,10 +289,16 @@
                <version>1.8</version>
             </plugin>
             <plugin>
-               <groupId>com.google.code.maven-replacer-plugin</groupId>
-               <artifactId>replacer</artifactId>
-               <version>1.5.2</version>
+               <groupId>org.alfresco.maven.plugin</groupId>
+               <artifactId>alfresco-maven-plugin</artifactId>
+               <version>1.1.1</version>
             </plugin>
+             <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>yuicompressor-maven-plugin</artifactId>
+                <version>1.3.2</version>
+            </plugin>
+
             <!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
             <plugin>
                <groupId>org.eclipse.m2e</groupId>

@@ -489,20 +489,23 @@ public class WorkflowServiceImpl implements WorkflowService
     @Override
     public List<WorkflowInstance> getWorkflows(final WorkflowInstanceQuery workflowInstanceQuery, final int maxItems, final int skipCount)
     {
-        if(workflowInstanceQuery.getWorkflowDefinitionId() == null)
-    {
-        List<String> ids = Arrays.asList(registry.getWorkflowComponents());
-        return CollectionUtils.transformFlat(ids, new Function<String, Collection<WorkflowInstance>>()
-        {
-            public List<WorkflowInstance> apply(String id)
-            {
-                WorkflowComponent component = registry.getWorkflowComponent(id);
-                return component.getWorkflows(workflowInstanceQuery, maxItems, skipCount);
-            }
-        });
-    }
+        if(workflowInstanceQuery.getWorkflowDefinitionId() == null && workflowInstanceQuery.getEngineId() == null)
+	    {
+	        List<String> ids = Arrays.asList(registry.getWorkflowComponents());
+	        return CollectionUtils.transformFlat(ids, new Function<String, Collection<WorkflowInstance>>()
+	        {
+	            public List<WorkflowInstance> apply(String id)
+	            {
+	                WorkflowComponent component = registry.getWorkflowComponent(id);
+	                return component.getWorkflows(workflowInstanceQuery, maxItems, skipCount);
+	            }
+	        });
+	    }
 
-        String engineId = BPMEngineRegistry.getEngineId(workflowInstanceQuery.getWorkflowDefinitionId());
+        String engineId = workflowInstanceQuery.getEngineId();
+        if(engineId == null) {
+        	engineId = BPMEngineRegistry.getEngineId(workflowInstanceQuery.getWorkflowDefinitionId());
+        }
         WorkflowComponent component = getWorkflowComponent(engineId);
         return component.getWorkflows(workflowInstanceQuery, maxItems, skipCount);
     }    
@@ -511,7 +514,7 @@ public class WorkflowServiceImpl implements WorkflowService
     public long countWorkflows(final WorkflowInstanceQuery workflowInstanceQuery)
     {
         // MNT-9074 My Tasks fails to render if tasks quantity is excessive
-        if (workflowInstanceQuery.getWorkflowDefinitionId() == null)
+        if (workflowInstanceQuery.getWorkflowDefinitionId() == null && workflowInstanceQuery.getEngineId() == null)
         {
             List<String> ids = Arrays.asList(registry.getWorkflowComponents());
 
@@ -526,10 +529,35 @@ public class WorkflowServiceImpl implements WorkflowService
             return total;
         }
 
-        String engineId = BPMEngineRegistry.getEngineId(workflowInstanceQuery.getWorkflowDefinitionId());
+        
+        String engineId = workflowInstanceQuery.getEngineId();
+        if(engineId == null) {
+        	engineId = BPMEngineRegistry.getEngineId(workflowInstanceQuery.getWorkflowDefinitionId());
+        }
         WorkflowComponent component = getWorkflowComponent(engineId);
         return component.countWorkflows(workflowInstanceQuery);
     }    
+    
+    @Override
+    public long countTasks(WorkflowTaskQuery workflowTaskQuery) {
+        long total = 0;
+        if (workflowTaskQuery.getEngineId() != null)
+        {
+            TaskComponent component = registry.getTaskComponent(workflowTaskQuery.getEngineId());
+            total = component.countTasks(workflowTaskQuery);
+        }
+        else
+        {
+            List<String> ids = Arrays.asList(registry.getTaskComponents());
+            for (String id : ids)
+            {
+                TaskComponent component = registry.getTaskComponent(id);
+                total += component.countTasks(workflowTaskQuery);
+            }
+        }
+        
+        return total;
+    }
 
     /**
     * {@inheritDoc}
@@ -889,11 +917,16 @@ public class WorkflowServiceImpl implements WorkflowService
     public List<WorkflowTask> queryTasks(WorkflowTaskQuery query, boolean sameSession)
     {
         // extract task component to perform query
-        String engineId = null;
+        String engineId = query.getEngineId();
+        
         String processId = query.getProcessId();
         if (processId != null)
         {
-            engineId = BPMEngineRegistry.getEngineId(processId);
+            String workflowEngineId = BPMEngineRegistry.getEngineId(processId);
+            if (engineId != null && !engineId.equals(workflowEngineId)) { throw new WorkflowException(
+                    "Cannot query for tasks across multiple task components: " + engineId + ", " + workflowEngineId); 
+            }
+            engineId = workflowEngineId;
         }
         String taskId = query.getTaskId();
         if (taskId != null)

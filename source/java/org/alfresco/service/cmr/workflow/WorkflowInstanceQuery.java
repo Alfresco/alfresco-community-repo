@@ -40,6 +40,7 @@ public class WorkflowInstanceQuery
     private Date endBefore;
     private Date endAfter;
     private List<String> excludedDefinitions;
+    private String engine;
 
     // Custom properties
     // Value for Date property must be Map<DatePosition, Date>
@@ -145,5 +146,13 @@ public class WorkflowInstanceQuery
     {
         this.excludedDefinitions = excludedDefinitions;
     }
+    
+    public void setEngineId(String engine) {
+		this.engine = engine;
+	}
+    
+    public String getEngineId() {
+		return engine;
+	}
 
 }

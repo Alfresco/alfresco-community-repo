@@ -23,6 +23,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -207,13 +208,13 @@ public class CommonRMTestUtils implements RecordsManagementModel
                 try
                 {
                     // Declare record
-                    nodeService.setProperty(record, RecordsManagementModel.PROP_PUBLICATION_DATE, new Date());
-                    nodeService.setProperty(record, RecordsManagementModel.PROP_MEDIA_TYPE, "mediaTypeValue");
-                    nodeService.setProperty(record, RecordsManagementModel.PROP_FORMAT, "formatValue");
-                    nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_RECEIVED, new Date());
+                    nodeService.setProperty(record, DOD5015Model.PROP_PUBLICATION_DATE, new Date());
+                    nodeService.setProperty(record, DOD5015Model.PROP_MEDIA_TYPE, "mediaTypeValue");
+                    nodeService.setProperty(record, DOD5015Model.PROP_FORMAT, "formatValue");
+                    nodeService.setProperty(record, DOD5015Model.PROP_DATE_RECEIVED, new Date());
                     nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_FILED, new Date());
-                    nodeService.setProperty(record, RecordsManagementModel.PROP_ORIGINATOR, "origValue");
-                    nodeService.setProperty(record, RecordsManagementModel.PROP_ORIGINATING_ORGANIZATION, "origOrgValue");
+                    nodeService.setProperty(record, DOD5015Model.PROP_ORIGINATOR, "origValue");
+                    nodeService.setProperty(record, DOD5015Model.PROP_ORIGINATING_ORGANIZATION, "origOrgValue");
                     nodeService.setProperty(record, ContentModel.PROP_TITLE, "titleValue");
                     actionService.executeRecordsManagementAction(record, "declareRecord");
                 }

@@ -27,6 +27,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
@@ -95,7 +96,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
             {
                 Set<QName> aspects = recordService.getRecordMetaDataAspects();
                 assertNotNull(aspects);
-                assertEquals(5, aspects.size());
+                assertEquals(6, aspects.size());
                 assertTrue(aspects.containsAll(getAspectList()));
 
                 return null;
@@ -108,9 +109,15 @@ public class RecordServiceImplTest extends BaseRMTestCase
              */
             private List<QName> getAspectList()
             {
-                QName[] aspects = new QName[] { DOD5015Model.ASPECT_DIGITAL_PHOTOGRAPH_RECORD,
-                        DOD5015Model.ASPECT_PDF_RECORD, DOD5015Model.ASPECT_WEB_RECORD,
-                        DOD5015Model.ASPECT_SCANNED_RECORD, ASPECT_RECORD_META_DATA };
+                QName[] aspects = new QName[] 
+                        { 
+                            DOD5015Model.ASPECT_DIGITAL_PHOTOGRAPH_RECORD,
+                            DOD5015Model.ASPECT_PDF_RECORD, 
+                            DOD5015Model.ASPECT_WEB_RECORD,
+                            DOD5015Model.ASPECT_SCANNED_RECORD, 
+                            ASPECT_RECORD_META_DATA,
+                            DOD5015Model.ASPECT_DOD_5015_RECORD
+                        };
 
                 return Arrays.asList(aspects);
             }
@@ -648,9 +655,9 @@ public class RecordServiceImplTest extends BaseRMTestCase
             @Override
             public void runImpl() throws Exception
             {
-                assertTrue(recordService.isPropertyEditable(recordOne, PROP_ORIGINATING_ORGANIZATION));
+                assertTrue(recordService.isPropertyEditable(recordOne, RecordsManagementModel.PROP_LOCATION));
                 assertTrue(recordService.isPropertyEditable(recordOne, PROP_DESCRIPTION));
-                assertTrue(recordService.isPropertyEditable(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION));
+                assertTrue(recordService.isPropertyEditable(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION));
                 assertFalse(recordService.isPropertyEditable(recordDeclaredOne, PROP_DESCRIPTION));
             }
         });
@@ -663,9 +670,9 @@ public class RecordServiceImplTest extends BaseRMTestCase
             {
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
 
-                assertFalse(recordService.isPropertyEditable(recordOne, PROP_ORIGINATING_ORGANIZATION));
+                assertFalse(recordService.isPropertyEditable(recordOne, RecordsManagementModel.PROP_LOCATION));
                 assertFalse(recordService.isPropertyEditable(recordOne, PROP_DESCRIPTION));
-                assertFalse(recordService.isPropertyEditable(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION));
+                assertFalse(recordService.isPropertyEditable(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION));
                 assertFalse(recordService.isPropertyEditable(recordDeclaredOne, PROP_DESCRIPTION));
             }
         }, rmUserName);
@@ -677,9 +684,9 @@ public class RecordServiceImplTest extends BaseRMTestCase
             @Override
             public void runImpl() throws Exception
             {
-                assertFalse(recordService.isPropertyEditable(recordOne, PROP_ORIGINATING_ORGANIZATION));
+                assertFalse(recordService.isPropertyEditable(recordOne, RecordsManagementModel.PROP_LOCATION));
                 assertTrue(recordService.isPropertyEditable(recordOne, PROP_DESCRIPTION));
-                assertFalse(recordService.isPropertyEditable(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION));
+                assertFalse(recordService.isPropertyEditable(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION));
                 assertFalse(recordService.isPropertyEditable(recordDeclaredOne, PROP_DESCRIPTION));
             }
         }, nonRecordMetadata);
@@ -691,9 +698,9 @@ public class RecordServiceImplTest extends BaseRMTestCase
             @Override
             public void runImpl() throws Exception
             {
-                assertTrue(recordService.isPropertyEditable(recordOne, PROP_ORIGINATING_ORGANIZATION));
+                assertTrue(recordService.isPropertyEditable(recordOne, RecordsManagementModel.PROP_LOCATION));
                 assertFalse(recordService.isPropertyEditable(recordOne, PROP_DESCRIPTION));
-                assertFalse(recordService.isPropertyEditable(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION));
+                assertFalse(recordService.isPropertyEditable(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION));
                 assertFalse(recordService.isPropertyEditable(recordDeclaredOne, PROP_DESCRIPTION));
             }
         }, recordMetadata);
@@ -705,9 +712,9 @@ public class RecordServiceImplTest extends BaseRMTestCase
             @Override
             public void runImpl() throws Exception
             {
-                assertFalse(recordService.isPropertyEditable(recordOne, PROP_ORIGINATING_ORGANIZATION));
+                assertFalse(recordService.isPropertyEditable(recordOne, RecordsManagementModel.PROP_LOCATION));
                 assertFalse(recordService.isPropertyEditable(recordOne, PROP_DESCRIPTION));
-                assertTrue(recordService.isPropertyEditable(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION));
+                assertTrue(recordService.isPropertyEditable(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION));
                 assertFalse(recordService.isPropertyEditable(recordDeclaredOne, PROP_DESCRIPTION));
             }
         }, declaredRecordMetadata);
@@ -739,36 +746,36 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
         // test rmadmin
         canEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, rmAdminName);
-        canEditProperty(recordOne, PROP_ORIGINATING_ORGANIZATION, rmAdminName);
+        canEditProperty(recordOne, RecordsManagementModel.PROP_LOCATION, rmAdminName);
         cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, rmAdminName);
-        canEditProperty(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION, rmAdminName);
+        canEditProperty(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION, rmAdminName);
 
         // test normal user
         cantEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, rmUserName);
-        cantEditProperty(recordOne, PROP_ORIGINATING_ORGANIZATION, rmUserName);
+        cantEditProperty(recordOne, RecordsManagementModel.PROP_LOCATION, rmUserName);
         cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, rmUserName);
-        cantEditProperty(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION, rmUserName);
+        cantEditProperty(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION, rmUserName);
 
         // test undeclared record with edit non-record metadata capability
         canEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, nonRecordMetadata);
-        cantEditProperty(recordOne, PROP_ORIGINATING_ORGANIZATION, nonRecordMetadata);
+        cantEditProperty(recordOne, RecordsManagementModel.PROP_LOCATION, nonRecordMetadata);
         // test declared record with edit non-record metadata capability
         cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, nonRecordMetadata);
-        cantEditProperty(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION, nonRecordMetadata);
+        cantEditProperty(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION, nonRecordMetadata);
 
         // test undeclared record with edit record metadata capability
         cantEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, recordMetadata);
-        canEditProperty(recordOne, PROP_ORIGINATING_ORGANIZATION, recordMetadata);
+        canEditProperty(recordOne, RecordsManagementModel.PROP_LOCATION, recordMetadata);
         // test declared record with edit record metadata capability
         cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, recordMetadata);
-        cantEditProperty(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION, recordMetadata);
+        cantEditProperty(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION, recordMetadata);
 
         // test undeclared record with edit declared record metadata capability
         cantEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, declaredRecordMetadata);
-        cantEditProperty(recordOne, PROP_ORIGINATING_ORGANIZATION, declaredRecordMetadata);
+        cantEditProperty(recordOne, RecordsManagementModel.PROP_LOCATION, declaredRecordMetadata);
         // test declared record with edit declared record metadata capability
         cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, declaredRecordMetadata);
-        canEditProperty(recordDeclaredOne, PROP_ORIGINATING_ORGANIZATION, declaredRecordMetadata);
+        canEditProperty(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION, declaredRecordMetadata);
 
     }
 

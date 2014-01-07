@@ -26,6 +26,7 @@
       <namespace uri="http://www.alfresco.org/model/dod5015/1.0" prefix="dod"/>
    </namespaces>
    
+   <!--  TODO I18N -->
    <constraints>
       <constraint name="dod:imageFormatList" type="LIST">
          <title>Image Formats</title>
@@ -56,6 +57,100 @@
    </types>
    
    <aspects>
+   
+   	  <!--  DOD5015 Record Properties -->
+      <!--  @since 2.2 -->
+      <aspect name="dod:dod5015record">
+        
+        <title>DOD5015 Record</title>
+        <parent>rma:recordMetaData</parent>
+        
+        <properties>
+
+            <property name="dod:publicationDate">
+               <title>Publication Date</title>
+               <type>d:date</type>
+               <mandatory>true</mandatory>
+            </property>
+
+            <property name="dod:originator">
+               <title>Originator</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+
+            <property name="dod:originatingOrganization">
+               <title>Originating Organization</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+
+            <property name="dod:mediaType">
+               <title>Media Type</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+
+            <property name="dod:format">
+               <title>Format</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+
+            <property name="dod:dateReceived">
+               <title>Date Received</title>
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+
+            <!-- TODO
+                 Do we need to model this as broken up address?
+                 Should we have a separate property for other address or just a multivalue property?
+            -->
+            <property name="dod:address">
+               <title>Addressee</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+            <property name="dod:otherAddress">
+               <title>Other Addressee</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+
+         </properties>
+      
+      </aspect>
      
       <aspect name="dod:scannedRecord">
         <title>Scanned Record</title>

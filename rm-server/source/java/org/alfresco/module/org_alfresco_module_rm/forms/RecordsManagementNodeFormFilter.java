@@ -39,7 +39,9 @@ import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.repo.forms.processor.node.FieldUtils;
 import org.alfresco.repo.forms.processor.node.FormFieldConstants;
+import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -169,7 +171,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
 
         for (QName customisable : customisables)
         {
-            addPropertyFieldsToGroup(form, rmAdminService.getCustomPropertyDefinitions(customisable), CUSTOM_RM_FIELD_GROUP_ID);
+            addPropertyFieldsToGroup(form, rmAdminService.getCustomPropertyDefinitions(customisable), CUSTOM_RM_FIELD_GROUP_ID, null);
         }
     }
 
@@ -188,7 +190,15 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             {
                 String aspectName = aspect.getPrefixedQName(namespaceService).toPrefixString().replace(":", "-");
                 String setId = RM_METADATA_PREFIX + aspectName;
-                addPropertyFieldsToGroup(form, dictionaryService.getPropertyDefs(aspect), setId);
+                                
+                String setLabel = null;
+                AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
+                if (aspectDefinition != null)
+                {
+                    setLabel = aspectDefinition.getTitle(new StaticMessageLookup());
+                }
+                
+                addPropertyFieldsToGroup(form, dictionaryService.getPropertyDefs(aspect), setId, setLabel);
             }
         }
     }

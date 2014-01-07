@@ -34,6 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionD
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
+import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.job.PublishUpdatesJobExecuter;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutor;
@@ -851,7 +852,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 adParams.put(PROP_DISPOSITION_ACTION_NAME, "cutoff");
                 adParams.put(PROP_DISPOSITION_DESCRIPTION, "test");
                 adParams.put(PROP_DISPOSITION_PERIOD, "week|1");
-                adParams.put(PROP_DISPOSITION_PERIOD_PROPERTY, PROP_PUBLICATION_DATE.toString());
+                adParams.put(PROP_DISPOSITION_PERIOD_PROPERTY, DOD5015Model.PROP_PUBLICATION_DATE.toString());
 
                 dispositionService.addDispositionActionDefinition(testRM263DispositionSchedule, adParams);
 
@@ -869,7 +870,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             @Override
             public Void run() throws Exception
             {
-                Date pubDate = (Date)nodeService.getProperty(testRM263Record, PROP_PUBLICATION_DATE);
+                Date pubDate = (Date)nodeService.getProperty(testRM263Record, DOD5015Model.PROP_PUBLICATION_DATE);
                 assertNull(pubDate);
                 Date asOfDate = (Date)nodeService.getProperty(testRM263Record, PROP_SEARCH_ASOF);
                 assertNull(asOfDate);
@@ -879,7 +880,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 assertNull(da.getAsOfDate());
 
                 //rma:recordSearchDispositionActionAsOf"
-                nodeService.setProperty(testRM263Record, PROP_PUBLICATION_DATE, new Date());
+                nodeService.setProperty(testRM263Record, DOD5015Model.PROP_PUBLICATION_DATE, new Date());
 
                 return null;
             }
@@ -887,7 +888,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             @Override
             public void test(Void result) throws Exception
             {
-                Date pubDate = (Date)nodeService.getProperty(testRM263Record, PROP_PUBLICATION_DATE);
+                Date pubDate = (Date)nodeService.getProperty(testRM263Record, DOD5015Model.PROP_PUBLICATION_DATE);
                 assertNotNull(pubDate);
                 Date asOfDate = (Date)nodeService.getProperty(testRM263Record, PROP_SEARCH_ASOF);
                 assertNotNull(asOfDate);

@@ -33,14 +33,8 @@
 	   <property name="appliesToFolderLevel" value="false"/>
 	</bean>
 	
-	<bean id="disposition.properties.publicationdate" parent="disposition.properties.base">
-	   <property name="name" value="rma:publicationDate" />
-	   <property name="appliesToFolderLevel" value="false"/>
-	</bean>
-	
 	<bean id="disposition.properties.created" parent="disposition.properties.base">
 	   <property name="name" value="cm:created" />
-	   <property name="appliesToRecordLevel" value="false"/>
 	</bean>
 	    
 </beans>

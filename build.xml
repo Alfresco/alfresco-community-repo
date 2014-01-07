@@ -105,4 +105,26 @@
          </fileset>
       </copy>
    </target>
+
+   <target name="deployExploded" description="">
+      <fail message="Exploded webapp directory '${app.war.artifactId}' does not exist.">
+         <condition><not>
+            <available file="${app.folder}" type="dir"/>
+         </not></condition>
+      </fail>
+      <copy todir="${app.folder}/WEB-INF/lib" failonerror="true">
+         <fileset dir="${mvn.build.directory}">
+            <include name="*.jar" />
+         </fileset>
+      </copy>
+      <copy todir="${app.folder}/WEB-INF/classes" failonerror="true">
+         <fileset dir="${mvn.resources.directory}">
+            <exclude name="**/module.properties" />
+            <exclude name="**/file-mapping.properties" />
+         </fileset>
+      </copy>
+      <move todir="${app.folder}" failonerror="false">
+         <fileset dir="${app.folder}/WEB-INF/classes/web"/>
+      </move>
+   </target>
 </project>

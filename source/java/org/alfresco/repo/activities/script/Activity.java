@@ -21,6 +21,7 @@ package org.alfresco.repo.activities.script;
 import java.util.List;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -35,6 +36,7 @@ import org.mozilla.javascript.Scriptable;
 public final class Activity extends BaseScopableProcessorExtension
 {
     private ActivityService activityService;
+    private TenantService tenantService;
 
    /**
     * Set the activity service
@@ -46,6 +48,15 @@ public final class Activity extends BaseScopableProcessorExtension
       this.activityService = activityService;
    }
    
+    /**
+     * Set the tenant service
+     * 
+     * @param tenantService the tenant service
+     */
+   public void setTenantService(TenantService tenantService)
+   {
+       this.tenantService = tenantService;
+   }
    
    /*
     * Post Activity
@@ -127,9 +138,12 @@ public final class Activity extends BaseScopableProcessorExtension
    {
        List<FeedControl> feedControls = activityService.getFeedControls();
        Object[] results = new Object[feedControls.size()];
-       for (int i=0; i < feedControls.size(); i++)
+       
+       int i = 0;
+       for(FeedControl fc : feedControls)
        {
-           results[i] = feedControls.get(i);
+           results[i] = new FeedControl(this.tenantService.getBaseName(fc.getSiteId()), fc.getAppToolId());
+           i++;
        }
        return Context.getCurrentContext().newArray(getScope(), results);
    }
@@ -142,7 +156,7 @@ public final class Activity extends BaseScopableProcessorExtension
     */
    public void setFeedControl(String siteId, String appToolId)
    {
-       activityService.setFeedControl(new FeedControl(siteId, appToolId));
+       activityService.setFeedControl(new FeedControl(getTenantSpecificSiteId(siteId), appToolId));
    }
    
    /**
@@ -153,6 +167,12 @@ public final class Activity extends BaseScopableProcessorExtension
     */
    public void unsetFeedControl(String siteId, String appToolId)
    {
-       activityService.unsetFeedControl(new FeedControl(siteId, appToolId));
+       activityService.unsetFeedControl(new FeedControl(getTenantSpecificSiteId(siteId), appToolId));
    }
+   
+    // CLOUD-2248
+    private String getTenantSpecificSiteId(String siteId)
+    {
+        return this.tenantService.getName(siteId);
+    }
 }

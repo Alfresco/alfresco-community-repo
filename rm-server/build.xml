@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<project name="rm-server" basedir=".">
+   <import file="../build.xml" />
+
+   <property file="../build.local.properties" />
+   <property file="../build.properties" />
+   <property file="build.local.properties" />
+   <property file="build.properties" />
+
+   <target name="copyDBDriver">
+      <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="dependency:get" />
+         <arg value="-DgroupId=${db.driver.groupId}" />
+         <arg value="-DartifactId=${db.driver.artifactId}" />
+         <arg value="-Dversion=${db.driver.version}" />
+         <arg value="-Dpackaging=${db.driver.packaging}" />
+         <arg value="-Ddest=${app.tomcat.folder}/lib" />
+      </exec>
+   </target>
+
+   <target name="copyDevContextFile">
+      <property name="devContextFile" value="../root/projects/repository/config/alfresco/extension/dev-context.xml" />
+      <copy file="${devContextFile}" todir="${app.tomcat.folder}/shared/classes/alfresco/extension" failonerror="true" />
+      <copy file="${devContextFile}" todir="src/main/resources/alfresco/extension" failonerror="true" />
+   </target>
+
+   <target name="prepareEnv" depends="updateClassPath, copyDBDriver, copyDevContextFile" description="" />
+</project>

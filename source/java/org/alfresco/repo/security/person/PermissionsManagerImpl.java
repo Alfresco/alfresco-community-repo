@@ -18,16 +18,15 @@
  */
 package org.alfresco.repo.security.person;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+
+import java.util.Map;
+import java.util.Set;
 
 public class PermissionsManagerImpl implements PermissionsManager
 {
@@ -159,7 +158,7 @@ public class PermissionsManagerImpl implements PermissionsManager
         {
             for (String userForPermission : permissions.keySet())
             {
-                Set<String> set = permissions.get(user);
+                Set<String> set = permissions.get(userForPermission);
                 if (set != null)
                 {
                     for (String permission : set)
@@ -223,7 +222,7 @@ public class PermissionsManagerImpl implements PermissionsManager
         {
             for (String userForPermission : permissions.keySet())
             {
-                Set<String> set = permissions.get(user);
+                Set<String> set = permissions.get(userForPermission);
                 if (set != null)
                 {
                     for (String permission : set)

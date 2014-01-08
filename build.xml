@@ -12,16 +12,10 @@
       <delete dir="${ant.build.directory}" failonerror="true" />
    </target>
 
-   <target name="install" depends="cleanTarget, updateClassPath">
+   <target name="install" depends="cleanTarget">
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="install" />
          <arg value="-DskipTests" />
-      </exec>
-   </target>
-
-   <target name="updateClassPath">
-      <exec executable="${mvn.exec}" failonerror="true">
-         <arg value="eclipse:eclipse" />
       </exec>
    </target>
 

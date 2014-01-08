@@ -24,5 +24,5 @@
       <copy file="${devContextFile}" todir="config/alfresco/extension" failonerror="true" />
    </target>
 
-   <target name="prepareEnv" depends="updateClassPath, copyDBDriver, copyDevContextFile" description="" />
+   <target name="prepareEnv" depends="copyDBDriver, copyDevContextFile" description="" />
 </project>

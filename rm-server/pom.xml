@@ -14,6 +14,18 @@
       <webapp.id>alfresco</webapp.id>
    </properties>
    <build>
+      <sourceDirectory>source/java</sourceDirectory>
+      <testSourceDirectory>test/java</testSourceDirectory>
+      <resources>
+         <resource>
+            <directory>config</directory>
+         </resource>
+      </resources>
+      <testResources>
+         <testResource>
+            <directory>test/resources</directory>
+         </testResource>
+      </testResources>
       <plugins>
          <plugin>
             <groupId>org.alfresco.maven.plugin</groupId>
@@ -38,7 +50,7 @@
                    </goals>
                    <configuration>
                        <sources>
-                          <source>src/main/compatibility</source>
+                          <source>source/compatibility</source>
                        </sources>
                    </configuration>
                </execution>

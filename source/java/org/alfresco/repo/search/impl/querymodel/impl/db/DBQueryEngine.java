@@ -178,7 +178,7 @@ public class DBQueryEngine implements QueryEngine
             set.add(node.getId());
         }
         List<Long> nodeIds = new ArrayList<Long>(set);
-        ResultSet rs =  new DBResultSet(options.getAsSearchParmeters(), nodeIds, nodeDAO, nodeService, Integer.MAX_VALUE);
+        ResultSet rs =  new DBResultSet(options.getAsSearchParmeters(), nodeIds, nodeDAO, nodeService, tenantService, Integer.MAX_VALUE);
         ResultSet paged = new PagingLuceneResultSet(rs, options.getAsSearchParmeters(), nodeService);
         
         answer.put(key, paged);

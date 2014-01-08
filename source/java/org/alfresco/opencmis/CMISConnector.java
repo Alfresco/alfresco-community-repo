@@ -2783,6 +2783,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
             for (CMISResultSetRow row : rs)
             {
+                NodeRef nodeRef = row.getNodeRef();
+                
+                if(!nodeService.exists(nodeRef) || filter(nodeRef))
+                {
+                    continue;
+                }
+                
                 ObjectDataImpl hit = new ObjectDataImpl();
                 PropertiesImpl properties = new PropertiesImpl();
                 hit.setProperties(properties);
@@ -2799,7 +2806,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
                 if (fetchObject)
                 {
-                    NodeRef nodeRef = row.getNodeRef();
                     TypeDefinitionWrapper type = getType(nodeRef);
                     if (type == null)
                     {

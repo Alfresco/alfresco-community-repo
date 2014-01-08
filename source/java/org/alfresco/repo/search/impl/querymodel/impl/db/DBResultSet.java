@@ -26,6 +26,7 @@ import java.util.List;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.AbstractResultSet;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -49,15 +50,18 @@ public class DBResultSet extends AbstractResultSet
     
     private NodeService nodeService;
     
+    private TenantService tenantService;
+    
     private SimpleResultSetMetaData resultSetMetaData;
     
     private BitSet prefetch;
     
-    public DBResultSet(SearchParameters searchParameters, List<Long> dbids, NodeDAO nodeDao,  NodeService nodeService, int maximumResultsFromUnlimitedQuery)
+    public DBResultSet(SearchParameters searchParameters, List<Long> dbids, NodeDAO nodeDao,  NodeService nodeService, TenantService tenantService, int maximumResultsFromUnlimitedQuery)
     {
         this.nodeDao = nodeDao;
         this.dbids = dbids;
         this.nodeService = nodeService;
+        this.tenantService = tenantService;
         this.prefetch = new BitSet(dbids.size());
         nodeRefs= new NodeRef[(dbids.size())];
         
@@ -190,7 +194,7 @@ public class DBResultSet extends AbstractResultSet
         int bulkFetchSize = getBulkFetchSize();
         if(bulkFetchSize < 1)
         {
-            nodeRefs[n] = nodeDao.getNodePair(dbids.get(n)).getSecond();
+            nodeRefs[n] = tenantService.getBaseName(nodeDao.getNodePair(dbids.get(n)).getSecond());
             return;
         }
         
@@ -223,7 +227,7 @@ public class DBResultSet extends AbstractResultSet
             nodeDao.cacheNodesById(fetchList);
             for (int i = done.nextSetBit(0); i >= 0; i = done.nextSetBit(i+1)) 
             {
-                nodeRefs[n+i] = nodeDao.getNodePair(fetchList.get(i)).getSecond();
+                nodeRefs[n+i] = tenantService.getBaseName(nodeDao.getNodePair(fetchList.get(i)).getSecond());
             }
         }
     }

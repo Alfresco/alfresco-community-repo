@@ -1,9 +1,0 @@
-<!DOCTYPE suite SYSTEM "http://beust.com/testng/testng-1.0.dtd" >
-
-<suite name="JUnit AllTestSuite" verbose="1" >
-   <test name="AllTests" junit="true">
-      <classes>
-         <class name="org.alfresco.module.org_alfresco_module_rm.test.AllTestSuite" />
-      </classes>
-   </test>
-</suite>

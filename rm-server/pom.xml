@@ -38,7 +38,7 @@
                </execution>
             </executions>
          </plugin>
-         <!-- Additional source folder to be added: src/main/compatibility -->
+         <!-- Additional source folder to be added: source/compatibility -->
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>

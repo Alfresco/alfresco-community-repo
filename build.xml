@@ -9,7 +9,7 @@
    <property environment="env" />
 
    <target name="cleanTarget">
-      <delete dir="${mvn.build.directory}" failonerror="true" />
+      <delete dir="${ant.build.directory}" failonerror="true" />
    </target>
 
    <target name="install" depends="cleanTarget, updateClassPath">
@@ -32,7 +32,7 @@
          <arg value="-DartifactId=${app.war.artifactId}" />
          <arg value="-Dversion=${app.war.version}" />
          <arg value="-Dpackaging=${app.war.packaging}" />
-         <arg value="-Ddest=${mvn.build.directory}/${app.package}" />
+         <arg value="-Ddest=${ant.build.directory}/${app.package}" />
       </exec>
    </target>
 
@@ -57,7 +57,7 @@
    </target>
 
    <target name="copyWarFileToTomcat">
-      <copy file="${mvn.build.directory}/${app.package}" todir="${app.tomcat.webapps}" failonerror="true" />
+      <copy file="${ant.build.directory}/${app.package}" todir="${app.tomcat.webapps}" failonerror="true" />
    </target>
 
    <target name="buildAndDeploy" depends="alfresco:install, copyWarFileToTomcat" description=""/>
@@ -85,8 +85,9 @@
    </target>
 
    <target name="assembleLocalisationPackage" description="">
-      <copy todir="${mvn.build.directory}/i18n/${ant.project.name}/${mvn.resources.directory}" failonerror="true">
-         <fileset dir="${mvn.resources.directory}">
+      <delete dir="${ant.build.directory}/i18n" failonerror="true" />
+	  <copy todir="${ant.build.directory}/i18n/${ant.project.name}/${ant.config.directory}" failonerror="true">
+         <fileset dir="${ant.config.directory}">
             <include name="**/*.properties" />
             <exclude name="**/*_*.properties" />
             <exclude name="**/rm-method-security.properties" />
@@ -99,9 +100,11 @@
    </target>
 
    <target name="assembleIconPackage" description="">
-      <copy todir="${mvn.build.directory}/icons/${ant.project.name}/${mvn.resources.directory}" failonerror="true">
-         <fileset dir="${mvn.resources.directory}">
+      <delete dir="${ant.build.directory}/icons" failonerror="true" />
+	  <copy todir="${ant.build.directory}/icons/${ant.project.name}" failonerror="true">
+		 <fileset dir=".">
             <include name="**/*.png"/>
+			<exclude name="**/${ant.build.directory}/**"/>
          </fileset>
       </copy>
    </target>
@@ -113,18 +116,18 @@
          </not></condition>
       </fail>
       <copy todir="${app.folder}/WEB-INF/lib" failonerror="true">
-         <fileset dir="${mvn.build.directory}">
+         <fileset dir="${ant.build.directory}">
             <include name="*.jar" />
          </fileset>
       </copy>
       <copy todir="${app.folder}/WEB-INF/classes" failonerror="true">
-         <fileset dir="${mvn.resources.directory}">
+         <fileset dir="${ant.config.directory}">
             <exclude name="**/module.properties" />
             <exclude name="**/file-mapping.properties" />
          </fileset>
       </copy>
-      <move todir="${app.folder}" failonerror="false">
-         <fileset dir="${app.folder}/WEB-INF/classes/web"/>
-      </move>
+      <copy todir="${app.folder}" failonerror="false">
+         <fileset dir="${ant.source.web.directory}" />
+      </copy>
    </target>
 </project>

@@ -1,1 +1,0 @@
-Files in this directory will be added to the amp.

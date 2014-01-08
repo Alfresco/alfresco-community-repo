@@ -219,6 +219,14 @@ if (Application.getDialogManager().getState() == null)
        </tr>
     </table>
     
+<script type="text/javascript">
+   function addMaxLengthForDescriptionTextArea(el)
+   {
+      el.setAttribute("maxlength", "1024");
+      el.removeAttribute("onfocus");
+   }
+</script>
+
     </h:form>
     
 </f:view>

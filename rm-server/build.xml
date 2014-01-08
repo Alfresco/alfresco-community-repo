@@ -21,7 +21,7 @@
    <target name="copyDevContextFile">
       <property name="devContextFile" value="../root/projects/repository/config/alfresco/extension/dev-context.xml" />
       <copy file="${devContextFile}" todir="${app.tomcat.folder}/shared/classes/alfresco/extension" failonerror="true" />
-      <copy file="${devContextFile}" todir="src/main/resources/alfresco/extension" failonerror="true" />
+      <copy file="${devContextFile}" todir="config/alfresco/extension" failonerror="true" />
    </target>
 
    <target name="prepareEnv" depends="updateClassPath, copyDBDriver, copyDevContextFile" description="" />

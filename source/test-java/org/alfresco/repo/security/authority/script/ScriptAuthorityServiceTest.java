@@ -67,6 +67,8 @@ public class ScriptAuthorityServiceTest extends TestCase
     private static final String GROUP_B_FULL = "GROUP_testGroupB";
     private static final String GROUP_C = "testGroupC";
     private static final String GROUP_C_FULL = "GROUP_testGroupC";
+    private static final String GROUP_RUS = "MNT10267RUS";
+    private static final String GROUP_RUS_FULL = "GROUP_MNT10267RUS";	
     private static final String USER_A = "testUserA";
     private static final String USER_B = "testUserB";
     private static final String USER_C = "testUserC";
@@ -154,6 +156,10 @@ public class ScriptAuthorityServiceTest extends TestCase
         {
            authorityService.deleteAuthority(GROUP_C_FULL);
         }
+        if (authorityService.authorityExists(GROUP_RUS_FULL))
+        {
+            authorityService.deleteAuthority(GROUP_RUS_FULL);
+        }     		
         tx.commit();
 
         // Now re-create them
@@ -163,6 +169,8 @@ public class ScriptAuthorityServiceTest extends TestCase
         authorityService.createAuthority(AuthorityType.GROUP, GROUP_A);
         authorityService.createAuthority(AuthorityType.GROUP, GROUP_B);
         authorityService.createAuthority(AuthorityType.GROUP, GROUP_C);
+        String authRus = authorityService.createAuthority(AuthorityType.GROUP, GROUP_RUS);
+        pubAuthorityService.setAuthorityDisplayName(authRus, "Тестовая группа");		
         
         for (String user : new String[] { USER_A, USER_B, USER_C })
         {
@@ -246,12 +254,16 @@ public class ScriptAuthorityServiceTest extends TestCase
         
         // make sure we support getting all results
         groups = service.getGroupsInZone("*", AuthorityService.ZONE_APP_DEFAULT, new ScriptPagingDetails(10,0), null);
-        assertEquals(5, groups.length);
+        assertEquals(6, groups.length);
         
         // ensure paging works, query for all results but just return 1 per page
         groups = service.getGroupsInZone("test", AuthorityService.ZONE_APP_DEFAULT, new ScriptPagingDetails(2,2), "displayName");
         assertEquals(1, groups.length);
         assertEquals(GROUP_C, groups[0].getShortName());
+		
+        // make sure search works for unicode dispaly name
+        groups = service.getGroupsInZone("тест", AuthorityService.ZONE_APP_DEFAULT, new ScriptPagingDetails(10, 0), null, true);
+        assertEquals(1, groups.length);   		
     }
     
     public void testFindGroups()

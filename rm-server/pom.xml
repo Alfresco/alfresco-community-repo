@@ -77,6 +77,24 @@
                </execution>
             </executions>
          </plugin>
+         <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <properties>
+                  <property>
+                     <name>usedefaultlisteners</name>
+                     <value>false</value>
+                  </property>
+                  <property>
+                     <name>listener</name>
+                     <value>org.uncommons.reportng.HTMLReporter, org.uncommons.reportng.JUnitXMLReporter</value>
+                  </property>
+               </properties>
+               <suiteXmlFiles>
+                  <suiteXmlFile>${project.build.testOutputDirectory}/testng.xml</suiteXmlFile>
+               </suiteXmlFiles>
+            </configuration>
+         </plugin>
       </plugins>
    </build>
    <profiles>

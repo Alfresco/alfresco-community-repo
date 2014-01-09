@@ -80,7 +80,7 @@
 
    <target name="assembleLocalisationPackage" description="">
       <delete dir="${ant.build.directory}/i18n" failonerror="true" />
-	  <copy todir="${ant.build.directory}/i18n/${ant.project.name}/${ant.config.directory}" failonerror="true">
+      <copy todir="${ant.build.directory}/i18n/${ant.project.name}/${ant.config.directory}" failonerror="true">
          <fileset dir="${ant.config.directory}">
             <include name="**/*.properties" />
             <exclude name="**/*_*.properties" />
@@ -95,19 +95,21 @@
 
    <target name="assembleIconPackage" description="">
       <delete dir="${ant.build.directory}/icons" failonerror="true" />
-	  <copy todir="${ant.build.directory}/icons/${ant.project.name}" failonerror="true">
-		 <fileset dir=".">
+      <copy todir="${ant.build.directory}/icons/${ant.project.name}" failonerror="true">
+         <fileset dir=".">
             <include name="**/*.png"/>
-			<exclude name="**/${ant.build.directory}/**"/>
+            <exclude name="**/${ant.build.directory}/**"/>
          </fileset>
       </copy>
    </target>
 
    <target name="deployExploded" description="">
       <fail message="Exploded webapp directory '${app.war.artifactId}' does not exist.">
-         <condition><not>
-            <available file="${app.folder}" type="dir"/>
-         </not></condition>
+         <condition>
+            <not>
+               <available file="${app.folder}" type="dir"/>
+            </not>
+         </condition>
       </fail>
       <copy todir="${app.folder}/WEB-INF/lib" failonerror="true">
          <fileset dir="${ant.build.directory}">

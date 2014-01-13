@@ -264,10 +264,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         	
         	if ( authHdr.startsWith( "Negotiate"))
         		reqAuth = true;
-        	else if ( authHdr.startsWith( "NTLM"))
+        	else if ( authHdr.startsWith( "NTLM") || (authHdr.length() > 5 && authHdr.substring(0,5).equalsIgnoreCase("BASIC")))
         	{
         		if ( getLogger().isDebugEnabled())
-        			getLogger().debug("Received NTLM logon from client");
+        			getLogger().debug("Received NTLM or BASIC logon from client: " + authHdr);
         		
         		// Restart the authentication
         		

@@ -18,7 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bootstrap;
 
-import org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuter;
 import org.alfresco.repo.module.ImporterModuleComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -32,29 +31,13 @@ import org.alfresco.service.cmr.repository.StoreRef;
  */
 public class BootstrapImporterModuleComponent extends ImporterModuleComponent
 {
-    /** root config nore id */
     private static final String CONFIG_NODEID = "rm_config_folder";
     
-    /** node service */
     private NodeService nodeService;
     
-    /** module patch executer */
-    private ModulePatchExecuter modulePatchExecuter;
-    
-    /**
-     * @param nodeService   node service
-     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
-    }
-    
-    /**
-     * @param modulePatchExecuter   module patch executer
-     */
-    public void setModulePatchExecuter(ModulePatchExecuter modulePatchExecuter)
-    {
-        this.modulePatchExecuter = modulePatchExecuter;
     }
     
     /**
@@ -70,13 +53,7 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
             NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID); 
             if (nodeService.exists(nodeRef) == false)
             {
-                // execute internal
                 super.executeInternal();
-                
-                System.out.println("Initialising schema version from config value");
-                
-                // initialise the schema version (based on current configured value)
-                modulePatchExecuter.initSchemaVersion();
             }
         }
         catch (Throwable exception)

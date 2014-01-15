@@ -100,12 +100,12 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     public static final QName ASPECT_RECORD = QName.createQName(RM_URI, "record");
     public static final QName PROP_DATE_FILED = QName.createQName(RM_URI, "dateFiled");
     public static final QName PROP_ORIGIONAL_NAME = QName.createQName(RM_URI, "origionalName");
-    public static final QName PROP_ORIGINATOR = QName.createQName(RM_URI, "originator");
-    public static final QName PROP_ORIGINATING_ORGANIZATION = QName.createQName(RM_URI, "originatingOrganization");
-    public static final QName PROP_PUBLICATION_DATE = QName.createQName(RM_URI, "publicationDate");
-    public static final QName PROP_MEDIA_TYPE = QName.createQName(RM_URI, "mediaType");
-    public static final QName PROP_FORMAT = QName.createQName(RM_URI, "format");
-    public static final QName PROP_DATE_RECEIVED = QName.createQName(RM_URI, "dateReceived");
+  //  public static final QName PROP_ORIGINATOR = QName.createQName(RM_URI, "originator");
+  //  public static final QName PROP_ORIGINATING_ORGANIZATION = QName.createQName(RM_URI, "originatingOrganization");
+  //  public static final QName PROP_PUBLICATION_DATE = QName.createQName(RM_URI, "publicationDate");
+  //  public static final QName PROP_MEDIA_TYPE = QName.createQName(RM_URI, "mediaType");
+  //  public static final QName PROP_FORMAT = QName.createQName(RM_URI, "format");
+  //  public static final QName PROP_DATE_RECEIVED = QName.createQName(RM_URI, "dateReceived");
 
     // Common record details
     public static final QName PROP_LOCATION = QName.createQName(RM_URI, "location");

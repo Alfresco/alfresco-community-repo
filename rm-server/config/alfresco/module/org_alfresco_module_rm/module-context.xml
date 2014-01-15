@@ -10,6 +10,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.bootstrap.BootstrapImporterModuleComponent"
       parent="module.baseComponent">
       <property name="nodeService" ref="nodeService" />
+      <property name="modulePatchExecuter" ref="rm.modulePatchExecuter" />
       <property name="moduleId" value="org_alfresco_module_rm"/>
       <property name="name" value="org_alfresco_module_rm_bootstrapData"/>
       <property name="description" value="Bootstrap records management data"/>

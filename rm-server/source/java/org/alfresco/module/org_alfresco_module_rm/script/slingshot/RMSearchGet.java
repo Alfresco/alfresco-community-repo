@@ -208,7 +208,7 @@ public class RMSearchGet extends DeclarativeWebScript
             List<Item> items = new ArrayList<Item>(results.size());
             for (NodeRef nodeRef : results)
             {
-                // FIXME: RM-478
+                // FIXME: This is a workaround for DOD Recert
                 // TC 3-3  Create User Groups
                 try
                 {

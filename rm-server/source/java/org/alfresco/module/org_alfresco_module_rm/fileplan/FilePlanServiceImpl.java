@@ -426,8 +426,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("filePlan", filePlan);
         if (isFilePlan(filePlan) == false)
         {
-            throw new AlfrescoRuntimeException("Unable to get the container " + containerName  + 
-                                               ", because passed node is not a file plan. (type=" + nodeService.getType(filePlan).toString() + ")");
+            throw new AlfrescoRuntimeException("Unable to get the container " + containerName  + ", because passed node is not a file plan.");
         }
 
         NodeRef result = null;

@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.content.ContentServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -33,9 +34,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
+@BehaviourBean 
 (
-   defaultType = "rma:ghosted"
+   defaultType = "rma:ghosted" // optional
 )
 public class GhostedAspect extends    BaseBehaviourBean
                            implements ContentServicePolicies.OnContentUpdatePolicy
@@ -47,11 +48,18 @@ public class GhostedAspect extends    BaseBehaviourBean
      * Ensure that the content of a ghosted node can not be updated.
      * 
      * @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean)
-     */
+     */ 
     @Override
     @Behaviour
     (
-       kind = BehaviourKind.CLASS
+       kind = BehaviourKind.CLASS,                                // required, use ASSOC for association behaviors
+       notificationFrequency = NotificationFrequency.EVERY_EVENT, // (defaults to EVERY_EVENT)
+       policy = "alf:onContentUpdate",                            // (defaults to alf:<methodname>)
+       type = "rma:ghosted"                                       // required, unless defaultType set
+       
+       // isService (default false)
+       // name (only needs to specified if associated behvaiour object needs to be accessed)
+       // assocType (defaults to cm:contains, used with BehaviourKind.ASSOC)
     )
     public void onContentUpdate(NodeRef Content, boolean bNew)
     {

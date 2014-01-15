@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.patch;
+package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
 import java.util.List;
 
@@ -39,7 +39,8 @@ import org.springframework.beans.factory.BeanNameAware;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RMv21RecordInheritancePatch extends ModulePatchComponent 
+@SuppressWarnings("deprecation")
+public class RMv21RecordInheritancePatch extends RMv21PatchComponent 
                                          implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {  
     /** file plan permission service */

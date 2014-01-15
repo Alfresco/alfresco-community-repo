@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.patch;
+package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -40,7 +40,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * 
  * @author Roy Wetherall
  */
-public class RMv2RMAdminUserPatch extends ModulePatchComponent implements BeanNameAware
+@SuppressWarnings("deprecation")
+public class RMv21RMAdminUserPatch extends RMv21PatchComponent implements BeanNameAware
 {
     /** I18N */
     private static final String MSG_FIRST_NAME = "bootstrap.rmadmin.firstName";

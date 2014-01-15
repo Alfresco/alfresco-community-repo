@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.patch;
+package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -44,7 +44,8 @@ import org.springframework.beans.factory.BeanNameAware;
  * @author Craig Tan
  * @since 2.1
  */
-public class RMv21BehaviorScriptsPatch extends ModulePatchComponent implements BeanNameAware
+@SuppressWarnings("deprecation")
+public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements BeanNameAware
 {   
     /** rm config folder root lookup */
     protected static final NodeRef RM_CONFIG = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
@@ -81,7 +82,7 @@ public class RMv21BehaviorScriptsPatch extends ModulePatchComponent implements B
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchComponent#executePatch()
+     * @see org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent#executePatch()
      */
     @Override
     protected void executePatch() throws Throwable

@@ -196,7 +196,7 @@ public class RecordServiceImpl implements RecordService,
 
     /** Permission service */
     private PermissionService permissionService;
-    
+
     /** Record aspect */
     private RecordAspect recordAspect;
 
@@ -348,7 +348,7 @@ public class RecordServiceImpl implements RecordService,
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
      * @param recordAspect  record aspect
      */
@@ -367,7 +367,7 @@ public class RecordServiceImpl implements RecordService,
                 TYPE_RECORD_FOLDER,
                 ContentModel.ASSOC_CONTAINS,
                 onCreateChildAssociation);
-        
+
         policyComponent.bindAssociationBehaviour(
                 NodeServicePolicies.BeforeDeleteChildAssociationPolicy.QNAME,
                 ContentModel.TYPE_FOLDER,
@@ -426,44 +426,44 @@ public class RecordServiceImpl implements RecordService,
      * Helper method to switch the name of the record around.  Used to support record creation via
      * file protocols.
      *
-     * @param nodeRef	node reference (record)
+     * @param nodeRef   node reference (record)
      */
     private void switchNames(NodeRef nodeRef)
     {
-    	try
-    	{
-    		if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == true)
-    		{
-    			String origionalName =  (String)nodeService.getProperty(nodeRef, PROP_ORIGIONAL_NAME);
-    			if (origionalName != null)
-    			{
-    				String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-    				fileFolderService.rename(nodeRef, origionalName);
-    				nodeService.setProperty(nodeRef, PROP_ORIGIONAL_NAME, name);
-    			}
-    		}
-		}
-    	catch (FileExistsException e)
-		{
-			if (logger.isDebugEnabled() == true)
-			{
-			    logger.debug(e.getMessage());
-			}
-		}
-    	catch (InvalidNodeRefException e)
-		{
+        try
+        {
+            if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == true)
+            {
+                String origionalName =  (String)nodeService.getProperty(nodeRef, PROP_ORIGIONAL_NAME);
+                if (origionalName != null)
+                {
+                    String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                    fileFolderService.rename(nodeRef, origionalName);
+                    nodeService.setProperty(nodeRef, PROP_ORIGIONAL_NAME, name);
+                }
+            }
+        }
+        catch (FileExistsException e)
+        {
             if (logger.isDebugEnabled() == true)
             {
                 logger.debug(e.getMessage());
             }
-		}
-    	catch (FileNotFoundException e)
-		{
+        }
+        catch (InvalidNodeRefException e)
+        {
             if (logger.isDebugEnabled() == true)
             {
                 logger.debug(e.getMessage());
             }
-		}
+        }
+        catch (FileNotFoundException e)
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug(e.getMessage());
+            }
+        }
     }
 
     /**
@@ -774,12 +774,15 @@ public class RecordServiceImpl implements RecordService,
      *
      * @param document the document from which a record will be created
      */
-    private void makeRecord(NodeRef document)
+    @Override
+    public void makeRecord(NodeRef document)
     {
+        ParameterCheck.mandatory("document", document);
+
         ruleService.disableRules();
         try
         {
-        	// get the record id
+            // get the record id
             String recordId = identifierService.generateIdentifier(ASPECT_RECORD,
                                                                    nodeService.getPrimaryParent(document).getParentRef());
 

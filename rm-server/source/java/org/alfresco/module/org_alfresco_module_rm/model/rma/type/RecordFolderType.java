@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
@@ -47,7 +46,7 @@ import org.apache.commons.lang.ArrayUtils;
 
 /**
  * rma:recordFolder behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -58,27 +57,27 @@ import org.apache.commons.lang.ArrayUtils;
 public class RecordFolderType extends    BaseBehaviourBean
                               implements NodeServicePolicies.OnMoveNodePolicy,
                                          NodeServicePolicies.OnCreateChildAssociationPolicy
-{    
+{
     /** unwanted aspects */
-    private QName[] unwantedAspects = 
+    private QName[] unwantedAspects =
     {
-        ASPECT_VITAL_RECORD, 
-        ASPECT_DISPOSITION_LIFECYCLE, 
+        ASPECT_VITAL_RECORD,
+        ASPECT_DISPOSITION_LIFECYCLE,
         RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH
     };
-    
+
     /** record service */
     private RecordService recordService;
-    
+
     /** record folder service */
     private RecordFolderService recordFolderService;
-    
+
     /** disposition service */
     private DispositionService dispositionService;
-    
+
     /** vital record service */
     protected VitalRecordService vitalRecordService;
-    
+
     /**
      * @param recordService record service
      */
@@ -86,7 +85,7 @@ public class RecordFolderType extends    BaseBehaviourBean
     {
         this.recordService = recordService;
     }
-    
+
     /**
      * @param recordFolderService   record folder service
      */
@@ -94,7 +93,7 @@ public class RecordFolderType extends    BaseBehaviourBean
     {
         this.recordFolderService = recordFolderService;
     }
-    
+
     /**
      * @param dispositionService    disposition service
      */
@@ -102,7 +101,7 @@ public class RecordFolderType extends    BaseBehaviourBean
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @param vitalRecordService    vital record service
      */
@@ -110,10 +109,10 @@ public class RecordFolderType extends    BaseBehaviourBean
     {
         this.vitalRecordService = vitalRecordService;
     }
-    
+
     /**
      * Record folder move behaviour
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
@@ -172,7 +171,7 @@ public class RecordFolderType extends    BaseBehaviourBean
             throw new UnsupportedOperationException("Cannot move record folder into another record folder.");
         }
     }
-    
+
     /**
      * Record folder copy callback
      */
@@ -216,7 +215,7 @@ public class RecordFolderType extends    BaseBehaviourBean
                     result = false;
                 }
                 else if (ArrayUtils.contains(unwantedAspects, classQName) == true)
-                {                    
+                {
                     result = false;
                 }
 
@@ -224,7 +223,7 @@ public class RecordFolderType extends    BaseBehaviourBean
             }
         };
     }
-    
+
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
@@ -239,12 +238,6 @@ public class RecordFolderType extends    BaseBehaviourBean
         NodeRef nodeRef = childAssocRef.getChildRef();
         if (nodeService.exists(nodeRef) == true)
         {
-            // ensure folders are never added to a record folder
-            if (instanceOf(nodeRef, ContentModel.TYPE_FOLDER) == true)
-            {
-                throw new AlfrescoRuntimeException("You can't create a folder within an exisiting record folder.");
-            }
-
             // ensure nothing is being added to a closed record folder
             NodeRef recordFolder = childAssocRef.getParentRef();
             Boolean isClosed = (Boolean) nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
@@ -254,10 +247,10 @@ public class RecordFolderType extends    BaseBehaviourBean
             }
         }
     }
-    
+
     /**
      * On transaction commit
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Behaviour
@@ -269,7 +262,7 @@ public class RecordFolderType extends    BaseBehaviourBean
     public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
     {
         final NodeRef recordFolder = childAssocRef.getChildRef();
-        
+
         behaviourFilter.disableBehaviour();
         try
         {
@@ -288,9 +281,9 @@ public class RecordFolderType extends    BaseBehaviourBean
         finally
         {
             behaviourFilter.enableBehaviour();
-        }    
+        }
     }
-    
+
     /**
      * Removes unwanted aspects
      *

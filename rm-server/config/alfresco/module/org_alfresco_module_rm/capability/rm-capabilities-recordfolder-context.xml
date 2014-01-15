@@ -32,6 +32,7 @@
          <list>
             <value>RECORD_CATEGORY</value>
             <value>RECORD_FOLDER</value>
+            <value>UNFILED_RECORD_CONTAINER</value>
          </list>
       </property>
       <property name="conditions">
@@ -66,14 +67,14 @@
       <property name="group"><ref bean="folderControlGroup"/></property>
       <property name="index" value="40" />
    </bean>
-   
+
    <!--  Unassignable -->
 
    <bean id="rmMoveRecordFolderCapability"
       parent="compositeCapability">
       <property name="name" value="MoveRecordFolder"/>
       <property name="private" value="true"/>
-      <property name="undetermined" value="true"/>      
+      <property name="undetermined" value="true"/>
       <property name="capabilities">
          <list>
             <ref bean="rmCreateModifyDestroyFoldersCapability"/>

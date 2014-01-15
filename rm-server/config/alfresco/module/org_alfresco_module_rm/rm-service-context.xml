@@ -1240,6 +1240,7 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isPropertyEditable=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isMetadataStub=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecords=RM.Read.0,AFTER_RM.FilterNode
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.makeRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>
@@ -1383,8 +1384,8 @@
         <property name="recordsManagementAdminService" ref = "recordsManagementAdminService"/>
     </bean>
 
-    <bean id="caveatConfigComponent" 
-          class="org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponentImpl" 
+    <bean id="caveatConfigComponent"
+          class="org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponentImpl"
           depends-on="org_alfresco_module_rm_dictionaryBootstrap">
         <property name="contentService" ref="contentService"/>
         <property name="dictionaryService" ref="dictionaryService"/>

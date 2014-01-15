@@ -24,6 +24,7 @@
             </props>
          </list>
       </property>
+      <property name="modulePatchExecuter" ref="rm.modulePatchExecuter"/>
    </bean>
 
    <!--  Bootstap the message property files -->
@@ -86,7 +87,7 @@
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-deprecated-context.xml"/>
 
    <!--  Import the RM module patches -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-patch-context.xml"/>
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-context.xml"/>
 
    <!-- Import RM UI evaluators -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-ui-evaluators-context.xml"/>

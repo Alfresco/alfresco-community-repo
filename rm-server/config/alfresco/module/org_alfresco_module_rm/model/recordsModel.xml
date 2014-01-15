@@ -610,7 +610,6 @@
        	</properties>
       </aspect>
 
-      <!-- @deprecated as of 2.1 -->
       <aspect name="rma:recordsManagementRoot">
         <title>Records Management Root</title>
          <associations>
@@ -733,7 +732,88 @@
                <title>Original Name</title>
                <type>d:text</type>
                <protected>true</protected>
-            </property>            
+            </property>
+
+            <property name="rma:publicationDate">
+               <title>Publication Date</title>
+               <type>d:date</type>
+               <mandatory>true</mandatory>
+            </property>
+
+            <property name="rma:originator">
+               <title>Originator</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+
+            <property name="rma:originatingOrganization">
+               <title>Originating Organization</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+
+            <property name="rma:mediaType">
+               <title>Media Type</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+
+            <property name="rma:format">
+               <title>Format</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+
+            <property name="rma:dateReceived">
+               <title>Date Received</title>
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+
+            <!-- TODO
+                 Do we need to model this as broken up address?
+                 Should we have a separate property for other address or just a multivalue property?
+            -->
+            <property name="rma:address">
+               <title>Addressee</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+            <property name="rma:otherAddress">
+               <title>Other Addressee</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
 
          </properties>
 

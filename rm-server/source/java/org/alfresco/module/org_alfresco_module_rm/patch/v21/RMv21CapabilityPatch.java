@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.patch;
+package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
 import java.util.Set;
 
@@ -29,12 +29,13 @@ import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Base class for the capability patch classes
+ * RM v2.1 patch to updated modified capabilities.
  *
- * @author Tuna Aksoy
- * @since 2.2
+ * @author Roy Wetherall
+ * @since 2.1
  */
-public abstract class BaseRMCapabilityPatch extends ModulePatchComponent
+@SuppressWarnings("deprecation")
+public class RMv21CapabilityPatch extends RMv21PatchComponent
 {
     /** File plan service */
     private FilePlanService filePlanService;
@@ -78,7 +79,7 @@ public abstract class BaseRMCapabilityPatch extends ModulePatchComponent
     {
         return filePlanService.getFilePlans();
     }
-
+    
     /**
      * Adds a new capability to the specified roles.
      *
@@ -115,6 +116,67 @@ public abstract class BaseRMCapabilityPatch extends ModulePatchComponent
                     filePlanRoleService.updateRole(filePlan, role.getName(), role.getDisplayLabel(), capabilities);
                 }
             }
+        }
+    }
+    
+    /**
+     * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
+     */
+    @Override
+    protected void executePatch() throws Throwable
+    {
+        Set<NodeRef> filePlans = getFilePlans();
+
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("  ... updating " + filePlans.size() + " file plans");
+        }
+
+        for (NodeRef filePlan : filePlans)
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("  ... updating file plan " + filePlan.toString());
+            }
+
+            // add new capabilities
+            addCapability(filePlan,
+                          "CreateRecords",
+                          FilePlanRoleService.ROLE_ADMIN,
+                          FilePlanRoleService.ROLE_POWER_USER,
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                          FilePlanRoleService.ROLE_SECURITY_OFFICER);
+            addCapability(filePlan,
+                          "ManageRules",
+                          FilePlanRoleService.ROLE_ADMIN);
+            addCapability(filePlan,
+                          "RequestRecordInformation",
+                          FilePlanRoleService.ROLE_ADMIN,
+                          FilePlanRoleService.ROLE_POWER_USER,
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                          FilePlanRoleService.ROLE_SECURITY_OFFICER);
+            addCapability(filePlan,
+                          "FileDestructionReport",
+                          FilePlanRoleService.ROLE_ADMIN,
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER);
+            addCapability(filePlan,
+                          "RejectRecords",
+                          FilePlanRoleService.ROLE_ADMIN,
+                          FilePlanRoleService.ROLE_POWER_USER,
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                          FilePlanRoleService.ROLE_SECURITY_OFFICER);
+            addCapability(filePlan,
+                          "FileUnfiledRecords",
+                          FilePlanRoleService.ROLE_ADMIN,
+                          FilePlanRoleService.ROLE_POWER_USER,
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                          FilePlanRoleService.ROLE_SECURITY_OFFICER);
+            addCapability(filePlan,
+                          "LinkToRecords",
+                          FilePlanRoleService.ROLE_ADMIN,
+                          FilePlanRoleService.ROLE_POWER_USER,
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                          FilePlanRoleService.ROLE_SECURITY_OFFICER);
         }
     }
 }

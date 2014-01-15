@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.patch;
+package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -40,7 +40,8 @@ import org.springframework.beans.factory.BeanNameAware;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RMv21ReportServicePatch extends ModulePatchComponent
+@SuppressWarnings("deprecation")
+public class RMv21ReportServicePatch extends RMv21PatchComponent
                                      implements BeanNameAware
 {
     private static final NodeRef TEMPLATE_ROOT = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_report_templates");    

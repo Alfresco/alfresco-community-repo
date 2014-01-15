@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.patch;
+package org.alfresco.module.org_alfresco_module_rm.patch.v20;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
+import org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -39,8 +40,12 @@ import org.alfresco.service.namespace.QName;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
+ * Notification template patch implementation
+ * 
  * @author Roy Wetherall
+ * @since 2.0
  */
+@SuppressWarnings("deprecation")
 public class NotificationTemplatePatch extends ModulePatchComponent
                                        implements BeanNameAware
 {

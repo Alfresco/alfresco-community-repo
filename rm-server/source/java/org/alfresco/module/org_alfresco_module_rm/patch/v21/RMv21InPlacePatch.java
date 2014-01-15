@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.patch;
+package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +47,8 @@ import org.springframework.beans.factory.BeanNameAware;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RMv21InPlacePatch extends ModulePatchComponent 
+@SuppressWarnings("deprecation")
+public class RMv21InPlacePatch extends RMv21PatchComponent 
                                implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     /** Extended reader and writer role details */
@@ -202,7 +203,6 @@ public class RMv21InPlacePatch extends ModulePatchComponent
                 
         NodeRef container = filePlanService.getHoldContainer(filePlan);
         
-        @SuppressWarnings("deprecation")
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_HOLDS, RegexQNamePattern.MATCH_ALL);
         for (ChildAssociationRef assoc : assocs)
         {
@@ -221,7 +221,6 @@ public class RMv21InPlacePatch extends ModulePatchComponent
         
         NodeRef container = filePlanService.getTransferContainer(filePlan);
         
-        @SuppressWarnings("deprecation")
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_TRANSFERS, RegexQNamePattern.MATCH_ALL);
         for (ChildAssociationRef assoc : assocs)
         {

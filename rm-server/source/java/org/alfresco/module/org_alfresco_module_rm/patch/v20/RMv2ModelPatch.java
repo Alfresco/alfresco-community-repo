@@ -16,12 +16,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.patch;
+package org.alfresco.module.org_alfresco_module_rm.patch.v20;
 
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -33,9 +34,10 @@ import org.springframework.beans.factory.BeanNameAware;
 /**
  * RM v2.0 Model Updates Patch
  * 
- * 
  * @author Roy Wetherall
+ * @since 2.0
  */
+@SuppressWarnings("deprecation")
 public class RMv2ModelPatch extends ModulePatchComponent 
                             implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {

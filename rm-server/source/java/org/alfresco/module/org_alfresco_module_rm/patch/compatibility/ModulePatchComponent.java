@@ -16,8 +16,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.patch;
+package org.alfresco.module.org_alfresco_module_rm.patch.compatibility;
 
+import org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuterImpl;
 import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -31,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  * @since 2.1
  */
+@Deprecated
 public abstract class ModulePatchComponent extends AbstractModuleComponent
 {
     /** logger */
@@ -41,6 +43,9 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     
     /** Behaviour filter */
     protected BehaviourFilter behaviourFilter;
+    
+    /** module patch executer */
+    protected ModulePatchExecuterImpl modulePatchExecuter;
     
     /**
      * @param retryingTransactionHelper retrying transaction helper
@@ -56,6 +61,24 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
+    }
+    
+    /**
+     * @param modulePatchExecuter   module patch executer
+     */
+    public void setModulePatchExecuter(ModulePatchExecuterImpl modulePatchExecuter)
+    {
+        this.modulePatchExecuter = modulePatchExecuter;
+    }
+    
+    /**
+     * Init method
+     */
+    @Override
+    public void init()
+    {
+        super.init();        
+        modulePatchExecuter.getDependsOn().add(this);
     }
     
     /**

@@ -124,7 +124,7 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
      * @param props
      * @param setId
      */
-    protected void addPropertyFieldsToGroup(Form form, Map<QName, PropertyDefinition> props, String setId, String setLabel)
+    protected void addPropertyFieldsToGroup(Form form, Map<QName, PropertyDefinition> props, String setId)
     {
         if (props != null)
         {
@@ -137,7 +137,7 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
                 NodeRef nodeRef = new NodeRef(id);
                 Serializable value = nodeService.getProperty(nodeRef, entry.getKey());
 
-                FieldGroup group = new FieldGroup(setId, setLabel, false, false, null);
+                FieldGroup group = new FieldGroup(setId, null, false, false, null);
                 Field field = FieldUtils.makePropertyField(prop, value, group, namespaceService, dictionaryService);
 
                 form.addField(field);

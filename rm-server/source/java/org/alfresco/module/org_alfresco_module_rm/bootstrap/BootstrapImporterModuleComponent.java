@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bootstrap;
 
+import org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuter;
 import org.alfresco.repo.module.ImporterModuleComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -35,10 +36,17 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
     
     private NodeService nodeService;
     
+    private ModulePatchExecuter modulePatchExecuter;
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
+    
+    public void setModulePatchExecuter(ModulePatchExecuter modulePatchExecuter) 
+    {
+		this.modulePatchExecuter = modulePatchExecuter;
+	}
     
     /**
      * Need to check whether this module has already been executed.
@@ -54,6 +62,9 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
             if (nodeService.exists(nodeRef) == false)
             {
                 super.executeInternal();
+                
+                // init module schema number
+                modulePatchExecuter.initSchemaVersion();
             }
         }
         catch (Throwable exception)

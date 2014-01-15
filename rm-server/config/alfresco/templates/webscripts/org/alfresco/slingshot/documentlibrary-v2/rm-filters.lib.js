@@ -165,7 +165,14 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
 
       case "unfiledRecords":
          filterParams.variablePath = false;
-         filterParams.query = "";
+         if (filterData == null)
+         {
+            filterParams.query = "";
+         }
+         else
+         {
+            filterParams.query = "+PARENT:\"" + filterData + "\"";
+         }
          break;
 
       default:

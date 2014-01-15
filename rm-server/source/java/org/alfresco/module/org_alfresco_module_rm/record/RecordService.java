@@ -161,4 +161,11 @@ public interface RecordService
     * @param typeQName  Type to add
     */
    void addRecordType(NodeRef nodeRef, QName typeQName);
+
+   /**
+    * Creates a record from the given document
+    *
+    * @param nodeRef    The document node reference from which a record will be created
+    */
+   void makeRecord(NodeRef nodeRef);
 }

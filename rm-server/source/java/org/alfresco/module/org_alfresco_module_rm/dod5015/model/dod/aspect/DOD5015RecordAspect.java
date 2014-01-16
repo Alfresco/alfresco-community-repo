@@ -39,6 +39,17 @@ public class DOD5015RecordAspect extends    BaseBehaviourBean
                                  implements NodeServicePolicies.OnAddAspectPolicy,
                                             DOD5015Model
 {
+	/** indicates whether the DOD record aspect should be added or not */
+	private boolean addDODRecordAspect = true;
+	
+	/**
+	 * @param addDODRecordAspect	true if add aspect, false otherwise
+	 */
+	public void setAddDODRecordAspect(boolean addDODRecordAspect) 
+	{
+		this.addDODRecordAspect = addDODRecordAspect;
+	}
+	
     /**
      * Ensure that the DOD record aspect meta-data is applied.
      * 
@@ -54,6 +65,7 @@ public class DOD5015RecordAspect extends    BaseBehaviourBean
     public void onAddAspect(NodeRef nodeRef, QName aspect)
     {
         if (nodeService.exists(nodeRef) == true && 
+        	addDODRecordAspect == true &&
             nodeService.hasAspect(nodeRef, ASPECT_DOD_5015_RECORD) == false)
         {
             nodeService.addAspect(nodeRef, ASPECT_DOD_5015_RECORD, null);

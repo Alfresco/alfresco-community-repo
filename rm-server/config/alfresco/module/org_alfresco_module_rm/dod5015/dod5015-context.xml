@@ -37,6 +37,7 @@
    
    <!--  Model behaviour -->
    <bean id="dod.dod5015RecordAspect" class="org.alfresco.module.org_alfresco_module_rm.dod5015.model.dod.aspect.DOD5015RecordAspect" parent="rm.baseBehaviour">
+      <property name="addDODRecordAspect" value="${rm.dodRecords}"/>
    </bean>
    
 </beans>

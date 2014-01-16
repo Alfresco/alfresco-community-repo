@@ -12,7 +12,7 @@
       <delete dir="${ant.build.directory}" failonerror="true" />
    </target>
 
-   <target name="install" depends="cleanTarget">
+   <target name="install">
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="install" />
          <arg value="-DskipTests" />
@@ -38,7 +38,7 @@
       <delete dir="${app.folder}" failonerror="true" />
    </target>
 
-   <target name="alfresco:amp" depends="install">
+   <target name="alfresco:amp" depends="cleanTarget, install">
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="alfresco:amp" />
       </exec>
@@ -56,28 +56,7 @@
 
    <target name="buildAndDeploy" depends="alfresco:install, copyWarFileToTomcat" description=""/>
 
-   <target name="tomcat-start" description="">
-      <exec executable="${bash.exec}" failonerror="true">
-         <arg value="${catalina.exec}"/>
-         <arg value="run"/>
-      </exec>
-   </target>
-
-   <target name="tomcat-start-debug" description="">
-      <exec executable="${bash.exec}" failonerror="true">
-         <arg value="${catalina.exec}"/>
-         <arg value="jpda"/>
-         <arg value="run"/>
-      </exec>
-   </target>
-
-   <target name="tomcat-stop" description="">
-      <exec executable="${bash.exec}" failonerror="true">
-         <arg value="${catalina.exec}"/>
-         <arg value="stop"/>
-      </exec>
-   </target>
-
+   <!-- FIXME: A zip file should be created and the revision number should be added to the file name -->
    <target name="assembleLocalisationPackage" description="">
       <delete dir="${ant.build.directory}/i18n" failonerror="true" />
       <copy todir="${ant.build.directory}/i18n/${ant.project.name}/${ant.config.directory}" failonerror="true">
@@ -103,6 +82,7 @@
       </copy>
    </target>
 
+   <!-- FIXME: Jar file should be generated -->
    <target name="deployExploded" description="">
       <fail message="Exploded webapp directory '${app.war.artifactId}' does not exist.">
          <condition>

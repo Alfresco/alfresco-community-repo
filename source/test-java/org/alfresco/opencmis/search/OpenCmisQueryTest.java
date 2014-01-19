@@ -100,7 +100,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 /**
  * @author andyh
  */
-public class QueryTest extends BaseCMISTest
+public class OpenCmisQueryTest extends BaseCMISTest
 {
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/cmis-query-test";
 

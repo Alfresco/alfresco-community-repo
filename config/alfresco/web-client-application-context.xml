@@ -53,15 +53,11 @@
    <!-- ===================================== -->
    
    <bean id="webClientConfigService" class="org.alfresco.repo.config.xml.RepoXMLConfigService">
-       <constructor-arg>
+      <constructor-arg>
          <ref bean="webClientConfigSource" />
       </constructor-arg>
-      
-      <property name="tenantAdminService" ref="tenantAdminService"/>  
       <property name="transactionService" ref="transactionComponent"/>
-      
       <property name="configDataCache"   ref="globalConfigCache"/>
-      
    </bean>
    
    <bean id="webClientConfigAdminInterpreter" class="org.alfresco.web.config.ConfigAdminInterpreter" parent="interpreterBase">

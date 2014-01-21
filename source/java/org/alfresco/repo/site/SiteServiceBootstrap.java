@@ -18,12 +18,8 @@
  */
 package org.alfresco.repo.site;
 
-import java.util.List;
-
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.tenant.Tenant;
-import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
@@ -36,23 +32,12 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class SiteServiceBootstrap extends AbstractLifecycleBean
 {
     private SiteService siteService;
-    private TenantAdminService tenantAdminService;
 
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
 
-    public void setTenantAdminService(TenantAdminService tenantAdminService)
-    {
-        this.tenantAdminService = tenantAdminService;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @seeorg.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.
-     * ApplicationEvent)
-     */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -64,29 +49,8 @@ public class SiteServiceBootstrap extends AbstractLifecycleBean
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-
-        if (tenantAdminService.isEnabled())
-        {
-            List<Tenant> tenants = tenantAdminService.getAllTenants();
-            for (Tenant tenant : tenants)
-            {
-                AuthenticationUtil.runAs(new RunAsWork<Object>()
-                {
-                    public Object doWork() throws Exception
-                    {
-                        siteService.listSites("a");
-                        return null;
-                    }
-                }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
-            }
-        }
     }
 
-    /*
-     * (non-Javadoc)
-     * @seeorg.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.context.
-     * ApplicationEvent)
-     */
     @Override
     protected void onShutdown(ApplicationEvent event)
     {

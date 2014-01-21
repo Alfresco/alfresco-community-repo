@@ -722,7 +722,6 @@
    <!-- Site service cache warmer -->
    <bean id="siteServiceBootstrap" class="org.alfresco.repo.site.SiteServiceBootstrap">
       <property name="siteService" ref="SiteService" />
-      <property name="tenantAdminService" ref="tenantAdminService" />
    </bean>
 
     <!-- Scheduled persisted actions - load into quartz -->

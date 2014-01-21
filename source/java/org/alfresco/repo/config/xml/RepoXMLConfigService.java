@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,7 +27,6 @@ import org.alfresco.repo.config.ConfigDataCache.ConfigData;
 import org.alfresco.repo.config.ConfigDataCache.ImmutableConfigData;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -59,17 +58,11 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     
     // Dependencies
     private TransactionService transactionService;
-    private TenantAdminService tenantAdminService;
     private ConfigDataCache configDataCache;
 
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
-    }
-
-    public void setTenantAdminService(TenantAdminService tenantAdminService)
-    {
-        this.tenantAdminService = tenantAdminService;
     }
 
     /**
@@ -192,12 +185,6 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
                 return null;
             }                               
         }, AuthenticationUtil.getSystemUserName());
-        
-        if ((tenantAdminService != null) && (tenantAdminService.isEnabled()))
-        {
-            tenantAdminService.deployTenants(this, logger);            
-            tenantAdminService.register(this);
-        } 
     }
     
     @Override

@@ -323,7 +323,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected void setupCollaborationSiteTestDataImpl()
     {
         // create collaboration site
-        String collabSiteId = GUID.generate();
+        collabSiteId = GUID.generate();
         siteService.createSite("preset", collabSiteId, "title", "description", SiteVisibility.PRIVATE);
         NodeRef documentLibrary = SiteServiceImpl.getSiteContainer(
                 collabSiteId,

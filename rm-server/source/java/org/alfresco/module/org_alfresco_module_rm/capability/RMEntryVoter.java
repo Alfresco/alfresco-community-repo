@@ -40,10 +40,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Records managment entry voter.
@@ -51,7 +48,7 @@ import org.springframework.context.ApplicationContextAware;
  * @author Roy Wetherall, Andy Hind
  */
 public class RMEntryVoter extends RMSecurityCommon
-                          implements AccessDecisionVoter, InitializingBean, ApplicationContextAware, PolicyRegister
+                          implements AccessDecisionVoter, InitializingBean, PolicyRegister
 {
 	/** Logger */
     private static Log logger = LogFactory.getLog(RMEntryVoter.class);
@@ -70,19 +67,7 @@ public class RMEntryVoter extends RMSecurityCommon
     
     /** Policy map */
     private HashMap<String, Policy> policies = new HashMap<String, Policy>();
-    
-    /** Application context */
-    private ApplicationContext applicationContext;
-    
-    /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;        
-    }
-
+  
     /**
      * @param capabilityService     capability service
      */

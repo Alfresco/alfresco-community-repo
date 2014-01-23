@@ -88,7 +88,7 @@ public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
         // Get the list of dm types and check them. It also contains rm related types.
 
         // Format url and send request
-        url = String.format(RM_TYPES_URL, "type", COLLAB_SITE_ID);
+        url = String.format(RM_TYPES_URL, "type", collabSiteId);
         response = sendRequest(new GetRequest(url), Status.STATUS_OK);
 
         // Check the content from the response

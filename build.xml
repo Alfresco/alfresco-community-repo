@@ -20,11 +20,12 @@
    </target>
 
    <target name="fetchWarFile">
+      <xmlproperty file="../pom.xml" keepRoot="false"/>
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="dependency:get" />
-         <arg value="-DgroupId=${app.war.groupId}" />
+         <arg value="-DgroupId=${groupId}" />
          <arg value="-DartifactId=${app.war.artifactId}" />
-         <arg value="-Dversion=${app.war.version}" />
+         <arg value="-Dversion=${properties.alfresco.base.version}" />
          <arg value="-Dpackaging=${app.war.packaging}" />
          <arg value="-Ddest=${ant.build.directory}/${app.package}" />
       </exec>
@@ -79,16 +80,13 @@
             <exclude name="**/file-mapping.properties" />
          </fileset>
       </copy>
-      <zip destfile="${i18n}/${ant.project.name}-r${Revision}.zip" basedir="${i18n}" />
+      <xmlproperty file="../pom.xml" keepRoot="false"/>
+      <zip destfile="${i18n}/${ant.project.name}-${version}-r${Revision}.zip" basedir="${i18n}" />
    </target>
 
-   <target name="assembleIconPackage" description="">
-      <delete dir="${ant.build.directory}/icons" failonerror="true" />
-      <copy todir="${ant.build.directory}/icons/${ant.project.name}" failonerror="true">
-         <fileset dir=".">
-            <include name="**/*.png"/>
-            <exclude name="**/${ant.build.directory}/**"/>
-         </fileset>
+   <target name="copyWebDirectory" if="${web.directory.exists}">
+      <copy todir="${app.folder}" failonerror="true">
+         <fileset dir="${ant.source.web.directory}" />
       </copy>
    </target>
 
@@ -111,8 +109,9 @@
             <exclude name="**/file-mapping.properties" />
          </fileset>
       </copy>
-      <copy todir="${app.folder}" failonerror="false">
-         <fileset dir="${ant.source.web.directory}" />
-      </copy>
+      <condition property="web.directory.exists">
+         <available file="${ant.source.web.directory}" type="dir" />
+      </condition>
+      <antcall target="copyWebDirectory"></antcall>
    </target>
 </project>

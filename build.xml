@@ -82,8 +82,7 @@
       </copy>
    </target>
 
-   <!-- FIXME: Jar file should be generated -->
-   <target name="deployExploded" description="">
+   <target name="deployExploded" depends="cleanTarget, install" description="">
       <fail message="Exploded webapp directory '${app.war.artifactId}' does not exist.">
          <condition>
             <not>

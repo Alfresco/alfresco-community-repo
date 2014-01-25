@@ -56,10 +56,19 @@
 
    <target name="buildAndDeploy" depends="alfresco:install, copyWarFileToTomcat" description=""/>
 
-   <!-- FIXME: A zip file should be created and the revision number should be added to the file name -->
-   <target name="assembleLocalisationPackage" description="">
-      <delete dir="${ant.build.directory}/i18n" failonerror="true" />
-      <copy todir="${ant.build.directory}/i18n/${ant.project.name}/${ant.config.directory}" failonerror="true">
+   <target name="getSvnRevision">
+      <mkdir dir="${ant.build.directory}"/>
+      <property name="svnInfoFile" value="${ant.build.directory}/svninfo.properties" />
+      <exec executable="svn" output="${svnInfoFile}" failonerror="true">
+         <arg value="info" />
+      </exec>
+      <property file="${svnInfoFile}"/>
+   </target>
+
+   <target name="assembleLocalisationPackage" depends="getSvnRevision" description="">
+      <property name="i18n" value="${ant.build.directory}/i18n" />
+      <delete dir="${i18n}" failonerror="true" />
+      <copy todir="${i18n}/${ant.project.name}/${ant.config.directory}" failonerror="true">
          <fileset dir="${ant.config.directory}">
             <include name="**/*.properties" />
             <exclude name="**/*_*.properties" />
@@ -70,6 +79,7 @@
             <exclude name="**/file-mapping.properties" />
          </fileset>
       </copy>
+      <zip destfile="${i18n}/${ant.project.name}-r${Revision}.zip" basedir="${i18n}" />
    </target>
 
    <target name="assembleIconPackage" description="">

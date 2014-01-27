@@ -217,6 +217,7 @@
             <value>RECORD_CATEGORY</value>
             <value>RECORD_FOLDER</value>
             <value>RECORD</value>
+            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
          </set>
       </property>
       <property name="capability" value ="UpdateProperties"/>
@@ -331,6 +332,7 @@
             <value>RECORD_CATEGORY</value>
             <value>RECORD_FOLDER</value>
             <value>RECORD</value>
+            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
          </set>
       </property>
       <property name="capability" value="Delete"/>
@@ -345,6 +347,7 @@
             <value>RECORD_CATEGORY</value>
             <value>RECORD_FOLDER</value>
             <value>UNFILED_RECORD_CONTAINER</value>
+            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
          </set>
       </property>
       <property name="capability" value ="ManageAccessRights"/>

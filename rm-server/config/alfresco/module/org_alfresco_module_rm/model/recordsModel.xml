@@ -95,7 +95,12 @@
       	 <title>Unfiled Record Container</title>
          <parent>rma:recordsManagementContainer</parent>
       </type>
-      
+
+      <type name="rma:unfiledRecordContainerChild">
+         <title>Unfiled Record Container Child</title>
+         <parent>rma:recordsManagementContainer</parent>
+      </type>
+
       <type name="rma:holdContainer">
       	 <title>Hold Container</title>
          <parent>rma:recordsManagementContainer</parent>

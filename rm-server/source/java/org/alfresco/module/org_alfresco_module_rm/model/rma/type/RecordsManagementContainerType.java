@@ -119,8 +119,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                         NodeRef parentRef = childAssocRef.getParentRef();
                         QName parentType = nodeService.getType(parentRef);
                         boolean isContentSubType = dictionaryService.isSubClass(childType, ContentModel.TYPE_CONTENT);
-                        boolean isUnfiledRecordContainerSubType = dictionaryService.isSubClass(parentType, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
-                        if (isContentSubType == true && isUnfiledRecordContainerSubType == true)
+                        boolean isUnfiledRecordContainerChild = parentType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER_CHILD);
+                        if (isContentSubType == true && isUnfiledRecordContainerChild == true)
                         {
                             if (nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT) == false)
                             {

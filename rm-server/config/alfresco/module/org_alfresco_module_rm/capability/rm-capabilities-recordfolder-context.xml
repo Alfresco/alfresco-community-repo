@@ -33,6 +33,7 @@
             <value>RECORD_CATEGORY</value>
             <value>RECORD_FOLDER</value>
             <value>UNFILED_RECORD_CONTAINER</value>
+            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
          </list>
       </property>
       <property name="conditions">

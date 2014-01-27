@@ -59,7 +59,10 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
 
     // Unfiled record container
     public static final QName TYPE_UNFILED_RECORD_CONTAINER = QName.createQName(RM_URI, "unfiledRecordContainer");
-    
+
+    // Unfiled record container child
+    public static final QName TYPE_UNFILED_RECORD_CONTAINER_CHILD = QName.createQName(RM_URI, "unfiledRecordContainerChild");
+
     // Hold container
     public static final QName TYPE_HOLD_CONTAINER = QName.createQName(RM_URI, "holdContainer");
     

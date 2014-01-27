@@ -230,6 +230,10 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             {
                 result = FilePlanComponentKind.UNFILED_RECORD_CONTAINER;
             }
+            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER_CHILD) == true)
+            {
+                result = FilePlanComponentKind.UNFILED_RECORD_CONTAINER_CHILD;
+            }
         }
 
         return result;

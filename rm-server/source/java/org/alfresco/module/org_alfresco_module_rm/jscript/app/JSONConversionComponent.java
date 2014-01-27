@@ -27,7 +27,6 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
@@ -156,9 +155,6 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
             rmNodeValues.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
         }
 
-        // Find out if it is an unfiled record container child
-        rmNodeValues.put("isUnfileRecordContainerChild", isUnfileRecordContainerChild(nodeRef));
-
         // Set the indicators array
         setIndicators(rmNodeValues, nodeRef);
 
@@ -166,25 +162,6 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
         setActions(rmNodeValues, nodeRef);
 
         return rmNodeValues;
-    }
-
-    private boolean isUnfileRecordContainerChild(NodeRef nodeRef)
-    {
-        boolean isUnfileRecordContainerChild = false;
-
-        List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
-        if (parentAssocs.size() == 1)
-        {
-            NodeRef parentNodeRef = parentAssocs.iterator().next().getParentRef();
-            FilePlanComponentKind filePlanComponentKind = filePlanService.getFilePlanComponentKind(parentNodeRef);
-
-            if (filePlanComponentKind != null && filePlanComponentKind.equals(FilePlanComponentKind.RECORD_CATEGORY) == false)
-            {
-                isUnfileRecordContainerChild = true;
-            }
-        }
-
-        return isUnfileRecordContainerChild;
     }
 
     @SuppressWarnings("unchecked")
@@ -286,6 +263,11 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                 case TRANSFER:
                 {
                     result = "transfer-container";
+                    break;
+                }
+                case UNFILED_RECORD_CONTAINER_CHILD:
+                {
+                    result = "unfiled-record-container-child";
                     break;
                 }
                 default:

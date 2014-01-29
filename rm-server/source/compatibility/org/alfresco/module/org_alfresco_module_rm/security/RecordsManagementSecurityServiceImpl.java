@@ -196,7 +196,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     @Override
     public Role updateRole(NodeRef rmRootNode, String role, String roleDisplayLabel, Set<Capability> capabilities)
     {
-        return updateRole(rmRootNode, role, roleDisplayLabel, capabilities);
+        return Role.toRole(filePlanRoleService.updateRole(rmRootNode, role, roleDisplayLabel, capabilities));
     }
 
     /**

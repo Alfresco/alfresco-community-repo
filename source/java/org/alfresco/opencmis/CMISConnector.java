@@ -2790,6 +2790,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     continue;
                 }
                 
+                TypeDefinitionWrapper type = getType(nodeRef);
+                if (type == null)
+                {
+                    continue;
+                }
+                
                 ObjectDataImpl hit = new ObjectDataImpl();
                 PropertiesImpl properties = new PropertiesImpl();
                 hit.setProperties(properties);
@@ -2806,12 +2812,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
                 if (fetchObject)
                 {
-                    TypeDefinitionWrapper type = getType(nodeRef);
-                    if (type == null)
-                    {
-                        continue;
-                    }
-
                     // set allowable actions
                     if (includeAllowableActions)
                     {

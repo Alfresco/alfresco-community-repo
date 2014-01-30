@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -443,8 +443,12 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                     
                     if (sort.length > 0)
                     {
-                    	Pair<QName, Boolean> sortProp = connector.getSortProperty(sort[0], sort.length > 1 ? sort[1] : null);
-                    	sortProps.add(sortProp);
+                        // MNT-10529: Leading spaces result in an empty string value after the split operation. Leading spaces may occur in the 'orderBy' statement when the
+                        // elements of statement separated by a comma and a space(s)
+                        int index = (sort[0].isEmpty()) ? (1) : (0);
+
+                        Pair<QName, Boolean> sortProp = connector.getSortProperty(sort[index], sort.length > (index + 1) ? sort[index + 1] : null);
+                        sortProps.add(sortProp);
                     }
                 }
             }

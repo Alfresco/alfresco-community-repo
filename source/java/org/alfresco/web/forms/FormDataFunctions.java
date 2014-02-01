@@ -30,6 +30,7 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.remote.AVMRemote;
+import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -147,10 +148,8 @@ public class FormDataFunctions
          DocumentBuilderFactory localDbf = dbf.get();
          if (localDbf == null)
          {
-            localDbf = DocumentBuilderFactory.newInstance();
+            localDbf = XMLUtil.getDocumentBuilderFactory(true, false);
          }
-         localDbf.setNamespaceAware(true);
-         localDbf.setValidating(false);
          dbf.set(localDbf);
          DocumentBuilder builder = localDbf.newDocumentBuilder();
          result = builder.parse(is);

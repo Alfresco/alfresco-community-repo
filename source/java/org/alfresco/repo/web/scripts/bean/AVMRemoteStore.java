@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.util.XMLUtil;
 import org.apache.axis.utils.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -288,7 +289,7 @@ public class AVMRemoteStore extends BaseRemoteStore
                 try
                 {
                     Set<String> checkedPaths = new HashSet<String>(16);
-                    DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder(); 
+                    DocumentBuilder documentBuilder = XMLUtil.getDocumentBuilder(); 
                     Document document = documentBuilder.parse(in);
                     Element docEl = document.getDocumentElement();
                     Transformer transformer = AVMRemoteStore.this.transformer.get();

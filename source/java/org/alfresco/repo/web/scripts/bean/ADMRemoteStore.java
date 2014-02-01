@@ -70,6 +70,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.XMLUtil;
 import org.apache.axis.utils.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -391,7 +392,7 @@ public class ADMRemoteStore extends BaseRemoteStore
     {
         try
         {
-            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder(); 
+            DocumentBuilder documentBuilder = XMLUtil.getDocumentBuilderFactory(true, false).newDocumentBuilder(); 
             Document document;
             document = documentBuilder.parse(in);
             Element docEl = document.getDocumentElement();

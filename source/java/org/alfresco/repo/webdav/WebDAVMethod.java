@@ -67,6 +67,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.DocumentHelper;
@@ -533,19 +534,7 @@ public abstract class WebDAVMethod
 
             try
             {
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                factory.setFeature("http://xml.org/sax/features/validation", false);
-                factory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-                factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-                factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-                factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-                factory.setFeature("http://xml.org/sax/features/use-entity-resolver2", false);   
-                factory.setFeature("http://apache.org/xml/features/validation/unparsed-entity-checking", false);
-                factory.setFeature("http://apache.org/xml/features/validation/dynamic", false);
-                factory.setFeature("http://apache.org/xml/features/validation/schema/augment-psvi", false);
-                factory.setNamespaceAware(true);
-
-                DocumentBuilder builder = factory.newDocumentBuilder();
+                DocumentBuilder builder = XMLUtil.getDocumentBuilderFactory(true, false).newDocumentBuilder();
                 if (m_request.getCharacterEncoding() == null)
                 {
                     // Let the XML parser work out the encoding if it is not explicitly declared in the HTTP header

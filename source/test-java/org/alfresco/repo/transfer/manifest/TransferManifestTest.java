@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.XMLUtil;
 
 /**
  * Unit test for the transfer manifest
@@ -258,7 +259,7 @@ public class TransferManifestTest extends TestCase
         }
         
         // Now try to parse the snapshot file we have just created
-        SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+        SAXParserFactory saxParserFactory = XMLUtil.getSAXParserFactory();
         SAXParser parser = saxParserFactory.newSAXParser();
         
         TestTransferManifestProcessor tp = new TestTransferManifestProcessor(); 

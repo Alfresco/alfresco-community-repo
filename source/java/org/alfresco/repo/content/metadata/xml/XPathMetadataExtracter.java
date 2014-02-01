@@ -48,6 +48,7 @@ import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -106,10 +107,10 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
         super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
         try
         {
-            DocumentBuilderFactory normalFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory normalFactory = XMLUtil.getDocumentBuilderFactory(true, false);
             documentBuilder = normalFactory.newDocumentBuilder();
             
-            DocumentBuilderFactory dtdIgnoringFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory dtdIgnoringFactory = XMLUtil.getDocumentBuilderFactory(true, false);
             dtdIgnoringFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             dtdIgnoringFactory.setFeature("http://xml.org/sax/features/validation", false);
             dtdIgnoringDocumentBuilder = dtdIgnoringFactory.newDocumentBuilder();

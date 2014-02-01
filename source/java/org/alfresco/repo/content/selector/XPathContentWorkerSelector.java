@@ -36,6 +36,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -65,7 +66,7 @@ public class XPathContentWorkerSelector<W extends ContentWorker> implements Cont
     {
         try
         {
-            documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            documentBuilder = XMLUtil.getDocumentBuilder();
             xpathFactory = XPathFactory.newInstance();
         }
         catch (Throwable e)

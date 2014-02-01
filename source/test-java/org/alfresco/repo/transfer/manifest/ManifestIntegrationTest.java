@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.XMLUtil;
 
 /**
  * Integration test for Transfer Manifest
@@ -169,7 +170,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
             TestTransferManifestProcessor processor = new TestTransferManifestProcessor();
             XMLTransferManifestReader reader = new XMLTransferManifestReader(processor);
 
-            SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+            SAXParserFactory saxParserFactory = XMLUtil.getSAXParserFactory();
             SAXParser parser = saxParserFactory.newSAXParser();
             parser.parse(snapshotFile, reader);
 

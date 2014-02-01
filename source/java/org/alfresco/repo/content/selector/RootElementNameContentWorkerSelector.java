@@ -32,6 +32,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xml.sax.Attributes;
@@ -60,7 +61,7 @@ public class RootElementNameContentWorkerSelector<W extends ContentWorker>
     
     public RootElementNameContentWorkerSelector()
     {
-        saxParserFactory = SAXParserFactory.newInstance();
+        saxParserFactory = XMLUtil.getSAXParserFactory();
         supportedMimetypes = new HashSet<String>();
         supportedMimetypes.add(MimetypeMap.MIMETYPE_XML);
         workersByRootElementName = Collections.emptyMap();

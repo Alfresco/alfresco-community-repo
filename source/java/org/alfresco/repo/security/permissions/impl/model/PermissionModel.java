@@ -53,6 +53,7 @@ import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.util.XMLUtil;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -1347,7 +1348,7 @@ public class PermissionModel implements ModelDAO
 //            {
 //                if (dtdSchemaIs != null)
 //                {
-//                    SAXParserFactory factory = SAXParserFactory.newInstance();
+//                    SAXParserFactory factory = XMLUtil.getSAXParserFactory();
 //
 //                    SchemaFactory schemaFactory = 
 //                        SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");

@@ -24,6 +24,7 @@ import java.io.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -240,14 +241,54 @@ public class XMLUtil
       return result;
    }
 
+   
+   public static DocumentBuilderFactory getDocumentBuilderFactory(final boolean namespaceAware, final boolean validating)
+   { 
+      final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      dbf.setNamespaceAware(namespaceAware);
+      dbf.setValidating(validating);
+      try
+      {
+          dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+          dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+          dbf.setFeature("http://xml.org/sax/features/use-entity-resolver2", false);
+      }
+      catch (ParserConfigurationException pce)
+      {
+          LOGGER.warn("Failed to configure DocumentBuilderFactory securely", pce);
+      }
+      return dbf;
+   }
+
+   public static SAXParserFactory getSAXParserFactory()
+   {
+       SAXParserFactory spf = SAXParserFactory.newInstance();
+       try
+       {
+           spf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+           spf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+           spf.setFeature("http://xml.org/sax/features/use-entity-resolver2", false);
+       }
+       catch (RuntimeException rte)
+       {
+           //If any runtime exception occurs then simply rethrow it
+           throw rte;
+       } 
+       catch (Exception pce)
+       {
+           //If we get any other exception then we've failed to configure the parser factory securely.
+           //Log a warning and return the factory as is.
+           LOGGER.warn("Failed to configure SAXParserFactory securely", pce);
+       } 
+       return spf;
+   }
+
    public static DocumentBuilder getDocumentBuilder(final boolean namespaceAware,
                                                     final boolean validating)
    { 
       try
       {
-         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-         dbf.setNamespaceAware(namespaceAware);
-         dbf.setValidating(validating);
+         final DocumentBuilderFactory dbf = getDocumentBuilderFactory(namespaceAware, validating);
          return dbf.newDocumentBuilder();
       }
       catch (ParserConfigurationException pce)

@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xml.sax.SAXException;
@@ -230,9 +231,7 @@ public class TransferReporterImpl implements TransferReporter
             /**
              * Step 3: wire up the manifest reader to a manifest processor
              */
-            SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-            SAXParser parser;
-            parser = saxParserFactory.newSAXParser();                   
+            SAXParser parser = XMLUtil.getSAXParserFactory().newSAXParser();                   
             XMLTransferManifestReader reader = new XMLTransferManifestReader(processor);
 
             /**

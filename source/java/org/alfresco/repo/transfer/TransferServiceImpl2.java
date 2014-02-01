@@ -94,6 +94,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xml.sax.SAXException;
@@ -1012,9 +1013,7 @@ public class TransferServiceImpl2 implements TransferService2
             File manifest, File requisite)
         throws SAXException, ParserConfigurationException, IOException
     {
-        SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-        SAXParser parser;
-        parser = saxParserFactory.newSAXParser(); 
+        SAXParser parser = XMLUtil.getSAXParserFactory().newSAXParser();
         
         /**
          * Parse the requisite file to generate the delta list

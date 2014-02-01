@@ -39,6 +39,7 @@ import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
 import org.alfresco.repo.transfer.manifest.XMLTransferManifestReader;
 import org.alfresco.repo.transfer.manifest.XMLTransferManifestWriter;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
+import org.alfresco.util.XMLUtil;
 
 /**
  * @author Brian
@@ -53,7 +54,7 @@ public class StandardNodeSnapshotSerializer implements NodeSnapshotSerializer
     @Override
     public List<NodeSnapshot> deserialize(InputStream input) throws Exception
     {
-        SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+        SAXParserFactory saxParserFactory = XMLUtil.getSAXParserFactory();
         SAXParser parser = saxParserFactory.newSAXParser();
         NodeSnapshotDeserializer processor = new NodeSnapshotDeserializer();
 

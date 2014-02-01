@@ -89,6 +89,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.FileCopyUtils;
@@ -897,8 +898,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                     List<TransferManifestProcessor> commitProcessors = manifestProcessorFactory.getCommitProcessors(
                             RepoTransferReceiverImpl.this, transferId);
 
-                    SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-                    SAXParser parser = saxParserFactory.newSAXParser();
+                    SAXParser parser = XMLUtil.getSAXParserFactory().newSAXParser();
                     File snapshotFile = getSnapshotFile(transferId);
 
                     if (snapshotFile.exists())
@@ -1148,8 +1148,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             if (snapshotFile.exists())
             {
                 log.debug("snapshot does exist");
-                SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-                SAXParser parser = saxParserFactory.newSAXParser();
+                SAXParser parser = XMLUtil.getSAXParserFactory().newSAXParser();
                 OutputStreamWriter dest = new OutputStreamWriter(out, "UTF-8");
 
                 XMLTransferRequsiteWriter writer = new XMLTransferRequsiteWriter(dest);

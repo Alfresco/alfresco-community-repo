@@ -25,6 +25,7 @@ import java.util.Stack;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.alfresco.util.XMLUtil;
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.ForeignKey;
@@ -67,7 +68,7 @@ public class XMLToSchema extends DefaultHandler
     
     public XMLToSchema(InputStream in)
     {
-        this(in, SAXParserFactory.newInstance());
+        this(in, XMLUtil.getSAXParserFactory());
     }
     
     public void parse()

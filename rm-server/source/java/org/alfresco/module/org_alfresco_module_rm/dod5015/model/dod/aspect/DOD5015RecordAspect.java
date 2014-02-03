@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.dod5015.model.dod.aspect;
 
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -39,17 +40,17 @@ public class DOD5015RecordAspect extends    BaseBehaviourBean
                                  implements NodeServicePolicies.OnAddAspectPolicy,
                                             DOD5015Model
 {
-	/** indicates whether the DOD record aspect should be added or not */
-	private boolean addDODRecordAspect = true;
-	
-	/**
-	 * @param addDODRecordAspect	true if add aspect, false otherwise
-	 */
-	public void setAddDODRecordAspect(boolean addDODRecordAspect) 
-	{
-		this.addDODRecordAspect = addDODRecordAspect;
-	}
-	
+    /** file plan service */
+    private FilePlanService filePlanService;
+    
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
+    
     /**
      * Ensure that the DOD record aspect meta-data is applied.
      * 
@@ -64,12 +65,30 @@ public class DOD5015RecordAspect extends    BaseBehaviourBean
     @Override
     public void onAddAspect(NodeRef nodeRef, QName aspect)
     {
-        if (nodeService.exists(nodeRef) == true && 
-        	addDODRecordAspect == true &&
-            nodeService.hasAspect(nodeRef, ASPECT_DOD_5015_RECORD) == false)
+        if (nodeService.exists(nodeRef) &&
+            nodeService.hasAspect(nodeRef, ASPECT_DOD_5015_RECORD) == false &&
+            isDODFilePlan(nodeRef))
         {
             nodeService.addAspect(nodeRef, ASPECT_DOD_5015_RECORD, null);
         }
     }
-   
+    
+    /**
+     * Helper method to indicate whether the records file plan is a DOD one or not.
+     * 
+     * @param record    record node reference
+     * @return boolean  true if in DOD file plan, false otherwise
+     */
+    private boolean isDODFilePlan(NodeRef record)
+    {
+        boolean result = false;
+        
+        NodeRef filePlan = filePlanService.getFilePlan(record);
+        if (filePlan != null && nodeService.exists(filePlan) == true)
+        {
+            result = TYPE_DOD_5015_FILE_PLAN.equals(nodeService.getType(filePlan));
+        }
+        
+        return result;
+    }   
 }

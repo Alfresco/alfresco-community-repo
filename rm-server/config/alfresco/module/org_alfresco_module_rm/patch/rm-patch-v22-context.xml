@@ -36,5 +36,14 @@
       <property name="patchDAO" ref="patchDAO"/>
       <property name="nodeDAO" ref="nodeDAO"/>
    </bean>
+   
+   <bean id="rm.dodCompliantSitePatch" 
+         parent="rm.parentModulePatch" 
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22DODCompliantSitePatch">           
+      <property name="description" value="DOD compliant module patch"/>      
+      <property name="fixesToSchema" value="1003"/>
+      <property name="targetSchema" value="1004"/>      
+      <property name="qnameDAO" ref="qnameDAO"/>
+   </bean>
 
 </beans>

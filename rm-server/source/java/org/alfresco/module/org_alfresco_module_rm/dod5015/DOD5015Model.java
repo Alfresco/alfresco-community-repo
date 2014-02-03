@@ -32,8 +32,13 @@ public interface DOD5015Model
 	public static final String DOD_URI = "http://www.alfresco.org/model/dod5015/1.0";
 	public static final String DOD_PREFIX = "dod";
 	
-    // DOD Record
+	// DOD Site
+	public static final QName TYPE_DOD_5015_SITE = QName.createQName(DOD_URI, "site");
 	
+	// DOD File Plan
+	public static final QName TYPE_DOD_5015_FILE_PLAN = QName.createQName(DOD_URI, "filePlan");
+	
+    // DOD Record	
 	public static final QName ASPECT_DOD_5015_RECORD = QName.createQName(DOD_URI, "dod5015record");
 	public static final QName PROP_ORIGINATOR = QName.createQName(DOD_URI, "originator");
 	public static final QName PROP_ORIGINATING_ORGANIZATION = QName.createQName(DOD_URI, "originatingOrganization");

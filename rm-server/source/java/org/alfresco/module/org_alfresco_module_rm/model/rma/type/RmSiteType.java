@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -42,6 +43,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 
 /**
@@ -62,6 +64,7 @@ public class RmSiteType extends    BaseBehaviourBean
 	/** Constant values */
 	public static final String COMPONENT_DOCUMENT_LIBRARY = "documentLibrary";
     public static final String DEFAULT_SITE_NAME = "rm";
+    public static final QName DEFAULT_FILE_PLAN_TYPE = TYPE_FILE_PLAN;
 	
     /** Policy component */
     protected PolicyComponent policyComponent;
@@ -74,6 +77,9 @@ public class RmSiteType extends    BaseBehaviourBean
     
     /** Capability service */
     protected CapabilityService capabilityService;
+    
+    /** Map of file plan type's key'ed by corresponding site types */
+    protected Map<QName, QName> mapFilePlanType = new HashMap<QName, QName>(3);
     
     /**
      * Set the policy component
@@ -108,6 +114,36 @@ public class RmSiteType extends    BaseBehaviourBean
     {
         this.capabilityService = capabilityService;
     }
+    
+    /**
+     * Registers a file plan type for a specific site type.
+     * 
+     * @param siteType		siteType		sub-type of rma:rmsite
+     * @param filePlanType  filePlanType	sub-type of rma:filePlan
+     * @since 2.2
+     */
+    public void registerFilePlanType(QName siteType, QName filePlanType)
+    {
+    	ParameterCheck.mandatory("siteType", siteType);
+    	ParameterCheck.mandatory("filePlanType", filePlanType);
+    	
+    	// check that the registered site type is a subtype of rma:rmsite
+    	if (dictionaryService.isSubClass(siteType, TYPE_RM_SITE) == false)
+    	{
+    		throw new AlfrescoRuntimeException(
+    				"Can't register site type, because site type is not a sub type of rma:rmsite (siteType=" + siteType.toString() + ")");
+    	}
+    	
+    	// check that the registered file plan type is a sub type of rma:filePlan
+    	if (dictionaryService.isSubClass(filePlanType, TYPE_FILE_PLAN) == false)
+    	{
+    		throw new AlfrescoRuntimeException(
+    				"Can't register file plan type, because site type is not a sub type of rma:filePlan (filePlanType=" + filePlanType.toString() + ")");
+    	}
+    	
+    	// add site and file plan types to map
+    	mapFilePlanType.put(siteType, filePlanType);
+    }
 
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
@@ -139,7 +175,7 @@ public class RmSiteType extends    BaseBehaviourBean
                 	if (siteInfo != null)
                 	{	                
 	                	// Create the file plan component
-	                	siteService.createContainer(siteInfo.getShortName(), COMPONENT_DOCUMENT_LIBRARY, TYPE_FILE_PLAN, null);
+	                	siteService.createContainer(siteInfo.getShortName(), COMPONENT_DOCUMENT_LIBRARY, getFilePlanType(siteInfo), null);
 	                	
 	                	// Add the reports
 	                	recordsManagementSearchService.addReports(siteInfo.getShortName());
@@ -148,6 +184,30 @@ public class RmSiteType extends    BaseBehaviourBean
                 }
             }, AuthenticationUtil.getAdminUserName());
         }
+	}
+	
+	/**
+	 * Get the file plan type for the given site.
+	 * 
+	 * @param siteInfo	site info
+	 * @return QName	file plan type to create as a container
+	 * @since 2.2
+	 */
+	private QName getFilePlanType(SiteInfo siteInfo)
+	{
+		ParameterCheck.mandatory("siteInfo", siteInfo);
+		
+		// set default file plan
+		QName result = DEFAULT_FILE_PLAN_TYPE;
+		
+		// check to see if there is an 'override' for the file plan type given the site type
+		QName siteType = nodeService.getType(siteInfo.getNodeRef());
+		if (mapFilePlanType.containsKey(siteType) == true)
+		{
+			result = mapFilePlanType.get(siteType);
+		}
+		
+		return result;
 	}
 
 	/**

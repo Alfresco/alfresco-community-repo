@@ -26,6 +26,11 @@
       </property>
    </bean>
    
+   <!-- Bootstrap DOD file plan type -->
+   <bean id="org_alfresco_module_rm_filePlanBootstrap.dod5015" class="org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015FilePlanTypeBootstrap" init-method="init">
+      <property name="rmSiteType" ref="rma.rmSite"/>
+   </bean>
+   
    <!--  add publication date as a disposition property -->
    <bean id="disposition.properties.publicationdate" parent="disposition.properties.base">
 	  <property name="name" value="dod:publicationDate" />
@@ -37,7 +42,7 @@
    
    <!--  Model behaviour -->
    <bean id="dod.dod5015RecordAspect" class="org.alfresco.module.org_alfresco_module_rm.dod5015.model.dod.aspect.DOD5015RecordAspect" parent="rm.baseBehaviour">
-      <property name="addDODRecordAspect" value="${rm.dodRecords}"/>
+      <property name="filePlanService" ref="filePlanService"/>
    </bean>
    
 </beans>

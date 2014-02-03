@@ -253,6 +253,15 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected String dmCollaborator;
     protected NodeRef dmCollaboratorNodeRef;
 
+    /** 
+     * Indicates whether this is a RM site test or not.  If true then the test RM site is created along with a basic 
+     * file plan structure, otherwise not.
+     */
+    protected boolean isRMSiteTest()
+    {
+    	return true;
+    }
+    
     /**
      * Indicates whether this is a multi-hierarchy test or not.  If it is then the multi-hierarchy record
      * taxonomy test data is loaded.
@@ -421,7 +430,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         filter.disableBehaviour();
         try
         {
-            if (nodeService.exists(filePlan) == true)
+            if (filePlan != null && nodeService.exists(filePlan) == true)
             {
                 Set<NodeRef> holds = freezeService.getHolds(filePlan);
                 for (NodeRef hold : holds)
@@ -430,13 +439,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 }
             }
 
-            if (nodeService.exists(folder) == true)
+            if (folder != null && nodeService.exists(folder) == true)
             {
                 // Delete the folder
                 nodeService.deleteNode(folder);
             }
 
-            if (siteService.getSite(siteId) != null)
+            if (siteId != null && siteService.getSite(siteId) != null)
             {
                 // Delete the site
                 siteService.deleteSite(siteId);
@@ -474,7 +483,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             {
             	setupTestDataImpl();
 
-            	if (isRecordTest() == true)
+            	if (isRecordTest() == true && isRMSiteTest() == true)
             	{
             	    setupTestRecords();
             	}
@@ -485,16 +494,19 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             @Override
             public void test(Void result) throws Exception
             {
-                if (isRecordTest() == true)
-                {
-                    // declare a record
-                    utils.declareRecord(recordDeclaredOne);
-                    utils.declareRecord(recordDeclaredTwo);
-                }
-
-                // unfiled container
-                unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
-                assertNotNull(unfiledContainer);
+            	if (isRMSiteTest() == true)
+            	{
+	                if (isRecordTest() == true)
+	                {
+	                    // declare a record
+	                    utils.declareRecord(recordDeclaredOne);
+	                    utils.declareRecord(recordDeclaredTwo);
+	                }
+	
+	                // unfiled container
+	                unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
+	                assertNotNull(unfiledContainer);
+            	}
             }
         }, AuthenticationUtil.getSystemUserName());
     }
@@ -529,28 +541,31 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         permissionService.setPermission(folder, "rmadmin", PermissionService.WRITE, true);
         permissionService.setPermission(folder, "rmadmin", PermissionService.ADD_CHILDREN, true);
 
-        siteId = GUID.generate();
-        siteInfo = siteService.createSite(
-                        "rm-site-dashboard",
-                        siteId,
-                        "title",
-                        "descrition",
-                        SiteVisibility.PUBLIC,
-                        RecordsManagementModel.TYPE_RM_SITE);
-
-        filePlan = siteService.getContainer(siteId, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
-        assertNotNull("Site document library container was not created successfully.", filePlan);
-
-        // Create RM container
-        rmContainer = filePlanService.createRecordCategory(filePlan, "rmContainer");
-        assertNotNull("Could not create rm container", rmContainer);
-
-        // Create disposition schedule
-        dispositionSchedule = utils.createBasicDispositionSchedule(rmContainer);
-
-        // Create RM folder
-        rmFolder = recordFolderService.createRecordFolder(rmContainer, "rmFolder");
-        assertNotNull("Could not create rm folder", rmFolder);
+        if (isRMSiteTest() == true)
+        {        
+	        siteId = GUID.generate();
+	        siteInfo = siteService.createSite(
+	                        "rm-site-dashboard",
+	                        siteId,
+	                        "title",
+	                        "descrition",
+	                        SiteVisibility.PUBLIC,
+	                        RecordsManagementModel.TYPE_RM_SITE);
+	
+	        filePlan = siteService.getContainer(siteId, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
+	        assertNotNull("Site document library container was not created successfully.", filePlan);
+	
+	        // Create RM container
+	        rmContainer = filePlanService.createRecordCategory(filePlan, "rmContainer");
+	        assertNotNull("Could not create rm container", rmContainer);
+	
+	        // Create disposition schedule
+	        dispositionSchedule = utils.createBasicDispositionSchedule(rmContainer);
+	
+	        // Create RM folder
+	        rmFolder = recordFolderService.createRecordFolder(rmContainer, "rmFolder");
+	        assertNotNull("Could not create rm folder", rmFolder);
+        }
     }
 
     protected void setupTestRecords()

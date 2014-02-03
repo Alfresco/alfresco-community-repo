@@ -46,13 +46,27 @@
       </constraint>
    </constraints>
       
-   <types>
+   <types>	
+      
+      <!-- DOD5015 site -->
+      <!-- @since 2.2 -->
+      <type name="dod:site">
+         <title>DOD5015 Site</title>
+         <parent>rma:rmsite</parent>
+      </type>
+      
+      <!-- DOD5015 file plan -->
+      <!-- @since 2.2 -->
+      <type name="dod:filePlan">
+         <title>DOD5015 File Plan</title>
+         <parent>rma:filePlan</parent>
+      </type>
    	
    	  <!--  Deprecated since 2.0 -->
       <type name="dod:recordSeries">      
          <title>Record Series</title>
          <parent>rma:recordCategory</parent>         
-      </type>	
+      </type>
    
    </types>
    

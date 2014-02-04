@@ -19,7 +19,9 @@
 package org.alfresco.repo.action.parameter;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +30,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.action.ParameterizedItem;
 import org.alfresco.service.cmr.action.ParameterizedItemDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Parameter processor component
@@ -35,13 +38,15 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class ParameterProcessorComponent
+public class ParameterProcessorComponent implements ParameterSubstitutionSuggester
 {
     /** regex used to parse parameters */
-    private static final String REG_EX = "\\$\\{([^\\$\\{]+)\\}";
+    private static final String REG_EX_OLD = "\\$\\{([^\\$\\{]+)\\}";
+    private static final String REG_EX = "\\{([^\\{]+)\\}";
     
     /** registry of parameter processors */
     private Map<String, ParameterProcessor> processors = new HashMap<String, ParameterProcessor>(5);
+    private List<ParameterSubstitutionSuggester> subtitutionSuggesterProcessors = new ArrayList<ParameterSubstitutionSuggester>(5);
     
     /**
      * Register parameter processor
@@ -51,6 +56,10 @@ public class ParameterProcessorComponent
     public void register(ParameterProcessor processor)
     {
         this.processors.put(processor.getName(), processor);
+        if(processor instanceof ParameterSubstitutionSuggester) 
+        {
+            this.subtitutionSuggesterProcessors.add((ParameterSubstitutionSuggester)processor);
+        }
     }
     
     /**
@@ -84,8 +93,13 @@ public class ParameterProcessorComponent
      */
     public String process(String value, NodeRef nodeRef)
     {
+        return process(process(value, nodeRef, REG_EX_OLD), nodeRef, REG_EX);
+    }
+    
+    public String process(String value, NodeRef nodeRef, String regExp)
+    {
         // match the substitution pattern
-        Pattern patt = Pattern.compile(REG_EX);
+        Pattern patt = Pattern.compile(regExp);
         Matcher m = patt.matcher(value);
         StringBuffer sb = new StringBuffer(value.length());
         
@@ -110,6 +124,25 @@ public class ParameterProcessorComponent
         }            
         m.appendTail(sb);                      
         return sb.toString();
+    }
+    
+    /**
+     * Return a list of substitution suggestions for the passed string fragment.
+     * 
+     * @param subtitutionFragment  Text fragment to search on.
+     * @return A list of substitutions that match the substitution fragment.
+     */
+    public List<String> getSubstitutionSuggestions(final String substitutionFragment)
+    {
+        List<String> suggestions = new ArrayList<String>();
+        if (StringUtils.isNotBlank(substitutionFragment))
+        {
+            for (ParameterSubstitutionSuggester suggestor : this.subtitutionSuggesterProcessors)
+            {
+                suggestions.addAll(suggestor.getSubstitutionSuggestions(substitutionFragment.toLowerCase()));
+            }
+        }
+        return suggestions;
     }
     
     /**

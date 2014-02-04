@@ -566,4 +566,11 @@
       <property name="authorityService" ref="AuthorityService" />
    </bean>
 
+   <!-- REST impl for GET Substitution Suggestions for RM -->
+   <bean id="webscript.org.alfresco.repository.substitutionsuggestions.rm-substitutionsuggestions.get"
+         class="org.alfresco.repo.web.scripts.substitutionsuggestions.RmSubstitutionSuggestionsGet"
+           parent="webscript">
+      <property name="parameterProcessorComponent" ref="parameterProcessorComponent"/>
+   </bean>
+
 </beans>

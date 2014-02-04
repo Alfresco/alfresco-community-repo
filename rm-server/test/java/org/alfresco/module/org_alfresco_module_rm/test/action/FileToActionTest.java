@@ -46,6 +46,7 @@ public class FileToActionTest extends BaseRMTestCase
     private static final String PATH2 = "/rmcontainer/rmfolder";
     private static final String PATH_BAD = "monkey/rmfolder";
     private static final String PATH_CREATE = "rmcontainer/newrmfolder";
+    private static final String LONG_PATH_CREATE = "/rmcontainer/one/two/three/four/newrmfolder";
 
     private static final String PATH_SUB1 = "rmcontainer/${node.cm:title}";
 
@@ -189,6 +190,12 @@ public class FileToActionTest extends BaseRMTestCase
         createRecord(PATH_SUB1, "mytestvalue", "rmcontainer/mytestvalue");
     }
 
+    public void testCreatePath() throws Exception
+    {
+        initRecord();
+        createRecord(LONG_PATH_CREATE, "newrmfolder", "rmcontainer/one/two/three/four/newrmfolder");
+    }
+
     private void createRecord(String path, String name)
     {
         createRecord(path, name, path);
@@ -209,7 +216,7 @@ public class FileToActionTest extends BaseRMTestCase
                 // set parameters
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
                 params.put(FileToAction.PARAM_PATH, path);
-                params.put(FileToAction.PARAM_CREATE_RECORD_FOLDER, true);
+                params.put(FileToAction.PARAM_CREATE_RECORD_PATH, true);
 
                 // execute file-to action
                 rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);

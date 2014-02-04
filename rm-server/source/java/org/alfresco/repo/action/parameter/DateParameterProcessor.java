@@ -19,7 +19,9 @@
 package org.alfresco.repo.action.parameter;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -30,7 +32,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class DateParameterProcessor extends ParameterProcessor
+public class DateParameterProcessor extends ParameterProcessor implements ParameterSubstitutionSuggester
 {
     private static final String DAY = "day";
     private static final String WEEK = "week";
@@ -39,6 +41,27 @@ public class DateParameterProcessor extends ParameterProcessor
     private static final String SHORT = "short";
     private static final String LONG = "long";
     private static final String NUMBER = "number";
+    
+    private static final String SEP = ".";
+    
+    private static final String[] ALL_FIELDS_FOR_SUBSTITUTION_QUERY = { 
+        DAY, 
+        DAY + SEP + SHORT, 
+        DAY + SEP + LONG, 
+        DAY + SEP + NUMBER, 
+        WEEK, 
+        WEEK + SEP + SHORT, 
+        WEEK + SEP + LONG, 
+        WEEK + SEP + NUMBER, 
+        MONTH, 
+        MONTH + SEP + SHORT, 
+        MONTH + SEP + LONG, 
+        MONTH + SEP + NUMBER, 
+        YEAR, 
+        YEAR + SEP + SHORT, 
+        YEAR + SEP + LONG, 
+        YEAR + SEP + NUMBER
+    };
 
     /**
      * @see org.alfresco.repo.action.parameter.ParameterProcessor#process(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
@@ -171,5 +194,29 @@ public class DateParameterProcessor extends ParameterProcessor
         }
 
         return style;
+    }
+
+    @Override
+    public List<String> getSubstitutionSuggestions(String substitutionFragment)
+    {
+        List<String> suggestions = new ArrayList<String>();
+        String namePrefix = this.getName() + ".";
+        if(this.getName().toLowerCase().contains(substitutionFragment.toLowerCase()))
+        {
+            for(String field: ALL_FIELDS_FOR_SUBSTITUTION_QUERY) {
+                suggestions.add(namePrefix + field);
+            }
+        }
+        else
+        {
+            for(String field: ALL_FIELDS_FOR_SUBSTITUTION_QUERY) {
+                String prefixFieldName = namePrefix + field;
+                if(prefixFieldName.toLowerCase().contains(substitutionFragment.toLowerCase()))
+                {
+                    suggestions.add(namePrefix + field);
+                }
+            }
+        }
+        return suggestions;
     }
 }

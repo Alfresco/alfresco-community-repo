@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
+import org.alfresco.repo.ParameterProcessorTestSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -36,7 +37,8 @@ import org.junit.runners.Suite.SuiteClasses;
     CapabilitiesTestSuite.class,
     ServicesTestSuite.class,
     WebScriptTestSuite.class,
-    IssueTestSuite.class
+    IssueTestSuite.class,
+    ParameterProcessorTestSuite.class
 })
 public class AllTestSuite
 {

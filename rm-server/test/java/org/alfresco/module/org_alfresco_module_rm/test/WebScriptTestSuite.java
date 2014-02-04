@@ -31,6 +31,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.webscript.RmAuthoritiesRe
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RmClassesRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RmPropertiesRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RoleRestApiTest;
+import org.alfresco.repo.web.scripts.SubstitutionSuggestionsRestApiTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -56,7 +57,8 @@ import org.junit.runners.Suite.SuiteClasses;
     ActionDefinitionsRestApiTest.class,
     RmClassesRestApiTest.class,
     RmPropertiesRestApiTest.class,
-    RmAuthoritiesRestApiTest.class
+    RmAuthoritiesRestApiTest.class,
+    SubstitutionSuggestionsRestApiTest.class
 })
 public class WebScriptTestSuite
 {

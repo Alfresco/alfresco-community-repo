@@ -15,6 +15,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.CategoryService;
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.util.StringUtils;
 
@@ -32,14 +33,14 @@ public class FileToAction extends RMActionExecuterAbstractBase
     /** action parameters */
     public static final String PARAM_DESTINATION_RECORD_FOLDER = "destinationRecordFolder";
     public static final String PARAM_PATH = "path";
-    public static final String PARAM_CREATE_RECORD_FOLDER = "createRecordFolder";
+    public static final String PARAM_CREATE_RECORD_PATH = "createRecordPath";
 
     /** file folder service */
     private FileFolderService fileFolderService;
 
     /** file plan service */
     private FilePlanService filePlanService;
-
+    
     /**
      * @param fileFolderService file folder service
      */
@@ -63,7 +64,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_PATH, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_PATH)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_CREATE_RECORD_FOLDER, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_CREATE_RECORD_FOLDER)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_CREATE_RECORD_PATH, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_CREATE_RECORD_PATH)));
     }
 
     /**
@@ -141,7 +142,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
 
         // look for the creation strategy
         boolean create = false;
-        Boolean createValue = (Boolean)action.getParameterValue(PARAM_CREATE_RECORD_FOLDER);
+        Boolean createValue = (Boolean)action.getParameterValue(PARAM_CREATE_RECORD_PATH);
         if (createValue != null)
         {
             create = createValue.booleanValue();
@@ -155,7 +156,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
             if (create == true)
             {
                 // get the parent into which we are going to create the new record folder
-                NodeRef parent = resolveParent(context, pathValues);
+                NodeRef parent = resolveParent(context, pathValues, create);
                 if (parent == null)
                 {
                     throw new AlfrescoRuntimeException("Unable to create new record folder, because destination parent could not be found.");
@@ -188,11 +189,42 @@ public class FileToAction extends RMActionExecuterAbstractBase
      */
     private NodeRef resolvePath(final NodeRef context, final String[] pathValues)
     {
+        return resolvePath(context, pathValues, false);
+    }
+    
+    /**
+    *
+    * @param context
+    * @param pathValues
+    * @param create      Create any missing path elements
+    * @return
+    */
+    private NodeRef resolvePath(final NodeRef context, final String[] pathValues, boolean create)
+    {
         NodeRef result = null;
         FileInfo fileInfo = null;
         try
         {
-            fileInfo = fileFolderService.resolveNamePath(context, new ArrayList<String>(Arrays.asList(pathValues)), false);
+            List<String> pathValueList = new ArrayList<String>(Arrays.asList(pathValues));
+            fileInfo = fileFolderService.resolveNamePath(context, pathValueList, false);
+            if((fileInfo == null) && create)
+            {
+                NodeRef parent = this.filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                for(int i = 1; i <= pathValueList.size(); i++)
+                {
+                    List<String> partialPathValueList = pathValueList.subList(0, i);
+                    fileInfo = fileFolderService.resolveNamePath(context, partialPathValueList, false);
+                    if(fileInfo == null) 
+                    {
+                        parent = this.filePlanService.createRecordCategory(parent, partialPathValueList.get(partialPathValueList.size() - 1));
+                    }
+                    else 
+                    {
+                        parent = fileInfo.getNodeRef();
+                    }          
+                }
+                result = parent;
+            }
         }
         catch (FileNotFoundException e)
         {
@@ -213,6 +245,18 @@ public class FileToAction extends RMActionExecuterAbstractBase
      */
     private NodeRef resolveParent(NodeRef context, String[] pathValues)
     {
+        return resolveParent(context, pathValues, false);
+    }
+    
+    /**
+    *
+    * @param context
+    * @param pathValues
+    * @param create      Create any missing path elements
+    * @return
+    */
+    private NodeRef resolveParent(NodeRef context, String[] pathValues, boolean create)
+    {
         NodeRef result = null;
 
         if (ArrayUtils.isEmpty(pathValues) == true)
@@ -229,7 +273,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
         else
         {
             pathValues = (String[])ArrayUtils.remove(pathValues, pathValues.length-1);
-            result = resolvePath(context, pathValues);
+            result = resolvePath(context, pathValues, create);
         }
 
         return result;

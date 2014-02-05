@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Date parameter processor.
@@ -41,26 +42,18 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
     private static final String SHORT = "short";
     private static final String LONG = "long";
     private static final String NUMBER = "number";
-    
+
     private static final String SEP = ".";
-    
-    private static final String[] ALL_FIELDS_FOR_SUBSTITUTION_QUERY = { 
-        DAY, 
-        DAY + SEP + SHORT, 
-        DAY + SEP + LONG, 
-        DAY + SEP + NUMBER, 
-        WEEK, 
-        WEEK + SEP + SHORT, 
-        WEEK + SEP + LONG, 
-        WEEK + SEP + NUMBER, 
-        MONTH, 
-        MONTH + SEP + SHORT, 
-        MONTH + SEP + LONG, 
-        MONTH + SEP + NUMBER, 
-        YEAR, 
-        YEAR + SEP + SHORT, 
-        YEAR + SEP + LONG, 
-        YEAR + SEP + NUMBER
+
+    private static final String[] ALL_FIELDS_FOR_SUBSTITUTION_QUERY = {
+        DAY + SEP + SHORT,
+        DAY + SEP + LONG,
+        DAY + SEP + NUMBER,
+        MONTH + SEP + SHORT,
+        MONTH + SEP + LONG,
+        MONTH + SEP + NUMBER,
+        YEAR + SEP + SHORT,
+        YEAR + SEP + LONG
     };
 
     /**
@@ -201,7 +194,7 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
     {
         List<String> suggestions = new ArrayList<String>();
         String namePrefix = this.getName() + ".";
-        if(this.getName().toLowerCase().contains(substitutionFragment.toLowerCase()))
+        if(StringUtils.isBlank(substitutionFragment)  || this.getName().toLowerCase().contains(substitutionFragment.toLowerCase()))
         {
             for(String field: ALL_FIELDS_FOR_SUBSTITUTION_QUERY) {
                 suggestions.add(namePrefix + field);

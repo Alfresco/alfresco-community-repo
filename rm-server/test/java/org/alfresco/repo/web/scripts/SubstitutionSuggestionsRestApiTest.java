@@ -84,7 +84,6 @@ public class SubstitutionSuggestionsRestApiTest extends BaseRMWebScriptTestCase
     {
         return Arrays.asList(new String[]
         {
-            "date.month",
             "date.month.number",
             "date.month.long",
             "date.month.short"

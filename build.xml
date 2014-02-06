@@ -114,7 +114,4 @@
       </condition>
       <antcall target="copyWebDirectory"></antcall>
    </target>
-
-   <target name="quickBuildAndDeployExploded" depends="install, deployExploded" description="" />
-
 </project>

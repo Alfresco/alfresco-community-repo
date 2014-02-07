@@ -15,7 +15,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.CategoryService;
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.util.StringUtils;
 
@@ -40,7 +39,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
 
     /** file plan service */
     private FilePlanService filePlanService;
-    
+
     /**
      * @param fileFolderService file folder service
      */
@@ -191,7 +190,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
     {
         return resolvePath(context, pathValues, false);
     }
-    
+
     /**
     *
     * @param context
@@ -214,14 +213,14 @@ public class FileToAction extends RMActionExecuterAbstractBase
                 {
                     List<String> partialPathValueList = pathValueList.subList(0, i);
                     fileInfo = fileFolderService.resolveNamePath(context, partialPathValueList, false);
-                    if(fileInfo == null) 
+                    if(fileInfo == null)
                     {
                         parent = this.filePlanService.createRecordCategory(parent, partialPathValueList.get(partialPathValueList.size() - 1));
                     }
-                    else 
+                    else
                     {
                         parent = fileInfo.getNodeRef();
-                    }          
+                    }
                 }
                 result = parent;
             }
@@ -237,17 +236,6 @@ public class FileToAction extends RMActionExecuterAbstractBase
         return result;
     }
 
-    /**
-     *
-     * @param context
-     * @param pathValues
-     * @return
-     */
-    private NodeRef resolveParent(NodeRef context, String[] pathValues)
-    {
-        return resolveParent(context, pathValues, false);
-    }
-    
     /**
     *
     * @param context

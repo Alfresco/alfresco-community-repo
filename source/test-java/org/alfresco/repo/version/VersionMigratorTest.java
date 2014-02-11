@@ -42,13 +42,16 @@ import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test simple version store migration
  */
+@Category(OwnJVMTestsCategory.class)
 public class VersionMigratorTest extends BaseVersionStoreTest
 {
     private static Log logger = LogFactory.getLog(VersionMigratorTest.class);

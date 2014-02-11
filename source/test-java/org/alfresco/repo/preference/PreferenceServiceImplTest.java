@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
@@ -54,6 +55,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 /**
@@ -62,6 +64,7 @@ import org.junit.rules.RuleChain;
  * @author Roy Wetherall
  * @author Neil Mc Erlean (refactoring to JUnit Rules and enabling disabled tests)
  */
+@Category(OwnJVMTestsCategory.class)
 public class PreferenceServiceImplTest
 {
     private static final Log log = LogFactory.getLog(PreferenceServiceImplTest.class);

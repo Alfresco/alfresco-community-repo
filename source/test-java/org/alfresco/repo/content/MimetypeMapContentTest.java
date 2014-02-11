@@ -28,8 +28,10 @@ import junit.framework.TestCase;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.DataModelTestApplicationContextHelper;
 import org.apache.poi.util.IOUtils;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -38,6 +40,7 @@ import org.springframework.context.ApplicationContext;
  * @see org.alfresco.repo.content.MimetypeMap
  * @see org.alfresco.repo.content.MimetypeMapTest
  */
+@Category(OwnJVMTestsCategory.class)
 public class MimetypeMapContentTest extends TestCase
 {
     private static ApplicationContext ctx = DataModelTestApplicationContextHelper.getApplicationContext();

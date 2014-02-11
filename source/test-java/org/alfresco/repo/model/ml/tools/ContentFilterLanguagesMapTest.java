@@ -23,6 +23,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
+
 /**
  * Content filter language service test cases
  * 
@@ -31,6 +34,7 @@ import java.util.Locale;
  * 
  * @author Yannick Pignot
  */
+@Category(OwnJVMTestsCategory.class)
 public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases 
 {
     

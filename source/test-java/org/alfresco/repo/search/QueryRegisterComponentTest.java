@@ -23,9 +23,12 @@ import junit.framework.TestCase;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
+@Category(OwnJVMTestsCategory.class)
 public class QueryRegisterComponentTest extends TestCase
 {
     static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

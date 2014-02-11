@@ -48,13 +48,16 @@ import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Nick Smith
  * @since 4.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
 {
     private static final String channelId = "test://channel/node";

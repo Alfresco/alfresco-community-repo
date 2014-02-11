@@ -37,14 +37,17 @@ import org.alfresco.service.cmr.transfer.NodeCrawler;
 import org.alfresco.service.cmr.transfer.NodeCrawlerFactory;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.experimental.categories.Category;
 
 /**
  * Unit test for classes related to the {@link NodeCrawler} interface
  * 
  * @author Brian Remmington
  */
+@Category(OwnJVMTestsCategory.class)
 public class NodeCrawlerTest extends BaseAlfrescoSpringTest
 {
     private ServiceRegistry serviceRegistry;

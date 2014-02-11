@@ -41,9 +41,11 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 
 /**
  * Checks that tagging of <i>incomplete</i> nodes is done properly.
@@ -51,6 +53,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Derek Hulley
  */
 @SuppressWarnings("unused")
+@Category(OwnJVMTestsCategory.class)
 public class IncompleteNodeTaggerTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(IncompleteNodeTaggerTest.class);

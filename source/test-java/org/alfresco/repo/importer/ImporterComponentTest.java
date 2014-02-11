@@ -41,11 +41,13 @@ import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.debug.NodeStoreInspector;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
-
+@Category(OwnJVMTestsCategory.class)
 public class ImporterComponentTest extends BaseSpringTest
 {
     private ImporterService importerService;

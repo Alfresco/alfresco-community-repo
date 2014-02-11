@@ -21,7 +21,10 @@ package org.alfresco.cmis.dictionary;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.mapping.BaseCMISTest;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 
+@Category(OwnJVMTestsCategory.class)
 public class CMISDictionaryTest extends BaseCMISTest
 {
     public void testAllTypes()

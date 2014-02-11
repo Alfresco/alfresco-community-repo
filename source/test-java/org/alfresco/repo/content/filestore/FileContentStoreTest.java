@@ -29,7 +29,9 @@ import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.TempFileProvider;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests read and write functionality for the store.
@@ -38,6 +40,7 @@ import org.alfresco.util.TempFileProvider;
  * 
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class FileContentStoreTest extends AbstractWritableContentStoreTest
 {
     private FileContentStore store;

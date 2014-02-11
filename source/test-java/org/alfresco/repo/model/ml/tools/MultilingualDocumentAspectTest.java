@@ -25,6 +25,8 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * Multilingual document aspect test cases
@@ -33,6 +35,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Yannick Pignot
  */
+@Category(OwnJVMTestsCategory.class)
 public class MultilingualDocumentAspectTest extends AbstractMultilingualTestCases
 {
     public void testCopy() throws Exception

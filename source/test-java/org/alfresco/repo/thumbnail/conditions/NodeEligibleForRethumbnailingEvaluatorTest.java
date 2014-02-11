@@ -33,8 +33,10 @@ import org.alfresco.service.cmr.thumbnail.FailedThumbnailInfo;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.experimental.categories.Category;
 
 /**
  * This class tests {@link NodeEligibleForRethumbnailingEvaluator}.
@@ -42,6 +44,7 @@ import org.alfresco.util.GUID;
  * @author Neil Mc Erlean
  * @since 3.5.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class NodeEligibleForRethumbnailingEvaluatorTest extends BaseSpringTest
 {
     private final QName thumbnailDef1 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thumbDef1");

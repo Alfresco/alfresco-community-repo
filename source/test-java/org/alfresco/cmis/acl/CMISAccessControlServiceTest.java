@@ -43,10 +43,13 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author andyh
  */
+@Category(OwnJVMTestsCategory.class)
 public class CMISAccessControlServiceTest extends BaseCMISTest
 {
     private NodeRef parent;

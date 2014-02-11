@@ -22,7 +22,9 @@ import java.io.File;
 
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.TempFileProvider;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests the file-based store when random access is not allowed, i.e. has to be spoofed.
@@ -32,6 +34,7 @@ import org.alfresco.util.TempFileProvider;
  * @since 2.1
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class NoRandomAccessFileContentStoreTest extends AbstractWritableContentStoreTest
 {
     private FileContentStore store;

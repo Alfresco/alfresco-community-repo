@@ -67,15 +67,18 @@ import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
 /**
  * Unit test for ImapServiceImpl
  */
+@Category(OwnJVMTestsCategory.class)
 public class ImapServiceImplTest extends TestCase 
 {
     private static final String IMAP_ROOT = "Alfresco IMAP";

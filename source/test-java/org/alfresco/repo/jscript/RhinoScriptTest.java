@@ -42,7 +42,9 @@ import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
@@ -51,6 +53,7 @@ import org.springframework.context.ApplicationContext;
 /**
  * @author Kevin Roast
  */
+@Category(OwnJVMTestsCategory.class)
 public class RhinoScriptTest extends TestCase
 {
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
@@ -59,6 +60,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 import org.springframework.context.ApplicationContext;
 
@@ -70,6 +72,7 @@ import org.springframework.context.ApplicationContext;
  * @author Neil Mc Erlean
  * @since 4.1.3
  */
+@Category(OwnJVMTestsCategory.class)
 public class MiscellaneousRulesTest
 {
     private static final Log log = LogFactory.getLog(MiscellaneousRulesTest.class);

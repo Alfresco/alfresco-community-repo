@@ -34,8 +34,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.junit.experimental.categories.Category;
 
+@Category(OwnJVMTestsCategory.class)
 public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
 {
     public static final String TEMPLATE_MODEL_XML = 

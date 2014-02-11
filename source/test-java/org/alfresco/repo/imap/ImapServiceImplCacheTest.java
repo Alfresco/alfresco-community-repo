@@ -21,8 +21,10 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 import com.icegreen.greenmail.store.SimpleStoredMessage;
@@ -33,6 +35,7 @@ import com.icegreen.greenmail.store.SimpleStoredMessage;
  * 
  * @author ArsenyKo
  */
+@Category(OwnJVMTestsCategory.class)
 public class ImapServiceImplCacheTest extends TestCase
 {
     private static final String USER_NAME = "admin";

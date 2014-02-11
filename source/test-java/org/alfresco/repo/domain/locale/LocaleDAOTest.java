@@ -31,11 +31,13 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -45,6 +47,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Derek Hulley, janv
  * @since 2.2.1, 3.3
  */
+@Category(OwnJVMTestsCategory.class)
 public class LocaleDAOTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(LocaleDAOTest.class);

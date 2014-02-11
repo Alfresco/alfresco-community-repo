@@ -47,15 +47,18 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Brian
  * @since 4.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class PublishingIntegratedTest extends BaseSpringTest
 {
     protected ServiceRegistry serviceRegistry;

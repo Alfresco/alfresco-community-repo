@@ -60,11 +60,13 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.jpeg.JpegParser;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import com.google.common.collect.Sets;
@@ -78,6 +80,7 @@ import com.google.common.collect.Sets;
  * @author Nick Burch
  * @author Ray Gauss II
  */
+@Category(OwnJVMTestsCategory.class)
 public class ContentMetadataExtracterTagMappingTest extends TestCase
 {
    private static ConfigurableApplicationContext ctx = 

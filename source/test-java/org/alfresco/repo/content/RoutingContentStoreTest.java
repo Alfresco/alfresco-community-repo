@@ -30,8 +30,10 @@ import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
+import org.junit.experimental.categories.Category;
 
 /**
  * Ensures that the routing of URLs based on context is working.  A combination
@@ -43,6 +45,7 @@ import org.alfresco.util.TempFileProvider;
  * 
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
 {
     private ContentStore storeA;

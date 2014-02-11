@@ -35,13 +35,16 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 
 /**
  * Test Transaction-level Policies
  */
+@Category(OwnJVMTestsCategory.class)
 public class PolicyComponentTransactionTest extends TestCase
 {
     private static final String TEST_MODEL = "org/alfresco/repo/policy/policycomponenttest_model.xml";

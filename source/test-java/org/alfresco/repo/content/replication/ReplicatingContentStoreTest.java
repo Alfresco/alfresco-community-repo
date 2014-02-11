@@ -35,8 +35,10 @@ import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests read and write functionality for the replicating store.
@@ -48,6 +50,7 @@ import org.alfresco.util.TempFileProvider;
  * 
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class ReplicatingContentStoreTest extends AbstractWritableContentStoreTest
 {
     private static final String SOME_CONTENT = "The No. 1 Ladies' Detective Agency";

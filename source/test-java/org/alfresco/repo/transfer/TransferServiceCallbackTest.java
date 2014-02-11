@@ -68,13 +68,16 @@ import org.alfresco.service.cmr.transfer.TransferProgress.Status;
 import org.alfresco.service.cmr.transfer.TransferVersion;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
 
+@Category(OwnJVMTestsCategory.class)
 public class TransferServiceCallbackTest extends TestCase
 {
 //    private static Log log = LogFactory.getLog(TransferServiceImplUnitTest.class);

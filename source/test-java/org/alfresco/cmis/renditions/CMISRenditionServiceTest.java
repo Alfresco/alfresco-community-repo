@@ -47,10 +47,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Stas Sokolovsky
  */
+@Category(OwnJVMTestsCategory.class)
 public class CMISRenditionServiceTest extends BaseCMISTest
 {
     private static final String[] THUMBNAIL_NAMES = new String[] { "doclib", "webpreview", "imgpreview" };

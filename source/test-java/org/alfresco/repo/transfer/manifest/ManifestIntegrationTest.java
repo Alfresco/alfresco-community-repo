@@ -49,14 +49,17 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.transfer.TransferService;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.TempFileProvider;
+import org.junit.experimental.categories.Category;
 
 /**
  * Integration test for Transfer Manifest
  *
  * @author Mark Rogers
  */
+@Category(OwnJVMTestsCategory.class)
 public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
 {
     private TransferService transferService;

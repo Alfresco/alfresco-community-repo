@@ -63,6 +63,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
@@ -71,6 +72,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import org.junit.FixMethodOrder;
+import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 
 /**
@@ -80,6 +82,7 @@ import org.junit.runners.MethodSorters;
  * @author Nick Burch
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Category(OwnJVMTestsCategory.class)
 public class TaggingServiceImplTest extends TestCase
 {
    private static ConfigurableApplicationContext ctx = 

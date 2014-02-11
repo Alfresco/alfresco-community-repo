@@ -48,8 +48,10 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.FixMethodOrder;
+import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -60,6 +62,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  * 
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Category(OwnJVMTestsCategory.class)
 public class MessageServiceImplTest extends TestCase implements MessageDeployer
 {
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();

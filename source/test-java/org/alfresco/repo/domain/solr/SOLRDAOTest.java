@@ -34,7 +34,9 @@ import org.alfresco.repo.solr.AclChangeSet;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.Transaction;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -42,6 +44,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  *
  * @since 4.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class SOLRDAOTest extends TestCase
 {
     private ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();

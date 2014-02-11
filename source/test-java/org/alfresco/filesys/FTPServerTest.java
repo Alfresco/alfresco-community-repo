@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
@@ -52,6 +53,7 @@ import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 
@@ -61,6 +63,7 @@ import org.springframework.context.ApplicationContext;
  * Uses the commons-net ftp client library to connect to the
  * Alfresco FTP server.
  */
+@Category(OwnJVMTestsCategory.class)
 public class FTPServerTest extends TestCase
 
 {

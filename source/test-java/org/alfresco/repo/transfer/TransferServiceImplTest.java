@@ -91,11 +91,13 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
+import org.junit.experimental.categories.Category;
 import org.springframework.util.ResourceUtils;
 
 /**
@@ -106,6 +108,7 @@ import org.springframework.util.ResourceUtils;
  * @author Mark Rogers
  */
 @SuppressWarnings("deprecation")
+@Category(OwnJVMTestsCategory.class)
 public class TransferServiceImplTest extends BaseAlfrescoSpringTest 
 {
     private TransferService transferService;

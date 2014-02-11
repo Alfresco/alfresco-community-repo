@@ -40,11 +40,14 @@ import org.alfresco.service.cmr.subscriptions.SubscriptionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
+@Category(OwnJVMTestsCategory.class)
 public class SubscriptionServiceImplTest extends TestCase
 {
     public static final String[] CONTEXTS = new String[] { "classpath:alfresco/application-context.xml", "classpath:test/alfresco/test-subscriptions-context.xml" };

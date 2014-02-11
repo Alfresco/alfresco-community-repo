@@ -42,15 +42,18 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Brian
  * @author Nick Smith
  * @since 4.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class PublishingPackageSerializerTest extends AbstractPublishingIntegrationTest
 {
     @Resource(name="publishingPackageSerializer")

@@ -63,10 +63,12 @@ import org.alfresco.service.cmr.transfer.TransferServicePolicies;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -77,7 +79,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author Brian Remmington
  */
 @SuppressWarnings("deprecation")
-// It's a test
+@Category(OwnJVMTestsCategory.class)
 public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 {
     private static int fileCount = 0;

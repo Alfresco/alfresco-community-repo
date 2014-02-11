@@ -44,9 +44,12 @@ import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.webscripts.GUID;
 
+@Category(OwnJVMTestsCategory.class)
 public class CMISPropertyServiceTest extends BaseCMISTest
 {
     public void testBasicFolder() throws Exception

@@ -34,6 +34,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
@@ -57,6 +58,7 @@ import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
 import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStream;
 import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStreamFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationContext;
 
@@ -67,6 +69,7 @@ import org.springframework.context.ApplicationContext;
  * @author Derek Hulley
  * @since 4.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class OpenCmisLocalTest extends TestCase
 {
     public static final String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml",

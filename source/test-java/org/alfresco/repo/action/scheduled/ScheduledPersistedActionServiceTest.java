@@ -41,8 +41,10 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.quartz.DateIntervalTrigger;
 import org.quartz.Job;
 import org.quartz.JobDetail;
@@ -60,6 +62,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 /**
  * Unit tests for the {@link ScheduledPersistedActionService}
  */
+@Category(OwnJVMTestsCategory.class)
 public class ScheduledPersistedActionServiceTest extends TestCase 
 {
     private static ConfigurableApplicationContext ctx =

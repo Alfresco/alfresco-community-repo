@@ -184,53 +184,51 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
     {
         assertNotNull("Invitation service is null", invitationService);
     }
-
-    
+   
     /**
-     * MNT-9101 An internal user account (disabled) should not be deleted if 
-     * an associated nominated invitation is cancelled.
+     * MNT-9101 An internal user account (disabled) should not be deleted if an
+     * associated nominated invitation is cancelled.
      * 
      * @throws Exception
      */
-	public void testInternalUserNotDeletedAfterInviteCancelled() throws Exception {
+    public void testInternalUserNotDeletedAfterInviteCancelled() throws Exception
+    {
+        // Disable our existing User
+        boolean enabled = authenticationService.getAuthenticationEnabled(USER_ONE);
+        assertTrue("User One authentication disabled", enabled);
+        authenticationService.setAuthenticationEnabled(USER_ONE, false);
+        enabled = authenticationService.getAuthenticationEnabled(USER_ONE);
+        assertTrue("User One authentication enabled", !enabled);
 
-		//Disable our existing User
-		boolean enabled = authenticationService.getAuthenticationEnabled(USER_ONE);
-		assertTrue("User One authentication disabled", enabled);
-		authenticationService.setAuthenticationEnabled(USER_ONE, false);
-		enabled = authenticationService.getAuthenticationEnabled(USER_ONE);
-		assertTrue("User One authentication enabled", !enabled);
+        String inviteeUserName = USER_ONE;
+        Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE;
+        String resourceName = SITE_SHORT_NAME_INVITE;
+        String inviteeRole = SiteModel.SITE_COLLABORATOR;
+        String acceptUrl = "froob";
+        String rejectUrl = "marshmallow";
 
-		String inviteeUserName = USER_ONE;
-		Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE;
-		String resourceName = SITE_SHORT_NAME_INVITE;
-		String inviteeRole = SiteModel.SITE_COLLABORATOR;
-		String acceptUrl = "froob";
-		String rejectUrl = "marshmallow";
+        this.authenticationComponent.setCurrentUser(USER_MANAGER);
 
-		this.authenticationComponent.setCurrentUser(USER_MANAGER);
+        // Invite our existing user
+        NominatedInvitation nominatedInvitation = invitationService.inviteNominated(
+                inviteeUserName, resourceType, resourceName, inviteeRole, acceptUrl, rejectUrl);
 
-		//Invite our existing user
-		NominatedInvitation nominatedInvitation = invitationService
-				.inviteNominated(inviteeUserName, resourceType, resourceName,
-						inviteeRole, acceptUrl, rejectUrl);
+        // Cancel the invite
+        invitationService.cancel(nominatedInvitation.getInviteId());
 
-		//Cancel the invite
-		invitationService.cancel(nominatedInvitation.getInviteId());
-		
-		//Our User and associated Authentication still exists
-		assertNotNull("User Exists", personService.getPersonOrNull(USER_ONE));
-		assertTrue("Authentication Exists", authenticationService.authenticationExists(USER_ONE));
+        // Our User and associated Authentication still exists
+        assertNotNull("User Exists", personService.getPersonOrNull(USER_ONE));
+        assertTrue("Authentication Exists", authenticationService.authenticationExists(USER_ONE));
+    }
 
-	}
-    
-	 /**
-     * Ensure that an External user account is deleted when an invite is cancelled
+    /**
+     * Ensure that an External user account is deleted when an invite is
+     * cancelled
      * 
      * @throws Exception
      */
-	public void testExternalUserDeletedAfterInviteCancelled() throws Exception {
-
+    public void testExternalUserDeletedAfterInviteCancelled() throws Exception
+    {
         String inviteeFirstName = PERSON_FIRSTNAME;
         String inviteeLastName = PERSON_LASTNAME;
         String inviteeEmail = "123@alfrescotesting.com";
@@ -243,19 +241,20 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
 
         this.authenticationComponent.setCurrentUser(USER_MANAGER);
 
-        NominatedInvitation nominatedInvitation = invitationService.inviteNominated(inviteeFirstName, inviteeLastName,
-                    inviteeEmail, resourceType, resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
-		
+        NominatedInvitation nominatedInvitation = invitationService.inviteNominated(
+                inviteeFirstName, inviteeLastName, inviteeEmail, resourceType, resourceName,
+                inviteeRole, serverPath, acceptUrl, rejectUrl);
+
         String inviteeUsername = nominatedInvitation.getInviteeUserName();
-        
+
         invitationService.cancel(nominatedInvitation.getInviteId());
-		
-        //Our User and Authentication has been removed
+
+        // Our User and Authentication has been removed
         assertNull("Person deleted", personService.getPersonOrNull(inviteeUsername));
-		assertFalse("Authentication deleted", authenticationService.authenticationExists(inviteeUsername));
-	}
-    
-    
+        assertFalse("Authentication deleted",
+                authenticationService.authenticationExists(inviteeUsername));
+    }
+
     /**
      * Test nominated user - new user
      * 

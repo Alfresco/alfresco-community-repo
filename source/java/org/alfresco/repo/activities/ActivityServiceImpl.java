@@ -624,6 +624,11 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                 {
                     logger.debug("Inserting feed control for siteId: " + feedControl.getSiteId() + ",\n appToolId : " + feedControl.getAppToolId() + ",\n for user : " + userId);
                 }
+                //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
+                if (! userNamesAreCaseSensitive)
+                {
+                    userId = userId.toLowerCase();
+                }
                 feedControlDAO.insertFeedControl(new FeedControlEntity(userId, feedControl));
             }
         }
@@ -673,6 +678,11 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
     {
         ParameterCheck.mandatoryString("userId", userId);
         
+        if (!userNamesAreCaseSensitive)
+        {
+            userId = userId.toLowerCase();
+        }
+        
         try
         {
             List<FeedControlEntity> feedControlDaos = feedControlDAO.selectFeedControls(userId);
@@ -721,6 +731,12 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
             {
                 logger.debug("Deleting feed control for siteId: " + feedControl.getSiteId() + ",\n appToolId : " + feedControl.getAppToolId() + ",\n for user : " + userId);
             }
+            // MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities"
+            if (!userNamesAreCaseSensitive)
+            {
+                userId = userId.toLowerCase();
+            }
+
             feedControlDAO.deleteFeedControl(new FeedControlEntity(userId, feedControl));
         }
         catch (SQLException e) 
@@ -746,6 +762,12 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
             {
                 logger.debug("Selecting feed control for siteId: " + feedControl.getSiteId() + ",\n appToolId : " + feedControl.getAppToolId() + ",\n for user : " + userId);
             }
+            // MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities"
+            if (!userNamesAreCaseSensitive)
+            {
+                userId = userId.toLowerCase();
+            }
+            
             long id = feedControlDAO.selectFeedControl(new FeedControlEntity(userId, feedControl));
             boolean exists = (id != -1);
             if (logger.isDebugEnabled())

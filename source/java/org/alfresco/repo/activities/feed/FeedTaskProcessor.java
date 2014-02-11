@@ -81,6 +81,13 @@ public abstract class FeedTaskProcessor
     private static final String URL_SERVICE_TEMPLATES = "/api/activities/templates";
     private static final String URL_SERVICE_TEMPLATE  = "/api/activities/template";
     
+    private boolean userNamesAreCaseSensitive = false;
+    
+    public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
+    {
+        this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
+    }
+    
     public void process(int jobTaskNode, long minSeq, long maxSeq, RepoCtx ctx) throws Exception
     {
         long startTime = System.currentTimeMillis();
@@ -245,6 +252,12 @@ public abstract class FeedTaskProcessor
                                 ActivityFeedEntity feed = new ActivityFeedEntity();
                                 
                                 // Generate activity feed summary 
+                                //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
+                                if (! userNamesAreCaseSensitive)
+                                {
+                                    recipient = recipient.toLowerCase();
+                                    postingUserId = postingUserId.toLowerCase();
+                                }
                                 feed.setFeedUserId(recipient);
                                 feed.setPostUserId(postingUserId);
                                 feed.setActivityType(activityType);
@@ -618,6 +631,12 @@ public abstract class FeedTaskProcessor
 
     protected List<FeedControlEntity> getFeedControls(String connectedUser) throws SQLException
     {
+        //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
+        if (! userNamesAreCaseSensitive)
+        {
+            connectedUser = connectedUser.toLowerCase();
+        }
+        
         return selectUserFeedControls(connectedUser);
     }
 

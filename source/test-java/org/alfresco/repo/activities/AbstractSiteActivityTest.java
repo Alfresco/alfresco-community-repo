@@ -18,10 +18,10 @@
  */
 package org.alfresco.repo.activities;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.feed.FeedGenerator;
@@ -37,30 +37,27 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
 import org.quartz.Scheduler;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Simple Activity Service unit test using site (membership) activities
  * 
  * @author janv
  */
-public class SiteActivityTest extends TestCase
+public abstract class AbstractSiteActivityTest
 {
-    private static Log logger = LogFactory.getLog(SiteActivityTest.class);
+    private static Log logger = LogFactory.getLog(AbstractSiteActivityTest.class);
     
-    private static final String[] CONFIG_LOCATIONS =
-    {
-        "classpath:alfresco/application-context.xml"
-        //, "classpath:alfresco/subsystems/ActivitiesFeed/default/activities-feed-context.xml"
-    };
-
-    private static ApplicationContext applicationContext = new ClassPathXmlApplicationContext(
-            SiteActivityTest.CONFIG_LOCATIONS);
+    private ApplicationContext applicationContext;
     
     private SiteService siteService;
     private ActivityService activityService;
@@ -99,14 +96,14 @@ public class SiteActivityTest extends TestCase
     private static boolean membersRemoved = false;
     private static boolean controlsCreated = false;
     
-    public SiteActivityTest()
+    public AbstractSiteActivityTest()
     {
     }
     
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
-        super.setUp();
+        applicationContext = ApplicationContextHelper.getApplicationContext();
         String testid = ""+System.currentTimeMillis();
         
         // Let's shut down the scheduler so that we aren't competing with the scheduled versions of the post lookup and
@@ -143,10 +140,10 @@ public class SiteActivityTest extends TestCase
         site2 = "test_site2_" + testid;
         site3 = "test_site3_" + testid;
         
-        user1 = "test_user1_" + testid;
-        user2 = "test_user2_" + testid;
-        user3 = "test_user3_" + testid;
-        user4 = "test_user4_" + testid;
+        user1 = "Test_User1_" + testid;
+        user2 = "Test_User2_" + testid;
+        user3 = "Test_User3_" + testid;
+        user4 = "Test_User4_" + testid;
         
         
         // create users
@@ -168,8 +165,8 @@ public class SiteActivityTest extends TestCase
         createSite(site3, false);
     }
     
-    @Override
-    protected void tearDown() throws Exception
+    @After
+    public void tearDown() throws Exception
     {
         login(ADMIN_USER, ADMIN_PW);
         
@@ -185,8 +182,6 @@ public class SiteActivityTest extends TestCase
         membersAddedUpdated  = false;
         membersRemoved = false;
         controlsCreated = false;
-        
-        super.tearDown();
     }
     
     protected void createSite(String siteId, boolean isPublic) throws Exception
@@ -205,6 +200,22 @@ public class SiteActivityTest extends TestCase
         siteService.deleteSite(siteId);
     }
     
+    @Test
+    //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
+    public void testUserActivitiesOnSite() throws Exception
+    {
+        login(ADMIN_USER, ADMIN_PW);
+        
+        addMembership(site1, user4, SiteModel.SITE_CONSUMER);
+        
+        generateFeed();
+        
+        login(user4, USER_PW);
+        
+        getUserFeed(user4, site1, false, false, true, 1);
+    }
+    
+    @Test
     public void testGetSiteFeedsBefore() throws Exception
     {
         login(ADMIN_USER, ADMIN_PW);
@@ -245,6 +256,7 @@ public class SiteActivityTest extends TestCase
         assertEquals(expectedCount, activityService.getSiteFeedEntries(siteId).size());
     }
     
+    @Test
     public void testGetUserFeedsBefore() throws Exception
     {
         // as admin
@@ -305,6 +317,7 @@ public class SiteActivityTest extends TestCase
         assertEquals(expectedCount, activityService.getUserFeedEntries(userId, siteId, excludeThisUser, excludeOtherUsers, null, null).size());
     }
     
+    @Test
     public void testUserFeedControls() throws Exception
     {
         if (! controlsCreated)
@@ -327,6 +340,7 @@ public class SiteActivityTest extends TestCase
         }
     }
     
+    @Test
     public void testAddAndUpdateMemberships() throws Exception
     {
         if (! membersAddedUpdated)
@@ -343,6 +357,7 @@ public class SiteActivityTest extends TestCase
         }
     }
     
+    @Test
     public void testGetSiteFeedsAfterAddAndUpdateMemberships() throws Exception
     {
         testAddAndUpdateMemberships();
@@ -369,6 +384,8 @@ public class SiteActivityTest extends TestCase
             // ignore
         }
     }
+    
+    @Test
     public void testRemoveMemberships() throws Exception
     {
         if (! membersRemoved)
@@ -420,6 +437,7 @@ public class SiteActivityTest extends TestCase
         activityService.setFeedControl(new FeedControl(siteId, appToolId));
     }
     
+    @Test
     public void testGetSiteFeedsAfterRemoveMemberships() throws Exception
     {
         testAddAndUpdateMemberships();
@@ -458,6 +476,7 @@ public class SiteActivityTest extends TestCase
         }
     }
     
+    @Test
     public void testGetUserFeedsAfter() throws Exception
     {
         testUserFeedControls();
@@ -565,5 +584,12 @@ public class SiteActivityTest extends TestCase
     {
         postLookup.execute();
         feedGenerator.execute();
+    }
+    
+    @AfterClass
+    // remove system "user.name.caseSensitive" property
+    public static void afterClass()
+    {
+        System.clearProperty("user.name.caseSensitive");
     }
 }

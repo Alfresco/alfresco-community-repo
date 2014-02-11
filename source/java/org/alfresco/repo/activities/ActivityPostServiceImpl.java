@@ -233,6 +233,11 @@ public class ActivityPostServiceImpl implements ActivityPostService
         {
             Date postDate = new Date();
             ActivityPostEntity activityPost = new ActivityPostEntity();
+            //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
+            if (! userNamesAreCaseSensitive)
+            {
+                userId = userId.toLowerCase();
+            }
             activityPost.setUserId(userId);
             
             activityPost.setSiteNetwork(tenantService.getName(siteId));

@@ -68,6 +68,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
     private int maxIdRange = 1000000;
     private int maxAgeMins = 0;
     private int maxFeedSize = 100;
+    private boolean userNamesAreCaseSensitive = false;
     
     private ActivityFeedDAO feedDAO;
     
@@ -80,6 +81,10 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
     private FeedCleanerDeleteSiteTransactionListener deleteSiteTransactionListener;
     private FeedCleanerDeletePersonTransactionListener deletePersonTransactionListener;
     
+    public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
+    {
+        this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
+    }
     
     public void setFeedDAO(ActivityFeedDAO feedDAO)
     {
@@ -430,7 +435,11 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
     public void beforeDeleteNodePerson(NodeRef personNodeRef)
     {
         String userId = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
-        
+        //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
+        if (! userNamesAreCaseSensitive)
+        {
+            userId = userId.toLowerCase();
+        }
         Set<String> deletedUserIds = (Set<String>)AlfrescoTransactionSupport.getResource(KEY_DELETED_USER_IDS);
         if (deletedUserIds == null)
         {
@@ -503,8 +512,19 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
             Set<String> deletedUserIds = TransactionalResourceHelper.getSet(KEY_DELETED_USER_IDS);
             if (deletedUserIds != null)
             {
-                for (final String userId : deletedUserIds)
+                for (String user : deletedUserIds)
                 {
+                    //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
+                    final String userId;
+                    if (! userNamesAreCaseSensitive)
+                    {
+                        userId = user.toLowerCase();
+                    }
+                    else
+                    {
+                        userId = user;
+                    }
+                    
                     transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
                     {
                         public Void execute() throws Throwable

@@ -107,7 +107,13 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     @Override
     protected WorkflowTask getTypedItemForDecodedId(String itemId)
     {
-        return workflowService.getTaskById(itemId);
+        WorkflowTask task = workflowService.getTaskById(itemId);
+        if (task == null)
+        {
+            String msg = "Workflow task does not exist: " + itemId;
+            throw new IllegalArgumentException(msg);
+        }
+        return task;
     }
 
     /**

@@ -57,7 +57,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
@@ -787,7 +786,10 @@ public class TaskFormProcessorTest extends TestCase
                 if (TASK_ID.equals(id))
                     return task;
                 else
-                    throw new WorkflowException("Task Id not found!");
+                {
+                    // if TaskId is not found then Activity returns null, does not throws WorkflowException
+                    return null;
+                }
             }
         });
         

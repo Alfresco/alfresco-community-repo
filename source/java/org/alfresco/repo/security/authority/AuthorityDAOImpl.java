@@ -377,9 +377,6 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     public void createAuthority(String name, String authorityDisplayName, Set<String> authorityZones)
     {
         HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
-        //MNT-9794 fix. ContentModel.PROP_NAME is added for preventing the generation of new uid for every new authority
-        // nodes with the duplicated names in 'child_node_name' field into 'alf_child_assoc' table
-        props.put(ContentModel.PROP_NAME, name);
         props.put(ContentModel.PROP_AUTHORITY_NAME, name);
         props.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
         NodeRef childRef;

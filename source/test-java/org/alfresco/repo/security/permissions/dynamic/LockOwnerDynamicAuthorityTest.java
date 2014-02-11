@@ -312,8 +312,8 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
                 PermissionService.UNLOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
         authenticationService.authenticate("lemur", "lemur".toCharArray());
         
@@ -335,8 +335,6 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
                 PermissionService.UNLOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
         
         authenticationService.authenticate("frog", "frog".toCharArray());

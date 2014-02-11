@@ -883,12 +883,8 @@
                                      <goal>test</goal>
                                  </goals>
                                  <configuration>
-                                     <!-- These are the default fork options -->
-                                     <forkCount>1</forkCount>
-                                     <reuseForks>true</reuseForks>
-                                     <!-- end of default fork options -->
                                      <groups>org.alfresco.test_category.BaseSpringTestsCategory</groups>
-                                     <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory</excludedGroups>        
+                                     <testFailureIgnore>true</testFailureIgnore>
                                  </configuration>
                             </execution>
                             <!-- Execution for tests which require their own JVM -->
@@ -899,18 +895,17 @@
                                  </goals>
                                  <phase>process-test-classes</phase>
                                  <configuration>
-                                     <argLine>-Xmx2560m -XX:MaxPermSize=512m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
-                                     <!-- Equivalent of forkMode="always" -->
-                                     <forkCount>1</forkCount>
                                      <reuseForks>false</reuseForks>
-                                     <!-- end of fork options -->
                                      <groups>org.alfresco.test_category.OwnJVMTestsCategory</groups>
+                                     <testFailureIgnore>true</testFailureIgnore>
                                  </configuration>
                             </execution>
                             <execution>
                                  <id>default-test</id>
                                  <configuration>
+                                     <argLine>-Xmx2560m -XX:MaxPermSize=512m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
                                      <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory, org.alfresco.test_category.BaseSpringTestsCategory,org.alfresco.test_category.LegacyCategory</excludedGroups>                                 
+                                     <testFailureIgnore>true</testFailureIgnore>
                                  </configuration>
                              </execution>
                              <execution>
@@ -919,20 +914,13 @@
                                      <goal>test</goal>
                                  </goals>
                                  <configuration>
-                                     <argLine>-Xmx2560m -XX:MaxPermSize=512m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
-                                     <!-- These are the default fork options -->
-                                     <forkCount>1</forkCount>
-                                     <reuseForks>true</reuseForks>
-                                     <!-- end of default fork options -->
                                      <groups>org.alfresco.test_category.LegacyCategory</groups>
-                                     <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory,org.alfresco.test_category.BaseSpringTestsCategory</excludedGroups>        
                                  </configuration>
                             </execution>
                         </executions>
 
                         <!-- Default configuration, specifying which tests to pass -->
                         <configuration>
-                            <argLine>-Xmx2560m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
                             <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
                             <includes>
                                 <!-- Standard test names -->
@@ -944,7 +932,6 @@
                             </includes>
                             <excludes>
                                 <exclude>**/org/alfresco/RepositoryStartupTest.*</exclude>
-
                                 <!-- Failing tests which are not run with Ant - OK to exclude -->
                                 <exclude>**/org/alfresco/encryption/EncryptionTests.*</exclude>
                                 <exclude>**/org/alfresco/jcr/test/BaseJCRTest.*</exclude>

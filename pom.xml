@@ -874,7 +874,6 @@
                                         <include>**/org/alfresco/RepositoryStartupTest.*</include>
                                     </includes>
                                     <excludes combine.self="override"/>
-                                    <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
                                 </configuration>
                             </execution>
                              <!-- Execution for tests which use BaseSpring test -->
@@ -883,7 +882,6 @@
                                  <goals>
                                      <goal>test</goal>
                                  </goals>
-                                 <phase>process-test-classes</phase>
                                  <configuration>
                                      <!-- These are the default fork options -->
                                      <forkCount>1</forkCount>
@@ -899,6 +897,7 @@
                                  <goals>
                                      <goal>test</goal>
                                  </goals>
+                                 <phase>process-test-classes</phase>
                                  <configuration>
                                      <argLine>-Xmx2560m -XX:MaxPermSize=512m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
                                      <!-- Equivalent of forkMode="always" -->
@@ -934,6 +933,7 @@
                         <!-- Default configuration, specifying which tests to pass -->
                         <configuration>
                             <argLine>-Xmx2560m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
+                            <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
                             <includes>
                                 <!-- Standard test names -->
                                 <include>**/*Test.*</include>

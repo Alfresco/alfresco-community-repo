@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -45,6 +46,7 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.debug.NodeStoreInspector;
 import org.junit.experimental.categories.Category;
+import org.joda.time.DateTimeZone;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 @Category(OwnJVMTestsCategory.class)
@@ -74,6 +76,11 @@ public class ImporterComponentTest extends BaseSpringTest
         
         // Create the store
         this.storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
+        
+        TimeZone tz = TimeZone.getTimeZone("GMT");
+        TimeZone.setDefault(tz);
+        // Joda time has already grabbed the JVM zone so re-set it here
+        DateTimeZone.setDefault(DateTimeZone.forTimeZone(tz));
     }
     
     @Override
@@ -126,9 +133,9 @@ public class ImporterComponentTest extends BaseSpringTest
         String modifiedDate = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_MODIFIED));
         String modifier = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_MODIFIER));
         // Check that the cm:auditable properties are correct
-        assertEquals("cm:created not preserved during import", ISO8601DateFormat.format(ISO8601DateFormat.parse("2009-05-01T00:00:00.000+01:00")), createdDate);
+        assertEquals("cm:created not preserved during import", ISO8601DateFormat.format(ISO8601DateFormat.parse("2009-04-30T23:00:00.000Z")), createdDate);
         assertEquals("cm:creator not preserved during import", "Import Creator", creator);
-        assertEquals("cm:modified not preserved during import", ISO8601DateFormat.format(ISO8601DateFormat.parse("2009-05-02T00:00:00.000+01:00")), modifiedDate);
+        assertEquals("cm:modified not preserved during import", ISO8601DateFormat.format(ISO8601DateFormat.parse("2009-05-01T23:00:00.000Z")), modifiedDate);
         assertEquals("cm:modifier not preserved during import", "Import Modifier", modifier);
         
         nodeRef = childAssocs.get(1).getChildRef();
@@ -138,7 +145,7 @@ public class ImporterComponentTest extends BaseSpringTest
         modifiedDate = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_MODIFIED));
         modifier = DefaultTypeConverter.INSTANCE.convert(String.class, nodeProps.get(ContentModel.PROP_MODIFIER));
         // Check that the cm:auditable properties are correct
-        assertEquals("cm:created not preserved during import", ISO8601DateFormat.format(ISO8601DateFormat.parse("2009-05-01T00:00:00.000+01:00")), createdDate);
+        assertEquals("cm:created not preserved during import", ISO8601DateFormat.format(ISO8601DateFormat.parse("2009-04-30T23:00:00.000Z")), createdDate);
         assertEquals("cm:creator not preserved during import", "Import Creator", creator);
         assertEquals("cm:modifier not preserved during import", AuthenticationUtil.getSystemUserName(), modifier);
     }

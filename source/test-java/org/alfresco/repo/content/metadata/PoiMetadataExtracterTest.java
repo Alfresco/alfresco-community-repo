@@ -94,7 +94,7 @@ public class PoiMetadataExtracterTest extends AbstractMetadataExtracterTest
         }
         else if (MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET.equals(mimetype))
         {
-            checkFileCreationDate(mimetype, properties, "1996-10-15T00:33:28.000+01:00");
+            checkFileCreationDate(mimetype, properties, "1996-10-14T23:33:28.000Z");
         }
         else if (MimetypeMap.MIMETYPE_OPENXML_PRESENTATION.equals(mimetype))
         {

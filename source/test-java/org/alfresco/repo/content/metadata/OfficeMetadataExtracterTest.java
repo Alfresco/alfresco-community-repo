@@ -105,20 +105,20 @@ public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
        if(mimetype.equals(MimetypeMap.MIMETYPE_WORD)) {
           assertEquals(
                 "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
-                "2005-05-26T13:57:00.000+01:00",
+                "2005-05-26T12:57:00.000Z",
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
           assertEquals(
                 "Property " + ContentModel.PROP_MODIFIED + " not found for mimetype " + mimetype,
-                "2005-09-20T18:25:00.000+01:00",
+                "2005-09-20T17:25:00.000Z",
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_MODIFIED)));
        } else if(mimetype.equals(MimetypeMap.MIMETYPE_EXCEL)) {
           assertEquals(
                 "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
-                "1996-10-15T00:33:28.000+01:00",
+                "1996-10-14T23:33:28.000Z",
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
           assertEquals(
                 "Property " + ContentModel.PROP_MODIFIED + " not found for mimetype " + mimetype,
-                "2005-09-20T19:22:32.000+01:00",
+                "2005-09-20T18:22:32.000Z",
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_MODIFIED)));
        } else if(mimetype.equals(MimetypeMap.MIMETYPE_PPT)) {
           assertEquals(
@@ -127,7 +127,7 @@ public class OfficeMetadataExtracterTest extends AbstractMetadataExtracterTest
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
           assertEquals(
                 "Property " + ContentModel.PROP_MODIFIED + " not found for mimetype " + mimetype,
-                "2005-09-20T19:23:41.000+01:00",
+                "2005-09-20T18:23:41.000Z",
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_MODIFIED)));
        }
        

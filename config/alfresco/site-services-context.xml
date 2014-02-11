@@ -163,7 +163,7 @@
         <property name="methodSecurity" ref="FileFolderService_security_list"/>
     </bean>
     
-    <bean id="baseSiteService" class="org.alfresco.repo.site.SiteServiceImpl" init-method="init">
+    <bean id="baseSiteService" abstract="true" class="org.alfresco.repo.site.SiteServiceImpl" init-method="init">
        <property name="nodeService" ref="NodeService"/>
        <property name="directNodeService" ref="nodeService"/>
        <property name="fileFolderService" ref="FileFolderService"/>

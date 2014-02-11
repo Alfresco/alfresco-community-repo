@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -31,8 +33,6 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.apache.poi.util.IOUtils;
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipFile;
 
 /**
  * Importer which allows the loading of part of an AVM
@@ -106,7 +106,7 @@ public class AVMZipImporter implements AVMImporter
         }
         
         // Process the zip file
-        Enumeration<ZipEntry> entries = zip.getEntries();
+        Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zip.entries();
         while(entries.hasMoreElements())
         {
             // Grab the entry, and build the AVM path for it

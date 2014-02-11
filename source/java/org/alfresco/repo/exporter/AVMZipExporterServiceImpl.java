@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,17 +19,18 @@
 package org.alfresco.repo.exporter;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.SortedMap;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
+import java.util.zip.ZipOutputStream;
 
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.view.AVMZipExporterService;
 import org.apache.poi.util.IOUtils;
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipOutputStream;
 
 /**
  * Exporter which allows the saving of part of an AVM
@@ -63,7 +64,7 @@ public class AVMZipExporterServiceImpl implements AVMZipExporterService
     public void export(File output, int version, String path, boolean recurse)
         throws IOException, ZipException
     {
-        ZipOutputStream out = new ZipOutputStream(output);
+        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(output));
         export(out, version, path, recurse);
         out.close();
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Alfresco Software Limited.
+ * Copyright (C) 2009-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -67,7 +67,6 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.mockito.ArgumentCaptor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -418,7 +417,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 nodes.add(node);
                 String snapshot = createSnapshot(nodes);
 
-                receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
+                receiver.saveSnapshot(transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
 
                 File stagingFolder = receiver.getStagingFolder(transferId);
                 snapshotFile = new File(stagingFolder, "snapshot.xml");
@@ -476,7 +475,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 nodes.add(tc.node);
                 String snapshot = createSnapshot(nodes);
 
-                receiver.saveSnapshot(tc.transferId, new StringInputStream(snapshot, "UTF-8"));
+                receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
                 receiver.saveContent(tc.transferId, tc.node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
             
                 return null;
@@ -610,7 +609,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 tc.transferId = receiver.start("1234", true, receiver.getVersion());
                 String snapshot = createSnapshot(tc.nodes);
 
-                receiver.saveSnapshot(tc.transferId, new StringInputStream(snapshot, "UTF-8"));
+                receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
 
                 for (TransferManifestNode node : tc.nodes)
                 {
@@ -772,7 +771,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 tc.transferId = receiver.start("1234", true, receiver.getVersion());
                 String snapshot = createSnapshot(tc.nodes);
                 log.debug(snapshot);
-                receiver.saveSnapshot(tc.transferId, new StringInputStream(snapshot, "UTF-8"));
+                receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
 
                 for (TransferManifestNode node : tc.nodes)
                 {
@@ -876,7 +875,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                         tc.deletedNode2,
                         tc.deletedNode11 }));
                 log.debug(snapshot);
-                receiver.saveSnapshot(tc.transferId, new StringInputStream(snapshot, "UTF-8"));
+                receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
              
                 return null;
             }
@@ -972,7 +971,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 tc.transferId = receiver.start("1234", true, receiver.getVersion());
                 String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] { tc.node2 }));
                 log.debug(snapshot);
-                receiver.saveSnapshot(tc.transferId, new StringInputStream(snapshot, "UTF-8"));
+                receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
                 receiver.saveContent(tc.transferId, tc.node2.getUuid(), new ByteArrayInputStream(dummyContentBytes));
              
                 return null;
@@ -1146,7 +1145,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 
                 String snapshot = createSnapshot(nodes);
                 log.debug(snapshot);
-                receiver.saveSnapshot(tc.transferId, new StringInputStream(snapshot, "UTF-8"));
+                receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
 
                 for (TransferManifestNode node : nodes)
                 {
@@ -1189,7 +1188,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 tc.transferId = receiver.start("1234", true, receiver.getVersion());
                 String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] { tc.deletedNode11 }));
                 log.debug(snapshot);
-                receiver.saveSnapshot(tc.transferId, new StringInputStream(snapshot, "UTF-8"));
+                receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
                 receiver.commit(tc.transferId);
                
                 return null;
@@ -1252,7 +1251,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
                 tc.transferId = receiver.start("1234", true, receiver.getVersion());
                 String snapshot = createSnapshot(Arrays.asList(new TransferManifestNode[] { tc.node2, tc.node11 }));
                 log.debug(snapshot);
-                receiver.saveSnapshot(tc.transferId, new StringInputStream(snapshot, "UTF-8"));
+                receiver.saveSnapshot(tc.transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
                 receiver.saveContent(tc.transferId, tc.node2.getUuid(), new ByteArrayInputStream(dummyContentBytes));
                 receiver.commit(tc.transferId);
                 
@@ -1335,7 +1334,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         String snapshot = createSnapshot(nodes);
 
         startNewTransaction();
-        receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
+        receiver.saveSnapshot(transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
         endTransaction();
 
         for (TransferManifestNode node : nodes)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -86,7 +86,8 @@ public class UIMenu extends SelfRenderingComponent
       out.write(menuId);
       // NOTE: the use of "*width:0px" is an IE6/7 specific hack to ensure that the CSS is processed
       //       only by IE (which needs the width value) and _not_ FireFox which doesn't...!
-      out.write("' style=\"position:absolute;display:none;padding-left:2px;*width:0px\">");
+      //       Changed the width to "auto" to support IE 10, see MNT-10027
+      out.write("' style=\"position:absolute;display:none;padding-left:2px;*width:auto\">");
       out.write("<table border='0' cellpadding='0'");
       outputAttribute(out, getAttributes().get("itemSpacing"), "cellspacing");
       outputAttribute(out, getAttributes().get("menuStyle"), "style");

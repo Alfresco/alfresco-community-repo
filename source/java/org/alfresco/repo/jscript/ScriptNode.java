@@ -70,6 +70,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -2155,6 +2156,11 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             try
             {
                 this.services.getFileFolderService().moveFrom(this.nodeRef, source.getNodeRef(), destination.getNodeRef(), null);
+            }
+            //MNT-7514 Uninformational error message on move when file name conflicts
+            catch (FileExistsException ex)
+            {
+                throw ex;
             }
             catch (Exception e)
             {

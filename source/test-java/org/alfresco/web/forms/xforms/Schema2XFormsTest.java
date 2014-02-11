@@ -18,12 +18,15 @@
  */
 package org.alfresco.web.forms.xforms;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.LinkedList;
-import java.util.Vector;
 import java.util.ResourceBundle;
+import java.util.Vector;
+
 import junit.framework.AssertionFailedError;
+
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.BaseTest;
 import org.alfresco.util.XMLUtil;
@@ -31,16 +34,20 @@ import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.chiba.xml.ns.NamespaceConstants;
+import org.chiba.xml.events.DOMEventNames;
 import org.chiba.xml.events.XFormsEventNames;
 import org.chiba.xml.events.XMLEvent;
+import org.chiba.xml.ns.NamespaceConstants;
 import org.chiba.xml.xforms.ChibaBean;
+import org.chiba.xml.xforms.config.Config;
 import org.chiba.xml.xforms.exception.XFormsException;
-import org.chiba.xml.xforms.XFormsElement;
-import org.chiba.xml.events.DOMEventNames;
-import org.w3c.dom.*;
-import org.w3c.dom.events.*;
-import org.xml.sax.*;
+import org.springframework.extensions.config.source.ClassPathConfigSource;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
+import org.xml.sax.SAXException;
 
 /**
  * JUnit tests to exercise the the schema to xforms converter
@@ -615,22 +622,14 @@ public class Schema2XFormsTest
    private Document loadTestResourceDocument(final String path)
       throws IOException, SAXException
    {
-      File f = new File(this.getResourcesDir());
-      for (final String p : path.split("/"))
-      {
-         f = new File(f, p);
-      }
-      return XMLUtil.parse(f);
+      ClassPathConfigSource source = new ClassPathConfigSource(path);
+      return XMLUtil.parse(source.getInputStream(path));
    }
 
    private ChibaBean runXForm(final Document xformsDocument)
       throws Exception
    {
       final ChibaBean chibaBean = new ChibaBean();
-      String webResourceDir = System.getProperty("alfresco.web.resources.dir",
-              this.getResourcesDir() + File.separator + ".." + File.separator + "web");
-      chibaBean.setConfig(webResourceDir + File.separator + 
-                          "WEB-INF" + File.separator + "chiba.xml");
       chibaBean.setXMLContainer(xformsDocument);
       chibaBean.init();
       return chibaBean;

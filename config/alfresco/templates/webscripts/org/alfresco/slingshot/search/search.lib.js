@@ -962,8 +962,24 @@ function getSearchResults(params)
                   }
                   else
                   {
-                     // single pseudo cm:content property - e.g. mimetype, size or encoding
-                     formQuery += (first ? '' : ' AND ') + 'cm:content.' + propName + ':"' + propValue + '"';
+                     // special case for size-range property
+                     if (propName.match("size-range$") == "size-range" && propValue.length > 1)
+                     {
+                        var from, to, sepindex = propValue.indexOf("|");
+
+                        propName = propName.substr(0, propName.length - "-range".length);
+
+                        // work out if "min" and/or "max" are specified - use MIN and MAX otherwise
+                        from = (sepindex === 0 ? "MIN" : propValue.substr(0, sepindex));
+                        to = (sepindex === propValue.length - 1 ? "MAX" : propValue.substr(sepindex + 1));
+
+                        formQuery += (first ? '' : ' AND ') + '@cm\\:content.' + propName + ':[' + from + ' TO ' + to + ']';
+                     }				  
+                     else
+                     {
+                        // single pseudo cm:content property - e.g. mimetype, size or encoding
+                        formQuery += (first ? '' : ' AND ') + 'cm:content.' + propName + ':"' + propValue + '"';
+                     }
                   }
                   first = false;
                }

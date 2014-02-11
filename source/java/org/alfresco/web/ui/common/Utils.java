@@ -67,6 +67,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
@@ -476,12 +477,37 @@ public final class Utils extends StringUtils
                   NodeRef rootNode = contentCtx.getRootNode();
                   try
                   {
-                     url = Repository.getNamePathEx(context, node.getNodePath(), rootNode, "\\", 
-                           "file:///" + navBean.getCIFSServerPath(diskShare));
+                     if (!EqualsHelper.nullSafeEquals(rootNode, node.getNodeRef()))
+                     {
+                        String userAgent = Utils.getUserAgent(context);
+                        final boolean isIE = Utils.USER_AGENT_MSIE.equals(userAgent);
+
+                        if (isIE)
+                        {
+                           url = Repository.getNamePathEx(context, node.getNodePath(), rootNode, "\\", "file:///" + navBean.getCIFSServerPath(diskShare));
+                        }
+                        else
+                        {
+                           // build up the CIFS url
+                           StringBuilder path = new StringBuilder("file:///").append(navBean.getCIFSServerPath(diskShare));
+                           List<FileInfo> paths = fileFolderService.getNamePath(rootNode, node.getNodeRef());
+                              
+                           // build up the path skipping the first path as it is the root folder
+                           for (int x = 0; x < paths.size(); x++)
+                           {
+                              path.append("\\").append(WebDAVHelper.encodeURL(paths.get(x).getName(), userAgent));
+                           }
+                           url = path.toString();
+                        }                        
+                     }
                   }
                   catch (AccessDeniedException e)
                   {
                      // cannot build path if user don't have access all the way up
+                  }
+                  catch (FileNotFoundException nodeErr)
+                  {
+                     // cannot build path if file no longer exists
                   }
                   catch (InvalidNodeRefException nodeErr)
                   {

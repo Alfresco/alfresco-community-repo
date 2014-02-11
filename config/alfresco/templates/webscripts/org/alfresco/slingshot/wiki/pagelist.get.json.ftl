@@ -29,7 +29,7 @@
                "${tag}"<#if tag_has_next>,</#if>
             </#list>
          ],
-         "createdOn": "<@dateFormat p.created />",
+         "createdOn": "${formatDateRFC822(p.created)}",
          <#if p.createdBy??>
             <#assign createdBy = (p.createdBy.properties.firstName!"" + " " + p.createdBy.properties.lastName!"")?trim>
             <#assign createdByUser = p.createdBy.properties.userName>
@@ -39,7 +39,7 @@
          </#if>
          "createdBy": "${createdBy}",
          "createdByUser": "${createdByUser}",
-         "modifiedOn": "<@dateFormat p.modified />",
+         "modifiedOn": "${formatDateRFC822(p.modified)}",
          <#if p.modifiedBy??>
             <#assign modifiedBy = (p.modifiedBy.properties.firstName!"" + " " + p.modifiedBy.properties.lastName!"")?trim>
             <#assign modifiedByUser = p.modifiedBy.properties.userName>
@@ -68,3 +68,10 @@
    ]
 }
 </#escape>
+
+<#function formatDateRFC822 dateItem>
+   <# local temp=${.locale}  -->
+   <#setting locale="en_US">
+   <#return dateItem?datetime?string("EEE, d MMM yyyy HH:mm:ss Z")>
+   <# setting locale=temp -->
+</#function>

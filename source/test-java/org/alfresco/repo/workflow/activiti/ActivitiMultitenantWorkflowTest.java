@@ -28,6 +28,8 @@ import org.alfresco.repo.workflow.AbstractMultitenantWorkflowTest;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 
 
 /**
@@ -35,6 +37,7 @@ import org.alfresco.service.namespace.QName;
  * @since 4.0
  *
  */
+@Category(OwnJVMTestsCategory.class)
 public class ActivitiMultitenantWorkflowTest extends AbstractMultitenantWorkflowTest
 {
 	private static final String CALLACTIVITY_SUBPROCESS_LOCATION = "activiti/test-callactivity-subprocess.bpmn20.xml";

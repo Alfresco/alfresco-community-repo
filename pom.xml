@@ -905,6 +905,7 @@
                                 <exclude>**/org/alfresco/repo/blog/BlogIntegrationServiceSystemTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/MimetypeMapContentTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/caching/quota/StandardQuotaStrategyTest.*</exclude>
+                                <exclude>**/org/alfresco/repo/content/caching/CachingContentStoreTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/caching/ContentCacheImplTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/caching/test/SlowContentStoreTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/metadata/TikaAudioMetadataExtracterTest.*</exclude>
@@ -920,6 +921,7 @@
                                 <exclude>**/org/alfresco/repo/publishing/PublishEventActionTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/rendition/executer/AbstractRenderingEngineTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/rule/BaseRuleTest.*</exclude>
+                                <exclude>**/org/alfresco/repo/search/impl/querymodel/impl/db/DBQueryTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/security/authority/script/ScriptAuthorityServiceTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/security/permissions/impl/AbstractPermissionTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/security/permissions/impl/AbstractReadPermissionTest.*</exclude>

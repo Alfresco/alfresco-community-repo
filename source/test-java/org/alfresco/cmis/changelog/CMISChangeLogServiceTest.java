@@ -52,9 +52,11 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 import org.alfresco.util.Pair;
+import org.junit.experimental.categories.Category;
 
 
 /**
@@ -62,6 +64,7 @@ import org.alfresco.util.Pair;
  * 
  * @author Dmitry Velichkevich
  */
+@Category(OwnJVMTestsCategory.class)
 public class CMISChangeLogServiceTest extends TestCase
 {
     private static final String CMIS_AUTHORITY = "cmis";

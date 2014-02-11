@@ -20,9 +20,11 @@ package org.alfresco.repo.management.subsystems.test;
 
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseSpringTest;
 import org.apache.cxf.endpoint.ServerRegistryImpl;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -39,6 +41,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @see ChildApplicationContextFactory
  * @author dward
  */
+@Category(OwnJVMTestsCategory.class)
 public class SubsystemsTest extends BaseSpringTest
 {
 

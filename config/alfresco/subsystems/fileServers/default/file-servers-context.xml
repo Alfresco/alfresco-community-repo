@@ -231,7 +231,7 @@
 
       <!-- FTP authentication -->
       <property name="authenticator">
-         <ref bean="FtpAuthenticator" />
+         <ref bean="ftpAuthenticator" />
       </property>
 
       <!-- FTP server debug settings -->

@@ -431,7 +431,13 @@
         <property name="namespaceService">
             <ref bean="namespaceService"/>
         </property>
-        
+    </bean>
+
+    <!-- FTP authentication -->
+    <bean id="ftpAuthenticator" class="org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator" parent="ftpAuthenticatorBase">
+        <property name="active">
+            <value>${ldap.authentication.authenticateFTP}</value>
+        </property>
     </bean>
 
 </beans>

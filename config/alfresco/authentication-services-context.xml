@@ -128,28 +128,6 @@
 		</property>
 	</bean>
 
-	<bean id="FtpAuthenticator"
-		class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
-		<property name="applicationContextManager">
-			<ref bean="Authentication" />
-		</property>
-		<property name="sourceBeanName">
-			<value>ftpAuthenticator</value>
-		</property>
-		<property name="interfaces">
-			<list>
-				<value>org.alfresco.jlan.ftp.FTPAuthenticator</value>
-				<value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
-			</list>
-		</property>
-		<!-- A generic fallback implementation, in case the chain doesn't provide 
-			one -->
-		<property name="defaultTarget">
-			<bean class="org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator"
-				parent="ftpAuthenticatorBase" />
-		</property>
-	</bean>
-
 	<!-- Passwords are encoded using MD4 -->
 	<!-- This is not ideal and only done to be compatible with NTLM -->
 	<!-- authentication against the default authentication mechanism. -->
@@ -229,6 +207,17 @@
 			<value>authenticationComponent</value>
 		</property>
 	</bean>
+
+    <!-- The chaining authentication component -->
+    <bean id="ftpAuthenticator"
+          class="org.alfresco.repo.security.authentication.subsystems.SubsystemChainingFtpAuthenticator">
+        <property name="applicationContextManager">
+            <ref bean="Authentication" />
+        </property>
+        <property name="sourceBeanName">
+            <value>ftpAuthenticator</value>
+        </property>
+    </bean>
 
 	<!-- Import the user registry synchronizer from the synchronization subsystem -->
 	<bean id="userRegistrySynchronizer"

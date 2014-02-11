@@ -164,4 +164,11 @@
 
    <alias alias="saltSource" name="authenticationDao" />
 
+   <!-- FTP authentication -->
+   <bean id="ftpAuthenticator" class="org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator" parent="ftpAuthenticatorBase">
+      <property name="active">
+         <value>${alfresco.authentication.authenticateFTP}</value>
+      </property>
+   </bean>
+
 </beans>

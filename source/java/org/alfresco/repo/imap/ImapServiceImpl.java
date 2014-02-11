@@ -1902,31 +1902,40 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     /**
      * Return true if provided nodeRef is in Sites/.../documentlibrary
      */
-    public boolean isNodeInSitesLibrary(NodeRef nodeRef)
+    public boolean isNodeInSitesLibrary(final NodeRef inputNodeRef)
     {
-        boolean isInDocLibrary = false;
-        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-        while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
+        return doAsSystem(new RunAsWork<Boolean>()
         {
-            String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
-            if (parentName.equalsIgnoreCase("documentlibrary"))
+            @Override
+            public Boolean doWork() throws Exception
             {
-                isInDocLibrary = true;
+                NodeRef nodeRef = inputNodeRef;
+                boolean isInDocLibrary = false;
+                NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
+                {
+                    String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
+                    if (parentName.equalsIgnoreCase("documentlibrary"))
+                    {
+                        isInDocLibrary = true;
+                    }
+                    nodeRef = parent;
+                    if (nodeService.getPrimaryParent(nodeRef) != null)
+                    {
+                        parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                    }
+                }
+                if (parent == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    return nodeService.getType(parent).equals(SiteModel.TYPE_SITE) && isInDocLibrary;
+                }
             }
-            nodeRef = parent;
-            if (nodeService.getPrimaryParent(nodeRef) != null)
-            {
-                parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-            }
-        }
-        if (parent == null)
-        {
-            return false;
-        }
-        else
-        {
-            return nodeService.getType(parent).equals(SiteModel.TYPE_SITE) && isInDocLibrary;
-        }
+        });
+
     }
 
     public void setNamespaceService(NamespaceService namespaceService)
@@ -2008,4 +2017,27 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             return message;
         }
     }    
+
+    @Override
+    public String getPathFromSites(final NodeRef ref)
+    {
+        return doAsSystem(new RunAsWork<String>()
+        {
+            @Override
+            public String doWork() throws Exception
+            {
+                String name = ((String) nodeService.getProperty(ref, ContentModel.PROP_NAME)).toLowerCase();
+                if (nodeService.getType(ref).equals(SiteModel.TYPE_SITE))
+                {
+                    return name;
+                }
+                else
+                {
+                    NodeRef parent = nodeService.getPrimaryParent(ref).getParentRef();
+                    return getPathFromSites(parent) + "/" + name;
+                }
+            }
+        });
+    }
+
 }

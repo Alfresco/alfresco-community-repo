@@ -31,16 +31,13 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.imap.ImapService.EmailBodyFormat;
-import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -193,7 +190,7 @@ public abstract class AbstractMimeMessage extends MimeMessage
         model.put("alfTicket", new String(serviceRegistry.getAuthenticationService().getCurrentTicket()));
         if (isMessageInSitesLibrary)
         {
-            String pathFromSites = getPathFromSites(parent);
+            String pathFromSites = imapService.getPathFromSites(parent);
             StringBuilder parsedPath = new StringBuilder();
             String[] pathParts = pathFromSites.split("/");
             if (pathParts.length > 2)
@@ -214,21 +211,6 @@ public abstract class AbstractMimeMessage extends MimeMessage
             model.put("parentPathFromSites", parsedPath.toString());
         }
         return model;
-    }
-
-    private String getPathFromSites(NodeRef ref)
-    {
-        NodeService nodeService = serviceRegistry.getNodeService();
-        String name = ((String) nodeService.getProperty(ref, ContentModel.PROP_NAME)).toLowerCase();
-        if (nodeService.getType(ref).equals(SiteModel.TYPE_SITE))
-        {
-            return name;
-        }
-        else
-        {
-            NodeRef parent = nodeService.getPrimaryParent(ref).getParentRef();
-            return getPathFromSites(parent) + "/" + name;
-        }
     }
 
     protected void updateMessageID() throws MessagingException

@@ -121,22 +121,22 @@ public class RFC822MetadataExtracterTest extends AbstractMetadataExtracterTest
         String[][] testData = new String[][]
             {
                 { "a1",  "EEE, d MMM yyyy HH:mm:ss Z",   "Thu, 16 Aug 12 08:13:29 -0700", "Thu Aug 18 15:13:29 GMT 12",    "0"}, // gets the year wrong
-                { "a2a",   "EEE, d MMM yy HH:mm:ss Z",   "Thu, 16 Aug 12 08:13:29 -0700", "Thu Aug 16 16:13:29 BST 2012", "20"},
-                { "a2b",   "EEE, d MMM yy HH:mm:ss Z",   "Wed, 16 Aug 50 08:13:29 -0700", "Wed Aug 16 16:13:29 BST 1950", "19"},
-                { "a2c",   "EEE, d MMM yy HH:mm:ss Z",   "Sun, 16 Aug 20 08:13:29 -0700", "Sun Aug 16 16:13:29 BST 2020", "20"},
+                { "a2a",   "EEE, d MMM yy HH:mm:ss Z",   "Thu, 16 Aug 12 08:13:29 -0700", "Thu Aug 16 15:13:29 GMT 2012", "20"},
+                { "a2b",   "EEE, d MMM yy HH:mm:ss Z",   "Wed, 16 Aug 50 08:13:29 -0700", "Wed Aug 16 15:13:29 GMT 1950", "19"},
+                { "a2c",   "EEE, d MMM yy HH:mm:ss Z",   "Sun, 16 Aug 20 08:13:29 -0700", "Sun Aug 16 15:13:29 GMT 2020", "20"},
                 { "a3",       "d MMM yyyy HH:mm:ss Z",   "Thu, 16 Aug 12 08:13:29 -0700", null,                           null},
                 
-                { "b1",  "EEE, d MMM yyyy HH:mm:ss Z", "Thu, 16 Aug 2012 08:13:29 -0700", "Thu Aug 16 16:13:29 BST 2012", "20"},
-                { "b2a",   "EEE, d MMM yy HH:mm:ss Z", "Thu, 16 Aug 2012 08:13:29 -0700", "Thu Aug 16 16:13:29 BST 2012", "20"},
-                { "b2b",   "EEE, d MMM yy HH:mm:ss Z", "Wed, 16 Aug 1950 08:13:29 -0700", "Wed Aug 16 16:13:29 BST 1950", "19"},
-                { "b2c",   "EEE, d MMM yy HH:mm:ss Z", "Sun, 16 Aug 2020 08:13:29 -0700", "Sun Aug 16 16:13:29 BST 2020", "20"},
+                { "b1",  "EEE, d MMM yyyy HH:mm:ss Z", "Thu, 16 Aug 2012 08:13:29 -0700", "Thu Aug 16 15:13:29 GMT 2012", "20"},
+                { "b2a",   "EEE, d MMM yy HH:mm:ss Z", "Thu, 16 Aug 2012 08:13:29 -0700", "Thu Aug 16 15:13:29 GMT 2012", "20"},
+                { "b2b",   "EEE, d MMM yy HH:mm:ss Z", "Wed, 16 Aug 1950 08:13:29 -0700", "Wed Aug 16 15:13:29 GMT 1950", "19"},
+                { "b2c",   "EEE, d MMM yy HH:mm:ss Z", "Sun, 16 Aug 2020 08:13:29 -0700", "Sun Aug 16 15:13:29 GMT 2020", "20"},
                 { "b3",       "d MMM yyyy HH:mm:ss Z", "Thu, 16 Aug 2012 08:13:29 -0700", null,                           "20"},
                 
                 { "c1", "EEE, d MMM yyyy HH:mm:ss Z",      "16 Aug 2012 08:13:29 -0700", null,                           null},
                 { "c2",   "EEE, d MMM yy HH:mm:ss Z",      "16 Aug 2012 08:13:29 -0700", null,                           null},
-                { "c3a",     "d MMM yyyy HH:mm:ss Z",      "16 Aug 2012 08:13:29 -0700", "Thu Aug 16 16:13:29 BST 2012", "20"},
-                { "c3b",     "d MMM yyyy HH:mm:ss Z",      "16 Aug 1950 08:13:29 -0700", "Wed Aug 16 16:13:29 BST 1950", "19"},
-                { "c3c",     "d MMM yyyy HH:mm:ss Z",      "16 Aug 2020 08:13:29 -0700", "Sun Aug 16 16:13:29 BST 2020", "20"},
+                { "c3a",     "d MMM yyyy HH:mm:ss Z",      "16 Aug 2012 08:13:29 -0700", "Thu Aug 16 15:13:29 GMT 2012", "20"},
+                { "c3b",     "d MMM yyyy HH:mm:ss Z",      "16 Aug 1950 08:13:29 -0700", "Wed Aug 16 15:13:29 GMT 1950", "19"},
+                { "c3c",     "d MMM yyyy HH:mm:ss Z",      "16 Aug 2020 08:13:29 -0700", "Sun Aug 16 15:13:29 GMT 2020", "20"},
             };
         
         for (String[] data: testData)

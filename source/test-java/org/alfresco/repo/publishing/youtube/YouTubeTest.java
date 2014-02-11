@@ -42,7 +42,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.Assert;
@@ -55,7 +55,7 @@ import org.springframework.core.io.Resource;
  * @author Brian
  * @since 4.0
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class YouTubeTest extends BaseSpringTest
 {
     protected ServiceRegistry serviceRegistry;

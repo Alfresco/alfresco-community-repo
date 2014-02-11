@@ -878,6 +878,21 @@
                                     <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
                                 </configuration>
                             </execution>
+                             <!-- Execution for tests which use BaseSpring test -->
+                            <execution>
+                                 <id>base-spring-troublesome-tests</id>
+                                 <goals>
+                                     <goal>test</goal>
+                                 </goals>
+                                 <configuration>
+                                     <!-- These are the default fork options -->
+                                     <forkCount>1</forkCount>
+                                     <reuseForks>true</reuseForks>
+                                     <!-- end of default fork options -->
+                                     <groups>org.alfresco.test_category.BaseSpringTestsCategory</groups>
+                                     <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory</excludedGroups>        
+                                 </configuration>
+                            </execution>
                             <!-- Execution for tests which require their own JVM -->
                             <execution>
                                  <id>run-ownJVMTestsCategory</id>
@@ -892,14 +907,16 @@
                                      <groups>org.alfresco.test_category.OwnJVMTestsCategory</groups>
                                  </configuration>
                             </execution>
+                            <execution>
+                                 <id>default-test</id>
+                                 <configuration>
+                                     <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory, org.alfresco.test_category.BaseSpringTestsCategory</excludedGroups>                                 
+                                 </configuration>
+                             </execution>
                         </executions>
 
                         <!-- Default configuration, specifying which tests to pass -->
                         <configuration>
-                            <!-- These are the default fork options -->
-                            <forkCount>1</forkCount>
-                            <reuseForks>true</reuseForks>
-                            <!-- end of default fork options -->
                             <includes>
                                 <!-- Standard test names -->
                                 <include>**/*Test.*</include>
@@ -908,9 +925,6 @@
                                 <include>**/org/alfresco/repo/avm/*TestP.*</include>
                                 <include>**/org/alfresco/repo/avm/AVMServiceTestBase.*</include>
                             </includes>
-                            <excludedGroups>
-                                org.alfresco.test_category.OwnJVMTestsCategory
-                            </excludedGroups>
                             <excludes>
                                 <exclude>**/org/alfresco/RepositoryStartupTest.*</exclude>
 

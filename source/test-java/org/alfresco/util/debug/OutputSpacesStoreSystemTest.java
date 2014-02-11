@@ -20,14 +20,14 @@ package org.alfresco.util.debug;
 
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.junit.experimental.categories.Category;
 
 /**
  * @author Roy Wetherall
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class OutputSpacesStoreSystemTest extends BaseSpringTest
 {
     /**

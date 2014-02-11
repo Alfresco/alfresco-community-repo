@@ -60,9 +60,11 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.TempFileProvider;
+import org.junit.experimental.categories.Category;
 
 /**
  * Thumbnail service implementation unit test
@@ -70,6 +72,7 @@ import org.alfresco.util.TempFileProvider;
  * @author Roy Wetherall
  * @author Neil McErlean
  */
+@Category(BaseSpringTestsCategory.class)
 public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 {
     private NodeService secureNodeService;

@@ -60,13 +60,16 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Nick Smith
  * @since 4.0
  */
+@Category(BaseSpringTestsCategory.class)
 public class PublishEventActionTest extends AbstractPublishingIntegrationTest
 {
     private static final String contentNodeName = "TheName";

@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.XMLUtil;
@@ -47,7 +47,7 @@ import org.junit.experimental.categories.Category;
  * @author Brian
  * 
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class XSLTProcessorTest extends BaseAlfrescoSpringTest
 {
     private final static Log log = LogFactory.getLog(XSLTProcessorTest.class);

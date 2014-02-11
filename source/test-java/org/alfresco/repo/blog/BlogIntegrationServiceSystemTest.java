@@ -37,11 +37,14 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Roy Wetherall
  */
+@Category(BaseSpringTestsCategory.class)
 public class BlogIntegrationServiceSystemTest extends BaseAlfrescoSpringTest implements BlogIntegrationModel
 {
     /**

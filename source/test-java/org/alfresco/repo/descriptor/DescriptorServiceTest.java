@@ -27,11 +27,11 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.junit.experimental.categories.Category;
 
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class DescriptorServiceTest extends BaseSpringTest
 {
     private NodeService nodeService;

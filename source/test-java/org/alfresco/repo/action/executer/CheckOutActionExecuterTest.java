@@ -26,12 +26,15 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests checkout using action executer
  */
+@Category(BaseSpringTestsCategory.class)
 public class CheckOutActionExecuterTest extends BaseSpringTest
 {
     private NodeService nodeService;

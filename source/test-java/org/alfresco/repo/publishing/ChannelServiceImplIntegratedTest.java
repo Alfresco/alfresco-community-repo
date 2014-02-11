@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.junit.Before;
@@ -49,7 +50,7 @@ import org.junit.experimental.categories.Category;
  * @author Nick Smith
  * @since 4.0
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrationTest
 {
     private static final String channelName = GUID.generate();

@@ -42,7 +42,7 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.junit.experimental.categories.Category;
 
@@ -51,7 +51,7 @@ import org.junit.experimental.categories.Category;
  * 
  * @author Roy Wetherall
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class RuleLinkTest extends BaseSpringTest
 {
     protected static final String RULE_TYPE_NAME = RuleType.INBOUND;

@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferService;
 import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.junit.experimental.categories.Category;
@@ -44,7 +45,7 @@ import org.mockito.Mockito;
  * 
  * @author Mark Rogers
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class ScriptTransferServiceTest extends BaseAlfrescoSpringTest 
 {
     

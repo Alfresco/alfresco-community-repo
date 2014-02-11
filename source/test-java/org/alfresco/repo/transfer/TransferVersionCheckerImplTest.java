@@ -1,7 +1,7 @@
 package org.alfresco.repo.transfer;
 
 import org.alfresco.service.cmr.transfer.TransferVersion;
-import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.junit.experimental.categories.Category;
 
@@ -9,7 +9,7 @@ import org.junit.experimental.categories.Category;
  * Unit test for TransferVersionChecker
  * @author mrogers
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class TransferVersionCheckerImplTest extends BaseAlfrescoSpringTest 
 {
     /**

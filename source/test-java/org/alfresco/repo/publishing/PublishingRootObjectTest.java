@@ -24,6 +24,7 @@ import javax.annotation.Resource;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -32,7 +33,7 @@ import org.junit.experimental.categories.Category;
  * @author Nick Smith
  * @since 4.0
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class PublishingRootObjectTest extends AbstractPublishingIntegrationTest
 {
     @Resource(name="publishingRootObject")

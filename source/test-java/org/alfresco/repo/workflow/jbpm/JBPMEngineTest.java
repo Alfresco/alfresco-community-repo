@@ -46,8 +46,10 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.PropertyMap;
+import org.junit.experimental.categories.Category;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -57,6 +59,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * 
  * @author davidc
  */
+@Category(BaseSpringTestsCategory.class)
 public class JBPMEngineTest extends BaseAlfrescoSpringTest
 {
     private static final String USER1 = "JbpmEngineTestJohn";

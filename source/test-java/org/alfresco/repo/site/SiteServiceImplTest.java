@@ -68,6 +68,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
@@ -79,7 +80,7 @@ import org.junit.experimental.categories.Category;
  * 
  * @author Roy Wetherall
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class SiteServiceImplTest extends BaseAlfrescoSpringTest 
 {
     private static final String TEST_SITE_PRESET = "testSitePreset";

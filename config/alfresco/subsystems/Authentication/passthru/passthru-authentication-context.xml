@@ -34,6 +34,9 @@
       <property name="nullDomainUseAnyServer">
          <value>true</value>
       </property>
+	  <property name="broadcastMask">
+		 <value>${passthru.authentication.broadcastMask}</value>
+	  </property>
    </bean>
 
    <!-- The authentication component.                                      -->

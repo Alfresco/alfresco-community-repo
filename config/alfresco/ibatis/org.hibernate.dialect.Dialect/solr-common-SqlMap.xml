@@ -39,10 +39,11 @@
             count(acl_id) as acl_count
         from
             alf_acl_change_set acs
-        join alf_access_control_list acl on (acl.acl_change_set = acs.id and exists (select 1 from alf_node admnode where admnode.acl_id = acl.id))
+        join alf_access_control_list acl on (acl.acl_change_set = acs.id)
         <where>
+           exists (select 1 from alf_node admnode where admnode.acl_id = acl.id)
            <if test="fromCommitTimeInclusive != null">
-               <![CDATA[acs.commit_time_ms >= #{fromCommitTimeInclusive}]]>
+               and <![CDATA[acs.commit_time_ms >= #{fromCommitTimeInclusive}]]>
            </if>
            <if test="fromIdInclusive != null">
                and <![CDATA[acs.id >= #{fromIdInclusive}]]>

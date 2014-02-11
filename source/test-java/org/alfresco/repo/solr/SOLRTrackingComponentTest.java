@@ -21,7 +21,6 @@ package org.alfresco.repo.solr;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,20 +138,25 @@ public class SOLRTrackingComponentTest extends TestCase
     {
         List<AclChangeSet> cs = solrTrackingComponent.getAclChangeSets(null, null, null, null, 50);
         assertTrue("Expected results to be limited in number", cs.size() <= 50);
+        List<Long> aclChangeSetIds = new ArrayList<Long>(50);
         int totalAcls = 0;
         for (AclChangeSet aclChangeSet : cs)
         {
+            aclChangeSetIds.add(aclChangeSet.getId());
             totalAcls += aclChangeSet.getAclCount();
         }
         int totalAclsCheck = 0;
-        
-        for (AclChangeSet aclChangeSet : cs)
+        Long fromAclId = null;
+        while (true)
         {
-            List<Acl> acls = solrTrackingComponent.getAcls(Arrays.asList(new Long[]{aclChangeSet.getId()}), null, 200);
-            assertEquals(aclChangeSet.getAclCount(), acls.size());
+            List<Acl> acls = solrTrackingComponent.getAcls(aclChangeSetIds, fromAclId, 2);
+            if (acls.size() == 0)
+            {
+                break;
+            }
             totalAclsCheck += acls.size();
+            fromAclId = acls.get(acls.size() - 1).getId() + 1;
         }
-        
         // Double check number of ACLs
         assertEquals("ACL count should have matched", totalAcls, totalAclsCheck);
     }

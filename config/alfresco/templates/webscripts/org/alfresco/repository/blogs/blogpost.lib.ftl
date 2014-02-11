@@ -91,6 +91,7 @@
 		},
 		"externalBlogConfig": ${externalBlogConfig?string}
 	},
+	"totalRecordsUpper": ${data.totalRecordsUpper?string("true","false")},
 <@gen.pagedResults data=data ; item>
 	<@blogpostJSON item=item />
 </@gen.pagedResults>

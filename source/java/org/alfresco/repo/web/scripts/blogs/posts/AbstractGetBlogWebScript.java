@@ -60,6 +60,7 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
         
         // process additional parameters. <index, count>
         PagingRequest pagingReq = parsePagingParams(req);
+        pagingReq.setRequestTotalCountMax(pagingReq.getSkipCount() + pagingReq.getRequestTotalCountMax());
         
         // begin and end date.
         // Legacy note: these dates are URL query parameters in int form.
@@ -126,11 +127,25 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
         Map<String, Object> blogPostsData = new HashMap<String, Object>();
         
         final Pair<Integer, Integer> totalResultCount = blogPostList.getTotalResultCount();
+        int total = blogPostList.getPage().size();
+        if (totalResultCount != null && totalResultCount.getFirst() != null)
+        {
+           total = totalResultCount.getFirst();
+        }
         //FIXME What to do? null
-        blogPostsData.put("total", totalResultCount.getFirst());
+        blogPostsData.put("total", total);
         blogPostsData.put("pageSize", pagingReq.getMaxItems());
         blogPostsData.put("startIndex", pagingReq.getSkipCount());
         blogPostsData.put("itemCount", blogPostList.getPage().size());
+        
+        if (total == pagingReq.getRequestTotalCountMax())
+        {
+            blogPostsData.put("totalRecordsUpper", true);
+        }
+        else
+        {
+            blogPostsData.put("totalRecordsUpper", false);
+        }
         
         List<Map<String, Object>> blogPostDataSets = new ArrayList<Map<String, Object>>(blogPostList.getPage().size());
         for (BlogPostInfo postInfo : blogPostList.getPage())

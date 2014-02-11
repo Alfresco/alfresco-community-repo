@@ -450,12 +450,24 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         Object params[] = {authenticatorName};
         throw new AuthenticationException("authentication.err.validation.authenticator.notfound", params);
     }
-    
+
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#synchronize(boolean, boolean, boolean)
      */
+    @Override
     public void synchronize(boolean forceUpdate, boolean isFullSync, final boolean splitTxns)
+    {
+        synchronizeInternal(forceUpdate, isFullSync, splitTxns);
+    }
+
+    @Override
+    public void synchronize(boolean forceUpdate, boolean isFullSync)
+    {
+        synchronizeInternal(forceUpdate, isFullSync, true);
+    }
+
+    private void synchronizeInternal(boolean forceUpdate, boolean isFullSync, final boolean splitTxns)
     {
         if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
         {
@@ -1454,7 +1466,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 }
             }
 
-            public void processGroups(UserRegistry userRegistry, boolean isFullSync, boolean splitTxns)
+            private void processGroups(UserRegistry userRegistry, boolean isFullSync, boolean splitTxns)
             {
                // If we got back some groups, we have to cross reference them with the set of known authorities
                if (isFullSync || !this.groupParentAssocsToDelete.isEmpty()
@@ -1634,7 +1646,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 }
             }
 
-            public void finalizeAssociations(UserRegistry userRegistry, boolean splitTxns)
+            private void finalizeAssociations(UserRegistry userRegistry, boolean splitTxns)
             {
                 // First validate the group associations to be created for potential cycles. Remove any offending association
                 validateGroupParentAssocsToCreate();

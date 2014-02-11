@@ -168,11 +168,16 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
                 if (nodeService.exists(otherNode)) 
                 {
                     //the other node exists in this repo
+                    
+                    NodeRef parent = isSource ? nodeRef : ref.sourceRef;
+                    NodeRef child = isSource ? ref.targetRef : nodeRef;
+                    
                     if(log.isDebugEnabled())
                     {
-                        log.debug("need to add peer assoc from:" + ref.sourceRef + ", to:" + ref.targetRef +", qname:" + ref.assocTypeQName);
+                        log.debug("need to add peer assoc from:" + parent + ", to:" + child +", qname:" + ref.assocTypeQName);
                     }
-                    nodeService.createAssociation(ref.sourceRef, ref.targetRef, ref.assocTypeQName);
+                    
+                    nodeService.createAssociation(parent, child, ref.assocTypeQName);
                 }
             }
         }

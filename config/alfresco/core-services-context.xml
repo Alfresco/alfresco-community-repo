@@ -684,6 +684,8 @@
                 <value>cm:fiveStarRatingSchemeTotal</value>
                 <!-- ALF-12205 - do not version on comments -->
                 <value>fm:commentCount</value>
+                <!-- MNT-9688 -->
+                <value>cm:storeName</value>
             </list>
         </property>
         <property name="enableAutoVersioning" value="${version.store.enableAutoVersioning}" />

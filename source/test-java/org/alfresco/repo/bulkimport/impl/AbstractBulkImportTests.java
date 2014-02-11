@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -74,6 +75,7 @@ public class AbstractBulkImportTests
 	protected UserTransaction txn = null;
 	protected RuleService ruleService;
     protected ActionService actionService;
+    protected VersionService versionService;
 	protected MultiThreadedBulkFilesystemImporter bulkImporter;
 
 	protected NodeRef rootNodeRef;
@@ -107,6 +109,7 @@ public class AbstractBulkImportTests
 	    	contentService = (ContentService)ctx.getBean("contentService");
 	        actionService = (ActionService)ctx.getBean("actionService");
 	    	ruleService = (RuleService)ctx.getBean("ruleService");
+            versionService = (VersionService)ctx.getBean("versionService");
 
 	        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 

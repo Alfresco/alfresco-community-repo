@@ -1182,7 +1182,13 @@
       </property>
    </bean>
    
-   <bean id="searchService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+   <bean id="searchService" class="org.alfresco.repo.search.impl.SearchServiceSubSystemDelegator">
+      <property name="subSystem" ref ="searchServiceSubsystemProxy" />
+      <property name="nodeService" ref="mlAwareNodeService" />
+      <property name="dictionaryService" ref="dictionaryService" />
+   </bean>
+   
+   <bean id="searchServiceSubsystemProxy" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
       </property>

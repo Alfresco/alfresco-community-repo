@@ -65,6 +65,9 @@
       <property name="tenantService">
          <ref bean="tenantService" />
       </property>
+      <property name="sizeLimitString">
+         <value>${system.content.maximumFileSizeLimit}</value>
+      </property>
       <property name="policyBehaviourFilter">
          <ref bean="policyBehaviourFilter" />
       </property>

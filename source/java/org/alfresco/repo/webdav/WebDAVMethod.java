@@ -25,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.SocketException;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,8 +45,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.model.filefolder.HiddenAspect;
-import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
+import org.alfresco.repo.content.LimitedStreamCopier;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -68,15 +66,12 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.FileFilterMode;
-import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-import org.springframework.util.FileCopyUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -289,12 +284,15 @@ public abstract class WebDAVMethod
         if (this.m_requestBody == null)
         {
             this.m_requestBody = TempFileProvider.createTempFile("webdav_" + req.getMethod() + "_", ".bin");
-            OutputStream out = new FileOutputStream(this.m_requestBody);
-            int bytesRead = FileCopyUtils.copy(req.getInputStream(), out);
+            // copy the streams
+            LimitedStreamCopier streamCopier = new LimitedStreamCopier();
+            long bytes = streamCopier.copyStreamsLong(req.getInputStream(), new FileOutputStream(this.m_requestBody), m_davHelper.getSizeLimit());
+            
+            // get content length
+            long contentLength = Long.valueOf(req.getHeader(WebDAV.HEADER_CONTENT_LENGTH));
             
             // ALF-7377: check for corrupt request
-            int contentLength = req.getIntHeader(WebDAV.HEADER_CONTENT_LENGTH);
-            if (contentLength >= 0 && contentLength != bytesRead)
+            if (contentLength >= 0 && contentLength != bytes)
             {
                 throw new IOException("Request body does not have specified Content Length");
             }

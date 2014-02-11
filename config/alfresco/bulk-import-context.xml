@@ -46,6 +46,7 @@
     <property name="metadataLoader"  ref="bfsiMetadataLoader" />
     <property name="importStatus"    ref="bfsiStatus" />
     <property name="importFilters"   ref="bfsiImportFilters" />
+    <property name="dictionaryService"   ref="dictionaryService" />
   </bean>
   
   <bean id="abstractNodeImporterFactory" class="org.alfresco.repo.bulkimport.impl.AbstractNodeImporterFactory" abstract="true">

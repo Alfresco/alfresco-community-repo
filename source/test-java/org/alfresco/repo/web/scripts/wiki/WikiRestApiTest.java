@@ -273,46 +273,62 @@ public class WikiRestApiTest extends BaseWebScriptTest
     private JSONObject createOrUpdatePage(String title, String contents, String version, int expectedStatus)
     throws Exception
     {
-       String name = title.replace(' ', '_');
-       
-       JSONObject json = new JSONObject();
-       json.put("site", SITE_SHORT_NAME_WIKI);
-       json.put("title", title);
-       json.put("pagecontent", contents);
-       json.put("tags", "");
-       json.put("page", "wiki-page"); // TODO Is this really needed?
-       
-       if (version == null || "force".equals(version))
-       {
-          // Allow the save as-is, no versioning check
-          json.put("forceSave", "true"); // Allow the save as-is
-       }
-       else
-       {
-          if ("none".equals(version))
-          {
-             // No versioning
-          }
-          else
-          {
-             json.put("currentVersion", version);
-          }
-       }
-       
-       Response response = sendRequest(new PutRequest(URL_WIKI_UPDATE + name, json.toString(), "application/json"), expectedStatus);
-       if (expectedStatus == Status.STATUS_OK)
-       {
-          JSONObject result = new JSONObject(response.getContentAsString());
-          if (result.has("page"))
-          {
-             return result.getJSONObject("page");
-          }
-          return result;
-       }
-       else
-       {
-          return null;
-       }
+       return createOrUpdatePage(null, title, contents, version, expectedStatus);
+    }
+    
+    /**
+     * Creates a single wiki page based on the supplied details
+     */
+    private JSONObject createOrUpdatePage(String pageName, String title, String contents, String version, int expectedStatus) throws Exception
+    {
+        String name = null;
+        if (pageName == null)
+        {
+            name = title.replace(' ', '_');
+        }
+        else
+        {
+            name = pageName;
+        }
+
+        JSONObject json = new JSONObject();
+        json.put("site", SITE_SHORT_NAME_WIKI);
+        json.put("title", title);
+        json.put("pagecontent", contents);
+        json.put("tags", "");
+        json.put("page", "wiki-page"); // TODO Is this really needed?
+
+        if (version == null || "force".equals(version))
+        {
+            // Allow the save as-is, no versioning check
+            json.put("forceSave", "true"); // Allow the save as-is
+        }
+        else
+        {
+            if ("none".equals(version))
+            {
+                // No versioning
+            }
+            else
+            {
+                json.put("currentVersion", version);
+            }
+        }
+
+        Response response = sendRequest(new PutRequest(URL_WIKI_UPDATE + name, json.toString(), "application/json"), expectedStatus);
+        if (expectedStatus == Status.STATUS_OK)
+        {
+            JSONObject result = new JSONObject(response.getContentAsString());
+            if (result.has("page"))
+            {
+                return result.getJSONObject("page");
+            }
+            return result;
+        }
+        else
+        {
+            return null;
+        }
     }
     
     /**
@@ -547,6 +563,56 @@ public class WikiRestApiTest extends BaseWebScriptTest
        page = getPage(name1, Status.STATUS_OK);
        assertEquals(name1, page.getString("name"));
        assertEquals(PAGE_TITLE_ONE, page.getString("title"));
+    }
+    
+    public void testRenamePageWithEmptyTitle() throws Exception
+    {
+        JSONObject page;
+        String name = System.currentTimeMillis()+"";
+        String name2 = System.currentTimeMillis()+1+"";
+        
+        // Create a page
+        page = createOrUpdatePage(name, name, null, Status.STATUS_OK);
+        assertEquals("Incorrect JSON: " + page.toString(), true, page.has("title"));
+        
+     // Fetch it and check
+        page = getPage(name, Status.STATUS_OK);
+        assertEquals(name, page.getString("name"));
+        assertEquals(name, page.getString("title"));
+        
+        //update title
+        SiteInfo site = siteService.getSite(SITE_SHORT_NAME_WIKI);
+        WikiPageInfo pageInfo = wikiService.getWikiPage(site.getShortName(), name);
+        NodeRef pageRef = pageInfo.getNodeRef();
+        nodeService.setProperty(pageRef, ContentModel.PROP_TITLE, "");
+        
+     // Fetch it and check
+        page = getPage(name, Status.STATUS_OK);
+        JSONArray versions = page.getJSONArray("versionhistory");
+        
+        int maxVersionIndex = versions.length()-1;
+        double vNum = Double.parseDouble(versions.getJSONObject(maxVersionIndex).getString("version"));
+        String newTitle =versions.getJSONObject(maxVersionIndex).getString("title");
+        for (int i = versions.length()-2; i>=0; i--)
+        {
+            JSONObject version = versions.getJSONObject(i);
+            String ver = version.getString("version");
+            if (Double.parseDouble(ver)>vNum)
+            {
+                maxVersionIndex = i;
+                vNum = Double.parseDouble(ver);
+                newTitle =versions.getJSONObject(maxVersionIndex).getString("title");
+            }
+        }
+        assertEquals(name, page.getString("name"));
+        assertEquals("", newTitle);
+        
+        renamePage(name, name2, Status.STATUS_OK);
+        
+        // Fetch it at the new address
+        page = getPage(name2, Status.STATUS_OK);
+        assertEquals(name2, page.getString("name"));
+        assertEquals(name2, page.getString("title"));
     }
     
     public void testVersioning() throws Exception

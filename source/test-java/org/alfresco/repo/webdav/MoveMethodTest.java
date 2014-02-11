@@ -34,6 +34,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -82,6 +85,7 @@ public class MoveMethodTest
     private FileFolderService fileFolderService;
     private NodeService nodeService;
     private TransactionService transactionService;
+    private ContentService contentService;
     private WebDAVHelper webDAVHelper;
 
     private NodeRef companyHomeNodeRef;
@@ -165,6 +169,7 @@ public class MoveMethodTest
         fileFolderService = ctx.getBean("FileFolderService", FileFolderService.class);
         nodeService = ctx.getBean("NodeService", NodeService.class);
         transactionService = ctx.getBean("transactionService", TransactionService.class);
+        contentService = ctx.getBean("contentService", ContentService.class);
         webDAVHelper = ctx.getBean("webDAVHelper", WebDAVHelper.class);
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -250,6 +255,111 @@ public class MoveMethodTest
                 finally
                 {
                     nodeService.deleteNode(testFileInfo.getNodeRef());
+                }
+                return null;
+            }
+        });
+    }
+    
+    @Test
+    public void testMNT_6480()
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable
+            {
+                // create test file with name that doesn't match getDAVHelper().isRenameShuffle()
+                String originalFileName = "content-" + GUID.generate() + ".txt";
+                FileInfo testFileInfo = fileFolderService.create(companyHomeNodeRef, originalFileName, ContentModel.TYPE_CONTENT);
+                
+                // rename source file to file with upper case name
+                String newFileName = originalFileName.toUpperCase();
+
+                req = new MockHttpServletRequest(WebDAV.METHOD_MOVE, "/alfresco/webdav/" + testFileInfo.getName());
+                req.setServerPort(8080);
+                req.setContextPath("/alfresco");
+                req.setServletPath("/webdav");
+                req.addHeader(WebDAV.HEADER_DESTINATION, "http://localhost:8080/alfresco/webdav/" + newFileName);
+                
+                resp = new MockHttpServletResponse();
+
+                moveMethod = new MoveMethod();
+                moveMethod.setDetails(req, resp, webDAVHelper, companyHomeNodeRef);
+
+                try
+                {
+                    moveMethod.execute();
+                    
+                    // MNT-6480 - File should be renamed but not deleted
+                    assertTrue(nodeService.exists(testFileInfo.getNodeRef()));
+                    assertEquals(newFileName, nodeService.getProperty(testFileInfo.getNodeRef(), ContentModel.PROP_NAME));
+                }
+                catch (WebDAVServerException e)
+                {
+                    fail("Fail to rename node: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+                }
+                finally
+                {
+                    nodeService.deleteNode(testFileInfo.getNodeRef());
+                }
+                return null;
+            }
+        });
+    }
+    
+    @Test
+    public void testMNT_9777()
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable
+            {
+                // create test file with name that does match getDAVHelper().isRenameShuffle()
+                String originalFileName = "tempfile-" + GUID.generate() + ".tmp";
+                
+                // destination within same folder
+                String newFileName = "destfile-" + GUID.generate() + ".txt";
+                
+                FileInfo sourceFileInfo = fileFolderService.create(companyHomeNodeRef, originalFileName, ContentModel.TYPE_CONTENT);
+                FileInfo newFileInfo = fileFolderService.create(companyHomeNodeRef, newFileName, ContentModel.TYPE_CONTENT);
+
+                String newContent = GUID.generate();
+                ContentWriter writer;
+                writer = contentService.getWriter(sourceFileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                writer.putContent(newContent);
+                
+                req = new MockHttpServletRequest(WebDAV.METHOD_MOVE, "/alfresco/webdav/" + sourceFileInfo.getName());
+                resp = new MockHttpServletResponse();
+                req.setServerPort(8080);
+                req.setContextPath("/alfresco");
+                req.setServletPath("/webdav");
+
+                moveMethod = new MoveMethod();
+                moveMethod.setDetails(req, resp, webDAVHelper, companyHomeNodeRef);
+
+                String destPath = "http://localhost:8080/alfresco/webdav/" + newFileName;
+                req.addHeader(WebDAV.HEADER_DESTINATION, destPath);
+
+                try
+                {
+                    moveMethod.execute();
+                    
+                    // MNT-9777 - Source node should be deleted
+                    assertTrue(!nodeService.exists(sourceFileInfo.getNodeRef()));
+                    
+                    // Content should be updated
+                    ContentReader reader = contentService.getReader(newFileInfo.getNodeRef(), ContentModel.PROP_CONTENT);
+                    assertEquals(newContent, reader.getContentString());
+                }
+                catch (WebDAVServerException e)
+                {
+                    fail("Fail to move node: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+                }
+                finally
+                {
+                    nodeService.deleteNode(newFileInfo.getNodeRef());
                 }
                 return null;
             }

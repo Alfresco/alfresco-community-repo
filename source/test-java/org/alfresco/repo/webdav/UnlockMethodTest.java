@@ -1,6 +1,7 @@
 package org.alfresco.repo.webdav;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -38,6 +39,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 public class UnlockMethodTest
 {
     private UnlockMethod unlockMethod;
+    private LockMethod lockMethod;
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
     private @Mock WebDAVHelper davHelper;    
@@ -62,6 +64,7 @@ public class UnlockMethodTest
     private String userNodeRef;
     private NodeRef folderNodeRef;
     private NodeRef fileNodeRef;
+    private NodeRef fileWorkingCopyNodeRef;
 
     /**
      * Types and properties used by the tests
@@ -83,6 +86,8 @@ public class UnlockMethodTest
         response = new MockHttpServletResponse();
         unlockMethod = new UnlockMethod();
         unlockMethod.setDetails(request, response, davHelper, null);
+        lockMethod = new LockMethod();
+        lockMethod.setDetails(request, null, davHelper, null);
     }
 
     /**
@@ -138,7 +143,7 @@ public class UnlockMethodTest
                 contentWriter.putContent(CONTENT_1);
 
                 // Check out test file
-                NodeRef fileWorkingCopyNodeRef = cociService.checkout(fileNodeRef);
+                fileWorkingCopyNodeRef = cociService.checkout(fileNodeRef);
                 assertNotNull(fileWorkingCopyNodeRef);
                 assertEquals(userNodeRef, nodeService.getProperty(fileNodeRef, ContentModel.PROP_LOCK_OWNER));
 
@@ -209,6 +214,91 @@ public class UnlockMethodTest
         unlockMethod.parseRequestHeaders();
         
         assertEquals(lockToken, unlockMethod.getLockToken());
+    }
+
+    /**
+     * Test MNT-9680: Working copies are open in read-only mode when using Webdav online edit
+     *
+     * @throws Exception
+     */
+    @Test
+    public void unlockWorkingCopy() throws Exception
+    {
+        setUpPreconditionForCheckedOutTest();
+        try
+        {
+            String workingCopyName = nodeService.getProperty(fileWorkingCopyNodeRef, ContentModel.PROP_NAME).toString();
+            String lockToken = fileWorkingCopyNodeRef.getId() + WebDAV.LOCK_TOKEN_SEPERATOR + this.userName;
+            String lockHeaderValue = "<" + WebDAV.OPAQUE_LOCK_TOKEN + lockToken + ">";
+            final WebDAVHelper davHelper = (WebDAVHelper) appContext.getBean("webDAVHelper");
+
+            request.addHeader(WebDAV.HEADER_LOCK_TOKEN, lockHeaderValue);
+            request.setRequestURI("/" + workingCopyName);
+            String content = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
+                + "<d:lockinfo xmlns:d=\"DAV:\">"
+                + "<d:lockscope><d:exclusive/></d:lockscope>"
+                + "</d:lockinfo>";
+
+            request.setContent(content.getBytes("UTF-8"));
+
+            lockMethod.setDetails(request, new MockHttpServletResponse(), davHelper, folderNodeRef);
+            lockMethod.parseRequestHeaders();
+            lockMethod.parseRequestBody();
+
+            RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
+            {
+
+                @Override
+                public Void execute() throws Throwable
+                {
+                    lockMethod.executeImpl();
+                    return null;
+                }
+
+            };
+            this.transactionService.getRetryingTransactionHelper().doInTransaction(lockExecuteImplCallBack);
+
+            unlockMethod.setDetails(request, new MockHttpServletResponse(), davHelper, folderNodeRef);
+            unlockMethod.parseRequestHeaders();
+
+            RetryingTransactionCallback<Void> unlockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
+            {
+
+                @Override
+                public Void execute() throws Throwable
+                {
+                    unlockMethod.executeImpl();
+                    return null;
+                }
+
+            };
+            this.transactionService.getRetryingTransactionHelper().doInTransaction(unlockExecuteImplCallBack);
+
+            assertNull("lockType property should be deleted on unlock", nodeService.getProperty(fileWorkingCopyNodeRef, ContentModel.PROP_LOCK_TYPE));
+            assertNull("lockOwner property should be deleted on unlock", nodeService.getProperty(fileWorkingCopyNodeRef, ContentModel.PROP_LOCK_OWNER));
+
+        }
+        finally
+        {
+            // clear context for current user
+            this.authenticationComponent.clearCurrentSecurityContext();
+
+            // delete test store as system user
+            this.authenticationComponent.setSystemUserAsCurrentUser();
+            RetryingTransactionCallback<Void> deleteStoreCallback = new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    if (nodeService.exists(storeRef))
+                    {
+                        nodeService.deleteStore(storeRef);
+                    }
+                    return null;
+                }
+            };
+            this.transactionService.getRetryingTransactionHelper().doInTransaction(deleteStoreCallback);
+        }
     }
 
     /**

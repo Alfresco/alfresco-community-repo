@@ -62,10 +62,12 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -73,6 +75,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Roy Wetherall, janv
  */
+@Category(OwnJVMTestsCategory.class)
 public class VersionServiceImplTest extends BaseVersionStoreTest
 {
     private static Log logger = LogFactory.getLog(VersionServiceImplTest.class);

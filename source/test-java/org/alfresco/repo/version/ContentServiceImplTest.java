@@ -26,12 +26,15 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.version.Version;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests for retrieving frozen content from a verioned node
  * 
  * @author Roy Wetherall
  */
+@Category(OwnJVMTestsCategory.class)
 public class ContentServiceImplTest extends BaseVersionStoreTest
 {   
     /**

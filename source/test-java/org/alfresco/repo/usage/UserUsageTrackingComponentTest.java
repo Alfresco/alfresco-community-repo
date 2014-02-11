@@ -43,14 +43,17 @@ import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
  * Test enabling (recalculating) and disabling (clearing) and user usages, and also collapsing user usage deltas.
  */
+@Category(OwnJVMTestsCategory.class)
 public class UserUsageTrackingComponentTest extends TestCase
 {
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();

@@ -36,10 +36,12 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.ReadOnlyServerException;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.TransientDataAccessResourceException;
@@ -51,6 +53,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * 
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class TransactionServiceImplTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

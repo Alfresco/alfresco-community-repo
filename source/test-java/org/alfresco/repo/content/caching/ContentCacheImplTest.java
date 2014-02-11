@@ -32,10 +32,12 @@ import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
@@ -51,6 +53,7 @@ import org.mockito.stubbing.Answer;
  * @author Matt Ward
  */
 @RunWith(MockitoJUnitRunner.class)
+@Category(OwnJVMTestsCategory.class)
 public class ContentCacheImplTest
 {
     private ContentCacheImpl contentCache;

@@ -20,13 +20,16 @@ package org.alfresco.util.schemacomp.model;
 
 import static org.mockito.Mockito.verify;
 
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests for the Sequence class.
  * @author Matt Ward
  */
+@Category(OwnJVMTestsCategory.class)
 public class SequenceTest extends DbObjectTestBase<Sequence>
 {
     private Sequence thisSequence;

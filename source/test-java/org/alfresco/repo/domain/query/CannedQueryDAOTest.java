@@ -33,12 +33,14 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 import org.junit.runners.MethodSorters;
 
@@ -49,6 +51,7 @@ import org.junit.runners.MethodSorters;
  * @since 3.2
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Category(OwnJVMTestsCategory.class)
 public class CannedQueryDAOTest
 {
     private static final String QUERY_NS = "alfresco.query.test";

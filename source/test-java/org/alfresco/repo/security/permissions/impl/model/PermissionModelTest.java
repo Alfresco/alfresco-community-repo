@@ -29,7 +29,10 @@ import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.security.permissions.impl.RequiredPermission.On;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 
+@Category(OwnJVMTestsCategory.class)
 public class PermissionModelTest extends AbstractPermissionTest
 {
 

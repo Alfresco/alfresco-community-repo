@@ -28,14 +28,17 @@ import org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerAndSearcherFact
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TempFileProvider;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
  * 
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class LuceneIndexBackupComponentTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

@@ -30,7 +30,9 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -39,6 +41,7 @@ import org.springframework.context.ApplicationContext;
  * @author janv
  * @since 3.4
  */
+@Category(OwnJVMTestsCategory.class)
 public class AclCrudDAOTest extends TestCase
 {
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

@@ -34,13 +34,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.junit.experimental.categories.Category;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.framework.adapter.AdvisorAdapterRegistry;
 import org.springframework.aop.framework.adapter.GlobalAdvisorAdapterRegistry;
 import org.springframework.aop.target.SingletonTargetSource;
 
+@Category(OwnJVMTestsCategory.class)
 public class ACLEntryVoterTest extends AbstractPermissionTest
 {
 

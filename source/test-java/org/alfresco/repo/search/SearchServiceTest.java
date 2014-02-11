@@ -39,9 +39,12 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
+@Category(OwnJVMTestsCategory.class)
 public class SearchServiceTest extends TestCase
 {
 

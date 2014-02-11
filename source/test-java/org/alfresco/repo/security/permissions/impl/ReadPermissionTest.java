@@ -11,8 +11,11 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 
 // Unit tests for ALF-3952 "Search/Read Permissions Evaluation Performance"
+@Category(OwnJVMTestsCategory.class)
 public class ReadPermissionTest extends AbstractReadPermissionTest
 {    
 //    public void testDynamicAuthority() throws Exception

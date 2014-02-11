@@ -28,13 +28,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.experimental.categories.Category;
 
 /**
  * Rule trigger test
  * 
  * @author Roy Wetherall
  */
+@Category(OwnJVMTestsCategory.class)
 public class RuleTriggerTest extends BaseSpringTest
 {
     private static final String ON_CREATE_NODE_TRIGGER = "on-create-node-trigger";

@@ -45,8 +45,10 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -54,6 +56,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class MissingContentReindexComponentTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

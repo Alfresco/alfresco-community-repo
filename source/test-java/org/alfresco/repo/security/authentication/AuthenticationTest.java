@@ -67,12 +67,15 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 @SuppressWarnings("unchecked")
+@Category(OwnJVMTestsCategory.class)
 public class AuthenticationTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

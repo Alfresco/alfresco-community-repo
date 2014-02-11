@@ -32,7 +32,9 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.TempFileProvider;
+import org.junit.experimental.categories.Category;
 import org.junit.internal.runners.JUnit38ClassRunner;
 import org.junit.runner.RunWith;
 
@@ -44,6 +46,7 @@ import org.junit.runner.RunWith;
  * @author Matt Ward
  */
 @RunWith(JUnit38ClassRunner.class)
+@Category(OwnJVMTestsCategory.class)
 public class CachingContentStoreSpringTest extends AbstractWritableContentStoreTest
 {
     private CachingContentStore store;

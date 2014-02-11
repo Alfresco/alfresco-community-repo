@@ -72,11 +72,13 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -84,6 +86,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @see org.alfresco.repo.model.filefolder.FileFolderServiceImpl
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class FileFolderServiceImplTest extends TestCase
 {
     private static final String IMPORT_VIEW = "filefolder/filefolder-test-import.xml";

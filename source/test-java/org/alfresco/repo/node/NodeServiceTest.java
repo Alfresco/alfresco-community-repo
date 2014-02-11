@@ -81,6 +81,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
@@ -92,6 +93,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -102,6 +104,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Derek Hulley
  * @since 4.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class NodeServiceTest
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/BaseNodeServiceTest";

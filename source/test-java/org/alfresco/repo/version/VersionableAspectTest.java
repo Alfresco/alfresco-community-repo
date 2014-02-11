@@ -41,12 +41,15 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
  * @author Dmitry Velichkevich
  */
+@Category(OwnJVMTestsCategory.class)
 public class VersionableAspectTest extends TestCase
 {
     private static final String NAME_AND_EXT_DELIMETER = ".";

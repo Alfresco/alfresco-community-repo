@@ -48,7 +48,9 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -56,6 +58,8 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author andyh
  */
+
+@Category(OwnJVMTestsCategory.class)
 public class LockOwnerDynamicAuthorityTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

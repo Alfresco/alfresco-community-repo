@@ -29,10 +29,12 @@ import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.audit.model.AuditApplication.DataExtractorDefinition;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PathMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ResourceUtils;
 
@@ -44,6 +46,7 @@ import org.springframework.util.ResourceUtils;
  * @author Derek Hulley
  * @since 3.2
  */
+@Category(OwnJVMTestsCategory.class)
 public class AuditBootstrapTest extends TestCase
 {
     private static final String APPLICATION_TEST = "Alfresco Test";

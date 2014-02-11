@@ -24,8 +24,10 @@ import static org.mockito.Mockito.verify;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -37,6 +39,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author Matt Ward
  */
 @RunWith(MockitoJUnitRunner.class)
+@Category(OwnJVMTestsCategory.class)
 public class TableTest extends DbObjectTestBase<Table>
 {
     private Table table;

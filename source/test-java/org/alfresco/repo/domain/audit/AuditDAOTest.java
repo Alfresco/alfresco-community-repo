@@ -40,10 +40,12 @@ import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang.mutable.MutableInt;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -52,6 +54,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @author Derek Hulley
  * @since 3.2
  */
+@Category(OwnJVMTestsCategory.class)
 public class AuditDAOTest extends TestCase
 {
     private ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();

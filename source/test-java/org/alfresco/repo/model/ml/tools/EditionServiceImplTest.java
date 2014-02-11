@@ -36,6 +36,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * Edition Service test cases
@@ -43,6 +45,7 @@ import org.alfresco.service.cmr.version.VersionType;
  * @since 2.1
  * @author Yannick Pignot
  */
+@Category(OwnJVMTestsCategory.class)
 public class EditionServiceImplTest extends AbstractMultilingualTestCases
 {
     private static String  FRENCH_CONTENT   = "FRENCH_CONTENT";

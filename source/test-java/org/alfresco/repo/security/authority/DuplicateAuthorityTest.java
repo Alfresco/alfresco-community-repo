@@ -46,7 +46,9 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -57,6 +59,7 @@ import org.springframework.dao.DataIntegrityViolationException;
  * @author Derek Hulley
  * @since 2.1.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class DuplicateAuthorityTest extends TestCase
 {
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

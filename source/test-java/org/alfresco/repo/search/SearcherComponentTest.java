@@ -42,10 +42,12 @@ import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ISO9075;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -53,7 +55,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Derek Hulley
  */
-
+@Category(OwnJVMTestsCategory.class)
 public class SearcherComponentTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

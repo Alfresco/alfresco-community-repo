@@ -36,12 +36,15 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
  * @author Kevin Roast
  */
+@Category(OwnJVMTestsCategory.class)
 public class TemplateServiceImplTest extends TestCase
 {
     private static final String TEMPLATE_1 = "org/alfresco/repo/template/test_template1.ftl";

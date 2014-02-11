@@ -50,14 +50,17 @@ import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
  * User Usage unit test
  */
+@Category(OwnJVMTestsCategory.class)
 public class UserUsageTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(UserUsageTest.class);

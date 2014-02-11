@@ -57,14 +57,17 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.tools.RenameUser;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
+@Category(OwnJVMTestsCategory.class)
 public class PersonTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

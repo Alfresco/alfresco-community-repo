@@ -47,11 +47,13 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 /**
@@ -60,6 +62,7 @@ import org.junit.rules.RuleChain;
  * @author Neil Mc Erlean
  * @since 4.1
  */
+@Category(OwnJVMTestsCategory.class)
 public class TemporaryNodesTest
 {
     // Rule to initialise the default Alfresco spring configuration

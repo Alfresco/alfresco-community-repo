@@ -45,7 +45,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.Pair;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -54,6 +56,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Derek Hulley
  */
 @SuppressWarnings("unused")
+@Category(OwnJVMTestsCategory.class)
 public class DbNodeServiceImplTest extends BaseNodeServiceTest
 {
     private TransactionService txnService;

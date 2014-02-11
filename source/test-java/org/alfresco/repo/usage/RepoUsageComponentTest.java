@@ -31,10 +31,12 @@ import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
 import org.alfresco.service.cmr.admin.RepoUsageStatus;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.FixMethodOrder;
+import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 import org.springframework.context.ApplicationContext;
 
@@ -45,6 +47,7 @@ import org.springframework.context.ApplicationContext;
  * @since 3.5
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Category(OwnJVMTestsCategory.class)
 public class RepoUsageComponentTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

@@ -54,9 +54,11 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ScriptPagingDetails;
 import org.alfresco.util.TestWithUserUtils;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -65,6 +67,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class ArchiveAndRestoreTest extends TestCase
 {
     private static final String USER_A = "aaaaa";

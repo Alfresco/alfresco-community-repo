@@ -36,7 +36,9 @@ import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -45,6 +47,7 @@ import org.springframework.context.ApplicationContext;
  * @author janv
  * @since 3.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class ActivityServiceImplTest extends TestCase 
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

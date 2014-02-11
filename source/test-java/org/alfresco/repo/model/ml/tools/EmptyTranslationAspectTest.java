@@ -28,6 +28,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * Empty translations aspect test cases
@@ -36,6 +38,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Yannick Pignot
  */
+@Category(OwnJVMTestsCategory.class)
 public class EmptyTranslationAspectTest extends AbstractMultilingualTestCases {
 
     protected ContentService contentService;

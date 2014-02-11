@@ -28,9 +28,12 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
+@Category(OwnJVMTestsCategory.class)
 public class ALF947Test extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

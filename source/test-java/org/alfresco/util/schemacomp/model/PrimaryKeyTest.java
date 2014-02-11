@@ -25,9 +25,11 @@ import static org.mockito.Mockito.verify;
 import java.util.Arrays;
 import java.util.List;
 
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 
 /**
@@ -35,6 +37,7 @@ import org.junit.Test;
  * 
  * @author Matt Ward
  */
+@Category(OwnJVMTestsCategory.class)
 public class PrimaryKeyTest extends DbObjectTestBase<PrimaryKey>
 {
     private PrimaryKey thisPK;

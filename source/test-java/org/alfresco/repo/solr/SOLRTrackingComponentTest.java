@@ -56,10 +56,12 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -67,6 +69,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  *
  * @since 4.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class SOLRTrackingComponentTest extends TestCase
 {
     private static final Log logger = LogFactory.getLog(SOLRTrackingComponentTest.class);

@@ -72,12 +72,14 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -86,6 +88,7 @@ import org.springframework.context.ApplicationContext;
  * @author janv
  * @since 4.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class GetChildrenCannedQueryTest extends TestCase
 {
     private Log logger = LogFactory.getLog(getClass());

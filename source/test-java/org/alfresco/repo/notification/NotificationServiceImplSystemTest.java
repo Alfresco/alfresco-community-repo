@@ -36,10 +36,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoTestCase;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 
 /**
  * Notification service implementation test.
@@ -47,6 +49,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  * @since 4.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class NotificationServiceImplSystemTest extends BaseAlfrescoTestCase
 {
     private static final String FROM_USER = "fromUser" + GUID.generate();

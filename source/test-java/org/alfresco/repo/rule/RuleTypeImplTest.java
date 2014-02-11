@@ -29,13 +29,16 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.experimental.categories.Category;
 
 /**
  * Parameter definition implementation unit test.
  * 
  * @author Roy Wetherall
  */
+@Category(OwnJVMTestsCategory.class)
 public class RuleTypeImplTest extends BaseSpringTest
 {
     private static final String NAME = "name";

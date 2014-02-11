@@ -34,13 +34,16 @@ import org.alfresco.service.cmr.oauth2.OAuth2CredentialsStoreService;
 import org.alfresco.service.cmr.remotecredentials.OAuth2CredentialsInfo;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
+@Category(OwnJVMTestsCategory.class)
 public class OAuth2CredentialsStoreServiceTest
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

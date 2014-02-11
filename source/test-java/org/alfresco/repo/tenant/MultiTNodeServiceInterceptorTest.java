@@ -22,8 +22,10 @@ import junit.framework.TestCase;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -32,6 +34,7 @@ import org.springframework.context.ApplicationContext;
  * @since 3.0 
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class MultiTNodeServiceInterceptorTest extends TestCase
 {
     public static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

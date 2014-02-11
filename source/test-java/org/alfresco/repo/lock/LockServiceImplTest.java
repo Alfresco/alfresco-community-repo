@@ -47,15 +47,18 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TestWithUserUtils;
 import org.hibernate.engine.TransactionHelper;
+import org.junit.experimental.categories.Category;
 
 /**
  * Simple lock service test
  * 
  * @author Roy Wetherall
  */
+@Category(OwnJVMTestsCategory.class)
 public class LockServiceImplTest extends BaseSpringTest
 {
     /**

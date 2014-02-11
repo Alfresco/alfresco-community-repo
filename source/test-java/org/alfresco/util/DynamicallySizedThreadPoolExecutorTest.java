@@ -21,8 +21,10 @@ package org.alfresco.util;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 
 import junit.framework.TestCase;
 
@@ -31,6 +33,7 @@ import junit.framework.TestCase;
  * 
  * @author Nick Burch
  */
+@Category(OwnJVMTestsCategory.class)
 public class DynamicallySizedThreadPoolExecutorTest extends TestCase
 {
     // We need logging, so load that if we don't have the full repo already

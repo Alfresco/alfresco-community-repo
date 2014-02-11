@@ -28,7 +28,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.experimental.categories.Category;
 
 /**
  * Configurable service implementation test
@@ -36,6 +38,7 @@ import org.alfresco.util.BaseSpringTest;
  * @author Roy Wetherall
  */
 @SuppressWarnings("unused")
+@Category(OwnJVMTestsCategory.class)
 public class ConfigurableServiceImplTest extends BaseSpringTest
 {
 	public NodeService nodeService;

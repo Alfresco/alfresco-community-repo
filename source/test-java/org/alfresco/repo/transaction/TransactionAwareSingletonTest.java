@@ -26,7 +26,9 @@ import junit.framework.TestCase;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -34,6 +36,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class TransactionAwareSingletonTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

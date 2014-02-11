@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
@@ -61,12 +62,14 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 /**
  * @author Harpritt Kalsi
  * @since 3.4
  */
+@Category(OwnJVMTestsCategory.class)
 public class RuleServiceIntegrationTest
 {
     private static final String STANDARD_TEXT_CONTENT = "standardTextContent";

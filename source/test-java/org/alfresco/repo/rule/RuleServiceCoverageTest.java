@@ -93,13 +93,16 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.StopWatch;
 
 /**
  * @author Roy Wetherall 
  */
+@Category(OwnJVMTestsCategory.class)
 public class RuleServiceCoverageTest extends TestCase
 {
     /**

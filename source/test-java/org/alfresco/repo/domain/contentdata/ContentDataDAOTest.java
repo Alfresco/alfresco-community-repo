@@ -34,9 +34,11 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -46,6 +48,7 @@ import org.springframework.dao.DataIntegrityViolationException;
  * @author Derek Hulley
  * @since 3.2
  */
+@Category(OwnJVMTestsCategory.class)
 public class ContentDataDAOTest extends TestCase
 {
     private ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();

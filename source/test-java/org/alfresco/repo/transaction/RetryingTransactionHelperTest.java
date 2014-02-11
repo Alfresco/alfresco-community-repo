@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang.mutable.MutableInt;
@@ -56,6 +57,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQLInnoDBDialect;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -69,6 +71,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  * @author Derek Hulley
  * @since 2.1
  */
+@Category(OwnJVMTestsCategory.class)
 public class RetryingTransactionHelperTest extends TestCase
 {
     private static Log logger = LogFactory.getLog("org.alfresco.repo.transaction.RetryingTransactionHelperTest");

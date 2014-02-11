@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
@@ -58,6 +59,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -69,6 +71,7 @@ import org.springframework.context.ApplicationContext;
  * @author Nick Burch
  * @since Odin
  */
+@Category(OwnJVMTestsCategory.class)
 public class RemoteCredentialsServicesTest
 {
     private static final String TEST_REMOTE_SYSTEM_ONE = "TestRemoteSystemOne";

@@ -40,15 +40,18 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
  * @author Nick Burch
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class ConcurrentNodeServiceTest extends TestCase
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/BaseNodeServiceTest";

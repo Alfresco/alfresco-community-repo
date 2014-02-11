@@ -47,11 +47,13 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ResourceUtils;
 
@@ -64,6 +66,7 @@ import org.springframework.util.ResourceUtils;
  * @author Derek Hulley
  * @since 3.2
  */
+@Category(OwnJVMTestsCategory.class)
 public class AuditComponentTest extends TestCase
 {
     private static final String APPLICATION_TEST = "Alfresco Test";

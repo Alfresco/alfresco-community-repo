@@ -30,7 +30,9 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -39,6 +41,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Derek Hulley
  * @author Philippe Dubois
  */
+@Category(OwnJVMTestsCategory.class)
 public class MultilingualContentServiceImplTest extends AbstractMultilingualTestCases
 {
 

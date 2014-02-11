@@ -83,6 +83,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.ISO9075;
 import org.antlr.runtime.ANTLRStringStream;
@@ -95,11 +96,13 @@ import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 import org.apache.chemistry.opencmis.commons.enums.Cardinality;
 import org.apache.chemistry.opencmis.commons.enums.PropertyType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @author andyh
  */
+@Category(OwnJVMTestsCategory.class)
 public class QueryTest extends BaseCMISTest
 {
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/cmis-query-test";

@@ -878,11 +878,26 @@
                                     <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
                                 </configuration>
                             </execution>
+                            <!-- Execution for tests which require their own JVM -->
+                            <execution>
+                                 <id>run-ownJVMTestsCategory</id>
+                                 <goals>
+                                     <goal>test</goal>
+                                 </goals>
+                                 <phase>process-test-classes</phase>
+                                 <configuration>
+                                     <forkMode>always</forkMode>
+                                     <groups>org.alfresco.test_category.OwnJVMTestsCategory</groups>
+                                 </configuration>
+                            </execution>
                         </executions>
 
                         <!-- Default configuration, specifying which tests to pass -->
                         <configuration>
-                            <forkMode>always</forkMode>
+                            <!-- These are the default fork options -->
+                            <forkCount>1</forkCount>
+                            <reuseForks>true</reuseForks>
+                            <!-- end of default fork options -->
                             <includes>
                                 <!-- Standard test names -->
                                 <include>**/*Test.*</include>
@@ -891,7 +906,9 @@
                                 <include>**/org/alfresco/repo/avm/*TestP.*</include>
                                 <include>**/org/alfresco/repo/avm/AVMServiceTestBase.*</include>
                             </includes>
-
+                            <excludedGroups>
+                                org.alfresco.test_category.OwnJVMTestsCategory
+                            </excludedGroups>
                             <excludes>
                                 <exclude>**/org/alfresco/RepositoryStartupTest.*</exclude>
 

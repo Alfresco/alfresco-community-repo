@@ -215,9 +215,6 @@ public class ItemTest extends BaseJCRTest
                 
                 System.out.println("getBaseVersion - get current version (BEFORE: " + beforeDuration + "ms, AFTER: " + afterDuration + "ms) ");
             }
-            
-            // save changes
-            session.save();
         }
         finally
         {
@@ -257,10 +254,7 @@ public class ItemTest extends BaseJCRTest
             // write some content to new node
             //
             content.setProperty("cm:content", is);
-            
-            // save changes
-            session.save();
-            
+         
             content = companyHome.getNode(pathname);
             
             // use Alfresco native API to get content data (for mimetype / encoding)
@@ -299,9 +293,6 @@ public class ItemTest extends BaseJCRTest
             // Write some content to new node, forcing it to be UTF-8
             // The source files are UTF-8, so these characters should be easily detected
             content.setProperty("cm:content", "äöå");
-            
-            // save changes
-            session.save();
             
             content = companyHome.getNode(pathname);
             

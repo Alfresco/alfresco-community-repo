@@ -324,6 +324,12 @@
             <property name="personService">
                <ref bean="PersonService" />
             </property>
+            <property name="remoteUserMapper">
+               <ref bean="RemoteUserMapper" />
+            </property>
+            <property name="authenticationComponent">
+               <ref bean="AuthenticationComponent" />
+            </property>			
          </bean>
       </property>
    </bean>

@@ -27,10 +27,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.repo.SessionUser;
+import org.alfresco.repo.management.subsystems.ActivateableBean;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.web.auth.AuthenticationListener;
 import org.alfresco.repo.web.auth.BasicAuthCredentials;
-import org.alfresco.repo.web.auth.TicketCredentials;
 import org.alfresco.repo.webdav.auth.SharepointConstants;
 import org.alfresco.web.bean.repository.User;
 import org.apache.commons.codec.binary.Base64;
@@ -49,6 +50,8 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
     private final static String BASIC_START = "Basic";
     
     private AuthenticationListener authenticationListener;
+    protected RemoteUserMapper remoteUserMapper;
+    protected AuthenticationComponent authenticationComponent;
     
     /**
      * Set the authentication listener
@@ -98,8 +101,8 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
     {
         String authHdr = request.getHeader(HEADER_AUTHORIZATION);
         HttpSession session = request.getSession(false);
-        SessionUser user = session == null ? null : (SessionUser) session.getAttribute(USER_SESSION_ATTRIBUTE);
-        if (user == null)
+        SessionUser sessionUser = session == null ? null : (SessionUser) session.getAttribute(USER_SESSION_ATTRIBUTE);
+        if (sessionUser == null)
         {
             if (authHdr != null && authHdr.length() > 5 && authHdr.substring(0, 5).equalsIgnoreCase(BASIC_START))
             {
@@ -147,18 +150,33 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
                     authenticationListener.authenticationFailed(new BasicAuthCredentials(username, password), ex);
                 }
             }
+            else
+            {
+                if (remoteUserMapper != null && (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive()))
+                {
+                    String userId = remoteUserMapper.getRemoteUser(request);
+                    if (userId != null)
+                    {
+                        // authenticated by other
+                        authenticationComponent.setCurrentUser(userId);
+
+                        request.getSession().setAttribute(USER_SESSION_ATTRIBUTE, new User(userId, authenticationService.getCurrentTicket(), personService.getPerson(userId)));
+                        return true;
+                    }
+                }
+            }
         }
         else
         {
             try
             {
-                authenticationService.validate(user.getTicket());
-                authenticationListener.userAuthenticated(new TicketCredentials(user.getTicket()));
+                authenticationService.validate(sessionUser.getTicket());
+                authenticationListener.userAuthenticated(new TicketCredentials(sessionUser.getTicket()));
                 return true;
             }
             catch (AuthenticationException ex)
             {
-                authenticationListener.authenticationFailed(new TicketCredentials(user.getTicket()), ex);
+                authenticationListener.authenticationFailed(new TicketCredentials(sessionUser.getTicket()), ex);
                 session.invalidate();
             }
         }
@@ -171,4 +189,16 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
     {
         return "Basic realm=\"Alfresco Server\"";
     }
+
+    public void setRemoteUserMapper(RemoteUserMapper remoteUserMapper)
+    {
+        this.remoteUserMapper = remoteUserMapper;
+    }
+
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    {
+        this.authenticationComponent = authenticationComponent;
+    }
+    
+    
 }

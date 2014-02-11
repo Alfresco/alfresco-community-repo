@@ -481,6 +481,24 @@
    </permissionSet>
    
    <!-- =================================================== -->
+   <!-- Permission related to check in and cancel check out. -->
+   <!-- =================================================== -->
+
+      <permissionSet type="cm:workingcopy" expose="selected">
+
+         <!-- Cancel Check Out permission - only exposed for the workingcopy aspect is present -->
+         <permissionGroup name="CancelCheckOut" requiresType="true" expose="false">
+            <includePermissionGroup permissionGroup="Unlock" type="cm:lockable" />
+         </permissionGroup>
+
+         <!-- Check In permission - only exposed when the workingcopy aspect is present        -->
+         <permissionGroup name="CheckIn" requiresType="true" expose="false">
+            <includePermissionGroup permissionGroup="Unlock" type="cm:lockable" />
+         </permissionGroup>
+			
+      </permissionSet>
+   
+   <!-- =================================================== -->
    <!-- Permission related to lock, check out and check in. -->
    <!-- =================================================== -->
    
@@ -494,17 +512,6 @@
           <includePermissionGroup permissionGroup="Lock" type="cm:lockable" />
       </permissionGroup>
       
-      <!-- Check In permission - only exposed when the lockable aspect is present        -->
-      <permissionGroup name="CheckIn" requiresType="true" expose="false">
-          <includePermissionGroup permissionGroup="Unlock" type="cm:lockable" />
-      </permissionGroup>
-      
-      <!-- Cancel Check Out permission - only exposed for the lockable aspect is present -->
-      <permissionGroup name="CancelCheckOut" requiresType="true" expose="false">
-          <includePermissionGroup permissionGroup="Unlock" type="cm:lockable" />
-      </permissionGroup>
-       
-       
       <permissionGroup name="Lock" requiresType="false" expose="false"/>
       <permissionGroup name="Unlock" requiresType="true" expose="false"/>
        

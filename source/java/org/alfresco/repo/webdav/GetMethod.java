@@ -283,7 +283,7 @@ public class GetMethod extends WebDAVMethod
                     break;
                 }
                 t = t.getCause();
-                if (t instanceof SocketException)
+                if (t instanceof SocketException || t.getClass().getSimpleName().equals("ClientAbortException"))
                 {
                     logAsError = false;
                 }

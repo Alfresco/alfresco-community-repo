@@ -375,4 +375,215 @@ public class BulkImportTest extends AbstractBulkImportTests
         assertEquals("This is version 1 of fileWithVersions.txt.", contentReader.getContentString());
     }
 
+    /**
+     * MNT-9067: bulkimport "Replace existing files" option does not work when versioning is enabled
+     *
+     * @throws Throwable
+     */
+    @Test
+    public void testMNT9067() throws Throwable
+    {
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        NodeRef folderNode = topLevelFolder.getNodeRef();
+
+        //initial import
+        try
+        {
+            NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport3/initial"));
+            BulkImportParameters bulkImportParameters = new BulkImportParameters();
+            bulkImportParameters.setTarget(folderNode);
+            bulkImportParameters.setReplaceExisting(true);
+            bulkImportParameters.setDisableRulesService(true);
+            bulkImportParameters.setBatchSize(40);
+            bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
+        }
+        catch(Throwable e)
+        {
+            fail(e.getMessage());
+        }
+
+        txn.commit();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        System.out.println(bulkImporter.getStatus());
+        assertEquals(false, bulkImporter.getStatus().inProgress());
+
+        List<FileInfo> files = getFiles(folderNode, null);
+        assertEquals("One file is expected to be imported:", 1, files.size());
+        FileInfo file = files.get(0);
+        assertEquals("File name is not equal:", "fileWithVersions.txt", file.getName());
+
+        NodeRef fileNodeRef = file.getNodeRef();
+        assertTrue("Imported file should be versioned:", versionService.isVersioned(fileNodeRef));
+
+        VersionHistory history = versionService.getVersionHistory(fileNodeRef);
+        assertEquals("Imported file should have 4 versions:", 4, history.getAllVersions().size());
+
+
+        //replace versioned file with new versioned file
+        try
+        {
+            NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport3/replace_with_versioned"));
+            BulkImportParameters bulkImportParameters = new BulkImportParameters();
+            bulkImportParameters.setTarget(folderNode);
+            bulkImportParameters.setReplaceExisting(true);
+            bulkImportParameters.setDisableRulesService(true);
+            bulkImportParameters.setBatchSize(40);
+            bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
+        }
+        catch(Throwable e)
+        {
+            fail(e.getMessage());
+        }
+
+        System.out.println(bulkImporter.getStatus());
+        assertEquals(false, bulkImporter.getStatus().inProgress());
+
+        txn.commit();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        files = getFiles(folderNode, null);
+        assertEquals("One file is expected to be imported:", 1, files.size());
+        file = files.get(0);
+        assertEquals("File name is not equal:", "fileWithVersions.txt", file.getName());
+
+        fileNodeRef = file.getNodeRef();
+        assertTrue("Imported file should be versioned:", versionService.isVersioned(fileNodeRef));
+
+        history = versionService.getVersionHistory(fileNodeRef);
+        assertNotNull(history);
+
+
+        assertEquals("Imported file should have 5 versions:", 5, history.getAllVersions().size());
+
+        Version[] versions = history.getAllVersions().toArray(new Version[5]);
+
+        //compare the content of each version
+        ContentReader contentReader;
+        contentReader = this.contentService.getReader(versions[0].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is the final version of replaced on import fileWithVersions.txt.", contentReader.getContentString());
+
+        contentReader = this.contentService.getReader(versions[1].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 4 of replaced on import fileWithVersions.txt.", contentReader.getContentString());
+
+        contentReader = this.contentService.getReader(versions[2].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 3 of replaced on import fileWithVersions.txt.", contentReader.getContentString());
+
+        contentReader = this.contentService.getReader(versions[3].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 2 of replaced on import fileWithVersions.txt.", contentReader.getContentString());
+
+        contentReader = this.contentService.getReader(versions[4].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 1 of replaced on import fileWithVersions.txt.", contentReader.getContentString());
+
+        txn.commit();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        //import non versioned file
+        try
+        {
+            NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport3/replace_with_non_versioned"));
+            BulkImportParameters bulkImportParameters = new BulkImportParameters();
+            bulkImportParameters.setTarget(folderNode);
+            bulkImportParameters.setReplaceExisting(true);
+            bulkImportParameters.setDisableRulesService(true);
+            bulkImportParameters.setBatchSize(40);
+            bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
+        }
+        catch(Throwable e)
+        {
+            fail(e.getMessage());
+        }
+
+        txn.commit();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        System.out.println(bulkImporter.getStatus());
+        assertEquals(false, bulkImporter.getStatus().inProgress());
+
+        files = getFiles(folderNode, null);
+        assertEquals("One file is expected to be imported:", 1, files.size());
+        file = files.get(0);
+        assertEquals("File name is not equal:", "fileWithVersions.txt", file.getName());
+
+        fileNodeRef = file.getNodeRef();
+        assertTrue("Imported file should be non versioned:", !versionService.isVersioned(fileNodeRef));
+
+        contentReader = this.contentService.getReader(fileNodeRef, ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is non versioned fileWithVersions.txt.", contentReader.getContentString());
+
+        txn.commit();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        //use initial file again to replace non versioned file
+        try
+        {
+            NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport3/initial"));
+            BulkImportParameters bulkImportParameters = new BulkImportParameters();
+            bulkImportParameters.setTarget(folderNode);
+            bulkImportParameters.setReplaceExisting(true);
+            bulkImportParameters.setDisableRulesService(true);
+            bulkImportParameters.setBatchSize(40);
+            bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
+        }
+        catch(Throwable e)
+        {
+            fail(e.getMessage());
+        }
+
+        txn.commit();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        System.out.println(bulkImporter.getStatus());
+        assertEquals(false, bulkImporter.getStatus().inProgress());
+
+        files = getFiles(folderNode, null);
+        assertEquals("One file is expected to be imported:", 1, files.size());
+        file = files.get(0);
+        assertEquals("File name is not equal:", "fileWithVersions.txt", file.getName());
+
+        fileNodeRef = file.getNodeRef();
+        assertTrue("Imported file should be versioned:", versionService.isVersioned(fileNodeRef));
+
+        history = versionService.getVersionHistory(fileNodeRef);
+        assertNotNull(history);
+
+
+        assertEquals("Imported file should have 4 versions:", 4, history.getAllVersions().size());
+
+        versions = history.getAllVersions().toArray(new Version[4]);
+
+        //compare the content of each version
+
+        contentReader = this.contentService.getReader(versions[0].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is the final version of fileWithVersions.txt.", contentReader.getContentString());
+
+        contentReader = this.contentService.getReader(versions[1].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 3 of fileWithVersions.txt.", contentReader.getContentString());
+
+        contentReader = this.contentService.getReader(versions[2].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 2 of fileWithVersions.txt.", contentReader.getContentString());
+
+        contentReader = this.contentService.getReader(versions[3].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 1 of fileWithVersions.txt.", contentReader.getContentString());
+
+    }
+
 }

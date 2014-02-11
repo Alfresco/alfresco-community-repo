@@ -125,7 +125,7 @@ public class StreamingNodeImporterFactory extends AbstractNodeImporterFactory
 	            }
 	            else
 	            {
-	                numVersionProperties = importImportableItemFile(result, importableItem, metadata);
+	                numVersionProperties = importImportableItemFile(result, importableItem, metadata, nodeState);
 	            }
 	            
 	            importStatus.incrementNodesWritten(importableItem, isDirectory, nodeState, metadata.getProperties().size() + 4, numVersionProperties);

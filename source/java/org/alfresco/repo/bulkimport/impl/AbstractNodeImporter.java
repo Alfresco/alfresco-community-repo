@@ -173,30 +173,28 @@ public abstract class AbstractNodeImporter implements NodeImporter
         return(result);
     }
 
-    protected final int importImportableItemFile(NodeRef nodeRef, ImportableItem importableItem, MetadataLoader.Metadata metadata)
+    protected final int importImportableItemFile(NodeRef nodeRef, ImportableItem importableItem, MetadataLoader.Metadata metadata, NodeState nodeState)
     {
         int result = 0;
 
         if (importableItem.hasVersionEntries())
         {
-            // If cm:versionable isn't listed as one of the aspects for this node, add it - cm:versionable is required for nodes that have versions
-            if (!metadata.getAspects().contains(ContentModel.ASPECT_VERSIONABLE))
-            {
-                if (logger.isWarnEnabled()) logger.warn("Metadata for file '" + getFileName(importableItem.getHeadRevision().getContentFile()) + "' was missing the cm:versionable aspect, yet it has " + importableItem.getVersionEntries().size() + " versions.  Adding cm:versionable.");
-                metadata.addAspect(ContentModel.ASPECT_VERSIONABLE);
-            }
-
-            result = importContentVersions(nodeRef, importableItem);
+            result = importContentVersions(nodeRef, importableItem, nodeState);
         }
         else
         {
+            if (nodeState == NodeState.REPLACED)
+            {
+                nodeService.removeAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+            }
+
             importContentAndMetadata(nodeRef, importableItem.getHeadRevision(), metadata);
         }
 
         return(result);
     }
 
-    protected final int importContentVersions(NodeRef nodeRef, ImportableItem importableItem)
+    protected final int importContentVersions(NodeRef nodeRef, ImportableItem importableItem, NodeState nodeState)
     {
         int result = 0;
         Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
@@ -205,6 +203,11 @@ public abstract class AbstractNodeImporter implements NodeImporter
         // See: http://code.google.com/p/alfresco-bulk-filesystem-import/issues/detail?id=85
         //versionProperties.put(ContentModel.PROP_VERSION_LABEL.toPrefixString(), String.valueOf(versionEntry.getVersion()));
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR); // Load every version as a major version for now - see http://code.google.com/p/alfresco-bulk-filesystem-import/issues/detail?id=84
+
+        if(nodeState == NodeState.REPLACED)
+        {
+            versionService.deleteVersionHistory(nodeRef);
+        }
 
         for (final ImportableItem.VersionedContentAndMetadata versionEntry : importableItem.getVersionEntries())
         {
@@ -220,6 +223,13 @@ public abstract class AbstractNodeImporter implements NodeImporter
         if (logger.isDebugEnabled()) logger.debug("Creating head revision of node " + nodeRef.toString());
         ImportableItem.ContentAndMetadata contentAndMetadata = importableItem.getHeadRevision();
         MetadataLoader.Metadata metadata = loadMetadata(contentAndMetadata);
+
+        // If cm:versionable isn't listed as one of the aspects for this node, add it - cm:versionable is required for nodes that have versions
+        if (!metadata.getAspects().contains(ContentModel.ASPECT_VERSIONABLE))
+        {
+            if (logger.isWarnEnabled()) logger.warn("Metadata for file '" + getFileName(importableItem.getHeadRevision().getContentFile()) + "' was missing the cm:versionable aspect, yet it has " + importableItem.getVersionEntries().size() + " versions.  Adding cm:versionable.");
+            metadata.addAspect(ContentModel.ASPECT_VERSIONABLE);
+        }
         importContentAndMetadata(nodeRef, importableItem.getHeadRevision(), metadata);
         versionService.createVersion(nodeRef, versionProperties);
 
@@ -248,7 +258,7 @@ public abstract class AbstractNodeImporter implements NodeImporter
 
         nodeRef = fileFolderService.searchSimple(target, nodeName);
 
-        // If we didn't find an existing item, create a new node in the repo.
+        // If we didn't find an existing item, create a new node in the repo. 
         if (nodeRef == null)
         {
             // But only if the content file exists - we don't create new nodes based on metadata-only importableItems

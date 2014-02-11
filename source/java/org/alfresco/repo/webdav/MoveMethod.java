@@ -198,7 +198,7 @@ public class MoveMethod extends HierarchicalMethod
         }
         // ALF-7079 fix, if destination exists then its content is updated with source content and source is deleted if
         // this is a move
-        if (!sourceFileInfo.isFolder() && destFileInfo != null && !sourceParentNodeRef.equals(destParentNodeRef))
+        if (destFileInfo != null && !sourceParentNodeRef.equals(destParentNodeRef))
         {
             copyContentOnly(sourceFileInfo, destFileInfo, fileFolderService);
             fileFolderService.setHidden(destFileInfo.getNodeRef(), false);

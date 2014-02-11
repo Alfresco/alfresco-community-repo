@@ -291,7 +291,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
                 {
                     sortBuffer.append(encoder.encode(", ", "UTF-8"));
                 }
-                sortBuffer.append(encoder.encode(sortDefinition.getField(), "UTF-8")).append(encoder.encode(" ", "UTF-8"));
+                // MNT-8557 fix, manually replace ' ' with '%20'
+                sortBuffer.append(encoder.encode(sortDefinition.getField().replaceAll(" ", "%20"), "UTF-8")).append(encoder.encode(" ", "UTF-8"));
                 if (sortDefinition.isAscending())
                 {
                     sortBuffer.append(encoder.encode("asc", "UTF-8"));

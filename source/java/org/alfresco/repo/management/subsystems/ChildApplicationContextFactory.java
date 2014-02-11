@@ -293,7 +293,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
     @Override
     protected PropertyBackedBeanState createInitialState() throws IOException
     {
-        return new ApplicationContextState();
+        return new ApplicationContextState(false);
     }
 
     /*
@@ -565,7 +565,8 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
      */
     protected class ApplicationContextState implements PropertyBackedBeanState
     {
-
+        private boolean allowInitAccess = false;
+        
         /** The properties to be used in placeholder expansion. */
         private Properties properties;
 
@@ -584,8 +585,9 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
          * @throws IOException
          *             Signals that an I/O exception has occurred.
          */
-        protected ApplicationContextState() throws IOException
+        protected ApplicationContextState(boolean allowInitAccess ) throws IOException
         {
+            this.allowInitAccess = allowInitAccess;
             // Load the property defaults
             PropertiesFactoryBean factory = new PropertiesFactoryBean();
             factory.setPropertiesPersister(getPersister());
@@ -800,6 +802,10 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                
                 try
                 {
+                    if(allowInitAccess)
+                    {
+                        this.applicationContext = applicationContext;
+                    }
                     applicationContext.refresh();
                     this.applicationContext = applicationContext;
                     ChildApplicationContextFactory.logger.info("Startup of '" + getCategory() + "' subsystem, ID: "

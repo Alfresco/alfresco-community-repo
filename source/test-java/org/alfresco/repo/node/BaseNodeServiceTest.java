@@ -1123,6 +1123,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         
         public void beforeDeleteNode(NodeRef nodeRef)
         {
+            // Get the node's properties
+            nodeService.getProperties(nodeRef);
             // add the child to the list
             beforeDeleteNodeRefs.add(nodeRef);
             

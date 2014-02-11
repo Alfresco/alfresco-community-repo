@@ -401,7 +401,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
             {
                 return totalCount;
             }
-        };    	
+        };        
     }
 
     /* (non-Javadoc)
@@ -560,9 +560,9 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
 
     public NodeRef searchSimple(NodeRef contextNodeRef, String name)
     {
-    	ParameterCheck.mandatory("name", name);
-    	ParameterCheck.mandatory("contextNodeRef", contextNodeRef);
-    	
+        ParameterCheck.mandatory("name", name);
+        ParameterCheck.mandatory("contextNodeRef", contextNodeRef);
+        
         NodeRef childNodeRef = nodeService.getChildByName(contextNodeRef, ContentModel.ASSOC_CONTAINS, name);
         if (logger.isTraceEnabled())
         {
@@ -1009,15 +1009,15 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         {
             if (dictionaryService.isSubClass(targetParentType, ContentModel.TYPE_FOLDER))
             {
-            	assocTypeQname = ContentModel.ASSOC_CONTAINS; // cm:folder -> cm:contains
+                assocTypeQname = ContentModel.ASSOC_CONTAINS; // cm:folder -> cm:contains
             }
             else if (dictionaryService.isSubClass(targetParentType, ContentModel.TYPE_CONTAINER))
             {
-            	assocTypeQname = ContentModel.ASSOC_CHILDREN; // sys:container -> sys:children
+                assocTypeQname = ContentModel.ASSOC_CHILDREN; // sys:container -> sys:children
             }
             else
             {
-            	throw new InvalidTypeException("Unexpected type (" + targetParentType + ") for target parent: " + targetParentRef);
+                throw new InvalidTypeException("Unexpected type (" + targetParentType + ") for target parent: " + targetParentRef);
             }
         }
         
@@ -1126,10 +1126,10 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
                     final ContentReader reader = contentService.getReader(targetNodeRef, ContentModel.PROP_CONTENT);
                     String newMimetype = mimetypeService.guessMimetype(newName, reader);
                     if (!targetMimetype.equalsIgnoreCase(newMimetype))
-                	{
+                    {
                         contentData = ContentData.setMimetype(contentData, newMimetype);
                         nodeService.setProperty(targetNodeRef, ContentModel.PROP_CONTENT, contentData);
-                	}
+                    }
                 }
             }
             catch (DuplicateChildNodeNameException e)

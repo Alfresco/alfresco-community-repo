@@ -526,7 +526,7 @@ public class ContentStreamer implements ResourceLoaderAware
                                     String attachFileName, 
                                     Map<String, Object> model) throws IOException
     {
-        setAttachment(res, attach, attachFileName);
+        setAttachment(null, res, attach, attachFileName);
     
         // establish mimetype
         String mimetype = reader.getMimetype();
@@ -611,11 +611,12 @@ public class ContentStreamer implements ResourceLoaderAware
     /**
      * Set attachment header
      * 
+     * @param req
      * @param res
      * @param attach
      * @param attachFileName
      */
-    public void setAttachment(WebScriptResponse res, boolean attach, String attachFileName)
+    public void setAttachment(WebScriptRequest req, WebScriptResponse res, boolean attach, String attachFileName)
     {
         if (attach == true)
         {
@@ -624,8 +625,26 @@ public class ContentStreamer implements ResourceLoaderAware
             {
                 if (logger.isDebugEnabled())
                     logger.debug("Attaching content using filename: " + attachFileName);
-                
-                headerValue += "; filename*=UTF-8''" + WebDAVHelper.encodeURL(attachFileName) + "; filename=\"" + attachFileName + "\"";
+
+                if (req == null)
+                {
+                    headerValue += "; filename*=UTF-8''" + WebDAVHelper.encodeURL(attachFileName)
+                            + "; filename=\"" + attachFileName + "\"";
+                }
+                else
+                {
+                    String userAgent = req.getHeader(HEADER_USER_AGENT);
+                    boolean isMSIE8 = (null != userAgent) && userAgent.contains("MSIE 8");
+                    if (isMSIE8)
+                    {
+                        headerValue += "; filename=\"" + WebDAVHelper.encodeURL(attachFileName);
+                    }
+                    else
+                    {
+                        headerValue += "; filename=\"" + attachFileName + "\"; filename*=UTF-8''"
+                                + WebDAVHelper.encodeURL(attachFileName);
+                    }
+                }
             }
             
             // set header based on filename - will force a Save As from the browse if it doesn't recognize it

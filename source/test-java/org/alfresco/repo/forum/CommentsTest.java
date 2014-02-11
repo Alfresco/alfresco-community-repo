@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,7 +34,6 @@ import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -42,19 +41,26 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.GUID;
-import org.junit.After;
+import org.alfresco.util.test.junitrules.AlfrescoPerson;
+import org.alfresco.util.test.junitrules.ApplicationContextInit;
+import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
+import org.alfresco.util.test.junitrules.TemporaryNodes;
+import org.alfresco.util.test.junitrules.TemporarySites;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
-import org.springframework.context.ApplicationContext;
+import org.junit.rules.RuleChain;
 
 /**
  * Test class for some {@link ForumModel forum model}-related functionality, specifically comments.
- * There is no "CommentService" or "DiscussionService" and the REST API simply creates the appropriate
+ * There is no (fully-featured) "CommentService" or "DiscussionService" and the REST API simply creates the appropriate
  * content structure as required by the forum model.
  * 
  * @author Neil McErlean
@@ -62,99 +68,67 @@ import org.springframework.context.ApplicationContext;
  */
 public class CommentsTest
 {
-    private static final ApplicationContext testContext = ApplicationContextHelper.getApplicationContext();
+    private static final ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
+    
+    public static final String USER_ONE_NAME = "userone";
+    public static final AlfrescoPerson TEST_USER1 = new AlfrescoPerson(APP_CONTEXT_INIT, USER_ONE_NAME);
+    
+    // Tie them together in a static Rule Chain
+    @ClassRule public static RuleChain STATIC_RULE_CHAIN = RuleChain.outerRule(APP_CONTEXT_INIT)
+                                                                    .around(TEST_USER1);
+    
+    // A JUnit Rule to run all tests as user1
+    public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(TEST_USER1);
+    
+    // A JUnit Rule to manage test nodes use in each test method
+    public TemporaryNodes testNodes = new TemporaryNodes(APP_CONTEXT_INIT);
+    public TemporarySites testSites = new TemporarySites(APP_CONTEXT_INIT);
+    
+    // Tie them together in a non-static rule chain.
+    @Rule public RuleChain ruleChain = RuleChain.outerRule(runAsRule)
+                                                .around(testSites)
+                                                .around(testNodes);
     
     // Services
     private static BehaviourFilter behaviourFilter;
     private static ContentService contentService;
     private static NodeService nodeService;
     private static Repository repositoryHelper;
+    private static SiteService siteService;
     private static RetryingTransactionHelper transactionHelper;
 
     // These NodeRefs are used by the test methods.
+    private static NodeRef COMPANY_HOME;
+    private SiteInfo testSite;
     private NodeRef testFolder;
     private List<NodeRef> testDocs;
     
-    /**
-     * Initialise various services required by the test.
-     */
-    @BeforeClass public static void initTestsContext() throws Exception
+    @BeforeClass public static void initBasicServices() throws Exception
     {
-        behaviourFilter = (BehaviourFilter)testContext.getBean("policyBehaviourFilter");
-        contentService = (ContentService)testContext.getBean("ContentService");
-        nodeService = (NodeService)testContext.getBean("NodeService");
-        repositoryHelper = (Repository)testContext.getBean("repositoryHelper");
-        transactionHelper = (RetryingTransactionHelper)testContext.getBean("retryingTransactionHelper");
+        behaviourFilter = (BehaviourFilter)APP_CONTEXT_INIT.getApplicationContext().getBean("policyBehaviourFilter");
+        contentService = (ContentService)APP_CONTEXT_INIT.getApplicationContext().getBean("ContentService");
+        nodeService = (NodeService)APP_CONTEXT_INIT.getApplicationContext().getBean("NodeService");
+        repositoryHelper = (Repository)APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper");
+        siteService = (SiteService)APP_CONTEXT_INIT.getApplicationContext().getBean("SiteService");
+        transactionHelper = (RetryingTransactionHelper)APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper");
         
-        // Set the current security context as admin
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        COMPANY_HOME = repositoryHelper.getCompanyHome();
     }
     
-    /**
-     * Create some content that can be commented on.
-     */
-    @Before public void initIndividualTestContext() throws Exception
+    @Before public void createSomeContentForCommentingOn() throws Exception
     {
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        // Create some content which we will comment on.
+        testSite = testSites.createSite("sitePreset", "testSite", "test site title", "test site description", SiteVisibility.PUBLIC, USER_ONE_NAME);
+        final NodeRef doclib = siteService.getContainer(testSite.getShortName(), SiteService.DOCUMENT_LIBRARY);
+        testFolder = testNodes.createFolder(doclib, "testFolder", TEST_USER1.getUsername());
+        testDocs = new ArrayList<NodeRef>(3);
+        for (int i = 0; i < 3; i++)
         {
-            @Override
-            public Void execute() throws Throwable
-            {
-                // Create some content which we will comment on.
-                NodeRef companyHome = repositoryHelper.getCompanyHome();
-                
-                testFolder = createNode(companyHome, "testFolder", ContentModel.TYPE_FOLDER);
-                testDocs = new ArrayList<NodeRef>(3);
-                for (int i = 0; i < 3; i++)
-                {
-                    NodeRef testNode = createNode(testFolder, "testDocInFolder", ContentModel.TYPE_CONTENT);
-                    testDocs.add(testNode);
-                }
-                
-                return null;
-            }
-        });
+            NodeRef testNode = testNodes.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, COMPANY_HOME, "testDocInFolder" + i, TEST_USER1.getUsername());
+            testDocs.add(testNode);
+        }
     }
     
-    /**
-     * This method deletes any nodes which were created during test execution.
-     */
-    @After public void tidyUpTestNodes() throws Exception
-    {
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-                    
-                    for (NodeRef nr : testDocs)
-                    {
-                        if (nodeService.exists(nr)) nodeService.deleteNode(nr);
-                    }
-                    
-                    return null;
-                }
-            });
-    }
-    
-    /**
-     * Create a node of the specified content type, under the specified parent node with the specified cm:name.
-     */
-    private NodeRef createNode(NodeRef parentNode, String name, QName type)
-    {
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-        String fullName = name + "-" + GUID.generate();
-        props.put(ContentModel.PROP_NAME, fullName);
-        QName docContentQName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, fullName);
-        NodeRef node = nodeService.createNode(parentNode,
-                    ContentModel.ASSOC_CONTAINS,
-                    docContentQName,
-                    type,
-                    props).getChildRef();
-        return node;
-    }
-
     /**
      * This test method comments on some nodes asserting that the commentCount rollup property
      * responds correctly to the changing number of comments.

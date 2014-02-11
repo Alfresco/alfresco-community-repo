@@ -20,12 +20,15 @@
 package org.alfresco.repo.workflow.jbpm;
 
 import org.alfresco.repo.workflow.AbstractMultitenantWorkflowTest;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Nick Smith
  * @since 4.0
  *
  */
+@Category(OwnJVMTestsCategory.class)
 public class JbpmMultitenantWorkflowTest extends AbstractMultitenantWorkflowTest
 {
     @Override

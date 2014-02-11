@@ -33,6 +33,8 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * JBPM Workflow Service Implementation Tests
@@ -40,6 +42,7 @@ import org.alfresco.service.namespace.QName;
  * @author Nick Smith
  * @since 3.4.e
  */
+@Category(OwnJVMTestsCategory.class)
 public class JbpmWorkflowServiceIntegrationTest extends AbstractWorkflowServiceIntegrationTest
 {
 

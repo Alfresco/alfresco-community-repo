@@ -39,8 +39,10 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.json.JSONObject;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
@@ -50,6 +52,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * @author Nick Smith
  * @since 4.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class NodeLocatorWebScriptTest extends BaseWebScriptTest
 {
     private static final String baseURL = "api/nodelocator/";

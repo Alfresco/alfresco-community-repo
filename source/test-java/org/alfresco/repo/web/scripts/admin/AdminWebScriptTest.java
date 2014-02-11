@@ -29,7 +29,9 @@ import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
 import org.alfresco.service.cmr.admin.RepoUsageStatus;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.json.JSONObject;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer;
@@ -41,6 +43,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * @author Derek Hulley
  * @since 3.4
  */
+@Category(OwnJVMTestsCategory.class)
 public class AdminWebScriptTest extends BaseWebScriptTest
 {
     private ApplicationContext ctx;

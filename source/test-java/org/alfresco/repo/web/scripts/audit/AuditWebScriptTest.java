@@ -31,8 +31,10 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Status;
@@ -46,6 +48,7 @@ import org.springframework.util.ResourceUtils;
  * @author Derek Hulley
  * @since 3.4
  */
+@Category(OwnJVMTestsCategory.class)
 public class AuditWebScriptTest extends BaseWebScriptTest
 {
     private static final String APP_REPOTEST_NAME = "AlfrescoRepositoryTest";

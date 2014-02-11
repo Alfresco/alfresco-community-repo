@@ -302,16 +302,41 @@
                 </executions>
             </plugin>
 
-            <!-- Exclude tests which should not run -->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <failIfNoTests>false</failIfNoTests>
+                    <!-- Exclude tests which should not run -->
                     <excludes>
                         <exclude>**/*SystemTest.*</exclude>
+                        <exclude>**/org/alfresco/rest/api/tests/Test*.*</exclude> <!--included in ApiTest and TestCMISAPI -->
                         <exclude>**/org/alfresco/repo/cmis/ws/*Test.*</exclude>
+                        <exclude>**/org/alfresco/repo/web/scripts/solr/SOLRWebScriptTest.*</exclude>
+                        <exclude>**/*$*</exclude>
                     </excludes>
                 </configuration>
+                <executions>
+                    <!-- Default execution, for tests with a shared JVM -->
+                    <execution>
+                        <id>default-test</id>
+                        <configuration>
+                            <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory</excludedGroups>
+                        </configuration>
+                    </execution>
+                    <!-- Execution for tests which require their own JVM -->
+                    <execution>
+                        <id>run-ownJVMTestsCategory</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <forkMode>always</forkMode>
+                            <groups>org.alfresco.test_category.OwnJVMTestsCategory</groups>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
+
             <!-- We still use committed generated sources -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

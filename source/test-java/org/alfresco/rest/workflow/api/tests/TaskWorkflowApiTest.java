@@ -56,11 +56,13 @@ import org.alfresco.rest.api.tests.client.data.MemberOfSite;
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
 import org.alfresco.rest.workflow.api.tests.WorkflowApiClient.TasksClient;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -70,6 +72,7 @@ import org.springframework.http.HttpStatus;
  * @author Frederik Heremans
  *
  */
+@Category(OwnJVMTestsCategory.class)
 public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
 {   
     @Test

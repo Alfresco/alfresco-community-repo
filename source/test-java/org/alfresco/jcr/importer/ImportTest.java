@@ -24,9 +24,11 @@ import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
 import org.alfresco.jcr.test.BaseJCRTest;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.experimental.categories.Category;
 import org.springframework.core.io.ClassPathResource;
 
-
+@Category(OwnJVMTestsCategory.class)
 public class ImportTest extends BaseJCRTest
 {
     protected Session superuserSession;

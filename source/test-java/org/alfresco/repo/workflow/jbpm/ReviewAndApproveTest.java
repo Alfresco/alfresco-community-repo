@@ -43,7 +43,9 @@ import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.experimental.categories.Category;
 import org.springframework.core.io.ClassPathResource;
 
 
@@ -52,6 +54,7 @@ import org.springframework.core.io.ClassPathResource;
  * 
  * @author davidc
  */
+@Category(OwnJVMTestsCategory.class)
 public class ReviewAndApproveTest extends BaseSpringTest
 {
     AuthenticationComponent authenticationComponent;

@@ -23,12 +23,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -60,6 +62,16 @@ public class LockBehaviourImplTest extends BaseSpringTest
      * The node service
      */
     private NodeService nodeService;
+    
+    /**
+     * The Copy service
+     */
+    private CopyService copyService;
+    
+    /**
+     * The NodeArchiveService service
+     */
+    private NodeArchiveService nodeArchiveService;
 
     /**
      * The authentication service
@@ -73,6 +85,7 @@ public class LockBehaviourImplTest extends BaseSpringTest
      */
     private NodeRef nodeRef;
     private NodeRef noAspectNode;
+    private NodeRef inSpaceStoreNode;
     
     /**
      * Store reference
@@ -85,6 +98,7 @@ public class LockBehaviourImplTest extends BaseSpringTest
     private static final String PWD = "password";
     private static final String GOOD_USER_NAME = "goodUser";
     private static final String BAD_USER_NAME = "badUser";
+    private static final String BAD_USER_WITH_ALL_PERMS_NAME = "badUserOwns";
     
     NodeRef rootNodeRef;
    
@@ -96,6 +110,8 @@ public class LockBehaviourImplTest extends BaseSpringTest
 		this.versionService = (VersionService)applicationContext.getBean("versionService");
         this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("authenticationService");
         this.permissionService = (PermissionService)applicationContext.getBean("permissionService");
+        this.copyService = (CopyService)applicationContext.getBean("copyService");
+        this.nodeArchiveService = (NodeArchiveService)applicationContext.getBean("nodeArchiveService");
         
         // Set the authentication
         AuthenticationComponent authComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
@@ -121,6 +137,15 @@ public class LockBehaviourImplTest extends BaseSpringTest
         this.nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_LOCKABLE, new HashMap<QName, Serializable>());
         assertNotNull(this.nodeRef);
         
+        this.inSpaceStoreNode = this.nodeService.createNode(
+                nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("{}ParentNode"),
+                ContentModel.TYPE_FOLDER,
+                nodeProperties).getChildRef();
+        this.nodeService.addAspect(this.inSpaceStoreNode, ContentModel.ASPECT_LOCKABLE, new HashMap<QName, Serializable>());
+        assertNotNull(this.inSpaceStoreNode);
+        
         // Create a node with no lockAspect
         this.noAspectNode = this.nodeService.createNode(
                 rootNodeRef, 
@@ -133,13 +158,19 @@ public class LockBehaviourImplTest extends BaseSpringTest
         // Create the  users
         TestWithUserUtils.createUser(GOOD_USER_NAME, PWD, rootNodeRef, this.nodeService, this.authenticationService);
         TestWithUserUtils.createUser(BAD_USER_NAME, PWD, rootNodeRef, this.nodeService, this.authenticationService);
+        TestWithUserUtils.createUser(BAD_USER_WITH_ALL_PERMS_NAME, PWD, rootNodeRef, this.nodeService, this.authenticationService);
         
         // Stash the user node ref's for later use
         TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);  
+        TestWithUserUtils.authenticateUser(BAD_USER_WITH_ALL_PERMS_NAME, PWD, rootNodeRef, this.authenticationService);  
         
         permissionService.setPermission(rootNodeRef, GOOD_USER_NAME, PermissionService.ALL_PERMISSIONS, true);
         permissionService.setPermission(rootNodeRef, BAD_USER_NAME, PermissionService.READ, true);
+        permissionService.setPermission(rootNodeRef, BAD_USER_WITH_ALL_PERMS_NAME, PermissionService.ALL_PERMISSIONS, true);
+
+        permissionService.setPermission(inSpaceStoreNode, GOOD_USER_NAME, PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setPermission(inSpaceStoreNode, BAD_USER_WITH_ALL_PERMS_NAME, PermissionService.ALL_PERMISSIONS, true);
     }   
     
     /**
@@ -391,5 +422,178 @@ public class LockBehaviourImplTest extends BaseSpringTest
         {
             // Good, we can't move it - as expected.
         }
+    }
+    
+    /**
+     * MNT-9475: Moving locked content breaks edit online
+     */
+    public void testCanMoveCopyDeleteWithLockOwner()
+    {
+        TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService); 
+        
+        // Create the node that we'll try to move, copy & delete
+        NodeRef parentNode = this.nodeRef;
+        ChildAssociationRef childAssocRef = nodeService.createNode(
+                parentNode, 
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName("{test}nodeServiceLockTest"),
+                ContentModel.TYPE_CONTENT);
+        
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        // Lock it
+        this.lockService.lock(nodeRef, LockType.WRITE_LOCK);
+        
+        // Create the node that we'll try to archive and restore
+        NodeRef archivingBehaviorNodeRef = nodeService.createNode(
+                this.inSpaceStoreNode, 
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName("{test}nodeServiceLockTest"),
+                ContentModel.TYPE_CONTENT).getChildRef();
+        // Lock it
+        this.lockService.lock(archivingBehaviorNodeRef, LockType.WRITE_LOCK);
+        
+        // Create the new container that we'll move the node to.
+        NodeRef newParentRefToMove = nodeService.createNode(
+                    parentNode, 
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName("{test}nodeServiceLockTest"),
+                    ContentModel.TYPE_CONTAINER).getChildRef();
+
+        // Create the new container that we'll copy the node to.
+        NodeRef newParentRefToCopy = nodeService.createNode(
+                    parentNode, 
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName("{test}nodeServiceLockTest"),
+                    ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        try
+        {
+            // user should be able to move node
+            nodeService.moveNode(nodeRef, newParentRefToMove, ContentModel.ASSOC_CONTAINS, QName.createQName("{test}nodeServiceLockTest"));
+            
+            // copy it
+            copyService.copy(nodeRef, newParentRefToCopy, ContentModel.ASSOC_CONTAINS, QName.createQName("{test}nodeServiceLockTest"));
+            
+            // and delete node
+            nodeService.deleteNode(nodeRef);
+        }
+        catch (NodeLockedException e)
+        {
+            fail("Should be moved, copied an deleted.");
+        }
+        
+        childAssocRef = nodeService.createNode(
+                parentNode, 
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName("{test}nodeServiceLockTest"),
+                ContentModel.TYPE_CONTENT);
+        
+        nodeRef = childAssocRef.getChildRef();      
+        
+        // Create the new container that we'll copy the node to.
+        newParentRefToCopy = nodeService.createNode(
+                    parentNode, 
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName("{test}nodeServiceLockTest"),
+                    ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        this.lockService.lock(nodeRef, LockType.WRITE_LOCK);
+        
+        TestWithUserUtils.authenticateUser(BAD_USER_WITH_ALL_PERMS_NAME, PWD, rootNodeRef, this.authenticationService);
+        
+        try
+        {
+            // Node Can be Copied by Not LockOwner
+            copyService.copy(nodeRef, newParentRefToCopy, ContentModel.ASSOC_CONTAINS, QName.createQName("{test}nodeServiceLockTest"));
+        }
+        catch (NodeLockedException e)
+        {
+            fail("Should be copied.");
+        }
+        
+        try
+        {
+            nodeService.deleteNode(newParentRefToCopy);
+        } 
+        catch (NodeLockedException e)
+        {
+        	fail("Should not have any locks.");
+        }
+        try
+        {
+            nodeService.deleteNode(nodeRef);
+            fail("Should not be deleted.");
+        } 
+        catch (NodeLockedException e)
+        {
+            // Only LockOwner can Delete Node
+        }
+        
+        TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+        
+        nodeService.deleteNode(archivingBehaviorNodeRef);
+        NodeRef archivedNode = nodeArchiveService.getArchivedNode(archivingBehaviorNodeRef);
+        
+        // check for lock for archived node
+        checkForLockForBadAndGoodUsers(archivedNode);
+        
+        TestWithUserUtils.authenticateUser(BAD_USER_WITH_ALL_PERMS_NAME, PWD, rootNodeRef, this.authenticationService);
+        try
+        {
+            // Try to restore archived node by Not Lock Owner
+            archivingBehaviorNodeRef = nodeService.restoreNode(archivedNode, 
+                    this.inSpaceStoreNode, ContentModel.ASSOC_CONTAINS,  QName.createQName("{test}nodeServiceLockTest"));
+        }
+        catch (Exception e)
+        {
+            fail("Should not be any Exceptons.");
+        }
+        
+        // check for lock for restored node by bad user  
+        checkForLockForBadAndGoodUsers(archivingBehaviorNodeRef);
+        
+        TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+        
+        nodeService.deleteNode(archivingBehaviorNodeRef);
+        try
+        {
+            archivingBehaviorNodeRef = nodeService.restoreNode(archivedNode, 
+                    this.inSpaceStoreNode, ContentModel.ASSOC_CONTAINS,  QName.createQName("{test}nodeServiceLockTest"));
+        }
+        catch (Exception e)
+        {
+            fail("Should not be any Exceptons.");
+        }
+        
+        // check for lock for restored node by good user 
+        checkForLockForBadAndGoodUsers(archivingBehaviorNodeRef);
+    }
+    
+    private void checkForLockForBadAndGoodUsers(NodeRef nodeToCheck)
+    {
+        String currentUserName = TestWithUserUtils.getCurrentUser(this.authenticationService);
+        
+        TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+        try
+        {
+            lockService.checkForLock(nodeToCheck);
+        }
+        catch (NodeLockedException e)
+        {
+            fail("Should not be locked for GoodUser : " + nodeToCheck);
+        }
+        
+        TestWithUserUtils.authenticateUser(BAD_USER_WITH_ALL_PERMS_NAME, PWD, rootNodeRef, this.authenticationService);
+        try
+        {
+            lockService.checkForLock(nodeToCheck);
+            fail("Should be locked for BadUser : " + nodeToCheck);
+        }
+        catch (NodeLockedException e)
+        {
+            // It's Ok
+        }
+        
+        TestWithUserUtils.authenticateUser(currentUserName, PWD, rootNodeRef, this.authenticationService);
     }
 }

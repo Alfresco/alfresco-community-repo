@@ -228,20 +228,15 @@ public class AlfrescoImapHostManager implements ImapHostManager
         AlfrescoImapUser alfrescoUser = new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword());
         String folderPath = getUnqualifiedMailboxPattern(
                 alfrescoUser, mailboxName);
-        // Warm up the cache if necessary
+
         if (folderCache == null)
         {
-            registerMailboxes(imapService.listMailboxes(alfrescoUser, "*", true));
+            registerMailBox(imapService.getOrCreateMailbox(alfrescoUser, mailboxName, true, false));
         }
-        // Try to retrieve from the cache
+
         AlfrescoImapFolder result = folderCache.get(folderPath);
-        if (result != null && result.reset())
-        {
-            return result;
-        }
-        
-        // Look up and cache as a last resort
-        return registerMailBox(imapService.getOrCreateMailbox(alfrescoUser, folderPath, true, false));
+
+        return result;
     }
 
     /**
@@ -370,7 +365,12 @@ public class AlfrescoImapHostManager implements ImapHostManager
     private MailFolder registerMailBox(AlfrescoImapFolder mailbox)
     {
         String folderPath = mailbox.getFolderPath();
-        if ((mailbox.isSelectable() || folderPath.isEmpty()) && folderCache != null)
+        if (folderCache == null)
+        {
+            folderCache = new HashMap<String, AlfrescoImapFolder>(2);
+        }
+
+        if ((mailbox.isSelectable() || folderPath.isEmpty()))
         {
             AlfrescoImapFolder oldFolder = folderCache.get(folderPath);
             if (oldFolder != null

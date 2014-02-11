@@ -19,6 +19,10 @@
 package org.alfresco.repo.content.metadata;
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -34,6 +38,8 @@ import org.alfresco.service.namespace.QName;
 public class OpenDocumentMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private OpenDocumentMetadataExtracter extracter;
+    
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     @Override
     public void setUp() throws Exception
@@ -81,21 +87,28 @@ public class OpenDocumentMetadataExtracterTest extends AbstractMetadataExtracter
    protected void testFileSpecificMetadata(String mimetype,
          Map<QName, Serializable> properties) 
    {
-      // Check for two cases
-      if(mimetype.equals("application/vnd.oasis.opendocument.text")) 
-      {
-         assertEquals(
-               "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
-               "2005-09-06T23:34:00.000+01:00",
-               DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
-      } 
-      else if(mimetype.equals("application/vnd.oasis.opendocument.graphics")) 
-      {
-         assertEquals(
-               "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
-               "2006-01-27T11:46:11.000Z",
-               DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
-      }
+       try
+       {
+          // Check for two cases
+          if(mimetype.equals("application/vnd.oasis.opendocument.text")) 
+          {
+             assertEquals(
+                   "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
+                   DATE_FORMAT.parse("2005-09-06T23:34:00.000+0100"),
+                   DefaultTypeConverter.INSTANCE.convert(Date.class, properties.get(ContentModel.PROP_CREATED)));
+          } 
+          else if(mimetype.equals("application/vnd.oasis.opendocument.graphics")) 
+          {
+             assertEquals(
+                   "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
+                   DATE_FORMAT.parse("2006-01-27T11:46:11.000+0000"),
+                   DefaultTypeConverter.INSTANCE.convert(Date.class, properties.get(ContentModel.PROP_CREATED)));
+          }
+       }
+       catch (ParseException e)
+       {
+           fail(e.getMessage());
+       }
    }
     
 }

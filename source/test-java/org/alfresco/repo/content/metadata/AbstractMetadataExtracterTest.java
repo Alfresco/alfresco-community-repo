@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import junit.framework.TestCase;
 
@@ -41,6 +42,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
+import org.joda.time.DateTimeZone;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -84,6 +86,11 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
         // perform a little cleaning up
         long now = System.currentTimeMillis();
         TempFileProvider.TempFileCleanerJob.removeFiles(now);
+        
+        TimeZone tz = TimeZone.getTimeZone("Europe/London");
+        TimeZone.setDefault(tz);
+        // Joda time has already grabbed the JVM zone so re-set it here
+        DateTimeZone.setDefault(DateTimeZone.forTimeZone(tz));
     }
     
     /**

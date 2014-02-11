@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -208,6 +209,9 @@ public class LuceneCategoryServiceImpl implements CategoryService
             	searchParameters.addSort("@" + ContentModel.PROP_NAME, true);
             }
             searchParameters.addStore(categoryRef.getStoreRef());
+            searchParameters.setLimit(-1);
+            searchParameters.setMaxItems(Integer.MAX_VALUE);
+            searchParameters.setLimitBy(LimitBy.UNLIMITED);
             resultSet = searcher.query(searchParameters);
 
             // Convert from search results to the required Child Assocs

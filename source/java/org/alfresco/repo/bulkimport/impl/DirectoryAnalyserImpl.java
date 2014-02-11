@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,6 +28,7 @@ package org.alfresco.repo.bulkimport.impl;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -50,6 +51,8 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.exception.PlatformRuntimeException;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * This class provides the implementation for directory analysis, the process by
@@ -179,6 +182,20 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser, InitializingBea
         // Build up the list of ImportableItems from the directory listing
         for (File file : result.getOriginalListing())
         {
+            // MNT-9763 bulkimport fails when there is a very large LastModified timestamp.
+            String isoDate = null;
+            try
+            {
+                isoDate = ISO8601DateFormat.format(new Date(file.lastModified()));
+                ISO8601DateFormat.parse(isoDate);
+            }
+            catch (PlatformRuntimeException e)
+            {
+                log.warn("Failed to convert date " + isoDate + " to string for " + file.getName(), e);
+                importStatus.incrementNumberOfUnreadableEntries();
+                continue;
+            }
+            
             if (log.isTraceEnabled())
             {
             	log.trace("Scanning file " + FileUtils.getFileName(file) + "...");

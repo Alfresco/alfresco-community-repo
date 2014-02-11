@@ -318,35 +318,46 @@ public abstract class AbstractMailActionExecuterTest
     @Test
     public void testPrepareEmailForDisabledUsers() throws MessagingException
     {
-        final String USER1 = "test_user1";
-        final String USER2 = "test_user2";
-        createUser(USER1);
-        NodeRef userNode = createUser(USER2);
-        String groupName = AUTHORITY_SERVICE.createAuthority(AuthorityType.GROUP, "testgroup1");
-        AUTHORITY_SERVICE.addAuthority(groupName, USER1);
-        AUTHORITY_SERVICE.addAuthority(groupName, USER2);
-        NODE_SERVICE.addAspect(userNode, ContentModel.ASPECT_PERSON_DISABLED, null);
-        final Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
-        mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
-        mailAction.setParameterValue(MailActionExecuter.PARAM_TO_MANY, groupName);
+    	String groupName = null;
+    	try
+    	{
+            final String USER1 = "test_user1";
+            final String USER2 = "test_user2";
+            createUser(USER1);
+            NodeRef userNode = createUser(USER2);
+            groupName = AUTHORITY_SERVICE.createAuthority(AuthorityType.GROUP, "testgroup1");
+            AUTHORITY_SERVICE.addAuthority(groupName, USER1);
+            AUTHORITY_SERVICE.addAuthority(groupName, USER2);
+            NODE_SERVICE.addAspect(userNode, ContentModel.ASPECT_PERSON_DISABLED, null);
+            final Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+            mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TO_MANY, groupName);
 
-        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
-        mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, "Testing");
+            mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, "Testing");
 
-        RetryingTransactionHelper txHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+            RetryingTransactionHelper txHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
 
-        MimeMessage mm = txHelper.doInTransaction(new RetryingTransactionCallback<MimeMessage>()
-        {
-            @Override
-            public MimeMessage execute() throws Throwable
+            MimeMessage mm = txHelper.doInTransaction(new RetryingTransactionCallback<MimeMessage>()
             {
-                return ACTION_EXECUTER.prepareEmail(mailAction, null, null, null).getMimeMessage();
-            }
-        }, true);
+                @Override
+                public MimeMessage execute() throws Throwable
+                {
+                    return ACTION_EXECUTER.prepareEmail(mailAction, null, null, null).getMimeMessage();
+                }
+            }, true);
 
-        Address[] addresses = mm.getRecipients(Message.RecipientType.TO);
-        Assert.assertEquals(1, addresses.length);
-        Assert.assertEquals(USER1 + "@email.com", addresses[0].toString());
+            Address[] addresses = mm.getRecipients(Message.RecipientType.TO);
+            Assert.assertEquals(1, addresses.length);
+            Assert.assertEquals(USER1 + "@email.com", addresses[0].toString());
+    	}
+    	finally
+    	{
+    		if (groupName != null)
+    		{
+                AUTHORITY_SERVICE.deleteAuthority(groupName, true);
+    		}
+    	}
     }
 
     private NodeRef createUser(String userName)

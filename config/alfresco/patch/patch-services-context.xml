@@ -3654,5 +3654,16 @@
             <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/createIdxAlfNodeTQN.sql</value>
         </property>
     </bean>
-
+ 
+    <bean id="patch.db-V4.2-restructure-idx_alf_nprop_s-MSSQL" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.2-restructure-idx_alf_nprop_s-MSSQL" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>7001</value></property>
+        <property name="targetSchema"><value>7002</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/restructure-idx_alf_nprop_s-MSSQL.sql</value>
+        </property>
+    </bean>
+ 
 </beans>

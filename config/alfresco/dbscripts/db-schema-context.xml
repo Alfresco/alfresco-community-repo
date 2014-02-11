@@ -93,6 +93,7 @@
                 <ref bean="patch.db-V4.1-fix-Repo-seqs-order" />
                 <ref bean="patch.db-V4.1-ChildAssoc-OrderBy" />
                 <ref bean="patch.db-V4.1-createIdxAlfNodeTQN" />
+                <ref bean="patch.db-V4.2-restructure-idx_alf_nprop_s-MSSQL" />
             </list>
         </property>
     </bean>

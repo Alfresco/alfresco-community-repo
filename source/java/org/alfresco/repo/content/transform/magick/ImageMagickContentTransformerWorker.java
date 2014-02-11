@@ -28,6 +28,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.CropSourceOptions;
 import org.alfresco.service.cmr.repository.PagedSourceOptions;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.exec.RuntimeExec;
 import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 import org.apache.commons.logging.Log;
@@ -82,6 +83,8 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
      */
     public void setExecuter(RuntimeExec executer)
     {
+        executer.setProcessProperty(
+                "MAGICK_TMPDIR", TempFileProvider.getTempDir().getAbsolutePath());
         this.executer = executer;
     }
     

@@ -472,7 +472,7 @@ public class SiteServiceTest extends BaseWebScriptTest
     	String testGroup = "SiteServiceTestGroupA";
     	String testGroupName = "GROUP_" + testGroup;
     	
-        if(!authorityService.authorityExists(testGroup))
+        if(!authorityService.authorityExists(testGroupName))
         {
             this.authenticationComponent.setSystemUserAsCurrentUser();
         	 
@@ -1092,12 +1092,17 @@ public class SiteServiceTest extends BaseWebScriptTest
         String testGroup = "SiteServiceTestGroupA";
         String testGroupName = "GROUP_" + testGroup;
 
-        if (!authorityService.authorityExists(testGroup))
+        if (!authorityService.authorityExists(testGroupName))
         {
             this.authenticationComponent.setSystemUserAsCurrentUser();
 
             testGroupName = authorityService.createAuthority(AuthorityType.GROUP, testGroup,
                         testGroup, authorityService.getDefaultZones());
+        }
+        
+        if(!authorityService.getContainedAuthorities(AuthorityType.USER, testGroupName, true).contains(USER_TWO))
+        {
+            this.authenticationComponent.setSystemUserAsCurrentUser();
             this.authorityService.addAuthority(testGroupName, USER_TWO);
         }
 

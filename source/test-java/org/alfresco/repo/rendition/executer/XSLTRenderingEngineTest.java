@@ -38,16 +38,19 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.custommonkey.xmlunit.Diff;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Brian
  * 
  */
+@Category(OwnJVMTestsCategory.class)
 public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
 {
     private final static Log log = LogFactory.getLog(XSLTRenderingEngineTest.class);

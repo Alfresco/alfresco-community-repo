@@ -55,11 +55,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -68,6 +70,7 @@ import org.springframework.context.ApplicationContext;
  * @author Neil Mc Erlean
  * @since 4.0
  */
+@Category(OwnJVMTestsCategory.class)
 public class ActionFormProcessorTest
 {
     private static final ApplicationContext testContext = ApplicationContextHelper.getApplicationContext();

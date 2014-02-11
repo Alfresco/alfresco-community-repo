@@ -28,14 +28,17 @@ import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.experimental.categories.Category;
 
 /**
  * Transition simple workflow action executer unit test
  * 
  * @author Roy Wetherall
  */
+@Category(OwnJVMTestsCategory.class)
 public class TransitionSimpleWorkflowActionExecuterTest extends BaseAlfrescoSpringTest
 {    
     private FileFolderService fileFolderService;

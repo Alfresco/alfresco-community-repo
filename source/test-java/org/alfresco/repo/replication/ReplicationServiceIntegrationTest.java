@@ -73,9 +73,11 @@ import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -84,6 +86,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  *  to run async actions and know how they'll behave
  * @author Nick Burch
  */
+@Category(OwnJVMTestsCategory.class)
 public class ReplicationServiceIntegrationTest extends TestCase
 {
    private static ConfigurableApplicationContext ctx = 

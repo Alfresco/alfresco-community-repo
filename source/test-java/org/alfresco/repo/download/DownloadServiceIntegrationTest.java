@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
@@ -59,6 +60,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 /**
@@ -66,6 +68,7 @@ import org.junit.rules.RuleChain;
  *
  * @author Alex Miller
  */
+@Category(OwnJVMTestsCategory.class)
 public class DownloadServiceIntegrationTest 
 {
     public static final long MAX_TIME = 5000;

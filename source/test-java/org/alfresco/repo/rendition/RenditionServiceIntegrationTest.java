@@ -80,8 +80,10 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.Pair;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -90,6 +92,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @since 3.3
  */
 @SuppressWarnings("deprecation")
+@Category(OwnJVMTestsCategory.class)
 public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
     private static final String WHITE = "ffffff";

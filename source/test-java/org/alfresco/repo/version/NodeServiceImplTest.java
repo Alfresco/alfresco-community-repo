@@ -42,15 +42,18 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TestWithUserUtils;
 import org.alfresco.util.debug.NodeStoreInspector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Roy Wetherall
  */
+@Category(OwnJVMTestsCategory.class)
 public class NodeServiceImplTest extends BaseVersionStoreTest 
 {
     private static Log logger = LogFactory.getLog(NodeServiceImplTest.class);

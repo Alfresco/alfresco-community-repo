@@ -36,10 +36,12 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -47,6 +49,7 @@ import org.w3c.dom.NodeList;
  * @author Brian
  *
  */
+@Category(OwnJVMTestsCategory.class)
 public class XSLTFunctionsTest extends BaseAlfrescoSpringTest
 {
     private final static Log log = LogFactory.getLog(XSLTFunctionsTest.class);

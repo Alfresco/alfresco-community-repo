@@ -37,7 +37,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.alfresco.repo.activities.post.lookup.PostLookup;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
@@ -134,7 +133,7 @@ public abstract class FeedTaskProcessor
                 }
                 catch(JSONException je)
                 {
-                    logger.error("Skipping activity post " + activityPost.getId() + " due to invalid activity data: " + je);
+                    logger.error("Skipping activity post " + activityPost.getId() + " due to invalid activity data: ", je);
                     updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     continue;
                 }
@@ -195,7 +194,7 @@ public abstract class FeedTaskProcessor
                 }
                 catch (Exception e)
                 {
-                    logger.error("Skipping activity post " + activityPost.getId() + " since failed to get recipients: " + e);
+                    logger.error("Skipping activity post " + activityPost.getId() + " since failed to get recipients: ", e);
                     updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     continue;
                 }

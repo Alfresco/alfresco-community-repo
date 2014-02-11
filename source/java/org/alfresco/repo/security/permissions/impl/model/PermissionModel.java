@@ -448,13 +448,15 @@ public class PermissionModel implements ModelDAO
                 {
                     ClassDefinition classDefinition = dictionaryService.getClass(pg.getQName());
                     QName parent;
-                    while ((parent = classDefinition.getParentName()) != null)
-                    {
-                        classDefinition = dictionaryService.getClass(parent);
-                        PermissionGroup attempt = getPermissionGroupOrNull(SimplePermissionReference.getPermissionReference(parent, pg.getName()));
-                        if ((attempt != null) && (!attempt.isExtends()))
+                    if (classDefinition != null) {
+                        while ((parent = classDefinition.getParentName()) != null)
                         {
-                            return attempt;
+                            classDefinition = dictionaryService.getClass(parent);
+                            PermissionGroup attempt = getPermissionGroupOrNull(SimplePermissionReference.getPermissionReference(parent, pg.getName()));
+                            if ((attempt != null) && (!attempt.isExtends()))
+                            {
+                                return attempt;
+                            }
                         }
                     }
                     return null;

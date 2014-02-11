@@ -35,8 +35,8 @@ public class AVMTestSuite extends TestSuite
 {
     public static ApplicationContext getContext() 
     {
-        ApplicationContextHelper.setUseLazyLoading(false);
-        ApplicationContextHelper.setNoAutoStart(true);
+        //ApplicationContextHelper.setUseLazyLoading(false);
+        //ApplicationContextHelper.setNoAutoStart(true);
         
         /*
         return ApplicationContextHelper.getApplicationContext(

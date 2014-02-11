@@ -405,8 +405,8 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 	        		}
 	        	}
 	
-	        	// check if checked out
-	        	hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
+	        	// check if current node(not specified version) checked out
+	        	hasPWC = connector.getCheckOutCheckInService().isCheckedOut(getCurrentNodeNodeRef());
         	}
         }
         catch (AccessDeniedException e)

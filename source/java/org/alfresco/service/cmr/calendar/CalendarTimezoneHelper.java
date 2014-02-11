@@ -321,7 +321,7 @@ public class CalendarTimezoneHelper
                           for (String extra : extras)
                           {
                              splitAt = extra.indexOf('=');
-                             if (splitAt > -1)
+                             if (splitAt > -1 && !result.containsKey(mainKey+"-"+extra.substring(0,splitAt-1)))
                              {
                                 result.put(mainKey+"-"+extra.substring(0,splitAt-1), extra.substring(splitAt+1));
                              }
@@ -336,16 +336,21 @@ public class CalendarTimezoneHelper
                        keyValue[0] = keyValue[0] + attendeeNum;
                        attendeeNum++;
                    }
-                   result.put(keyValue[0], keyValue[keyValue.length - 1]);
+                   
+                   if (!result.containsKey(keyValue[0]))
+                   {
+                       result.put(keyValue[0], keyValue[keyValue.length - 1]);
+                   }                   
                }
                
-               if (!stack.isEmpty() && stack.peek().equals(ICAL_SECTION_TIMEZONE))
+               if (!stack.isEmpty() && stack.peek().equals(ICAL_SECTION_TIMEZONE) && !result.containsKey("TZ-" + keyValue[0]))
                {
                    // Store the top level timezone details with a TZ prefix
                    result.put("TZ-"+keyValue[0], keyValue[keyValue.length-1]);
                }
                if (stack.size() >= 2 && stack.get(stack.size()-2).equals(ICAL_SECTION_TIMEZONE) &&
-                     (stack.peek().equals(ICAL_SECTION_TZ_STANDARD) || stack.peek().equals(ICAL_SECTION_TZ_DAYLIGHT)) )
+                     (stack.peek().equals(ICAL_SECTION_TZ_STANDARD) || stack.peek().equals(ICAL_SECTION_TZ_DAYLIGHT)) && 
+                        !result.containsKey("TZ-"+stack.peek()+"-"+keyValue[0]))
                {
                    // Store the timezone details with a TZ prefix + details type
                    result.put("TZ-"+stack.peek()+"-"+keyValue[0], keyValue[keyValue.length-1]);

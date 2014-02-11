@@ -1075,7 +1075,7 @@ public class RepoService
 			this.siteInfo = siteInfo;
 		}
 		
-		TestSite(TestNetwork account, String siteId, String guid, String title, String description, SiteVisibility siteVisibility)
+		public TestSite(TestNetwork account, String siteId, String guid, String title, String description, SiteVisibility siteVisibility)
 		{
 			super((account == null ? null : account.getId()), siteId, guid);
 			setTitle(title);

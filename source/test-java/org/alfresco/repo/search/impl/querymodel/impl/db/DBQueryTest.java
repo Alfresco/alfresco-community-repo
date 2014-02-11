@@ -247,7 +247,7 @@ public class DBQueryTest  implements DictionaryListener
     protected void loadTestModel()
     {
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
-        InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/querymodel/impl/db/MetadataQueryTest_model.xml");
+        InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/MetadataQueryTest_model.xml");
         assertNotNull(modelStream);
         model = M2Model.createModel(modelStream);
         dictionaryDAO.register(this);

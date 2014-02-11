@@ -492,13 +492,12 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
      * <p/>
      * Both streams are closed but any IOExceptions are thrown
      */
-    private final int copyStreams(InputStream in, OutputStream out) throws IOException
+    private final long copyStreams(InputStream in, OutputStream out) throws IOException
     {
         ContentLimitProvider contentLimitProvider = getContentLimitProvider();
         final long sizeLimit = contentLimitProvider.getSizeLimit();
         
-        int byteCount = sizeLimitedStreamCopier.copyStreams(in, out, sizeLimit);
-        
+        long byteCount = sizeLimitedStreamCopier.copyStreamsLong(in, out, sizeLimit);
         return byteCount;
     }
     

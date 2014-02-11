@@ -51,7 +51,18 @@ public final class LimitedStreamCopier
      */
     public final int copyStreams(InputStream in, OutputStream out, long sizeLimit) throws IOException
     {
-        int byteCount = 0;
+        long bytes = copyStreamsLong(in, out, sizeLimit);
+        if (bytes > Integer.MAX_VALUE)
+        {
+            throw new IllegalArgumentException(bytes + " cannot be cast to int.");
+        }
+        
+        return (int) bytes;
+    }
+    
+    public final long copyStreamsLong(InputStream in, OutputStream out, long sizeLimit) throws IOException
+    {
+        long byteCount = 0;
         IOException error = null;
         
         long totalBytesRead = 0;

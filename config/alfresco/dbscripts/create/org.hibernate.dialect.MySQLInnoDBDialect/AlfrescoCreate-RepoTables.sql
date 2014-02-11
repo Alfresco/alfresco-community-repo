@@ -215,7 +215,7 @@ CREATE TABLE alf_node
     KEY idx_alf_node_txn_type (transaction_id, type_qname_id),
     KEY fk_alf_node_acl (acl_id),
     KEY fk_alf_node_store (store_id),
-    KEY fk_alf_node_tqn (type_qname_id),
+    KEY idx_alf_node_tqn (type_qname_id, store_id, id),
     KEY fk_alf_node_loc (locale_id),
     KEY idx_alf_node_mdq (store_id, type_qname_id),
     KEY idx_alf_node_cor (audit_creator, store_id, type_qname_id),

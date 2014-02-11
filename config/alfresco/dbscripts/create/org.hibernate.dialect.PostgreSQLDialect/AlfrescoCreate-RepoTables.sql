@@ -241,7 +241,7 @@ CREATE INDEX idx_alf_node_mod ON alf_node (audit_modified, store_id, type_qname_
 CREATE INDEX idx_alf_node_txn_type ON alf_node (transaction_id, type_qname_id);
 CREATE INDEX fk_alf_node_acl ON alf_node (acl_id);
 CREATE INDEX fk_alf_node_store ON alf_node (store_id);
-CREATE INDEX fk_alf_node_tqn ON alf_node (type_qname_id);
+CREATE INDEX idx_alf_node_tqn ON alf_node (type_qname_id, store_id, id);
 CREATE INDEX fk_alf_node_loc ON alf_node (locale_id);
 
 CREATE INDEX fk_alf_store_root ON alf_store (root_node_id);

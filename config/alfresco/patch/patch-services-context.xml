@@ -3643,5 +3643,16 @@
             <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/ChildAssoc-OrderBy.sql</value>
         </property>
     </bean>
+    
+    <bean id="patch.db-V4.1-createIdxAlfNodeTQN" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.1-createIdxAlfNodeTQN</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>7000</value></property>
+        <property name="targetSchema"><value>7001</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/createIdxAlfNodeTQN.sql</value>
+        </property>
+    </bean>
 
 </beans>

@@ -32,7 +32,6 @@ import java.util.ResourceBundle.Control;
 import java.util.Set;
 import java.util.Stack;
 
-import org.alfresco.repo.copy.AbstractBaseCopyService.AssociationCopyInfo;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
@@ -428,9 +427,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         return getPagingResults(pagingRequest, results);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.model.FileFolderService#list(org.alfresco.service.cmr.repository.NodeRef, boolean, boolean, String, java.util.Set, org.alfresco.service.cmr.model.PagingSortRequest)
-     */
+    @Override
     public PagingResults<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders, String pattern, Set<QName> ignoreQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("contextNodeRef", contextNodeRef);

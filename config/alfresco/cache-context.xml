@@ -42,7 +42,6 @@
    <bean name="authorityBridgeTableCache" class="org.alfresco.repo.security.authority.AuthorityBridgeTableAsynchronouslyRefreshedCache" parent="abstractAsynchronouslyRefreshedCache">
       <property name="authorityBridgeDAO" ref="authorityBridgeDAO" />
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
-      <property name="tenantAdminService" ref="tenantAdminService" />
    </bean>
    
    <!-- ===================================== -->

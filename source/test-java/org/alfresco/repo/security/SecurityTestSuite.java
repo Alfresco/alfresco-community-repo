@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,7 +28,6 @@ import org.alfresco.repo.security.authentication.AuthenticationTest;
 import org.alfresco.repo.security.authentication.AuthorizationTest;
 import org.alfresco.repo.security.authentication.ChainingAuthenticationServiceTest;
 import org.alfresco.repo.security.authentication.NameBasedUserNameGeneratorTest;
-import org.alfresco.repo.security.authority.AuthorityBridgeTableAsynchronouslyRefreshedCacheTest;
 import org.alfresco.repo.security.authority.AuthorityServiceTest;
 import org.alfresco.repo.security.authority.DuplicateAuthorityTest;
 import org.alfresco.repo.security.authority.ExtendedPermissionServiceTest;
@@ -77,8 +76,7 @@ public class SecurityTestSuite extends TestSuite
         // suite.addTestSuite(ChainingUserRegistrySynchronizerTest.class);
         suite.addTestSuite(OwnableServiceTest.class);    
         suite.addTestSuite(ReadPermissionTest.class);    
-        suite.addTestSuite(AuthorizationTest.class);
-        suite.addTestSuite(AuthorityBridgeTableAsynchronouslyRefreshedCacheTest.class);
+        suite.addTestSuite(AuthorizationTest.class);    
 
         suite.addTest(new JUnit4TestAdapter(HomeFolderProviderSynchronizerTest.class));
 

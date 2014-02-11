@@ -465,7 +465,7 @@ public class RenditionServicePermissionsTest
      */
     private static class MockUserCheckingContentTransformer implements ContentTransformer
     {
-        public static final String SUPPORTED_TARGET_MIMETYPE = "dummy/dummy";
+        public static final String SUPPORTED_TARGET_MIMETYPE = "image/dummy";
         public static final String TEST_TARGET_CONTENT = "transformed text";
         
         private String expectedUsername;

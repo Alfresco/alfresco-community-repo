@@ -183,14 +183,18 @@ public abstract class AbstractCalendarListingWebScript extends AbstractCalendarW
       childNodeTypeQNames = new HashSet<QName>();
       childNodeTypeQNames.add(CalendarModel.TYPE_UPDATED_EVENT);
       List<ChildAssociationRef> updatedEventList = nodeService.getChildAssocs(entry.getNodeRef(), childNodeTypeQNames);
-      Map<String, Date[]> updatedDates = new HashMap<String, Date[]>();
+      Map<String, Object> updatedDates = new HashMap<String, Object>();
       for (ChildAssociationRef updatedEvent : updatedEventList)
       {
           NodeRef nodeRef = updatedEvent.getChildRef();
           Date updatedDate = (Date) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_EVENT_DATE);
           Date newStart = (Date) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_START);
           Date newEnd = (Date) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_END);
+          String newWhere = (String) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_WHERE);
+          String newWhat = (String) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_WHAT);
           updatedDates.put(fmt.format(updatedDate), new Date[] { newStart, newEnd });
+          updatedDates.put(fmt.format(updatedDate).toString() + "where", newWhere);
+          updatedDates.put(fmt.format(updatedDate).toString() + "what", newWhat);
       }
       
       // first occurrence can be edited as separate event
@@ -199,9 +203,9 @@ public abstract class AbstractCalendarListingWebScript extends AbstractCalendarW
       // If first result only, alter title and finish
       if (repeatingFirstOnly)
       {
-         updateRepeating(entry, updatedDates, entryResult, duration, fmt, liveEntry);
-         
          entryResult.put(RESULT_TITLE, entry.getTitle() + " (Repeating)");
+         
+         updateRepeating(entry, updatedDates, entryResult, duration, fmt, liveEntry);
          return true; // Date has been changed
       }
       else
@@ -244,19 +248,17 @@ public abstract class AbstractCalendarListingWebScript extends AbstractCalendarW
       result.put("legacyTimeTo", ltf.format(newEnd));
    }
    
-   private void updateRepeating(CalendarEntry entry, Map<String, Date[]> updatedDates, Map<String, Object> entryResult, long duration, SimpleDateFormat fmt, Date date)
+   private void updateRepeating(CalendarEntry entry, Map<String, Object> updatedDates, Map<String, Object> entryResult, long duration, SimpleDateFormat fmt, Date date)
    {
       if (updatedDates.keySet().contains(fmt.format(date)))
       {
          // there is day that was edited
-         Date[] newValues = updatedDates.get(fmt.format(date));
+         Date[] newValues = (Date[]) updatedDates.get(fmt.format(date));
          long newDuration = newValues[1].getTime() - newValues[0].getTime();
-         NodeRef nodeRef = nodeService.getChildAssocsByPropertyValue(entry.getNodeRef(), CalendarModel.PROP_UPDATED_EVENT_DATE, date).get(0).getChildRef();
-         if (nodeRef != null)
-         {
-            entryResult.put(RESULT_TITLE, (String) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_WHAT));
-            entryResult.put("where", (String) nodeService.getProperty(nodeRef, CalendarModel.PROP_UPDATED_WHERE));
-         }
+
+         entryResult.put(RESULT_TITLE, (String) updatedDates.get(fmt.format(date).toString() + "what"));
+         entryResult.put("where", (String) updatedDates.get(fmt.format(date).toString() + "where"));
+         
          updateRepeatingStartEnd(newValues[0], newDuration, entryResult);
       }
       else

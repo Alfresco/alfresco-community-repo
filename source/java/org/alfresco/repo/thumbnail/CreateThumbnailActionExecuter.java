@@ -58,9 +58,6 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
     /** Node Service */
     private NodeService nodeService;
     
-    /** Property turns on and off all thumbnail creation */
-    private boolean generateThumbnails = true;
-
     // Size limitations (in KBytes) indexed by mimetype for thumbnail creation
     private HashMap<String,Long> mimetypeMaxSourceSizeKBytes;
 
@@ -101,10 +98,17 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
     /**
      * Enable thumbnail creation at all regardless of mimetype.
      * @param generateThumbnails a {@code false} value turns off all thumbnail creation.
+     * @deprecated Use {@link ThumbnailServiceImpl#setThumbnailsEnabled(boolean)} instead.
      */
     public void setGenerateThumbnails(boolean generateThumbnails)
     {
-        this.generateThumbnails = generateThumbnails;
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Thumbnail generation is " +
+                         (generateThumbnails ? "enabled" : "disabled") +
+                         "via deprecated method in " + this.getClass().getSimpleName());
+        }
+        this.thumbnailService.setThumbnailsEnabled(generateThumbnails);
     }
     
     /**
@@ -114,7 +118,7 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         // Check if thumbnailing is generally disabled
-        if (!generateThumbnails)
+        if (!thumbnailService.getThumbnailsEnabled())
         {
             if (logger.isDebugEnabled())
             {

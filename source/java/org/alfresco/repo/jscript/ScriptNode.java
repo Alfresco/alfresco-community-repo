@@ -2866,71 +2866,76 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      */
     public ScriptThumbnail createThumbnail(String thumbnailName, boolean async)
     {
+        final ThumbnailService thumbnailService = services.getThumbnailService();
+        
         ScriptThumbnail result = null;
         
-        // Use the thumbnail registy to get the details of the thumbail
-        ThumbnailRegistry registry = this.services.getThumbnailService().getThumbnailRegistry();
-        ThumbnailDefinition details = registry.getThumbnailDefinition(thumbnailName);
-        if (details == null)
+        // If thumbnail generation has been configured off, then don't bother with any of this.
+        if ( thumbnailService.getThumbnailsEnabled())
         {
-            // Throw exception 
-            throw new ScriptException("The thumbnail name '" + thumbnailName + "' is not registered");
-        }
-        
-        // If there's nothing currently registered to generate thumbnails for the
-        // specified mimetype, then log a message and bail out
-        String nodeMimeType = getMimetype();
-        Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-        ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
-        if (!ContentData.hasContent(contentData) ||
-            !services.getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT).exists())
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Unable to create thumbnail '" + details.getName() + "' as there is no content");
-            return null;
-        }
-        if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), nodeMimeType, getSize(), nodeRef, details))
-        {
-            logger.info("Unable to create thumbnail '" + details.getName() + "' for " +
-                        nodeMimeType + " as no transformer is currently available.");
-            return null;
-        }
-        
-        // Have the thumbnail created
-        if (async == false)
-        {
-            try
+            // Use the thumbnail registy to get the details of the thumbail
+            ThumbnailRegistry registry = thumbnailService.getThumbnailRegistry();
+            ThumbnailDefinition details = registry.getThumbnailDefinition(thumbnailName);
+            if (details == null)
             {
-                // Create the thumbnail
-                NodeRef thumbnailNodeRef = this.services.getThumbnailService().createThumbnail(
-                    this.nodeRef, 
-                    ContentModel.PROP_CONTENT, 
-                    details.getMimetype(), 
-                    details.getTransformationOptions(), 
-                    details.getName());
-            
-                // Create the thumbnail script object
-                result = new ScriptThumbnail(thumbnailNodeRef, this.services, this.scope);
+                // Throw exception 
+                throw new ScriptException("The thumbnail name '" + thumbnailName + "' is not registered");
             }
-            catch (AlfrescoRuntimeException e)
+            
+            // If there's nothing currently registered to generate thumbnails for the
+            // specified mimetype, then log a message and bail out
+            String nodeMimeType = getMimetype();
+            Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+            if (!ContentData.hasContent(contentData) ||
+                !services.getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT).exists())
             {
-                Throwable rootCause = e.getRootCause();
-                if (rootCause instanceof UnimportantTransformException)
+                if (logger.isDebugEnabled())
+                    logger.debug("Unable to create thumbnail '" + details.getName() + "' as there is no content");
+                return null;
+            }
+            if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), nodeMimeType, getSize(), nodeRef, details))
+            {
+                logger.info("Unable to create thumbnail '" + details.getName() + "' for " +
+                            nodeMimeType + " as no transformer is currently available.");
+                return null;
+            }
+            
+            // Have the thumbnail created
+            if (async == false)
+            {
+                try
                 {
-                    logger.debug("Unable to create thumbnail '" + details.getName() + "' as "+rootCause.getMessage());
-                    return null;
+                    // Create the thumbnail
+                    NodeRef thumbnailNodeRef = thumbnailService.createThumbnail(
+                        this.nodeRef, 
+                        ContentModel.PROP_CONTENT, 
+                        details.getMimetype(), 
+                        details.getTransformationOptions(), 
+                        details.getName());
+                    
+                    // Create the thumbnail script object
+                    result = new ScriptThumbnail(thumbnailNodeRef, this.services, this.scope);
                 }
-                throw e;
+                catch (AlfrescoRuntimeException e)
+                {
+                    Throwable rootCause = e.getRootCause();
+                    if (rootCause instanceof UnimportantTransformException)
+                    {
+                        logger.debug("Unable to create thumbnail '" + details.getName() + "' as "+rootCause.getMessage());
+                        return null;
+                    }
+                    throw e;
+                }
+            }
+            else
+            {
+                Action action = ThumbnailHelper.createCreateThumbnailAction(details, services);
+                
+                // Queue async creation of thumbnail
+                this.services.getActionService().executeAction(action, this.nodeRef, true, true);
             }
         }
-        else
-        {
-            Action action = ThumbnailHelper.createCreateThumbnailAction(details, services);
-            
-            // Queue async creation of thumbnail
-            this.services.getActionService().executeAction(action, this.nodeRef, true, true);
-        }
-        
         return result;
     }
 

@@ -217,8 +217,6 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
                 PermissionService.UNLOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
         authenticationService.authenticate("lemur", "lemur".toCharArray());
         
@@ -227,8 +225,6 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode,
                 PermissionService.UNLOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
-        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
-        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
         authenticationService.authenticate("andy", "andy".toCharArray());
         lockService.unlock(testNode);
@@ -240,8 +236,6 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
                 PermissionService.UNLOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
         
         authenticationService.authenticate("frog", "frog".toCharArray());
@@ -251,6 +245,45 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode,
                 PermissionService.UNLOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
+    }
+    
+    /**
+     * MNT-9502
+     */
+    public void testPermissionOfLockedNodeWithWorkingcopyAspect()
+    {
+        permissionService.setPermission(rootNodeRef, "andy", PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setPermission(rootNodeRef, "lemur", PermissionService.CHECK_OUT, true);
+        permissionService.setPermission(rootNodeRef, "lemur", PermissionService.WRITE, true);
+        permissionService.setPermission(rootNodeRef, "lemur", PermissionService.READ, true);
+        permissionService.setPermission(rootNodeRef, "frog", PermissionService.CHECK_OUT, true);
+        permissionService.setPermission(rootNodeRef, "frog", PermissionService.WRITE, true);
+        permissionService.setPermission(rootNodeRef, "frog", PermissionService.READ, true);
+        authenticationService.authenticate("andy", "andy".toCharArray());
+        NodeRef testNode = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_PERSON,
+                ContentModel.TYPE_CMOBJECT, null).getChildRef();
+        nodeService.addAspect(testNode, ContentModel.ASPECT_WORKING_COPY, null);
+        lockService.lock(testNode, LockType.READ_ONLY_LOCK);
+       
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
+        
+        authenticationService.authenticate("lemur", "lemur".toCharArray());
+        
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
+        
+        authenticationService.authenticate("andy", "andy".toCharArray());
+        lockService.unlock(testNode);
+        authenticationService.authenticate("lemur", "lemur".toCharArray());
+        lockService.lock(testNode, LockType.READ_ONLY_LOCK);
+        
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
+        
+        
+        authenticationService.authenticate("frog", "frog".toCharArray());
+        
         assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
         assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
@@ -374,8 +407,9 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
                 PermissionService.UNLOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
+        //MNT-9502 node hasn't cm:workingcopy aspect
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(workingCopy,
                 PermissionService.LOCK));
@@ -413,8 +447,9 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode,
                 PermissionService.UNLOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
+        //MNT-9502 node hasn't cm:workingcopy aspect
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(workingCopy,
                 PermissionService.LOCK));
@@ -518,8 +553,9 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.LOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.UNLOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
+        //MNT-9502 node hasn't cm:workingcopy aspect
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
         authenticationService.authenticate("lemur", "lemur".toCharArray());
         
@@ -534,8 +570,6 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.LOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.UNLOCK));
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_OUT));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
-        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
         lockService.unlock(testNode);
         
@@ -553,6 +587,7 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
         assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CHECK_IN));
         assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.CANCEL_CHECK_OUT));
         
+        nodeService.addAspect(testNode, ContentModel.ASPECT_WORKING_COPY, null);
         lockService.lock(testNode, LockType.READ_ONLY_LOCK);
         
         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(testNode, PermissionService.LOCK));

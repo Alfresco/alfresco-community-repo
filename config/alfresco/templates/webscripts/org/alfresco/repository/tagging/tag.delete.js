@@ -47,6 +47,7 @@ function main()
             // Unable to remove Tag
             model.msg = "manage-tags.delete-failure";
             model.result = false;
+            logger.warn("tag.delete.js: " + e);
          }
       }
    }

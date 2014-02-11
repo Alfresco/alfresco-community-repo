@@ -74,6 +74,7 @@ function main()
                   // Unable to remove Tag
                   model.msg = "manage-tags.edit-failure";
                   model.result = false;
+                  logger.warn("tag.put.json.js: " + e);
                }
             }
          }

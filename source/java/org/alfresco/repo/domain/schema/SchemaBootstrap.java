@@ -471,10 +471,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         else
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Ignoring script patch (pre-Hibernate): " + scriptPatch.getId());
-            }
+            logger.info("Ignoring script patch (pre-Hibernate): " + scriptPatch.getId());
         }
         
     }
@@ -496,10 +493,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         else
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Ignoring script patch (post-Hibernate): " + scriptPatch.getId());
-            }
+            logger.info("Ignoring script patch (post-Hibernate): " + scriptPatch.getId());
         }
     }
 
@@ -520,10 +514,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         else
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Ignoring Activiti script patch: " + scriptPatch.getId());
-            }
+            logger.info("Ignoring Activiti script patch: " + scriptPatch.getId());
         }
         
     }

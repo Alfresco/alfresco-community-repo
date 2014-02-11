@@ -1608,7 +1608,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                         action.setParameterValue(CancelWorkflowActionExecuter.PARAM_WORKFLOW_ID_LIST, (Serializable)invitationIds);
                                                 
                         // Cancel the workflows asynchronously - see ALF-11872 (svn rev 32936 for details on why this is asynchronous).
-                        actionService.executeAction(action, siteRef, false, true); // FIXME Here's the fix - make the steRef null
+                        actionService.executeAction(action, null, false, true);
                         
                         if (logger.isDebugEnabled())
                         {

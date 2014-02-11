@@ -1389,4 +1389,8 @@
    
    <bean id="defaultImageResolver" class="org.alfresco.util.DefaultImageResolver" />
    
+   <bean id="nameChecker" class="org.alfresco.repo.dictionary.constraint.NameChecker">
+      <property name="dictionaryService" ref="dictionaryService" />
+   </bean>
+
 </beans>

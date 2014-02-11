@@ -210,10 +210,11 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                         "currently unsupported, this action can't be cancelled");
             }
         }
-        
+
         // Call the transform in a different thread so we can move on if cancelled
         FutureTask<ContentWriter> transformTask = new FutureTask<ContentWriter>(
-                new TransformationCallable(contentReader, targetMimeType, options, context));
+                new TransformationCallable(contentReader, targetMimeType, options, context, 
+                        AuthenticationUtil.getFullyAuthenticatedUser()));
         getExecutorService().execute(transformTask);
         
         // Start checking for cancellation or timeout
@@ -406,19 +407,22 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
         private String targetMimeType;
         private TransformationOptions options;
         private RenderingContext context;
+        private String initiatingUsername;
         
         public TransformationCallable(ContentReader contentReader, String targetMimeType,
-                TransformationOptions options, RenderingContext context)
+                TransformationOptions options, RenderingContext context, String initiatingUsername)
         {
             this.contentReader = contentReader;
             this.targetMimeType = targetMimeType;
             this.options = options;
             this.context = context;
+            this.initiatingUsername = initiatingUsername;
         }
 
         @Override
         public ContentWriter call() throws Exception
         {
+            AuthenticationUtil.setFullyAuthenticatedUser(initiatingUsername);
             Serializable runAsParam = context.getDefinition().getParameterValue(AbstractRenderingEngine.PARAM_RUN_AS);
             String runAsName = runAsParam == null ? AbstractRenderingEngine.DEFAULT_RUN_AS_NAME : (String) runAsParam;
             

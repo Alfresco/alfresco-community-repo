@@ -98,8 +98,8 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
     @Override
     protected FilterSortChildQueryCallback getFilterSortChildQuery(final List<FilterSortNode> children, final List<FilterProp> filterProps, GetChildrenCannedQueryParams paramBean)
     {
-    	FilterSortChildQueryCallback callback = new FileFolderFilterSortChildQueryCallback(children, filterProps);
-    	return callback;
+        FilterSortChildQueryCallback callback = new FileFolderFilterSortChildQueryCallback(children, filterProps);
+        return callback;
     }
 
     private class FileFolderFilterSortChildQueryCallback extends DefaultFilterSortChildQueryCallback
@@ -146,17 +146,17 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
     private class FileFolderUnsortedChildQueryCallback extends DefaultUnsortedChildQueryCallback
     {
 		public FileFolderUnsortedChildQueryCallback(List<NodeRef> rawResult,int requestedCount, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
-		{
+        {
 			super(rawResult, requestedCount, inclusiveAspects, exclusiveAspects);
-		}
+        }
 		
-		@Override
-		protected boolean include(NodeRef nodeRef)
-		{
-			boolean ret = super.include(nodeRef);
-			
-			return ret && includeImpl(ret, nodeRef);
-		}
+        @Override
+        protected boolean include(NodeRef nodeRef)
+        {
+            boolean ret = super.include(nodeRef);
+            
+            return ret && includeImpl(ret, nodeRef);
+        }
     }
     
     protected boolean includeImpl(boolean ret, NodeRef nodeRef)

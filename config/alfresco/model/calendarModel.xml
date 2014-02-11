@@ -21,7 +21,7 @@
 
    <types>
       <type name="ia:ignoreEvent">
-         <title>Separate Recurring Event</title>
+         <title>Separate Ignored Recurring Event</title>
          <parent>cm:content</parent>
          <properties>
             <property name="ia:date">
@@ -29,7 +29,28 @@
             </property>
          </properties>       
       </type>
-	  
+      <type name="ia:updateEvent">
+         <title>Separate Updated Recurring Event</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="ia:updatedDate">
+               <type>d:datetime</type>
+            </property>
+            <property name="ia:newWhatEvent">
+               <type>d:text</type>
+            </property>
+            <property name="ia:newStart">
+               <type>d:datetime</type>
+            </property>
+            <property name="ia:newEnd">
+               <type>d:datetime</type>
+            </property>
+            <property name="ia:newWhereEvent">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+
       <type name="ia:calendarEvent">
          <title>Calendar Event</title>
          <parent>cm:content</parent>
@@ -92,7 +113,18 @@
                   <many>true</many>
                </target>
             </child-association>
-         </associations>         
+            <child-association name="ia:updatedEventList">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>ia:updateEvent</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </child-association>
+         </associations>
       </type>
       
       <type name="ia:calendar">

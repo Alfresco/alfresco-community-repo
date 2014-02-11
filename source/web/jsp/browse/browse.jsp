@@ -153,7 +153,7 @@
                               <td>
                                  <%-- Summary --%>
                                  <div class="mainTitle"><h:outputText value="#{msg.search_results}" id="msg11" /></div>
-                                 <div class="mainSubText"><h:outputFormat value="#{msg.search_detail}" id="msg12"><f:param value="#{NavigationBean.searchContext.text}" id="param2" /></h:outputFormat></div>
+                                 <div class="mainSubText"><h:outputFormat value="#{msg.search_detail}" id="msg12"><f:param value="#{NavigationBean.searchContext.searchText}" id="param2" /></h:outputFormat></div>
                                  <div class="mainSubText"><h:outputText value="#{msg.search_description}" id="msg13" /></div>
                               </td>
                               <td style="padding-right:4px" align=right>

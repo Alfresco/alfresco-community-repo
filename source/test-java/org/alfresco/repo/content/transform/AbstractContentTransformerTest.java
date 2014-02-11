@@ -21,6 +21,7 @@ package org.alfresco.repo.content.transform;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -127,10 +128,29 @@ public abstract class AbstractContentTransformerTest extends TestCase
      */
     public static File loadNamedQuickTestFile(String quickname) throws IOException
     {
-        URL url = AbstractContentTransformerTest.class.getClassLoader().getResource("quick/" + quickname);
+        String quickNameAndPath = "quick/" + quickname;
+        URL url = AbstractContentTransformerTest.class.getClassLoader().getResource(quickNameAndPath);
         if (url == null)
         {
             return null;
+        }
+        if (ResourceUtils.isJarURL(url))
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Using a temp file for quick resource that's in a jar." + quickNameAndPath);
+            }
+            try
+            {
+                InputStream is = AbstractContentTransformerTest.class.getClassLoader().getResourceAsStream(quickNameAndPath);
+                File tempFile = TempFileProvider.createTempFile(is, quickname, ".tmp");
+                return tempFile;
+            }
+            catch (Exception error)
+            {
+                logger.equals("Failed to load a quick file from a jar. "+error);
+                return null;
+            }
         }
         return ResourceUtils.getFile(url);
     }

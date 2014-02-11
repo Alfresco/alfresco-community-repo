@@ -102,6 +102,7 @@
       <![CDATA[
       select site_network as siteNetwork
       from alf_activity_feed
+      where site_network IS NOT NULL AND ('' IS NULL OR '' != site_network)
       group by site_network
       having count(*) > #{maxFeedSize}
       ]]>

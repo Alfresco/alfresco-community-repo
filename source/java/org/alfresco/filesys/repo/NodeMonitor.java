@@ -279,12 +279,12 @@ public class NodeMonitor extends TransactionListenerAdapter
             String beforeName = (String) before.get(ContentModel.PROP_NAME);
             String afterName = (String) after.get(ContentModel.PROP_NAME);
             
-            Path nodePath = m_nodeService.getPath(nodeRef);
-            String relPath = nodePath.toDisplayPath(m_nodeService, m_permissionService);
-    		
     		if (( beforeLock != null && afterLock == null) ||
     				( beforeLock == null && afterLock != null)) 
     		{
+                Path nodePath = m_nodeService.getPath(nodeRef);
+                String relPath = nodePath.toDisplayPath(m_nodeService, m_permissionService);
+
     			// Process the lock update first
         		fireNodeEvent(new LockNodeEvent( fType, nodeRef, relPath, beforeName, beforeLock, afterLock));
     		}

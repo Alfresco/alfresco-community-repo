@@ -94,6 +94,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
     private int numRetries = 10;
     
     private int defaultListMaxResults = 5000;
+    private boolean honorHintUseCQ = true;
     
     private static final String HINT_CQ_SUFFIX = " [hint:useCQ]";
     
@@ -241,6 +242,23 @@ public class People extends BaseScopableProcessorExtension implements Initializi
     public void setDefaultListMaxResults(int defaultListMaxResults)
     {
         this.defaultListMaxResults = defaultListMaxResults;
+    }
+    
+    /**
+     * Allows customers to choose to use Solr or Lucene rather than a canned query in
+     * {@link #getPeople(String, int, String, boolean)} when
+     * {@code " [hint:useCQ]"} is appended to the search term (currently Share's
+     * User Console does this). The down side is that new users may not appear as they
+     * will not have been indexed. This is similar to what happened in 4.1.1 prior to
+     * MNT-7548 (4.1.2 and 4.1.1.1). The down side of using a canned query at the moment
+     * is that there is a bug, so that it is impossible to search for names such as
+     * {@code "Carlos Allende García"} where the first or last names may contain spaces.
+     * See MNT-9719 for more details. The alfresco global property
+     * {@code people.search.honor.hint.useCQ} is used to set this value (default is true).
+     */
+    public void setHonorHintUseCQ(boolean honorHintUseCQ)
+    {
+        this.honorHintUseCQ = honorHintUseCQ;
     }
     
     /**
@@ -563,7 +581,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
         {
             if (filter.endsWith(HINT_CQ_SUFFIX))
             {
-                useCQ = true;
+                useCQ = honorHintUseCQ;
                 filter = filter.substring(0, filter.length()-HINT_CQ_SUFFIX.length());
             }
         }

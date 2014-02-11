@@ -78,8 +78,8 @@ public class WikiRestApiTest extends BaseWebScriptTest
     private static final String SITE_SHORT_NAME_WIKI = "WikiSiteShortNameTest";
     
     private static final String PAGE_TITLE_ONE   = "TestPageOne";
-    private static final String PAGE_TITLE_TWO   = "Test Page Two";
-    private static final String PAGE_TITLE_THREE = "Still Test Page Three";
+    private static final String PAGE_TITLE_TWO   = "Test_Page_Two";
+    private static final String PAGE_TITLE_THREE = "Still_Test_Page_Three";
     private static final String PAGE_CONTENTS_ONE   = "http://google.com/";
     private static final String PAGE_CONTENTS_TWO   = "http://alfresco.com/";
     private static final String PAGE_CONTENTS_THREE = "http://share.alfresco.com/";

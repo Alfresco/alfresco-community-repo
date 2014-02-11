@@ -502,7 +502,6 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <version>2.1.7</version>
-            <classifier>indy</classifier>
         </dependency>
         <!-- OpenOffice -->
         <dependency>

@@ -66,214 +66,214 @@ import org.springframework.context.ApplicationContext;
  */
 public class AbstractBulkImportTests
 {
-	protected static ApplicationContext ctx = null;
+    protected static ApplicationContext ctx = null;
 
     protected FileFolderService fileFolderService;
     protected NodeService nodeService;
     protected TransactionService transactionService;
-	protected ContentService contentService;
-	protected UserTransaction txn = null;
-	protected RuleService ruleService;
+    protected ContentService contentService;
+    protected UserTransaction txn = null;
+    protected RuleService ruleService;
     protected ActionService actionService;
     protected VersionService versionService;
-	protected MultiThreadedBulkFilesystemImporter bulkImporter;
+    protected MultiThreadedBulkFilesystemImporter bulkImporter;
 
-	protected NodeRef rootNodeRef;
-	protected FileInfo topLevelFolder;
-	protected NodeRef top;
+    protected NodeRef rootNodeRef;
+    protected FileInfo topLevelFolder;
+    protected NodeRef top;
 
-	protected static void startContext()
-	{
-		ctx = ApplicationContextHelper.getApplicationContext();
-	}
+    protected static void startContext()
+    {
+        ctx = ApplicationContextHelper.getApplicationContext();
+    }
 
-	protected static void startContext(String[] configLocations)
-	{
-		ctx = ApplicationContextHelper.getApplicationContext(configLocations);		
-	}
+    protected static void startContext(String[] configLocations)
+    {
+        ctx = ApplicationContextHelper.getApplicationContext(configLocations);
+    }
 
-	protected static void stopContext()
-	{
-		ApplicationContextHelper.closeApplicationContext();		
-	}
+    protected static void stopContext()
+    {
+        ApplicationContextHelper.closeApplicationContext();
+    }
 
     @Before
-	public void setup() throws SystemException, NotSupportedException
-	{
-    	try
-    	{
-	    	nodeService = (NodeService)ctx.getBean("nodeService");
-	    	fileFolderService = (FileFolderService)ctx.getBean("fileFolderService");
-	    	transactionService = (TransactionService)ctx.getBean("transactionService");
-	    	bulkImporter = (MultiThreadedBulkFilesystemImporter)ctx.getBean("bulkFilesystemImporter");
-	    	contentService = (ContentService)ctx.getBean("contentService");
-	        actionService = (ActionService)ctx.getBean("actionService");
-	    	ruleService = (RuleService)ctx.getBean("ruleService");
+    public void setup() throws SystemException, NotSupportedException
+    {
+        try
+        {
+            nodeService = (NodeService)ctx.getBean("nodeService");
+            fileFolderService = (FileFolderService)ctx.getBean("fileFolderService");
+            transactionService = (TransactionService)ctx.getBean("transactionService");
+            bulkImporter = (MultiThreadedBulkFilesystemImporter)ctx.getBean("bulkFilesystemImporter");
+            contentService = (ContentService)ctx.getBean("contentService");
+            actionService = (ActionService)ctx.getBean("actionService");
+            ruleService = (RuleService)ctx.getBean("ruleService");
             versionService = (VersionService)ctx.getBean("versionService");
 
-	        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-			String s = "BulkFilesystemImport" + System.currentTimeMillis();
-	
-			txn = transactionService.getUserTransaction();
-			txn.begin();
-			
-			AuthenticationUtil.pushAuthentication();
-			AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+            String s = "BulkFilesystemImport" + System.currentTimeMillis();
 
-	        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, s);
-	        rootNodeRef = nodeService.getRootNode(storeRef);
-	        top = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}top"), ContentModel.TYPE_FOLDER).getChildRef();
-	        
-	        topLevelFolder = fileFolderService.create(top, s, ContentModel.TYPE_FOLDER);
+            txn = transactionService.getUserTransaction();
+            txn.begin();
 
-	        txn.commit();
-    	}
-    	catch(Throwable e)
-    	{
-    		fail(e.getMessage());
-    	}
-	}
+            AuthenticationUtil.pushAuthentication();
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+            StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, s);
+            rootNodeRef = nodeService.getRootNode(storeRef);
+            top = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}top"), ContentModel.TYPE_FOLDER).getChildRef();
+            
+            topLevelFolder = fileFolderService.create(top, s, ContentModel.TYPE_FOLDER);
+
+            txn.commit();
+        }
+        catch(Throwable e)
+        {
+            fail(e.getMessage());
+        }
+    }
 
     @After
-	public void teardown() throws Exception
-	{
+    public void teardown() throws Exception
+    {
         AuthenticationUtil.popAuthentication();
-		if(txn != null)
-		{
-			txn.commit();
-		}
-	}
+        if(txn != null)
+        {
+            txn.commit();
+        }
+    }
     
     @AfterClass
     public static void afterTests()
     {
-		stopContext();    	
+        stopContext();
     }
 
     protected List<FileInfo> getFolders(NodeRef parent, String pattern)
     {
-		PagingResults<FileInfo> page = fileFolderService.list(parent, false, true, pattern, null, null, new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
-		List<FileInfo> folders = page.getPage();
-		return folders;
+        PagingResults<FileInfo> page = fileFolderService.list(parent, false, true, pattern, null, null, new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
+        List<FileInfo> folders = page.getPage();
+        return folders;
     }
 
     protected List<FileInfo> getFiles(NodeRef parent, String pattern)
     {
-    	PagingResults<FileInfo> page = fileFolderService.list(parent, true, false, pattern, null, null, new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
-		List<FileInfo> files = page.getPage();
-		return files;
+        PagingResults<FileInfo> page = fileFolderService.list(parent, true, false, pattern, null, null, new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
+        List<FileInfo> files = page.getPage();
+        return files;
     }
-    
+
     protected Map<String, FileInfo> toMap(List<FileInfo> list)
     {
-    	Map<String, FileInfo> map = new HashMap<String, FileInfo>(list.size());
-    	for(FileInfo fileInfo : list)
-    	{
-    		map.put(fileInfo.getName(), fileInfo);
-    	}
-    	return map;
+        Map<String, FileInfo> map = new HashMap<String, FileInfo>(list.size());
+        for(FileInfo fileInfo : list)
+        {
+            map.put(fileInfo.getName(), fileInfo);
+        }
+        return map;
     }
 
     protected void checkFolder(NodeRef folderNode, String childFolderName, String pattern, int numExpectedFolders, int numExpectedFiles, ExpectedFolder[] expectedFolders, ExpectedFile[] expectedFiles)
     {
-		List<FileInfo> folders = getFolders(folderNode, childFolderName);
-		assertEquals("", 1, folders.size());
-		NodeRef folder1 = folders.get(0).getNodeRef();
-		checkFiles(folder1, pattern, numExpectedFolders, numExpectedFiles, expectedFiles, expectedFolders);
+        List<FileInfo> folders = getFolders(folderNode, childFolderName);
+        assertEquals("", 1, folders.size());
+        NodeRef folder1 = folders.get(0).getNodeRef();
+        checkFiles(folder1, pattern, numExpectedFolders, numExpectedFiles, expectedFiles, expectedFolders);
     }
 
     protected void checkFiles(NodeRef parent, String pattern, int expectedNumFolders, int expectedNumFiles,
-    		ExpectedFile[] expectedFiles, ExpectedFolder[] expectedFolders)
+            ExpectedFile[] expectedFiles, ExpectedFolder[] expectedFolders)
     {
-    	Map<String, FileInfo> folders = toMap(getFolders(parent, pattern));
-    	Map<String, FileInfo> files = toMap(getFiles(parent, pattern));
-		assertEquals("", expectedNumFolders, folders.size());
-		assertEquals("", expectedNumFiles, files.size());
-		
-		if(expectedFiles != null)
-		{
-			for(ExpectedFile expectedFile : expectedFiles)
-			{
-				FileInfo fileInfo = files.get(expectedFile.getName());
-				assertNotNull("", fileInfo);
-				assertNotNull("", fileInfo.getContentData());
-				assertEquals(expectedFile.getMimeType(), fileInfo.getContentData().getMimetype());
-				if(fileInfo.getContentData().getMimetype() == MimetypeMap.MIMETYPE_TEXT_PLAIN
-						&& expectedFile.getContentContains() != null)
-				{
-					ContentReader reader = contentService.getReader(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT);
-					String contentContains = expectedFile.getContentContains();
-					assertTrue("", reader.getContentString().indexOf(contentContains) != -1);
-				}
-			}
-		}
-		
-		if(expectedFolders != null)
-		{
-			for(ExpectedFolder expectedFolder : expectedFolders)
-			{
-				FileInfo fileInfo = folders.get(expectedFolder.getName());
-				assertNotNull("", fileInfo);
-			}
-		}
+        Map<String, FileInfo> folders = toMap(getFolders(parent, pattern));
+        Map<String, FileInfo> files = toMap(getFiles(parent, pattern));
+        assertEquals("", expectedNumFolders, folders.size());
+        assertEquals("", expectedNumFiles, files.size());
+
+        if(expectedFiles != null)
+        {
+            for(ExpectedFile expectedFile : expectedFiles)
+            {
+                FileInfo fileInfo = files.get(expectedFile.getName());
+                assertNotNull("", fileInfo);
+                assertNotNull("", fileInfo.getContentData());
+                assertEquals(expectedFile.getMimeType(), fileInfo.getContentData().getMimetype());
+                if(fileInfo.getContentData().getMimetype() == MimetypeMap.MIMETYPE_TEXT_PLAIN
+                        && expectedFile.getContentContains() != null)
+                {
+                    ContentReader reader = contentService.getReader(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT);
+                    String contentContains = expectedFile.getContentContains();
+                    assertTrue("", reader.getContentString().indexOf(contentContains) != -1);
+                }
+            }
+        }
+        
+        if(expectedFolders != null)
+        {
+            for(ExpectedFolder expectedFolder : expectedFolders)
+            {
+                FileInfo fileInfo = folders.get(expectedFolder.getName());
+                assertNotNull("", fileInfo);
+            }
+        }
     }
 
     protected void checkContent(FileInfo file, String name, String mimeType)
     {
-		assertEquals("", name, file.getName());
-		assertEquals("", mimeType, file.getContentData().getMimetype());    	
+        assertEquals("", name, file.getName());
+        assertEquals("", mimeType, file.getContentData().getMimetype());
     }
     
-	
+    
     protected static class ExpectedFolder
-	{
-		private String name;
+    {
+        private String name;
 
-		public ExpectedFolder(String name)
-		{
-			super();
-			this.name = name;
-		}
+        public ExpectedFolder(String name)
+        {
+            super();
+            this.name = name;
+        }
 
-		public String getName()
-		{
-			return name;
-		}
-	}
-	
-	protected static class ExpectedFile
-	{
-		private String name;
-		private String mimeType;
-		private String contentContains = null;
-		
-		public ExpectedFile(String name, String mimeType, String contentContains)
-		{
-			this(name, mimeType);
-			this.contentContains = contentContains;
-		}
-		
-		public ExpectedFile(String name, String mimeType)
-		{
-			super();
-			this.name = name;
-			this.mimeType = mimeType;
-		}
+        public String getName()
+        {
+            return name;
+        }
+    }
 
-		public String getName()
-		{
-			return name;
-		}
+    protected static class ExpectedFile
+    {
+        private String name;
+        private String mimeType;
+        private String contentContains = null;
+        
+        public ExpectedFile(String name, String mimeType, String contentContains)
+        {
+            this(name, mimeType);
+            this.contentContains = contentContains;
+        }
+        
+        public ExpectedFile(String name, String mimeType)
+        {
+            super();
+            this.name = name;
+            this.mimeType = mimeType;
+        }
 
-		public String getMimeType()
-		{
-			return mimeType;
-		}
+        public String getName()
+        {
+            return name;
+        }
 
-		public String getContentContains()
-		{
-			return contentContains;
-		}
-	}
+        public String getMimeType()
+        {
+            return mimeType;
+        }
+
+        public String getContentContains()
+        {
+            return contentContains;
+        }
+    }
 }

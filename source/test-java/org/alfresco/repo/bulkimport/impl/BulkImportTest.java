@@ -63,151 +63,151 @@ import org.springframework.util.ResourceUtils;
  */
 public class BulkImportTest extends AbstractBulkImportTests
 {
-	private StreamingNodeImporterFactory streamingNodeImporterFactory;
+    private StreamingNodeImporterFactory streamingNodeImporterFactory;
 
-	@BeforeClass
-	public static void beforeTests()
-	{
-		startContext();		
-	}
+    @BeforeClass
+    public static void beforeTests()
+    {
+        startContext();
+    }
 
     @Before
-	public void setup() throws SystemException, NotSupportedException
-	{
-    	super.setup();
-    	streamingNodeImporterFactory = (StreamingNodeImporterFactory)ctx.getBean("streamingNodeImporterFactory");
-	}
+    public void setup() throws SystemException, NotSupportedException
+    {
+        super.setup();
+        streamingNodeImporterFactory = (StreamingNodeImporterFactory)ctx.getBean("streamingNodeImporterFactory");
+    }
 
     /**
      * For replaceExisting = true, the title must be taken from the metadata and not overridden by the actual filename.
      * 
      * @throws Throwable
      */
-	@Test
-	public void testMNT8470() throws Throwable
-	{
+    @Test
+    public void testMNT8470() throws Throwable
+    {
         txn = transactionService.getUserTransaction();
         txn.begin();
 
-		NodeRef folderNode = topLevelFolder.getNodeRef();
+        NodeRef folderNode = topLevelFolder.getNodeRef();
 
-		try
-		{
-			NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport1"));
+        try
+        {
+            NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport1"));
             BulkImportParameters bulkImportParameters = new BulkImportParameters();
             bulkImportParameters.setTarget(folderNode);
             bulkImportParameters.setReplaceExisting(true);
             bulkImportParameters.setDisableRulesService(true);
             bulkImportParameters.setBatchSize(40);
-			bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
-		}
-		catch(Throwable e)
-		{
-			fail(e.getMessage());
-		}
+            bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
+        }
+        catch(Throwable e)
+        {
+            fail(e.getMessage());
+        }
 
-		System.out.println(bulkImporter.getStatus());
-		assertEquals(false, bulkImporter.getStatus().inProgress());
-		
-	    List<FileInfo> folders = getFolders(folderNode, null);
-	    assertEquals(1, folders.size());
-	    FileInfo folder1 = folders.get(0);
-	    assertEquals("folder1", folder1.getName());
-	    // title should be taken from the metadata file
-	    assertEquals("", folder1.getProperties().get(ContentModel.PROP_TITLE));
-	}
+        System.out.println(bulkImporter.getStatus());
+        assertEquals(false, bulkImporter.getStatus().inProgress());
+        
+        List<FileInfo> folders = getFolders(folderNode, null);
+        assertEquals(1, folders.size());
+        FileInfo folder1 = folders.get(0);
+        assertEquals("folder1", folder1.getName());
+        // title should be taken from the metadata file
+        assertEquals("", folder1.getProperties().get(ContentModel.PROP_TITLE));
+    }
 
-	@Test
-	public void testCopyImportStriping() throws Throwable
-	{
+    @Test
+    public void testCopyImportStriping() throws Throwable
+    {
         txn = transactionService.getUserTransaction();
         txn.begin();
 
-		NodeRef folderNode = topLevelFolder.getNodeRef();
+        NodeRef folderNode = topLevelFolder.getNodeRef();
 
-		try
-		{
-			NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport"));
+        try
+        {
+            NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport"));
             BulkImportParameters bulkImportParameters = new BulkImportParameters();
             bulkImportParameters.setTarget(folderNode);
             bulkImportParameters.setReplaceExisting(true);
             bulkImportParameters.setDisableRulesService(true);
             bulkImportParameters.setBatchSize(40);
-			bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
-		}
-		catch(Throwable e)
-		{
-			fail(e.getMessage());
-		}
+            bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
+        }
+        catch(Throwable e)
+        {
+            fail(e.getMessage());
+        }
 
-		System.out.println(bulkImporter.getStatus());
+        System.out.println(bulkImporter.getStatus());
 
-		checkFiles(folderNode, null, 2, 9,
-				new ExpectedFile[]
-				{
-					new ExpectedFile("quickImg1.xls", MimetypeMap.MIMETYPE_EXCEL),
-					new ExpectedFile("quickImg1.doc", MimetypeMap.MIMETYPE_WORD),
-					new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
-				},
-				new ExpectedFolder[]
-				{
-					new ExpectedFolder("folder1"),
-					new ExpectedFolder("folder2")
-				});
-		
-		List<FileInfo> folders = getFolders(folderNode, "folder1");
-		assertEquals("", 1, folders.size());
-		NodeRef folder1 = folders.get(0).getNodeRef();
-		checkFiles(folder1, null, 1, 0, null,
-				new ExpectedFolder[]
-				{
-					new ExpectedFolder("folder1.1")
-				});
+        checkFiles(folderNode, null, 2, 9,
+                new ExpectedFile[]
+                {
+                    new ExpectedFile("quickImg1.xls", MimetypeMap.MIMETYPE_EXCEL),
+                    new ExpectedFile("quickImg1.doc", MimetypeMap.MIMETYPE_WORD),
+                    new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
+                },
+                new ExpectedFolder[]
+                {
+                    new ExpectedFolder("folder1"),
+                    new ExpectedFolder("folder2")
+                });
 
-		folders = getFolders(folderNode, "folder2");
-		assertEquals("", 1, folders.size());
-		NodeRef folder2 = folders.get(0).getNodeRef();
-		checkFiles(folder2, null, 1, 0,
-				new ExpectedFile[]
-				{
-				},
-				new ExpectedFolder[]
-				{
-					new ExpectedFolder("folder2.1")
-				});
+        List<FileInfo> folders = getFolders(folderNode, "folder1");
+        assertEquals("", 1, folders.size());
+        NodeRef folder1 = folders.get(0).getNodeRef();
+        checkFiles(folder1, null, 1, 0, null,
+                new ExpectedFolder[]
+                {
+                    new ExpectedFolder("folder1.1")
+                });
 
-		folders = getFolders(folder1, "folder1.1");
-		assertEquals("", 1, folders.size());
-		NodeRef folder1_1 = folders.get(0).getNodeRef();
-		checkFiles(folder1_1, null, 2, 12,
-				new ExpectedFile[]
-				{
-					new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
-					new ExpectedFile("quick.sxw", MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER),
-					new ExpectedFile("quick.tar", "application/x-gtar"),
-				},
-				new ExpectedFolder[]
-				{
-					new ExpectedFolder("folder1.1.1"),
-					new ExpectedFolder("folder1.1.2")
-				});
-		
-		folders = getFolders(folder2, "folder2.1");
-		assertEquals("", 1, folders.size());
-		NodeRef folder2_1 = folders.get(0).getNodeRef();
-		
-		checkFiles(folder2_1, null, 0, 17,
-				new ExpectedFile[]
-				{
-					new ExpectedFile("quick.png", MimetypeMap.MIMETYPE_IMAGE_PNG),
-					new ExpectedFile("quick.pdf", MimetypeMap.MIMETYPE_PDF),
-					new ExpectedFile("quick.odt", MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT),
-				},
-				new ExpectedFolder[]
-				{
-				});
-	}
-	
+        folders = getFolders(folderNode, "folder2");
+        assertEquals("", 1, folders.size());
+        NodeRef folder2 = folders.get(0).getNodeRef();
+        checkFiles(folder2, null, 1, 0,
+                new ExpectedFile[]
+                {
+                },
+                new ExpectedFolder[]
+                {
+                    new ExpectedFolder("folder2.1")
+                });
+
+        folders = getFolders(folder1, "folder1.1");
+        assertEquals("", 1, folders.size());
+        NodeRef folder1_1 = folders.get(0).getNodeRef();
+        checkFiles(folder1_1, null, 2, 12,
+                new ExpectedFile[]
+                {
+                    new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
+                    new ExpectedFile("quick.sxw", MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER),
+                    new ExpectedFile("quick.tar", "application/x-gtar"),
+                },
+                new ExpectedFolder[]
+                {
+                    new ExpectedFolder("folder1.1.1"),
+                    new ExpectedFolder("folder1.1.2")
+                });
+
+        folders = getFolders(folder2, "folder2.1");
+        assertEquals("", 1, folders.size());
+        NodeRef folder2_1 = folders.get(0).getNodeRef();
+
+        checkFiles(folder2_1, null, 0, 17,
+                new ExpectedFile[]
+                {
+                    new ExpectedFile("quick.png", MimetypeMap.MIMETYPE_IMAGE_PNG),
+                    new ExpectedFile("quick.pdf", MimetypeMap.MIMETYPE_PDF),
+                    new ExpectedFile("quick.odt", MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT),
+                },
+                new ExpectedFolder[]
+                {
+                });
+    }
+
     protected Rule createCopyRule(NodeRef targetNode, boolean isAppliedToChildren)
     {
         Rule rule = new Rule();
@@ -215,7 +215,7 @@ public class BulkImportTest extends AbstractBulkImportTests
         String title = "rule title " + System.currentTimeMillis();
         rule.setTitle(title);
         rule.setDescription(title);
-        rule.applyToChildren(isAppliedToChildren);        
+        rule.applyToChildren(isAppliedToChildren);
 
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
         params.put(MoveActionExecuter.PARAM_DESTINATION_FOLDER, targetNode);
@@ -228,9 +228,9 @@ public class BulkImportTest extends AbstractBulkImportTests
         return rule;
     }
     
-	@Test
-	public void testImportWithRules() throws Throwable
-	{
+    @Test
+    public void testImportWithRules() throws Throwable
+    {
         NodeRef folderNode = topLevelFolder.getNodeRef();
         NodeImporter nodeImporter = null;
 
@@ -258,60 +258,60 @@ public class BulkImportTest extends AbstractBulkImportTests
         bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
 
         System.out.println(bulkImporter.getStatus());
-        
+
         assertEquals("", 74, bulkImporter.getStatus().getNumberOfContentNodesCreated());
 
-	    checkFiles(folderNode, null, 2, 9, new ExpectedFile[] {
-	            new ExpectedFile("quickImg1.xls", MimetypeMap.MIMETYPE_EXCEL),
-	            new ExpectedFile("quickImg1.doc", MimetypeMap.MIMETYPE_WORD),
-	            new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
-	    },
-	    new ExpectedFolder[] {
-	            new ExpectedFolder("folder1"),
-	            new ExpectedFolder("folder2")
-	    });
+        checkFiles(folderNode, null, 2, 9, new ExpectedFile[] {
+                new ExpectedFile("quickImg1.xls", MimetypeMap.MIMETYPE_EXCEL),
+                new ExpectedFile("quickImg1.doc", MimetypeMap.MIMETYPE_WORD),
+                new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
+        },
+        new ExpectedFolder[] {
+                new ExpectedFolder("folder1"),
+                new ExpectedFolder("folder2")
+        });
 
-	    List<FileInfo> folders = getFolders(folderNode, "folder1");
-	    assertEquals("", 1, folders.size());
-	    NodeRef folder1 = folders.get(0).getNodeRef();
-	    checkFiles(folder1, null, 1, 0, null, new ExpectedFolder[] {
-	            new ExpectedFolder("folder1.1")
-	    });
+        List<FileInfo> folders = getFolders(folderNode, "folder1");
+        assertEquals("", 1, folders.size());
+        NodeRef folder1 = folders.get(0).getNodeRef();
+        checkFiles(folder1, null, 1, 0, null, new ExpectedFolder[] {
+                new ExpectedFolder("folder1.1")
+        });
 
-	    folders = getFolders(folderNode, "folder2");
-	    assertEquals("", 1, folders.size());
-	    NodeRef folder2 = folders.get(0).getNodeRef();
-	    checkFiles(folder2, null, 1, 0, new ExpectedFile[] {
-	    },
-	    new ExpectedFolder[] {
-	            new ExpectedFolder("folder2.1")
-	    });
+        folders = getFolders(folderNode, "folder2");
+        assertEquals("", 1, folders.size());
+        NodeRef folder2 = folders.get(0).getNodeRef();
+        checkFiles(folder2, null, 1, 0, new ExpectedFile[] {
+        },
+        new ExpectedFolder[] {
+                new ExpectedFolder("folder2.1")
+        });
 
-	    folders = getFolders(folder1, "folder1.1");
-	    assertEquals("", 1, folders.size());
-	    NodeRef folder1_1 = folders.get(0).getNodeRef();
-	    checkFiles(folder1_1, null, 2, 12, new ExpectedFile[] {
-	            new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
-	            new ExpectedFile("quick.sxw", MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER),
-	            new ExpectedFile("quick.tar", "application/x-gtar"),
-	    },
-	    new ExpectedFolder[] {
-	            new ExpectedFolder("folder1.1.1"),
-	            new ExpectedFolder("folder1.1.2")
-	    });
+        folders = getFolders(folder1, "folder1.1");
+        assertEquals("", 1, folders.size());
+        NodeRef folder1_1 = folders.get(0).getNodeRef();
+        checkFiles(folder1_1, null, 2, 12, new ExpectedFile[] {
+                new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
+                new ExpectedFile("quick.sxw", MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER),
+                new ExpectedFile("quick.tar", "application/x-gtar"),
+        },
+        new ExpectedFolder[] {
+                new ExpectedFolder("folder1.1.1"),
+                new ExpectedFolder("folder1.1.2")
+        });
 
-	    folders = getFolders(folder2, "folder2.1");
-	    assertEquals("", 1, folders.size());
-	    NodeRef folder2_1 = folders.get(0).getNodeRef();
+        folders = getFolders(folder2, "folder2.1");
+        assertEquals("", 1, folders.size());
+        NodeRef folder2_1 = folders.get(0).getNodeRef();
 
-	    checkFiles(folder2_1, null, 0, 17, new ExpectedFile[] {
-	            new ExpectedFile("quick.png", MimetypeMap.MIMETYPE_IMAGE_PNG),
-	            new ExpectedFile("quick.pdf", MimetypeMap.MIMETYPE_PDF),
-	            new ExpectedFile("quick.odt", MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT),
-	    },
-	    new ExpectedFolder[] {
-	    });
-	}
+        checkFiles(folder2_1, null, 0, 17, new ExpectedFile[] {
+                new ExpectedFile("quick.png", MimetypeMap.MIMETYPE_IMAGE_PNG),
+                new ExpectedFile("quick.pdf", MimetypeMap.MIMETYPE_PDF),
+                new ExpectedFile("quick.odt", MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT),
+        },
+        new ExpectedFolder[] {
+        });
+    }
 
     /**
      * MNT-9076: Penultimate version cannot be accessed from Share when uploading using bulkimport
@@ -373,6 +373,6 @@ public class BulkImportTest extends AbstractBulkImportTests
         contentReader = this.contentService.getReader(versions[3].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
         assertEquals("This is version 1 of fileWithVersions.txt.", contentReader.getContentString());
-	}
+    }
 
 }

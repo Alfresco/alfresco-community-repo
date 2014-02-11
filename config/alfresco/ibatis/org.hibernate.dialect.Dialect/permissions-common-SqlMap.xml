@@ -125,6 +125,12 @@
         <parameter property="int" jdbcType="INTEGER" javaType="int"/>
     </parameterMap>
     
+    <parameterMap id="parameter_IdIdIntMap" type="map">
+        <parameter property="id1" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="id2" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="int" jdbcType="INTEGER" javaType="int"/>
+    </parameterMap>
+    
     <!--                         -->
     <!-- SQL Snippets / Inserts  -->
     <!--                         -->
@@ -315,6 +321,24 @@
         </if>
     </update>
     
+    <!-- Optimistic update of the ace -->
+    <update id="update_Ace" parameterType="Ace">
+        update
+            alf_access_control_entry
+        set
+            permission_id = #{permissionId},
+            authority_id = #{authorityId},
+            allowed = #{allowed},
+            applies = #{applies},
+            context_id = #{contextId},
+            version = #{version}
+        where
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
+    </update>
+    
     <!-- Optimistic update of the permission -->
     <update id="update_Permission" parameterType="Permission">
         update
@@ -397,6 +421,17 @@
             join alf_authority authority on (ace.authority_id = authority.id)
         where
             authority.authority = ?
+    </select>
+    
+    <select id="select_AclMember" parameterMap="parameter_IdIdIntMap" resultMap="result_AclMember">
+        select
+            aclmem.*
+        from
+            alf_acl_member aclmem
+        where
+            aclmem.acl_id = ? and
+            aclmem.ace_id = ? and
+            aclmem.pos = ?
     </select>
     
     <select id="select_AclChangeSetById" parameterMap="parameter_IdMap" resultMap="result_AclChangeSet">

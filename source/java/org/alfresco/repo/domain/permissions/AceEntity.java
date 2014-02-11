@@ -164,4 +164,16 @@ public class AceEntity implements Ace
           .append("]");
         return sb.toString();
     }
+    
+    public void incrementVersion()
+    {
+        if (this.version >= Long.MAX_VALUE)
+        {
+            this.version = 0L;
+        }
+        else
+        {
+            this.version++;
+        }
+    }
 }

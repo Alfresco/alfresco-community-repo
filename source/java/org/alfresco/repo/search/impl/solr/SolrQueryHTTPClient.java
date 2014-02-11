@@ -459,7 +459,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
                     throw new LuceneQueryParserException("Request failed " + post.getStatusCode() + " " + url.toString());
                 }
 
-                Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream()));
+                Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream(), post.getResponseCharSet()));
                 // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
                 JSONObject json = new JSONObject(new JSONTokener(reader));
                 SolrJSONResultSet results = new SolrJSONResultSet(json, searchParameters, nodeService, nodeDAO, limitBy, maxResults);

@@ -56,39 +56,39 @@
 </head>
 <body>
 <hr/>
-<h1> 文档（名称）：  <!--SDL${document.name}SDL--> </h1>
+<h1> 文档（名称）：  ${document.name} </h1>
 <hr/>
 <fieldset>
 <legend> 元数据 </legend>
 <table class="description">
    <#if document.properties.title?exists>
-                     <tr><td valign="top">标题：</td><td> <!--SDL${document.properties.title}SDL--></td></tr>
+                     <tr><td valign="top">标题：</td><td> ${document.properties.title}</td></tr>
    <#else>
                      <tr><td valign="top">标题：</td><td>&nbsp;</td></tr>
    </#if>
    <#if document.properties.description?exists>
-                     <tr><td valign="top">说明：</td><td> <!--SDL${document.properties.description}SDL--></td></tr>
+                     <tr><td valign="top">说明：</td><td> ${document.properties.description}</td></tr>
    <#else>
                      <tr><td valign="top">说明：</td><td>&nbsp;</td></tr>
    </#if>
-                     <tr><td>创建者：</td><td> <!--SDL${document.properties.creator}SDL--></td></tr>
-                     <tr><td>创建时间：</td><td> <!--SDL${document.properties.created?datetime}SDL--></td></tr>
-                     <tr><td>修改者：</td><td> <!--SDL${document.properties.modifier}SDL--></td></tr>
-                     <tr><td>修改时间：</td><td> <!--SDL${document.properties.modified?datetime}SDL--></td></tr>
-                     <tr><td>大小：</td><td> <!--SDL${document.size / 1024}SDL--> KB</td></tr>
+                     <tr><td>创建者：</td><td> ${document.properties.creator}</td></tr>
+                     <tr><td>创建时间：</td><td> ${document.properties.created?datetime}</td></tr>
+                     <tr><td>修改者：</td><td> ${document.properties.modifier}</td></tr>
+                     <tr><td>修改时间：</td><td> ${document.properties.modified?datetime}</td></tr>
+                     <tr><td>大小：</td><td> ${document.size / 1024} KB</td></tr>
 </table>
 </fieldset>
 <fieldset>
 <legend> 内容链接 </legend>
 <table class="links">
    <tr>
-   <td>内容文件夹：</td><td> <!--SDL<a href="${shareContextUrl}/page/site/${parentPathFromSites}">${shareContextUrl}/page/site/${parentPathFromSites}</a>SDL--></td>
+   <td>内容文件夹：</td><td> <a href="${shareContextUrl}/page/site/${parentPathFromSites}">${shareContextUrl}/page/site/${parentPathFromSites}</a></td>
    </tr>
    <tr>
-   <td>内容 URL：</td><td> <!--SDL<a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a>SDL--></td>
+   <td>内容 URL：</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
    </tr>
    <tr>
-   <td>下载 URL：</td><td> <!--SDL<a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a>SDL--></td>
+   <td>下载 URL：</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
    </tr>
 </table>
 </fieldset>

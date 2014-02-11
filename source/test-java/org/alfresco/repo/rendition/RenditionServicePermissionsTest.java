@@ -554,5 +554,21 @@ public class RenditionServicePermissionsTest
             checkUser();
             contentWriter.putContent(TEST_TARGET_CONTENT);
         }
+
+		@Override
+		public String getComments(boolean available) {
+	        return "";
+		}
+
+		@Override
+		public long getTransformationTime(String sourceMimetype,
+				String targetMimetype) {
+			return 0;
+		}
+
+		@Override
+		public String getName() {
+			return "MockUserCheckingContentTransformerFor"+expectedUsername;
+		}
     }
 }

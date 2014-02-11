@@ -26,9 +26,11 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.hibernate.HibernateException;
 import org.hibernate.jdbc.BorrowedConnectionProxy;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.datasource.ConnectionHolder;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -38,6 +40,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * 
  * @author Derek Hulley
  */
+@Category(OwnJVMTestsCategory.class)
 public class BorrowedConnectionProxyTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

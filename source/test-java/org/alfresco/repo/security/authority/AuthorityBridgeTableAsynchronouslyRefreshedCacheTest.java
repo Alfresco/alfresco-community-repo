@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.security.authority;
 
+import java.util.Set;
+
 import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -25,19 +27,20 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
-import java.util.Set;
-
+@Category(OwnJVMTestsCategory.class)
 public class AuthorityBridgeTableAsynchronouslyRefreshedCacheTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

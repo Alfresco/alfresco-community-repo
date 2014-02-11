@@ -21,6 +21,7 @@ package org.alfresco.util.schemacomp;
 
 import javax.sql.DataSource;
 
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.test.exportdb.AbstractExportTester;
@@ -33,6 +34,7 @@ import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.dialect.PostgreSQLDialect;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -47,6 +49,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @see AbstractExportTester
  * @author Matt Ward
  */
+@Category(OwnJVMTestsCategory.class)
 public class ExportDbTest
 {
     private ApplicationContext ctx;

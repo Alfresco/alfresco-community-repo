@@ -26,6 +26,8 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -33,6 +35,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author gavinc
  */
+@Category(LegacyCategory.class)
 public class AVMDeploymentAttemptCleanerTest extends TestCase
 {
     private static ApplicationContext ctx = AVMTestSuite.getContext();

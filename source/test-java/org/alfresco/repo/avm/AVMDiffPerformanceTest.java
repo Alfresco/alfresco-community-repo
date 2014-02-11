@@ -22,8 +22,11 @@ import java.util.List;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.GUID;
+import org.junit.experimental.categories.Category;
 
+@Category(LegacyCategory.class)
 public class AVMDiffPerformanceTest extends AVMServiceTestBase
 {
     public void testSetup() throws Exception

@@ -20,13 +20,16 @@ package org.alfresco.repo.avm;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.util.BulkLoader;
+import org.alfresco.test_category.LegacyCategory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test the purge thread.
  * @author britt
  */
+@Category(LegacyCategory.class)
 public class PurgeTestP extends AVMServiceTestBase
 {
     private static Log logger = LogFactory.getLog(PurgeTestP.class);

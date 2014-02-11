@@ -26,14 +26,16 @@ import org.alfresco.repo.search.impl.lucene.AVMLuceneIndexer;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.util.TriggerBean;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.TriggerBeanSPI;
+import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Test AVMService indexing
  */
+@Category(LegacyCategory.class)
 public class AVMServiceIndexTest extends AVMServiceTestBase
 {
     /*

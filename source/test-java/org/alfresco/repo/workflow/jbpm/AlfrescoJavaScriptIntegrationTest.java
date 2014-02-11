@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
@@ -52,9 +53,11 @@ import org.jbpm.context.exe.ContextInstance;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.jbpm.graph.exe.Token;
 import org.jbpm.taskmgmt.exe.TaskInstance;
+import org.junit.experimental.categories.Category;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+@Category(OwnJVMTestsCategory.class)
 public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
 {
     private static final QName fooName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "Foo");

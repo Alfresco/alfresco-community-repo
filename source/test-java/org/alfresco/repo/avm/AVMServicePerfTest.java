@@ -20,10 +20,14 @@ package org.alfresco.repo.avm;
 
 import java.io.PrintStream;
 
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
+
 /**
  * Performance test(s).
  * @author britt
  */
+@Category(LegacyCategory.class)
 public class AVMServicePerfTest extends AVMServiceTestBase
 {
     public void testSetup() throws Exception

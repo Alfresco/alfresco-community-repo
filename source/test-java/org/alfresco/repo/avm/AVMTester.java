@@ -34,12 +34,15 @@ import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * This is a Runnable which randomly performs operations on an AVM Repository.
  * It's purpose is to act as a single thread in a multithreaded stress tester.
  * @author britt
  */
+@Category(LegacyCategory.class)
 class AVMTester implements Runnable
 {
     // Operation codes.

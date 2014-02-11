@@ -24,7 +24,10 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 
+@Category(LegacyCategory.class)
 public class WCMInheritPermissionsTest extends AVMServiceTestBase
 {
     private static final String FILE_NAME = "fileForExport";

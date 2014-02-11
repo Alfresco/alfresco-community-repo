@@ -50,9 +50,11 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.util.WCMUtil;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -60,6 +62,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Derek Hulley, janv
  */
+@Category(LegacyCategory.class)
 public class AVMLockingServiceTest extends TestCase
 {
     private static String[] TESTUSERS = {"Buffy", "Willow", "Xander", "Tara", "Spike"};

@@ -19,11 +19,14 @@
 package org.alfresco.repo.avm;
 
 import org.alfresco.repo.avm.util.BulkLoader;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * This tests loading content simultaneously.
  * @author britt
  */
+@Category(LegacyCategory.class)
 public class SimultaneousLoadTest extends AVMServiceTestBase
 {
     /*

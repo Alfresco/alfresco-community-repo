@@ -34,12 +34,15 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
  * @author Dmitry Velichkevich
  */
+@Category(LegacyCategory.class)
 public class AVMTemplateNodeTest extends TestCase
 {
     private static final String TEST_WCM_NAMESPACE = "http://www.alfresco.org/model/testwcmmodel/1.0";

@@ -19,7 +19,9 @@
 package org.alfresco.repo.avm;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.Pair;
+import org.junit.experimental.categories.Category;
 
 import junit.framework.TestCase;
 
@@ -27,6 +29,7 @@ import junit.framework.TestCase;
  * Tester of the converter from NodeRef, StoreRef space to AVM space.
  * @author britt
  */
+@Category(LegacyCategory.class)
 public class AVMNodeConverterTest extends TestCase
 {
     /**

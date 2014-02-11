@@ -22,11 +22,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.avm.util.BulkLoader;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * This is a stress test for the AVM repository.
  * @author britt
  */
+@Category(LegacyCategory.class)
 public class AVMStressTestP extends AVMServiceTestBase
 {
     /*

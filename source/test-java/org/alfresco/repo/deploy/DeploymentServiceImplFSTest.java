@@ -38,10 +38,12 @@ import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
 import org.alfresco.service.cmr.avm.deploy.DeploymentReportCallback;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.Deleter;
 import org.alfresco.util.NameMatcher;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -49,6 +51,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @author britt
  * @author mrogers
  */
+@Category(LegacyCategory.class)
 public class DeploymentServiceImplFSTest extends AVMServiceTestBase
 {
     private File log = null;

@@ -21,11 +21,14 @@ package org.alfresco.repo.avm;
 
 import org.alfresco.service.cmr.avm.deploy.DeploymentCallback;
 import org.alfresco.service.cmr.avm.deploy.DeploymentEvent;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * Trivial deployment callback for testing.
  * @author britt
  */
+@Category(LegacyCategory.class)
 public class TestDeploymentCallback implements DeploymentCallback 
 {
     public void eventOccurred(DeploymentEvent event) 

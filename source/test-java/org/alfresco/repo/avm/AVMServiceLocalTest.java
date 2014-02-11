@@ -47,15 +47,18 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
  * Local unit tests of AVM (AVMSyncService & AVMService)
  */
+@Category(LegacyCategory.class)
 public class AVMServiceLocalTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(AVMServiceLocalTest.class);

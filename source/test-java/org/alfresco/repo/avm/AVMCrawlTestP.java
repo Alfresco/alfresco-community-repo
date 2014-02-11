@@ -25,6 +25,8 @@ import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 
 
 /**
@@ -32,6 +34,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
  * do operations with locality of reference.
  * @author britt
  */
+@Category(LegacyCategory.class)
 public class AVMCrawlTestP extends AVMServiceTestBase
 {
     /*

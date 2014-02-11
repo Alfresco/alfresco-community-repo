@@ -899,6 +899,7 @@
                                      <goal>test</goal>
                                  </goals>
                                  <configuration>
+                                     <argLine>-Xmx2560m -XX:MaxPermSize=512m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
                                      <!-- Equivalent of forkMode="always" -->
                                      <forkCount>1</forkCount>
                                      <reuseForks>false</reuseForks>
@@ -909,13 +910,29 @@
                             <execution>
                                  <id>default-test</id>
                                  <configuration>
-                                     <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory, org.alfresco.test_category.BaseSpringTestsCategory</excludedGroups>                                 
+                                     <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory, org.alfresco.test_category.BaseSpringTestsCategory,org.alfresco.test_category.LegacyCategory</excludedGroups>                                 
                                  </configuration>
                              </execution>
+                             <execution>
+                                 <id>run-legacy-tests</id>
+                                 <goals>
+                                     <goal>test</goal>
+                                 </goals>
+                                 <configuration>
+                                     <argLine>-Xmx2560m -XX:MaxPermSize=512m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
+                                     <!-- These are the default fork options -->
+                                     <forkCount>1</forkCount>
+                                     <reuseForks>true</reuseForks>
+                                     <!-- end of default fork options -->
+                                     <groups>org.alfresco.test_category.LegacyCategory</groups>
+                                     <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory,org.alfresco.test_category.BaseSpringTestsCategory</excludedGroups>        
+                                 </configuration>
+                            </execution>
                         </executions>
 
                         <!-- Default configuration, specifying which tests to pass -->
                         <configuration>
+<!--                             <argLine>-Xmx1280m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine> -->
                             <includes>
                                 <!-- Standard test names -->
                                 <include>**/*Test.*</include>

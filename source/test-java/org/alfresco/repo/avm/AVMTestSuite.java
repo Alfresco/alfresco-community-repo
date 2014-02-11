@@ -23,7 +23,9 @@ import junit.framework.TestSuite;
 
 import org.alfresco.repo.avm.locking.AVMLockingServiceTest;
 import org.alfresco.repo.avm.util.VersionPathTest;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -31,6 +33,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author brittp, janv
  */
+@Category(LegacyCategory.class)
 public class AVMTestSuite extends TestSuite
 {
     public static ApplicationContext getContext() 

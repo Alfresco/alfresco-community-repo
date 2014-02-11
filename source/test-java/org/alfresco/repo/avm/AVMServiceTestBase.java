@@ -43,12 +43,15 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
  * Base class for AVMService tests.
  * @author britt
  */
+@Category(LegacyCategory.class)
 public class AVMServiceTestBase extends TestCase
 {
     /**

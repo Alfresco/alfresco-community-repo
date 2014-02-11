@@ -29,6 +29,8 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -36,6 +38,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author gavinc
  */
+@Category(LegacyCategory.class)
 public class AVMExpiredContentTest extends TestCase
 {
     private static ApplicationContext ctx = AVMTestSuite.getContext();

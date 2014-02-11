@@ -21,11 +21,14 @@ package org.alfresco.repo.avm;
 
 import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.avm.util.BulkReader;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test of scaling out to large numbers of files.
  * @author britt
  */
+@Category(LegacyCategory.class)
 public class AVMScaleTestP extends AVMServiceTestBase
 {
     public void testScaleA()

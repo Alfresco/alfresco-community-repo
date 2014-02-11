@@ -39,13 +39,16 @@ import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.NameMatcher;
+import org.junit.experimental.categories.Category;
 
 /**
  * End to end test of deployment to an alfresco system receiver (ASR).
  * @author britt
  * @author mrogers
  */
+@Category(LegacyCategory.class)
 public class ASRDeploymentTest extends AVMServiceTestBase
 {
    

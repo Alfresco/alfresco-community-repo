@@ -23,10 +23,13 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * @see FileFolderPerformanceTester
  */
+@Category(LegacyCategory.class)
 public class AVMFileFolderPerformanceTester extends FileFolderPerformanceTester
 {
     @Override

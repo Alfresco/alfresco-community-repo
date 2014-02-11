@@ -34,12 +34,15 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * AVM concurrency and search
  *
  * @author andyh, janv
  */
+@Category(LegacyCategory.class)
 public class AVMServiceConcurrentTest extends AVMServiceTestBase
 {
     public void testSetup() throws Exception

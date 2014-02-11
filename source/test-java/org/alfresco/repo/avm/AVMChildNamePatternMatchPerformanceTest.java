@@ -22,8 +22,11 @@ import java.util.SortedMap;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.GUID;
+import org.junit.experimental.categories.Category;
 
+@Category(LegacyCategory.class)
 public class AVMChildNamePatternMatchPerformanceTest extends AVMServiceTestBase
 {
 

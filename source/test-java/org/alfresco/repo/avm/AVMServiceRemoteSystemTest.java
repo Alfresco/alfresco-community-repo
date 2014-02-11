@@ -22,12 +22,15 @@ import org.alfresco.repo.remote.ClientTicketHolder;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.NameMatcher;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
  * Remote system tests of AVM (AVMSyncService & AVMService) - requires running repo
  */
+@Category(LegacyCategory.class)
 public class AVMServiceRemoteSystemTest extends AVMServiceLocalTest
 {
     private final static String ADMIN_UN = "admin";

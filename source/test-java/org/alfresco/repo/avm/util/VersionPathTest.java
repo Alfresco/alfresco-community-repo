@@ -21,7 +21,9 @@ package org.alfresco.repo.avm.util;
 import java.util.List;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.Pair;
+import org.junit.experimental.categories.Category;
 
 import junit.framework.TestCase;
 
@@ -29,6 +31,7 @@ import junit.framework.TestCase;
  * Test out stuffing and unstuffing Version/Paths
  * @author britt
  */
+@Category(LegacyCategory.class)
 public class VersionPathTest extends TestCase 
 {
     public void testVersionPath()

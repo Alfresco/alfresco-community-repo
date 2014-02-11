@@ -79,15 +79,18 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.wcm.sandbox.SandboxConstants;
+import org.junit.experimental.categories.Category;
 
 /**
  * Big test of AVM behavior.
  *
  * @author britt
  */
+@Category(LegacyCategory.class)
 public class AVMServiceTest extends AVMServiceTestBase
 {
     public void testSetup() throws Exception

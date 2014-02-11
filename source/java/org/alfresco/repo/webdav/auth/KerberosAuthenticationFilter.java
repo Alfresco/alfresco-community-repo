@@ -19,6 +19,7 @@
 package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -37,8 +38,7 @@ import org.apache.commons.logging.LogFactory;
 public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilter
 {
     // Debug logging
-    
-    private static Log logger = LogFactory.getLog(KerberosAuthenticationFilter.class);    
+    private static Log logger = LogFactory.getLog(KerberosAuthenticationFilter.class);
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidateFailed(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.http.HttpSession)
@@ -52,11 +52,40 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
         restartLoginChallenge(sc, req, res);
     }
     
-	/* (non-Javadoc)
-	 * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#getLogger()
-	 */
-	@Override
-	protected Log getLogger() {
-		return logger;
-	}
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#getLogger()
+     */
+    @Override
+    protected Log getLogger()
+    {
+        return logger;
+    }
+
+    @Override
+    protected boolean checkLoginPage(HttpServletRequest req, HttpServletResponse resp)
+    {
+        return (req.getRequestURI().endsWith("/jsp/login.jsp"));
+    }
+    
+    /**
+     * Writes link to login page and refresh tag which cause user
+     * to be redirected to the login page.
+     *
+     * @param context ServletContext
+     * @param resp HttpServletResponse
+     * @param httpSess HttpSession
+     * @throws IOException
+     */
+    protected void writeLoginPageLink(ServletContext context, HttpServletRequest req, HttpServletResponse resp) throws IOException
+    {
+        resp.setContentType(MIME_HTML_TEXT);
+
+        final PrintWriter out = resp.getWriter();
+        out.println("<html><head>");
+        out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + req.getContextPath() + "/faces/jsp/login.jsp?_alfRedirect=%2Falfresco%2Fwebdav\">");
+        out.println("</head><body><p>Please <a href=\"" + req.getContextPath() + "/faces/jsp/login.jsp?_alfRedirect=%2Falfresco%2Fwebdav\">log in</a>.</p>");
+        out.println("</body></html>");
+        out.close();
+    }
 }

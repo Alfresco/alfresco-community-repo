@@ -40,6 +40,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.repo.web.auth.BasicAuthCredentials;
 import org.alfresco.repo.web.auth.TicketCredentials;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
@@ -161,10 +163,21 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
                             password = "";
                         }
     
-                        // Authenticate the user
-
-                        authenticationService.authenticate(username, password.toCharArray());
-                        authenticationListener.userAuthenticated(new BasicAuthCredentials(username, password));
+                        // First check if we already are authenticated
+                        if (AuthenticationUtil.getFullyAuthenticatedUser() == null)
+                        {
+                            // We have to go to the repo and authenticate
+                            Authorization auth = new Authorization(username, password);
+                            if (auth.isTicket())
+                            {
+                                authenticationService.validate(auth.getTicket());
+                            }
+                            else
+                            {
+                                authenticationService.authenticate(username, password.toCharArray());
+                                authenticationListener.userAuthenticated(new BasicAuthCredentials(username, password));
+                        }
+                        
                         user = createUserEnvironment(httpReq.getSession(), authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), false);
                         
                         // Success so break out

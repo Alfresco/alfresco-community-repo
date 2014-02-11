@@ -165,7 +165,7 @@ public class WikiServiceImpl implements WikiService
        page.setModifiedAt((Date)props.get(ContentModel.PROP_MODIFIED));
        
        // Now the wiki ones
-       page.setTitle((String)props.get(ContentModel.PROP_TITLE));
+       page.setTitle(((String)props.get(ContentModel.PROP_TITLE)).replaceAll(" ", "_"));
        
        // Finally, do the content
        String contents = preLoadedContents;

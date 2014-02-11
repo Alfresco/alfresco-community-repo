@@ -668,7 +668,20 @@ public class AuditComponentImpl implements AuditComponent
         // Generate data
         Map<String, DataGenerator> generators = application.getDataGenerators(generatorKeys);
         Map<String, Serializable> auditData = generateData(generators);
-        
+
+        // MNT-8401
+        for (Map.Entry<String, Serializable> value : auditData.entrySet())
+        {
+            String root = value.getKey();
+            int index = root.lastIndexOf("/");
+            Map<String, Serializable> argc = new HashMap<String, Serializable>(1);
+            argc.put(root.substring(index, root.length()).substring(1), value.getValue());
+            if (!auditFilter.accept(root.substring(0, index), argc))
+            {
+                return Collections.emptyMap();
+            }
+        }
+
         // Now extract values
         Map<String, Serializable> extractedData = AuthenticationUtil.runAs(new RunAsWork<Map<String, Serializable>>()
         {

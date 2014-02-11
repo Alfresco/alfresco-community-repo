@@ -148,7 +148,7 @@ public abstract class AbstractContentTransformerTest extends TestCase
             }
             catch (Exception error)
             {
-                logger.equals("Failed to load a quick file from a jar. "+error);
+                logger.error("Failed to load a quick file from a jar. "+error);
                 return null;
             }
         }

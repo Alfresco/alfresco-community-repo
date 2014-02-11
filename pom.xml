@@ -893,7 +893,6 @@
                                  <goals>
                                      <goal>test</goal>
                                  </goals>
-                                 <phase>process-test-classes</phase>
                                  <configuration>
                                      <reuseForks>false</reuseForks>
                                      <groups>org.alfresco.test_category.OwnJVMTestsCategory</groups>
@@ -903,7 +902,7 @@
                             <execution>
                                  <id>default-test</id>
                                  <configuration>
-                                     <argLine>-Xmx2560m -XX:MaxPermSize=512m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
+                                     <argLine>-Xmx3G -XX:MaxPermSize=512m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
                                      <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory, org.alfresco.test_category.BaseSpringTestsCategory,org.alfresco.test_category.LegacyCategory</excludedGroups>                                 
                                      <testFailureIgnore>true</testFailureIgnore>
                                  </configuration>

@@ -18,16 +18,22 @@
  */
 package org.alfresco.repo.web.scripts.person;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.person.UserNameMatcherImpl;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyMap;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Status;
@@ -403,5 +409,68 @@ public class PersonServiceTest extends BaseWebScriptTest
         deletePerson(userName, Status.STATUS_OK);
 
         this.authenticationComponent.setCurrentUser(currentUser);
+    }
+    
+    public void test_MNT10404_AuthenticationUtil()
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        String user1 = "user1";
+        String user2 = "user2";
+        String user3 = "user3";
+
+        List<String> users = new ArrayList<String>();
+        try
+        {
+            users.add(user1);
+            users.add(user2);
+            users.add(user3);
+
+            for (String user : users)
+            {
+                createPerson(user);
+
+                assertEquals(user, getAuthInRun(user));
+            }
+        }
+        finally
+        {
+            if (users.size() > 0)
+            {
+                for (String user : users)
+                {
+                    if (personService.personExists(user))
+                    {
+                        personService.deletePerson(user);
+                    }
+                }
+            }
+        }
+    }
+    
+    private String getAuthInRun(String userName)
+    {
+        RunAsWork<String> getWork = new RunAsWork<String>()
+        {
+            @Override
+            public String doWork() throws Exception
+            {
+                return AuthenticationUtil.getRunAsUser();
+            }
+        };
+        return AuthenticationUtil.runAs(getWork, userName);
+    }
+    
+    private NodeRef createPerson(String userName)
+    {
+        if (personService.personExists(userName))
+        {
+            personService.deletePerson(userName);
+        }
+
+        HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        properties.put(ContentModel.PROP_USERNAME, userName);
+
+        return personService.createPerson(properties);
     }
 }

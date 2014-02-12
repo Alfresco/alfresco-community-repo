@@ -329,17 +329,19 @@
                         <id>default-test</id>
                         <configuration>
                             <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory</excludedGroups>
-                            <testFailureIgnore>true</testFailureIgnore>
                         </configuration>
                     </execution>
                     <!-- Execution for tests which require their own JVM -->
+                    <!-- Executed before the other ones to prevent failures - see ALF-20697 -->
                     <execution>
                         <id>run-ownJVMTestsCategory</id>
+                        <phase>process-test-classes</phase>
                         <goals>
                             <goal>test</goal>
                         </goals>
                         <configuration>
                             <forkMode>always</forkMode>
+                            <testFailureIgnore>true</testFailureIgnore>
                             <groups>org.alfresco.test_category.OwnJVMTestsCategory</groups>
                         </configuration>
                     </execution>

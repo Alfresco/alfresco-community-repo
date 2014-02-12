@@ -25,12 +25,20 @@
     </bean>
 
     <!-- Thumbnail service transaction bean -->
-    <bean id="ThumbnailService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+    <bean id="ThumbnailService_transaction" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionService" ref="TransactionService" />
         <property name="transactionManager">
             <ref bean="transactionManager"/>
         </property>
         <property name="transactionAttributes">
             <props>
+                <prop key="getThumbnailRegistry">${server.transaction.mode.readOnly}</prop>
+                <prop key="getThumbnailByName">${server.transaction.mode.readOnly}</prop>
+                <prop key="getThumbnails">${server.transaction.mode.readOnly}</prop>
+                <prop key="getFailedThumbnails">${server.transaction.mode.readOnly}</prop>
+                <prop key="getThumbnailsEnabled">${server.transaction.mode.readOnly}</prop>
+                <!-- It is read-only intentionally, see MNT-9964 -->
+                <prop key="createThumbnail">${server.transaction.mode.readOnly}</prop>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
         </property>

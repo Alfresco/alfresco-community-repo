@@ -12,6 +12,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
+import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionEntry;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -48,6 +49,7 @@ public class CommentsApiTest extends BaseWebScriptTest
     private AuthenticationComponent authenticationComponent;
     protected PermissionServiceSPI permissionService;
     protected ModelDAO permissionModelDAO;
+    private MutableAuthenticationDao authenticationDAO;
     
     private NodeRef rootNodeRef;
     private NodeRef companyHomeNodeRef; 
@@ -56,6 +58,9 @@ public class CommentsApiTest extends BaseWebScriptTest
     private static final String USER_TEST = "UserTest";
     
     private UserTransaction txn;
+
+    private String USER2 = "user2";
+    
 
     @Override
     protected void setUp() throws Exception
@@ -70,6 +75,7 @@ public class CommentsApiTest extends BaseWebScriptTest
         namespaceService = (NamespaceService)appContext.getBean("namespaceService");
         versionService = (VersionService)appContext.getBean("versionService");
         personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
+        authenticationDAO = (MutableAuthenticationDao) appContext.getBean("authenticationDao");
         authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         permissionService =  (PermissionServiceSPI) getServer().getApplicationContext().getBean("permissionService");
@@ -98,6 +104,12 @@ public class CommentsApiTest extends BaseWebScriptTest
         nodeRef = fileFolderService.create(companyHomeNodeRef, "Commenty", ContentModel.TYPE_CONTENT).getNodeRef();
         versionService.ensureVersioningEnabled(nodeRef, null);
         nodeService.setProperty(nodeRef, ContentModel.PROP_AUTO_VERSION_PROPS, true);
+        
+        if (authenticationDAO.userExists(USER2))
+        {
+            authenticationService.deleteAuthentication(USER2);
+        }
+        authenticationService.createAuthentication(USER2, USER2.toCharArray());
 
         createUser(USER_TEST);
         
@@ -154,7 +166,7 @@ public class CommentsApiTest extends BaseWebScriptTest
     	String version = versionService.getCurrentVersion(nodeRef).getVersionLabel();
         return version;
     }
-
+    
     public void testCommentDoesNotVersion() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -165,6 +177,10 @@ public class CommentsApiTest extends BaseWebScriptTest
         assertEquals(versionBefore, versionAfter);
     }
     
+    /**
+     * MNT-9771
+     * @throws Exception
+     */
     public void testCommentPermissions() throws Exception
     {
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -217,4 +233,18 @@ public class CommentsApiTest extends BaseWebScriptTest
     {
         return permissionModelDAO.getPermissionReference(null, permission);
     }
+    
+    /**
+     * MNT-9771
+     * @throws Exception
+     */
+    public void testCommentDoesNotChangeModifier() throws Exception
+    {
+        permissionService.setPermission(nodeRef, USER2, PermissionService.ALL_PERMISSIONS, true);
+        String modifierBefore = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        addComment(nodeRef, USER2, 200);
+        String modifierAfter = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        assertEquals(modifierBefore, modifierAfter);
+    }
+    
 }

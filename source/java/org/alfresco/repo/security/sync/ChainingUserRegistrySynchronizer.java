@@ -18,40 +18,6 @@
  */
 package org.alfresco.repo.security.sync;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.text.DateFormat;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.IntrospectionException;
-import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanException;
-import javax.management.MBeanInfo;
-import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.batch.BatchProcessor;
@@ -87,11 +53,20 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import javax.management.*;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.text.DateFormat;
+import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A <code>ChainingUserRegistrySynchronizer</code> is responsible for synchronizing Alfresco's local user (person) and
@@ -1469,8 +1444,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             private void processGroups(UserRegistry userRegistry, boolean isFullSync, boolean splitTxns)
             {
                // If we got back some groups, we have to cross reference them with the set of known authorities
-               if (isFullSync || !this.groupParentAssocsToDelete.isEmpty()
-                     || !this.groupParentAssocsToDelete.isEmpty())
+                // MNT-9711 fix. If allowDeletions is false, there is no need to pull all users and all groups from LDAP during the full synchronization.
+               if (allowDeletions && (isFullSync || !this.groupParentAssocsToDelete.isEmpty()))
                {
                     final Set<String> allZonePersons = newPersonSet();
                     final Set<String> allZoneGroups = new TreeSet<String>();
@@ -1515,76 +1490,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                         this.deletionCandidates = new TreeSet<String>();
                         this.deletionCandidates.addAll(personDeletionCandidates);
                         this.deletionCandidates.addAll(groupDeletionCandidates);
-                        if (allowDeletions)
-                        {
-                            allZonePersons.removeAll(personDeletionCandidates);
-                            allZoneGroups.removeAll(groupDeletionCandidates);
-                        }
-                        else
-                        {
-                            if (!personDeletionCandidates.isEmpty())
-                            {
-                                ChainingUserRegistrySynchronizer.logger.warn("The following missing users are not being deleted as allowDeletions == false");
-                                for (String person : personDeletionCandidates)
-                                {
-                                    ChainingUserRegistrySynchronizer.logger.warn("    " + person);
-                                }
-                            }
-                            if (!groupDeletionCandidates.isEmpty())
-                            {
-                                ChainingUserRegistrySynchronizer.logger.warn("The following missing groups are not being deleted as allowDeletions == false");
-                                for (String group : groupDeletionCandidates)
-                                {
-                                    ChainingUserRegistrySynchronizer.logger.warn("    " + group);
-                                }
-                            }
-                            
-                            // Complete association deletion information by scanning deleted groups
-                            // Batch 3 - Missing Authority Scanning",
-                            BatchProcessor<String> groupScanner = new BatchProcessor<String>(
-                                    SyncProcess.MISSING_AUTHORITY.getTitle(zone),
-                                    ChainingUserRegistrySynchronizer.this.transactionService
-                                            .getRetryingTransactionHelper(), this.deletionCandidates,
-                                    ChainingUserRegistrySynchronizer.this.workerThreads, 20,
-                                    ChainingUserRegistrySynchronizer.this.applicationEventPublisher,
-                                    ChainingUserRegistrySynchronizer.logger,
-                                    ChainingUserRegistrySynchronizer.this.loggingInterval);
-                            groupScanner.process(new BaseBatchProcessWorker<String>()
-                            {
 
-                                @Override
-                                public String getIdentifier(String entry)
-                                {
-                                    return entry;
-                                }
-
-                                @Override
-                                public void process(String authority) throws Throwable
-                                {
-                                    // Disassociate it from this zone, allowing it to be reclaimed by something further down the chain
-                                    ChainingUserRegistrySynchronizer.this.authorityService.removeAuthorityFromZones(authority,
-                                            Collections.singleton(zoneId));
-                                    
-                                    // For groups, remove all members
-                                    if (AuthorityType.getAuthorityType(authority) != AuthorityType.USER)
-                                    {                                    
-                                        String groupShortName = ChainingUserRegistrySynchronizer.this.authorityService
-                                                .getShortName(authority);
-                                        String groupDisplayName = ChainingUserRegistrySynchronizer.this.authorityService
-                                                .getAuthorityDisplayName(authority);
-                                        NodeDescription dummy = new NodeDescription(groupShortName + " (Deleted)");
-                                        PropertyMap dummyProperties = dummy.getProperties();
-                                        dummyProperties.put(ContentModel.PROP_AUTHORITY_NAME, authority);
-                                        if (groupDisplayName != null)
-                                        {
-                                            dummyProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, groupDisplayName);
-                                        }
-                                        updateGroup(dummy, true);
-                                    }
-                                }
-                            }, splitTxns);
-                            
-                        }
+                        allZonePersons.removeAll(personDeletionCandidates);
+                        allZoneGroups.removeAll(groupDeletionCandidates);
                     }
 
                     // Prune the group associations now that we have complete information

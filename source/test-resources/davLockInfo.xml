@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<D:lockinfo xmlns:D="DAV:">
+    <D:lockscope>
+        <D:exclusive/>
+    </D:lockscope>
+    <D:locktype>
+        <D:write/>
+    </D:locktype>
+    <D:owner>
+        <D:href>admin</D:href>
+    </D:owner>
+</D:lockinfo>

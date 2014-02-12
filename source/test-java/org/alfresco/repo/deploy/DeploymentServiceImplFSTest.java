@@ -545,7 +545,7 @@ public class DeploymentServiceImplFSTest extends AVMServiceTestBase
         
     	BulkLoader loader = new BulkLoader();
     	loader.setAvmService(fService);
-    	loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
+    	loader.recursiveLoad(getSourceFolder() + "/org/alfresco/repo/avm", "main:/");
     	report = new DeploymentReport();
     	callbacks = new ArrayList<DeploymentCallback>();
     	callbacks.add(new DeploymentReportCallback(report));

@@ -317,6 +317,7 @@
                         <exclude>**/org/alfresco/repo/web/scripts/calendar/CalendarRestApiTest.*</exclude>
                         <exclude>**/org/alfresco/repo/web/scripts/content/MimetypesGetTest.*</exclude>
                         <exclude>**/org/alfresco/repo/web/scripts/dictionary/prefixed/DictionaryRestApiTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/web/scripts/nodelocator/NodeLocatorWebScriptTest.*</exclude>
                         <exclude>**/org/alfresco/repo/web/scripts/publishing/PublishingRestApiTest.*</exclude>
                         <exclude>**/org/alfresco/repo/web/scripts/wcm/sandbox/AssetTest.*</exclude>
                         <exclude>**/*$*</exclude>

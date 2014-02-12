@@ -19,10 +19,6 @@
 
 package org.alfresco.repo.rendition;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +69,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Neil McErlean
@@ -419,19 +417,34 @@ public class RenditionServicePermissionsTest
                 return null;
             }
         });
-        
-        // FIXME Yuck. Sleeping to wait for the completion of the above async action.
-        Thread.sleep(2000);
-        
-        // Now to check that the node has no renditions as the previous one should have been deleted.
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+
+        int waitTime = 200;
+        int numRetries = 20;
+        // Try and retry for 200ms up to 4s
+        for (int i = 1 ; i <= numRetries; i++)
         {
-            public Void execute() throws Throwable
+            Thread.sleep(waitTime * i);
+
+            // Now to check that the node has no renditions as the previous one should have been deleted.
+            Boolean hasNoRenditions = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Boolean>()
             {
-                assertTrue(renditionService.getRenditions(imgNode).isEmpty());
-                return null;
+                public Boolean execute() throws Throwable
+                {
+                    return renditionService.getRenditions(imgNode).isEmpty();
+                }
+            });
+
+            if (hasNoRenditions)
+            {
+                //test passed
+                break;
             }
-        });
+            else if (i == numRetries)
+            {
+                // the last try, time to fail
+                fail("The node should have no renditions.");
+            }
+        }
     }
     
     /**

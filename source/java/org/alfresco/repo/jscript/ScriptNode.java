@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -69,6 +69,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -2222,7 +2223,11 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             }
             else
             {
-                ensureVersioningEnabled(true, true);
+                // MNT-9369, read props from contentModel.xml, sets to false, false if there is no defaults.
+                Map<QName, PropertyDefinition> versionableProps = services.getDictionaryService().getAspect(ContentModel.ASPECT_VERSIONABLE).getProperties();
+                boolean autoVersion = Boolean.parseBoolean(versionableProps.get(ContentModel.PROP_AUTO_VERSION).getDefaultValue());
+                boolean autoVersionProps = Boolean.parseBoolean(versionableProps.get(ContentModel.PROP_AUTO_VERSION_PROPS).getDefaultValue());
+                ensureVersioningEnabled(autoVersion, autoVersionProps);
             }
         }
         else

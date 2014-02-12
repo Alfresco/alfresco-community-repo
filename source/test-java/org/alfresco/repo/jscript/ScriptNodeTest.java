@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,29 +24,45 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.DictionaryModelType;
+import org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap;
+import org.alfresco.repo.dictionary.RepositoryLocation;
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionableAspect;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyMap;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
@@ -54,6 +70,7 @@ import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule.RunAsUser;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.test.junitrules.TemporarySites;
 import org.alfresco.util.test.junitrules.TemporarySites.TestSiteAndMemberInfo;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.After;
@@ -117,39 +134,138 @@ public class ScriptNodeTest
     private static Search                      SEARCH_SCRIPT;
     private static VersionableAspect           VERSIONABLE_ASPECT;
     private static VersionService              VERSION_SERVICE;
+    private static DictionaryService           DICTIONARY_SERVICE;
+    private static NamespaceService            NAMESPACE_SERVICE;
+    private static DictionaryDAO               DICTIONARY_DAO;
+    private static TenantAdminService          TENANT_ADMIN_SERVICE;
+    private static MessageService              MESSAGE_SERVICE;
+    private static TransactionService          TRANSACTION_SERVICE;
+    private static DictionaryModelType         DICTIONARY_MODEL_TYPE;
     
     private static TestSiteAndMemberInfo USER_ONES_TEST_SITE;
     private static NodeRef               USER_ONES_TEST_FILE;
     
     private List<String> excludedOnUpdateProps;
     private NodeRef testNode;
-    
+
+    /** The store reference */
+    protected StoreRef storeRef;
+
+    /** The root node reference */
+    private NodeRef rootNodeRef;
+
+    /** The Dictionary bootstrap for loading new content model */
+    DictionaryRepositoryBootstrap bootstrap;
+
+    boolean autoVersion;
+    boolean autoVersionProps;
+
+    private static final String TEST_CONTENT_MODEL = "alfresco/extension/model/testContentModel.xml";
+
     @BeforeClass public static void initStaticData() throws Exception
     {
-        CONTENT_SERVICE    = APP_CONTEXT_INIT.getApplicationContext().getBean("ContentService", ContentService.class);
-        NODE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("NodeService", NodeService.class);
-        SERVICE_REGISTRY   = APP_CONTEXT_INIT.getApplicationContext().getBean("ServiceRegistry", ServiceRegistry.class);
-        TRANSACTION_HELPER = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
-        PERMISSION_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("permissionService", PermissionServiceSPI.class);
-        SEARCH_SCRIPT      = APP_CONTEXT_INIT.getApplicationContext().getBean("searchScript", Search.class);
-        VERSIONABLE_ASPECT = APP_CONTEXT_INIT.getApplicationContext().getBean("versionableAspect", VersionableAspect.class);
-        VERSION_SERVICE    = APP_CONTEXT_INIT.getApplicationContext().getBean("VersionService", VersionService.class);
-        
+        CONTENT_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("ContentService", ContentService.class);
+        NODE_SERVICE          = APP_CONTEXT_INIT.getApplicationContext().getBean("NodeService", NodeService.class);
+        SERVICE_REGISTRY      = APP_CONTEXT_INIT.getApplicationContext().getBean("ServiceRegistry", ServiceRegistry.class);
+        TRANSACTION_HELPER    = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+        PERMISSION_SERVICE    = APP_CONTEXT_INIT.getApplicationContext().getBean("permissionService", PermissionServiceSPI.class);
+        SEARCH_SCRIPT         = APP_CONTEXT_INIT.getApplicationContext().getBean("searchScript", Search.class);
+        VERSIONABLE_ASPECT    = APP_CONTEXT_INIT.getApplicationContext().getBean("versionableAspect", VersionableAspect.class);
+        VERSION_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("VersionService", VersionService.class);
+        DICTIONARY_SERVICE    = APP_CONTEXT_INIT.getApplicationContext().getBean("DictionaryService", DictionaryService.class);       
+        NAMESPACE_SERVICE     = APP_CONTEXT_INIT.getApplicationContext().getBean("namespaceService", NamespaceService.class);
+        DICTIONARY_DAO        = APP_CONTEXT_INIT.getApplicationContext().getBean("dictionaryDAO", DictionaryDAO.class);
+        TENANT_ADMIN_SERVICE  = APP_CONTEXT_INIT.getApplicationContext().getBean("tenantAdminService", TenantAdminService.class);
+        MESSAGE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("messageService", MessageService.class);
+        TRANSACTION_SERVICE   = APP_CONTEXT_INIT.getApplicationContext().getBean("transactionComponent", TransactionService.class);
+        DICTIONARY_MODEL_TYPE = APP_CONTEXT_INIT.getApplicationContext().getBean("dictionaryModelType", DictionaryModelType.class);
+		
         USER_ONES_TEST_SITE = STATIC_TEST_SITES.createTestSiteWithUserPerRole(GUID.generate(), "sitePreset", SiteVisibility.PRIVATE, USER_ONE_NAME);
-        USER_ONES_TEST_FILE = STATIC_TEST_NODES.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, USER_ONES_TEST_SITE.doclib, "test.txt", USER_ONE_NAME);
+        USER_ONES_TEST_FILE = STATIC_TEST_NODES.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, USER_ONES_TEST_SITE.doclib, "test.txt", USER_ONE_NAME);		
     }
-    
+
     @Before public void createTestContent()
+    {  
+        excludedOnUpdateProps = VERSIONABLE_ASPECT.getExcludedOnUpdateProps();
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        // Create the store and get the root node
+        storeRef = NODE_SERVICE.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
+        rootNodeRef = NODE_SERVICE.getRootNode(storeRef);
+    }
+
+    /**
+     * Create test content, can be versionable.
+     * @param versionable 
+     */
+    private void createTestContent(boolean versionable)
     {
         Repository repositoryHelper = (Repository) APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper");
         NodeRef companyHome = repositoryHelper.getCompanyHome();
-        
+         
         // Create some test content
-        testNode = testNodes.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, companyHome, "userOnesDoc", TEST_USER1.getUsername(), true);
-        
-        excludedOnUpdateProps = VERSIONABLE_ASPECT.getExcludedOnUpdateProps();
+        testNode = testNodes.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, companyHome, "userOnesDoc", TEST_USER1.getUsername(), versionable);
     }
-    
+
+    /**
+     * Bootstraps the model from custom store
+     */
+    private void setUpBootstrap()
+    {
+        bootstrap = new DictionaryRepositoryBootstrap();
+        bootstrap.setContentService(CONTENT_SERVICE);
+        bootstrap.setDictionaryDAO(DICTIONARY_DAO);
+        bootstrap.setTransactionService(TRANSACTION_SERVICE);
+        bootstrap.setTenantAdminService(TENANT_ADMIN_SERVICE);
+        bootstrap.setNodeService(NODE_SERVICE);
+        bootstrap.setNamespaceService(NAMESPACE_SERVICE);
+        bootstrap.setMessageService(MESSAGE_SERVICE);
+
+        List<String> storeUrlsToValidate = new ArrayList<String>(1);
+        storeUrlsToValidate.add(this.storeRef.toString());
+        DICTIONARY_MODEL_TYPE.setStoreUrls(storeUrlsToValidate);
+
+        RepositoryLocation location = new RepositoryLocation();
+        location.setStoreProtocol(storeRef.getProtocol());
+        location.setStoreId(storeRef.getIdentifier());
+        location.setQueryLanguage(RepositoryLocation.LANGUAGE_PATH);
+        // NOTE: we are not setting the path for now .. in doing so we are searching the root node only
+
+        List<RepositoryLocation> locations = new ArrayList<RepositoryLocation>();
+        locations.add(location);
+
+        bootstrap.setRepositoryModelsLocations(locations);
+
+        // register with dictionary service
+        bootstrap.register();
+    }
+
+    /**
+     * Bootstraps the model from default store
+     */
+    private void revertBootstrap()
+    {
+        bootstrap.destroy();
+
+        List<String> storeUrlsToValidate = new ArrayList<String>(1);
+        storeUrlsToValidate.add(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString());
+        DICTIONARY_MODEL_TYPE.setStoreUrls(storeUrlsToValidate);
+
+        RepositoryLocation location = new RepositoryLocation();
+        location.setStoreProtocol(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getProtocol());
+        location.setStoreId(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier());
+        location.setQueryLanguage(RepositoryLocation.LANGUAGE_PATH);
+        // NOTE: we are not setting the path for now .. in doing so we are searching the root node only
+
+        List<RepositoryLocation> locations = new ArrayList<RepositoryLocation>();
+        locations.add(location);
+
+        bootstrap.setRepositoryModelsLocations(locations);
+
+        // register with dictionary service
+        bootstrap.register();
+    }
+
     @After public void versionableAspectTearDown()
     {
         VERSIONABLE_ASPECT.setExcludedOnUpdateProps(excludedOnUpdateProps);
@@ -221,6 +337,7 @@ public class ScriptNodeTest
     /** See ALF-19783. */
     @Test public void versionNumberShouldIncrementOnNodeRevert()
     {
+       createTestContent(true);
        log.debug(testName.getMethodName() + "()");
        
        // We've already got a test node set up. Let's see what its content is so we can ensure that the revert works.
@@ -345,5 +462,94 @@ public class ScriptNodeTest
                return null;
            }
        });
+    }
+
+    /**
+     * MNT-9369
+     * <p>
+     * Initially the ContentModel.PROP_AUTO_VERSION and ContentModel.PROP_AUTO_VERSION_PROPS are true by defaults.
+     */
+    @Test
+    public void testVersioningPropsDefault()
+    {
+        createTestContent(false);
+        Map<QName, PropertyDefinition> versionableProps = DICTIONARY_SERVICE.getAspect(ContentModel.ASPECT_VERSIONABLE).getProperties();
+        autoVersion = Boolean.parseBoolean(versionableProps.get(ContentModel.PROP_AUTO_VERSION).getDefaultValue());
+        autoVersionProps = Boolean.parseBoolean(versionableProps.get(ContentModel.PROP_AUTO_VERSION_PROPS).getDefaultValue());
+
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                log.debug("Adding versionable aspect.");
+
+                ScriptNode sn = new ScriptNode(testNode, SERVICE_REGISTRY);
+                sn.addAspect("cm:versionable");
+                return null;
+            }
+        });
+
+        assertEquals("Incorrect Auto Version property.", autoVersion, NODE_SERVICE.getProperty(testNode, ContentModel.PROP_AUTO_VERSION));
+        assertEquals("Incorrect Auto Version Props property.", autoVersionProps, NODE_SERVICE.getProperty(testNode, ContentModel.PROP_AUTO_VERSION_PROPS));
+    }
+
+    /**
+     * MNT-9369
+     * <p>
+     * Initially the ContentModel.PROP_AUTO_VERSION and ContentModel.PROP_AUTO_VERSION_PROPS are true by defaults. We'll set them to false.
+     */
+    @Test
+    public void testVersioningPropsDefaultChanged()
+    {
+        setUpBootstrap();
+
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                log.debug("Adding new model.");
+
+                // Create a model node
+                PropertyMap properties = new PropertyMap(1);
+                properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
+
+                final NodeRef modelNode = NODE_SERVICE.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.ALFRESCO_URI, "dictionaryModels"),
+                        ContentModel.TYPE_DICTIONARY_MODEL, properties).getChildRef();
+                assertNotNull(modelNode);
+
+                // Add the model content to the model node
+                ContentWriter contentWriter = CONTENT_SERVICE.getWriter(modelNode, ContentModel.PROP_CONTENT, true);
+                contentWriter.setEncoding("UTF-8");
+                contentWriter.setMimetype(MimetypeMap.MIMETYPE_XML);
+                InputStream cmStream = getClass().getClassLoader().getResourceAsStream(TEST_CONTENT_MODEL);
+                contentWriter.putContent(IOUtils.toString(cmStream));
+                cmStream.close();
+                return null;
+            }
+        });
+
+        Map<QName, PropertyDefinition> versionableProps = DICTIONARY_SERVICE.getAspect(ContentModel.ASPECT_VERSIONABLE).getProperties();
+
+        autoVersion = Boolean.parseBoolean(versionableProps.get(ContentModel.PROP_AUTO_VERSION).getDefaultValue());
+        autoVersionProps = Boolean.parseBoolean(versionableProps.get(ContentModel.PROP_AUTO_VERSION_PROPS).getDefaultValue());
+
+        createTestContent(false);
+
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                log.debug("Adding versionable aspect.");
+
+                ScriptNode sn = new ScriptNode(testNode, SERVICE_REGISTRY);
+                sn.addAspect("cm:versionable");
+                return null;
+            }
+        });
+
+        assertEquals("Incorrect Auto Version property.", autoVersion, NODE_SERVICE.getProperty(testNode, ContentModel.PROP_AUTO_VERSION));
+        assertEquals("Incorrect Auto Version Props property.", autoVersionProps, NODE_SERVICE.getProperty(testNode, ContentModel.PROP_AUTO_VERSION_PROPS));
+
+        revertBootstrap();
     }
 }

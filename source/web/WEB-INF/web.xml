@@ -800,7 +800,7 @@
 
    <servlet-mapping>
       <servlet-name>CMISFileShareServlet</servlet-name>
-      <url-pattern>/cmisbrowse</url-pattern>
+      <url-pattern>/cmisbrowser</url-pattern>
    </servlet-mapping>
 
    <servlet-mapping>

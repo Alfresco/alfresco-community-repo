@@ -61,7 +61,7 @@ public class SubsystemChainingFtpAuthenticator extends AbstractChainingFtpAuthen
     @Override
     protected List<FTPAuthenticatorBase> getUsableFtpAuthenticators()
     {
-        List<FTPAuthenticatorBase> result = new LinkedList<>();
+        List<FTPAuthenticatorBase> result = new LinkedList<FTPAuthenticatorBase>();
         for (String instance : this.applicationContextManager.getInstanceIds())
         {
             try

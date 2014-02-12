@@ -57,10 +57,6 @@ public class CalendarRecurrenceHelper
    public static final Map<String,Integer> DAY_NAMES_TO_CALENDAR_DAYS =
       Collections.unmodifiableMap(d2cd);
    
-   private final static long DAY_IN_MS = 24 * 60 * 60 * 1000L;
-   private final static long WEEK_IN_MS = DAY_IN_MS * 7L;
-   private final static long MONTH_IN_MS = DAY_IN_MS * 31L;
-   private final static long YEAR_IN_MS = MONTH_IN_MS * 12L;
    /**
     * Returns a lookup from recurrence rule days of the week, to
     *  the proper days of the week in the specified locale
@@ -94,10 +90,10 @@ public class CalendarRecurrenceHelper
    
    /**
     * The lookup from the week in month number to week 
-	* in month name in the specified locale
+   * in month name in the specified locale
     */
    public static Map<Integer, String> buildLocalRecurrenceWeekNames(Locale locale){
-	   return WEEK_NUMBER_TO_WEEK_NAME;
+      return WEEK_NUMBER_TO_WEEK_NAME;
    }
    
    /**
@@ -301,7 +297,7 @@ public class CalendarRecurrenceHelper
       if (lastRecurrence == null && !firstOnly && until == null)
       {
          logger.info("No end date set on the recurring event, and no end date " +
-         		"specified, only fetching first instance");
+               "specified, only fetching first instance");
          firstOnly = true;
       }
       
@@ -739,7 +735,7 @@ public class CalendarRecurrenceHelper
     private static List<Integer> getDaysOfWeek(Map<String, String> params, String dayWeekType)
     {
         String[] weekDays = params.get(dayWeekType).split(",");
-        List<Integer> daysOfWeek = new ArrayList<>();
+        List<Integer> daysOfWeek = new ArrayList<Integer>();
 
         for (String day : weekDays)
         {
@@ -948,11 +944,11 @@ public class CalendarRecurrenceHelper
     */
    private static void toDayOfWeekInMonth(Calendar c, int dayOfWeek, int weekInMonth)
    {
-	   //set it to the first day
-	   c.set(Calendar.DATE, 1);
-	   //move to the day we need
-	   c.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-	   //and then to the month
-	   c.set(Calendar.DAY_OF_WEEK_IN_MONTH, weekInMonth);
+      //set it to the first day
+      c.set(Calendar.DATE, 1);
+      //move to the day we need
+      c.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+      //and then to the month
+      c.set(Calendar.DAY_OF_WEEK_IN_MONTH, weekInMonth);
    }
 }

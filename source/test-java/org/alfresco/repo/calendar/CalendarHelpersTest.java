@@ -18,17 +18,26 @@
  */
 package org.alfresco.repo.calendar;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
+
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.calendar.CalendarTimezoneHelper;
 import org.junit.Test;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Test cases for the helpers relating to the {@link CalendarService},
@@ -899,6 +908,7 @@ public class CalendarHelpersTest
    /**
     * eg the last Tuesday of the month
     */
+   @SuppressWarnings("unused")
    @Test public void monthlyRecurrenceByLastDayOfWeek()
    {
        List<Date> dates = new ArrayList<Date>();
@@ -921,12 +931,12 @@ public class CalendarHelpersTest
     @Test
     public void monthlyRecurrenceByFirstDayOfEveryFirstMonth()
     {
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Setting the recurrence rule fo the first day of every 1 month
         // FREQ=MONTHLY;INTERVAL=1;BYDAY=SA,MO,TU,WE,TH,FR,SU;BYSETPOS=1
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("INTERVAL", "1");
         params.put("BYDAY", "SA,MO,TU,WE,TH,FR,SU");
@@ -961,12 +971,12 @@ public class CalendarHelpersTest
     @Test
     public void monthlyRecurrenceByFirstWeekdayEveryFirstMonth()
     {
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Setting the recurrence rule fo the first weekday of every 1 month
         // FREQ=MONTHLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=1
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("INTERVAL", "1");
         params.put("BYDAY", "MO,TU,WE,TH,FR");
@@ -1003,12 +1013,12 @@ public class CalendarHelpersTest
     @Test
     public void monthlyRecurrenceByFirstWeekendDayEveryFirstMonth()
     {
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Setting the recurrence rule fo the last day of every 1 month
         // FREQ=MONTHLY;INTERVAL=1;BYDAY=SA,SU;BYSETPOS=1
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("INTERVAL", "1");
         params.put("BYDAY", "SA,SU");
@@ -1045,12 +1055,12 @@ public class CalendarHelpersTest
     @Test
     public void monthlyRecurrenceBySecondDayOfEveryFirstMonth()
     {
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Setting the recurrence rule fo the second day of every 1 month
         // FREQ=MONTHLY;INTERVAL=1;BYDAY=SA,MO,TU,WE,TH,FR,SU;BYSETPOS=-1
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("INTERVAL", "1");
         params.put("BYDAY", "SA,MO,TU,WE,TH,FR,SU");
@@ -1087,12 +1097,12 @@ public class CalendarHelpersTest
     @Test
     public void monthlyRecurrenceBySecondWeekdayOfEveryFirstMonth()
     {
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Setting the recurrence rule fo the second weekday of every 1 month
         // FREQ=MONTHLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("INTERVAL", "1");
         params.put("BYDAY", "MO,TU,WE,TH,FR");
@@ -1136,12 +1146,12 @@ public class CalendarHelpersTest
     @Test
     public void monthlyRecurrenceBySecondWeekendDayOfEveryFirstMonth()
     {
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Setting the recurrence rule fo the second weekday of every 1 month
         // FREQ=MONTHLY;INTERVAL=1;BYDAY=SU,SA;BYSETPOS=-1
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("INTERVAL", "1");
         params.put("BYDAY", "SU,SA");
@@ -1185,12 +1195,12 @@ public class CalendarHelpersTest
     @Test
     public void monthlyRecurrenceByLastDayOfEveryFirstMonth()
     {
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Setting the recurrence rule fo the last day of every 1 month
         // FREQ=MONTHLY;INTERVAL=1;BYDAY=SA,MO,TU,WE,TH,FR,SU;BYSETPOS=-1
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("INTERVAL", "1");
         params.put("BYDAY", "SU,MO,TU,WE,TH,FR,SA");
@@ -1227,12 +1237,12 @@ public class CalendarHelpersTest
     @Test
     public void monthlyRecurrenceByLastWeekdayOfEveryFirstMonth()
     {
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Setting the recurrence rule fo the last day of every 1 month
         // FREQ=MONTHLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("INTERVAL", "1");
         params.put("BYDAY", "MO,TU,WE,TH,FR");
@@ -1269,12 +1279,12 @@ public class CalendarHelpersTest
     @Test
     public void monthlyRecurrenceByLastWeekendDayOfEveryFirstMonth()
     {
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Setting the recurrence rule fo the last day of every 1 month
         // FREQ=MONTHLY;INTERVAL=1;BYDAY=SU,SA;BYSETPOS=-1
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("INTERVAL", "1");
         params.put("BYDAY", "SU,SA");
@@ -1313,11 +1323,11 @@ public class CalendarHelpersTest
     {
         // Setting the yearly recurrence rule fo the first day of every January
         //FREQ=MONTHLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;BYMONTH=1;BYSETPOS=1;INTERVAL=12
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Recurrecne rule
-        Map<String,String> params = new HashMap<>();
+        Map<String,String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("BYDAY", "SU,MO,TU,WE,TH,FR,SA");
         params.put("BYMONTH", "1");
@@ -1360,11 +1370,11 @@ public class CalendarHelpersTest
     {
         // Setting the yearly recurrence rule fo the first weekday of every January
         //FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYMONTH=1;BYSETPOS=1;INTERVAL=12
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Recurrecne rule
-        Map<String,String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("BYDAY", "MO,TU,WE,TH,FR");
         params.put("BYMONTH", "1");
@@ -1408,11 +1418,11 @@ public class CalendarHelpersTest
     {
         // Setting the yearly recurrence rule fo the first weekend day of every January
         //FREQ=MONTHLY;BYDAY=SU,SA;BYMONTH=1;BYSETPOS=1;INTERVAL=12
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Recurrecne rule
-        Map<String,String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("BYDAY", "SU,SA");
         params.put("BYMONTH", "1");
@@ -1456,11 +1466,11 @@ public class CalendarHelpersTest
     {
         // Setting the yearly recurrence rule fo the second weekend day of every January
         //FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYMONTH=1;BYSETPOS=2;INTERVAL=12
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Recurrecne rule
-        Map<String,String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("BYDAY", "MO,TU,WE,TH,FR");
         params.put("BYMONTH", "1");
@@ -1510,11 +1520,11 @@ public class CalendarHelpersTest
     {
         // Setting the yearly recurrence rule fo the second weekend day of every January
         //FREQ=MONTHLY;BYDAY=SU,SA;BYMONTH=1;BYSETPOS=2;INTERVAL=12
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Recurrecne rule
-        Map<String,String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("BYDAY", "SU,SA");
         params.put("BYMONTH", "1");
@@ -1564,11 +1574,11 @@ public class CalendarHelpersTest
     {
         // Setting the yearly recurrence rule fo the last day of every January
         //FREQ=MONTHLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;BYMONTH=1;BYSETPOS=-1;INTERVAL=12
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Recurrecne rule
-        Map<String,String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("BYDAY", "SU,MO,TU,WE,TH,FR,SA");
         params.put("BYMONTH", "1");
@@ -1611,11 +1621,11 @@ public class CalendarHelpersTest
     {
         // Setting the yearly recurrence rule fo the last weekday of every January
         //FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYMONTH=1;BYSETPOS=-1;INTERVAL=12
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Recurrecne rule
-        Map<String,String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("BYDAY", "MO,TU,WE,TH,FR");
         params.put("BYMONTH", "1");
@@ -1665,11 +1675,11 @@ public class CalendarHelpersTest
     {
         // Setting the yearly recurrence rule fo the last weekday of every January
         //FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYMONTH=1;BYSETPOS=-1;INTERVAL=12
-        List<Date> dates = new ArrayList<>();
+        List<Date> dates = new ArrayList<Date>();
         Calendar currentDate = Calendar.getInstance();
 
         // Recurrecne rule
-        Map<String,String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<String, String>();
         params.put("FREQ", "MONTHLY");
         params.put("BYDAY", "SU,SA");
         params.put("BYMONTH", "1");

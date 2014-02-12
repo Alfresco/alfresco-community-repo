@@ -109,7 +109,7 @@ public class StandardQuotaStrategyTest
         // Quota is 20MB. The quota manager will...
         //   * start the cleaner at 16MB (80% of 20MB)
         //   * refuse to cache any more files at 18MB (90% of 20MB)
-        List<String> contentURLs = new ArrayList<>();
+        List<String> contentURLs = new ArrayList<String>();
         for (int i = 0; i < 15; i++)
         {
             String url = writeSingleFileInMB(1);

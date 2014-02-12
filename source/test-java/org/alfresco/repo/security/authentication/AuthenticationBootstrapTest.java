@@ -18,7 +18,9 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 
 import junit.framework.TestCase;
 
@@ -29,6 +31,7 @@ import junit.framework.TestCase;
  * @author Derek Hulley
  * @since 3.0.1
  */
+@Category(OwnJVMTestsCategory.class)
 public class AuthenticationBootstrapTest extends TestCase
 {
     /**

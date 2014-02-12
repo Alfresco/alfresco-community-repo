@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.transaction.UserTransaction;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -170,8 +172,8 @@ public class TransactionCleanupTest
     	// run the transaction cleaner to clean up any existing unused transactions
     	worker.doClean();
 
-    	long start = System.currentTimeMillis();
-    	Long minTxnId = nodeDAO.getMinTxnId();
+    	final long start = System.currentTimeMillis();
+    	final Long minTxnId = nodeDAO.getMinTxnId();
 
     	final Map<NodeRef, List<String>> txnIds = createTransactions();
     	final List<String> txnIds1 = txnIds.get(nodeRef1);
@@ -182,8 +184,17 @@ public class TransactionCleanupTest
         
         // Double-check that n4 and n5 are present in deleted form
     	nodesCache.clear();
-        assertNotNull("Node 4 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef4));
-        assertNotNull("Node 5 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef5));
+    	UserTransaction txn = transactionService.getUserTransaction(true);
+    	txn.begin();
+    	try
+    	{
+            assertNotNull("Node 4 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef4));
+            assertNotNull("Node 5 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef5));
+    	}
+    	finally
+    	{
+    	    txn.rollback();
+    	}
 
     	// run the transaction cleaner
         worker.setPurgeSize(5); // small purge size
@@ -194,7 +205,15 @@ public class TransactionCleanupTest
         }
 
     	// Get transactions committed after the test started
-    	List<Transaction> txns = nodeDAO.getTxnsByCommitTimeAscending(Long.valueOf(start), Long.valueOf(Long.MAX_VALUE), Integer.MAX_VALUE, null, false);
+    	RetryingTransactionCallback<List<Transaction>> getTxnsCallback = new RetryingTransactionCallback<List<Transaction>>()
+        {
+            @Override
+            public List<Transaction> execute() throws Throwable
+            {
+                return nodeDAO.getTxnsByCommitTimeAscending(Long.valueOf(start), Long.valueOf(Long.MAX_VALUE), Integer.MAX_VALUE, null, false);
+            }
+        };
+    	List<Transaction> txns = transactionService.getRetryingTransactionHelper().doInTransaction(getTxnsCallback, true, false);
     	
     	List<String> expectedUnusedTxnIds = new ArrayList<String>(10);
     	expectedUnusedTxnIds.addAll(txnIds1.subList(0, txnIds1.size() - 1));
@@ -233,7 +252,16 @@ public class TransactionCleanupTest
 
     	assertEquals(3, numFoundUsedTxnIds);
 
-    	List<Long> txnsUnused = nodeDAO.getTxnsUnused(minTxnId, Long.MAX_VALUE, Integer.MAX_VALUE);
+        // Get transactions committed after the test started
+        RetryingTransactionCallback<List<Long>> getTxnsUnusedCallback = new RetryingTransactionCallback<List<Long>>()
+        {
+            @Override
+            public List<Long> execute() throws Throwable
+            {
+                return nodeDAO.getTxnsUnused(minTxnId, Long.MAX_VALUE, Integer.MAX_VALUE);
+            }
+        };
+        List<Long> txnsUnused = transactionService.getRetryingTransactionHelper().doInTransaction(getTxnsUnusedCallback, true, false);
     	assertEquals(0, txnsUnused.size());
     	
     	// Double-check that n4 and n5 were removed as well

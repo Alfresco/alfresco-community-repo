@@ -679,10 +679,10 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         
         final NodeRef finalNodeRef = origNodeRef;        
         
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<Object>()
+        NodeRef wk3 = this.transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<NodeRef>()
                 {
-                    public Object execute()
+                    public NodeRef execute()
                     {
                         NodeRef wk2 = cociService.getWorkingCopy(finalNodeRef);
                         assertNotNull(wk2);
@@ -691,12 +691,10 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
                         assertNotNull(orig2);
                         assertEquals(origNodeRef, orig2);
                         
-                        cociService.cancelCheckout(workingCopy);                        
-                        return null;
+                        cociService.cancelCheckout(workingCopy);   
+                        return cociService.getWorkingCopy(nodeRef);
                     }
                 });
-        
-        NodeRef wk3 = cociService.getWorkingCopy(this.nodeRef);
         assertNull(wk3);
     }
     /**
@@ -730,21 +728,19 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         
         final NodeRef finalNodeRef = origNodeRef;        
         
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<Object>()
+        NodeRef wk3 = this.transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<NodeRef>()
                 {
-                    public Object execute()
+                    public NodeRef execute()
                     {
                         NodeRef wk2 = cociService.getWorkingCopy(finalNodeRef);
                         assertNotNull(wk2);
                         assertEquals(workingCopy, wk2);
                         
                         cociService.cancelCheckout(workingCopy);                        
-                        return null;
+                        return cociService.getWorkingCopy(nodeRef);
                     }
                 });
-        
-        NodeRef wk3 = cociService.getWorkingCopy(this.nodeRef);
         assertNull(wk3);           
     }
     

@@ -57,6 +57,7 @@ import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.rating.RatingScheme;
 import org.alfresco.service.cmr.rating.RatingService;
@@ -72,6 +73,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
@@ -97,6 +99,7 @@ public class GetChildrenCannedQueryTest extends TestCase
     
     private Repository repositoryHelper;
     private NodeService nodeService;
+    private TransactionService transactionService;
     private DictionaryService dictionaryService;
     private ContentService contentService;
     private MimetypeService mimetypeService;
@@ -145,6 +148,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
         
         nodeService = (NodeService)ctx.getBean("NodeService");
+        transactionService = (TransactionService)ctx.getBean("TransactionService");
         contentService = (ContentService)ctx.getBean("ContentService");
         mimetypeService = (MimetypeService)ctx.getBean("MimetypeService");
         dictionaryService = (DictionaryService)ctx.getBean("DictionaryService");
@@ -818,6 +822,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         assertEquals(2, children.size());
     }
     
+    @SuppressWarnings("unused")
     public void testAspectFiltering() throws Exception
     {
         NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
@@ -898,10 +903,18 @@ public class GetChildrenCannedQueryTest extends TestCase
         
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CQ_FACTORY_NAME);
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, pattern, null, null, null, null,  null, sortProps, pagingRequest);
+        final GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, pattern, null, null, null, null,  null, sortProps, pagingRequest);
         
         // execute canned query
-        CannedQueryResults<NodeRef> results = cq.execute();
+        RetryingTransactionCallback<CannedQueryResults<NodeRef>> callback = new RetryingTransactionCallback<CannedQueryResults<NodeRef>>()
+        {
+            @Override
+            public CannedQueryResults<NodeRef> execute() throws Throwable
+            {
+                return cq.execute();
+            }
+        };
+        CannedQueryResults<NodeRef> results = transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
         
         List<NodeRef> nodeRefs = results.getPages().get(0);
         
@@ -1182,10 +1195,18 @@ public class GetChildrenCannedQueryTest extends TestCase
         
         // get canned query (note: test the fileFolder extension - including support for sorting folders first)
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CQ_FACTORY_NAME);
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, null, childTypeQNames, null, null, filterProps, sortProps, pagingRequest);
+        final GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, null, childTypeQNames, null, null, filterProps, sortProps, pagingRequest);
         
         // execute canned query
-        CannedQueryResults<NodeRef> results = cq.execute();
+        RetryingTransactionCallback<CannedQueryResults<NodeRef>> callback = new RetryingTransactionCallback<CannedQueryResults<NodeRef>>()
+        {
+            @Override
+            public CannedQueryResults<NodeRef> execute() throws Throwable
+            {
+                return cq.execute();
+            }
+        };
+        CannedQueryResults<NodeRef> results = transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
         
         List<NodeRef> nodeRefs = results.getPages().get(0);
         
@@ -1206,10 +1227,18 @@ public class GetChildrenCannedQueryTest extends TestCase
         
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CQ_FACTORY_NAME);
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, assocTypeQNames, childTypeQNames, inclusiveAspects, exclusiveAspects, filterProps, sortProps, pagingRequest);
+        final GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, assocTypeQNames, childTypeQNames, inclusiveAspects, exclusiveAspects, filterProps, sortProps, pagingRequest);
         
         // execute canned query
-        CannedQueryResults<NodeRef> results = cq.execute();
+        RetryingTransactionCallback<CannedQueryResults<NodeRef>> callback = new RetryingTransactionCallback<CannedQueryResults<NodeRef>>()
+        {
+            @Override
+            public CannedQueryResults<NodeRef> execute() throws Throwable
+            {
+                return cq.execute();
+            }
+        };
+        CannedQueryResults<NodeRef> results = transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
         
         List<NodeRef> nodeRefs = results.getPages().get(0);
         

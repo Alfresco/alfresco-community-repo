@@ -1460,7 +1460,15 @@ public class PersonTest extends TestCase
         testTX.rollback();
         
         // Clean up
-        personService.deletePerson(TEST_PERSON);
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                personService.deletePerson(TEST_PERSON);
+                return null;
+            }
+        });
     }
     
     public void testDisableEnablePerson()

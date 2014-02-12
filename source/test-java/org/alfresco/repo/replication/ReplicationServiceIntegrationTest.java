@@ -148,7 +148,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
         jobLockService = (JobLockService) ctx.getBean("jobLockService");
         actionService = (ActionService) ctx.getBean("actionService");
         scriptService = (ScriptService)ctx.getBean("scriptService");
-        nodeService = (NodeService) ctx.getBean("nodeService");
+        nodeService = (NodeService) ctx.getBean("NodeService");
         lockService = (LockService) ctx.getBean("lockService");
         repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         actionTrackingService = (ActionTrackingService) ctx.getBean("actionTrackingService");

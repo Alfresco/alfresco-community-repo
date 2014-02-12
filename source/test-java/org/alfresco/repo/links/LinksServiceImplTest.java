@@ -147,8 +147,8 @@ public class LinksServiceImplTest
        assertNotNull(link.getNodeRef());
        assertNotNull(link.getSystemName());
        
-       NodeRef container = NODE_SERVICE.getPrimaryParent(link.getNodeRef()).getParentRef();
-       NodeRef site = NODE_SERVICE.getPrimaryParent(container).getParentRef();
+       NodeRef container = PUBLIC_NODE_SERVICE.getPrimaryParent(link.getNodeRef()).getParentRef();
+       NodeRef site = PUBLIC_NODE_SERVICE.getPrimaryParent(container).getParentRef();
        assertEquals(LINKS_SITE.getNodeRef(), site);
        
        
@@ -199,11 +199,11 @@ public class LinksServiceImplTest
        
        
        // Check the underlying node
-       assertEquals("Title", NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_TITLE));
-       assertEquals("Description", NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_DESCRIPTION));
-       assertEquals("http://www.alfresco.com/", NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_URL));
+       assertEquals("Title", PUBLIC_NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_TITLE));
+       assertEquals("Description", PUBLIC_NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_DESCRIPTION));
+       assertEquals("http://www.alfresco.com/", PUBLIC_NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_URL));
        assertEquals("http://www.alfresco.com/", CONTENT_SERVICE.getReader(link.getNodeRef(), ContentModel.PROP_CONTENT).getContentString());
-       assertEquals(false, NODE_SERVICE.hasAspect(link.getNodeRef(), LinksModel.ASPECT_INTERNAL_LINK));
+       assertEquals(false, PUBLIC_NODE_SERVICE.hasAspect(link.getNodeRef(), LinksModel.ASPECT_INTERNAL_LINK));
        
        
        // Change it
@@ -225,11 +225,11 @@ public class LinksServiceImplTest
        
        
        // Check the underlying node now
-       assertEquals("New Title", NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_TITLE));
-       assertEquals("Description", NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_DESCRIPTION));
-       assertEquals("http://share.alfresco.com/", NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_URL));
+       assertEquals("New Title", PUBLIC_NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_TITLE));
+       assertEquals("Description", PUBLIC_NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_DESCRIPTION));
+       assertEquals("http://share.alfresco.com/", PUBLIC_NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_URL));
        assertEquals("http://share.alfresco.com/", CONTENT_SERVICE.getReader(link.getNodeRef(), ContentModel.PROP_CONTENT).getContentString());
-       assertEquals(true, NODE_SERVICE.hasAspect(link.getNodeRef(), LinksModel.ASPECT_INTERNAL_LINK));
+       assertEquals(true, PUBLIC_NODE_SERVICE.hasAspect(link.getNodeRef(), LinksModel.ASPECT_INTERNAL_LINK));
        
        
        // Delete it

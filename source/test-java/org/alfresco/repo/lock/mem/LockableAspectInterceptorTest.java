@@ -18,11 +18,13 @@ import java.util.concurrent.Future;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -33,6 +35,7 @@ import org.springframework.context.ApplicationContext;
 public class LockableAspectInterceptorTest
 {
     private static ApplicationContext appCtx;
+    private TransactionService transactionService;
     private NodeService nodeService;
     private NodeService rawNodeService;
     private LockStore lockStore;
@@ -61,6 +64,7 @@ public class LockableAspectInterceptorTest
         // The 'current' user.
         userName = AuthenticationUtil.getAdminUserName();
         AuthenticationUtil.setFullyAuthenticatedUser(userName);
+        transactionService = (TransactionService) appCtx.getBean("TransactionService");
         nodeService = (NodeService) appCtx.getBean("NodeService");
         rawNodeService = (NodeService) appCtx.getBean("dbNodeService");
         lockStore = (LockStore) appCtx.getBean("lockStore");
@@ -202,7 +206,25 @@ public class LockableAspectInterceptorTest
         // Spoofed - wasn't explicitly added.
         assertEquals(Lifetime.PERSISTENT, readProps.get(ContentModel.PROP_LOCK_LIFETIME));
         // Double check - not really present
-        assertFalse(rawNodeService.getProperties(nodeRef).containsKey(ContentModel.PROP_LOCK_LIFETIME));
+        ensurePropertyNotPresent(nodeRef, ContentModel.PROP_LOCK_LIFETIME);
+    }
+    
+    /**
+     * Uses the raw NodeService to ensure that the given property is not present
+     */
+    private void ensurePropertyNotPresent(final NodeRef nodeRef, final QName propQName)
+    {
+        RetryingTransactionCallback<Boolean> check = new RetryingTransactionCallback<Boolean>()
+        {
+            @Override
+            public Boolean execute() throws Throwable
+            {
+                return rawNodeService.getProperties(nodeRef).containsKey(propQName);
+            }
+        };
+        assertFalse(
+                "Node should not have the " + propQName + " property present.",
+                transactionService.getRetryingTransactionHelper().doInTransaction(check));
     }
     
     @Test
@@ -296,8 +318,8 @@ public class LockableAspectInterceptorTest
         assertEquals(now, nodeService.getProperty(nodeRef, ContentModel.PROP_EXPIRY_DATE));
         // Spoofed property
         assertEquals(Lifetime.PERSISTENT.toString(), nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_LIFETIME));
-        // Double check, not really present
-        assertNull(rawNodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_LIFETIME));
+        // Double check - not really present
+        ensurePropertyNotPresent(nodeRef, ContentModel.PROP_LOCK_LIFETIME);
     }
     
     @Test
@@ -365,7 +387,7 @@ public class LockableAspectInterceptorTest
                     nodeName,
                     ContentModel.TYPE_BASE).getChildRef();
 
-        Map<QName, Serializable> properties = rawNodeService.getProperties(nodeRef);
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
         
         // With the exception of cm:lockLifetime, lock properties should be unaffected after setProperties()
         properties.put(ContentModel.PROP_AUTHOR, "Joe Bloggs");
@@ -380,7 +402,7 @@ public class LockableAspectInterceptorTest
         nodeService.setProperties(nodeRef, properties);
         
         // Check the persisted properties
-        properties = rawNodeService.getProperties(nodeRef);
+        properties = nodeService.getProperties(nodeRef);
         assertEquals("Joe Bloggs", properties.get(ContentModel.PROP_AUTHOR));
         assertEquals("A Name", properties.get(ContentModel.PROP_NAME));
         assertEquals(LockType.NODE_LOCK.toString(), properties.get(ContentModel.PROP_LOCK_TYPE));
@@ -388,7 +410,7 @@ public class LockableAspectInterceptorTest
         assertEquals(expiryDate, properties.get(ContentModel.PROP_EXPIRY_DATE));
         
         // cm:lockLifetime is not persisted.
-        assertFalse(properties.containsKey(ContentModel.PROP_LOCK_LIFETIME));
+        ensurePropertyNotPresent(nodeRef, ContentModel.PROP_LOCK_LIFETIME);
     }
     
     @Test
@@ -401,7 +423,7 @@ public class LockableAspectInterceptorTest
                     nodeName,
                     ContentModel.TYPE_BASE).getChildRef();
 
-        Map<QName, Serializable> properties = rawNodeService.getProperties(nodeRef);
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
         // Non-lock properties should be unaffected after setProperties()
         properties.put(ContentModel.PROP_AUTHOR, "Joe Bloggs");
         properties.put(ContentModel.PROP_NAME, "A Name");
@@ -416,7 +438,7 @@ public class LockableAspectInterceptorTest
         nodeService.setProperties(nodeRef, properties);
         
         // Check the persisted properties
-        properties = rawNodeService.getProperties(nodeRef);
+        properties = nodeService.getProperties(nodeRef);
         assertEquals("Joe Bloggs", properties.get(ContentModel.PROP_AUTHOR));
         assertEquals("A Name", properties.get(ContentModel.PROP_NAME));
         // Check the filtered properties

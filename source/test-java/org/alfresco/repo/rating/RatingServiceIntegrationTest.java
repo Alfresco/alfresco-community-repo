@@ -116,7 +116,6 @@ public class RatingServiceIntegrationTest
     private static NodeRef COPY_DEST_FOLDER;
     private static NodeRef TEST_FOLDER;
     private NodeRef testDoc_Admin;
-    private NodeRef testDoc_Copy;
     private NodeRef testDoc_UserOne;
     private NodeRef testDoc_UserTwo;
     
@@ -188,11 +187,19 @@ public class RatingServiceIntegrationTest
         }
     }
 
-    private void applyIllegalRating(NodeRef nodeRef, float illegalRating, String schemeName)
+    private void applyIllegalRating(final NodeRef nodeRef, final float illegalRating, final String schemeName)
     {
         try
         {
-            RATING_SERVICE.applyRating(nodeRef, illegalRating, schemeName);
+            TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    RATING_SERVICE.applyRating(nodeRef, illegalRating, schemeName);
+                    return null;
+                }
+            });
         } 
         catch (RatingServiceException expectedException)
         {

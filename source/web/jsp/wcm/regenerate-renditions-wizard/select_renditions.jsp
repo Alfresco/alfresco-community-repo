@@ -20,7 +20,7 @@
           xmlns:jsp="http://java.sun.com/JSP/Page"
  	  xmlns:c="http://java.sun.com/jsp/jstl/core"
           xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
-          xmlns:a="urn:jsptld:/WEB-INF/alfresco.tld"
+          xmlns:a="http://alfresco.com/alfresco"
           xmlns:f="http://java.sun.com/jsf/core"
           xmlns:h="http://java.sun.com/jsf/html">
 

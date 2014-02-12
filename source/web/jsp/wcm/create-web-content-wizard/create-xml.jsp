@@ -18,7 +18,7 @@
 -->
 <jsp:root version="1.2"
           xmlns:jsp="http://java.sun.com/JSP/Page"
-          xmlns:wcm="urn:jsptld:/WEB-INF/wcm.tld"
+          xmlns:wcm="http://alfresco.com/wcm"
           xmlns:f="http://java.sun.com/jsf/core">
   <script type="text/javascript">
     function _xforms_getSubmitButtons()

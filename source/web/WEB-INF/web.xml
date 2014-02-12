@@ -979,4 +979,13 @@
       <env-entry-type>java.lang.String</env-entry-type>
    </env-entry>
 
+   <taglib>
+      <taglib-uri>http://alfresco.com/alfresco</taglib-uri>
+      <taglib-location>/WEB-INF/alfresco.tld</taglib-location>
+   </taglib>
+
+   <taglib>
+      <taglib-uri>http://alfresco.com/wcm</taglib-uri>
+      <taglib-location>/WEB-INF/wcm.tld</taglib-location>
+   </taglib>	   
 </web-app>

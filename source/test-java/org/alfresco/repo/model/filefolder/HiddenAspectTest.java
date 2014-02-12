@@ -269,7 +269,7 @@ public class HiddenAspectTest
                 }
             }
 
-            // Resource fork should not be visible to any client
+            // Resource fork should not be visible to any client except webdav(see MNT-10333)
             node = fileFolderService.create(topNodeRef, "._resourceFork", ContentModel.TYPE_FOLDER).getNodeRef();
             assertTrue(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
             assertTrue(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
@@ -277,10 +277,13 @@ public class HiddenAspectTest
             assertEquals("", 0, results.length());
             for(Client client : hiddenAspect.getClients())
             {
-            	if(client != Client.admin)
-            	{
-            		assertEquals("Client " + client.toString(), Visibility.NotVisible, hiddenAspect.getVisibility(client, node));
-            	}
+                if(client != Client.admin)
+                {
+                    if(client != Client.webdav)
+                    {
+                        assertEquals("Client " + client.toString(), Visibility.NotVisible, hiddenAspect.getVisibility(client, node));
+                    }
+                }
             }
         }
         finally

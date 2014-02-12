@@ -305,48 +305,11 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <failIfNoTests>false</failIfNoTests>
-                    <!-- Exclude tests which should not run -->
-                    <excludes>
-                        <exclude>**/*SystemTest.*</exclude>
-                        <exclude>**/org/alfresco/rest/api/tests/Test*.*</exclude> <!--included in ApiTest and TestCMISAPI -->
-                        <exclude>**/org/alfresco/repo/cmis/ws/*Test.*</exclude>
-                        <exclude>**/org/alfresco/repo/cmis/ws/test/*Test.*</exclude>
-                        <exclude>**/org/alfresco/repo/cmis/ws/test/QueryPagingTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/web/scripts/solr/SOLRWebScriptTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/web/scripts/calendar/CalendarRestApiTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/web/scripts/comment/CommentsApiTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/web/scripts/content/MimetypesGetTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/web/scripts/dictionary/prefixed/DictionaryRestApiTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/web/scripts/nodelocator/NodeLocatorWebScriptTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/web/scripts/publishing/PublishingRestApiTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/web/scripts/wcm/sandbox/AssetTest.*</exclude>
-                        <exclude>**/*$*</exclude>
-                    </excludes>
+                    <forkMode>always</forkMode>
+                    <includes combine.self="override">
+                        <include>**/org/alfresco/RemoteApi*TestSuite.java</include>
+                    </includes>
                 </configuration>
-                <executions>
-                    <!-- Default execution, for tests with a shared JVM -->
-                    <execution>
-                        <id>default-test</id>
-                        <configuration>
-                            <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory</excludedGroups>
-                        </configuration>
-                    </execution>
-                    <!-- Execution for tests which require their own JVM -->
-                    <!-- Executed before the other ones to prevent failures - see ALF-20697 -->
-                    <execution>
-                        <id>run-ownJVMTestsCategory</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <forkMode>always</forkMode>
-                            <testFailureIgnore>true</testFailureIgnore>
-                            <groups>org.alfresco.test_category.OwnJVMTestsCategory</groups>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
             <!-- We still use committed generated sources -->

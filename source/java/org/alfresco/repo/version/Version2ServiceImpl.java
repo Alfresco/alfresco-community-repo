@@ -114,6 +114,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     @Override
     public StoreRef getVersionStoreReference()
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         if (useDeprecatedV1)
         {
             return super.getVersionStoreReference();
@@ -127,6 +133,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             Map<String, Serializable> versionProperties)
             throws ReservedVersionNameException, AspectMissingException
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         if (useDeprecatedV1)
         {
             return super.createVersion(nodeRef, versionProperties);
@@ -155,6 +167,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             Map<String, Serializable> versionProperties)
             throws ReservedVersionNameException, AspectMissingException
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         /* 
          * Note: we can't control the order of the list, so if we have children and parents in the list and the
          * parents get versioned before the children and the children are not already versioned then the parents
@@ -191,6 +209,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             int versionNumber)
             throws ReservedVersionNameException
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         if (useDeprecatedV1)
         {
             return super.createVersion(nodeRef, origVersionProperties, versionNumber);
@@ -419,6 +443,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     public VersionHistory getVersionHistory(NodeRef nodeRef)
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         if (useDeprecatedV1)
         {
             return super.getVersionHistory(nodeRef);
@@ -458,6 +488,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     public Version getCurrentVersion(NodeRef nodeRef)
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         if (useDeprecatedV1)
         {
             return super.getCurrentVersion(nodeRef);
@@ -1039,6 +1075,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     public void revert(NodeRef nodeRef)
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         if (useDeprecatedV1)
         {
             super.revert(nodeRef, getCurrentVersion(nodeRef), true);
@@ -1054,6 +1096,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     public void revert(NodeRef nodeRef, boolean deep)
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         if (useDeprecatedV1)
         {
             super.revert(nodeRef, getCurrentVersion(nodeRef), deep);
@@ -1069,6 +1117,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     public void revert(NodeRef nodeRef, Version version)
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         if (useDeprecatedV1)
         {
             super.revert(nodeRef, version, true);
@@ -1084,6 +1138,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     public void revert(NodeRef nodeRef, Version version, boolean deep)
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
     	if(logger.isDebugEnabled())
     	{
     	     logger.debug("revert nodeRef:" + nodeRef);
@@ -1342,6 +1402,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             QName assocQName,
             boolean deep)
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         if (useDeprecatedV1)
         {
             return super.restore(nodeRef, parentNodeRef, assocTypeQName, assocQName, deep);
@@ -1424,6 +1490,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     public void deleteVersionHistory(NodeRef nodeRef)
                                      throws AspectMissingException
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         if (useDeprecatedV1)
         {
             super.deleteVersionHistory(nodeRef);
@@ -1465,6 +1537,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     public void deleteVersion(NodeRef nodeRef, Version version)
     {
+        if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         if (useDeprecatedV1)
         {
             super.deleteVersion(nodeRef, version); // throws UnsupportedOperationException
@@ -1505,6 +1583,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
 	@Override
     public boolean isAVersion(NodeRef nodeRef)
     {
+	if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+	    
 		NodeRef realNodeRef = nodeRef;
         if(nodeRef.getStoreRef().getProtocol().equals(VersionBaseModel.STORE_PROTOCOL))
         {
@@ -1519,6 +1603,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
 	@Override
     public boolean isVersioned(NodeRef nodeRef)
     {
+	if (logger.isDebugEnabled())
+        {
+        	logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+        	logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+	    
 		NodeRef realNodeRef = nodeRef;
         if(nodeRef.getStoreRef().getProtocol().equals(VersionBaseModel.STORE_PROTOCOL))
         {

@@ -35,6 +35,7 @@ import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyScope;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPolicy;
 import org.alfresco.repo.version.common.AbstractVersionServiceImpl;
 import org.alfresco.repo.version.common.VersionHistoryImpl;
@@ -195,6 +196,12 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
     @Override
     public StoreRef getVersionStoreReference()
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         return new StoreRef(
                 StoreRef.PROTOCOL_WORKSPACE,
                 VersionModel.STORE_ID);
@@ -208,6 +215,12 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
             Map<String, Serializable> versionProperties)
             throws ReservedVersionNameException, AspectMissingException
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         long startTime = System.currentTimeMillis();
         
         int versionNumber = 0; // deprecated (unused)
@@ -234,6 +247,12 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
             boolean versionChildren)
             throws ReservedVersionNameException, AspectMissingException
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         long startTime = System.currentTimeMillis();
         
         int versionNumber = 0; // deprecated (unused)
@@ -307,6 +326,12 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
             Map<String, Serializable> versionProperties)
             throws ReservedVersionNameException, AspectMissingException
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         long startTime = System.currentTimeMillis();
         
         Collection<Version> result = new ArrayList<Version>(nodeRefs.size());
@@ -479,6 +504,12 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
      */
     public VersionHistory getVersionHistory(NodeRef nodeRef)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         VersionHistory versionHistory = null;
 
         if (this.nodeService.exists(nodeRef) == true)
@@ -498,6 +529,12 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
      */
     public Version getCurrentVersion(NodeRef nodeRef)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         Version version = null;
 
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
@@ -922,6 +959,12 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
      */
     public void ensureVersioningEnabled(NodeRef nodeRef, Map<QName, Serializable> versionProperties)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         // Don't alter the auditable aspect!
         boolean disableAuditable = policyBehaviourFilter.isEnabled(ContentModel.ASPECT_AUDITABLE);
         if(disableAuditable)
@@ -997,6 +1040,12 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
      */
     public void revert(NodeRef nodeRef, Version version, boolean deep)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         // Check the mandatory parameters
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("version", version);
@@ -1141,6 +1190,12 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
             QName assocQName,
             boolean deep)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+         
         NodeRef restoredNodeRef = null;
 
         // Check that the node does not exist
@@ -1267,6 +1322,12 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
     public void deleteVersionHistory(NodeRef nodeRef)
         throws AspectMissingException
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+        
         // Get the version history node for the node is question and delete it
         NodeRef versionHistoryNodeRef = getVersionHistoryNodeRef(nodeRef);
 
@@ -1352,6 +1413,12 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
 	@Override
     public boolean isVersioned(NodeRef nodeRef)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Run as user " + AuthenticationUtil.getRunAsUser());
+            logger.debug("Fully authenticated " + AuthenticationUtil.getFullyAuthenticatedUser());
+        }
+	    
         return this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
     }
 }

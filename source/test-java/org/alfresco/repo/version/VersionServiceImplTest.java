@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
@@ -90,6 +91,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     private static final String PWD_A = "passA";
     private static final String USER_NAME_A = "userA";
     
+    private PersonService personService;
     private VersionableAspect versionableAspect;
     private List<String> excludedOnUpdateProps;
     
@@ -97,6 +99,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
+        personService = (PersonService) applicationContext.getBean("personService");
         versionableAspect = (VersionableAspect) applicationContext.getBean("versionableAspect");
         excludedOnUpdateProps = versionableAspect.getExcludedOnUpdateProps();
     }
@@ -2437,5 +2440,92 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         }
         
         System.out.println("Finished: " + fileCount);
+    }
+
+    public void test_MNT10404()
+    {
+        String test_run = System.currentTimeMillis() + "";
+        final String test_user = "userUsageTestUser-" + test_run;
+        final String document_name = "test_MNT10404" + test_run + ".txt";
+
+        final String theFirstContent = "This is simple content.";
+        final String theSecondContent = "Update content.";
+
+        NodeRef document = null;
+
+        try
+        {
+            // create user
+            if (personService.personExists(test_user))
+            {
+                personService.deletePerson(test_user);
+            }
+
+            HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
+            properties.put(ContentModel.PROP_USERNAME, test_user);
+
+            NodeRef personNodeRef = personService.createPerson(properties);
+
+            assertNotNull(personNodeRef);
+
+            // create node
+            properties.clear();
+            properties.put(ContentModel.PROP_NAME, document_name);
+
+            document = nodeService.createNode(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(ContentModel.USER_MODEL_URI, document_name),
+                    ContentModel.TYPE_CONTENT, properties).getChildRef();
+            contentService.getWriter(document, ContentModel.PROP_CONTENT, true).putContent(theFirstContent);
+
+            // add write permission
+            permissionService.setPermission(document, test_user, PermissionService.WRITE_CONTENT, true);
+
+            // add versionable aspect as system user
+            final NodeRef doc = document;
+
+            RunAsWork<Void> getWork = new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    Map<QName, Serializable> versionProperties = new HashMap<QName, Serializable>();
+                    versionProperties.put(ContentModel.PROP_VERSION_LABEL, "0.1");
+                    versionProperties.put(ContentModel.PROP_INITIAL_VERSION, true);
+                    versionProperties.put(ContentModel.PROP_VERSION_TYPE, VersionType.MINOR);
+                    nodeService.addAspect(doc, ContentModel.ASPECT_VERSIONABLE, versionProperties);
+                    return null;
+                }
+            };
+            AuthenticationUtil.runAs(getWork, AuthenticationUtil.getSystemUserName());
+
+            assertTrue(nodeService.hasAspect(document, ContentModel.ASPECT_VERSIONABLE));
+
+            // set content by test_user
+            RunAsWork<Void> getWorkSetContent = new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    contentService.getWriter(doc, ContentModel.PROP_CONTENT, true).putContent(theSecondContent);
+                    return null;
+                }
+            };
+            AuthenticationUtil.runAs(getWorkSetContent, test_user);
+
+            assertTrue(theSecondContent.equals(contentService.getReader(document, ContentModel.PROP_CONTENT).getContentString()));
+        }
+        finally
+        {
+            // delete user
+            if (personService.personExists(test_user))
+            {
+                personService.deletePerson(test_user);
+            }
+
+            // delete node
+            if (document != null && nodeService.exists(document))
+            {
+                nodeService.deleteNode(document);
+            }
+        }
     }
 }

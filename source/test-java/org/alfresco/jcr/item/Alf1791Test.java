@@ -7,7 +7,10 @@ import javax.jcr.SimpleCredentials;
 import javax.jcr.nodetype.NodeType;
 
 import org.alfresco.jcr.test.BaseJCRTest;
+import org.alfresco.test_category.LegacyCategory;
+import org.junit.experimental.categories.Category;
 
+@Category(LegacyCategory.class)
 public class Alf1791Test extends BaseJCRTest
 {
 

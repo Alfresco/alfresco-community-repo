@@ -27,6 +27,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.experimental.categories.Category;
@@ -43,7 +44,7 @@ import org.springframework.context.ApplicationContext;
  * @since 3.2
  */
 @SuppressWarnings("unused")
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class JobLockServiceTest extends TestCase
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/JobLockServiceTest";

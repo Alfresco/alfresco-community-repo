@@ -36,20 +36,20 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
+import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
-import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.debug.NodeStoreInspector;
-import org.junit.experimental.categories.Category;
 import org.joda.time.DateTimeZone;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class ImporterComponentTest extends BaseSpringTest
 {
     private ImporterService importerService;

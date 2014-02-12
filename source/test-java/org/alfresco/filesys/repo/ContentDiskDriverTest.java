@@ -91,7 +91,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -103,7 +103,7 @@ import org.springframework.core.io.ClassPathResource;
 /**
  * Unit tests for Alfresco Repository ContentDiskDriver
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class ContentDiskDriverTest extends TestCase
 {
     private static final String TEST_PROTOTYPE_NAME = "test";

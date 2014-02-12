@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TestWithUserUtils;
@@ -58,7 +59,7 @@ import org.junit.experimental.categories.Category;
  * 
  * @author Roy Wetherall
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class LockServiceImplTest extends BaseSpringTest
 {
     /**

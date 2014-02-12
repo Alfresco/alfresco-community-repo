@@ -57,6 +57,7 @@ import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TempFileProvider;
@@ -64,7 +65,7 @@ import org.alfresco.util.debug.NodeStoreInspector;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class ExporterComponentTest extends BaseSpringTest
 {
 

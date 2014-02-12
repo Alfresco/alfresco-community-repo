@@ -53,6 +53,7 @@ import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -63,7 +64,7 @@ import org.springframework.util.ResourceUtils;
 /**
  * @since 4.0
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class BulkImportTest extends AbstractBulkImportTests
 {
     private StreamingNodeImporterFactory streamingNodeImporterFactory;

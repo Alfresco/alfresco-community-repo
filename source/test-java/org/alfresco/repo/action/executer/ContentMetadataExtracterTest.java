@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
@@ -50,7 +51,7 @@ import org.junit.experimental.categories.Category;
  * 
  * @author Jesper Steen Møller
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class ContentMetadataExtracterTest extends BaseSpringTest
 {
     protected static final String QUICK_TITLE = "The quick brown fox jumps over the lazy dog";

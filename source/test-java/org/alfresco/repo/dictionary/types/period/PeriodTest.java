@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.PeriodProvider;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.CachingDateFormat;
@@ -41,7 +42,7 @@ import org.junit.runners.MethodSorters;
  * @author andyh
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class PeriodTest extends TestCase
 {
 

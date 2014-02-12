@@ -882,6 +882,7 @@
                                  <goals>
                                      <goal>test</goal>
                                  </goals>
+                                 <phase>process-test-classes</phase>
                                  <configuration>
                                      <groups>org.alfresco.test_category.BaseSpringTestsCategory</groups>
                                      <testFailureIgnore>true</testFailureIgnore>

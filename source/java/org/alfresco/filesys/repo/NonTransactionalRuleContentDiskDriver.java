@@ -106,9 +106,17 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         {
             logger.debug("getFileInformation:" + path);
         }
-        FileInfo info = diskInterface.getFileInformation(sess, tree, path);
-        
-        return info;
+        FileFilterMode.setClient(ClientHelper.getClient(sess));
+        try
+        {
+        	FileInfo info = diskInterface.getFileInformation(sess, tree, path);
+        	return info;
+        }
+        finally
+        {
+        	FileFilterMode.clearClient();
+        	
+        }
     }
     
     @Override
@@ -537,9 +545,16 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     public SearchContext startSearch(SrvSession sess, TreeConnection tree,
             String searchPath, int attrib) throws FileNotFoundException
     {
-        SearchContext context = diskInterface.startSearch(sess, tree, searchPath, attrib);
-
-        return context;
+    	  FileFilterMode.setClient(ClientHelper.getClient(sess));
+          try
+          {
+              SearchContext context = diskInterface.startSearch(sess, tree, searchPath, attrib);
+              return context;
+          }
+          finally
+          {
+        	  FileFilterMode.clearClient();
+          }
     }
 
     @Override

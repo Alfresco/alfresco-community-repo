@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1218,7 +1218,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         performAsyncRendition(testTargetFolder, callback, latch, results);
         
         assertNull(results.getAssoc());
-        assertEquals("Expected a RenditionServiceException", RenditionServiceException.class, results.getThrowable().getClass());
+        assertEquals("Expected a RenditionServiceException", RenditionCancelledException.class, results.getThrowable().getClass());
     }
 
     /**

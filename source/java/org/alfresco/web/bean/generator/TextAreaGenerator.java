@@ -21,6 +21,7 @@ package org.alfresco.web.bean.generator;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.ui.common.ComponentConstants;
 
@@ -76,6 +77,13 @@ public class TextAreaGenerator extends TextFieldGenerator
 
       component.getAttributes().put("rows", this.rows);
       component.getAttributes().put("cols", this.columns);
+      
+      // MNT-10171 Exception thrown if Share metadata is longer than 1024 characters
+      if (ContentModel.PROP_DESCRIPTION.getLocalName().equals(id))
+      {
+          // add 'onfocus' event for adding 'maxlength' attribute
+          component.getAttributes().put("onfocus", "addMaxLengthForDescriptionTextArea(this)");
+      }
       
       return component;
    }

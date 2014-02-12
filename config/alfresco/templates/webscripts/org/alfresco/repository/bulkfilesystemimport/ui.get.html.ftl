@@ -77,13 +77,7 @@
 
         <tr>
         <!-- TODO i18n for this string -->
-          <td><br/><label for="targetPath">Path:</label></td>
-          <td>
-            <div id="targetNodeRefAutoComplete">
-              <input id="targetPath" type="text" name="targetPath" size="128" />
-              <div id="targetPathAutoSuggestContainer"></div>
-            </div>
-          </td>
+          <td><label for="targetPath">Path:</label></td><td><input id="targetPath" type="text" name="targetPath" size="128" /></td>
         </tr>
 
         <tr>
@@ -120,18 +114,5 @@
       </table>
       <br/>
     </form>
-    <script type="text/javascript">
-    YUI().use("autocomplete", "autocomplete-highlighters", "datasource-get", function(Y)
-    {
-      Y.one('#targetPath').plug(Y.Plugin.AutoComplete,
-      {
-        source            : '${url.service}/ajax/suggest/spaces.json?query={query}',
-        maxResults        : 25,
-        resultHighlighter : 'phraseMatch',
-        resultListLocator : 'data',
-        resultTextLocator : 'path'
-      });
-    });
-    </script>    
   </body>
 </html>

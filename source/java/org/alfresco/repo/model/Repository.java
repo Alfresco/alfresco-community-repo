@@ -245,16 +245,24 @@ public class Repository implements ApplicationContextAware
      */
     public NodeRef getPerson()
     {
-        NodeRef person = null;
-        String currentUserName = AuthenticationUtil.getRunAsUser();
-        if (currentUserName != null)
+        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
         {
-            if (personService.personExists(currentUserName))
+            @Override
+            public NodeRef execute() throws Throwable
             {
-                person = personService.getPerson(currentUserName);
+                NodeRef person = null;
+                String currentUserName = AuthenticationUtil.getRunAsUser();
+                if (currentUserName != null)
+                {
+                    if (personService.personExists(currentUserName))
+                    {
+                        person = personService.getPerson(currentUserName);
+                    }
+                }
+                return person;
             }
-        }
-        return person;
+        };
+        return retryingTransactionHelper.doInTransaction(callback, true);
     }
     
     /**
@@ -264,16 +272,24 @@ public class Repository implements ApplicationContextAware
      */
     public NodeRef getFullyAuthenticatedPerson()
     {
-        NodeRef person = null;
-        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (currentUserName != null)
+        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
         {
-            if (personService.personExists(currentUserName))
+            @Override
+            public NodeRef execute() throws Throwable
             {
-                person = personService.getPerson(currentUserName);
+                NodeRef person = null;
+                String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
+                if (currentUserName != null)
+                {
+                    if (personService.personExists(currentUserName))
+                    {
+                        person = personService.getPerson(currentUserName);
+                    }
+                }
+                return person;
             }
-        }
-        return person;
+        };
+        return retryingTransactionHelper.doInTransaction(callback, true);
     }
 
     /**
@@ -282,17 +298,25 @@ public class Repository implements ApplicationContextAware
      * @param person  person
      * @return  user home of person
      */
-    public NodeRef getUserHome(NodeRef person)
+    public NodeRef getUserHome(final NodeRef person)
     {
-        NodeRef homeFolderRef = (NodeRef)nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
-        if (homeFolderRef != null && nodeService.exists(homeFolderRef))
+        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
         {
-            return homeFolderRef;
-        }
-        else
-        {
-            return null;
-        }
+            @Override
+            public NodeRef execute() throws Throwable
+            {
+                NodeRef homeFolderRef = (NodeRef)nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
+                if (homeFolderRef != null && nodeService.exists(homeFolderRef))
+                {
+                    return homeFolderRef;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        };
+        return retryingTransactionHelper.doInTransaction(callback, true);
     }
     
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -69,6 +69,9 @@ public class ExportDb
     
     /** Only top-level tables starting with namePrefix will be exported, set to empty string for all objects */
     private String namePrefix = "alf_";
+
+    /** Default schema name to use */
+    private String dbSchemaName;
 
     private final static Log log = LogFactory.getLog(ExportDb.class);
     
@@ -390,6 +393,11 @@ public class ExportDb
      */
     private String getSchemaName(final DatabaseMetaData dbmd) throws SQLException
     {
+        if (this.dbSchemaName != null)
+        {
+            return this.dbSchemaName;
+        }
+
         String schemaName = null;
         final ResultSet schemas = dbmd.getSchemas();
         while (schemas.next())
@@ -511,5 +519,15 @@ public class ExportDb
     public void setNamePrefix(String namePrefix)
     {
         this.namePrefix = namePrefix;
+    }
+
+    /**
+     * Set the default schema name
+     *
+     * @param dbSchemaName the default schema name
+     */
+    public void setDbSchemaName(String dbSchemaName)
+    {
+        this.dbSchemaName = dbSchemaName;
     }
 }

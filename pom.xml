@@ -819,6 +819,12 @@
             <version>1.4</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>gunit</artifactId>
+            <version>${dependency.antlr.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

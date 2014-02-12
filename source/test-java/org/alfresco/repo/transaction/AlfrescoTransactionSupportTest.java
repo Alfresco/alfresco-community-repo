@@ -246,6 +246,12 @@ public class AlfrescoTransactionSupportTest extends TestCase
             {
                 postCommitReadState[0] = AlfrescoTransactionSupport.getTransactionReadState();
             }
+
+            @Override
+            public void afterRollback()
+            {
+                postCommitReadState[0] = AlfrescoTransactionSupport.getTransactionReadState();
+            }
         };
 
         RetryingTransactionCallback<TxnReadState> getReadStateWork = new RetryingTransactionCallback<TxnReadState>()
@@ -270,6 +276,20 @@ public class AlfrescoTransactionSupportTest extends TestCase
         // check TXN_READ_WRITE
         checkTxnReadState = transactionService.getRetryingTransactionHelper().doInTransaction(getReadStateWork, false);
         assertEquals("Expected 'read-write transaction'", TxnReadState.TXN_READ_WRITE, checkTxnReadState);
+        assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, postCommitReadState[0]);
+
+        // Check TXN_NONE on rollback
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        AlfrescoTransactionSupport.bindListener(getReadStatePostCommit);
+        txn.rollback();
+        assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, postCommitReadState[0]);
+
+        // Check TXN_NONE on commit
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        AlfrescoTransactionSupport.bindListener(getReadStatePostCommit);
+        txn.commit();
         assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, postCommitReadState[0]);
     }
     

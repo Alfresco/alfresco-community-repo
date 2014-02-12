@@ -366,8 +366,7 @@ public class RetryingTransactionHelper
         }
 
         // First validate the requiresNew setting
-		boolean startingNew = requiresNew;
-        if (!startingNew)
+        if (!requiresNew)
         {
             TxnReadState readState = AlfrescoTransactionSupport.getTransactionReadState();
             switch (readState)
@@ -385,7 +384,7 @@ public class RetryingTransactionHelper
                     break;
                 case TXN_NONE:
                     // There is no current transaction so we need a new one.
-                    startingNew = true;
+                    requiresNew = true;
                     break;
                 default:
                     throw new RuntimeException("Unknown transaction state: " + readState);
@@ -395,7 +394,7 @@ public class RetryingTransactionHelper
         // If we are time limiting, set ourselves a time limit and maintain the count of concurrent transactions
         long startTime = 0;
 		Throwable stackTrace = null;
-        if (startingNew && maxExecutionMs > 0)
+        if (requiresNew && maxExecutionMs > 0)
         {
             startTime = System.currentTimeMillis();
             synchronized (this)
@@ -433,11 +432,10 @@ public class RetryingTransactionHelper
                 UserTransaction txn = null;
                 try
                 {
-                    if (startingNew)
+                    if (requiresNew)
                     {
-                        txn = requiresNew ?
-                                txnService.getNonPropagatingUserTransaction(readOnly, forceWritable) :
-                                txnService.getUserTransaction(readOnly, forceWritable);
+                        txn = txnService.getNonPropagatingUserTransaction(readOnly, forceWritable);
+
                         txn.begin();
                         // Wrap it to protect it
                         UserTransactionProtectionAdvise advise = new UserTransactionProtectionAdvise();
@@ -588,7 +586,7 @@ public class RetryingTransactionHelper
         }
         finally
         {
-            if (startingNew && maxExecutionMs > 0)
+            if (requiresNew && maxExecutionMs > 0)
             {
                 synchronized (this)
                 {

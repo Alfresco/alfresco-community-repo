@@ -61,7 +61,6 @@
             <artifactId>alfresco-web-framework-commons</artifactId>
             <version>${project.version}</version>
             <classifier>classes</classifier>
-            <scope>provided</scope> <!-- ALF-16947 -->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -170,13 +169,10 @@
             <artifactId>standard</artifactId>
             <version>1.1.0</version>
         </dependency>
-
-        <!-- Dependency on the web-framework-commons resources skinny war -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-test-browser</artifactId>
             <version>${dependency.opencmis.version}</version>
-            <scope>provided</scope> <!-- ALF-16947 -->
         </dependency>
 
         <!-- 'provided' dependencies, not packaged in war -->

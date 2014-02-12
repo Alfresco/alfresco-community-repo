@@ -20,6 +20,8 @@
          <list>
             <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
                 <property name="filter" value="\._.*" />
+                <!-- Show them in webdav because office 2011 want to see them-->
+                <property name="visibility" value="webdav" />				
             </bean>
             <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
                 <property name="filter" value="\..*" />

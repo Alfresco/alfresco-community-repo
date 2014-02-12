@@ -36,6 +36,7 @@ import org.alfresco.repo.solr.Transaction;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;

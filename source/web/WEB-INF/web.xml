@@ -100,7 +100,7 @@
       <param-value>false</param-value>
    </context-param>
    
-   <!-- Activiti context param placeholder -->
+   <context-param><param-name>productionMode</param-name><param-value>true</param-value><description>Vaadin production mode</description></context-param>
 
    <filter>
       <filter-name>CMIS security context cleaning filter</filter-name>
@@ -380,7 +380,7 @@
         <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
    </listener> 
    
-   <!-- Activiti listener placeholder -->
+   <listener><listener-class>org.springframework.web.context.request.RequestContextListener</listener-class></listener>
 
 
    <!-- Faces Servlet -->
@@ -631,7 +631,7 @@
       </init-param>
    </servlet>
    
-   <!-- Activiti servlet placeholder -->
+   <servlet><servlet-name>Vaadin Application Servlet</servlet-name><servlet-class>org.activiti.explorer.servlet.ExplorerApplicationServlet</servlet-class></servlet>
 	
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
@@ -831,7 +831,8 @@
    </servlet-mapping>
    CMISTCK -->
    
-   <!-- Activiti servlet mapping placeholder -->
+   <servlet-mapping><servlet-name>Vaadin Application Servlet</servlet-name><url-pattern>/activiti-admin/*</url-pattern></servlet-mapping>
+   <servlet-mapping><servlet-name>Vaadin Application Servlet</servlet-name><url-pattern>/VAADIN/*</url-pattern></servlet-mapping>
 
    <session-config>
       <session-timeout>60</session-timeout>

@@ -489,19 +489,17 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     public void purgeArchivedNode(final NodeRef archivedNodeRef)
     {
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        RetryingTransactionCallback<Object> deleteCallback = new RetryingTransactionCallback<Object>()
+        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
         {
-            public Object execute() throws Exception
+            public Void execute() throws Exception
             {
-                try
+                if (!nodeService.exists(archivedNodeRef))
                 {
-                    invokeBeforePurgeNode(archivedNodeRef);
-                    nodeService.deleteNode(archivedNodeRef);
+                    // Node has disappeared
+                    return null;
                 }
-                catch (InvalidNodeRefException e)
-                {
-                    // ignore
-                }
+                invokeBeforePurgeNode(archivedNodeRef);
+                nodeService.deleteNode(archivedNodeRef);
                 return null;
             }
         };

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,6 +20,7 @@ package org.alfresco.repo.model;
 
 import org.alfresco.repo.model.filefolder.FileFolderDuplicateChildTest;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImplTest;
+import org.alfresco.repo.model.filefolder.FileFolderServicePropagationTest;
 import org.alfresco.repo.model.filefolder.HiddenAspectTest;
 import org.alfresco.repo.model.ml.tools.ContentFilterLanguagesMapTest;
 import org.alfresco.repo.model.ml.tools.EditionServiceImplTest;
@@ -52,6 +53,7 @@ import org.junit.runners.Suite.SuiteClasses;
     //  interceptors which would otherwise confuse things
     FileFolderServiceImplTest.class,
     FileFolderDuplicateChildTest.class,
+    FileFolderServicePropagationTest.class
 })
 public class ModelTestSuite
 {

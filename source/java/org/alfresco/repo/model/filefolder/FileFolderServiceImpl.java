@@ -41,6 +41,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.copy.AbstractBaseCopyService;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
@@ -132,8 +133,11 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     private SearchService searchService;
     private ContentService contentService;
     private MimetypeService mimetypeService;
+    private BehaviourFilter behaviourFilter;
     private NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry;
-    
+
+    private boolean preserveModificationData = true;
+
     // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
     private List<String> systemPaths;
     
@@ -206,8 +210,23 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     {
         this.defaultListMaxResults = defaultListMaxResults;
     }
-    
-    
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
+    public void setPreserveModificationData(boolean preserveModificationData)
+    {
+        this.preserveModificationData = preserveModificationData;
+    }
+
+    public boolean isPreserveModificationData()
+    {
+        return preserveModificationData;
+    }
+
+
     public void init()
     {
     }
@@ -1044,7 +1063,23 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
                     if (isPrimaryParent)
                     {
                         // move the node so that the association moves as well
-                        newAssocRef = nodeService.moveNode(sourceNodeRef, targetParentRef, assocTypeQname, qname);
+                        boolean auditableBehaviorWasDisabled = preserveModificationData && behaviourFilter.isEnabled(ContentModel.ASPECT_AUDITABLE);
+                        if (auditableBehaviorWasDisabled)
+                        {
+                            behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                        }
+
+                        try
+                        {
+                            newAssocRef = nodeService.moveNode(sourceNodeRef, targetParentRef, assocTypeQname, qname);
+                        }
+                        finally
+                        {
+                            if (auditableBehaviorWasDisabled)
+                            {
+                                behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                            }
+                        }
                     }
                     else
                     {

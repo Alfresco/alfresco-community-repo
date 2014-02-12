@@ -346,9 +346,7 @@
    <bean id="webscript.org.alfresco.cmiskind" class="org.alfresco.repo.cmis.rest.CMISWebScript" parent="webscript" scope="prototype" />
 
    <!-- CMIS Test Runner Web Script -->
-   <!-- This is a test and should not be in the bundled with the webapp. Redefined in the test context 
    <bean id="webscript.org.alfresco.cmis.test.post" class="org.alfresco.repo.cmis.rest.test.CMISTestRunnerWebScript" parent="webscript" />
-   -->
 
    <!--  Content Retrieval -->
    <bean id="webscript.org.alfresco.cmis.content.get" class="org.alfresco.repo.web.scripts.content.ContentGet" parent="webscript">

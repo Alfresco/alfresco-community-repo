@@ -168,8 +168,8 @@ public class DiscussionServiceImplTest
        assertNotNull(siteTopic.getNodeRef());
        assertNotNull(siteTopic.getSystemName());
        
-       NodeRef container = NODE_SERVICE.getPrimaryParent(siteTopic.getNodeRef()).getParentRef();
-       NodeRef site = NODE_SERVICE.getPrimaryParent(container).getParentRef();
+       NodeRef container = PUBLIC_NODE_SERVICE.getPrimaryParent(siteTopic.getNodeRef()).getParentRef();
+       NodeRef site = PUBLIC_NODE_SERVICE.getPrimaryParent(container).getParentRef();
        assertEquals(DISCUSSION_SITE.getNodeRef(), site);
        
        
@@ -192,7 +192,7 @@ public class DiscussionServiceImplTest
        assertNotNull(nodeTopic.getSystemName());
        
        // Check it went in the right place
-       assertEquals(FORUM_NODE, NODE_SERVICE.getPrimaryParent(nodeTopic.getNodeRef()).getParentRef());
+       assertEquals(FORUM_NODE, PUBLIC_NODE_SERVICE.getPrimaryParent(nodeTopic.getNodeRef()).getParentRef());
        
        // Check the details
        assertEquals("Node Title", nodeTopic.getTitle());
@@ -1686,7 +1686,7 @@ public class DiscussionServiceImplTest
             String reply1Contents = "Reply Contents";
             reply = DISCUSSION_SERVICE.createReply(post, reply1Contents);
             
-            List<AssociationRef> assocs = NODE_SERVICE.getTargetAssocs(reply.getNodeRef(), ContentModel.ASSOC_REFERENCES);
+            List<AssociationRef> assocs = PUBLIC_NODE_SERVICE.getTargetAssocs(reply.getNodeRef(), ContentModel.ASSOC_REFERENCES);
             
             // check that reply has an association with original post
             assertNotNull(assocs);
@@ -1697,10 +1697,10 @@ public class DiscussionServiceImplTest
             DISCUSSION_SERVICE.deletePost(post);
             
             // check that post was deleted
-            assertFalse(NODE_SERVICE.exists(post.getNodeRef()));
+            assertFalse(PUBLIC_NODE_SERVICE.exists(post.getNodeRef()));
             
             // check that associations to the original post was also deleted
-            assocs = NODE_SERVICE.getTargetAssocs(reply.getNodeRef(), ContentModel.ASSOC_REFERENCES);
+            assocs = PUBLIC_NODE_SERVICE.getTargetAssocs(reply.getNodeRef(), ContentModel.ASSOC_REFERENCES);
             assertNotNull(assocs);
             assertEquals(0, assocs.size());
         }

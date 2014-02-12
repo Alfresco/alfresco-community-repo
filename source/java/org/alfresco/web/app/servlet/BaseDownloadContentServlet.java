@@ -388,8 +388,21 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       // this is better than the default response of the browser trying to display the contents
 
       // IE requires that "Content-Disposition" header in case of "attachment" type should include
-      // "filename" part. Should be harmless in other browsers.
-      res.setHeader(HEADER_CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(filename)+ "\"");
+      // "filename" part. See MNT-9900
+      String userAgent = req.getHeader(HEADER_USER_AGENT);
+      if (userAgent != null && userAgent.toLowerCase().contains("msie"))
+      {
+         res.setHeader(HEADER_CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(filename) + "\"");
+      }
+      else if (userAgent != null && (userAgent.toLowerCase().contains("firefox") || userAgent.toLowerCase().contains("safari")))
+      {
+         res.setHeader(HEADER_CONTENT_DISPOSITION, "attachment; filename=\"" + URLDecoder.decode(filename) + "\"");
+      }
+      else
+      {
+         res.setHeader(HEADER_CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+      }
+
    }
       
    /**

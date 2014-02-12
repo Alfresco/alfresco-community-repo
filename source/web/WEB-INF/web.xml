@@ -240,6 +240,8 @@
       <url-pattern>/d/*</url-pattern>
    </filter-mapping>
  
+   <!-- Activiti Global Authentication Filter mapping placeholder -->
+
     <!-- The Cookie WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->  
    <filter-mapping>
       <filter-name>WebScript Cookie Authentication Filter</filter-name>

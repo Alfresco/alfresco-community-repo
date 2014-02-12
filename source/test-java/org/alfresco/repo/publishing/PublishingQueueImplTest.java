@@ -58,7 +58,7 @@ import org.junit.experimental.categories.Category;
  * @author Nick Smith
  * @since 4.0
  */
-@Category(BaseSpringTestsCategory.class)
+@Category(OwnJVMTestsCategory.class)
 public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
 {
     private static final String channelId = "test://channel/node";

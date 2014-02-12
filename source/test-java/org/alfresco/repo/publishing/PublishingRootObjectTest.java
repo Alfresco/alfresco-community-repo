@@ -33,7 +33,7 @@ import org.junit.experimental.categories.Category;
  * @author Nick Smith
  * @since 4.0
  */
-@Category(BaseSpringTestsCategory.class)
+@Category(OwnJVMTestsCategory.class)
 public class PublishingRootObjectTest extends AbstractPublishingIntegrationTest
 {
     @Resource(name="publishingRootObject")

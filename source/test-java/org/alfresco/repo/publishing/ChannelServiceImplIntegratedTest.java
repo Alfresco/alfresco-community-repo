@@ -50,7 +50,7 @@ import org.junit.experimental.categories.Category;
  * @author Nick Smith
  * @since 4.0
  */
-@Category(BaseSpringTestsCategory.class)
+@Category(OwnJVMTestsCategory.class)
 public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrationTest
 {
     private static final String channelName = GUID.generate();

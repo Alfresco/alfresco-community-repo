@@ -140,7 +140,7 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
                 .replaceAll("\\>", "\\\\>")
                 .replaceAll("\\/", "\\\\/")
                 .replaceAll("\\|", "\\\\|");
-        return Pattern.compile(searchValue, Pattern.CASE_INSENSITIVE);
+        return Pattern.compile(searchValue, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     }
     
     private class AuthComparator implements Comparator<AuthorityInfo>

@@ -679,10 +679,10 @@ public class FTPServerTest extends TestCase
             }
                 
             boolean login = ftpOne.login(USER_THREE, PASSWORD_THREE);
-            assertTrue("user one login not successful", login);
+            assertTrue("user three login not successful", login);
                         
             boolean success = ftpOne.changeWorkingDirectory("Alfresco");
-            assertTrue("user one unable to cd to Alfreco", success);
+            assertTrue("user three unable to cd to Alfreco", success);
             success = ftpOne.changeWorkingDirectory("User*Homes");
             assertTrue("user one unable to cd to User*Homes", success);
             success = ftpOne.changeWorkingDirectory(USER_THREE);

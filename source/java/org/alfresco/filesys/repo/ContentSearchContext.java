@@ -287,13 +287,7 @@ public class ContentSearchContext extends SearchContext
         	StringBuilder pathStr = new StringBuilder( m_relPath);
         	pathStr.append ( info.getFileName());
         	
-            // Set the file id
-        	  
-            long id = DefaultTypeConverter.INSTANCE.convert(Long.class, cifsHelper.getNodeService().getProperty(nextNodeRef, ContentModel.PROP_NODE_DBID));
-            info.setFileId((int) (id & 0xFFFFFFFFL));
-
         	// Check if this is a link node
-        	
         	if ( nextInfo.isLinkNode())
         	{
         		// Set a dummy file size for the link data that will be generated if/when the file is opened

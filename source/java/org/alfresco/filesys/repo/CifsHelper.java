@@ -18,6 +18,7 @@
 package org.alfresco.filesys.repo;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,6 +31,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.repo.CommandExecutorImpl.PropagatingException;
 import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.FileExistsException;
 import org.alfresco.jlan.server.filesys.FileName;
@@ -38,6 +40,8 @@ import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -79,6 +83,7 @@ public class CifsHelper
     private PermissionService permissionService;
     private LockService lockService;
     private HiddenAspect hiddenAspect;
+    private RetryingTransactionHelper retryingTransactionHelper;
 
     private Set<QName> excludedTypes = new HashSet<QName>();
     
@@ -99,6 +104,7 @@ public class CifsHelper
         PropertyCheck.mandatory(this, "permissionService",permissionService);
         PropertyCheck.mandatory(this, "lockService",lockService);
         PropertyCheck.mandatory(this, "mimetypeService",mimetypeService);
+        PropertyCheck.mandatory(this, "transactionHelper",getRetryingTransactionHelper());
     }
     
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -184,6 +190,89 @@ public class CifsHelper
             return false;   
         }
     }
+    
+    /**
+     * Extract a single node's file info, where the node is reference by
+     * a path relative to an ancestor node.
+     * 
+     * @param pathRootNodeRef
+     * @param path the path
+     * @return Returns the existing node reference
+     * @throws FileNotFoundException
+     */
+    public ContentFileInfo getFileInformation(final NodeRef pathRootNodeRef, final String path, final boolean readOnly, final boolean lockedFilesAsOffline) throws FileNotFoundException
+    {
+               
+        RetryingTransactionCallback<ContentFileInfo> cb =  new RetryingTransactionCallback<ContentFileInfo>()
+        {
+            /**
+             * Perform a set of commands as a unit of transactional work.
+             *
+             * @return              Return the result of the unit of work
+             * @throws Throwable    This can be anything and will guarantee either a retry or a rollback
+             */
+            public ContentFileInfo execute() throws IOException
+            {
+                try
+                {
+                	return getFileInformationImpl(pathRootNodeRef, path, readOnly, lockedFilesAsOffline);
+                }
+                catch (FileNotFoundException e)
+                {
+                    // Ensure original checked IOExceptions get propagated
+                    throw new PropagatingException(e);
+                }
+            }
+        };
+        
+        try
+        {
+            return getRetryingTransactionHelper().doInTransaction(cb, true);
+        }
+        catch(PropagatingException pe)
+        {          
+            // Unwrap checked exceptions
+            throw (FileNotFoundException) pe.getCause();
+        }
+    }
+
+    
+    public ContentFileInfo getFileInformation(final NodeRef nodeRef, final boolean readOnly, final boolean lockedFilesAsOffline) throws FileNotFoundException
+    {
+        RetryingTransactionCallback<ContentFileInfo> cb =  new RetryingTransactionCallback<ContentFileInfo>()
+        {
+            /**
+             * Perform a set of commands as a unit of transactional work.
+             *
+             * @return              Return the result of the unit of work
+             * @throws Throwable    This can be anything and will guarantee either a retry or a rollback
+             */
+            public ContentFileInfo execute() throws IOException
+            {
+                try
+                {
+                	return getFileInformationImpl(nodeRef, readOnly, lockedFilesAsOffline);
+                }
+                catch (FileNotFoundException e)
+                {
+                    // Ensure original checked IOExceptions get propagated
+                    throw new PropagatingException(e);
+                }
+            }
+        };
+        
+        try
+        {
+            return getRetryingTransactionHelper().doInTransaction(cb, true);
+        }
+        catch(PropagatingException pe)
+        {          
+            // Unwrap checked exceptions
+            throw (FileNotFoundException) pe.getCause();
+        }
+    	
+    }
+
 
     /**
      * Extract a single node's file info, where the node is reference by
@@ -194,13 +283,14 @@ public class CifsHelper
      * @return Returns the existing node reference
      * @throws FileNotFoundException
      */
-    public ContentFileInfo getFileInformation(NodeRef pathRootNodeRef, String path, boolean readOnly, boolean lockedFilesAsOffline) throws FileNotFoundException
+    public ContentFileInfo getFileInformationImpl(NodeRef pathRootNodeRef, String path, boolean readOnly, boolean lockedFilesAsOffline) throws FileNotFoundException
     {
         // get the node being referenced
         NodeRef nodeRef = getNodeRef(pathRootNodeRef, path);
 
-        return getFileInformation(nodeRef, readOnly, lockedFilesAsOffline);
+        return getFileInformationImpl(nodeRef, readOnly, lockedFilesAsOffline);
     }
+    
 
     /**
      * Helper method to extract file info from a specific node.
@@ -215,7 +305,7 @@ public class CifsHelper
      * @return Returns the file information pertinent to the node
      * @throws FileNotFoundException if the path refers to a non-existent file
      */
-    public ContentFileInfo getFileInformation(NodeRef nodeRef, boolean readOnly, boolean lockedFilesAsOffline) throws FileNotFoundException
+    private ContentFileInfo getFileInformationImpl(NodeRef nodeRef, boolean readOnly, boolean lockedFilesAsOffline) throws FileNotFoundException
     {
         // get the file info
         org.alfresco.service.cmr.model.FileInfo fileFolderInfo = fileFolderService.getFileInfo(nodeRef);
@@ -735,11 +825,36 @@ public class CifsHelper
     /**
      * Return the file name for a node
      * 
+     * @param nodeRef NodeRef of node to get the file name
+     * @return String or null if the nodeRef is not valid
+     */
+    public String getFileName(final NodeRef nodeRef)
+    {
+        RetryingTransactionCallback<String> cb =  new RetryingTransactionCallback<String>()
+        {
+            /**
+             * Perform a set of commands as a unit of transactional work.
+             *
+             * @return              Return the result of the unit of work
+             * @throws Throwable    This can be anything and will guarantee either a retry or a rollback
+             */
+            public String execute() throws IOException
+            {
+                return getFileName(nodeRef);
+            }
+        };
+        
+        return getRetryingTransactionHelper().doInTransaction(cb, true);
+    	
+    }
+    /**
+     * Return the file name for a node
+     * 
      * @param node NodeRef
      * @return String
      * @throws FileNotFoundException
      */
-    public String getFileName(NodeRef node)
+    public String getFileNameImpl(NodeRef node)
     {
         String fname = null;
         
@@ -781,5 +896,13 @@ public class CifsHelper
     {
         return lockService;
     }
+
+	public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper) {
+		this.retryingTransactionHelper = retryingTransactionHelper;
+	}
+
+	public RetryingTransactionHelper getRetryingTransactionHelper() {
+		return retryingTransactionHelper;
+	}
 
 }

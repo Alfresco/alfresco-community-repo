@@ -842,18 +842,28 @@ public class ContentDiskDriverTest extends TestCase
          * Step 5: Rename to another directory
          */
         String DIR_NEW_PATH = TEST_ROOT_DOS_PATH + "\\NewDir";
-        String NEW_PATH = DIR_NEW_PATH + "\\File2";
+        final String NEW_PATH = DIR_NEW_PATH + "\\File2";
         FileOpenParams params5 = new FileOpenParams(DIR_NEW_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
         driver.createDirectory(testSession, testConnection, params5);
         
-        NodeRef newDirNodeRef = getNodeForPath(testConnection, DIR_NEW_PATH);
+        final NodeRef newDirNodeRef = getNodeForPath(testConnection, DIR_NEW_PATH);
         
         driver.renameFile(testSession, testConnection, FILE_PATH2, NEW_PATH);
         
-        NodeRef file5NodeRef = getNodeForPath(testConnection, NEW_PATH);
-        ChildAssociationRef parentRef5 = nodeService.getPrimaryParent(file5NodeRef);
-        
-        assertTrue(parentRef5.getParentRef().equals(newDirNodeRef));
+        RetryingTransactionCallback<Void> validateStep5CB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                NodeRef file5NodeRef = getNodeForPath(testConnection, NEW_PATH);
+                ChildAssociationRef parentRef5 = nodeService.getPrimaryParent(file5NodeRef);
+                
+                assertTrue(parentRef5.getParentRef().equals(newDirNodeRef));
+          
+                return null;
+            }
+        };
+        tran.doInTransaction(validateStep5CB, false, true);
         
 //        /** 
 //         * Step 5: rename to self - check no damage.

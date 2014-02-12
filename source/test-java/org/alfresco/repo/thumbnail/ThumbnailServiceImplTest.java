@@ -60,7 +60,7 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.test_category.BaseSpringTestsCategory;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.TempFileProvider;
@@ -72,7 +72,7 @@ import org.junit.experimental.categories.Category;
  * @author Roy Wetherall
  * @author Neil McErlean
  */
-@Category(BaseSpringTestsCategory.class)
+@Category(OwnJVMTestsCategory.class)
 public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 {
     private NodeService secureNodeService;

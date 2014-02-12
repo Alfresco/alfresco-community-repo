@@ -28,11 +28,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseApplicationContextHelper;
-import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
@@ -53,7 +51,6 @@ import junit.framework.TestCase;
  * 
  * @author Nick Burch
  */
-@Category(OwnJVMTestsCategory.class)
 public class RepositoryStartStopTest extends TestCase
 {
     private ServiceRegistry serviceRegistry;

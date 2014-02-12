@@ -23,9 +23,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.caching.CachingContentStore;
+import org.alfresco.repo.content.caching.ContentCacheImpl;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -37,21 +40,31 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class SlowContentStoreTest
 {
-    private ClassPathXmlApplicationContext ctx;
+    private static ClassPathXmlApplicationContext ctx;
     private CachingContentStore cachingStore;
     private static final Log logger = LogFactory.getLog(SlowContentStoreTest.class);
-    
-    
-    public SlowContentStoreTest()
-    {
+
+
+    @BeforeClass
+    public static void setUpClass()
+    {        
         String conf = "classpath:cachingstore/test-context.xml";
         String slowconf = "classpath:cachingstore/test-slow-context.xml";
         ctx = (ClassPathXmlApplicationContext) ApplicationContextHelper.getApplicationContext(new String[] { conf, slowconf });    
-        cachingStore = (CachingContentStore) ctx.getBean("cachingContentStore");
-        cachingStore.setCacheOnInbound(false);
     }
     
-    
+    @Before
+    public void setUp()
+    {
+        cachingStore = (CachingContentStore) ctx.getBean("cachingContentStore");
+        cachingStore.setCacheOnInbound(false);
+        
+        // Clear the cache before each test case.
+        ContentCacheImpl cache = (ContentCacheImpl) ctx.getBean("contentCache");
+        cache.removeAll();
+    }
+
+
     @Test
     public void readsAreFasterFromCache()
     {

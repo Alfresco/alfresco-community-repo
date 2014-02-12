@@ -83,6 +83,7 @@ public class RenameShuffleDetectionTest
             { "/some/parent/ab0c1d2ef3456789", true},
             { "aaaaaaaa", true },
             { "abcdef01", true },
+            { "1234567890.txt.sb-764f0c5c-JUoEKy", true }, // MNT-10373 test for TextEdit shuffle
             // Photoshop (MNT-8971)
             { "/psC1DA.tmp", true },
             { "/path/psA1B5.tmp", true }

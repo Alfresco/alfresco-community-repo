@@ -300,7 +300,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
                                 }
                                 return null;
                             }
-                        }, false, true);
+                        }, false, false);
             }
             throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
         }

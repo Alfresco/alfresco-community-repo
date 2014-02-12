@@ -408,7 +408,7 @@ public abstract class WebDAVMethod
         catch (AccessDeniedException e)
         {
             // Return a forbidden status
-            throw new WebDAVServerException(getStatusForAccessDeniedException(), e);
+            throw new WebDAVServerException(getStatusForAccessDeniedException());
         }
         catch (Throwable e)
         {

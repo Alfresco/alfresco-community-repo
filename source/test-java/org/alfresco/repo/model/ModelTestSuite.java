@@ -24,6 +24,7 @@ import org.alfresco.repo.model.filefolder.HiddenAspectTest;
 import org.alfresco.repo.model.ml.tools.ContentFilterLanguagesMapTest;
 import org.alfresco.repo.model.ml.tools.EditionServiceImplTest;
 import org.alfresco.repo.model.ml.tools.EmptyTranslationAspectTest;
+import org.alfresco.repo.model.ml.tools.LanguagesTest;
 import org.alfresco.repo.model.ml.tools.MLContainerTypeTest;
 import org.alfresco.repo.model.ml.tools.MultilingualContentServiceImplTest;
 import org.alfresco.repo.model.ml.tools.MultilingualDocumentAspectTest;
@@ -42,6 +43,7 @@ import org.junit.runners.Suite.SuiteClasses;
     MultilingualContentServiceImplTest.class,
     MultilingualDocumentAspectTest.class,
     EditionServiceImplTest.class,
+    LanguagesTest.class,
     
 	HiddenAspectTest.class,
 	

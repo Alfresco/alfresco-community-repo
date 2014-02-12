@@ -893,8 +893,9 @@
                                  <goals>
                                      <goal>test</goal>
                                  </goals>
+                                 <phase>process-test-classes</phase>
                                  <configuration>
-                                     <reuseForks>false</reuseForks>
+                                     <!-- <reuseForks>false</reuseForks> -->
                                      <groups>org.alfresco.test_category.OwnJVMTestsCategory</groups>
                                      <testFailureIgnore>true</testFailureIgnore>
                                  </configuration>

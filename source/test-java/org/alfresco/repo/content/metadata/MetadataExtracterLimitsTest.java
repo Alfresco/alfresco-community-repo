@@ -172,7 +172,7 @@ public class MetadataExtracterLimitsTest
 
         assertTrue("Metadata extraction took (" + extractionTime + "ms) " +
                 "but should have been interrupted at " + interruptMs + "ms",
-                extractionTime < (interruptMs + 50)); // bit of wiggle room for logging, cleanup, etc.
+                extractionTime < (interruptMs + 500)); // bit of wiggle room for logging, cleanup, etc.
     }
     
     /**

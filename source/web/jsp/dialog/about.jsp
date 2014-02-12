@@ -186,11 +186,27 @@
                            </tr>
                            <tr>
                               <td width="50%" align="right">
-                                 Supported language packs:
+                                 Language and translation packs:
                               </td>
                               <td>&nbsp;&#8226;&nbsp;</td>
                               <td width="50%">
-                                 French, German, Italian, (European) Spanish and Japanese.
+                                 Camille B&eacute;gnis,
+                                 Andrejus Chaliapinas,
+                                 Laurent Genier,
+                                 Antti Jokipii,
+                                 Henning Kristensen,
+                                 Betty Mai,
+                                 Fabian Mandelbaum,
+                                 Theodoros Papageorgiou,
+                                 Helio Silvio Piccinatto,
+                                 Gian Luca Farina Perseu,
+                                 Alex Revesz,
+                                 Christian Roy,
+                                 Philippe Seillier,
+                                 Frank Shipley,
+                                 Michiel Steltman,
+                                 Gert Thiel,
+                                 cnalfresco
                               </td>
                            </tr>
                         </table>

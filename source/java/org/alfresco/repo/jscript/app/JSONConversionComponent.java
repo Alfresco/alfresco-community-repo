@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -92,6 +93,7 @@ public class JSONConversionComponent
     protected LockService lockService;    
     protected ContentService contentService;    
     protected PermissionService permissionService;
+    protected MimetypeService mimetypeService;
     
     
     /**
@@ -156,6 +158,14 @@ public class JSONConversionComponent
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+
+    /**
+     * @param mimetypeService    mimetype service
+     */
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
     }
     
     /**
@@ -251,6 +261,13 @@ public class JSONConversionComponent
                 
                 rootJSONObject.put("contentURL", contentURL);
                 rootJSONObject.put("mimetype", cdata.getMimetype());
+                Map<String, String> mimetypeDescriptions;
+                mimetypeDescriptions = mimetypeService.getDisplaysByMimetype();
+
+                if (mimetypeDescriptions.containsKey(cdata.getMimetype()))
+                {
+                    rootJSONObject.put("mimetypeDisplayName", mimetypeDescriptions.get(cdata.getMimetype()));
+                }
                 rootJSONObject.put("encoding", cdata.getEncoding());
                 rootJSONObject.put("size", cdata.getSize());
             }

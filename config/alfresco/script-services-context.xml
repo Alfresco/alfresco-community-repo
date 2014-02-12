@@ -258,6 +258,7 @@
     </bean>
 
     <bean id="jsonConversionComponent" class="org.alfresco.repo.jscript.app.JSONConversionComponent" parent="baseJsonConversionComponent">
+        <property name="mimetypeService" ref="MimetypeService" />
     </bean>
     
     <bean id="baseDecorator" abstract="true" init-method="init">

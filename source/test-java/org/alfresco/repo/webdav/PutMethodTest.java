@@ -307,7 +307,7 @@ public class PutMethodTest
         catch (WebDAVServerException wse)
         {
             // The execution failed and it is expected
-            assertTrue(wse.getHttpStatusCode() == HttpServletResponse.SC_BAD_REQUEST);
+            assertTrue(wse.getHttpStatusCode() == HttpServletResponse.SC_CONFLICT);
         }
         catch (Exception e)
         {

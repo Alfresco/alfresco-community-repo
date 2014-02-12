@@ -308,6 +308,7 @@
                     <forkMode>always</forkMode>
                     <includes combine.self="override">
                         <include>**/org/alfresco/RemoteApi*TestSuite.java</include>
+                        <include>**/org/alfresco/repo/webdav/PutMethodTest.java</include>
                     </includes>
                 </configuration>
             </plugin>

@@ -183,7 +183,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
 
 
     @Override
-    public QuickShareDTO shareContent(NodeRef nodeRef)
+    public QuickShareDTO shareContent(final NodeRef nodeRef)
     {
         checkEnabled();
         
@@ -203,11 +203,19 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
             UUID uuid = UUIDGenerator.getInstance().generateRandomBasedUUID();
             sharedId = Base64.encodeBase64URLSafeString(uuid.toByteArray()); // => 22 chars (eg. q3bEKPeDQvmJYgt4hJxOjw)
             
-            Map<QName,Serializable> props = new HashMap<QName,Serializable>(2);
+            final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
             props.put(QuickShareModel.PROP_QSHARE_SHAREDID, sharedId);
             props.put(QuickShareModel.PROP_QSHARE_SHAREDBY, AuthenticationUtil.getRunAsUser());
             
-            nodeService.addAspect(nodeRef, QuickShareModel.ASPECT_QSHARE, props);
+            // consumer/contributor should be able to add "shared" aspect (MNT-10366)
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                public Void doWork()
+                {
+                    nodeService.addAspect(nodeRef, QuickShareModel.ASPECT_QSHARE, props);
+                    return null;
+                }
+            });
             
             final NodeRef tenantNodeRef = tenantService.getName(nodeRef);
             

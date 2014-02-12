@@ -150,6 +150,11 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable
         {
             auditableProperties.lock();
         }
+        // Help to avoid NPEs e.g. MNT-10486: NPE in NodeEntity during post-commit write through to shared cache
+        if (id == null || version == null)
+        {
+            throw new IllegalStateException("The NodeEntity has not be filled: " + this);
+        }
     }
     
     private synchronized final void checkLock()

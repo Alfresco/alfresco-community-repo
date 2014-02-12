@@ -1058,6 +1058,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 }
                 Long nodeId = dbNode.getId();
                 invalidateNodeCaches(nodeId);
+                dbNode.lock();                            // Prevent unexpected edits of values going into the cache
                 nodesCache.setValue(nodeId, dbNode);
                 return dbNode.getNodePair();
             }
@@ -1159,6 +1160,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     logger.debug("Repairing stale cache entry for node: " + nodeId);
                 }
                 invalidateNodeCaches(nodeId);
+                dbNode.lock();                              // Prevent unexpected edits of values going into the cache
                 nodesCache.setValue(nodeId, dbNode);
                 return dbNode.getNodePair();
             }
@@ -4632,6 +4634,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             Long nodeId = node.getId();
             NodeVersionKey nodeVersionKey = node.getNodeVersionKey();
+            node.lock();                            // Prevent unexpected edits of values going into the cache
             nodesCache.setValue(nodeId, node);
             if (propertiesCache.getValue(nodeVersionKey) == null)
             {

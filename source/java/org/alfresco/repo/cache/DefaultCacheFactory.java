@@ -45,14 +45,8 @@ public class DefaultCacheFactory<K extends Serializable, V> extends AbstractCach
     
     private SimpleCache<K, V> createLocalCache(String cacheName)
     {
-        DefaultSimpleCache<K, V> cache = new DefaultSimpleCache<K, V>();
-        cache.setCacheName(cacheName);
         int maxItems = maxItems(cacheName);
-        // maxItems of zero has no effect, DefaultSimpleCache will use its default capacity.
-        if (maxItems > 0)
-        {
-            cache.setMaxItems(maxItems);
-        }
+        DefaultSimpleCache<K, V> cache = new DefaultSimpleCache<K, V>(maxItems, cacheName);
         if (log.isDebugEnabled())
         {
             log.debug("Creating cache: " + cache);

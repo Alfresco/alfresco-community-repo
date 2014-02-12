@@ -41,7 +41,7 @@ public class DefaultSimpleCacheTest extends SimpleCacheTestBase<DefaultSimpleCac
     public void boundedSizeCache() throws Exception
     {
         // We'll only keep the LAST 3 items
-        cache.setMaxItems(3);
+        cache = new DefaultSimpleCache<Integer, String>(3, getClass().getName());
         
         cache.put(1, "1");
         cache.put(2, "2");

@@ -24,11 +24,11 @@ import java.util.Collection;
 
 import org.springframework.beans.factory.BeanNameAware;
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.googlecode.concurrentlinkedhashmap.Weighers;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
- * {@link SimpleCache} implementation backed by a {@link ConcurrentLinkedHashMap}.
+ * {@link SimpleCache} implementation backed by a Google {@link Cache} implementation.
  * 
  * @author Matt Ward
  */
@@ -36,8 +36,9 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     implements SimpleCache<K, V>, BeanNameAware
 {
     private static final int DEFAULT_CAPACITY = 200000;
-    private ConcurrentLinkedHashMap<K, AbstractMap.SimpleImmutableEntry<K, V>> map;
+    private Cache<K, AbstractMap.SimpleImmutableEntry<K, V>> map;
     private String cacheName;
+    private final int maxItems;
     
     /**
      * Construct a cache using the specified capacity and name.
@@ -50,14 +51,17 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
         {
             throw new IllegalArgumentException("maxItems must be a positive integer, but was " + maxItems);
         }
-        
+        else if (maxItems == 0)
+        {
+            maxItems = DEFAULT_CAPACITY;
+        }
+        this.maxItems = maxItems;
         setBeanName(cacheName);
         
         // The map will have a bounded size determined by the maxItems member variable.
-        map = new ConcurrentLinkedHashMap.Builder<K, AbstractMap.SimpleImmutableEntry<K, V>>()
-                    .maximumWeightedCapacity(maxItems)
+        map = CacheBuilder.newBuilder()
+                    .maximumSize(maxItems)
                     .concurrencyLevel(32)
-                    .weigher(Weighers.singleton())
                     .build();
     }
     
@@ -73,19 +77,19 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     @Override
     public boolean contains(K key)
     {
-        return map.containsKey(key);
+        return map.asMap().containsKey(key);
     }
 
     @Override
     public Collection<K> getKeys()
     {
-        return map.keySet();
+        return map.asMap().keySet();
     }
 
     @Override
     public V get(K key)
     {
-        AbstractMap.SimpleImmutableEntry<K, V> kvp = map.get(key);
+        AbstractMap.SimpleImmutableEntry<K, V> kvp = map.getIfPresent(key);
         if (kvp == null)
         {
             return null;
@@ -107,36 +111,26 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     public boolean putAndCheckUpdate(K key, V value)
     {
         AbstractMap.SimpleImmutableEntry<K, V> kvp = new AbstractMap.SimpleImmutableEntry<K, V>(key, value);
-        AbstractMap.SimpleImmutableEntry<K, V> priorKVP = map.put(key, kvp);
+        AbstractMap.SimpleImmutableEntry<K, V> priorKVP = map.asMap().put(key, kvp);
         return priorKVP != null && (! priorKVP.equals(kvp));
     }
     
     @Override
     public void remove(K key)
     {
-        map.remove(key);
+        map.invalidate(key);
     }
 
     @Override
     public void clear()
     {
-        map.clear();
+        map.invalidateAll();
     }
 
     @Override
     public String toString()
     {
-        return "DefaultSimpleCache[maxItems=" + map.capacity() + ", cacheName=" + cacheName + "]";
-    }
-
-    /**
-     * Sets the maximum number of items that the cache will hold.
-     * 
-     * @param maxItems
-     */
-    public void setMaxItems(int maxItems)
-    {
-        map.setCapacity(maxItems);
+        return "DefaultSimpleCache[maxItems=" + maxItems + ", cacheName=" + cacheName + "]";
     }
     
     /**
@@ -146,7 +140,7 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
      */
     public int getMaxItems()
     {
-        return map.capacity();
+        return maxItems;
     }
     
     

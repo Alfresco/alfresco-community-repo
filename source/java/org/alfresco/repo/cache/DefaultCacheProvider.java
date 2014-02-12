@@ -47,8 +47,7 @@ public class DefaultCacheProvider implements CacheProvider
         {
             log.debug("building cache for regionName=" + regionName + ", with properties: " + properties);
         }
-        DefaultSimpleCache<Serializable, Object> cache = new DefaultSimpleCache<Serializable, Object>();
-        cache.setMaxItems(defaultMaxItems);
+        DefaultSimpleCache<Serializable, Object> cache = new DefaultSimpleCache<Serializable, Object>(defaultMaxItems, null);
         Cache hibCache = new HibernateSimpleCacheAdapter(cache, regionName);
         return hibCache;
     }

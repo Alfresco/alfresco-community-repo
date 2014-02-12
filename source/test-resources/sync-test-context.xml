@@ -73,4 +73,8 @@
     <!--  A fake applicaton context manager into which we can inject test-specific beans -->
     <bean id="testApplicationContextManager" class="org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizerTest$MockApplicationContextManager" />
 
+    <bean id="testSynchronizeEventListener" class="org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizerTest$TestSynchronizeEventListener">
+        <property name="synchronizer" ref="testUserRegistrySynchronizer" />
+    </bean>
+
 </beans>

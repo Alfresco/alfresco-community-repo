@@ -41,6 +41,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
 
@@ -899,6 +901,30 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     {
         return this.authorityService.getName(shortName.toLowerCase().startsWith("g") ? AuthorityType.GROUP
                 : AuthorityType.USER, shortName);
+    }
+
+    /**
+     * A Test {@link ApplicationListener} that checks SyncEndTime before the SynchronizeEndEvent and SynchronizeDirectoryEndEvent events.
+     */
+    public static class TestSynchronizeEventListener implements ApplicationListener<ApplicationEvent>
+    {
+        private ChainingUserRegistrySynchronizer synchronizer;
+        
+        public void setSynchronizer(ChainingUserRegistrySynchronizer synchronizer)
+        {
+            this.synchronizer = synchronizer;
+        }
+
+        @Override
+        public void onApplicationEvent(ApplicationEvent event)
+        {
+            if (SynchronizeEndEvent.class.isAssignableFrom(event.getClass())
+                    || SynchronizeDirectoryEndEvent.class.isAssignableFrom(event.getClass()))
+            {
+                assertEquals(null, this.synchronizer.getSyncEndTime());
+            }
+        }
+        
     }
 
     /**

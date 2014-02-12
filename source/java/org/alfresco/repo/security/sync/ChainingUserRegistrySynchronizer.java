@@ -2101,7 +2101,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                             ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
                             ChainingUserRegistrySynchronizer.START_TIME_ATTRIBUTE);
                         ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(
-                                -1,
+                                -1L,
                                 ChainingUserRegistrySynchronizer.ROOT_ATTRIBUTE_PATH, 
                                 ChainingUserRegistrySynchronizer.END_TIME_ATTRIBUTE);
                         ChainingUserRegistrySynchronizer.this.attributeService.setAttribute(

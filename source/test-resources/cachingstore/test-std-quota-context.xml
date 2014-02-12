@@ -35,9 +35,7 @@
     </bean>
     
 
-    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
-        <property name="maxItems" value="12"/>
-    </bean>
+    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.DefaultSimpleCache"/>
     
     
     <bean id="cachedContentCleaner"

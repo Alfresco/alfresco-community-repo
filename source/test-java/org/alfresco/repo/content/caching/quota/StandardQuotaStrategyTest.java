@@ -109,13 +109,27 @@ public class StandardQuotaStrategyTest
         // Quota is 20MB. The quota manager will...
         //   * start the cleaner at 16MB (80% of 20MB)
         //   * refuse to cache any more files at 18MB (90% of 20MB)
+        List<String> contentURLs = new ArrayList<>();
         for (int i = 0; i < 15; i++)
         {
-            writeSingleFileInMB(1);
+            String url = writeSingleFileInMB(1);
+            contentURLs.add(url);
         }
         // All 15 should be retained.
         assertEquals(15, findCacheFiles().size());
     
+        // Simulate eviction from the in-memory cache. We'll evict 10, so that 6 of the
+        // eventual 16 created files have details remaining in the cache.
+        //
+        // Note, we're simulating eviction here, rather than imposing, for example, a maxItems on the
+        // cache (i.e. the "cachingContentStoreCache" bean) since cache behaviour isn't easily deterministic
+        // in this respect - the google guava cache in particular, evicts items as the cache size *approaches*
+        // the size limit.
+        for (int evictCount = 0; evictCount < 10; evictCount++)
+        {
+            cache.remove(contentURLs.get(evictCount));
+        }
+        
         // Writing one more file should trigger a clean.
         writeSingleFileInMB(1);
         
@@ -125,10 +139,9 @@ public class StandardQuotaStrategyTest
             Thread.sleep(50);
         }
 
-        // As the cache is set to contain a max of 12 items in-memory (see cachingContentStoreCache
-        // definition in test-std-quota-context.xml) and 2 cache items are required per cached content URL
-        // then after the cleaner has processed the tree there will 6 items left on disk (12/2). 
-        assertEquals(6, findCacheFiles().size());    
+        // Since 6 of the 16 total had details in the in-memory cache at the time the cleaner
+        // ran, then only 6 files should remain on disk - the rest should have been removed by the cleaner.
+        assertEquals(6, findCacheFiles().size());
     }
     
     
@@ -164,11 +177,12 @@ public class StandardQuotaStrategyTest
         assertEquals(3, files.get(2).length() / FileUtils.ONE_MB);
     }
     
-    private void writeSingleFileInMB(int sizeInMb) throws IOException
+    private String writeSingleFileInMB(int sizeInMb) throws IOException
     {
         ContentWriter writer = store.getWriter(ContentContext.NULL_CONTEXT);
         File content = createFileOfSize(sizeInMb * 1024);
         writer.putContent(content);
+        return writer.getContentUrl();
     }
 
     private File createFileOfSize(long sizeInKB) throws IOException

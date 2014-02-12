@@ -45,7 +45,9 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -54,6 +56,7 @@ import org.springframework.context.ApplicationContext;
  * @author Alfresco
  * @since 4.2.1
  */
+@Category(OwnJVMTestsCategory.class)
 public class AbstractTenantRoutingContentStoreTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

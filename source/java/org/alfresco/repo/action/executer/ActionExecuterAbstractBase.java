@@ -24,6 +24,8 @@ import java.util.Set;
 import org.alfresco.repo.action.ActionDefinitionImpl;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
 import org.alfresco.repo.lock.LockUtils;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -77,10 +79,10 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     
     public void setMlAwareNodeService(NodeService mlAwareNodeService)
     {
-		this.mlAwareNodeService = mlAwareNodeService;
-	}
+        this.mlAwareNodeService = mlAwareNodeService;
+    }
 
-	public void setLockService(LockService lockService) 
+    public void setLockService(LockService lockService) 
     {
         this.lockService = lockService;
     }
@@ -235,7 +237,12 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
      * {@inheritDoc}
      */
     public void execute(Action action, NodeRef actionedUponNodeRef)
-    {        
+    {
+        if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_NONE)
+        {
+            throw new IllegalStateException("Actions invariably access the repository.  Doing so without a transaction is not recommended.");
+        }
+        
         // Check the mandatory properties
         checkMandatoryProperties(action, getActionDefinition());
         

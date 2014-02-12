@@ -230,7 +230,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     
     public void setPreferenceService(PreferenceService preferenceService)
     {
-    	this.preferenceService = preferenceService;
+        this.preferenceService = preferenceService;
     }
     
     /**
@@ -400,11 +400,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     @Override
     public void init()
     {
-    	if(logger.isDebugEnabled())
-    	{
-    		logger.debug("Init called, testMessageTo=" + testMessageTo);
-    	}
-    	
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("Init called, testMessageTo=" + testMessageTo);
+        }
+        
         numberSuccessfulSends.set(0);
         numberFailedSends.set(0);
         
@@ -451,17 +451,17 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             final NodeRef actionedUponNodeRef) 
     {
 
-    	//Prepare our messages before the commit, in-case of deletes
-    	MimeMessageHelper[] messages = null; 
-    	if (validNodeRefIfPresent(actionedUponNodeRef))
+        //Prepare our messages before the commit, in-case of deletes
+        MimeMessageHelper[] messages = null; 
+        if (validNodeRefIfPresent(actionedUponNodeRef))
         {
-    	messages = prepareEmails(ruleAction, actionedUponNodeRef);
+            messages = prepareEmails(ruleAction, actionedUponNodeRef);
         }
-    	final MimeMessageHelper[] finalMessages = messages;
-    	
-    	//Send out messages
-    	if(finalMessages!=null){
-        	if (sendAfterCommit(ruleAction))
+        final MimeMessageHelper[] finalMessages = messages;
+        
+        //Send out messages
+        if(finalMessages!=null){
+            if (sendAfterCommit(ruleAction))
             {
                 AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
                 {
@@ -474,9 +474,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                             @Override
                             public Void execute() throws Throwable
                             {
-                            	for (MimeMessageHelper message : finalMessages) {
-                            		sendEmail(ruleAction, message);
-    							}
+                                for (MimeMessageHelper message : finalMessages) {
+                                    sendEmail(ruleAction, message);
+                                }
                                 
                                 return null;
                             }
@@ -486,11 +486,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             }
             else 
             {
-                	for (MimeMessageHelper message : finalMessages) {
-                		sendEmail(ruleAction, message);
-    				}
+                    for (MimeMessageHelper message : finalMessages) {
+                        sendEmail(ruleAction, message);
+                    }
             }
-    	}
+        }
 
     }
     
@@ -838,7 +838,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     }
                     if (locale == null)
                     {
-                    	locale = sender.getSecond();
+                        locale = sender.getSecond();
                     }
                     
                     // set subject line
@@ -847,13 +847,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     String localizedSubject = getLocalizedSubject(subject, subjectParams, locale);
                     if (locale == null)
                     {
-    					// process the template against the model
+                        // process the template against the model
                         text = templateService.processTemplate("freemarker", templateRef, model);
                     }
                     else
                     {
-						// process the template against the model
-	                    text = templateService.processTemplate("freemarker", templateRef, model, locale);
+                        // process the template against the model
+                        text = templateService.processTemplate("freemarker", templateRef, model, locale);
                     }
                     if ((testModeRecipient != null) && (testModeRecipient.length() > 0) && (! testModeRecipient.equals("${dev.email.recipient.address}")))
                     {
@@ -974,23 +974,23 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     private String getLocalizedSubject(String subject, Object[] params, Locale locale)
     {
-    	String localizedSubject = null;
+        String localizedSubject = null;
         if (locale == null)
         {
-        	localizedSubject = I18NUtil.getMessage(subject, params);
+            localizedSubject = I18NUtil.getMessage(subject, params);
         }
         else 
         {
-        	localizedSubject = I18NUtil.getMessage(subject, locale, params);
+            localizedSubject = I18NUtil.getMessage(subject, locale, params);
         }
         
         if (localizedSubject == null)
         {
-        	return subject;
+            return subject;
         }
         else
         {
-        	return localizedSubject;
+            return localizedSubject;
         }
         
     }
@@ -1036,11 +1036,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     {
                         try
                         {
-                    	    address = new InternetAddress(from, fromPersonalName);
+                            address = new InternetAddress(from, fromPersonalName);
                         }
                         catch (UnsupportedEncodingException error)
                         {
-                    	    address = new InternetAddress(from);
+                            address = new InternetAddress(from);
                         }
                     }
                     else
@@ -1101,19 +1101,19 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     @SuppressWarnings("unchecked")
     private List<Pair<String, Locale>> getRecipients(Action ruleAction) 
     {
-    	
-    	List<Pair<String, Locale>> recipients = new LinkedList<Pair<String,Locale>>();
-    	
+        
+        List<Pair<String, Locale>> recipients = new LinkedList<Pair<String,Locale>>();
+        
         // set recipient
         String to = (String)ruleAction.getParameterValue(PARAM_TO);
         if (to != null && to.length() != 0)
         {
-        	Locale locale = null;
-        	if (personExists(to))
-        	{
-        		locale = getLocaleForUser(to);
-        	}
-        	recipients.add(new Pair<String, Locale>(to, locale));
+            Locale locale = null;
+            if (personExists(to))
+            {
+                locale = getLocaleForUser(to);
+            }
+            recipients.add(new Pair<String, Locale>(to, locale));
         }
         else
         {
@@ -1241,13 +1241,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         String domain = tenantService.getPrimaryDomain(user); // get primary tenant 
         if (domain != null) 
         { 
-	        exists = TenantUtil.runAsTenant(new TenantRunAsWork<Boolean>()
-	        {
-	            public Boolean doWork() throws Exception
-	            {
-	                return personService.personExists(user);
-	            }
-	        }, domain);
+            exists = TenantUtil.runAsTenant(new TenantRunAsWork<Boolean>()
+            {
+                public Boolean doWork() throws Exception
+                {
+                    return personService.personExists(user);
+                }
+            }, domain);
         }
         else
         {
@@ -1262,13 +1262,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         String domain = tenantService.getPrimaryDomain(user); // get primary tenant 
         if (domain != null) 
         { 
-	        person = TenantUtil.runAsTenant(new TenantRunAsWork<NodeRef>()
-	        {
-	            public NodeRef doWork() throws Exception
-	            {
-	                return personService.getPerson(user);
-	            }
-	        }, domain);
+            person = TenantUtil.runAsTenant(new TenantRunAsWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                    return personService.getPerson(user);
+                }
+            }, domain);
         }
         else
         {

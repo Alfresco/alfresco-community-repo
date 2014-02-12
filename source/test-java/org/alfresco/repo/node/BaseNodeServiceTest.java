@@ -3240,7 +3240,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             Map<QName, Serializable> after)
     {
         behaviourExecuted = true;       
-        assertFalse(before.get(ContentModel.PROP_TITLE).toString().equals(after.get(ContentModel.PROP_TITLE).toString()));
+        assertFalse(String.valueOf(before.get(ContentModel.PROP_TITLE)).equals(String.valueOf(after.get(ContentModel.PROP_TITLE))));
         
         System.out.print("Before values: ");
         for (Map.Entry<QName, Serializable> entry : before.entrySet()) 

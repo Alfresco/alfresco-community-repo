@@ -2,13 +2,6 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-   <bean id="publishingService_dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
-        <property name="models">
-            <list>
-                <value>alfresco/model/publishingModel.xml</value>
-            </list>
-        </property>
-    </bean>
 
    <!-- Bootstrap the publishing process definition -->
     <bean parent="workflowDeployer">

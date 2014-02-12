@@ -79,6 +79,17 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
         dictionaryService = (DictionaryService) applicationContext.getBean("dictionaryService");
     }
+
+    /**
+     * Ensure that transactionless calls are handled
+     */
+    public void testCallWithoutTxn()
+    {
+        setComplete();
+        endTransaction();
+        
+        nodeService.getAllRootNodes(rootNodeRef.getStoreRef());
+    }
     
     /**
      * Manually trigger the cleanup registry

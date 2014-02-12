@@ -81,7 +81,21 @@
       <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
    </bean>
    
-   <bean id="qnameDAO" class="org.alfresco.repo.domain.qname.ibatis.QNameDAOImpl">
+   <bean id="qnameDAO" class="org.springframework.aop.framework.ProxyFactoryBean" >
+      <property name="targetName">
+         <value>qnameDAOImpl</value>
+      </property>
+      <property name="proxyInterfaces">
+         <list>
+            <value>org.alfresco.repo.domain.qname.QNameDAO</value>
+         </list>
+      </property>
+      <property name="interceptorNames">
+         <list>
+         </list>
+      </property>
+   </bean>
+   <bean id="qnameDAOImpl" class="org.alfresco.repo.domain.qname.ibatis.QNameDAOImpl">
       <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="namespaceCache" ref="immutableEntityCache"/>
       <property name="qnameCache" ref="immutableEntityCache"/>

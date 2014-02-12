@@ -821,6 +821,12 @@
                 
                 <!-- Share UI model -->
                 <value>alfresco/model/shareUiModel.xml</value>
+                
+                <!-- Site model -->
+                <value>alfresco/model/siteModel.xml</value>
+                
+                <!-- Content Publishing model -->
+                <value>alfresco/model/publishingModel.xml</value>
             </list>
         </property>
         <property name="labels">
@@ -836,6 +842,7 @@
                 <value>alfresco/messages/transfer-model</value>
                 <value>alfresco/messages/wcmapp-model</value>
                 <value>alfresco/messages/publishing-model</value>
+                <value>alfresco/messages/site-model</value>
             </list>
         </property>
     </bean>

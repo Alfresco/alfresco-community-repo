@@ -1094,6 +1094,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         setComplete();
         endTransaction();
 
+        startNewTransaction();
+        
         assertFalse("n6 not directly deleted", nodeService.exists(n6Ref));
         assertFalse("n8 not cascade deleted", nodeService.exists(n8Ref));
         assertEquals("n6 primary parent association not removed from n3", 0, countChildrenOfNode(n3Ref));
@@ -1844,6 +1846,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // persist
         setComplete();
         endTransaction();
+        
+        startNewTransaction();
         
         // get the properties back
         Map<QName, Serializable> checkProperties = nodeService.getProperties(nodeRef);

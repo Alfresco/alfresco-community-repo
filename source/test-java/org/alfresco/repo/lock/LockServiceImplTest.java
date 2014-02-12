@@ -25,14 +25,14 @@ import java.util.Map;
 
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.lock.mem.LockState;
 import org.alfresco.repo.lock.mem.LockStore;
+import org.alfresco.repo.search.IndexerAndSearcher;
+import org.alfresco.repo.search.SearcherComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -44,14 +44,14 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TestWithUserUtils;
-import org.hibernate.engine.TransactionHelper;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 /**
@@ -341,6 +341,32 @@ public class LockServiceImplTest extends BaseSpringTest
         assertEquals(LockStatus.NO_LOCK, lockService.getLockStatus(noAspectNode));
     }
 
+    @Test
+    public void testEphemeralLockIndexing()
+    {
+        TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, authenticationService);
+        
+        IndexerAndSearcher indexerAndSearcher = (IndexerAndSearcher)
+                    applicationContext.getBean("indexerAndSearcherFactory");
+        SearcherComponent searcher = new SearcherComponent();
+        searcher.setIndexerAndSearcherFactory(indexerAndSearcher);
+
+        // Create a lock (owned by the current user)
+        lockService.lock(noAspectNode, LockType.WRITE_LOCK, 86400, Lifetime.EPHEMERAL);
+        
+        // Query for the user's locks
+        final String query = String.format("+@cm\\:lockOwner:\"%s\" +@cm\\:lockType:\"WRITE_LOCK\"", GOOD_USER_NAME);
+        ResultSet rs = searcher.query(storeRef, "lucene", query);
+        assertTrue(rs.getNodeRefs().contains(noAspectNode));
+        
+        // Unlock the node
+        lockService.unlock(noAspectNode);
+        
+        // Perform a new search, the index should reflect that it is not locked.
+        rs = searcher.query(storeRef, "lucene", query);
+        assertFalse(rs.getNodeRefs().contains(noAspectNode));
+    }
+    
     public void testLockRevertedOnRollback() throws NotSupportedException, SystemException
     {
         // Preconditions of test

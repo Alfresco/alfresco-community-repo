@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
@@ -40,6 +39,7 @@ import org.alfresco.repo.lock.mem.LockState;
 import org.alfresco.repo.lock.mem.LockStore;
 import org.alfresco.repo.lock.mem.LockableAspectInterceptor;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -48,7 +48,6 @@ import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.repo.version.VersionServicePolicies;
@@ -102,6 +101,8 @@ public class LockServiceImpl implements LockService,
     
     /** Class policy delegate's */
     private ClassPolicyDelegate<BeforeLock> beforeLock;
+
+    private NodeIndexer nodeIndexer;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -360,6 +361,8 @@ public class LockServiceImpl implements LockService,
                 // it to be reverted to this state on rollback.
                 TransactionalResourceHelper.getMap(KEY_MODIFIED_NODES).put(nodeRef, currentLockInfo);
                 AlfrescoTransactionSupport.bindListener(this);
+                
+                nodeIndexer.indexUpdateNode(nodeRef);
             }
             else
             {
@@ -502,6 +505,7 @@ public class LockServiceImpl implements LockService,
             {
                 // Remove the ephemeral lock.
                 lockStore.set(nodeRef, LockState.createUnlocked(nodeRef));
+                nodeIndexer.indexUpdateNode(nodeRef);
             }
             else
             {
@@ -869,6 +873,11 @@ public class LockServiceImpl implements LockService,
     public BehaviourFilter getBehaviourFilter()
     {
         return behaviourFilter;
+    }
+
+    public void setNodeIndexer(NodeIndexer nodeIndexer)
+    {
+        this.nodeIndexer = nodeIndexer;
     }
 
     @Override

@@ -877,6 +877,7 @@
                                 </configuration>
                             </execution>
                              <!-- Execution for tests which use BaseSpring test -->
+                             <!--
                             <execution>
                                  <id>base-spring-troublesome-tests</id>
                                  <goals>
@@ -887,6 +888,7 @@
                                      <testFailureIgnore>true</testFailureIgnore>
                                  </configuration>
                             </execution>
+                            -->
                             <!-- Execution for tests which require their own JVM -->
                             <execution>
                                  <id>run-ownJVMTestsCategory</id>
@@ -894,7 +896,7 @@
                                      <goal>test</goal>
                                  </goals>
                                  <configuration>
-                                     <!-- <reuseForks>false</reuseForks> -->
+                                     <reuseForks>false</reuseForks>
                                      <groups>org.alfresco.test_category.OwnJVMTestsCategory</groups>
                                      <testFailureIgnore>true</testFailureIgnore>
                                  </configuration>
@@ -903,10 +905,11 @@
                                  <id>default-test</id>
                                  <configuration>
                                      <argLine>-Xmx3G -XX:MaxPermSize=512m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
-                                     <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory, org.alfresco.test_category.BaseSpringTestsCategory,org.alfresco.test_category.LegacyCategory</excludedGroups>                                 
+                                     <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory</excludedGroups>
                                      <testFailureIgnore>true</testFailureIgnore>
                                  </configuration>
                              </execution>
+                            <!--
                              <execution>
                                  <id>run-legacy-tests</id>
                                  <goals>
@@ -916,6 +919,7 @@
                                      <groups>org.alfresco.test_category.LegacyCategory</groups>
                                  </configuration>
                             </execution>
+                            -->
                         </executions>
 
                         <!-- Default configuration, specifying which tests to pass -->

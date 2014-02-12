@@ -65,7 +65,7 @@ import org.alfresco.util.debug.NodeStoreInspector;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-@Category(BaseSpringTestsCategory.class)
+@Category(OwnJVMTestsCategory.class)
 public class ExporterComponentTest extends BaseSpringTest
 {
 

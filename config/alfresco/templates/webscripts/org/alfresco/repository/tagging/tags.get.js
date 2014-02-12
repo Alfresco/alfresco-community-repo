@@ -8,16 +8,40 @@ function main()
    
    var filter = args["tf"];
    var details = args["details"];
+   var from = args["from"];
+   var size = args["size"];
    
    if (filter === null)
    {
-      // Get all the tags
-      tagNames = taggingService.getTags(store);
+      if(from === null || size === null)
+      {
+          // Get all the tags
+          tagNames = taggingService.getTags(store);
+          model.totalRecords = tagNames.length;
+      }
+      else
+      {
+          // Get page of the tags
+          var pagedTagsWrapper = taggingService.getPagedTags(store, from, size);
+          tagNames = pagedTagsWrapper.getTagNames();
+          model.totalRecords = pagedTagsWrapper.getTotal();
+      }
    }
    else
    {
-      // Get a list of filtered tags
-      tagNames = taggingService.getTags(store, filter);
+      if(from === null || size === null)
+      {
+          // Get a list of filtered tags
+          tagNames = taggingService.getTags(store, filter);
+          model.totalRecords = tagNames.length;
+      }
+      else
+      {
+          // Get a page of filtered tags
+          var pagedTagsWrapper = taggingService.getPagedTags(store, filter, from, size);
+          tagNames = pagedTagsWrapper.getTagNames();
+          model.totalRecords = pagedTagsWrapper.getTotal();
+      }
    }
    
    // Sort by tag name

@@ -10,7 +10,8 @@
 		   <#list tags as tag>
               <@taggingLib.tagJSONDetails item=tag/><#if tag_has_next>,</#if>
            </#list>
-        ]
+        ],
+        "totalRecords": ${totalRecords}
     }
 }
 <#else>	

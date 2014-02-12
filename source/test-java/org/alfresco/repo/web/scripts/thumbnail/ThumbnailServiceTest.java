@@ -32,18 +32,17 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.junit.experimental.categories.Category;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  * Unit test to test thumbnail web script API
@@ -57,7 +56,6 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
     private NodeRef pdfNode;
     private NodeRef jpgNode;
     
-    private NodeService nodeService;
     private FileFolderService fileFolderService;
     private ContentService contentService;
     private Repository repositoryHelper;
@@ -72,7 +70,6 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
     {
         super.setUp();       
  
-        this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         this.fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
         this.contentService = (ContentService)getServer().getApplicationContext().getBean("ContentService");
         this.repositoryHelper = (Repository)getServer().getApplicationContext().getBean("repositoryHelper");
@@ -296,11 +293,11 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
     {
         String url = "/api/node/" + node.getStoreRef().getProtocol() + "/" + node.getStoreRef().getIdentifier() + "/" + node.getId() + "/content/thumbnails/" + thumbnailName;
        
-        int retrys = 10;
-        int trys = 0;
+        int retries = 50;
+        int tries = 0;
         while (true)
         {
-            if (trys >= retrys)
+            if (tries >= retries)
             {
                 fail("Thumbnail never gets created " + thumbnailName);
             }
@@ -320,7 +317,7 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
                 Thread.sleep(100);
             }
             
-            trys++;
+            tries++;
         }        
     } 
     

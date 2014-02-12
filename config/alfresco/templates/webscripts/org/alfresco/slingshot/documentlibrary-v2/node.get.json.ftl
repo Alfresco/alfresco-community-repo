@@ -12,8 +12,10 @@
       "shareURL": "${site.getShareUrl()}",
       "serverURL": "${url.server}"
    },
+   <#if doclist.content??>"itemContent": "${doclist.content}",</#if>
    "item":
    {
+   <#if doclist.thumbnailDefinitions??>"thumbnailDefinitions": [<#list doclist.thumbnailDefinitions as thumbnail>"${thumbnail}"<#if thumbnail_has_next>,</#if></#list>],</#if>
    <#if doclist.item??>
       <#assign item = doclist.item>
       "node": <#noescape>${item.nodeJSON}</#noescape>,

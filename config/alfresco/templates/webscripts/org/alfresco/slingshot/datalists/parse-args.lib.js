@@ -244,7 +244,7 @@ var ParseArgs =
          {
             node = companyhome.childrenByXPath("st:sites")[0];
          }
-         else if (reference == "alfresco://shared")
+         else if (reference == "alfresco://company/shared")
          {
             node = companyhome.childrenByXPath("app:shared")[0];
          }

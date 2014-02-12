@@ -290,10 +290,11 @@ var ParseArgs =
          status.setCode(status.STATUS_GONE, "Location is 'null'. (No permission?)");
          return null;
       }
-      if (path !== "")
-      {
-         location.path = ParseArgs.combinePaths(location.path, location.file);
-      }
+      // Commented this out because it was generating duplicate entries in the path...
+      // if (path !== "")
+      // {
+      //    location.path = ParseArgs.combinePaths(location.path, location.file);
+      // }
       if (args.filter !== "node" && !pathNode.isContainer)
       {
          location.file = "";
@@ -359,7 +360,7 @@ var ParseArgs =
          {
             node = companyhome.childrenByXPath("st:sites")[0];
          }
-         else if (reference == "alfresco://shared")
+         else if (reference == "alfresco://company/shared")
          {
             node = companyhome.childrenByXPath("app:shared")[0];
          }

@@ -121,18 +121,6 @@ function getRepositoryItem(folderPath, node, populate)
          };
          item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
          item.createdBy = getPersonDisplayName(item.createdByUser);
-         if (node.hasAspect("{http://www.alfresco.org/model/content/1.0}thumbnailModification"))
-         {
-            var dates = node.properties["lastThumbnailModification"];
-            for (var i=0; i<dates.length; i++)
-            {
-               if (dates[i].indexOf("doclib") !== -1)
-               {
-                  item.lastThumbnailModification = dates[i];
-                  break;
-               }
-            }
-         }
       }
       if (node.isContainer)
       {
@@ -190,18 +178,6 @@ function getDocumentItem(siteId, containerId, pathParts, node, populate)
          };
          item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
          item.createdBy = getPersonDisplayName(item.createdByUser);
-         if (node.hasAspect("{http://www.alfresco.org/model/content/1.0}thumbnailModification"))
-         {
-            var dates = node.properties["lastThumbnailModification"];
-            for (var i=0; i<dates.length; i++)
-            {
-               if (dates[i].indexOf("doclib") !== -1)
-               {
-                  item.lastThumbnailModification = dates[i];
-                  break;
-               }
-            }
-         }
       }
       if (node.isContainer)
       {
@@ -554,14 +530,14 @@ function getItem(siteId, containerId, pathParts, node, populate)
  * [1] = container or null if the node does not match
  * [2] = remaining part of the cm:name based path to the object - as an array
  */
-function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath)
+function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath, qnameOnly)
 {
    var path = node.qnamePath,
-       displayPath = utils.displayPath(node).split("/"),
+       displayPath = qnameOnly ? null : utils.displayPath(node).split("/"),
        parts = null;
    
    // restructure the display path of the node if we have an overriden root node
-   if (rootNodeDisplayPath != null && path.indexOf(rootNodeQNamePath) === 0)
+   if (!qnameOnly && rootNodeDisplayPath != null && path.indexOf(rootNodeQNamePath) === 0)
    {
       var nodeDisplayPath = utils.displayPath(node).split("/");
       nodeDisplayPath = nodeDisplayPath.splice(rootNodeDisplayPath.length);
@@ -578,8 +554,8 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath)
           pos = tmp.indexOf('/');
       if (pos >= 1)
       {
-         // site id is the cm:name for the site - we cannot use the encoded QName version
-         var siteId = displayPath[3];
+         var siteQName = Packages.org.alfresco.util.ISO9075.decode(tmp.split("/")[0]);
+             siteId = siteQName.substring(siteQName.indexOf(":") + 1);
          tmp = tmp.substring(pos + 1);
          pos = tmp.indexOf('/');
          if (pos >= 1)
@@ -588,7 +564,7 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath)
             var containerId = tmp.substring(0, pos);
             containerId = containerId.substring(containerId.indexOf(":") + 1);
             
-            parts = [ siteId, containerId, displayPath.slice(5, displayPath.length) ];
+            parts = [ siteId, containerId, qnameOnly ? null : displayPath.slice(5, displayPath.length) ];
          }
       }
    }
@@ -627,7 +603,7 @@ function processResults(nodes, maxPageResults, startIndex, rootNode)
          // then we populate and add items up to the maxPageResults - after that we still need to process
          // (but don't populate or add to results) each item to correctly calculate the totalRecordsUpper.
          var populate = (processed >= startIndex && added < maxPageResults);
-         parts = splitQNamePath(nodes[i], rootNodeDisplayPath, rootNodeQNamePath);
+         parts = splitQNamePath(nodes[i], rootNodeDisplayPath, rootNodeQNamePath, !populate);
          item = getItem(parts[0], parts[1], parts[2], nodes[i], populate);
          if (item !== null)
          {
@@ -986,24 +962,8 @@ function getSearchResults(params)
                   }
                   else
                   {
-                     // special case for size-range property
-                     if (propName.match("size-range$") == "size-range" && propValue.length > 1)
-                     {
-                        var from, to, sepindex = propValue.indexOf("|");
-
-                        propName = propName.substr(0, propName.length - "-range".length);
-
-                        // work out if "min" and/or "max" are specified - use MIN and MAX otherwise
-                        from = (sepindex === 0 ? "MIN" : propValue.substr(0, sepindex));
-                        to = (sepindex === propValue.length - 1 ? "MAX" : propValue.substr(sepindex + 1));
-
-                        formQuery += (first ? '' : ' AND ') + '@cm\\:content.' + propName + ':[' + from + ' TO ' + to + ']';
-                     }				  
-                     else
-                     {
-                        // single pseudo cm:content property - e.g. mimetype, size or encoding
-                        formQuery += (first ? '' : ' AND ') + 'cm:content.' + propName + ':"' + propValue + '"';
-                     }
+                     // single pseudo cm:content property - e.g. mimetype, size or encoding
+                     formQuery += (first ? '' : ' AND ') + 'cm:content.' + propName + ':"' + propValue + '"';
                   }
                   first = false;
                }

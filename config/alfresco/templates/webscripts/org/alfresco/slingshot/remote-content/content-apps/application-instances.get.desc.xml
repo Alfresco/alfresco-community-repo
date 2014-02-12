@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Application Instances</shortname>
+  <description>Returns available Application Instances</description>
+  <family>Content Applications</family>
+  <url>/remote-share/content-app-instances</url>
+  <format default="json"></format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

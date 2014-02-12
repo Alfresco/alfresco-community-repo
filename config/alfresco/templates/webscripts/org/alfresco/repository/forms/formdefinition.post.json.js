@@ -98,7 +98,7 @@ function main()
     {
         // encode the item id and item kind using URI encoding scheme, however, the encoded / character
         // causes problems when posting back to Apache so change these back
-        submissionUrl = '/api/' + encodeURIComponent(itemKind) + '/' + encodeURIComponent(itemId).replace(/%2f/g, "/") + '/formprocessor';
+        submissionUrl = '/api/' + encodeURIComponent(itemKind) + '/' + encodeURIComponent(itemId).replace(/%2F/g, "/") + '/formprocessor';
     }
     
     // create form model

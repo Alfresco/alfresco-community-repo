@@ -68,7 +68,7 @@ function findFromReference()
    {
       node = companyhome.childrenByXPath("st:sites")[0];
    }
-   else if (nodeRef == "alfresco://shared")
+   else if (nodeRef == "alfresco://company/shared")
    {
       node = companyhome.childrenByXPath("app:shared")[0];
    }

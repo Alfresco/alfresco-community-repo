@@ -40,6 +40,12 @@
 				<#if row.item.properties.modifier??>"modifier": "${row.item.properties.modifier}",</#if>
 				<#if row.item.siteShortName??>"site": "${row.item.siteShortName}",</#if>
 				"displayPath": "${row.item.displayPath!""}",
+            "userAccess":
+            {
+               "create": ${row.item.hasPermission("CreateChildren")?string},
+               "edit": ${row.item.hasPermission("Write")?string},
+               "delete": ${row.item.hasPermission("Delete")?string}
+            },
 				"nodeRef": "${row.item.nodeRef}"<#if row.selectable?exists>,
 				"selectable" : ${row.selectable?string}</#if>
 			}<#if row_has_next>,</#if>

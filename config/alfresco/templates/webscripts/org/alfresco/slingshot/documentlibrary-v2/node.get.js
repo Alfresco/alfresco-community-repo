@@ -49,13 +49,23 @@ function getDoclist()
       item.location.file = "";
    }
    
-   return (
-   {
+   var returnObject = {
       container: parsedArgs.rootNode,
       onlineEditing: utils.moduleInstalled("org.alfresco.module.vti"),
       item: item,
       customJSON: slingshotDocLib.getJSON()
-   });
+   };
+
+   // Additionally include the content if requested by request parameter...
+   if (args["includeContent"] == "true")
+   {
+      returnObject.content = item.node.content
+   }
+   if (args["includeThumbnails"] == "true")
+   {
+      returnObject.thumbnailDefinitions = item.node.thumbnailDefinitions
+   }
+   return (returnObject);
 }
 
 /**

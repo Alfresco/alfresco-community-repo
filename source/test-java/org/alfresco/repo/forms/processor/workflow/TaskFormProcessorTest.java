@@ -93,6 +93,7 @@ public class TaskFormProcessorTest extends TestCase
     private static final NodeRef FAKE_NODE3 = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode3");
     private static final NodeRef PCKG_NODE = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakePackage");
     private static final NodeRef USER_NODE = new NodeRef(NamespaceService.CONTENT_MODEL_1_0_URI + "/admin");
+    private static final String NO_MESSAGE = "(No Message)";
 
     private WorkflowService workflowService;
     private NodeService nodeService;
@@ -246,7 +247,7 @@ public class TaskFormProcessorTest extends TestCase
 
     public void testGenerateMessage() throws Exception
     {
-        String message = "(No Message)";
+        String message = NO_MESSAGE;
         String fieldName = MessageFieldProcessor.KEY;
         Form form = processForm(fieldName);
         checkSingleProperty(form, fieldName, message);
@@ -262,7 +263,7 @@ public class TaskFormProcessorTest extends TestCase
         // and make sure the message comes back as null
         this.task.getProperties().put(PROP_DESCRIPTION, this.task.getTitle());
         form = processForm(fieldName);
-        checkSingleProperty(form, fieldName, null);
+        checkSingleProperty(form, fieldName, NO_MESSAGE);
     }
     
     public void testGenerateTaskOwner() throws Exception

@@ -937,9 +937,26 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             {
                 Serializable key = entry.getKey();
                 CacheBucket<V> bucket = entry.getValue();
-                bucket.doPostCommit(
-                        sharedCache,
-                        key, this.isMutable, this.allowEqualsChecks, txnData.isReadOnly);
+                try
+                {
+                    bucket.doPostCommit(
+                            sharedCache,
+                            key, this.isMutable, this.allowEqualsChecks, txnData.isReadOnly);
+                }
+                catch (Exception e)
+                {
+                    // MNT-10486: NPE in NodeEntity during post-commit write through to shared cache
+                    //              This try-catch is diagnostic in nature.  We need to know the names of the caches
+                    //              and details of the values involved.
+                    //              The causal exception will be rethrown.
+                    throw new AlfrescoRuntimeException(
+                            "CacheBucket postCommit transfer to shared cache failed: \n" +
+                            "   Cache:      " + sharedCache + "\n" +
+                            "   Key:        " + key + "\n" +
+                            "   New Value:  " + bucket.getValue() + "\n" +
+                            "   Cash Value: " + sharedCache.get(key),
+                            e);
+                }
             }
             if (isDebugEnabled)
             {

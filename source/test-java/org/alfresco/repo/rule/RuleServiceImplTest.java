@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,6 +30,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
+import org.alfresco.repo.action.executer.CopyActionExecuter;
 import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
@@ -38,6 +39,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.CompositeAction;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
@@ -56,6 +58,8 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.junit.experimental.categories.Category;
 
+import javax.transaction.UserTransaction;
+
 
 /**
  * Rule service implementation test
@@ -72,6 +76,7 @@ public class RuleServiceImplTest extends BaseRuleTest
     PermissionService permissionService;  
     SearchService searchService;
     NamespaceService namespaceService;
+    FileFolderService fileFolderService;
     
     @Override
     protected void onSetUpInTransaction() throws Exception 
@@ -81,6 +86,7 @@ public class RuleServiceImplTest extends BaseRuleTest
 		this.authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("authenticationService");
         this.searchService = (SearchService) applicationContext.getBean("SearchService");
         this.namespaceService = (NamespaceService) applicationContext.getBean("NamespaceService");
+        this.fileFolderService = (FileFolderService) applicationContext.getBean("FileFolderService");
     }
     
     /**
@@ -1073,5 +1079,112 @@ public class RuleServiceImplTest extends BaseRuleTest
         ((RuntimeRuleService) ruleService).addRulePendingExecution(parentNodeRef, actionedUponNodeRef, testRule);
         ((RuntimeRuleService) ruleService).executePendingRules();
         assertTrue("Pending rule was not executed", this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE));
+    }
+
+    /**
+     * ALF-12726
+     * use FileFolderService to rename
+     */
+    public void testOutboundRuleTriggeredAfterRename1() throws Exception
+    {
+        String newName = "newName" + GUID.generate();
+
+        // Create 2 folders
+        NodeRef folder1NodeRef = this.nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("parentnode" + GUID.generate()), ContentModel.TYPE_FOLDER)
+                .getChildRef();
+        NodeRef folder2NodeRef = this.nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("parentnode" + GUID.generate()), ContentModel.TYPE_FOLDER)
+                .getChildRef();
+
+        // Create rule for folder1
+        Rule testRule = new Rule();
+        testRule.setRuleTypes(Collections.singletonList(RuleType.OUTBOUND));
+        testRule.setTitle("RuleServiceTest" + GUID.generate());
+        testRule.setDescription(DESCRIPTION);
+        testRule.applyToChildren(true);
+        Action action = this.actionService.createAction(CopyActionExecuter.NAME);
+        action.setParameterValue(CopyActionExecuter.PARAM_DESTINATION_FOLDER, folder2NodeRef);
+        testRule.setAction(action);
+        this.ruleService.saveRule(folder1NodeRef, testRule);
+        assertNotNull("Rule was not saved", testRule.getNodeRef());
+
+        QName actionedQName = QName.createQName("actioneduponnode" + GUID.generate());
+        // New node
+        NodeRef actionedUponNodeRef = this.nodeService.createNode(folder1NodeRef, ContentModel.ASSOC_CHILDREN, actionedQName,
+                ContentModel.TYPE_CONTENT).getChildRef();
+        ContentWriter writer = this.contentService.getWriter(actionedUponNodeRef, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype("text/plain");
+        writer.putContent("TestContent");
+
+        // Rename the node
+        this.fileFolderService.rename(actionedUponNodeRef, newName);
+
+        // Check that the rule was not executed
+        List<ChildAssociationRef> childAssoc = this.nodeService.getChildAssocs(folder2NodeRef, RegexQNamePattern.MATCH_ALL, actionedQName);
+        assertEquals("The rule should not be triggered and no document should be present.", 0, childAssoc.size());
+
+        // Check that the content is still in folder1
+        childAssoc = this.nodeService.getChildAssocs(folder1NodeRef, RegexQNamePattern.MATCH_ALL, QName.createQName(newName));
+        assertEquals("The rule should not be triggered and the document should be in folder1.", 1, childAssoc.size());
+
+        this.nodeService.deleteNode(folder1NodeRef);
+        this.nodeService.deleteNode(folder2NodeRef);
+    }
+
+    /**
+     * ALF-12726
+     * use NodeService to rename
+     */
+    public void testOutboundRuleTriggeredAfterRename2() throws Exception
+    {
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        String newName = "newName" + GUID.generate();
+
+        // Create 2 folders
+        NodeRef folder1NodeRef = this.nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("parentnode" + GUID.generate()), ContentModel.TYPE_FOLDER)
+                .getChildRef();
+        NodeRef folder2NodeRef = this.nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("parentnode" + GUID.generate()), ContentModel.TYPE_FOLDER)
+                .getChildRef();
+
+        // Create rule for folder1
+        Rule testRule = new Rule();
+        testRule.setRuleTypes(Collections.singletonList(RuleType.OUTBOUND));
+        testRule.setTitle("RuleServiceTest" + GUID.generate());
+        testRule.setDescription(DESCRIPTION);
+        testRule.applyToChildren(true);
+        Action action = this.actionService.createAction(CopyActionExecuter.NAME);
+        action.setParameterValue(CopyActionExecuter.PARAM_DESTINATION_FOLDER, folder2NodeRef);
+        testRule.setAction(action);
+        this.ruleService.saveRule(folder1NodeRef, testRule);
+        assertNotNull("Rule was not saved", testRule.getNodeRef());
+
+        QName actionedQName = QName.createQName("actioneduponnode" + GUID.generate());
+        // New node
+        NodeRef actionedUponNodeRef = this.nodeService.createNode(folder1NodeRef, ContentModel.ASSOC_CHILDREN, actionedQName,
+                ContentModel.TYPE_CONTENT).getChildRef();
+        ContentWriter writer = this.contentService.getWriter(actionedUponNodeRef, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype("text/plain");
+        writer.putContent("TestContent");
+
+        // Rename the node
+        nodeService.setProperty(actionedUponNodeRef, ContentModel.PROP_NAME, newName);
+        txn.commit();
+
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        // Check that the rule was not executed
+        List<ChildAssociationRef> childAssoc = this.nodeService.getChildAssocs(folder2NodeRef, RegexQNamePattern.MATCH_ALL, actionedQName);
+        assertEquals("The rule should not be triggered and no document should be present.", 0, childAssoc.size());
+
+        // Check that the content is still in folder1
+        childAssoc = this.nodeService.getChildAssocs(folder1NodeRef, RegexQNamePattern.MATCH_ALL, actionedQName);
+        assertEquals("The rule should not be triggered and the document should be in folder1.", 1, childAssoc.size());
+
+        assertEquals("The node should be renamed.", newName, nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME));
+
+        this.nodeService.deleteNode(folder1NodeRef);
+        this.nodeService.deleteNode(folder2NodeRef);
+        txn.commit();
     }
 }

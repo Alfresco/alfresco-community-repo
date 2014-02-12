@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -42,7 +42,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class BeforeDeleteChildAssociationRuleTrigger
         extends RuleTriggerAbstractBase
-        implements NodeServicePolicies.BeforeDeleteChildAssociationPolicy
+        implements NodeServicePolicies.BeforeDeleteChildAssociationPolicy,
+        NodeServicePolicies.BeforeMoveNodePolicy
 
 {
 	/**
@@ -78,6 +79,11 @@ public class BeforeDeleteChildAssociationRuleTrigger
 					this, 
 					new JavaBehaviour(this, POLICY));
 		}
+
+        this.policyComponent.bindClassBehaviour(
+                NodeServicePolicies.BeforeMoveNodePolicy.QNAME,
+                this,
+                new JavaBehaviour(this, NodeServicePolicies.BeforeMoveNodePolicy.QNAME.getLocalName()));
 	}
 
     public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
@@ -103,5 +109,20 @@ public class BeforeDeleteChildAssociationRuleTrigger
         }
         
         triggerRules(childAssocRef.getParentRef(), childNodeRef);
+    }
+
+    @Override
+    public void beforeMoveNode(ChildAssociationRef oldChildAssocRef, NodeRef newParentRef)
+    {
+        // Break out early if rules are not enabled
+        if (!areRulesEnabled())
+        {
+            return;
+        }
+        // Check that it is rename operation, add the node to the ignore list.
+        if (oldChildAssocRef.getParentRef().equals(newParentRef))
+        {
+            TransactionalResourceHelper.getSet(RULE_TRIGGER_RENAMED_NODES).add(oldChildAssocRef.getChildRef());
+        }
     }
 }

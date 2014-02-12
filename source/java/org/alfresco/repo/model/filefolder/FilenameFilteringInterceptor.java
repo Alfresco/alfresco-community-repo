@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -46,6 +46,7 @@ import org.apache.commons.logging.LogFactory;
  * An interceptor that intercepts FileFolderService methods, ensuring system, temporary and hidden files
  * and paths are marked with the correct aspects.
  * 
+ * @author alex.mukha
  */
 public class FilenameFilteringInterceptor implements MethodInterceptor
 {
@@ -219,158 +220,161 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 
     public Object invoke(final MethodInvocation invocation) throws Throwable
     {
+        if (!enabled)
+        {
+            return invocation.proceed();
+        }
+        
         // execute and get the result
         String methodName = invocation.getMethod().getName();
         Object ret = null;
 
-        if(enabled)
+        // do the invocation
+        if (methodName.startsWith("create"))
         {
-            // do the invocation
-            if (methodName.startsWith("create"))
-            {
-                NodeRef nodeRef  = (NodeRef)invocation.getArguments()[0];
-                String filename = (String)invocation.getArguments()[1];
-    
-            	if(getMode() == Mode.ENHANCED)
-            	{
-    	            if(systemPaths.isFiltered(filename))
-    	            {
-    	            	// it's a system file/folder, create as system and allow full control to all authorities
-    	            	ret = runAsSystem(invocation);
-    	            	FileInfoImpl fileInfo = (FileInfoImpl)ret;
-    		            permissionService.setPermission(fileInfo.getNodeRef(), PermissionService.ALL_AUTHORITIES, PermissionService.FULL_CONTROL, true);	            
+            NodeRef nodeRef  = (NodeRef)invocation.getArguments()[0];
+            String filename = (String)invocation.getArguments()[1];
 
-    		            // it's always marked temporary and hidden
-    		            checkTemporaryAspect(true, fileInfo);
+            if(getMode() == Mode.ENHANCED)
+            {
+                if(systemPaths.isFiltered(filename))
+                {
+                    // it's a system file/folder, create as system and allow full control to all authorities
+                    ret = runAsSystem(invocation);
+                    FileInfoImpl fileInfo = (FileInfoImpl)ret;
+                    permissionService.setPermission(fileInfo.getNodeRef(), PermissionService.ALL_AUTHORITIES, PermissionService.FULL_CONTROL, true);                
+    		            
+                    // it's always marked temporary and hidden
+                    checkTemporaryAspect(true, fileInfo);
     		            hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask(), false, false, false);
-    	            }
-    	            else
-    	            {
-    	            	// it's not a temporary file/folder, create as normal
-    	            	ret = invocation.proceed();
-    	            	
-    	            	FileInfoImpl fileInfo = (FileInfoImpl)ret;
-    
-    	            	if(isSystemPath(nodeRef, filename))
-    	            	{
-    	                    // it's on a system path, check whether temporary, hidden and noindex aspects need to be applied
-    	            		checkTemporaryAspect(true, fileInfo);
-    	            		hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask(), false, false, false);
-    	            	}
-    	            	else
-    	            	{
-    	            	    // check whether it's a temporary or hidden file
-                           FileInfo sourceInfo = (FileInfo)ret;
-    			            checkTemporaryAspect(isNameOfTmporaryObject(filename, sourceInfo.getNodeRef()), sourceInfo);
-    			            boolean isHidden = hiddenAspect.checkHidden(fileInfo, false, false);
-			                if(isHidden && fileInfo instanceof FileInfoImpl)
-			                {
-			                    ((FileInfoImpl)fileInfo).setHidden(true);
-			                }
-    	            	}
-    	            }
                 }
                 else
                 {
+                    // it's not a temporary file/folder, create as normal
                     ret = invocation.proceed();
-    
+                    
                     FileInfoImpl fileInfo = (FileInfoImpl)ret;
-    
-    	            checkTemporaryAspect(isNameOfTmporaryObject(filename, fileInfo.getNodeRef()), fileInfo);
-                }
-            }
-            else if (methodName.startsWith("move"))
-            {
-                Object[] args = invocation.getArguments();
-                NodeRef sourceNodeRef = (NodeRef)args[0];
-                String newName = (String)args[args.length -1];
-               
-                if(newName != null)
-                {
-                    // Name is changing
-                    // check against all the regular expressions
-                    checkTemporaryAspect(isNameOfTmporaryObject(newName, sourceNodeRef), sourceNodeRef);
-                }
-              
-                // now do the move
-                ret = invocation.proceed();
 
-                if(getMode() == Mode.ENHANCED)
-                {
-                    hiddenAspect.checkHidden(sourceNodeRef, true, true);
-                }
-            }
-            else if (methodName.startsWith("copy"))
-            {
-                ret = invocation.proceed();
-
-                FileInfoImpl fileInfo = (FileInfoImpl) ret;
-                String filename = fileInfo.getName();
-    
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Checking filename returned by " + methodName + ": " + filename);
-                }
-    
-                // check against all the regular expressions
-                checkTemporaryAspect(isNameOfTmporaryObject(filename, fileInfo.getNodeRef()), fileInfo);
-                if(getMode() == Mode.ENHANCED)
-                {
-                    boolean isHidden = hiddenAspect.checkHidden(fileInfo, true, true);
-                    if(isHidden && fileInfo instanceof FileInfoImpl)
+                    if(isSystemPath(nodeRef, filename))
                     {
-                        ((FileInfoImpl)fileInfo).setHidden(true);
+                        // it's on a system path, check whether temporary, hidden and noindex aspects need to be applied
+                        checkTemporaryAspect(true, fileInfo);
+    	            		hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask(), false, false, false);
                     }
-                }
-                /*
-                 * TODO should these two calls be before the proceed?   However its the same problem as create
-                 * The node needs to be created before we can add aspects.
-                 */
-            }
-            else if (methodName.startsWith("rename")) 
-            {
-                Object[] args = invocation.getArguments();
-                
-                if(args != null && args.length == 2)
-                {
-                    /**
-                     * Expecting rename(NodeRef, newName)
-                     */
-                    String newName = (String)args[1];
-                    NodeRef sourceNodeRef = (NodeRef)args[0];
-                    
-                    if (logger.isDebugEnabled())
+                    else
                     {
-                        logger.debug("Checking filename returned by " + methodName + ": " + newName);
-                    }
-                  
-                    // check against all the regular expressions
-                    checkTemporaryAspect(isNameOfTmporaryObject(newName, sourceNodeRef), sourceNodeRef);
-                    
-                    ret = invocation.proceed();
-
-                    if(getMode() == Mode.ENHANCED)
-                    {
-                        boolean isHidden = hiddenAspect.checkHidden(sourceNodeRef, true, true);
-                        if(isHidden && ret instanceof FileInfoImpl)
+                        // check whether it's a temporary or hidden file
+                        FileInfo sourceInfo = (FileInfo)ret;
+                        boolean isTmp = isTemporaryObject(filename, sourceInfo.getNodeRef());
+                        checkTemporaryAspect(isTmp, sourceInfo);
+    	                boolean isHidden = hiddenAspect.checkHidden(fileInfo, false, false);
+	                if(isHidden && fileInfo instanceof FileInfoImpl)
                         {
-                            ((FileInfoImpl)ret).setHidden(true);
+                            ((FileInfoImpl)fileInfo).setHidden(true);
                         }
                     }
-
-                    return ret;
-                }
-                else
-                {
-                    /**
-                     * expected rename(NodeRef, String) - got something else...
-                     */
-                    throw new AlfrescoRuntimeException("FilenameFilteringInterceptor: unknown rename method");
                 }
             }
             else
             {
                 ret = invocation.proceed();
+
+                FileInfoImpl fileInfo = (FileInfoImpl)ret;
+
+                boolean isTmp = isTemporaryObject(filename, fileInfo.getNodeRef());
+                checkTemporaryAspect(isTmp, fileInfo);
+            }
+        }
+        else if (methodName.startsWith("move"))
+        {
+            Object[] args = invocation.getArguments();
+            NodeRef sourceNodeRef = (NodeRef)args[0];
+            String newName = (String)args[args.length -1];
+           
+            if(newName != null)
+            {
+                // Name is changing
+                // check against all the regular expressions
+                boolean isTmp = isTemporaryObject(newName, sourceNodeRef);
+                checkTemporaryAspect(isTmp, sourceNodeRef);
+            }
+          
+            // now do the move
+            ret = invocation.proceed();
+
+            if(getMode() == Mode.ENHANCED)
+            {
+                    hiddenAspect.checkHidden(sourceNodeRef, true, true);
+            }
+        }
+        else if (methodName.startsWith("copy"))
+        {
+            ret = invocation.proceed();
+
+            FileInfoImpl fileInfo = (FileInfoImpl) ret;
+            String filename = fileInfo.getName();
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Checking filename returned by " + methodName + ": " + filename);
+            }
+
+            // check against all the regular expressions
+            boolean isTmp = isTemporaryObject(filename, fileInfo.getNodeRef());
+            checkTemporaryAspect(isTmp, fileInfo);
+            if(getMode() == Mode.ENHANCED)
+            {
+                    boolean isHidden = hiddenAspect.checkHidden(fileInfo, true, true);
+                    if(isHidden && fileInfo instanceof FileInfoImpl)
+                    {
+                        ((FileInfoImpl)fileInfo).setHidden(true);
+                    }
+            }
+            /*
+             * TODO should these two calls be before the proceed?   However its the same problem as create
+             * The node needs to be created before we can add aspects.
+             */
+        }
+        else if (methodName.startsWith("rename")) 
+        {
+            Object[] args = invocation.getArguments();
+            
+            if(args != null && args.length == 2)
+            {
+                /**
+                 * Expecting rename(NodeRef, newName)
+                 */
+                String newName = (String)args[1];
+                NodeRef sourceNodeRef = (NodeRef)args[0];
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Checking filename returned by " + methodName + ": " + newName);
+                }
+              
+                // check against all the regular expressions
+                boolean isTmp = isTemporaryObject(newName, sourceNodeRef);
+                checkTemporaryAspect(isTmp, sourceNodeRef);
+                
+                ret = invocation.proceed();
+
+                if(getMode() == Mode.ENHANCED)
+                {
+                        boolean isHidden = hiddenAspect.checkHidden(sourceNodeRef, true, true);
+                        if(isHidden && ret instanceof FileInfoImpl)
+                        {
+                            ((FileInfoImpl)ret).setHidden(true);
+                        }
+                }
+
+                return ret;
+            }
+            else
+            {
+                /**
+                 * expected rename(NodeRef, String) - got something else...
+                 */
+                throw new AlfrescoRuntimeException("FilenameFilteringInterceptor: unknown rename method");
             }
         }
         else
@@ -383,33 +387,45 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     }
 
     /**
-     * Determines whether specified <code>name</code> matches any pattern of temporary file names. Also it checks special case of new XLS document creation in MacOS. See <a
-     * href="https://issues.alfresco.com/jira/browse/ALF-14078">ALF-14078</a> (comment added on 04-September-12 04:11 PM) for more details
+     * Determines whether specified <code>name</code> matches any pattern of temporary file names.
+     * <br>Also it checks special case of new XLS document creation in MacOS:
+     * <ul>
+     *    <li>its name doesn’t have extension (on MacOS, but it has ‘.tmp’ extension on Windows);
+     *    <li>length of its name equals to 8;
+     *    <li>its name contains only hexadecimal digits (0-9, A-F);
+     *    <li>it has Mimetype equal to ‘application/vnd.openxmlformats-officedocument.spreadsheetml.sheet’.
+     * </ul>
      * 
      * @param name - {@link String} value which contains name of node
      * @param nodeRef - {@link NodeRef} instance of the node
-     * @return {@link Boolean} value. <code>true</code> if <code>name</code> is name of temporary object including special case of XLSX in MacOS. <code>false</code> in other case
+     * @return {@link boolean} value. <code>true</code> if <code>name</code> is name of temporary object.
      */
-    private boolean isNameOfTmporaryObject(String name, NodeRef nodeRef)
+    private boolean isTemporaryObject(String name, NodeRef nodeRef)
     {
-        boolean result = temporaryFiles.isFiltered(name);
-
-        if (!result)
+        boolean isFiltered = temporaryFiles.isFiltered(name);
+        if (isFiltered)
         {
-            // This pattern must be validated in conjunction with mimetype validation only!
-            result = XSL_MACOS_TEMPORARY_FILENAME_FITLER.matcher(name).matches();
+            return true;
+        }
+        
+        // This pattern must be validated in conjunction with mimetype validation only!
+        boolean result = XSL_MACOS_TEMPORARY_FILENAME_FITLER.matcher(name).matches();
 
-            if (result && !name.startsWith(MACOS_TEMPORARY_FILE_NAME_PREFIX))
+        if (result && !name.startsWith(MACOS_TEMPORARY_FILE_NAME_PREFIX))
+        {
+            ContentReader contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+
+            if (null != contentReader)
             {
-                ContentReader contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-
-                if (null != contentReader)
-                {
-                    result = XLSX_MIMETYPE.equals(contentReader.getMimetype());
-                }
+                result = XLSX_MIMETYPE.equals(contentReader.getMimetype());
+            }
+            else 
+            {
+                // MNT-10561
+                // We are unable to determine the mimetype so assume it's NOT temporary
+                result = false;
             }
         }
-
         return result;
     }
 }

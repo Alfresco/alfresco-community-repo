@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -412,6 +412,24 @@ public class FileFolderServiceImplTest extends TestCase
         assertNull("Folder info should have been renamed away", checkInfo);
         checkInfo = getByName(newName, true);
         assertNotNull("Folder info for new name is not present", checkInfo);
+    }
+
+    /**
+     * Test for MNT-10561. Renames a folder to a name with the pattern "^[0-9,a-f]{8}$"
+     */
+    public void testRenamePattern() throws Exception
+    {
+        FileInfo folderInfo = getByName(NAME_L0_FOLDER_A, true);
+        assertNotNull(folderInfo);
+        // rename normal
+        String newName = "abcd1234";
+        folderInfo = fileFolderService.rename(folderInfo.getNodeRef(), newName);
+        // check it
+        FileInfo checkInfo = getByName(NAME_L0_FOLDER_A, true);
+        assertNull("Folder info should have been renamed away", checkInfo);
+        checkInfo = getByName(newName, true);
+        assertNotNull("Folder info for new name is not present", checkInfo);
+        assertFalse(nodeService.getAspects(checkInfo.getNodeRef()).contains(ContentModel.ASPECT_TEMPORARY));
     }
 
     public void testRenameWithoutAssocQNameChange() throws Exception

@@ -33,7 +33,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.lang.mutable.MutableLong;
@@ -45,7 +44,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Derek Hulley 
  */
-@Category(BaseSpringTestsCategory.class)
+@Category(OwnJVMTestsCategory.class)
 public class CacheTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(

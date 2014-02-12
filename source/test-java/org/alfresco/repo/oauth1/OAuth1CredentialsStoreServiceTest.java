@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.oauth1.OAuth1CredentialsStoreService;
 import org.alfresco.service.cmr.remotecredentials.OAuth1CredentialsInfo;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
@@ -45,7 +46,7 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class OAuth1CredentialsStoreServiceTest
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

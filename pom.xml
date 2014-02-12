@@ -882,7 +882,6 @@
                                  <goals>
                                      <goal>test</goal>
                                  </goals>
-                                 <phase>process-test-classes</phase>
                                  <configuration>
                                      <groups>org.alfresco.test_category.BaseSpringTestsCategory</groups>
                                      <testFailureIgnore>true</testFailureIgnore>
@@ -894,7 +893,6 @@
                                  <goals>
                                      <goal>test</goal>
                                  </goals>
-                                 <phase>process-test-classes</phase>
                                  <configuration>
                                      <!-- <reuseForks>false</reuseForks> -->
                                      <groups>org.alfresco.test_category.OwnJVMTestsCategory</groups>

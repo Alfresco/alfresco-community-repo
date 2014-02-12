@@ -21,6 +21,7 @@ package org.alfresco.util.schemacomp.model;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.junit.Before;
@@ -36,7 +37,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author Matt Ward
  */
 @RunWith(MockitoJUnitRunner.class)
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class SchemaTest extends DbObjectTestBase<Schema>
 {
     private Schema left;

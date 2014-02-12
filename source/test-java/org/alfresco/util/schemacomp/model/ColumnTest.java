@@ -19,6 +19,7 @@
 package org.alfresco.util.schemacomp.model;
 
 
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.junit.Before;
@@ -32,7 +33,7 @@ import static org.junit.Assert.*;
  * Tests for the Column class.
  * @author Matt Ward
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class ColumnTest extends DbObjectTestBase<Column>
 {
     private Column thisColumn;

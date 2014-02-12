@@ -22,7 +22,7 @@ package org.alfresco.repo.publishing;
 import java.util.List;
 
 import org.alfresco.service.cmr.workflow.WorkflowPath;
-import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.junit.experimental.categories.Category;
 
 
@@ -31,7 +31,7 @@ import org.junit.experimental.categories.Category;
  * @author Frederik Heremans
  * @since 4.0
  */
-@Category(OwnJVMTestsCategory.class)
+@Category(BaseSpringTestsCategory.class)
 public class PublishWebContentActivitiTest extends PublishWebContentProcessTest
 {
     private static final String DEF_NAME = "activiti$publishWebContent";

@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.web.scripts.solr;
 
 import java.io.IOException;
@@ -28,6 +46,10 @@ public class AlfrescoModelsDiff extends DeclarativeWebScript
 {
     protected static final Log logger = LogFactory.getLog(AlfrescoModelsDiff.class);
 
+    private static final String MSG_IO_EXCEPTION = "IO exception parsing request ";
+
+    private static final String MSG_JSON_EXCEPTION = "Unable to fetch model changes from ";
+
     private SOLRTrackingComponent solrTrackingComponent;
     
     public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
@@ -46,26 +68,35 @@ public class AlfrescoModelsDiff extends DeclarativeWebScript
             }
             return model;
         }
-        catch(IOException e)
+        catch (IOException e)
         {
-            throw new WebScriptException("IO exception parsing request", e);
+            setExceptionResponse(req, status, MSG_IO_EXCEPTION, Status.STATUS_INTERNAL_SERVER_ERROR, e);
+            return null;
         }
-        catch(JSONException e)
+        catch (JSONException e)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.warn("Unable to fetch model changes from " + req, e);
-            }
-            else
-            {
-                logger.warn("Unable to fetch model changes from " + req);
-            }
-            status.setCode(Status.STATUS_BAD_REQUEST, "Unable to fetch model changes from " + req);
-            status.setException(e);
+            setExceptionResponse(req, status, MSG_JSON_EXCEPTION, Status.STATUS_BAD_REQUEST, e);
             return null;
         }
     }
-    
+
+    private void setExceptionResponse(WebScriptRequest req, Status responseStatus, String responseMessage, int statusCode, Exception e)
+    {
+        String message = responseMessage + req;
+
+        if (logger.isDebugEnabled())
+        {
+            logger.warn(message, e);
+        }
+        else
+        {
+            logger.warn(message);
+        }
+
+        responseStatus.setCode(statusCode, message);
+        responseStatus.setException(e);
+    }
+
     private Map<String, Object> buildModel(WebScriptRequest req) throws JSONException, IOException
     {
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);

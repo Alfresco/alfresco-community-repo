@@ -115,6 +115,17 @@ public interface CategoryService
     PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName);
 
     /**
+     * Get the root categories for an aspect/classification with names that start with filter
+     * 
+     * @param storeRef
+     * @param aspectName
+     * @param filter
+     * @return
+     */
+    @Auditable(parameters = {"storeRef", "aspectName"})
+    public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, String filter);
+
+    /**
      * Looks up a category by name under its immediate parent. Index-independent so can be used for cluster-safe
      * existence checks.
      * 

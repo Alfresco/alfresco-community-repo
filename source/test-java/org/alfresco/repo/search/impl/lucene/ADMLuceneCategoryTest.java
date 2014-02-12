@@ -740,6 +740,18 @@ public class ADMLuceneCategoryTest extends TestCase
         tx = transactionService.getUserTransaction();
         tx.begin();
         assertEquals(3, categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass")).size());
+        Collection<ChildAssociationRef> fruitCategories = categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), "Fruit");
+        assertEquals(1, fruitCategories.size());
+        assertTrue(fruitCategories.iterator().next().getQName().toString().contains("Fruit"));
+        fruitCategories = categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), "Fru");
+        assertEquals(1, fruitCategories.size());
+        assertTrue(fruitCategories.iterator().next().getQName().toString().contains("Fruit"));
+        fruitCategories = categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), "rui");
+        assertEquals(1, fruitCategories.size());
+        assertTrue(fruitCategories.iterator().next().getQName().toString().contains("Fruit"));
+        fruitCategories = categoryService.getRootCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), "uit");
+        assertEquals(1, fruitCategories.size());
+        assertTrue(fruitCategories.iterator().next().getQName().toString().contains("Fruit"));
         assertEquals(3, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.IMMEDIATE).size());
         assertEquals(4, categoryService.getCategories(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), CategoryService.Depth.ANY).size());
      

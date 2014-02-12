@@ -518,6 +518,36 @@ public class TaggingServiceImpl implements TaggingService,
         }
         return result;
     }
+
+    public Pair<List<String>, Integer> getPagedTags(StoreRef storeRef, int fromTag, int pageSize)
+    {
+        ParameterCheck.mandatory("storeRef", storeRef);
+        ParameterCheck.mandatory("fromTag", fromTag);
+        ParameterCheck.mandatory("pageSize", pageSize);
+
+        Collection<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE);
+
+        final int totalCount = rootCategories.size();
+        final int startIndex = Math.max(fromTag, 0);
+        final int endIndex = Math.min(fromTag + pageSize, totalCount);
+        List<String> result = new ArrayList<String>(pageSize);
+        int index = 0;
+        // paging for not sorted tag names
+        for (ChildAssociationRef rootCategory : rootCategories)
+        {
+            if (startIndex > index++)
+            {
+                continue;
+            }
+            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
+            result.add(name);
+            if (index == endIndex)
+            {
+                break;
+            }
+        }
+        return new Pair<List<String>, Integer> (result, totalCount);
+    }
     
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.StoreRef, java.lang.String)
@@ -547,7 +577,44 @@ public class TaggingServiceImpl implements TaggingService,
         
         return result;
     }
-    
+
+    public Pair<List<String>, Integer> getPagedTags(StoreRef storeRef, String filter, int fromTag, int pageSize)
+    {
+        ParameterCheck.mandatory("storeRef", storeRef);
+        ParameterCheck.mandatory("fromTag", fromTag);
+        ParameterCheck.mandatory("pageSize", pageSize);
+
+        if (filter == null || filter.length() == 0)
+        {
+            return getPagedTags(storeRef, fromTag, pageSize);
+        }
+        else
+        {
+            Collection<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, filter);
+
+            final int totalCount = rootCategories.size();
+            final int startIndex = Math.max(fromTag, 0);
+            final int endIndex = Math.min(fromTag + pageSize, totalCount);
+            List<String> result = new ArrayList<String>(pageSize);
+            int index = 0;
+            // paging for not sorted tag names
+            for (ChildAssociationRef rootCategory : rootCategories)
+            {
+                if (startIndex > index++)
+                {
+                    continue;
+                }
+                String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
+                    result.add(name);
+                if (index == endIndex)
+                {
+                    break;
+                }
+            }
+            return new Pair<List<String>, Integer> (result, totalCount);
+        }
+    }
+
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#hasTag(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
@@ -1423,5 +1490,6 @@ public class TaggingServiceImpl implements TaggingService,
      */
     public void flush()
     {
-    }   
+    }
+
 }

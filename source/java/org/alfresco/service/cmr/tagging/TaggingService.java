@@ -275,6 +275,28 @@ public interface TaggingService
      */
     @NotAuditable
     List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag, NodeRef nodeRef);
+
+    /**
+     * Get page of the tags currently available
+     *  
+     * @param  storeRef                       node reference
+     * @param  fromTag                        offset
+     * @param  pageSize                       page size
+     * @return Pair<List<String>, Integer>    pair of tag names and total count
+     */
+    @NotAuditable
+    Pair<List<String>, Integer> getPagedTags(StoreRef storeRef, int fromTag, int pageSize);
+    
+    /**
+     * 
+     * @param  storeRef                       node reference
+     * @param  filter                         tag filter
+     * @param  fromTag                        page offset
+     * @param  pageSize                       page size
+     * @return Pair<List<String>, Integer>    pair of tag names and total count
+     */
+    @NotAuditable
+    Pair<List<String>, Integer> getPagedTags(StoreRef storeRef, String filter, int fromTag, int pageSize);
 }
 
 

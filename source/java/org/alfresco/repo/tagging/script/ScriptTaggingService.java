@@ -25,6 +25,7 @@ import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.Pair;
 
 
 /**
@@ -61,6 +62,22 @@ public class ScriptTaggingService extends BaseScopableProcessorExtension
     }
 
     /**
+     * Get page of tags with totalRecords info
+     * 
+     * @param store
+     * @param fromTag
+     * @param pageSize
+     * @return
+     */
+    public PagedTagsWrapper getPagedTags(String store, int fromTag, int pageSize)
+    {
+        StoreRef storeRef = new StoreRef(store);
+        Pair<List<String>, Integer> page = this.serviceRegistry.getTaggingService().getPagedTags(storeRef, fromTag, pageSize);
+        List<String> result = page.getFirst();
+        return new PagedTagsWrapper((String[])result.toArray(new String[result.size()]), page.getSecond());
+    }
+
+    /**
      * Get all the tags available in a store based on a text filter
      * 
      * @param store     store reference
@@ -72,6 +89,14 @@ public class ScriptTaggingService extends BaseScopableProcessorExtension
         StoreRef storeRef = new StoreRef(store);
         List<String> result = this.serviceRegistry.getTaggingService().getTags(storeRef, filter);
         return (String[])result.toArray(new String[result.size()]);
+    }
+
+    public PagedTagsWrapper getPagedTags(String store, String filter, int fromTag, int pageSize)
+    {
+        StoreRef storeRef = new StoreRef(store);
+        Pair<List<String>, Integer> page = this.serviceRegistry.getTaggingService().getPagedTags(storeRef, filter, fromTag, pageSize);
+        List<String> result = page.getFirst();
+        return new PagedTagsWrapper((String[])result.toArray(new String[result.size()]), page.getSecond());
     }
 
     /**

@@ -66,6 +66,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -337,6 +338,15 @@ public class TaggingServiceImplTest extends TestCase
                 assertTrue(tags.contains(TAG_1));
                 assertTrue(tags.contains(LOWER_TAG));
                 
+                // Get Paged tags with filter
+                Pair<List<String>, Integer> pagedTags = taggingService.getPagedTags(TaggingServiceImplTest.storeRef, "one", 0 ,10);
+                assertNotNull(pagedTags);
+                List<String> tagPage = pagedTags.getFirst();
+                int allFilteredTagsCount = pagedTags.getSecond();
+                assertEquals(1, allFilteredTagsCount);
+                assertEquals(1, tagPage.size());
+                assertTrue(tagPage.get(0).contains("one"));
+
                 // Check isTag method
                 assertFalse(taggingService.isTag(TaggingServiceImplTest.storeRef, TAG_2));
                 assertTrue(taggingService.isTag(TaggingServiceImplTest.storeRef, TAG_1));

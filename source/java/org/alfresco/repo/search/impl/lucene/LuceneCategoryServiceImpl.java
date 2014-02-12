@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -147,10 +148,15 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth)
     {
-    	return getChildren(categoryRef, mode, depth, false);
+    	return getChildren(categoryRef, mode, depth, false, null);
+    }
+    
+    public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, String filter)
+    {
+    	return getChildren(categoryRef, mode, depth, false, filter);
     }
 
-    private Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, boolean sortByName)
+    private Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, boolean sortByName, String filter)
     {
         if (categoryRef == null)
         {
@@ -195,18 +201,26 @@ public class LuceneCategoryServiceImpl implements CategoryService
                 luceneQuery.append("+TYPE:\"" + ContentModel.TYPE_CATEGORY.toString() + "\"");
                 break;
             }
+            if (filter != null)
+            {
+                luceneQuery.append(" " + "+@cm\\:name:\"*" + filter + "*\"");
+            }
 
             // Get a searcher that will include Categories added in this transaction
             SearchService searcher = indexerAndSearcher.getSearcher(categoryRef.getStoreRef(), true);
             
             // Perform the search
             SearchParameters searchParameters = new SearchParameters();
-            searchParameters.setQuery(luceneQuery.toString());
+            resultSet = searcher.query(categoryRef.getStoreRef(), "lucene", luceneQuery.toString(), null);
             searchParameters.setLanguage("lucene");
             if(sortByName)
             {
             	searchParameters.addSort("@" + ContentModel.PROP_NAME, true);
             }
+            searchParameters.setQuery(luceneQuery.toString());
+            searchParameters.setLimit(-1);
+            searchParameters.setMaxItems(Integer.MAX_VALUE);
+            searchParameters.setLimitBy(LimitBy.UNLIMITED);
             searchParameters.addStore(categoryRef.getStoreRef());
             resultSet = searcher.query(searchParameters);
 
@@ -368,7 +382,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
         OUTER: for(NodeRef nodeRef : nodeRefs)
         {
-        	Collection<ChildAssociationRef> children = getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName);
+        	Collection<ChildAssociationRef> children = getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, null);
         	for(ChildAssociationRef child : children)
         	{
         		count++;
@@ -419,11 +433,16 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName)
     {
+        return getRootCategories(storeRef, aspectName, null);
+    }
+
+    public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, String filter)
+    {
         Collection<ChildAssociationRef> assocs = new LinkedList<ChildAssociationRef>();
         Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
         for (NodeRef nodeRef : nodeRefs)
         {
-            assocs.addAll(getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE));
+            assocs.addAll(getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, false, filter));
         }
         return assocs;
     }

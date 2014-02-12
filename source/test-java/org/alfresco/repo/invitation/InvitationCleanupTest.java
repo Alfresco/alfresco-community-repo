@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
@@ -31,6 +32,8 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 import org.alfresco.service.cmr.invitation.InvitationService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -73,6 +76,7 @@ public class InvitationCleanupTest
     private static SiteService               SITE_SERVICE;
     private static RetryingTransactionHelper TRANSACTION_HELPER;
     private static WorkflowService           WORKFLOW_SERVICE;
+    private static NodeArchiveService        NODE_ARCHIVE_SERVICE;
     
     @BeforeClass public static void initStaticData() throws Exception
     {
@@ -80,6 +84,7 @@ public class InvitationCleanupTest
         SITE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("SiteService", SiteService.class);
         TRANSACTION_HELPER = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
         WORKFLOW_SERVICE   = APP_CONTEXT_INIT.getApplicationContext().getBean("WorkflowService", WorkflowService.class);
+        NODE_ARCHIVE_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("nodeArchiveService", NodeArchiveService.class);
     }
     
     /** See CLOUD-1824 for details on bug &amp; ALF-11872 for details on a related, older bug. */
@@ -125,16 +130,20 @@ public class InvitationCleanupTest
                     }
                 });
                 
-                TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+                NodeRef archivedNodeRef = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<NodeRef>()
                 {
-                    public Void execute() throws Throwable
+                    public NodeRef execute() throws Throwable
                     {
+                        SiteInfo siteInfo = SITE_SERVICE.getSite(siteShortName);
                         // UserOne ignores the task and instead deletes the site.
                         SITE_SERVICE.deleteSite(siteShortName);
                         
-                        return null;
+                        return NODE_ARCHIVE_SERVICE.getArchivedNode(siteInfo.getNodeRef());
                     }
                 });
+                
+                // Purge deleted site from trashcan so that sitename can be reused
+                NODE_ARCHIVE_SERVICE.purgeArchivedNode(archivedNodeRef);
                 
                 // The pending inviations are deleted asynchronously and so we must wait for that deletion to complete.
                 // TODO Obviously Thread.sleep is not the best way to do this.

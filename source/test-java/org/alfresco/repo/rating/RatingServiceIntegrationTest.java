@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
@@ -60,12 +61,14 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 /**
  * @author Neil McErlean
  * @since 3.4
  */
+@Category(OwnJVMTestsCategory.class)
 public class RatingServiceIntegrationTest
 {
     // Rule to initialise the default Alfresco spring configuration

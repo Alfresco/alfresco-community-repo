@@ -23,8 +23,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test class for {@link ApplicationContextInit}.
@@ -32,6 +34,7 @@ import org.junit.Test;
  * @author Neil Mc Erlean
  * @since Odin
  */
+@Category(OwnJVMTestsCategory.class)
 public class ApplicationContextInitTest
 {
     // Some dummy contexts with test beans in them.

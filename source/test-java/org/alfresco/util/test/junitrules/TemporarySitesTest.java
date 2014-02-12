@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.test.junitrules.TemporarySites.TestSiteAndMemberInfo;
 import org.junit.Before;
@@ -40,6 +41,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 /**
@@ -48,6 +50,7 @@ import org.junit.rules.RuleChain;
  * @author Neil McErlean
  * @since 4.0.3
  */
+@Category(OwnJVMTestsCategory.class)
 public class TemporarySitesTest
 {
     // Rule to initialise the default Alfresco spring configuration

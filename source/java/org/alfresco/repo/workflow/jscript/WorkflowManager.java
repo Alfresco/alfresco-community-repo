@@ -209,7 +209,7 @@ public class WorkflowManager extends BaseScopableProcessorExtension
     public ScriptNode createPackage()
     {
         NodeRef node = services.getWorkflowService().createPackage(null);
-        return new ScriptNode(node, services);
+        return new ScriptNode(node, services, getScope());
     }
 
     /**

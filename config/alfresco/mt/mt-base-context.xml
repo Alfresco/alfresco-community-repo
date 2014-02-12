@@ -16,9 +16,6 @@
    
    <bean id="baseMultiTAdminService" abstract="true">
    
-      <!--
-      <property name="nodeService" ref="NodeService"/>
-      -->
       <property name="nodeService" ref="dbNodeServiceImpl"/> <!-- TODO - go direct, until we expose deleteStore via public NodeService API -->
       <property name="dictionaryComponent" ref="dictionaryService"/>
       <property name="authenticationContext" ref="authenticationContext"/>
@@ -46,7 +43,7 @@
       <property name="tenantService" ref="tenantService" />
       <property name="tenantAdminDAO" ref="tenantAdminDAO" />
       <property name="storesCache" ref="routingContentStoreCache" />
-      <property name="singletonCache" ref="immutableSingletonCache"/>
+      <property name="transactionService" ref="transactionService"/>
    </bean>
 
    <bean id="networksService" class="org.alfresco.repo.tenant.NetworksServiceImpl">

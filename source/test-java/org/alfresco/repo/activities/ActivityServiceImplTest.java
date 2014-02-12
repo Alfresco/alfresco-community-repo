@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,6 +29,7 @@ import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -38,6 +39,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.experimental.categories.Category;
@@ -58,6 +60,7 @@ public class ActivityServiceImplTest extends TestCase
     private ScriptService scriptService;
     private MutableAuthenticationService authenticationService;
     private SiteService siteService;
+    private TransactionService transactionService;
     private ActivityPostDAO postDAO;
     private NodeArchiveService nodeArchiveService;
     
@@ -75,6 +78,7 @@ public class ActivityServiceImplTest extends TestCase
         scriptService = (ScriptService)ctx.getBean("ScriptService");
         siteService = (SiteService)ctx.getBean("SiteService");
         nodeArchiveService = (NodeArchiveService)ctx.getBean("nodeArchiveService");
+        transactionService = (TransactionService)ctx.getBean("TransactionService");
         
         postDAO = (ActivityPostDAO)ctx.getBean("postDAO");
         
@@ -142,10 +146,18 @@ public class ActivityServiceImplTest extends TestCase
         
         authenticationService.authenticate(USER_UN, USER_PW.toCharArray());
         
-        String siteId = "emptySite-"+TEST_RUN_ID;
+        final String siteId = "emptySite-"+TEST_RUN_ID;
         siteService.createSite("mypreset", siteId, "empty site title", "empty site description", SiteVisibility.PUBLIC);
-        
-        List<String> siteFeedEntries = activityService.getSiteFeedEntries(siteId);
+
+        RetryingTransactionCallback<List<String>> getEntriesCallback = new RetryingTransactionCallback<List<String>>()
+        {
+            @Override
+            public List<String> execute() throws Throwable
+            {
+                return activityService.getSiteFeedEntries(siteId);
+            }
+        };
+        List<String> siteFeedEntries = transactionService.getRetryingTransactionHelper().doInTransaction(getEntriesCallback);
         
         assertNotNull(siteFeedEntries);
         assertTrue(siteFeedEntries.isEmpty());

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -141,8 +141,8 @@ public interface NodeServicePolicies
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateNode");
         /**
-         * Called after a new node has been created.  This includes the modification of properties, child and target
-         * associations and the addition of aspects.
+         * Called after a new node has been created.  This includes the modification of properties and
+         * the addition of aspects.
          * 
          * @param nodeRef  reference to the updated node
          */

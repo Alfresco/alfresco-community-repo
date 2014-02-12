@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,7 +20,10 @@ package org.alfresco.repo.action.executer;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -44,6 +47,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
@@ -75,6 +79,7 @@ public abstract class AbstractMailActionExecuterTest
 
     private static String ALFRESCO_EE_USER = "plainUser";
 
+    protected static TransactionService TRANSACTION_SERVICE;
     protected static ActionService ACTION_SERVICE;
     protected static MailActionExecuter ACTION_EXECUTER;
     protected static PreferenceService PREFERENCE_SERVICE;
@@ -86,6 +91,7 @@ public abstract class AbstractMailActionExecuterTest
 
     public static void setupTests(ApplicationContext appCtx)
     {
+        TRANSACTION_SERVICE = appCtx.getBean("TransactionService", TransactionService.class);
         ACTION_SERVICE = appCtx.getBean("ActionService", ActionService.class);
         ACTION_EXECUTER = appCtx.getBean("OutboundSMTP", ApplicationContextFactory.class).getApplicationContext().getBean("mail", MailActionExecuter.class);
         PREFERENCE_SERVICE = appCtx.getBean("PreferenceService", PreferenceService.class);
@@ -134,7 +140,6 @@ public abstract class AbstractMailActionExecuterTest
         boolean thisIsCloud = false;
         try
         {
-            // FIXME This is awful, but JUnit's insistence on static modifiers for various lifecycle methods has driven me to it...
             thisIsCloud = (Class.forName("org.alfresco.module.org_alfresco_module_cloud.registration.RegistrationService") != null);
         }
         catch (ClassNotFoundException ignoreIfThrown)
@@ -301,12 +306,20 @@ public abstract class AbstractMailActionExecuterTest
             // run with no current user
             AuthenticationUtil.clearCurrentSecurityContext();
 
-            Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+            final Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
             mailAction.setParameterValue(MailActionExecuter.PARAM_TO, "some.body@eaxmple.com");
             mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
             mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, "This is a test message.");
 
-            ACTION_EXECUTER.executeImpl(mailAction, null);
+            TRANSACTION_SERVICE.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    ACTION_EXECUTER.executeImpl(mailAction, null);
+                    return null;
+                }
+            });
         }
         finally
         {

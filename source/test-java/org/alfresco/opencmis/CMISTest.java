@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.alfresco.opencmis;
 
 import static org.junit.Assert.assertEquals;
@@ -17,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
@@ -1316,5 +1336,55 @@ public class CMISTest
         ObjectList ol = this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("2"));
         assertEquals(2, ol.getNumItems());
         assertEquals("3", changeLogToken.getValue());
+    }
+
+    /**
+     * MNT-10223
+     * Check the IsLatestMajorVersion for a doc with minor version.
+     */
+    @Test
+    public void testIsLatestMajorVersion()
+    {
+        final TestContext testContext = new TestContext();
+
+        // create simple text plain content
+        final PropertiesImpl properties = new PropertiesImpl();
+        String objectTypeId = "cmis:document";
+        properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, objectTypeId));
+        String fileName = "textFile" + GUID.generate();
+        properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, fileName));
+        final ContentStreamImpl contentStream = new ContentStreamImpl(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Simple text plain document");
+
+        withCmisService(new CmisServiceCallback<String>() {
+            @Override
+            public String execute(CmisService cmisService) {
+                List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                assertTrue(repositories.size() > 0);
+                RepositoryInfo repo = repositories.get(0);
+                String repositoryId = repo.getId();
+                String objectId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().getId(), contentStream, VersioningState.MINOR, null, null);
+
+                ObjectData cmidDoc = cmisService.getObject(repositoryId, objectId, null, true, IncludeRelationships.NONE, null, false, false, null);
+                List<PropertyData<?>> properties = cmidDoc.getProperties().getPropertyList();
+                boolean found = false;
+                PropertyData<?> propIsLatestMajorVersion = null;
+                for (PropertyData<?> property : properties)
+                {
+                    if (property.getId().equals(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION))
+                    {
+                        found = true;
+                        propIsLatestMajorVersion = property;
+                        break;
+                    }
+                }
+                //properties..contains(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION);
+                assertTrue("The CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION property was not found", found);
+                if (found)
+                {
+                    assertFalse("The CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION should be false as minor version was created", (Boolean) propIsLatestMajorVersion.getValues().get(0));
+                }
+                return objectId;
+            }
+        });
     }
 }

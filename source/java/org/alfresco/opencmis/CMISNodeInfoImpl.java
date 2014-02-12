@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -592,7 +592,9 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             isLatestMajorVersion = Boolean.FALSE;
             if (!isPWC())
             {
-                if(isCurrentNode())
+                // MNT-10223. It should not be a version and not a minor version
+                Version version = getVersion();
+                if (isCurrentNode() && version != null && version.getVersionType() == VersionType.MAJOR)
                 {
                     isLatestMajorVersion = Boolean.TRUE;
                 }

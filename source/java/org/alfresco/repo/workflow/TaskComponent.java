@@ -82,6 +82,14 @@ public interface TaskComponent
     public List<WorkflowTask> queryTasks(final WorkflowTaskQuery query, boolean sameSession);
 
     /**
+     * Count the number of active tasks that match the given query.
+     * 
+     * @param query the filter by which tasks are queried
+     * @return number of matching tasks.
+     */
+    public long countTasks(final WorkflowTaskQuery query);
+    
+    /**
      * Update the Properties and Associations of a Task
      * 
      * @param taskId  the task id to update

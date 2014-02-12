@@ -509,6 +509,14 @@ public interface WorkflowService
     public List<WorkflowTask> queryTasks(WorkflowTaskQuery query, boolean sameSession);
     
     /**
+     * Get the number of tasks matching the given query
+     * 
+     * @param workflowTaskQuery the filter by which tasks are queried
+     * @return count of matching tasks
+     */
+    public long countTasks(WorkflowTaskQuery workflowTaskQuery);
+    
+    /**
      * Update the Properties and Associations of a Task
      * 
      * @param taskId  the task id to update

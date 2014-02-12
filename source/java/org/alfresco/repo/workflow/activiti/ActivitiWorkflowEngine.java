@@ -241,8 +241,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             
             // Convert historic process instance
             HistoricProcessInstance deletedInstance = historyService.createHistoricProcessInstanceQuery()
-            	.processInstanceId(processInstance.getId())
-            	.singleResult();
+                .processInstanceId(processInstance.getId())
+                .singleResult();
             WorkflowInstance result =  typeConverter.convert(deletedInstance);
             
             // Delete the historic process instance
@@ -274,8 +274,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             
             // Convert historic process instance
             HistoricProcessInstance deletedInstance = historyService.createHistoricProcessInstanceQuery()
-            	.processInstanceId(localId)
-            	.singleResult();
+                .processInstanceId(localId)
+                .singleResult();
             
             if(deletedInstance == null) {
                 throw new WorkflowException(messageService.getMessage(ERR_DELETE_UNEXISTING_WORKFLOW, localId));
@@ -429,12 +429,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try 
         {
-        	ProcessDefinitionQuery query = repoService.createProcessDefinitionQuery();
-        	if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && !TenantUtil.isCurrentDomainDefault()) 
-        	{
-        		query.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "%");
-        	}
-        	return getValidWorkflowDefinitions(query.list());
+            ProcessDefinitionQuery query = repoService.createProcessDefinitionQuery();
+            if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && !TenantUtil.isCurrentDomainDefault()) 
+            {
+                query.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "%");
+            }
+            return getValidWorkflowDefinitions(query.list());
         } 
         catch (ActivitiException ae)
         {
@@ -493,8 +493,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             
             if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && procDef != null)
             {
-            	factory.checkDomain(procDef.getKey());
-        	}
+                factory.checkDomain(procDef.getKey());
+            }
             
             return typeConverter.convert(procDef);
         }
@@ -515,7 +515,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             String key = factory.getLocalEngineId(workflowName);
             if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
             {
-            	key = factory.getDomainProcessKey(workflowName);
+                key = factory.getDomainProcessKey(workflowName);
             }
             ProcessDefinition definition = activitiUtil.getProcessDefinitionByKey(key);
             return typeConverter.convert(definition);
@@ -575,12 +575,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try 
         {
-        	ProcessDefinitionQuery query = repoService.createProcessDefinitionQuery().latestVersion();
-        	if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && !TenantUtil.isCurrentDomainDefault()) 
-        	{
-        		query.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "%");
-        	}
-        	return getValidWorkflowDefinitions(query.list());
+            ProcessDefinitionQuery query = repoService.createProcessDefinitionQuery().latestVersion();
+            if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && !TenantUtil.isCurrentDomainDefault()) 
+            {
+                query.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "%");
+            }
+            return getValidWorkflowDefinitions(query.list());
         }
         catch (ActivitiException ae)
         {
@@ -735,37 +735,37 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     */
     public List<WorkflowTimer> getTimers(String workflowId)
     {
-    	 try 
+         try 
          {
              List<WorkflowTimer> timers = new ArrayList<WorkflowTimer>();
              
              String processInstanceId = createLocalId(workflowId);
              List<Job> timerJobs = managementService.createJobQuery()
-             	.processInstanceId(processInstanceId)
-             	.timers()
-             	.list();
+                 .processInstanceId(processInstanceId)
+                 .timers()
+                 .list();
              
              // Only fetch process-instance when timers are available, to prevent extra unneeded query
              ProcessInstance jobsProcessInstance = null;
              if(timerJobs.size() > 0)
              {
-            	 // Reuse the process-instance, is used from WorkflowPath creation
-            	 jobsProcessInstance = runtimeService.createProcessInstanceQuery()
-              		.processInstanceId(processInstanceId).singleResult();
+                 // Reuse the process-instance, is used from WorkflowPath creation
+                 jobsProcessInstance = runtimeService.createProcessInstanceQuery()
+                      .processInstanceId(processInstanceId).singleResult();
              }
              
              // Convert the timerJobs to WorkflowTimers
              for(Job job : timerJobs)
              {
-            	 Execution jobExecution = runtimeService.createExecutionQuery()
-            	 	.executionId(job.getExecutionId()).singleResult();
-            	 
-            	 WorkflowPath path = typeConverter.convert(jobExecution, jobsProcessInstance);
-            	 WorkflowTask workflowTask = getTaskForTimer(job, jobsProcessInstance, jobExecution);
-            	 
-            	 WorkflowTimer workflowTimer = factory.createWorkflowTimer(job.getId(), job.getId(),
-            			 job.getExceptionMessage(), job.getDuedate(), path, workflowTask);
-            	 timers.add(workflowTimer);
+                 Execution jobExecution = runtimeService.createExecutionQuery()
+                     .executionId(job.getExecutionId()).singleResult();
+                 
+                 WorkflowPath path = typeConverter.convert(jobExecution, jobsProcessInstance);
+                 WorkflowTask workflowTask = getTaskForTimer(job, jobsProcessInstance, jobExecution);
+                 
+                 WorkflowTimer workflowTimer = factory.createWorkflowTimer(job.getId(), job.getId(),
+                         job.getExceptionMessage(), job.getDuedate(), path, workflowTask);
+                 timers.add(workflowTimer);
              }
              
              return timers;
@@ -782,28 +782,28 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         if (job instanceof TimerEntity) 
         {
-			ReadOnlyProcessDefinition def = activitiUtil.getDeployedProcessDefinition(processInstance.getProcessDefinitionId());
-			List<String> activeActivityIds = runtimeService.getActiveActivityIds(jobExecution.getId());
-			
-			if(activeActivityIds.size() == 1)
-			{
-				PvmActivity targetActivity = def.findActivity(activeActivityIds.get(0));
-				if(targetActivity != null)
-				{
-					// Only get tasks of active activity is a user-task 
-					String activityType = (String) targetActivity.getProperty(ActivitiConstants.NODE_TYPE);
-					if(ActivitiConstants.USER_TASK_NODE_TYPE.equals(activityType))
-					{
-						Task task = taskService.createTaskQuery().executionId(job.getExecutionId()).singleResult();
-						return typeConverter.convert(task);
-					}
-				}
-			}
-		}
-		return null;
-	}
+            ReadOnlyProcessDefinition def = activitiUtil.getDeployedProcessDefinition(processInstance.getProcessDefinitionId());
+            List<String> activeActivityIds = runtimeService.getActiveActivityIds(jobExecution.getId());
+            
+            if(activeActivityIds.size() == 1)
+            {
+                PvmActivity targetActivity = def.findActivity(activeActivityIds.get(0));
+                if(targetActivity != null)
+                {
+                    // Only get tasks of active activity is a user-task 
+                    String activityType = (String) targetActivity.getProperty(ActivitiConstants.NODE_TYPE);
+                    if(ActivitiConstants.USER_TASK_NODE_TYPE.equals(activityType))
+                    {
+                        Task task = taskService.createTaskQuery().executionId(job.getExecutionId()).singleResult();
+                        return typeConverter.convert(task);
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
-	/**
+    /**
     * {@inheritDoc}
     */
     public WorkflowInstance getWorkflowById(String workflowId)
@@ -921,12 +921,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             
             if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
             {
-            	// Workflow-definition is deployed tenant-aware, key should be altered
-            	return factory.getDomainProcessKey(idAttrib.getNodeValue());
+                // Workflow-definition is deployed tenant-aware, key should be altered
+                return factory.getDomainProcessKey(idAttrib.getNodeValue());
             }
             else
             {
-            	return idAttrib.getNodeValue();
+                return idAttrib.getNodeValue();
             }
         }
         finally
@@ -1268,12 +1268,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         // Check if the assignee is equal to the current logged-in user. If not, assign task before ending
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         if(task.getAssignee() == null || !task.getAssignee().equals(currentUserName)) {
-        	taskService.setAssignee(localTaskId, currentUserName);
-        	// Also update pojo used to set the outcome, this will read assignee as wel
-        	task.setAssignee(currentUserName);
-        	
-        	// Re-fetch the task-entity since it's revision has been updated by the setAssignee() call
-        	task = taskService.createTaskQuery().taskId(localTaskId).singleResult();
+            taskService.setAssignee(localTaskId, currentUserName);
+            // Also update pojo used to set the outcome, this will read assignee as wel
+            task.setAssignee(currentUserName);
+            
+            // Re-fetch the task-entity since it's revision has been updated by the setAssignee() call
+            task = taskService.createTaskQuery().taskId(localTaskId).singleResult();
         }
         
         setOutcome(task, transition);
@@ -1362,53 +1362,53 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         {
             if(state == WorkflowTaskState.IN_PROGRESS)
             {
-            	TaskQuery taskQuery = taskService.createTaskQuery()
-                	.taskAssignee(authority);
-            	
-            	if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
-            	{
-            		taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
-            	}
+                TaskQuery taskQuery = taskService.createTaskQuery()
+                    .taskAssignee(authority);
+                
+                if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+                {
+                    taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+                }
                 List<Task> tasks = taskQuery.list();
                 
                 List<WorkflowTask> resultingTasks = new ArrayList<WorkflowTask>();
                 for(Task task : tasks) {
-                	
-                	if(lazyInitialization)
-                	{
-                		resultingTasks.add(new LazyActivitiWorkflowTask(task, typeConverter, tenantService, 
-                				typeConverter.getWorkflowDefinitionName(task.getProcessDefinitionId())));
-                	}
-                	else
-                	{
-                		resultingTasks.add(typeConverter.convert(task));
-                	}
+                    
+                    if(lazyInitialization)
+                    {
+                        resultingTasks.add(new LazyActivitiWorkflowTask(task, typeConverter, tenantService, 
+                                typeConverter.getWorkflowDefinitionName(task.getProcessDefinitionId())));
+                    }
+                    else
+                    {
+                        resultingTasks.add(typeConverter.convert(task));
+                    }
                 }
                 return resultingTasks;
             }
             else
             {
-            	HistoricTaskInstanceQuery taskQuery = historyService.createHistoricTaskInstanceQuery()
-	                .taskAssignee(authority)
-	                .finished();
-            	
-            	if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
-            	{
-            		taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
-            	}
+                HistoricTaskInstanceQuery taskQuery = historyService.createHistoricTaskInstanceQuery()
+                    .taskAssignee(authority)
+                    .finished();
+                
+                if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+                {
+                    taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+                }
                 List<HistoricTaskInstance> historicTasks =taskQuery.list();
                 
                 List<WorkflowTask> resultingTasks = new ArrayList<WorkflowTask>();
                 for(HistoricTaskInstance historicTask : historicTasks) {
-                	
-                	if(lazyInitialization)
-                	{
-                		resultingTasks.add(new LazyActivitiWorkflowTask(historicTask, typeConverter, tenantService));
-                	}
-                	else
-                	{
-                		resultingTasks.add(typeConverter.convert(historicTask));
-                	}
+                    
+                    if(lazyInitialization)
+                    {
+                        resultingTasks.add(new LazyActivitiWorkflowTask(historicTask, typeConverter, tenantService));
+                    }
+                    else
+                    {
+                        resultingTasks.add(typeConverter.convert(historicTask));
+                    }
                 }
                 return resultingTasks;
             }
@@ -1458,30 +1458,30 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 {
                     if(task.getAssignee() == null) 
                     {
-                    	// ALF-12264: filter out tasks from other domain, can occur when tenants
-                    	// have a group with the same name
-                    	if(lazyInitialization)
-                    	{
-                    		String workflowDefinitionName = typeConverter.getWorkflowDefinitionName(task.getProcessDefinitionId());
-                    		try
-                    		{
-                    			workflowDefinitionName = tenantService.getBaseName(workflowDefinitionName);
-                    			currentTask = new LazyActivitiWorkflowTask(task, typeConverter, tenantService, workflowDefinitionName);
-                    		}
-                    		catch(RuntimeException re)
-                    		{
-                    			// Domain mismatch, don't use this task
-                    			currentTask = null;
-                    		}
-                    	}
-                    	else
-                    	{
-                    		currentTask = typeConverter.convert(task, true);
-                    	}
-                    	if(currentTask != null)
-                    	{
-                    		tasks.add(currentTask);
-                    	}
+                        // ALF-12264: filter out tasks from other domain, can occur when tenants
+                        // have a group with the same name
+                        if(lazyInitialization)
+                        {
+                            String workflowDefinitionName = typeConverter.getWorkflowDefinitionName(task.getProcessDefinitionId());
+                            try
+                            {
+                                workflowDefinitionName = tenantService.getBaseName(workflowDefinitionName);
+                                currentTask = new LazyActivitiWorkflowTask(task, typeConverter, tenantService, workflowDefinitionName);
+                            }
+                            catch(RuntimeException re)
+                            {
+                                // Domain mismatch, don't use this task
+                                currentTask = null;
+                            }
+                        }
+                        else
+                        {
+                            currentTask = typeConverter.convert(task, true);
+                        }
+                        if(currentTask != null)
+                        {
+                            tasks.add(currentTask);
+                        }
                     }
                 }
                 return tasks;
@@ -1576,6 +1576,24 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         return queryTasks(query);
     }
+    
+    @Override
+    public long countTasks(WorkflowTaskQuery query) {
+        long totalCount = 0;
+        
+        WorkflowTaskState taskState = query.getTaskState();
+        if(WorkflowTaskState.COMPLETED.equals(taskState) == false)
+        {
+           totalCount += createRuntimeTaskQuery(query).count();    
+        }   
+        
+         // Depending on the state, history should be included/excluded as well
+        if(WorkflowTaskState.IN_PROGRESS.equals(taskState) == false)
+        {
+            totalCount += createHistoricTaskQuery(query).count();
+        }
+        return totalCount;
+    }
 
     /**
      * {@inheritDoc}
@@ -1604,67 +1622,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         // so no use in querying runtime tasks if not active
         if (!Boolean.FALSE.equals(query.isActive()))
         {
-            // Add task name
-            TaskQuery taskQuery = taskService.createTaskQuery();
-            
-            if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
-            {
-            	// Filter by tenant domain.
-                taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
-            }
-            
-            if (query.getTaskName() != null)
-            {
-                // Task 'key' is stored as variable on task
-                String formKey = query.getTaskName().toPrefixString(namespaceService);
-                taskQuery.taskVariableValueEquals(ActivitiConstants.PROP_TASK_FORM_KEY, formKey);
-            }
-
-            if (query.getProcessId() != null)
-            {
-                String processInstanceId = createLocalId(query.getProcessId());
-                taskQuery.processInstanceId(processInstanceId);
-            }
-
-            if (query.getProcessName() != null)
-            {
-                String processName = getProcessNameMTSafe(query.getProcessName());
-                taskQuery.processDefinitionKey(processName);
-            }
-            
-            if (query.getWorkflowDefinitionName() != null)
-            {
-                String processName = factory.getProcessKey(query.getWorkflowDefinitionName());
-                taskQuery.processDefinitionKey(processName);
-            }
-
-            if (query.getActorId() != null)
-            {
-                taskQuery.taskAssignee(query.getActorId());
-            }
-
-            if (query.getTaskId() != null)
-            {
-                String taskId = createLocalId(query.getTaskId());
-                taskQuery.taskId(taskId);
-            }
-
-            // Custom task properties
-            if (query.getTaskCustomProps() != null)
-            {
-                addTaskPropertiesToQuery(query.getTaskCustomProps(), taskQuery);
-            }
-
-            if (query.getProcessCustomProps() != null)
-            {
-                addProcessPropertiesToQuery(query.getProcessCustomProps(), taskQuery);
-            }
-            // Add ordering
-            if (query.getOrderBy() != null)
-            {
-                WorkflowTaskQuery.OrderBy[] orderBy = query.getOrderBy();
-                orderQuery(taskQuery, orderBy);
-            }
+            TaskQuery taskQuery = createRuntimeTaskQuery(query);
 
             List<Task> results;
             int limit = query.getLimit();
@@ -1684,16 +1642,16 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      private void addProcessPropertiesToQuery(
              Map<QName, Object> processCustomProps, TaskQuery taskQuery) 
      {
-    	 for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
+         for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
          {
              String name =factory.mapQNameToName(customProperty.getKey());
 
              // Exclude the special "VAR_TENANT_DOMAIN" variable, this cannot be queried by users
              if(name != ActivitiConstants.VAR_TENANT_DOMAIN)
              {
-            	 // Perform minimal property conversions
-            	 Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
-            	 taskQuery.processVariableValueEquals(name, converted);
+                 // Perform minimal property conversions
+                 Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
+                 taskQuery.processVariableValueEquals(name, converted);
              }
          }
      }
@@ -1818,78 +1776,81 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
              taskQuery.taskVariableValueEquals(name, converted);
          }
      }
+     
+     private TaskQuery createRuntimeTaskQuery(WorkflowTaskQuery query) 
+     {
+         // Add task name
+         TaskQuery taskQuery = taskService.createTaskQuery();
+         
+         if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+         {
+             // Filter by tenant domain.
+             taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+         } else if(tenantService.isEnabled() && !TenantUtil.isCurrentDomainDefault() && !StringUtils.isEmpty(TenantUtil.getCurrentDomain())) {
+             // Process definition keys are prefixed with the tenant ID, in case MT is enabled and
+             // deployments are done in tenant-context
+             taskQuery.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "@%");
+         }
+         
+         if (query.getTaskName() != null)
+         {
+             // Task 'key' is stored as variable on task
+             String formKey = query.getTaskName().toPrefixString(namespaceService);
+             taskQuery.taskVariableValueEquals(ActivitiConstants.PROP_TASK_FORM_KEY, formKey);
+         }
+
+         if (query.getProcessId() != null)
+         {
+             String processInstanceId = createLocalId(query.getProcessId());
+             taskQuery.processInstanceId(processInstanceId);
+         }
+
+         if (query.getProcessName() != null)
+         {
+             String processName = getProcessNameMTSafe(query.getProcessName());
+             taskQuery.processDefinitionKey(processName);
+         }
+         
+         if (query.getWorkflowDefinitionName() != null)
+         {
+             String processName = factory.getProcessKey(query.getWorkflowDefinitionName());
+             taskQuery.processDefinitionKey(processName);
+         }
+
+         if (query.getActorId() != null)
+         {
+             taskQuery.taskAssignee(query.getActorId());
+         }
+
+         if (query.getTaskId() != null)
+         {
+             String taskId = createLocalId(query.getTaskId());
+             taskQuery.taskId(taskId);
+         }
+
+         // Custom task properties
+         if (query.getTaskCustomProps() != null)
+         {
+             addTaskPropertiesToQuery(query.getTaskCustomProps(), taskQuery);
+         }
+
+         if (query.getProcessCustomProps() != null)
+         {
+             addProcessPropertiesToQuery(query.getProcessCustomProps(), taskQuery);
+         }
+         // Add ordering
+         if (query.getOrderBy() != null)
+         {
+             WorkflowTaskQuery.OrderBy[] orderBy = query.getOrderBy();
+             orderQuery(taskQuery, orderBy);
+         }
+         
+         return taskQuery;
+     }
 
      private List<WorkflowTask> queryHistoricTasks(WorkflowTaskQuery query)
      {
-        HistoricTaskInstanceQuery historicQuery = historyService.createHistoricTaskInstanceQuery().finished();
-        
-        if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
-        {
-            // Filter by tenant domain
-            historicQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
-        }
-
-        if (query.getTaskId() != null)
-        {
-            String taskId = createLocalId(query.getTaskId());
-            historicQuery.taskId(taskId);
-        }
-
-        if (query.getProcessId() != null)
-        {
-            String processInstanceId = createLocalId(query.getProcessId());
-            historicQuery.processInstanceId(processInstanceId);
-        }
-
-        if (query.getTaskName() != null)
-        {
-            historicQuery.taskDefinitionKey(query.getTaskName().toPrefixString());
-        }
-
-        if (query.getActorId() != null)
-        {
-            historicQuery.taskAssignee(query.getActorId());
-        }
-
-        if (query.getProcessName() != null)
-        {
-            String processName = getProcessNameMTSafe(query.getProcessName());
-            historicQuery.processDefinitionKey(processName);
-        }
-        
-        if (query.getWorkflowDefinitionName() != null)
-        {
-            String processName = factory.getProcessKey(query.getWorkflowDefinitionName());
-            historicQuery.processDefinitionKey(processName);
-        }
-
-        if (query.getTaskCustomProps() != null)
-        {
-            addTaskPropertiesToQuery(query.getTaskCustomProps(), historicQuery);
-        }
-
-        if (query.getProcessCustomProps() != null)
-        {
-            addProcessPropertiesToQuery(query.getProcessCustomProps(), historicQuery);
-        }
-
-        if (query.isActive() != null)
-        {
-            if (query.isActive())
-            {
-                historicQuery.processUnfinished();
-            }
-            else
-            {
-                historicQuery.processFinished();
-            }
-        }
-
-        // Order query
-        if (query.getOrderBy() != null)
-        {
-            orderQuery(historicQuery, query.getOrderBy());
-        }
+         HistoricTaskInstanceQuery historicQuery = createHistoricTaskQuery(query);
 
         List<HistoricTaskInstance> results;
         int limit = query.getLimit();
@@ -1904,34 +1865,113 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         return getValidHistoricTasks(results);
      }
      
+     private HistoricTaskInstanceQuery createHistoricTaskQuery(WorkflowTaskQuery query) 
+     {
+         HistoricTaskInstanceQuery historicQuery = historyService.createHistoricTaskInstanceQuery().finished();
+         
+         if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+         {
+             // Filter by tenant domain
+             historicQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+         } else if(tenantService.isEnabled() && !TenantUtil.isCurrentDomainDefault() && !StringUtils.isEmpty(TenantUtil.getCurrentDomain())) {
+             // Process definition keys are prefixed with the tenant ID, in case MT is enabled and
+             // deployments are done in tenant-context
+             historicQuery.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "@%");
+         }
+
+         if (query.getTaskId() != null)
+         {
+             String taskId = createLocalId(query.getTaskId());
+             historicQuery.taskId(taskId);
+         }
+
+         if (query.getProcessId() != null)
+         {
+             String processInstanceId = createLocalId(query.getProcessId());
+             historicQuery.processInstanceId(processInstanceId);
+         }
+
+         if (query.getTaskName() != null)
+         {
+             historicQuery.taskDefinitionKey(query.getTaskName().toPrefixString());
+         }
+
+         if (query.getActorId() != null)
+         {
+             historicQuery.taskAssignee(query.getActorId());
+         }
+
+         if (query.getProcessName() != null)
+         {
+             String processName = getProcessNameMTSafe(query.getProcessName());
+             historicQuery.processDefinitionKey(processName);
+         }
+         
+         if (query.getWorkflowDefinitionName() != null)
+         {
+             String processName = factory.getProcessKey(query.getWorkflowDefinitionName());
+             historicQuery.processDefinitionKey(processName);
+         }
+
+         if (query.getTaskCustomProps() != null)
+         {
+             addTaskPropertiesToQuery(query.getTaskCustomProps(), historicQuery);
+         }
+
+         if (query.getProcessCustomProps() != null)
+         {
+             addProcessPropertiesToQuery(query.getProcessCustomProps(), historicQuery);
+         }
+
+         if (query.isActive() != null)
+         {
+             if (query.isActive())
+             {
+                 historicQuery.processUnfinished();
+             }
+             else
+             {
+                 historicQuery.processFinished();
+             }
+         }
+
+         // Order query
+         if (query.getOrderBy() != null)
+         {
+             orderQuery(historicQuery, query.getOrderBy());
+         }
+         
+         return historicQuery;
+     }
+     
      private void addTaskPropertiesToQuery(Map<QName, Object> taskCustomProps, 
                  HistoricTaskInstanceQuery taskQuery) 
      {
-    	 for(Entry<QName, Object> customProperty : taskCustomProps.entrySet()) 
-    	 {
-    		 String name =factory.mapQNameToName(customProperty.getKey());
-    		 
-    		 // Perform minimal property conversions
+         for(Entry<QName, Object> customProperty : taskCustomProps.entrySet()) 
+         {
+             String name =factory.mapQNameToName(customProperty.getKey());
+             
+             // Perform minimal property conversions
              Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
              taskQuery.taskVariableValueEquals(name, converted);
-    	 }
+         }
      }
      
      private void addProcessPropertiesToQuery(Map<QName, Object> processCustomProps, 
                  HistoricTaskInstanceQuery taskQuery) 
      {
-    	 for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
-    	 {
-    		 String name =factory.mapQNameToName(customProperty.getKey());
-    		 
-    		 // Exclude the special "VAR_TENANT_DOMAIN" variable, this cannot be queried by users
+         for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
+         {
+             String name =factory.mapQNameToName(customProperty.getKey());
+             
+             // Exclude the special "VAR_TENANT_DOMAIN" variable, this cannot be queried by users
              if(name != ActivitiConstants.VAR_TENANT_DOMAIN)
              {
-            	 // Perform minimal property conversions
-            	 Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
-            	 taskQuery.processVariableValueEquals(name, converted);
+                 // Perform minimal property conversions
+                 Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
+                 taskQuery.processVariableValueEquals(name, converted);
              }
-    	 }
+         }
      }
      
      private List<WorkflowTask> queryStartTasks(WorkflowTaskQuery query)
@@ -1962,11 +2002,11 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
              WorkflowTask workflowTask = typeConverter.getVirtualStartTask(processInstanceId, null);
              if(workflowTask != null)
              {
-            	boolean startTaskMatches = isStartTaskMatching(workflowTask, query);
-            	if(startTaskMatches)
-            	{
-            		startTasks.add(workflowTask);
-            	}
+                boolean startTaskMatches = isStartTaskMatching(workflowTask, query);
+                if(startTaskMatches)
+                {
+                    startTasks.add(workflowTask);
+                }
              }
          }
          return startTasks;
@@ -1975,134 +2015,134 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      
     private boolean isStartTaskMatching(WorkflowTask workflowTask, WorkflowTaskQuery query) 
     {
-    	if(query.isActive() != null)
-    	{
-    		if(query.isActive() && !workflowTask.getPath().isActive()) 
-    		{
-    			return false;
-    		}
-    		if(!query.isActive() && workflowTask.getPath().isActive()) 
-    		{
-    			return false;
-    		}
-    	}
-    	
-    	if(query.getActorId() != null && !query.getActorId().equals(workflowTask.getProperties().get(ContentModel.PROP_OWNER)))
-    	{
-    		return false;
-    	}
-    	
-    	if(query.getProcessCustomProps() != null)
-    	{
-    		// Get properties for process instance, based on path of start task, which is process-instance
-    		Map<QName, Serializable> props = getPathProperties(workflowTask.getPath().getId());
-    		if(!checkPropertiesPresent(query.getProcessCustomProps(), props))
-    		{
-    			return false;
-    		}
-    	}
-    		
-		if(query.getProcessId() != null)
-		{
-			if(!query.getProcessId().equals(workflowTask.getPath().getInstance().getId()))
-			{
-				return false;
-			}
-		}
-		
-		// Query by process name deprecated, but still implemented.
-		if(query.getProcessName() != null)
-		{
-			String processName = factory.mapQNameToName(query.getProcessName());
-			if(!processName.equals(workflowTask.getPath().getInstance().getDefinition().getName()))
-			{
-				return false;
-			}
-		}
-		
-		if(query.getWorkflowDefinitionName() != null)
+        if(query.isActive() != null)
+        {
+            if(query.isActive() && !workflowTask.getPath().isActive()) 
+            {
+                return false;
+            }
+            if(!query.isActive() && workflowTask.getPath().isActive()) 
+            {
+                return false;
+            }
+        }
+        
+        if(query.getActorId() != null && !query.getActorId().equals(workflowTask.getProperties().get(ContentModel.PROP_OWNER)))
+        {
+            return false;
+        }
+        
+        if(query.getProcessCustomProps() != null)
+        {
+            // Get properties for process instance, based on path of start task, which is process-instance
+            Map<QName, Serializable> props = getPathProperties(workflowTask.getPath().getId());
+            if(!checkPropertiesPresent(query.getProcessCustomProps(), props))
+            {
+                return false;
+            }
+        }
+            
+        if(query.getProcessId() != null)
+        {
+            if(!query.getProcessId().equals(workflowTask.getPath().getInstance().getId()))
+            {
+                return false;
+            }
+        }
+        
+        // Query by process name deprecated, but still implemented.
+        if(query.getProcessName() != null)
+        {
+            String processName = factory.mapQNameToName(query.getProcessName());
+            if(!processName.equals(workflowTask.getPath().getInstance().getDefinition().getName()))
+            {
+                return false;
+            }
+        }
+        
+        if(query.getWorkflowDefinitionName() != null)
         {
             if(!query.getWorkflowDefinitionName().equals(workflowTask.getPath().getInstance().getDefinition().getName()))
             {
                 return false;
             }
         }
-    	
-		if(query.getTaskCustomProps() != null)
-		{
-			if(!checkPropertiesPresent(query.getTaskCustomProps(), workflowTask.getProperties()))
-    		{
-    			return false;
-    		}
-		}
-		
-		if(query.getTaskId() != null)
-		{
-			if(!query.getTaskId().equals(workflowTask.getId()))
-			{
-				return false;
-			}
-		}
-		
-		if(query.getTaskName() != null)
-		{
-			if(!query.getTaskName().equals(workflowTask.getDefinition().getMetadata().getName()))
-			{
-				return false;
-			}
-		}
-		
-		if(query.getTaskState() != null)
-		{
-			if(!query.getTaskState().equals(workflowTask.getState()))
-			{
-				return false;
-			}
-		}
-		
-    	// If we fall through, start task matches the query
-    	return true;
+        
+        if(query.getTaskCustomProps() != null)
+        {
+            if(!checkPropertiesPresent(query.getTaskCustomProps(), workflowTask.getProperties()))
+            {
+                return false;
+            }
+        }
+        
+        if(query.getTaskId() != null)
+        {
+            if(!query.getTaskId().equals(workflowTask.getId()))
+            {
+                return false;
+            }
+        }
+        
+        if(query.getTaskName() != null)
+        {
+            if(!query.getTaskName().equals(workflowTask.getDefinition().getMetadata().getName()))
+            {
+                return false;
+            }
+        }
+        
+        if(query.getTaskState() != null)
+        {
+            if(!query.getTaskState().equals(workflowTask.getState()))
+            {
+                return false;
+            }
+        }
+        
+        // If we fall through, start task matches the query
+        return true;
     }
     
     private boolean checkPropertiesPresent(Map<QName, Object> expectedProperties, Map<QName, Serializable> props)
     {
-    	for(Map.Entry<QName, Object> entry : expectedProperties.entrySet())
-		{
-			if(props.containsKey(entry.getKey())) 
-			{
-				Object requiredValue = entry.getValue();
-				Object actualValue = props.get(entry.getKey());
-				
-				if(requiredValue != null)
-				{
-					if(!requiredValue.equals(actualValue))
-					{
-						return false;
-					}
-					break;
-				}
-				else
-				{
-					if(actualValue != null)
-					{
-						return false;
-					}
-					break;
-				}
-			}
-			if(entry.getValue() != null)
-			{
-				// If variable is not found and required value is non null, start-task doesn't match
-				return false;    				
-			}
-		}
-    	
-    	return true;
+        for(Map.Entry<QName, Object> entry : expectedProperties.entrySet())
+        {
+            if(props.containsKey(entry.getKey())) 
+            {
+                Object requiredValue = entry.getValue();
+                Object actualValue = props.get(entry.getKey());
+                
+                if(requiredValue != null)
+                {
+                    if(!requiredValue.equals(actualValue))
+                    {
+                        return false;
+                    }
+                    break;
+                }
+                else
+                {
+                    if(actualValue != null)
+                    {
+                        return false;
+                    }
+                    break;
+                }
+            }
+            if(entry.getValue() != null)
+            {
+                // If variable is not found and required value is non null, start-task doesn't match
+                return false;                    
+            }
+        }
+        
+        return true;
     }
     
     
     
-	/* (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.TaskComponent#getStartTasks(java.util.List, boolean)
      */
     @Override
@@ -2271,6 +2311,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             query = historyService.createHistoricProcessInstanceQuery().finished();
         }
         
+        if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && tenantService.isEnabled() && !TenantUtil.isCurrentDomainDefault() && !StringUtils.isEmpty(TenantUtil.getCurrentDomain())) {
+            // Process definition keys are prefixed with the tenant ID, in case MT is enabled and
+            // deployments are done in tenant-context
+            query.processDefinitionKey("@" + TenantUtil.getCurrentDomain() + "@%");
+        }
+        
         if(processDefId!=null)
         {
             query = query.processDefinitionId(processDefId);
@@ -2278,18 +2324,18 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
         if(workflowInstanceQuery.getExcludedDefinitions() != null)
         {
-	        List<String> exDefIds = new ArrayList<String>();
-	        for (String excludedDef : workflowInstanceQuery.getExcludedDefinitions())
-	        {
-	            String exDef = createLocalId(excludedDef);
-	            exDef = exDef.replaceAll("\\*", "%");
-	            exDefIds.add(exDef);
-	        }
-	
-	        if(exDefIds.size() > 0)
-	        {
-	        	query.processDefinitionKeyNotIn(exDefIds);
-	        }
+            List<String> exDefIds = new ArrayList<String>();
+            for (String excludedDef : workflowInstanceQuery.getExcludedDefinitions())
+            {
+                String exDef = createLocalId(excludedDef);
+                exDef = exDef.replaceAll("\\*", "%");
+                exDefIds.add(exDef);
+            }
+    
+            if(exDefIds.size() > 0)
+            {
+                query.processDefinitionKeyNotIn(exDefIds);
+            }
         }
 
         // Check start range
@@ -2315,15 +2361,15 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
         if (workflowInstanceQuery.getCustomProps() != null)
         {
-        	Map<QName, Object> customProps = workflowInstanceQuery.getCustomProps();
-        	
-        	// CLOUD-667: Extract initiator-property and use 'startedBy' instead
-        	Object initiatorObject = customProps.get(QNAME_INITIATOR);
-        	if(initiatorObject != null && initiatorObject instanceof NodeRef)
-        	{
-        		// Extract username from person-node
-        		NodeRef initiator = (NodeRef) initiatorObject;
-        		if(this.nodeService.exists(initiator))
+            Map<QName, Object> customProps = workflowInstanceQuery.getCustomProps();
+            
+            // CLOUD-667: Extract initiator-property and use 'startedBy' instead
+            Object initiatorObject = customProps.get(QNAME_INITIATOR);
+            if(initiatorObject != null && initiatorObject instanceof NodeRef)
+            {
+                // Extract username from person-node
+                NodeRef initiator = (NodeRef) initiatorObject;
+                if(this.nodeService.exists(initiator))
                 {
                     String initiatorUserName = (String) nodeService.getProperty(initiator, ContentModel.PROP_USERNAME);
                     query.startedBy(initiatorUserName);
@@ -2333,8 +2379,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                     customProps.putAll(workflowInstanceQuery.getCustomProps());
                     customProps.remove(QNAME_INITIATOR);
                 }
-        	}
-        	
+            }
+            
             for (Map.Entry<QName, Object> prop : customProps.entrySet())
             {
                 String propertyName = factory.mapQNameToName(prop.getKey());

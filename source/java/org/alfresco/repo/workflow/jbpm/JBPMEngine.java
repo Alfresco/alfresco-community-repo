@@ -906,6 +906,11 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         return getWorkflows(workflowInstanceQuery).size();
     }
 
+    @Override
+    public long countTasks(WorkflowTaskQuery query) {
+        return queryTasks(query).size();
+    }
+    
     @SuppressWarnings("unchecked")
     private List<ProcessInstance> getProcessInstances(final WorkflowInstanceQuery query)
     {

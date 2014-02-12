@@ -947,6 +947,7 @@
                                 <exclude>**/org/alfresco/repo/content/caching/ContentCacheImplTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/caching/test/SlowContentStoreTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/metadata/TikaAudioMetadataExtracterTest.*</exclude>
+                                <exclude>**/org/alfresco/repo/content/metadata/xml/XmlMetadataExtracterTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/transform/OOXMLThumbnailContentTransformerTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/transform/ArchiveContentTransformerTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/transform/TransformerDebugTest.*</exclude>

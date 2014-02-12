@@ -914,6 +914,7 @@
                                      <goal>test</goal>
                                  </goals>
                                  <configuration>
+                                     <skipTests>true</skipTests>
                                      <reuseForks>false</reuseForks>
                                      <groups>org.alfresco.test_category.LegacyCategory</groups>
                                      <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory</excludedGroups>                         

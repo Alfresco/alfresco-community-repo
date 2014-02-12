@@ -248,36 +248,20 @@ public class MoveMethod extends HierarchicalMethod
         else if (sourceParentNodeRef.equals(destParentNodeRef)) 
         { 
            // It is a simple rename operation
-           try
+           // MNT-9939 - check overwrite
+           if (hasOverWrite() && destFileInfo != null && !sourceFileInfo.equals(destFileInfo))
            {
-               // MNT-9939 - check overwrite
-               if (hasOverWrite() && destFileInfo != null && !sourceFileInfo.equals(destFileInfo))
+               if (logger.isDebugEnabled())
                {
-                   if (logger.isDebugEnabled())
-                   {
-                       logger.debug("Destination exists and overwrite is allowed");
-                   }
-                   
-                   fileFolderService.delete(destFileInfo.getNodeRef());
+                   logger.debug("Destination exists and overwrite is allowed");
                }
                
-               fileFolderService.rename(sourceNodeRef, name);
-               // As per the WebDAV spec, we make sure the node is unlocked once moved
-               getDAVHelper().getLockService().unlock(sourceNodeRef);
+               fileFolderService.delete(destFileInfo.getNodeRef());
            }
-           catch (AccessDeniedException e)
-           {
-               XMLWriter xml = createXMLWriter();
-
-               Attributes nullAttr = getDAVHelper().getNullAttributes();
-
-               xml.startElement(WebDAV.DAV_NS, WebDAV.XML_ERROR, WebDAV.XML_NS_ERROR, nullAttr);
-               // Output error
-               xml.write(DocumentHelper.createElement(WebDAV.XML_NS_CANNOT_MODIFY_PROTECTED_PROPERTY));
-
-               xml.endElement(WebDAV.DAV_NS, WebDAV.XML_ERROR, WebDAV.XML_NS_ERROR);
-               m_response.setStatus(HttpServletResponse.SC_CONFLICT);
-           }
+           
+           fileFolderService.rename(sourceNodeRef, name);
+           // As per the WebDAV spec, we make sure the node is unlocked once moved
+           getDAVHelper().getLockService().unlock(sourceNodeRef);
         }
         else
         {

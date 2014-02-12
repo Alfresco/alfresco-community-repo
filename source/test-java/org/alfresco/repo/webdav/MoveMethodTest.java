@@ -21,7 +21,6 @@ package org.alfresco.repo.webdav;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
-
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,6 +30,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -217,6 +217,16 @@ public class MoveMethodTest
         verify(mockFileFolderService, never()).create(destParentNodeRef, "dest.doc", ContentModel.TYPE_CONTENT);
     }
 
+    
+    @Test(expected=AccessDeniedException.class)
+    public void testMNT_10380_ThrowAccessDeniedExceptionWhenUserLacksPermissions() throws Exception
+    {
+        when(mockFileFolderService.rename(sourceNodeRef, "dest.doc")).
+            thenThrow(new AccessDeniedException("Access denied in test by mockFileFolderService"));
+        
+        moveMethod.moveOrCopy(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, "dest.doc");
+    }
+    
     @Test
     public void testMNT_9662()
     {

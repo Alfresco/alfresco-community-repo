@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,7 +28,7 @@ import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
-import org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeRemoveAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -49,7 +49,7 @@ import org.apache.commons.logging.LogFactory;
  * @since 2.2
  */
 public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
-    NodeServicePolicies.OnRemoveAspectPolicy,
+    NodeServicePolicies.BeforeRemoveAspectPolicy,
     NodeServicePolicies.OnUpdatePropertiesPolicy,
     NodeServicePolicies.BeforeDeleteNodePolicy,
     CopyServicePolicies.OnCopyNodePolicy
@@ -103,9 +103,9 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
            EmailServerModel.ASPECT_ALIASABLE, 
             new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT));
  
-        policyComponent.bindClassBehaviour(OnRemoveAspectPolicy.QNAME, 
+        policyComponent.bindClassBehaviour(BeforeRemoveAspectPolicy.QNAME,
            EmailServerModel.ASPECT_ALIASABLE, 
-           new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.FIRST_EVENT));
+           new JavaBehaviour(this, "beforeRemoveAspect", NotificationFrequency.FIRST_EVENT));
 
         policyComponent.bindClassBehaviour(OnUpdatePropertiesPolicy.QNAME, 
             EmailServerModel.ASPECT_ALIASABLE, 
@@ -235,7 +235,7 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
     }
 
     @Override
-    public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
+    public void beforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
         String alias = (String)nodeService.getProperty(nodeRef, EmailServerModel.PROP_ALIAS);
         if(alias != null)

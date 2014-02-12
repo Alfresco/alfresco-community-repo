@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -41,6 +41,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import javax.naming.CompositeName;
+import javax.naming.Context;
 import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NamingEnumeration;
@@ -944,8 +945,11 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         });
         
         String query = this.userSearchBase + "(&" + this.personQuery
-        + "(" + this.userIdAttributeName + "= userId))"; 
- 
+        + "(" + this.userIdAttributeName + "= userId))";
+
+
+        NamingEnumeration<SearchResult> searchResults = null;
+        SearchResult result = null;
 
         InitialDirContext ctx = null;
         try
@@ -955,7 +959,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             // Execute the user query with an additional condition that ensures only the user with the required ID is
             // returned. Force RFC 2254 escaping of the user ID in the filter to avoid any manipulation            
             
-            NamingEnumeration<SearchResult> searchResults = ctx.search(this.userSearchBase, "(&" + this.personQuery
+             searchResults = ctx.search(this.userSearchBase, "(&" + this.personQuery
                     + "(" + this.userIdAttributeName + "={0}))", new Object[]
             {
                 userId
@@ -963,7 +967,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
 
             if (searchResults.hasMore())
             {
-                SearchResult result = searchResults.next();
+                result = searchResults.next();
                 Attributes attributes = result.getAttributes();
                 Attribute uidAttribute = attributes.get(this.userIdAttributeName);
                 if (uidAttribute == null)
@@ -985,8 +989,18 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 // only resolve this user if the user ID matches
                 else if (userId.equalsIgnoreCase((String) uidAttribute.get(0)))
                 {
-                    return result.getNameInNamespace();
+                    String name = result.getNameInNamespace();
+
+                    // Close the contexts, see ALF-20682
+                    ((Context)result.getObject()).close();
+                    result = null;
+
+                    return name;
                 }
+
+                // Close the contexts, see ALF-20682
+                ((Context)result.getObject()).close();
+                result = null;
             }
             
             Object[] args = {userId, query};
@@ -1007,6 +1021,28 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         }
         finally
         {
+            if (result != null)
+            {
+                try
+                {
+                    ((Context)result.getObject()).close();
+                }
+                catch (Exception e)
+                {
+                    logger.debug("error when closing result block context", e);
+                }
+            }
+            if (searchResults != null)
+            {
+                try
+                {
+                    searchResults.close();
+                }
+                catch (Exception e)
+                {
+                    logger.debug("error when closing searchResults context", e);
+                }
+            }
             if (ctx != null)
             {
                 try
@@ -1220,18 +1256,23 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             }
         }
         InitialDirContext ctx = null;
+        NamingEnumeration<SearchResult> searchResults = null;
+        SearchResult result = null;
         try
         {
             ctx = this.ldapInitialContextFactory.getDefaultIntialDirContext(this.queryBatchSize);
             do
             {
-                NamingEnumeration<SearchResult> searchResults;
                 searchResults = ctx.search(searchBase, query, searchControls);
 
                 while (searchResults.hasMore())
                 {
-                    SearchResult result = searchResults.next();
+                    result = searchResults.next();
                     callback.process(result);
+
+                    // Close the contexts, see ALF-20682
+                    ((Context)result.getObject()).close();
+                    result = null;
                 }
             }
             while (this.ldapInitialContextFactory.hasNextPage(ctx, this.queryBatchSize));
@@ -1248,6 +1289,28 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         }
         finally
         {
+            if (result != null)
+            {
+                try
+                {
+                    ((Context)result.getObject()).close();
+                }
+                catch (Exception e)
+                {
+                    logger.debug("error when closing result block context", e);
+                }
+            }
+            if (searchResults != null)
+            {
+                try
+                {
+                    searchResults.close();
+                }
+                catch (Exception e)
+                {
+                    logger.debug("error when closing searchResults context", e);
+                }
+            }
             if (ctx != null)
             {
                 try

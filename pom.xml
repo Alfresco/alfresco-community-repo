@@ -646,14 +646,12 @@
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-commons-impl</artifactId>
             <version>${dependency.opencmis.version}</version>
-            <!-- 
             <exclusions>
                 <exclusion>
-                    <groupId>com.sun.xml.ws</groupId>
-                    <artifactId>jaxws-rt</artifactId>
+                    <groupId>org.jvnet.staxex</groupId>
+                    <artifactId>stax-ex</artifactId>
                 </exclusion>
             </exclusions>
-             -->
         </dependency>
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
@@ -663,6 +661,10 @@
                 <exclusion>
                     <artifactId>antlr-runtime</artifactId>
                     <groupId>org.antlr</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jvnet.staxex</groupId>
+                    <artifactId>stax-ex</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

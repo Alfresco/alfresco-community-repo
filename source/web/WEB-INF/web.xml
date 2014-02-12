@@ -187,6 +187,7 @@
    <filter-mapping>
       <filter-name>Global Localization Filter</filter-name>
       <url-pattern>/*</url-pattern>
+      <dispatcher>REQUEST</dispatcher>
    </filter-mapping>
  
    <filter-mapping>

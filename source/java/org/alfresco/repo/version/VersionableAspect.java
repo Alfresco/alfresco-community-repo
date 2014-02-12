@@ -544,7 +544,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
 		        vs.createVersion(nf, vp);
 				return null;
 			}
-		},AuthenticationUtil.getRunAsUser());
+		},AuthenticationUtil.getRunAsUser()); 
     	
     }
     

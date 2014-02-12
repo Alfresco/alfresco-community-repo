@@ -1205,7 +1205,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     	return sb.toString();
     }
 
-    private void createVersion(NodeRef nodeRef, VersionType versionType, String reason)
+    public void createVersion(NodeRef nodeRef, VersionType versionType, String reason)
     {
     	if(versionService.getVersionHistory(nodeRef) == null)
     	{
@@ -1674,11 +1674,10 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
     	NodeRef nodeRef = nodeInfo.getNodeRef();
 
+    	this.disableBehaviour(ContentModel.ASPECT_VERSIONABLE, nodeRef);
+		
     	if(!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CMIS_UPDATE_CONTEXT))
     	{
-    		// version on first chunk
-    		createVersion(nodeRef, VersionType.MINOR, "Append content stream");
-
     		Map<QName, Serializable> props = new HashMap<QName, Serializable>();
     		props.put(ContentModel.PROP_GOT_FIRST_CHUNK, true);
     		nodeService.addAspect(nodeRef, ContentModel.ASPECT_CMIS_UPDATE_CONTEXT, props);
@@ -1723,6 +1722,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 			{
     	    	out.close();	
 			}
+			
+			this.enableBehaviour(ContentModel.ASPECT_VERSIONABLE, nodeRef);
 		}
     }
 

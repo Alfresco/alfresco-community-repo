@@ -1382,6 +1382,12 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             removeTempFile(tempFile);
         }
 
+        // MNT-10176 Cmisaction:setContent; The properties don't update.
+        if (connector.getNodeService().exists(nodeRef) && connector.getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            connector.createVersion(nodeRef, VersionType.MINOR, "Set content stream");
+        }
+
         objectId.setValue(connector.createObjectId(nodeRef));
 
         connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
@@ -1489,6 +1495,12 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             final NodeRef nodeRef = info.getNodeRef();
 
             connector.setProperties(nodeRef, info.getType(), properties, new String[0]);
+            
+            // MNT-10176 Cmisaction:setContent; The properties don't update.
+            if(connector.getNodeService().exists(nodeRef) && connector.getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+            {
+                connector.createVersion(nodeRef, VersionType.MINOR, "Update properties");
+            }
             
             objectId.setValue(connector.createObjectId(nodeRef));
 

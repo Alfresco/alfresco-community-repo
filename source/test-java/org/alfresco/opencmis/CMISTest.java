@@ -495,7 +495,17 @@ public class CMISTest
 
         // checkout/checkin object with mimetype and encoding
         {
-            objectIdHolder.setValue(objectId);
+            ObjectData objectDa = withCmisService(new CmisServiceCallback<ObjectData>()
+            {
+                @Override
+                public ObjectData execute(CmisService cmisService)
+                {
+                    return cmisService.getObjectByPath(repositoryId, path, null, false, IncludeRelationships.NONE, null, false, false, null);
+                }
+            });
+
+
+            objectIdHolder.setValue(objectDa.getId());
             withCmisService(new CmisServiceCallback<Void>()
             {
     			@Override

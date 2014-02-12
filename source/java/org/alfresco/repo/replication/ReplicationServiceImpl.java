@@ -26,6 +26,8 @@ import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
 import org.alfresco.service.cmr.replication.ReplicationServiceException;
+import org.alfresco.service.cmr.transfer.TransferService;
+import org.alfresco.service.cmr.transfer.TransferService2;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,6 +43,7 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
    private ScheduledPersistedActionService scheduledPersistedActionService;
    private ReplicationParams replicationParams;
    private ReplicationDefinitionPersisterImpl replicationDefinitionPersister;
+   private TransferService transferService;
    
    /**
     * Injects the ReplicationDefinitionPersister bean.
@@ -96,7 +99,21 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
    public ReplicationDefinition loadReplicationDefinition(String replicationDefinitionName) {
       ReplicationDefinitionImpl rd = (ReplicationDefinitionImpl)
             replicationDefinitionPersister.loadReplicationDefinition(replicationDefinitionName);
-      if(rd != null) {
+          
+      if(rd != null) 
+      {
+    	  // check here whether the target still exists and blank if not
+          // TODO we should rework relationship between action and target 
+
+          String targetName = rd.getTargetName();
+          if(targetName != null)
+          {
+              if(!getTransferService().targetExists(targetName))
+        	  {
+        	      rd.setTargetName(null);
+        	  }
+         }
+     
          rd.setSchedule(
                scheduledPersistedActionService.getSchedule(rd)
          );
@@ -242,5 +259,15 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
     public void setReplicationParams(ReplicationParams replicationParams)
     {
         this.replicationParams = replicationParams;
+    }
+
+	public TransferService getTransferService()
+    {
+	    return transferService;
+    }
+
+	public void setTransferService(TransferService transferService)
+    {
+	    this.transferService = transferService;
     }
 }

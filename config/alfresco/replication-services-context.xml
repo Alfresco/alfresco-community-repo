@@ -60,6 +60,7 @@
    <!-- Replication Service base bean -->
    <bean id="replicationService" class="org.alfresco.repo.replication.ReplicationServiceImpl" >
       <property name="actionService" ref="ActionService"/>
+      <property name="transferService" ref="TransferService"/>
       <property name="scheduledPersistedActionService" ref="scheduledPersistedActionService" />
       <property name="replicationDefinitionPersister" ref="replicationDefinitionPersister" />
    </bean>

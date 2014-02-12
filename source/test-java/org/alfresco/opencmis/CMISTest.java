@@ -60,6 +60,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.Pair;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
 import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
@@ -1372,6 +1373,7 @@ public class CMISTest
                 assertTrue(repositories.size() > 0);
                 RepositoryInfo repo = repositories.get(0);
                 String repositoryId = repo.getId();
+
                 String objectId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().getId(), contentStream, VersioningState.MINOR, null, null);
 
                 ObjectData cmidDoc = cmisService.getObject(repositoryId, objectId, null, true, IncludeRelationships.NONE, null, false, false, null);
@@ -1396,5 +1398,88 @@ public class CMISTest
                 return objectId;
             }
         });
+    }
+
+    @Test
+    public void testMNT10529() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        try
+        {
+            final Pair<FileInfo, FileInfo> folderAndDocument = transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<Pair<FileInfo, FileInfo>>()
+                    {
+                        @Override
+                        public Pair<FileInfo, FileInfo> execute() throws Throwable
+                        {
+                            NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+
+                            String folderName = GUID.generate();
+                            FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                            nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+                            assertNotNull(folderInfo);
+
+                            String docName = GUID.generate();
+                            FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+                            assertNotNull(document);
+                            nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, docName);
+
+                            return new Pair<FileInfo, FileInfo>(folderInfo, document);
+                        }
+                    });
+
+            withCmisService(new CmisServiceCallback<Void>()
+            {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertNotNull(repositories);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.iterator().next();
+                    String repositoryId = repo.getId();
+
+                    String objectIdStr = folderAndDocument.getFirst().getNodeRef().toString();
+
+                    ObjectInFolderList children = cmisService.getChildren(repositoryId, objectIdStr, null, "cmis:name ASC", false, IncludeRelationships.NONE, null, false, null,
+                            null, null);
+                    assertChildren(folderAndDocument, children);
+
+                    children = cmisService.getChildren(repositoryId, objectIdStr, null, "cmis:name ASC, cmis:creationDate ASC", false, IncludeRelationships.NONE, null, false,
+                            null, null, null);
+                    assertChildren(folderAndDocument, children);
+
+                    children = cmisService.getChildren(repositoryId, objectIdStr, null, "    cmis:name ASC", false, IncludeRelationships.NONE, null, false, null, null, null);
+                    assertChildren(folderAndDocument, children);
+
+                    children = cmisService.getChildren(repositoryId, objectIdStr, null, "    cmis:name ASC, cmis:creationDate ASC   ", false, IncludeRelationships.NONE, null,
+                            false, null, null, null);
+                    assertChildren(folderAndDocument, children);
+
+                    return null;
+                }
+
+                private void assertChildren(final Pair<FileInfo, FileInfo> folderAndDocument, ObjectInFolderList children)
+                {
+                    assertNotNull(children);
+                    assertTrue(1 == children.getNumItems().longValue());
+
+                    PropertyData<?> nameData = children.getObjects().iterator().next().getObject().getProperties().getProperties().get("cmis:name");
+                    assertNotNull(nameData);
+                    Object name = nameData.getValues().iterator().next();
+                    assertEquals(folderAndDocument.getSecond().getName(), name);
+                }
+            }, CmisVersion.CMIS_1_0);
+        }
+        catch (CmisConstraintException e)
+        {
+            fail(e.toString());
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
     }
 }

@@ -50,9 +50,8 @@ public class ConcurrentCachingStoreTest
     @Before
     public void setUp()
     {
-        String conf = "classpath:cachingstore/test-context.xml";
         String slowconf = "classpath:cachingstore/test-slow-context.xml";
-        ctx = ApplicationContextHelper.getApplicationContext(new String[] { conf, slowconf });
+        ctx = ApplicationContextHelper.getApplicationContext(new String[] { slowconf });
         
         store = (CachingContentStore) ctx.getBean("cachingContentStore");
         store.setCacheOnInbound(false);

@@ -28,7 +28,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.alfresco.repo.content.caching.CacheFileProps;
@@ -39,10 +38,8 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -64,9 +61,8 @@ public class CachedContentCleanupJobTest
     @BeforeClass
     public static void beforeClass()
     {
-        String conf = "classpath:cachingstore/test-context.xml";
         String cleanerConf = "classpath:cachingstore/test-cleaner-context.xml";
-        ctx = ApplicationContextHelper.getApplicationContext(new String[] { conf, cleanerConf });
+        ctx = ApplicationContextHelper.getApplicationContext(new String[] { cleanerConf });
     }
     
     

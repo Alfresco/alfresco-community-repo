@@ -48,9 +48,8 @@ public class SlowContentStoreTest
     @BeforeClass
     public static void setUpClass()
     {        
-        String conf = "classpath:cachingstore/test-context.xml";
         String slowconf = "classpath:cachingstore/test-slow-context.xml";
-        ctx = (ClassPathXmlApplicationContext) ApplicationContextHelper.getApplicationContext(new String[] { conf, slowconf });    
+        ctx = (ClassPathXmlApplicationContext) ApplicationContextHelper.getApplicationContext(new String[] { slowconf });    
     }
     
     @Before

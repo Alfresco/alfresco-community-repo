@@ -29,7 +29,6 @@ import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.publishing.Environment;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.repo.publishing.PublishingQueueImpl;
@@ -45,7 +44,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
@@ -77,7 +75,6 @@ public class SlideShareTest extends BaseSpringTest
     protected NodeRef docLib;
     protected Map<String, String> testFiles = new TreeMap<String, String>();
     protected Map<NodeRef, String> testNodeMap = new HashMap<NodeRef, String>();
-    protected NodeArchiveService nodeArchiveService;
 
     private ChannelService channelService;
 
@@ -87,7 +84,6 @@ public class SlideShareTest extends BaseSpringTest
     {
         serviceRegistry = (ServiceRegistry) getApplicationContext().getBean("ServiceRegistry");
         channelService = (ChannelService) getApplicationContext().getBean("channelService");
-        nodeArchiveService = (NodeArchiveService) getApplicationContext().getBean("nodeArchiveService");
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         siteService = serviceRegistry.getSiteService();
         fileFolderService = serviceRegistry.getFileFolderService();
@@ -107,12 +103,7 @@ public class SlideShareTest extends BaseSpringTest
 
     public void onTearDown()
     {
-        SiteInfo siteInfo = siteService.getSite(siteId);
-        if (siteInfo != null)
-        {
-            siteService.deleteSite(siteId);
-            nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteInfo.getNodeRef()));
-        }
+        siteService.deleteSite(siteId);
     }
 
     public void testBlank()

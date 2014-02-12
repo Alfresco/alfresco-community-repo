@@ -800,8 +800,9 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 {
                     return authorityService.createAuthority(AuthorityType.GROUP, testGroupName);
                 }
+                
             }, AuthenticationUtil.getAdminUserName());
-
+        
         // Create a test site
         String siteShortName = "testUpdateSite";
         this.siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
@@ -816,15 +817,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertNull(this.siteService.getSite(siteShortName));
         NodeRef archivedNodeRef = nodeArchiveService.getArchivedNode(siteInfo.getNodeRef());
         assertTrue("Deleted sites can be recovered from the Trash.", nodeService.exists(archivedNodeRef));
-                
-        // related site groups should remain after site delete but should be deleted on site purge from trashcan.
-        // Such case is tested in SiteServiceImplMoreTest.deleteSiteAndRestoreEnsuringSiteGroupsAreRecovered
-        assertTrue(authorityService.authorityExists(((SiteServiceImpl)smallSiteService).getSiteGroup(siteShortName, true)));
+        
+        // Ensure that all the related site groups are deleted
+        assertFalse(authorityService.authorityExists(((SiteServiceImpl)smallSiteService).getSiteGroup(siteShortName, true)));
         Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
         for (String permission : permissions)
         {
             String siteRoleGroup = ((SiteServiceImpl)smallSiteService).getSiteRoleGroup(siteShortName, permission, true);
-            assertTrue(authorityService.authorityExists(siteRoleGroup));
+            assertFalse(authorityService.authorityExists(siteRoleGroup));
         }
         
         // Ensure that the added "normal" groups have not been deleted

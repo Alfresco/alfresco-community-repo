@@ -32,7 +32,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
-import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.rendition.executer.ReformatRenderingEngine;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -48,7 +47,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
@@ -75,7 +73,6 @@ public class GoogleDocumentServiceSystemTest extends TestCase implements GoogleD
     private PersonService personService;
     private ApplicationContextFactory subsystem;
     private RenditionService renditionService;
-    private NodeArchiveService nodeArchiveService;
     
     private static final String USER_ONE = "GoogleDocUserOne";
     private static final String USER_TWO = "GoogleDocUserTwo";
@@ -108,7 +105,6 @@ public class GoogleDocumentServiceSystemTest extends TestCase implements GoogleD
         authenticationService = (MutableAuthenticationService)appContext.getBean("authenticationService");
         personService = (PersonService)appContext.getBean("personService");
         renditionService = (RenditionService)appContext.getBean("renditionService");
-        nodeArchiveService = (NodeArchiveService)appContext.getBean("nodeArchiveService");
         
         // Start the user transaction
         userTransaction = transactionService.getUserTransaction();
@@ -210,14 +206,12 @@ public class GoogleDocumentServiceSystemTest extends TestCase implements GoogleD
     @Override
     protected void tearDown() throws Exception
     {
-        SiteInfo siteInfo = siteService.getSite(siteId);
         siteService.deleteSite(siteId);
         
         if (userTransaction != null)
         {
             userTransaction.commit();
         }
-        nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteInfo.getNodeRef()));
     }
     
     private boolean isGoogleServiceAvailable()

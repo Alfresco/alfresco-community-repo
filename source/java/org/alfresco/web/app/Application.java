@@ -759,6 +759,7 @@ public class Application
     */
    public static Locale getLanguage(FacesContext fc)
    {
+      boolean useInterfaceLanguage = Application.getClientConfig(fc).isLanguageSelect();
       Map sessionMap = fc.getExternalContext().getSessionMap();
       Boolean useSessionLocale = (Boolean)sessionMap.get(USE_SESSION_LOCALE);
       if (useSessionLocale == null)
@@ -767,9 +768,9 @@ public class Application
          sessionMap.put(USE_SESSION_LOCALE, useSessionLocale);
       }
       Locale locale = (Locale)sessionMap.get(LOCALE);
-      if (locale == null)
+      if (locale == null || (!locale.equals(I18NUtil.getLocale()) && !useInterfaceLanguage))
       {
-         if (useSessionLocale)
+         if (useSessionLocale && useInterfaceLanguage)
          {
             // first check saved user preferences
             String strLocale = null;
@@ -834,9 +835,9 @@ public class Application
          session.setAttribute(USE_SESSION_LOCALE, useSessionLocale);
       }
       Locale locale = (Locale)session.getAttribute(LOCALE);
-      if (locale == null)
+      if (locale == null || (!locale.equals(I18NUtil.getLocale()) && !useInterfaceLanguage))
       {
-         if (useSessionLocale)
+         if (useSessionLocale && useInterfaceLanguage)
          {
             // first check saved user preferences
             String strLocale = null;

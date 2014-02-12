@@ -26,6 +26,8 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
+<%@ page import="javax.faces.context.FacesContext" %>
+<%@ page import="java.util.Locale" %>
 
 <%
 if (Application.getDialogManager().getState() == null)
@@ -38,7 +40,18 @@ if (Application.getDialogManager().getState() == null)
 <r:page title="<%=Application.getDialogManager().getTitle() %>">
 
 <f:view>
-   
+   <%
+      FacesContext fc = FacesContext.getCurrentInstance();
+     
+      // set locale for JSF framework usage
+      Locale locale = Application.getLanguage(fc);
+      fc.getViewRoot().setLocale(locale);
+      if (!Application.getClientConfig(fc).isLanguageSelect())
+      {
+         Application.setLanguage(fc, locale.toString());
+      }
+   %>
+
    <%-- load a bundle of properties with I18N strings --%>
    <r:loadBundle var="msg"/>
    

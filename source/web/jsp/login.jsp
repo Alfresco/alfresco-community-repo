@@ -69,7 +69,12 @@
    FacesContext fc = FacesContext.getCurrentInstance();
 
    // set locale for JSF framework usage (passed on by Localization Filter)
-   fc.getViewRoot().setLocale(I18NUtil.getLocale());
+   Locale locale = I18NUtil.getLocale();
+   fc.getViewRoot().setLocale(locale);
+   if (!Application.getClientConfig(fc).isLanguageSelect())
+   {
+    Application.setLanguage(fc, locale.toString());
+   }
    
    // set permissions error if applicable
    if (session.getAttribute(LoginBean.LOGIN_NOPERMISSIONS) != null)

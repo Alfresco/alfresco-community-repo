@@ -41,6 +41,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Integration tests that check transaction related functionality of {@link LockStore} implementations.
@@ -212,11 +213,17 @@ public abstract class AbstractLockStoreTxTest<T extends LockStore>
                     "jbloggs", expires, Lifetime.EPHEMERAL, null);
         
 
+        assertFalse("Transaction present, but should not be. Leak?",
+                    TransactionSynchronizationManager.isSynchronizationActive());
+        
         Thread thread2 = new Thread("Thread2")
         {
             @Override
             public void run()
             {
+                assertFalse("Transaction present, but should not be. Leak?",
+                            TransactionSynchronizationManager.isSynchronizationActive());
+                
                 Object main = AbstractLockStoreTxTest.this;
                 try
                 {

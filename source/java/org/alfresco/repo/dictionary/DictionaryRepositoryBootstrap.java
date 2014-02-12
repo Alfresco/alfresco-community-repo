@@ -36,6 +36,8 @@ import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -207,12 +209,34 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         // NOOP - will be destroyed directly via DictionaryComponent
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.DictionaryListener#onInit()
+    /**
+     * Initialise the dictionary, ensuring that a transaction is available
      */
+    @Override
     public void onDictionaryInit()
     {
+        RetryingTransactionCallback<Void> initCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                onDictionaryInitInTxn();
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(initCallback, true, false);
+    }
+    
+    /**
+     * Perform the actual repository access, checking for the existence of a valid transaction
+     */
+    private void onDictionaryInitInTxn()
+    {
+        if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_NONE)
+        {
+            throw new IllegalStateException("The Repository-based dictionary initialization has to be done in the context of a transaction.");
+        }
+        
         long startTime = System.currentTimeMillis();
         
         if (logger.isTraceEnabled())

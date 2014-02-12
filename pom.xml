@@ -863,15 +863,25 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <!-- Default configuration, specifying which tests to pass -->
                         <configuration>
-                            <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
                             <forkMode>always</forkMode>
                             <includes combine.self="override">
                                 <include>**/org/alfresco/Repository*TestSuite.java</include>
                             </includes>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Fail fast in case this very basic repository test does not pass -->
+        <!-- Only enabled in continuous integration, otherwise SUREFIRE-806 prevents using -Dtest=... -->
+        <profile>
+            <id>repo-fail-fast</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
-                            <!-- Additional execution running basic test 
-                                first, to fail fast if nothing works -->
                             <execution>
                                 <id>startup-test</id>
                                 <goals>
@@ -889,7 +899,6 @@
                 </plugins>
             </build>
         </profile>
-
     </profiles>
 
     <build>

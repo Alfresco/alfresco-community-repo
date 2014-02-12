@@ -698,7 +698,17 @@
 
     <!-- Constraint Registry -->
     <bean id="cm:constraintRegistry" class="org.alfresco.repo.dictionary.constraint.ConstraintRegistry" />
-
+    
+    <!-- A constraint that does nothing -->
+    <bean id="noop.storeSelectorConstraint" class="org.alfresco.repo.dictionary.constraint.NoOpConstraint" init-method="initialize" >
+       <property name="shortName">
+           <value>defaultStoreSelector</value>
+       </property>
+       <property name="registry">
+           <ref bean="cm:constraintRegistry" />
+       </property>
+    </bean>
+    
     <bean id="namespaceDAO" class="org.alfresco.repo.dictionary.NamespaceDAOImpl">
         <property name="tenantService">
             <ref bean="tenantService"/>

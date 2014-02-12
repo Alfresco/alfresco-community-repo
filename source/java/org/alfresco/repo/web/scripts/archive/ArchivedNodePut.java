@@ -73,6 +73,10 @@ public class ArchivedNodePut extends AbstractArchivedNodeWebScript
         {
             throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Unable to restore archive node: " + nodeRefToBeRestored);
         }
+        else if (report.getStatus().equals(RestoreNodeReport.RestoreStatus.FAILURE_DUPLICATE_CHILD_NODE_NAME))
+        {
+            throw new WebScriptException(HttpServletResponse.SC_CONFLICT, "Unable to restore archive node: " + nodeRefToBeRestored +". Duplicate child node name");
+        }
         else if (report.getStatus().equals(RestoreNodeReport.RestoreStatus.FAILURE_INVALID_PARENT) ||
                  report.getStatus().equals(RestoreNodeReport.RestoreStatus.FAILURE_INTEGRITY) ||
                  report.getStatus().equals(RestoreNodeReport.RestoreStatus.FAILURE_OTHER))

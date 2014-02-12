@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
 import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
 import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
-import org.alfresco.filesys.repo.rules.operations.MoveFileOperation;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.util.MaxSizeMap;
 import org.apache.commons.logging.Log;
@@ -104,46 +103,6 @@ public class ScenarioTempDeleteShuffle implements Scenario
                         }                        
                     }
                     createdTempFiles.put(c.getName(), c.getName());
-                
-                    // TODO - Return a different scenario instance here ???
-                    // So it can time out and have anti-patterns etc?
-                }
-            }
-        }
-        
-        if (operation instanceof MoveFileOperation)
-        {
-            MoveFileOperation mf = (MoveFileOperation)operation;
-            
-            // check whether file is below .TemporaryItems 
-            String path = mf.getFromPath();
-            
-            // if path contains .TemporaryItems
-            Matcher d = tempDirPattern.matcher(path);
-            if(d.matches())
-            {
-                logger.debug("pattern matches temp dir folder so this is a new create in a temp dir");
-                Matcher m = pattern.matcher(mf.getFrom());
-                if(m.matches())
-                {
-                    // and how to lock - since we are already have one lock on the scenarios/folder here
-                    // this is a potential deadlock and synchronization bottleneck
-                    Map<String, String> createdTempFiles = (Map<String,String>)ctx.getSessionState().get(SCENARIO_KEY);
-                    
-                    if(createdTempFiles == null)
-                    {
-                        synchronized(ctx.getSessionState())
-                        {
-                            logger.debug("created new temp file map and added it to the session state");
-                            createdTempFiles = (Map<String,String>)ctx.getSessionState().get(SCENARIO_KEY);
-                            if(createdTempFiles == null)
-                            {
-                                createdTempFiles = Collections.synchronizedMap(new MaxSizeMap<String, String>(5, false));
-                                ctx.getSessionState().put(SCENARIO_KEY, createdTempFiles);
-                            }
-                        }                        
-                    }
-                    createdTempFiles.remove(mf.getFrom());
                 
                     // TODO - Return a different scenario instance here ???
                     // So it can time out and have anti-patterns etc?

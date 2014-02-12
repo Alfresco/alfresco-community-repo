@@ -1135,14 +1135,4 @@ public class WebDAVHelper
     {
         return LockUtils.isLockedAndReadOnly(nodeRef, m_serviceRegistry.getLockService());
     }
-
-    /**
-     * Indicates if the node is locked and the current user is not lock owner<p>
-     *
-     * @param nodeRef    the node reference
-     */
-    public boolean isLockedAndNotLockOwner(final NodeRef nodeRef)
-    {
-        return LockUtils.isLockedAndNotLockOwner(nodeRef, m_serviceRegistry.getLockService());
-    }
 }

@@ -112,10 +112,12 @@ public class SubscriptionServiceActivitiesTest
     protected static ContentService contentService;
     protected static PostLookup postLookup;
     protected static FeedGenerator feedGenerator;
-    protected NodeArchiveService nodeArchiveService;
+    protected static RetryingTransactionHelper transactionHelper;
+    protected static NodeArchiveService nodeArchiveService;
     
     private static Scheduler QUARTZ_SCHEDULER;
     
+
     // Test Sites - these are all created by USER_ONE & hence USER_ONE is the SiteManager.
     private SiteInfo publicSite,
                      privateSite1, privateSite2,

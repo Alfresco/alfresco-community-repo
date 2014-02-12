@@ -96,22 +96,20 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
     * org.alfresco.service.cmr.replication.ReplicationService#loadReplicationDefinition
     * (org.alfresco.service.namespace.QName)
     */
-   public ReplicationDefinition loadReplicationDefinition(String replicationDefinitionName) {
+   @SuppressWarnings("deprecation")
+public ReplicationDefinition loadReplicationDefinition(String replicationDefinitionName) {
       ReplicationDefinitionImpl rd = (ReplicationDefinitionImpl)
             replicationDefinitionPersister.loadReplicationDefinition(replicationDefinitionName);
           
       if(rd != null) 
       {
-    	  // check here whether the target still exists and blank if not
           // TODO we should rework relationship between action and target 
 
           String targetName = rd.getTargetName();
           if(targetName != null)
           {
-              if(!getTransferService().targetExists(targetName))
-        	  {
-        	      rd.setTargetName(null);
-        	  }
+        	  // Decorate RD with targetExists
+        	  rd.setTargetExists(getTransferService().targetExists(targetName));
          }
      
          rd.setSchedule(

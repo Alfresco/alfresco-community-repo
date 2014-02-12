@@ -122,5 +122,11 @@ public interface ReplicationDefinition extends CancellableAction, SchedulableAct
     */
    boolean isSchedulingEnabled();
    
+   /**
+    * Does the target exist?
+    * @return true it does
+    */
+   boolean isTargetExists();
+   
    // TODO Replication options, such as permissions and rules
 }

@@ -263,4 +263,16 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
    public boolean isSchedulingEnabled() {
       return (schedule != null);
    }
+   
+   private boolean targetExists = false;
+   
+   public boolean isTargetExists()
+   {
+	   return targetExists;
+   }
+   public void setTargetExists(boolean targetExists)
+   {
+	   this.targetExists = targetExists;
+   }
+   
 }

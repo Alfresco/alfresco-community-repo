@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -101,7 +101,7 @@ public class PageTag extends TagSupport
         "<a class='footer' href='http://www.alfresco.com'>Alfresco</a> or its " +
         "<a class='footer' href='http://www.alfresco.com/partners/'>Certified Partners</a>. " +
         "<a class='footer' href='http://www.alfresco.com/services/support/'>Click here for support</a>. " +
-        "Alfresco Software Inc. &copy; 2005-2013 All rights reserved.";
+        "Alfresco Software Inc. &copy; 2005-2014 All rights reserved.";
    
    private final static Log logger = LogFactory.getLog(PageTag.class);
    private static String alfresco = null;

@@ -1,5 +1,5 @@
 <%--
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -37,7 +37,7 @@
                         <div style="padding:4px">
                            <a href="http://www.alfresco.com/" class="title" target="new">http://www.alfresco.com</a>
                            <p>
-                           Alfresco Software Inc. &copy; 2005-2013 All rights reserved. <a href="http://www.alfresco.com/legal/" target="new">Legal and License</a>
+                           Alfresco Software Inc. &copy; 2005-2014 All rights reserved. <a href="http://www.alfresco.com/legal/" target="new">Legal and License</a>
                         </div>
                         
                         <div style="padding:4px" class="mainSubTitle">

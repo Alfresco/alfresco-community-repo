@@ -42,6 +42,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarService;
@@ -80,8 +81,10 @@ public class CalendarServiceImplTest
     
     // injected services
     private static MutableAuthenticationService AUTHENTICATION_SERVICE;
+    @SuppressWarnings("unused")
     private static BehaviourFilter              BEHAVIOUR_FILTER;
     private static CalendarService              CALENDAR_SERVICE;
+    @SuppressWarnings("unused")
     private static DictionaryService            DICTIONARY_SERVICE;
     private static NodeService                  NODE_SERVICE;
     private static NodeService                  PUBLIC_NODE_SERVICE;
@@ -122,6 +125,7 @@ public class CalendarServiceImplTest
         TAGGING_SERVICE        = (TaggingService)testContext.getBean("TaggingService");
 
         // Get the canned query registry, and from that the factory
+        @SuppressWarnings("unchecked")
         NamedObjectRegistry<CannedQueryFactory<? extends Object>> calendarCannedQueryRegistry =
            (NamedObjectRegistry<CannedQueryFactory<? extends Object>>)testContext.getBean("calendarCannedQueryRegistry");
         CALENDAR_CQ_FACTORY = (GetCalendarEntriesCannedQueryFactory)
@@ -182,8 +186,8 @@ public class CalendarServiceImplTest
        assertNotNull(entry.getNodeRef());
        assertNotNull(entry.getSystemName());
        
-       NodeRef container = NODE_SERVICE.getPrimaryParent(entry.getNodeRef()).getParentRef();
-       NodeRef site = NODE_SERVICE.getPrimaryParent(container).getParentRef();
+       NodeRef container = PUBLIC_NODE_SERVICE.getPrimaryParent(entry.getNodeRef()).getParentRef();
+       NodeRef site = PUBLIC_NODE_SERVICE.getPrimaryParent(container).getParentRef();
        assertEquals(CALENDAR_SITE.getNodeRef(), site);
        
        // Tell the test system about it, for tidying later
@@ -864,19 +868,19 @@ public class CalendarServiceImplTest
      */
     @Test public void testCannedQueryEntityResults() throws Exception
     {
-       PagingRequest paging = new PagingRequest(10);
-       NodeRef[] containers = new NodeRef[] {
+       final PagingRequest paging = new PagingRequest(10);
+       final NodeRef[] containers = new NodeRef[] {
              SITE_SERVICE.getContainer(CALENDAR_SITE.getShortName(), CalendarServiceImpl.CALENDAR_COMPONENT),
              SITE_SERVICE.getContainer(ALTERNATE_CALENDAR_SITE.getShortName(), CalendarServiceImpl.CALENDAR_COMPONENT),
        };
-       Date from = new Date(1302431400);
-       Date to = new Date(1302442200);
+       final Date from1 = new Date(1302431400);
+       final Date to1 = new Date(1302442200);
        
        
        // To capture the low level results
        final List<CalendarEntity> full = new ArrayList<CalendarEntity>();
        final List<CalendarEntity> filtered = new ArrayList<CalendarEntity>();
-       GetCalendarEntriesCannedQueryTestHook hook = new GetCalendarEntriesCannedQueryTestHook()
+       final GetCalendarEntriesCannedQueryTestHook hook = new GetCalendarEntriesCannedQueryTestHook()
        {
           @Override
           public void notifyComplete(List<CalendarEntity> fullList,
@@ -889,13 +893,20 @@ public class CalendarServiceImplTest
           }
        };
        
-       
        // With no entries, won't find anything
-       GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, from, to, paging
-       );
-       cq.setTestHook(hook);
-       cq.execute();
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+       {
+           @Override
+           public Void execute() throws Throwable
+           {
+               GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery) CALENDAR_CQ_FACTORY.getCannedQuery(
+                       containers, from1, to1, paging
+                       );
+               cq.setTestHook(hook);
+               cq.execute();
+               return null;
+           }
+       });
        
        assertEquals(0, full.size());
        assertEquals(0, filtered.size());
@@ -911,10 +922,19 @@ public class CalendarServiceImplTest
        
        
        // Do a fetch that'll include all of them
-       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, from, to, paging);
-       cq.setTestHook(hook);
-       cq.execute();
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+       {
+           @Override
+           public Void execute() throws Throwable
+           {
+               GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+                       containers, from1, to1, paging
+                       );
+               cq.setTestHook(hook);
+               cq.execute();
+               return null;
+           }
+       });
        
        assertEquals(3, full.size());
        assertEquals(3, filtered.size());
@@ -942,12 +962,21 @@ public class CalendarServiceImplTest
        
        
        // Now do one that'll only have some
-       from = new Date(1302431400-10);
-       to = new Date(1302431400+10);
-       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, from, to, paging);
-       cq.setTestHook(hook);
-       cq.execute();
+       final Date from2 = new Date(1302431400-10);
+       final Date to2 = new Date(1302431400+10);
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+       {
+           @Override
+           public Void execute() throws Throwable
+           {
+               GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+                       containers, from2, to2, paging
+                       );
+               cq.setTestHook(hook);
+               cq.execute();
+               return null;
+           }
+       });
        
        assertEquals(3, full.size());
        assertEquals(2, filtered.size());
@@ -962,10 +991,19 @@ public class CalendarServiceImplTest
        c3.setLastRecurrence(new Date(1303431400));
        CALENDAR_SERVICE.updateCalendarEntry(c3);
        
-       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, from, to, paging);
-       cq.setTestHook(hook);
-       cq.execute();
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+       {
+           @Override
+           public Void execute() throws Throwable
+           {
+               GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+                       containers, from2, to2, paging
+                       );
+               cq.setTestHook(hook);
+               cq.execute();
+               return null;
+           }
+       });
        assertEquals(3, full.size());
        assertEquals(2, filtered.size());
        
@@ -985,10 +1023,10 @@ public class CalendarServiceImplTest
        
        
        // Do a recurring query
-       Calendar c20110718mon = Calendar.getInstance();
-       Calendar c20110719tue = Calendar.getInstance();
-       Calendar c20110720wed = Calendar.getInstance();
-       Calendar c20110722fri = Calendar.getInstance();
+       final Calendar c20110718mon = Calendar.getInstance();
+       final Calendar c20110719tue = Calendar.getInstance();
+       final Calendar c20110720wed = Calendar.getInstance();
+       final Calendar c20110722fri = Calendar.getInstance();
        c20110718mon.set(2011, 7-1, 18, 0, 0, 0);
        c20110719tue.set(2011, 7-1, 19, 0, 0, 0);
        c20110720wed.set(2011, 7-1, 20, 0, 0, 0);
@@ -1001,28 +1039,52 @@ public class CalendarServiceImplTest
        
        
        // Monday-Tuesday will find it for itself
-       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, c20110718mon.getTime(), c20110719tue.getTime(), paging);
-       cq.setTestHook(hook);
-       cq.execute();
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+       {
+           @Override
+           public Void execute() throws Throwable
+           {
+               GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+                       containers, c20110718mon.getTime(), c20110719tue.getTime(), paging);
+               cq.setTestHook(hook);
+               cq.execute();
+               return null;
+           }
+       });
        assertEquals(3, full.size());
        assertEquals(1, filtered.size());
        assertEquals(c3.getSystemName(), filtered.get(0).getName());
        
        // Monday-Wednesday will find it for itself
-       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, c20110718mon.getTime(), c20110720wed.getTime(), paging);
-       cq.setTestHook(hook);
-       cq.execute();
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+       {
+           @Override
+           public Void execute() throws Throwable
+           {
+               GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+                       containers, c20110718mon.getTime(), c20110720wed.getTime(), paging);
+               cq.setTestHook(hook);
+               cq.execute();
+               return null;
+           }
+       });
        assertEquals(3, full.size());
        assertEquals(1, filtered.size());
        assertEquals(c3.getSystemName(), filtered.get(0).getName());
        
        // Wednesday-Friday will find it as a repeating event on the Thursday
-       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, c20110720wed.getTime(), c20110722fri.getTime(), paging);
-       cq.setTestHook(hook);
-       cq.execute();
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+       {
+           @Override
+           public Void execute() throws Throwable
+           {
+               GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+                       containers, c20110720wed.getTime(), c20110722fri.getTime(), paging);
+               cq.setTestHook(hook);
+               cq.execute();
+               return null;
+           }
+       });
        assertEquals(3, full.size());
        assertEquals(1, filtered.size());
        assertEquals(c3.getSystemName(), filtered.get(0).getName());
@@ -1031,10 +1093,18 @@ public class CalendarServiceImplTest
        c3.setLastRecurrence(c20110720wed.getTime());
        CALENDAR_SERVICE.updateCalendarEntry(c3);
        
-       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, c20110720wed.getTime(), c20110722fri.getTime(), paging);
-       cq.setTestHook(hook);
-       cq.execute();
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+       {
+           @Override
+           public Void execute() throws Throwable
+           {
+               GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+                       containers, c20110720wed.getTime(), c20110722fri.getTime(), paging);
+               cq.setTestHook(hook);
+               cq.execute();
+               return null;
+           }
+       });
        assertEquals(3, full.size());
        assertEquals(0, filtered.size());
     }

@@ -132,6 +132,8 @@ public class NodeServiceTest
     private static SimpleCache<Serializable, Serializable> propsCache;
     private static SimpleCache<Serializable, Serializable> aspectsCache;
     
+    private static Long deletedTypeQNameId;
+    
     /** populated during setup */
     private static NodeRef rootNodeRef;
 
@@ -172,6 +174,17 @@ public class NodeServiceTest
             }
         };
         rootNodeRef = txnService.getRetryingTransactionHelper().doInTransaction(createStoreWork);
+        
+        final QNameDAO qnameDAO = (QNameDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("qnameDAO");
+        deletedTypeQNameId = txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Long>()
+        {
+            @Override
+            public Long execute() throws Throwable
+            {
+                return qnameDAO.getOrCreateQName(ContentModel.TYPE_DELETED).getFirst();
+            }
+        });
+
     }
     
     /**
@@ -1199,8 +1212,6 @@ public class NodeServiceTest
      */
     @Test public void testConcurrentLinkToDeletedNode() throws Throwable
     {
-        QNameDAO qnameDAO = (QNameDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("qnameDAO");
-        Long deletedTypeQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_DELETED).getFirst();
         // First find any broken links to start with
         final NodeEntity params = new NodeEntity();
         params.setId(0L);
@@ -1371,8 +1382,6 @@ public class NodeServiceTest
      */
     @Test public void testLinkToDeletedNodeRecovery() throws Throwable
     {
-        QNameDAO qnameDAO = (QNameDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("qnameDAO");
-        Long deletedTypeQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_DELETED).getFirst();
         // First find any broken links to start with
         final NodeEntity params = new NodeEntity();
         params.setId(0L);
@@ -1504,18 +1513,35 @@ public class NodeServiceTest
         assertTrue("The following child nodes have no parent node: " + nodeIds, nodeIds.isEmpty());
 
         // check lost_found ...
-        List<NodeRef> lostAndFoundNodeRefs = getLostAndFoundNodes();
+        final List<NodeRef> lostAndFoundNodeRefs = getLostAndFoundNodes();
         assertFalse(lostAndFoundNodeRefs.isEmpty());
 
-        List<Long> lostAndFoundNodeIds = new ArrayList<Long>(lostAndFoundNodeRefs.size());
-        for (NodeRef nodeRef : lostAndFoundNodeRefs)
+        final List<Long> lostAndFoundNodeIds = new ArrayList<Long>(lostAndFoundNodeRefs.size());
+        txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
-            lostAndFoundNodeIds.add(nodeDAO.getNodePair(nodeRef).getFirst());
-        }
+            @Override
+            public Void execute() throws Throwable
+            {
+                for (NodeRef nodeRef : lostAndFoundNodeRefs)
+                {
+                    Long nodeId = nodeDAO.getNodePair(nodeRef).getFirst();
+                    lostAndFoundNodeIds.add(nodeId);
+                }
+                return null;
+            }
+        });
 
-        for (Long childNodeId : childNodeIds)
+        for (final Long childNodeId : childNodeIds)
         {
-            assertTrue("Not found: "+childNodeId, lostAndFoundNodeIds.contains(childNodeId) || !nodeDAO.exists(childNodeId));
+            Boolean exists = txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>()
+            {
+                @Override
+                public Boolean execute() throws Throwable
+                {
+                    return nodeDAO.exists(childNodeId);
+                }
+            });
+            assertTrue("Not found: "+childNodeId, lostAndFoundNodeIds.contains(childNodeId) || !exists);
         }
     }
 
@@ -1524,8 +1550,6 @@ public class NodeServiceTest
      */
     @Test public void testForceNonRootNodeWithNoParentNode() throws Throwable
     {
-        QNameDAO qnameDAO = (QNameDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("qnameDAO");
-        Long deletedTypeQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_DELETED).getFirst();
         // First find any broken links to start with
         final NodeEntity params = new NodeEntity();
         params.setId(0L);
@@ -1695,8 +1719,6 @@ public class NodeServiceTest
         final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         final NodeRef[] nodes = new NodeRef[6];
         buildNodeHierarchy(workspaceRootNodeRef, nodes);
-        Pair<Long, NodeRef> parentNodePair = nodeDAO.getNodePair(nodes[0]);
-        Pair<Long, ChildAssociationRef> parentAssocPair = nodeDAO.getPrimaryParentAssoc(parentNodePair.getFirst());
         // Hook up some associations
         nodeService.addAspect(nodes[1], ContentModel.ASPECT_COPIEDFROM, null);
         nodeService.createAssociation(nodes[1], nodes[0], ContentModel.ASSOC_ORIGINAL);             // Peer n1-n0
@@ -1707,8 +1729,19 @@ public class NodeServiceTest
                 QName.createQName(NamespaceService.ALFRESCO_URI, "testNodeHierarchyWalker"));
         
         // Walk the hierarchy
-        NodeHierarchyWalker walker = new NodeHierarchyWalker(nodeDAO);
-        walker.walkHierarchy(parentNodePair, parentAssocPair);
+        NodeHierarchyWalker walker = txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeHierarchyWalker>()
+        {
+            @Override
+            public NodeHierarchyWalker execute() throws Throwable
+            {
+                Pair<Long, NodeRef> parentNodePair = nodeDAO.getNodePair(nodes[0]);
+                Pair<Long, ChildAssociationRef> parentAssocPair = nodeDAO.getPrimaryParentAssoc(parentNodePair.getFirst());
+                
+                NodeHierarchyWalker walker = new NodeHierarchyWalker(nodeDAO);
+                walker.walkHierarchy(parentNodePair, parentAssocPair);
+                return walker;
+            }
+        }, true);
         
         List<VisitedNode> nodesLeafFirst = walker.getNodes(true);
         assertEquals("Unexpected number of nodes visited", 6, nodesLeafFirst.size());

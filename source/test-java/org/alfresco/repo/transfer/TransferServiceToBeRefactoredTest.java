@@ -579,28 +579,6 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         }
     }
 
-    private UnitTestTransferManifestNodeFactory unitTestKludgeToTransferGuestHomeToCompanyHome()
-    {
-        /**
-         *  For unit test 
-         *  - replace the HTTP transport with the in-process transport
-         *  - replace the node factory with one that will map node refs, paths etc.
-         */
-        TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(this.receiver, this.contentService, transactionService);
-        transferServiceImpl.setTransmitter(transmitter);
-        UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory);
-        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory);
-        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
-        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
-        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-
-        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
-        transferServiceImpl.setDescriptorService(mockedDescriptorService);
-
-        return testNodeFactory;
-
-    }
-
     /**
      * Test the transfer method behaviour with respect to sync folders - sending a complete set 
      * of nodes and implying delete from the absence of an association.
@@ -644,7 +622,6 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         setDefaultRollback(false);
 
         final String CONTENT_TITLE = "ContentTitle";
-        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
         final Locale CONTENT_LOCALE = Locale.GERMAN;
         final String CONTENT_STRING = "Hello";
 
@@ -657,9 +634,17 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         transferServiceImpl.setTransmitter(transmitter);
         final UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory);
         transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory);
-        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
-        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
-        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+        final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+                pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+                return null;
+            }
+        });
 
         DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
         transferServiceImpl.setDescriptorService(mockedDescriptorService);
@@ -1354,7 +1339,6 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         setDefaultRollback(false);
 
         final String CONTENT_TITLE = "ContentTitle";
-        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
         final Locale CONTENT_LOCALE = Locale.JAPAN;
         final String CONTENT_STRING = "Hello";
 
@@ -1593,6 +1577,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 assertTrue("node B9 is not alien", (Boolean) nodeService.hasAspect(testData.B9NodeRef, TransferModel.ASPECT_ALIEN));
 
                 // Temp code
+                @SuppressWarnings("unchecked")
                 List<String> invaders = (List<String>) nodeService.getProperty(A1destNodeRef, TransferModel.PROP_INVADED_BY);
                 assertTrue("invaders contains local repository Id", invaders.contains(localRepositoryId));
                 assertFalse("invaders contains REPO_ID_A", invaders.contains(REPO_ID_A));
@@ -1619,6 +1604,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             {
                 NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(testData.A1NodeRef);
                 NodeRef A3destNodeRef = testNodeFactory.getMappedNodeRef(testData.A3NodeRef);
+                @SuppressWarnings({ "unused", "unchecked" })
                 List<String> invaders = (List<String>) nodeService.getProperty(A1destNodeRef, TransferModel.PROP_INVADED_BY);
                 assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
                 assertFalse("node A1 is still alien", (Boolean) nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));
@@ -2043,9 +2029,6 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         setDefaultRollback(false);
 
         final String CONTENT_TITLE = "ContentTitle";
-        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
-        final Locale CONTENT_LOCALE = Locale.JAPAN;
-        final String CONTENT_STRING = "Hello";
 
         /**
          * Now go ahead and create our first transfer target
@@ -2054,6 +2037,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
 
         class TestData
         {
+            @SuppressWarnings("unused")
             TransferTarget transferMe;
             NodeRef S0NodeRef;
             NodeRef A0NodeRef;
@@ -2134,8 +2118,16 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         transferServiceImpl.setTransmitter(transmitter);
         final UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory);
         transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory);
-        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
-        pathMap.add(new Pair(nodeService.getPath(testData.A0NodeRef), nodeService.getPath(testData.B1NodeRef)));
+        final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                pathMap.add(new Pair<Path, Path>(nodeService.getPath(testData.A0NodeRef), nodeService.getPath(testData.B1NodeRef)));
+                return null;
+            }
+        });
         DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
         transferServiceImpl.setDescriptorService(mockedDescriptorService);
 
@@ -2227,6 +2219,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             public Void execute() throws Throwable
             {
                 NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(testData.A1NodeRef);
+                @SuppressWarnings({ "unchecked", "unused" })
                 List<String> invaders = (List<String>) nodeService.getProperty(A1destNodeRef, TransferModel.PROP_INVADED_BY);
                 assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
                 assertFalse("node A1 is still alien", (Boolean) nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));
@@ -2305,6 +2298,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             public Void execute() throws Throwable
             {
                 NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(testData.A1NodeRef);
+                @SuppressWarnings({ "unused", "unchecked" })
                 List<String> invaders = (List<String>) nodeService.getProperty(A1destNodeRef, TransferModel.PROP_INVADED_BY);
                 assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
                 assertFalse("node A1 is still alien", (Boolean) nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));
@@ -2371,7 +2365,6 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         setDefaultRollback(false);
 
         final String CONTENT_TITLE = "ContentTitle";
-        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
         final Locale CONTENT_LOCALE = Locale.GERMAN;
         final String CONTENT_STRING = "Hello";
 
@@ -2714,8 +2707,6 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         setDefaultRollback(false);
 
         final String CONTENT_TITLE = "ContentTitle";
-        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
-        final String CONTENT_NAME = "Demo Node 1";
         final Locale CONTENT_LOCALE = Locale.GERMAN;
         final String CONTENT_STRING = "The quick brown fox";
         final Set<NodeRef> nodes = new HashSet<NodeRef>();
@@ -2733,6 +2724,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
 
             ChildAssociationRef child;
 
+            @SuppressWarnings("unused")
             TransferTarget transferMe;
         }
         final TestData testData = new TestData();
@@ -3125,7 +3117,6 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         setDefaultRollback(false);
 
         final String CONTENT_TITLE = "ContentTitle";
-        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
         final Locale CONTENT_LOCALE = Locale.GERMAN;
         final String CONTENT_STRING = "Hello";
 
@@ -3153,6 +3144,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         final String targetName = "testTransferSyncNodes";
         class TestData
         {
+            @SuppressWarnings("unused")
             TransferTarget transferMe;
             NodeRef A1NodeRef;
             NodeRef A2NodeRef;
@@ -3444,14 +3436,12 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         setDefaultRollback(false);
 
         final String CONTENT_TITLE = "ContentTitle";
-        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
-        final Locale CONTENT_LOCALE = Locale.GERMAN;
-        final String CONTENT_STRING = "Hello";
 
         final String targetName = "testMultiRepoTransfer";
 
         class TestData
         {
+            @SuppressWarnings("unused")
             TransferTarget transferMe;
             NodeRef S0NodeRef;
             NodeRef A1NodeRef;
@@ -3584,12 +3574,20 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         transferServiceImpl.setTransmitter(transmitter);
         final UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory);
         transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory);
-        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map Project A/images to Project B/images
         // Map Project C/images to Project A/images
-        nodeService.getPath(testData.A2NodeRef);
-        pathMap.add(new Pair(nodeService.getPath(testData.A1NodeRef), nodeService.getPath(testData.B1NodeRef)));
-        pathMap.add(new Pair(nodeService.getPath(testData.C1NodeRef), nodeService.getPath(testData.B1NodeRef)));
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                nodeService.getPath(testData.A2NodeRef);
+                pathMap.add(new Pair<Path, Path>(nodeService.getPath(testData.A1NodeRef), nodeService.getPath(testData.B1NodeRef)));
+                pathMap.add(new Pair<Path, Path>(nodeService.getPath(testData.C1NodeRef), nodeService.getPath(testData.B1NodeRef)));
+                return null;
+            }
+        }, true);
         {
             DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
             transferServiceImpl.setDescriptorService(mockedDescriptorService);
@@ -3873,13 +3871,11 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         final String localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
 
         final String CONTENT_TITLE = "ContentTitle";
-        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
-        final Locale CONTENT_LOCALE = Locale.GERMAN;
-        final String CONTENT_STRING = "Hello";
 
         final String targetName = "testMultiRepoTransferMove";
         class TestData
         {
+            @SuppressWarnings("unused")
             TransferTarget transferMe;
             NodeRef S0NodeRef;
             NodeRef A1NodeRef;
@@ -4015,11 +4011,19 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         transferServiceImpl.setTransmitter(transmitter);
         final UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory);
         transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory);
-        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map Project A to Project B
         // Map Project C to Project B
-        pathMap.add(new Pair(nodeService.getPath(testData.A1NodeRef), nodeService.getPath(testData.B1NodeRef)));
-        pathMap.add(new Pair(nodeService.getPath(testData.C1NodeRef), nodeService.getPath(testData.B1NodeRef)));
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                pathMap.add(new Pair<Path, Path>(nodeService.getPath(testData.A1NodeRef), nodeService.getPath(testData.B1NodeRef)));
+                pathMap.add(new Pair<Path, Path>(nodeService.getPath(testData.C1NodeRef), nodeService.getPath(testData.B1NodeRef)));
+                return null;
+            }
+        }, true);
 
         DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_C);
         transferServiceImpl.setDescriptorService(mockedDescriptorService);
@@ -4200,6 +4204,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 assertTrue("A5 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(testData.A5NodeRef), TransferModel.ASPECT_ALIEN));
                 assertTrue("C2 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(testData.C2NodeRef), TransferModel.ASPECT_ALIEN));
                 assertFalse("C3 dest is still invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(testData.C3NodeRef), TransferModel.ASPECT_ALIEN));
+                @SuppressWarnings("unchecked")
                 List<String> invaders = (List<String>) nodeService.getProperty(testNodeFactory.getMappedNodeRef(testData.C2NodeRef), TransferModel.PROP_INVADED_BY);
                 assertTrue("invaders is too small", invaders.size() > 1);
                 assertTrue("invaders does not contain REPO A", invaders.contains(REPO_ID_A));
@@ -4251,6 +4256,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 assertFalse("C2 dest is still invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(testData.C2NodeRef), TransferModel.ASPECT_ALIEN));
                 assertFalse("C3 dest is still invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(testData.C3NodeRef), TransferModel.ASPECT_ALIEN));
 
+                @SuppressWarnings("unchecked")
                 List<String> invaders = (List<String>) nodeService.getProperty(testNodeFactory.getMappedNodeRef(testData.A4NodeRef), TransferModel.PROP_INVADED_BY);
                 assertTrue("invaders is too big", invaders.size() < 2);
                 assertFalse("invaders contains REPO A", invaders.contains(REPO_ID_A));
@@ -4283,6 +4289,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         final String targetName = "testCopyTransferredNode";
         class TestData
         {
+            @SuppressWarnings("unused")
             TransferTarget transferMe;
             NodeRef S0NodeRef;
             NodeRef A1NodeRef;
@@ -4377,10 +4384,18 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         transferServiceImpl.setTransmitter(transmitter);
         final UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory);
         transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory);
-        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
 
-        // Map Project A to Project B
-        pathMap.add(new Pair(nodeService.getPath(testData.A1NodeRef), nodeService.getPath(testData.B1NodeRef)));
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                // Map Project A to Project B
+                pathMap.add(new Pair<Path, Path>(nodeService.getPath(testData.A1NodeRef), nodeService.getPath(testData.B1NodeRef)));
+                return null;
+            }
+        });
 
         DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
         transferServiceImpl.setDescriptorService(mockedDescriptorService);
@@ -4428,6 +4443,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 assertFalse("copied node still has transferred aspect", nodeService.hasAspect(copiedNode, TransferModel.ASPECT_TRANSFERRED));
                 assertNull("copied node still has from repository id", nodeService.getProperty(copiedNode, TransferModel.PROP_FROM_REPOSITORY_ID));
                 assertNull("copied node still has original repository id", nodeService.getProperty(copiedNode, TransferModel.PROP_REPOSITORY_ID));
+                @SuppressWarnings("unused")
                 Set<QName> aspects = nodeService.getAspects(copiedNode);
 
                 /**
@@ -4503,13 +4519,11 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         setDefaultRollback(false);
 
         final String CONTENT_TITLE = "ContentTitle";
-        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
-        final Locale CONTENT_LOCALE = Locale.GERMAN;
-        final String CONTENT_STRING = "Hello";
 
         final String targetName = "testCopyAlien";
         class TestData
         {
+            @SuppressWarnings("unused")
             TransferTarget transferMe;
             NodeRef S0NodeRef;
             NodeRef A1NodeRef;
@@ -4648,11 +4662,19 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         transferServiceImpl.setTransmitter(transmitter);
         final UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory);
         transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory);
-        List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
-        // Map Project A to Project B
-        // Map Project C to Project B
-        pathMap.add(new Pair(nodeService.getPath(testData.A1NodeRef), nodeService.getPath(testData.B1NodeRef)));
-        pathMap.add(new Pair(nodeService.getPath(testData.C1NodeRef), nodeService.getPath(testData.B1NodeRef)));
+        final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                // Map Project A to Project B
+                // Map Project C to Project B
+                pathMap.add(new Pair<Path, Path>(nodeService.getPath(testData.A1NodeRef), nodeService.getPath(testData.B1NodeRef)));
+                pathMap.add(new Pair<Path, Path>(nodeService.getPath(testData.C1NodeRef), nodeService.getPath(testData.B1NodeRef)));
+                return null;
+            }
+        });
 
         DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_C);
         transferServiceImpl.setDescriptorService(mockedDescriptorService);
@@ -4754,7 +4776,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 assertTrue("C3 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(testData.C3NodeRef), TransferModel.ASPECT_ALIEN));
                 assertTrue("C2 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(testData.C2NodeRef), TransferModel.ASPECT_ALIEN));
 
+                @SuppressWarnings("unchecked")
                 List<String> C2invaders = (List<String>) nodeService.getProperty(testNodeFactory.getMappedNodeRef(testData.C2NodeRef), TransferModel.PROP_INVADED_BY);
+                @SuppressWarnings("unchecked")
                 List<String> C3invaders = (List<String>) nodeService.getProperty(testNodeFactory.getMappedNodeRef(testData.C3NodeRef), TransferModel.PROP_INVADED_BY);
                 assertTrue("C3 invaders contains local repository Id", C3invaders.contains(localRepositoryId));
                 assertFalse("C3 invaders contains REPO_ID_A", C3invaders.contains(REPO_ID_A));
@@ -4784,7 +4808,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 assertTrue("A4 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(testData.A4NodeRef), TransferModel.ASPECT_ALIEN));
                 assertTrue("C2 dest is not invaded", nodeService.hasAspect(testNodeFactory.getMappedNodeRef(testData.C2NodeRef), TransferModel.ASPECT_ALIEN));
 
+                @SuppressWarnings("unchecked")
                 List<String> C2invaders = (List<String>) nodeService.getProperty(testNodeFactory.getMappedNodeRef(testData.C2NodeRef), TransferModel.PROP_INVADED_BY);
+                @SuppressWarnings("unchecked")
                 List<String> A4invaders = (List<String>) nodeService.getProperty(testNodeFactory.getMappedNodeRef(testData.A4NodeRef), TransferModel.PROP_INVADED_BY);
                 assertTrue("A4 invaders contains local repository Id", A4invaders.contains(localRepositoryId));
 

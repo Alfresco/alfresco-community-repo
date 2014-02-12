@@ -242,12 +242,20 @@ public class LockDAOTest extends TestCase
     
     public void testReleaseLockRepeated() throws Exception
     {
-        String token = lock(lockAAA, 500000L, true);
+        final String token = lock(lockAAA, 500000L, true);
         release(lockAAA, token, true);
         release(lockAAA, token, false);
         try
         {
-            lockDAO.releaseLock(lockAAA, token, false);
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    lockDAO.releaseLock(lockAAA, token, false);
+                    return null;
+                }
+            });
             fail("Pessimistic lock release should have failed.");
         }
         catch (LockAcquisitionException e)
@@ -256,7 +264,14 @@ public class LockDAOTest extends TestCase
         }
         try
         {
-            boolean released = lockDAO.releaseLock(lockAAA, token, true);
+            boolean released = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>()
+            {
+                @Override
+                public Boolean execute() throws Throwable
+                {
+                    return lockDAO.releaseLock(lockAAA, token, true);
+                }
+            });
             // Expected
             assertFalse("Release should have been negative.", released);
         }

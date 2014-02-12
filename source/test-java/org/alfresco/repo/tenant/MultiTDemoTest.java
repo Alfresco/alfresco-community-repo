@@ -960,10 +960,18 @@ public class MultiTDemoTest extends TestCase
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
         
         // find person
-        NodeRef personNodeRef = personService.getPerson(userName);
+        final NodeRef personNodeRef = personService.getPerson(userName);
         // clear user usage
         nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, null);
-        usageService.deleteDeltas(personNodeRef);
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                usageService.deleteDeltas(personNodeRef);
+                return null;
+            }
+        }, false);
     }
     
     

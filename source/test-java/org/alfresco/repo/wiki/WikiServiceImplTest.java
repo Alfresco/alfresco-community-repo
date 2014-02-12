@@ -78,11 +78,13 @@ public class WikiServiceImplTest
     private static BehaviourFilter              BEHAVIOUR_FILTER;
     private static WikiService                  WIKI_SERVICE;
     private static ContentService               CONTENT_SERVICE;
+    @SuppressWarnings("unused")
     private static DictionaryService            DICTIONARY_SERVICE;
     private static NodeService                  NODE_SERVICE;
     private static NodeService                  PUBLIC_NODE_SERVICE;
     private static PersonService                PERSON_SERVICE;
     private static RetryingTransactionHelper    TRANSACTION_HELPER;
+    @SuppressWarnings("unused")
     private static TransactionService           TRANSACTION_SERVICE;
     private static PermissionService            PERMISSION_SERVICE;
     private static SiteService                  SITE_SERVICE;
@@ -154,8 +156,8 @@ public class WikiServiceImplTest
        assertNotNull(page.getNodeRef());
        assertNotNull(page.getSystemName());
        
-       NodeRef container = NODE_SERVICE.getPrimaryParent(page.getNodeRef()).getParentRef();
-       NodeRef site = NODE_SERVICE.getPrimaryParent(container).getParentRef();
+       NodeRef container = PUBLIC_NODE_SERVICE.getPrimaryParent(page.getNodeRef()).getParentRef();
+       NodeRef site = PUBLIC_NODE_SERVICE.getPrimaryParent(container).getParentRef();
        assertEquals(WIKI_SITE.getNodeRef(), site);
        
        // Ensure the content was correctly set up

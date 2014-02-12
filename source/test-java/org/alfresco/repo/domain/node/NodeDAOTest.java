@@ -100,7 +100,7 @@ public class NodeDAOTest extends TestCase
     
     public void testGetNodesWithAspects() throws Throwable
     {
-        NodeRefQueryCallback callback = new NodeRefQueryCallback()
+        final NodeRefQueryCallback callback = new NodeRefQueryCallback()
         {
             public boolean handle(Pair<Long, NodeRef> nodePair)
             {
@@ -108,10 +108,18 @@ public class NodeDAOTest extends TestCase
                 return false;
             }
         };
-        nodeDAO.getNodesWithAspects(
-                Collections.singleton(ContentModel.ASPECT_AUDITABLE),
-                1L, 1000L,
-                callback);
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                nodeDAO.getNodesWithAspects(
+                        Collections.singleton(ContentModel.ASPECT_AUDITABLE),
+                        1L, 1000L,
+                        callback);
+                return null;
+            }
+        }, true);
     }
     
     public void testGetPrimaryChildAcls() throws Throwable

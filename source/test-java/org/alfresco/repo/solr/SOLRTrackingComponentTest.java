@@ -122,25 +122,25 @@ public class SOLRTrackingComponentTest extends TestCase
         rootNodeRef = nodeService.getRootNode(storeRef);
     }
 
-    public void testAclChnageSetLimits()
+    public void testAclChangeSetLimits()
     {
-        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, null, null, 50);
+        List<AclChangeSet> aclChangeSets = getAclChangeSets(null, null, null, null, 50);
 
         // First
         Long first = aclChangeSets.get(0).getId();
         Long firstTime = aclChangeSets.get(1).getId();
-        List<AclChangeSet> testSets = solrTrackingComponent.getAclChangeSets(first, null, first, null, 50);
+        List<AclChangeSet> testSets = getAclChangeSets(first, null, first, null, 50);
         assertEquals(0, testSets.size());
-        testSets = solrTrackingComponent.getAclChangeSets(first, firstTime, first+1, firstTime, 50);
+        testSets = getAclChangeSets(first, firstTime, first+1, firstTime, 50);
         assertEquals(0, testSets.size());
-        testSets = solrTrackingComponent.getAclChangeSets(first, firstTime, first+1, firstTime+1, 50);
+        testSets = getAclChangeSets(first, firstTime, first+1, firstTime+1, 50);
         assertEquals(0, testSets.size());
 
     }
 
     public void testGetAcls_Simple()
     {
-        List<AclChangeSet> cs = solrTrackingComponent.getAclChangeSets(null, null, null, null, 50);
+        List<AclChangeSet> cs = getAclChangeSets(null, null, null, null, 50);
         assertTrue("Expected results to be limited in number", cs.size() <= 50);
         int totalAcls = 0;
         for (AclChangeSet aclChangeSet : cs)
@@ -151,7 +151,7 @@ public class SOLRTrackingComponentTest extends TestCase
         
         for (AclChangeSet aclChangeSet : cs)
         {
-            List<Acl> acls = solrTrackingComponent.getAcls(Arrays.asList(new Long[]{aclChangeSet.getId()}), null, 200);
+            List<Acl> acls = getAcls(Arrays.asList(new Long[]{aclChangeSet.getId()}), null, 200);
             assertEquals(aclChangeSet.getAclCount(), acls.size());
             totalAclsCheck += acls.size();
         }
@@ -167,7 +167,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTest3(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
+        List<Transaction> txns = getTransactions(null, startTime-1000, null, null, 100);
 
         int[] updates = new int[] {1, 1};
         int[] deletes = new int[] {0, 1};
@@ -195,6 +195,82 @@ public class SOLRTrackingComponentTest extends TestCase
         }
         return txIds;
     }
+    
+    /**
+     * Call {@link SOLRTrackingComponent#getTransactions(Long, Long, Long, Long, int)} in a transaction
+     */
+    private List<Transaction> getTransactions(
+            final Long minTxnId, final Long fromCommitTime,
+            final Long maxTxnId, final Long toCommitTimeint,
+            final int maxResults)
+    {
+        RetryingTransactionCallback<List<Transaction>> callback = new RetryingTransactionCallback<List<Transaction>>()
+        {
+            @Override
+            public List<Transaction> execute() throws Throwable
+            {
+                return solrTrackingComponent.getTransactions(minTxnId, fromCommitTime, maxTxnId, toCommitTimeint, maxResults);
+            }
+        };
+        return transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
+    }
+
+    /**
+     * Call {@link SOLRTrackingComponent#getNodes(NodeParameters, NodeQueryCallback)} in a transaction
+     */
+    private void getNodes(final NodeParameters nodeParameters, final SOLRTest bt)
+    {
+        long startTime = System.currentTimeMillis();
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                solrTrackingComponent.getNodes(nodeParameters, bt);
+                return null;
+            }
+        }, true);
+        long endTime = System.currentTimeMillis();
+
+        bt.runNodeChecks(nodeParameters.getMaxResults());
+
+        logger.debug("Got " + bt.getActualNodeCount() + " nodes in " + (endTime - startTime) + " ms");
+    }
+
+    /**
+     * Call {@link SOLRTrackingComponent#getAcls(List, Long, int)} in a transaction
+     */
+    private List<Acl> getAcls(final List<Long> aclChangeSetIds, final Long minAclId, final int maxResults)
+    {
+        RetryingTransactionCallback<List<Acl>> callback = new RetryingTransactionCallback<List<Acl>>()
+        {
+            @Override
+            public List<Acl> execute() throws Throwable
+            {
+                return solrTrackingComponent.getAcls(aclChangeSetIds, minAclId, maxResults);
+            }
+        };
+        return transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
+    }
+
+    /**
+     * Call {@link SOLRTrackingComponent#getAclChangeSets(Long, Long, Long, Long, int)} in a transaction
+     */
+    private List<AclChangeSet> getAclChangeSets(
+            final Long minAclChangeSetId, final Long fromCommitTime,
+            final Long maxAclChangeSetId, final Long toCommitTime,
+            final int maxResults)
+    {
+        RetryingTransactionCallback<List<AclChangeSet>> callback = new RetryingTransactionCallback<List<AclChangeSet>>()
+        {
+            @Override
+            public List<AclChangeSet> execute() throws Throwable
+            {
+                return solrTrackingComponent.getAclChangeSets(minAclChangeSetId, fromCommitTime, maxAclChangeSetId, toCommitTime, maxResults);
+            }
+        };
+        return transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
+    }
 
     public void testGetTransactionLimits()
     {
@@ -205,7 +281,7 @@ public class SOLRTrackingComponentTest extends TestCase
 
         // All
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
+        List<Transaction> txns = getTransactions(null, startTime-1000, null, null, 100);
 
         int[] updates = new int[] {1, 1};
         int[] deletes = new int[] {0, 1};
@@ -218,28 +294,28 @@ public class SOLRTrackingComponentTest extends TestCase
 
         // First
 
-        txns = solrTrackingComponent.getTransactions(first, null, first, null, 50);
+        txns = getTransactions(first, null, first, null, 50);
         assertEquals(0, txns.size());
 
-        txns = solrTrackingComponent.getTransactions(first, null, first+1, null, 50);
+        txns = getTransactions(first, null, first+1, null, 50);
         updates = new int[] {1};
         deletes = new int[] {0};
         List<Long> createdTransactionFirst = new ArrayList<Long>(1);
         createdTransactionFirst.add(createdTransactions.get(0));
         checkTransactions(txns, createdTransactionFirst, updates, deletes);
 
-        txns = solrTrackingComponent.getTransactions(first, firstTime, first+1, firstTime+1, 50);
+        txns = getTransactions(first, firstTime, first+1, firstTime+1, 50);
         checkTransactions(txns, createdTransactionFirst, updates, deletes);
 
-        txns = solrTrackingComponent.getTransactions(first, firstTime-1, first+1, firstTime, 50);
+        txns = getTransactions(first, firstTime-1, first+1, firstTime, 50);
         assertEquals(0, txns.size());
 
         // Last
 
-        txns = solrTrackingComponent.getTransactions(last, null, last, null, 50);
+        txns = getTransactions(last, null, last, null, 50);
         assertEquals(0, txns.size());
 
-        txns = solrTrackingComponent.getTransactions(last, null, last+1, null, 50);
+        txns = getTransactions(last, null, last+1, null, 50);
         updates = new int[] {1};
         deletes = new int[] {1};
         List<Long> createdTransactionLast = new ArrayList<Long>(1);
@@ -247,10 +323,10 @@ public class SOLRTrackingComponentTest extends TestCase
         checkTransactions(txns, createdTransactionLast, updates, deletes);
 
 
-        txns = solrTrackingComponent.getTransactions(last, lastTime, last+1, lastTime+1, 50);
+        txns = getTransactions(last, lastTime, last+1, lastTime+1, 50);
         checkTransactions(txns, createdTransactionLast, updates, deletes);
 
-        txns = solrTrackingComponent.getTransactions(last, lastTime-1, last+1, lastTime, 50);
+        txns = getTransactions(last, lastTime-1, last+1, lastTime, 50);
         assertEquals(0, txns.size());
     }
 
@@ -261,7 +337,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTestResidualProperties(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataNullPropertyValue", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
+        List<Transaction> txns = getTransactions(null, startTime-1000, null, null, 100);
 
         int[] updates = new int[] {2};
         int[] deletes = new int[] {0};
@@ -285,7 +361,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTest100Nodes(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
+        List<Transaction> txns = getTransactions(null, startTime-1000, null, null, 100);
 
         int[] updates = new int[] {100};
         int[] deletes = new int[] {0};
@@ -314,7 +390,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTest4(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataManyNodes", true, false);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime-1000, null, null, 100);
+        List<Transaction> txns = getTransactions(null, fromCommitTime-1000, null, null, 100);
 
         int[] updates = new int[] {2001};
         int[] deletes = new int[] {0};
@@ -371,7 +447,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTest4(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataManyNodes", true, false);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime-1000, null, null, 100);
+        List<Transaction> txns = getTransactions(null, fromCommitTime-1000, null, null, 100);
 
         int[] updates = new int[] {2001};
         int[] deletes = new int[] {0};
@@ -401,7 +477,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTest5(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataNullPropertyValue", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime-1000, null, null, 100);
+        List<Transaction> txns = getTransactions(null, fromCommitTime-1000, null, null, 100);
 
         int[] updates = new int[] {11};
         int[] deletes = new int[] {0};
@@ -423,7 +499,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTest1(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testFilters", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
+        List<Transaction> txns = getTransactions(null, startTime-1000, null, null, 100);
 
         int[] updates = new int[] {1, 1};
         int[] deletes = new int[] {0, 1};
@@ -670,17 +746,6 @@ public class SOLRTrackingComponentTest extends TestCase
         }
 
         return matchedTransactions;
-    }
-
-    private void getNodes(NodeParameters nodeParameters, SOLRTest bt)
-    {
-        long startTime = System.currentTimeMillis();
-        solrTrackingComponent.getNodes(nodeParameters, bt);        
-        long endTime = System.currentTimeMillis();
-
-        bt.runNodeChecks(nodeParameters.getMaxResults());
-
-        logger.debug("Got " + bt.getActualNodeCount() + " nodes in " + (endTime - startTime) + " ms");
     }
 
     private void getNodeMetaData(final NodeMetaDataParameters params, final MetaDataResultsFilter filter, final SOLRTest bt)

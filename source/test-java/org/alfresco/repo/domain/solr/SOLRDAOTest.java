@@ -33,8 +33,9 @@ import org.alfresco.repo.solr.Acl;
 import org.alfresco.repo.solr.AclChangeSet;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.Transaction;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -49,6 +50,7 @@ public class SOLRDAOTest extends TestCase
 {
     private ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
 
+    private TransactionService transactionService;
     private AuthenticationComponent authenticationComponent;
     private SOLRDAO solrDAO;
     
@@ -57,8 +59,63 @@ public class SOLRDAOTest extends TestCase
     {
         solrDAO = (SOLRDAO)ctx.getBean("solrDAO");
         authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
+        transactionService = (TransactionService) ctx.getBean("TransactionService");
         
         authenticationComponent.setSystemUserAsCurrentUser();
+    }
+    
+    private List<Node> getNodes(final NodeParameters nodeParameters)
+    {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Node>>()
+        {
+            @Override
+            public List<Node> execute() throws Throwable
+            {
+                return solrDAO.getNodes(nodeParameters);
+            }
+        }, true);
+    }
+    
+    private List<Acl> getAcls(final List<Long> aclChangeSetIds, final Long minAclId, final int maxResults)
+    {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Acl>>()
+        {
+            @Override
+            public List<Acl> execute() throws Throwable
+            {
+                return solrDAO.getAcls(aclChangeSetIds, minAclId, maxResults);
+            }
+        }, true);
+    }
+    
+    private List<Transaction> getTransactions(
+            final Long minTxnId, final Long fromCommitTime,
+            final Long maxTxnId, final Long toCommitTime,
+            final int maxResults)
+    {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Transaction>>()
+        {
+            @Override
+            public List<Transaction> execute() throws Throwable
+            {
+                return solrDAO.getTransactions(minTxnId, fromCommitTime, maxTxnId, toCommitTime, maxResults);
+            }
+        }, true);
+    }
+    
+    private List<AclChangeSet> getAclChangeSets(
+            final Long minAclChangeSetId, final Long fromCommitTime,
+            final Long maxAclChangeSetId, final Long toCommitTime,
+            final int maxResults)
+    {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<AclChangeSet>>()
+        {
+            @Override
+            public List<AclChangeSet> execute() throws Throwable
+            {
+                return solrDAO.getAclChangeSets(minAclChangeSetId, fromCommitTime, maxAclChangeSetId, toCommitTime, maxResults);
+            }
+        }, true);
     }
     
     public void testQueryChangeSets_NoLimit()
@@ -67,7 +124,7 @@ public class SOLRDAOTest extends TestCase
 
         try
         {
-            solrDAO.getAclChangeSets(null, startTime, null, null, 0);
+            getAclChangeSets(null, startTime, null, null, 0);
             fail("Must have result limit");
         }
         catch (IllegalArgumentException e)
@@ -79,13 +136,13 @@ public class SOLRDAOTest extends TestCase
     public void testQueryChangeSets_Time()
     {
         long startTime = System.currentTimeMillis() + (5 * 60000L);             // The future
-        List<AclChangeSet> results = solrDAO.getAclChangeSets(null, startTime, null, null, 50);
+        List<AclChangeSet> results = getAclChangeSets(null, startTime, null, null, 50);
         assertTrue("ChangeSet count not limited", results.size() == 0);
     }
     
     public void testQueryChangeSets_Limit()
     {
-        List<AclChangeSet> results = solrDAO.getAclChangeSets(null, 0L, null, null, 50);
+        List<AclChangeSet> results = getAclChangeSets(null, 0L, null, null, 50);
         assertTrue("Transaction count not limited", results.size() <= 50);
     }
     
@@ -97,7 +154,7 @@ public class SOLRDAOTest extends TestCase
         try
         {
             // No IDs
-            solrDAO.getAcls(Collections.<Long>emptyList(), null, 50);
+            getAcls(Collections.<Long>emptyList(), null, 50);
             fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException e)
@@ -109,7 +166,7 @@ public class SOLRDAOTest extends TestCase
     public void testQueryAcls_All()
     {
         // Do a query for some changesets
-        List<AclChangeSet> aclChangeSets = solrDAO.getAclChangeSets(null, 0L, null, null, 50);
+        List<AclChangeSet> aclChangeSets = getAclChangeSets(null, 0L, null, null, 50);
         
         // Choose some changesets with changes
         int aclTotal = 0;
@@ -135,7 +192,7 @@ public class SOLRDAOTest extends TestCase
         List<Long> aclChangeSetIds = toIds(aclChangeSets);
 
         // Now use those to query for details
-        List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, null, 1000);
+        List<Acl> acls = getAcls(aclChangeSetIds, null, 1000);
 
         // Check that the ACL ChangeSet IDs are correct
         Set<Long> aclChangeSetIdsSet = new HashSet<Long>(aclChangeSetIds);
@@ -148,7 +205,7 @@ public class SOLRDAOTest extends TestCase
     
     public void testQueryAcls_Single()
     {
-        List<AclChangeSet> aclChangeSets = solrDAO.getAclChangeSets(null, 0L, null, null, 1000);
+        List<AclChangeSet> aclChangeSets = getAclChangeSets(null, 0L, null, null, 1000);
         // Find one with multiple ALCs
         AclChangeSet aclChangeSet = null;
         for (AclChangeSet aclChangeSetLoop : aclChangeSets)
@@ -173,7 +230,7 @@ public class SOLRDAOTest extends TestCase
         Long minAclId = null;
         while (true)
         {
-            List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, minAclId, 1);
+            List<Acl> acls = getAcls(aclChangeSetIds, minAclId, 1);
             if (acls.size() == 0)
             {
                 break;
@@ -201,7 +258,7 @@ public class SOLRDAOTest extends TestCase
 
         try
         {
-            solrDAO.getTransactions(null, startTime, null, null, 0);
+            getTransactions(null, startTime, null, null, 0);
             fail("Must have result limit");
         }
         catch (IllegalArgumentException e)
@@ -213,13 +270,13 @@ public class SOLRDAOTest extends TestCase
     public void testQueryTransactions_Time()
     {
         long startTime = System.currentTimeMillis() + (5 * 60000L);             // The future
-        List<Transaction> results = solrDAO.getTransactions(null, startTime, null, null, 50);
+        List<Transaction> results = getTransactions(null, startTime, null, null, 50);
         assertTrue("Transaction count not limited", results.size() == 0);
     }
     
     public void testQueryTransactions_Limit()
     {
-        List<Transaction> results = solrDAO.getTransactions(null, 0L, null, null, 50);
+        List<Transaction> results = getTransactions(null, 0L, null, null, 50);
         assertTrue("Transaction count not limited", results.size() <= 50);
     }
     
@@ -227,7 +284,7 @@ public class SOLRDAOTest extends TestCase
     {
         long startTime = 0L;
 
-        List<Transaction> txns = solrDAO.getTransactions(null, startTime, null, null, 500);
+        List<Transaction> txns = getTransactions(null, startTime, null, null, 500);
 
         List<Long> txnIds = toTxnIds(txns);
 
@@ -236,26 +293,26 @@ public class SOLRDAOTest extends TestCase
         nodeParameters.setStoreProtocol(StoreRef.PROTOCOL_WORKSPACE);
         nodeParameters.setStoreIdentifier(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier());
         
-        List<Node> nodes = solrDAO.getNodes(nodeParameters);
+        List<Node> nodes = getNodes(nodeParameters);
         assertTrue("Expect 'some' nodes associated with txns", nodes.size() > 0);
     }
     
     public void testGetNodesForStore()
     {
-        List<Transaction> txns = solrDAO.getTransactions(null, null, null, null, 500);
+        List<Transaction> txns = getTransactions(null, null, null, null, 500);
 
         List<Long> txnIds = toTxnIds(txns);
 
         NodeParameters nodeParameters = new NodeParameters();
         nodeParameters.setTransactionIds(txnIds);
         
-        List<Node> nodes = solrDAO.getNodes(nodeParameters);
+        List<Node> nodes = getNodes(nodeParameters);
         assertTrue("Expect 'some' nodes associated with txns", nodes.size() > 0);
     }
     
     public void testGetNodesForTxnRange()
     {
-        List<Transaction> txns = solrDAO.getTransactions(null, null, null, null, 500);
+        List<Transaction> txns = getTransactions(null, null, null, null, 500);
 
         List<Long> txnIds = toTxnIds(txns);
         
@@ -270,7 +327,7 @@ public class SOLRDAOTest extends TestCase
         nodeParameters.setFromTxnId(txnIds.get(0));
         nodeParameters.setToTxnId(txnIds.get(1));
         
-        List<Node> nodes = solrDAO.getNodes(nodeParameters);
+        List<Node> nodes = getNodes(nodeParameters);
         assertTrue("Expect 'some' nodes associated with txns", nodes.size() > 0);
     }
     

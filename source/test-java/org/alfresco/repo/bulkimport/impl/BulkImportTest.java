@@ -64,7 +64,7 @@ import org.springframework.util.ResourceUtils;
 /**
  * @since 4.0
  */
-@Category(BaseSpringTestsCategory.class)
+@Category(OwnJVMTestsCategory.class)
 public class BulkImportTest extends AbstractBulkImportTests
 {
     private StreamingNodeImporterFactory streamingNodeImporterFactory;

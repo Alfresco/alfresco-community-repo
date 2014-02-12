@@ -27,7 +27,6 @@ import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
-import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -82,7 +81,6 @@ public class InviteServiceTest extends BaseWebScriptTest
     private MutableAuthenticationDao mutableAuthenticationDao;
     private NamespaceService namespaceService;
     private TransactionService transactionService;
-    private NodeArchiveService nodeArchiveService;
 
     // stores invitee email addresses, one entry for each "start invite" operation
     // invoked, so that resources created for each invitee for each test
@@ -136,7 +134,6 @@ public class InviteServiceTest extends BaseWebScriptTest
         this.namespaceService = (NamespaceService) getServer().getApplicationContext().getBean("NamespaceService");
         this.transactionService = (TransactionService) getServer().getApplicationContext()
                 .getBean("TransactionService");
-        this.nodeArchiveService = (NodeArchiveService)getServer().getApplicationContext().getBean("nodeArchiveService");
         
         configureMailExecutorForTestMode(this.getServer());
         
@@ -282,19 +279,6 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         super.tearDown();
 
-
-        RunAsWork<SiteInfo[]> runAsWork = new RunAsWork<SiteInfo[]>()
-        {
-            public SiteInfo[] doWork() throws Exception
-            {
-                SiteInfo[] siteInfos = { siteService.getSite(SITE_SHORT_NAME_INVITE_1),
-                                         siteService.getSite(SITE_SHORT_NAME_INVITE_2),
-                                         siteService.getSite(SITE_SHORT_NAME_INVITE_3) };
-                return siteInfos;
-            }
-        };
-        final SiteInfo[] siteInfos = AuthenticationUtil.runAs(runAsWork, AuthenticationUtil.getSystemUserName());
-    
         //
         // run various teardown operations which need to be run as 'admin'
         //
@@ -349,19 +333,6 @@ public class InviteServiceTest extends BaseWebScriptTest
                 }
                 return null;
             }});
-
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
-            {
-                for (SiteInfo siteInfo : siteInfos)
-                {
-                    nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteInfo.getNodeRef()));
-                }
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-
     }
 
     public static String PERSON_FIRSTNAME = "FirstName123";

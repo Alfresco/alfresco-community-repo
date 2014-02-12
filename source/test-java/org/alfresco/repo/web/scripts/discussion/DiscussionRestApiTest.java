@@ -29,7 +29,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
-import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -79,7 +78,6 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     private SiteService siteService;
     private NodeService nodeService;
     private NodeService internalNodeService;
-    private NodeArchiveService nodeArchiveService;
     
     private static final String USER_ONE = "UserOneThird";
     private static final String USER_TWO = "UserTwoThird";
@@ -111,7 +109,6 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         this.internalNodeService = (NodeService)getServer().getApplicationContext().getBean("nodeService");
-        this.nodeArchiveService = (NodeArchiveService)getServer().getApplicationContext().getBean("nodeArchiveService");
         
         // Authenticate as user
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -181,22 +178,17 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
            this.authenticationService.deleteAuthentication(USER_TWO);
         }
         
-        SiteInfo siteInfo = this.siteService.getSite(SITE_SHORT_NAME_DISCUSSION);
-        if (siteInfo != null)
+        // delete discussions test site
+        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
         {
-           // delete discussions test site
-           RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
-           {
-               @Override
-               public Void execute() throws Throwable
-               {
-                   siteService.deleteSite(SITE_SHORT_NAME_DISCUSSION);
-                   return null;
-               }
-            };
-            transactionService.getRetryingTransactionHelper().doInTransaction(deleteCallback);
-            nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteInfo.getNodeRef()));
-        }
+            @Override
+            public Void execute() throws Throwable
+            {
+                siteService.deleteSite(SITE_SHORT_NAME_DISCUSSION);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(deleteCallback);
     }
     
     private void createUser(String userName, String role)

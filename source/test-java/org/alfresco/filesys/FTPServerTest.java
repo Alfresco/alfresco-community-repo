@@ -490,6 +490,68 @@ public class FTPServerTest extends TestCase
 
 
     }
+    
+    /**
+     * Test of rename case ALF-20584
+     * 
+  
+     */
+    public void testRenameCase() throws Exception
+    {
+        
+        logger.debug("Start testRenameCase");
+        
+        FTPClient ftp = connectClient();
+
+        String PATH1="testRenameCase";
+        
+        try
+        {
+            int reply = ftp.getReplyCode();
+
+            if (!FTPReply.isPositiveCompletion(reply))
+            {
+                fail("FTP server refused connection.");
+            }
+        
+            boolean login = ftp.login(USER_ADMIN, PASSWORD_ADMIN);
+            assertTrue("admin login successful", login);
+                          
+            reply = ftp.cwd("/Alfresco/User*Homes");
+            assertTrue(FTPReply.isPositiveCompletion(reply));
+                        
+            // Delete the root directory in case it was left over from a previous test run
+            try
+            {
+                ftp.removeDirectory(PATH1);
+            }
+            catch (IOException e)
+            {
+                // ignore this error
+            }
+            
+            // make root directory for this test
+            boolean success = ftp.makeDirectory(PATH1);
+            assertTrue("unable to make directory:" + PATH1, success);
+            
+            ftp.cwd(PATH1);
+            
+            String FILE1_CONTENT_2="That's how it is says Pooh!";
+            ftp.storeFile("FileA.txt" , new ByteArrayInputStream(FILE1_CONTENT_2.getBytes("UTF-8")));
+            
+            assertTrue("unable to rename", ftp.rename("FileA.txt", "FILEA.TXT"));
+        
+        } 
+        finally
+        {
+            // clean up tree if left over from previous run
+
+            ftp.disconnect();
+        }    
+
+
+    } // test Rename Case
+
 
     /**
      * Create a user other than "admin" who has access to a set of files. 

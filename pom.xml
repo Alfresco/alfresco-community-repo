@@ -861,6 +861,14 @@
 
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
+                        <!-- Default configuration, specifying which tests to pass -->
+                        <configuration>
+                            <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+                            <forkMode>always</forkMode>
+                            <includes combine.self="override">
+                                <include>**/org/alfresco/Repository*TestSuite.java</include>
+                            </includes>
+                        </configuration>
                         <executions>
                             <!-- Additional execution running basic test 
                                 first, to fail fast if nothing works -->
@@ -871,109 +879,12 @@
                                 </goals>
                                 <phase>process-test-classes</phase>
                                 <configuration>
-                                    <includes>
-                                        <include>**/org/alfresco/RepositoryStartupTest.*</include>
+                                    <includes combine.self="override">
+                                        <include>**/org/alfresco/RepositoryStartupTest.java</include>
                                     </includes>
-                                    <excludes combine.self="override"/>
                                 </configuration>
                             </execution>
-                             <!-- Execution for tests which use BaseSpring test -->
-                            <execution>
-                                 <id>base-spring-troublesome-tests</id>
-                                 <goals>
-                                     <goal>test</goal>
-                                 </goals>
-                                 <configuration>
-                                     <groups>org.alfresco.test_category.BaseSpringTestsCategory</groups>
-                                     <testFailureIgnore>true</testFailureIgnore>
-                                 </configuration>
-                            </execution>
-                            <!-- Execution for tests which require their own JVM -->
-                            <execution>
-                                 <id>run-ownJVMTestsCategory</id>
-                                 <goals>
-                                     <goal>test</goal>
-                                 </goals>
-                                 <configuration>
-                                     <reuseForks>false</reuseForks>
-                                     <groups>org.alfresco.test_category.OwnJVMTestsCategory</groups>
-                                     <testFailureIgnore>true</testFailureIgnore>
-                                 </configuration>
-                            </execution>
-                            <execution>
-                                 <id>default-test</id>
-                                 <configuration>
-                                     <argLine>-Xmx3G -XX:MaxPermSize=512m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
-                                     <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory, org.alfresco.test_category.BaseSpringTestsCategory,org.alfresco.test_category.LegacyCategory</excludedGroups>                         
-                                     <testFailureIgnore>true</testFailureIgnore>
-                                 </configuration>
-                             </execution>
-                             <execution>
-                                 <id>run-legacy-tests</id>
-                                 <goals>
-                                     <goal>test</goal>
-                                 </goals>
-                                 <configuration>
-                                     <reuseForks>false</reuseForks>
-                                     <groups>org.alfresco.test_category.LegacyCategory</groups>
-                                     <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory</excludedGroups>                         
-                                 </configuration>
-                            </execution>
                         </executions>
-
-                        <!-- Default configuration, specifying which tests to pass -->
-                        <configuration>
-                            <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
-                            <includes>
-                                <!-- Standard test names -->
-                                <include>**/*Test.*</include>
-
-                                <!-- Additional tests with non-conventional names -->
-                                <include>**/org/alfresco/repo/avm/*TestP.*</include>
-                                <include>**/org/alfresco/repo/avm/AVMServiceTestBase.*</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/org/alfresco/RepositoryStartupTest.*</exclude>
-                                <!-- Failing tests which are not run with Ant - OK to exclude -->
-                                <exclude>**/org/alfresco/encryption/EncryptionTests.*</exclude>
-                                <exclude>**/org/alfresco/jcr/test/BaseJCRTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/action/evaluator/HasChildEvaluatorTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/action/scheduled/ScheduledPersistedActionServiceTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/avm/AVMServiceRemoteSystemTest.*</exclude>
-                                <exclude>**/org/alfresco/wcm/**/*Test.*</exclude>
-                                <exclude>**/org/alfresco/repo/blog/BlogIntegrationServiceSystemTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/MimetypeMapContentTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/caching/quota/StandardQuotaStrategyTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/caching/CachingContentStoreTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/caching/ContentCacheImplTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/caching/test/SlowContentStoreTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/metadata/TikaAudioMetadataExtracterTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/metadata/xml/XmlMetadataExtracterTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/transform/OOXMLThumbnailContentTransformerTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/transform/ArchiveContentTransformerTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/transform/TransformerDebugTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/domain/avm/AVMStoreDAOTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/transform/FailoverContentTransformerTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/domain/node/NodePropertyHelperTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/googledocs/GoogleDocumentServiceSystemTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/model/filefolder/HiddenAspectTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/notification/NotificationServiceImplSystemTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/publishing/PublishEventActionTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/rendition/executer/AbstractRenderingEngineTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/rule/BaseRuleTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/search/impl/querymodel/impl/db/DBQueryTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/security/authority/script/ScriptAuthorityServiceTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/security/permissions/impl/AbstractPermissionTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/security/permissions/impl/AbstractReadPermissionTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/workflow/activiti/AbstractActivitiComponentTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiSmokeTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiSpringTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiTaskComponentTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiWorkflowComponentTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/workflow/jbpm/JbpmTimerTest.*</exclude>
-                                <exclude>**/org/alfresco/util/schemacomp/model/AbstractDbObjectTest.*</exclude>
-                            </excludes>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

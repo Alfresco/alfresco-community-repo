@@ -19,7 +19,7 @@
 
 package org.alfresco.repo.publishing;
 
-import org.alfresco.test_category.BaseSpringTestsCategory;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.experimental.categories.Category;
 
 
@@ -28,7 +28,7 @@ import org.junit.experimental.categories.Category;
  * @author Frederik Heremans
  * @since 4.0
  */
-@Category(BaseSpringTestsCategory.class)
+@Category(OwnJVMTestsCategory.class)
 public class PublishWebContentJbpmTest extends PublishWebContentProcessTest
 {
     private static final String DEF_NAME = "jbpm$publishWebContent";

@@ -153,6 +153,9 @@ public interface SiteService
      * the specified string (ignoring case). The listing of sites whose cm:names (or titles or descriptions) <i>contain</i> the
      * specified string is no longer supported. To retrieve sites whose cm:names etc contain a substring, {@link SiteService#findSites(String, String, int)}
      * should be used instead.
+     * <p/>
+     * <b>THIS METHOD CAN RETURN INCOMPLETE RESULTS WHILE CACHES CATCH UP WITH REALITY</b>
+     * (<a href=https://issues.alfresco.com/jira/browse/ACE-196>BM-0012: Run v420b1494_01: (CMIS) GetSites is Slow</a>).
      * 
      * @param filter                filter (sites whose cm:name, cm:title or cm:description START WITH filter)
      * @param sitePresetFilter      site preset filter (sites whose preset EQUALS sitePresetFilter)

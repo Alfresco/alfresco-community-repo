@@ -21,7 +21,9 @@ package org.alfresco.repo.node.archive;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -35,7 +37,11 @@ import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.node.NodeArchiveServicePolicies;
+import org.alfresco.repo.node.NodeArchiveServicePolicies.BeforePurgeNodePolicy;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
+import org.alfresco.repo.policy.ClassPolicyDelegate;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -86,6 +92,15 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     private TenantService tenantService;
     private boolean userNamesAreCaseSensitive = false;
 
+    /** controls policy delegates */
+    private PolicyComponent policyComponent;
+    private ClassPolicyDelegate<BeforePurgeNodePolicy> beforePurgeNodeDelegate;
+
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -110,7 +125,13 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     {
         this.jobLockService = jobLockService;
     }
-    
+
+    public void init()
+    {
+        // Register the various policies
+        beforePurgeNodeDelegate = policyComponent.registerClassPolicy(NodeArchiveServicePolicies.BeforePurgeNodePolicy.class);
+    }
+
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
@@ -474,6 +495,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
             {
                 try
                 {
+                    invokeBeforePurgeNode(archivedNodeRef);
                     nodeService.deleteNode(archivedNodeRef);
                 }
                 catch (InvalidNodeRefException e)
@@ -524,6 +546,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                 AuthenticationUtil.setFullyAuthenticatedUser(user);
                 if (nodeService.exists(nodeRef))
                 {
+                    invokeBeforePurgeNode(nodeRef);
                     nodeService.deleteNode(nodeRef);
                 }
             }
@@ -747,5 +770,53 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
             currentUser = currentUser.toLowerCase();
         }
         return currentUser;
+    }
+
+    protected void invokeBeforePurgeNode(NodeRef nodeRef)
+    {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+        
+        // get qnames to invoke against
+        Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
+        // execute policy for node type and aspects
+        NodeArchiveServicePolicies.BeforePurgeNodePolicy policy = beforePurgeNodeDelegate.get(nodeRef, qnames);
+        policy.beforePurgeNode(nodeRef);
+    }
+
+    /**
+     * Get all aspect and node type qualified names
+     * 
+     * @param nodeRef
+     *            the node we are interested in
+     * @return Returns a set of qualified names containing the node type and all
+     *         the node aspects, or null if the node no longer exists
+     */
+    protected Set<QName> getTypeAndAspectQNames(NodeRef nodeRef)
+    {
+        Set<QName> qnames = null;
+        try
+        {
+            Set<QName> aspectQNames = nodeService.getAspects(nodeRef);
+            
+            QName typeQName = nodeService.getType(nodeRef);
+            
+            qnames = new HashSet<QName>(aspectQNames.size() + 1);
+            qnames.addAll(aspectQNames);
+            qnames.add(typeQName);
+        }
+        catch (InvalidNodeRefException e)
+        {
+            qnames = Collections.emptySet();
+        }
+        // done
+        return qnames;
+    }
+
+    private boolean ignorePolicy(NodeRef nodeRef)
+    {
+        return false;
     }
 }

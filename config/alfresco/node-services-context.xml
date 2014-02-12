@@ -126,7 +126,7 @@
    </bean>
 
    <!-- Wrapper component to handle restore and purge of archived nodes -->
-   <bean id="nodeArchiveService" class="org.alfresco.repo.node.archive.NodeArchiveServiceImpl" >
+   <bean id="nodeArchiveService" class="org.alfresco.repo.node.archive.NodeArchiveServiceImpl" init-method="init" >
       <property name="nodeService">
          <ref bean="NodeService"/>
       </property>
@@ -139,6 +139,7 @@
       <property name="jobLockService">
          <ref bean="jobLockService"/>
       </property>
+      <property name="policyComponent" ref="policyComponent"/>
       <property name="cannedQueryRegistry">
          <ref bean="archivedNodesCannedQueryRegistry"/>
       </property>

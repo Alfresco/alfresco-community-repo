@@ -32,6 +32,7 @@ import org.alfresco.repo.activities.feed.local.LocalFeedTaskProcessor;
 import org.alfresco.repo.activities.post.lookup.PostLookup;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -112,6 +113,7 @@ public class SubscriptionServiceActivitiesTest
     protected static PostLookup postLookup;
     protected static FeedGenerator feedGenerator;
     protected static RetryingTransactionHelper transactionHelper;
+    protected static NodeArchiveService nodeArchiveService;
     
     private static Scheduler QUARTZ_SCHEDULER;
     
@@ -139,6 +141,7 @@ public class SubscriptionServiceActivitiesTest
         activityService = (ActivityService) ctx.getBean("activityService");
         nodeService = (NodeService) ctx.getBean("NodeService");
         contentService = (ContentService) ctx.getBean("ContentService");
+        nodeArchiveService = (NodeArchiveService)ctx.getBean("nodeArchiveService");
         transactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
         
         ChildApplicationContextFactory activitiesFeed = (ChildApplicationContextFactory) ctx.getBean("ActivitiesFeed");
@@ -473,10 +476,12 @@ public class SubscriptionServiceActivitiesTest
     
     private void deleteSite(String siteShortName)
     {
-        if (siteService.getSite(siteShortName) != null)
+        SiteInfo siteInfo = siteService.getSite(siteShortName);
+        if (siteInfo != null)
         {
             log.debug("Deleting site: " + siteShortName);
             siteService.deleteSite(siteShortName);
+            nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteInfo.getNodeRef()));
         }
         else
         {

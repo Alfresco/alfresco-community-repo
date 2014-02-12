@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
@@ -34,6 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -57,6 +59,7 @@ public class ActivityServiceImplTest extends TestCase
     private MutableAuthenticationService authenticationService;
     private SiteService siteService;
     private ActivityPostDAO postDAO;
+    private NodeArchiveService nodeArchiveService;
     
     private static final String ADMIN_PW = "admin";
     
@@ -71,6 +74,7 @@ public class ActivityServiceImplTest extends TestCase
         activityService = (ActivityService)ctx.getBean("activityService");
         scriptService = (ScriptService)ctx.getBean("ScriptService");
         siteService = (SiteService)ctx.getBean("SiteService");
+        nodeArchiveService = (NodeArchiveService)ctx.getBean("nodeArchiveService");
         
         postDAO = (ActivityPostDAO)ctx.getBean("postDAO");
         
@@ -145,7 +149,9 @@ public class ActivityServiceImplTest extends TestCase
         
         assertNotNull(siteFeedEntries);
         assertTrue(siteFeedEntries.isEmpty());
+        SiteInfo siteInfo = siteService.getSite(siteId);
         siteService.deleteSite(siteId);
+        nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteInfo.getNodeRef()));
     }
     
     public void testGetEmptyUserFeed() throws Exception

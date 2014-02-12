@@ -23,9 +23,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -35,10 +38,14 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -105,6 +112,7 @@ public class SiteServiceImplMoreTest
     private static NodeArchiveService          NODE_ARCHIVE_SERVICE;
     private static SiteService                 SITE_SERVICE;
     private static RetryingTransactionHelper   TRANSACTION_HELPER;
+    private static PermissionService           PERMISSION_SERVICE;
     
     private static String TEST_SITE_NAME, TEST_SUB_SITE_NAME;
     private static TestSiteAndMemberInfo TEST_SITE_WITH_MEMBERS;
@@ -117,6 +125,8 @@ public class SiteServiceImplMoreTest
         NODE_ARCHIVE_SERVICE      = APP_CONTEXT_INIT.getApplicationContext().getBean("nodeArchiveService", NodeArchiveService.class);
         SITE_SERVICE              = APP_CONTEXT_INIT.getApplicationContext().getBean("siteService", SiteService.class);
         TRANSACTION_HELPER        = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+        PERMISSION_SERVICE        = APP_CONTEXT_INIT.getApplicationContext().getBean("permissionServiceImpl", PermissionService.class);
+        
         
         // We'll create this test content as admin.
         final String admin = AuthenticationUtil.getAdminUserName();
@@ -207,11 +217,31 @@ public class SiteServiceImplMoreTest
         final TestSiteAndMemberInfo testSiteAndMemberInfo = perMethodTestSites.createTestSiteWithUserPerRole(siteShortName, "sitePreset", SiteVisibility.PUBLIC, AuthenticationUtil.getAdminUserName());
         
         // Now get the various site-related data that we want to examine after deletion & restoration
-        final Map<String, String> userNameToRoleMap =
-                TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Map<String, String>>()
+        final TestData testData =
+                TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<TestData>()
         {
-            public Map<String, String> execute() throws Throwable
+            public TestData execute() throws Throwable
             {
+                Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                properties.put(ContentModel.PROP_NAME, "testcontent");
+                properties.put(ContentModel.PROP_DESCRIPTION, "content - test doc for test");
+                ChildAssociationRef testDoc = NODE_SERVICE.createNode(testSiteAndMemberInfo.doclib, ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testcontent"),
+                        ContentModel.TYPE_CONTENT, properties);
+                NodeRef testDocNodeRef = testDoc.getChildRef();
+                
+                // change all groups to have the permissions from a contributor
+                PERMISSION_SERVICE.deletePermissions(testDocNodeRef);
+                PERMISSION_SERVICE.setInheritParentPermissions(testDocNodeRef, false);
+                assertTrue("Permissions should be cleared", PERMISSION_SERVICE.getAllSetPermissions(testDocNodeRef).isEmpty());
+                
+                Set<String> permissions = PERMISSION_SERVICE.getSettablePermissions(SiteModel.TYPE_SITE);
+                for (String permission : permissions)
+                {
+                    String siteRoleGroup = SITE_SERVICE.getSiteRoleGroup(siteShortName, permission);
+                    PERMISSION_SERVICE.setPermission(testDocNodeRef, siteRoleGroup, "SiteContributor", true);
+                }
+                
                 final Map<String, String> userNameToRoleMap = new HashMap<String, String>();
                 
                 // Which users are members of which groups?
@@ -232,7 +262,7 @@ public class SiteServiceImplMoreTest
                 SITE_SERVICE.deleteSite(siteShortName);
                 log.debug("Site deleted.");
                 
-                return userNameToRoleMap;
+                return new TestData(userNameToRoleMap, testDocNodeRef);
             }
         });
         
@@ -257,9 +287,9 @@ public class SiteServiceImplMoreTest
             }
         });
         
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        final Map<String, String> associatedGroups = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Map<String, String>>()
         {
-            public Void execute() throws Throwable
+            public Map<String, String> execute() throws Throwable
             {
                 // The site itself should have been restored, of course...
                 assertTrue("The site noderef was not restored as expected", NODE_SERVICE.exists(testSiteAndMemberInfo.siteInfo.getNodeRef()));
@@ -276,21 +306,83 @@ public class SiteServiceImplMoreTest
                 for (Map.Entry<String, String> entry : SITE_SERVICE.listMembers(siteShortName, null, null, 0, true).entrySet()) { log.debug(entry); }
                 
                 // And finally, the original members of the site should have been given the same membership that they had before.
-                for (Map.Entry<String, String> entry : userNameToRoleMap.entrySet())
+                for (Map.Entry<String, String> entry : testData.userNameToRoleMap.entrySet())
                 {
                     assertEquals("Unexpected role for site user: " + entry.getKey(),
                                  entry.getValue(),
                                  SITE_SERVICE.getMembersRole(siteShortName, entry.getKey()));
                 }
                 
+                // When the site is restored custom permissions on contents should be also restored
+                Set<AccessPermission> accessPermissions = PERMISSION_SERVICE.getAllSetPermissions(testData.testDocNodeRef);
+                Map<String, String> associatedGroups = new HashMap<String, String>();
+                for(AccessPermission access : accessPermissions)
+                {
+                    associatedGroups.put(access.getAuthority(), access.getPermission());
+                }
+                Set<String> permissions = PERMISSION_SERVICE.getSettablePermissions(SiteModel.TYPE_SITE);
+                for (String permission : permissions)
+                {
+                    String siteRoleGroup = SITE_SERVICE.getSiteRoleGroup(siteShortName, permission);
+                    assertTrue("all groups should have the permissions from a contributor on test content", "SiteContributor".equals(associatedGroups.get(siteRoleGroup)));
+                }
+                
+                return associatedGroups;
+            }
+        });
+        
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                log.debug("About to delete site completely.");
+                SITE_SERVICE.deleteSite(siteShortName);
+                for (String authority : associatedGroups.keySet())
+                {
+                    assertTrue("Associated groups should remain after site delete", AUTHORITY_SERVICE.authorityExists(authority));
+                }
+                
                 return null;
             }
         });
+        
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                log.debug("About to purge site from trashcan.");
+                
+                // get archive node reference
+                String storePath = "archive://SpacesStore";
+                StoreRef storeRef = new StoreRef(storePath);
+                NodeRef archivedNodeRef = new NodeRef(storeRef, testSiteAndMemberInfo.siteInfo.getNodeRef().getId());
+                NODE_ARCHIVE_SERVICE.purgeArchivedNode(archivedNodeRef);
+                for (String authority : associatedGroups.keySet())
+                {
+                    assertTrue("Associated groups should be deleted on site purge", !AUTHORITY_SERVICE.authorityExists(authority));
+                }
+                
+                return null;
+            }
+        });
+        
     }
     
     private void assertThatArchivedNodeExists(NodeRef originalNodeRef, String failureMsg)
     {
         final NodeRef archivedNodeRef = NODE_ARCHIVE_SERVICE.getArchivedNode(originalNodeRef);
         assertTrue(failureMsg, NODE_SERVICE.exists(archivedNodeRef));
+    }
+    
+    public static class TestData
+    {
+        public final Map<String, String> userNameToRoleMap;
+        public final NodeRef testDocNodeRef;
+        
+        public TestData(Map<String, String> userNameToRoleMap, NodeRef testDocNodeRef)
+        {
+            this.userNameToRoleMap = userNameToRoleMap;
+            this.testDocNodeRef = testDocNodeRef;
+        }
     }
 }

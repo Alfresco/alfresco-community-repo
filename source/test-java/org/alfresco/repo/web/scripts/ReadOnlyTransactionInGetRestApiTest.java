@@ -21,6 +21,7 @@ package org.alfresco.repo.web.scripts;
 import java.text.MessageFormat;
 import java.util.List;
 
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -71,6 +72,7 @@ public class ReadOnlyTransactionInGetRestApiTest extends BaseWebScriptTest
     private SiteService siteService;
     private NodeService nodeService;
     private TransactionService transactionService;
+    private NodeArchiveService nodeArchiveService;
     
     private NodeRef testSiteNodeRef;
     private String testSiteNodeRefString;
@@ -86,14 +88,17 @@ public class ReadOnlyTransactionInGetRestApiTest extends BaseWebScriptTest
         this.siteService = (SiteService)appContext.getBean("SiteService");
         this.nodeService = (NodeService)appContext.getBean("NodeService");
         this.transactionService = (TransactionService)appContext.getBean("TransactionService");
+        this.nodeArchiveService = (NodeArchiveService)getServer().getApplicationContext().getBean("nodeArchiveService");
         
         // set admin as current user
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         // delete the test site if it's still hanging around from previous runs
-        if (siteService.getSite(TEST_SITE_NAME) != null)
+        SiteInfo site = siteService.getSite(TEST_SITE_NAME);
+        if (site != null)
         {
             siteService.deleteSite(TEST_SITE_NAME);
+            nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(site.getNodeRef()));
         }
         
         // create the test site, this should create a site but it won't have any containers created
@@ -115,6 +120,7 @@ public class ReadOnlyTransactionInGetRestApiTest extends BaseWebScriptTest
     {
         super.tearDown();
         
+        SiteInfo site = siteService.getSite(TEST_SITE_NAME);
         // use retrying transaction to delete the site
         this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
@@ -127,6 +133,7 @@ public class ReadOnlyTransactionInGetRestApiTest extends BaseWebScriptTest
                 return null;
             }
         });
+        nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(site.getNodeRef()));
         
         AuthenticationUtil.clearCurrentSecurityContext();
     }

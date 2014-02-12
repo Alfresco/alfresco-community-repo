@@ -21,7 +21,6 @@ package org.alfresco.util.test.junitrules;
 
 import java.io.File;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -326,7 +325,7 @@ public class TemporaryNodes extends ExternalResource
                     nodeService.addAspect(result, ContentModel.ASPECT_VERSIONABLE, null);
                 }
                 
-                File quickFile = loadQuickFile(getQuickResource(mimetype));
+                File quickFile = AbstractContentTransformerTest.loadNamedQuickTestFile(getQuickResource(mimetype));
                 
                 ContentService contentService = appContextRule.getApplicationContext().getBean("contentService", ContentService.class);
                 ContentWriter writer = contentService.getWriter(result, ContentModel.PROP_CONTENT, true);
@@ -370,7 +369,7 @@ public class TemporaryNodes extends ExternalResource
             {
                 final NodeRef result = createNode(quickFileName, parentNode, ContentModel.TYPE_CONTENT);
                 
-                File quickFile = loadQuickFile(quickFileName);
+                File quickFile = AbstractContentTransformerTest.loadNamedQuickTestFile(quickFileName);
                 
                 ContentService contentService = appContextRule.getApplicationContext().getBean("contentService", ContentService.class);
                 ContentWriter writer = contentService.getWriter(result, ContentModel.PROP_CONTENT, true);
@@ -421,32 +420,4 @@ public class TemporaryNodes extends ExternalResource
         return "quick." + extension;
     }
     
-    /**
-     * Gets the resource name for the named Alfresco 'quick file'.
-     * 
-     * @param quickFileName e.g. "quickGEO.jpg"
-     * @return the resource path e.g. "quick/quickGEO.jpg"
-     */
-    private String getNamedQuickResource(String quickFileName)
-    {
-        return "quick/" + quickFileName;
-    }
-    
-    private File loadQuickFile(String quickfile)
-    {
-        final String quickResource = getNamedQuickResource(quickfile);
-        
-        URL url = AbstractContentTransformerTest.class.getClassLoader().getResource(quickResource);
-        
-        if (url == null)
-        {
-            throw new UnsupportedOperationException("No 'quick' file for file: " + quickResource);
-        }
-        File file = new File(url.getFile());
-        if (!file.exists())
-        {
-            throw new UnsupportedOperationException("No 'quick' file for file: " + quickResource);
-        }
-        return file;
-    }
 }

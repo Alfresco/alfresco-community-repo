@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -46,6 +47,7 @@ public class NodeWebScripTest extends BaseWebScriptTest
     private PersonService personService;
     private SiteService siteService;
     private NodeService nodeService;
+    private NodeArchiveService nodeArchiveService;
     
     private static final String USER_ONE = "UserOneSecondToo";
     private static final String USER_TWO = "UserTwoSecondToo";
@@ -63,6 +65,7 @@ public class NodeWebScripTest extends BaseWebScriptTest
         this.personService = (PersonService)ctx.getBean("PersonService");
         this.siteService = (SiteService)ctx.getBean("SiteService");
         this.nodeService = (NodeService)ctx.getBean("NodeService");
+        this.nodeArchiveService = (NodeArchiveService)ctx.getBean("nodeArchiveService");
         
         // Do the setup as admin
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
@@ -86,8 +89,14 @@ public class NodeWebScripTest extends BaseWebScriptTest
         // Admin user required to delete users and sites
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         
-        // Zap the site, and their contents
-        siteService.deleteSite(TEST_SITE.getShortName());
+        SiteInfo siteInfo = siteService.getSite(TEST_SITE.getShortName());
+        if (siteInfo != null)
+        {
+            // Zap the site, and their contents
+            siteService.deleteSite(TEST_SITE.getShortName());
+            nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteInfo.getNodeRef()));
+        }
+
         
         // Delete users
         for (String user : new String[] {USER_ONE, USER_TWO, USER_THREE})
@@ -112,10 +121,12 @@ public class NodeWebScripTest extends BaseWebScriptTest
               @Override
               public SiteInfo execute() throws Throwable
               {
-                  if (siteService.getSite(shortName) != null)
+                  SiteInfo siteInfo = siteService.getSite(shortName);
+                  if (siteInfo != null)
                   {
                       // Tidy up after failed earlier run
                       siteService.deleteSite(shortName);
+                      nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteInfo.getNodeRef()));
                   }
                   
                   // Do the create

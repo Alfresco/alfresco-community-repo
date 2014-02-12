@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
@@ -61,6 +62,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
     private SiteService siteService;
+    private NodeArchiveService nodeArchiveService;
     
     private static final String USER_ONE = "UserOneSecondToo";
     private static final String USER_TWO = "UserTwoSecondToo";
@@ -91,6 +93,7 @@ public class BlogServiceTest extends BaseWebScriptTest
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
+        this.nodeArchiveService = (NodeArchiveService)getServer().getApplicationContext().getBean("nodeArchiveService");
         
         // Authenticate as user
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -123,8 +126,14 @@ public class BlogServiceTest extends BaseWebScriptTest
         // admin user required to delete things
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
-        // delete invite site
-        siteService.deleteSite(SITE_SHORT_NAME_BLOG);
+        SiteInfo siteInfo = this.siteService.getSite(SITE_SHORT_NAME_BLOG);
+        if (siteInfo != null)
+        {
+            // delete invite site
+            siteService.deleteSite(SITE_SHORT_NAME_BLOG);
+            nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteInfo.getNodeRef()));
+        }
+
         
         // delete the users
         personService.deletePerson(USER_ONE);

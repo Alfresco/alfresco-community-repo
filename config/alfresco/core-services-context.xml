@@ -513,7 +513,7 @@
     <bean id="lockStore" factory-bean="lockStoreFactory" factory-method="createLockStore"/>
     
     <bean id="lockableAspectInterceptor" class="org.alfresco.repo.lock.mem.LockableAspectInterceptor">
-        <property name="nodeService" ref="mlAwareNodeService"/>
+        <property name="nodeService" ref="dbNodeService"/>
         <property name="lockStore" ref="lockStore"/>
         <property name="authenticationService" ref="authenticationService"/>
     </bean>

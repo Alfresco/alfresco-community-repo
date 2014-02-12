@@ -121,6 +121,18 @@ function getRepositoryItem(folderPath, node, populate)
          };
          item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
          item.createdBy = getPersonDisplayName(item.createdByUser);
+         if (node.hasAspect("{http://www.alfresco.org/model/content/1.0}thumbnailModification"))
+         {
+            var dates = node.properties["lastThumbnailModification"];
+            for (var i=0; i<dates.length; i++)
+            {
+               if (dates[i].indexOf("doclib") !== -1)
+               {
+                  item.lastThumbnailModification = dates[i];
+                  break;
+               }
+            }
+         }
       }
       if (node.isContainer)
       {
@@ -178,6 +190,18 @@ function getDocumentItem(siteId, containerId, pathParts, node, populate)
          };
          item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
          item.createdBy = getPersonDisplayName(item.createdByUser);
+         if (node.hasAspect("{http://www.alfresco.org/model/content/1.0}thumbnailModification"))
+         {
+            var dates = node.properties["lastThumbnailModification"];
+            for (var i=0; i<dates.length; i++)
+            {
+               if (dates[i].indexOf("doclib") !== -1)
+               {
+                  item.lastThumbnailModification = dates[i];
+                  break;
+               }
+            }
+         }
       }
       if (node.isContainer)
       {

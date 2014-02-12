@@ -48,7 +48,6 @@ function runAction(p_params)
          }
          else
          {
-            result.id = fileNode.name;
             result.type = fileNode.isContainer ? "folder" : "document"
             
             // Retain the name of the site the node is currently in. Null if it's not in a site.
@@ -64,6 +63,7 @@ function runAction(p_params)
                copiedNode = fileNode.copy(destNode);
             }
 
+            result.id = copiedNode.name;
             result.nodeRef = copiedNode.nodeRef.toString();
             result.success = (result.nodeRef != null);
             

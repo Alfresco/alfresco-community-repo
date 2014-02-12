@@ -178,12 +178,12 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
         String tenantId = tenantService.getCurrentUserDomain();
         if (logger.isDebugEnabled())
         {
-            logger.debug("Building cache for tenant" + tenantId + " ......");
+            logger.debug("Building cache for tenant " + tenantId + " ......");
         }
         T cache = buildCache(tenantId);
         if (logger.isDebugEnabled())
         {
-            logger.debug(".... cache built for tenant" + tenantId);
+            logger.debug(".... cache built for tenant " + tenantId);
         }
 
         liveLock.writeLock().lock();
@@ -441,7 +441,7 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("Building cache for tenant" + refresh.getTenantId());
+            logger.debug("Building cache for tenant" + refresh.getTenantId()); 
         }
 
         try

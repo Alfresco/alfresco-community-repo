@@ -915,6 +915,7 @@
                                  <configuration>
                                      <reuseForks>false</reuseForks>
                                      <groups>org.alfresco.test_category.LegacyCategory</groups>
+                                     <excludedGroups>org.alfresco.test_category.OwnJVMTestsCategory</excludedGroups>                         
                                  </configuration>
                             </execution>
                         </executions>

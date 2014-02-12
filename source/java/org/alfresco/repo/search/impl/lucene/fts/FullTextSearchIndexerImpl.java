@@ -84,52 +84,52 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     // Helper class to keep track of which Thread has the lock, so we can give up if it dies.
     private abstract class SynchronizedHelper<Result>
     {
-    	public Result executeNoInterruptedException()
-    	{
-    		try {
-				return execute();
-			} catch (InterruptedException e) {
-				// ignore
-				return null;
-			}
-    	}
-    	
-    	@SuppressWarnings("finally")
-		public Result execute() throws InterruptedException
-    	{
-        	Thread origThreadHoldingLock = threadHoldingLock;
-        	threadHoldingLock = Thread.currentThread();
-        	try
-        	{
-        		return run();
-        	}
-        	catch (ThreadDeath threadDeath)
-        	{
-    			origThreadHoldingLock = null;
-    			throw threadDeath;
-        	}
-        	finally
-        	{
-            	threadHoldingLock = origThreadHoldingLock;
-        	}
-    	}
-    	
-    	public abstract Result run() throws InterruptedException;
-    	
-    	// Does a wait(10000). Returns true if the Thread that had the lock has died.
-    	public boolean waitAndCheckForSubsystemShutdown() throws InterruptedException
-    	{
-    		try
-    		{
-    			threadHoldingLock = null;
+        public Result executeNoInterruptedException()
+        {
+            try {
+                return execute();
+            } catch (InterruptedException e) {
+                // ignore
+                return null;
+            }
+        }
+        
+        @SuppressWarnings("finally")
+        public Result execute() throws InterruptedException
+        {
+            Thread origThreadHoldingLock = threadHoldingLock;
+            threadHoldingLock = Thread.currentThread();
+            try
+            {
+                return run();
+            }
+            catch (ThreadDeath threadDeath)
+            {
+                origThreadHoldingLock = null;
+                throw threadDeath;
+            }
+            finally
+            {
+                threadHoldingLock = origThreadHoldingLock;
+            }
+        }
+        
+        public abstract Result run() throws InterruptedException;
+        
+        // Does a wait(10000). Returns true if the Thread that had the lock has died.
+        public boolean waitAndCheckForSubsystemShutdown() throws InterruptedException
+        {
+            try
+            {
+                threadHoldingLock = null;
                 FullTextSearchIndexerImpl.this.wait(10000);
                 return threadHoldingLock != null && !threadHoldingLock.isAlive();
-    		}
-    		finally
-    		{
-    			threadHoldingLock = Thread.currentThread();
-    		}
-    	}
+            }
+            finally
+            {
+                threadHoldingLock = Thread.currentThread();
+            }
+        }
     }
 
     /**
@@ -148,18 +148,18 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
      */
     public synchronized void requiresIndex(final StoreRef storeRef)
     {
-    	new SynchronizedHelper<Void>()
-    	{
-    		public Void run()
-    		{
+        new SynchronizedHelper<Void>()
+        {
+            public Void run()
+            {
                 if(s_logger.isDebugEnabled())
                 {
                     s_logger.debug("FTS index request for "+storeRef);
                 }
                 requiresIndex.add(storeRef);
-				return null;
-    		}
-    	}.executeNoInterruptedException();
+                return null;
+            }
+        }.executeNoInterruptedException();
     }
 
     /*
@@ -169,10 +169,10 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
      */
     public synchronized void indexCompleted(final StoreRef storeRef, final int remaining, final Throwable t)
     {
-    	new SynchronizedHelper<Void>()
-    	{
-    		public Void run()
-    		{
+        new SynchronizedHelper<Void>()
+        {
+            public Void run()
+            {
                 try
                 {
                     if(s_logger.isDebugEnabled())
@@ -191,11 +191,11 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
                 }
                 finally
                 {
-                	FullTextSearchIndexerImpl.this.notifyAll();
+                    FullTextSearchIndexerImpl.this.notifyAll();
                 }
-				return null;
-    		}
-    	}.executeNoInterruptedException();
+                return null;
+            }
+        }.executeNoInterruptedException();
     }
 
     /*
@@ -205,11 +205,11 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
      */
     public synchronized void pause() throws InterruptedException
     {
-    	new SynchronizedHelper<Void>()
-    	{
-    		public Void run() throws InterruptedException
-    		{
-            	pauseCount++;
+        new SynchronizedHelper<Void>()
+        {
+            public Void run() throws InterruptedException
+            {
+                pauseCount++;
                 if(s_logger.isTraceEnabled())
                 {
                     s_logger.trace("..Waiting "+pauseCount+" id is "+this);
@@ -223,7 +223,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
                     
                     if (waitAndCheckForSubsystemShutdown())
                     {
-                    	indexing.clear();
+                        indexing.clear();
                     }
                 }
                 pauseCount--;
@@ -236,9 +236,9 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
                 {
                     s_logger.trace("..Remaining "+pauseCount +" paused = "+paused+" id is "+this);
                 }
-				return null;
-    		}
-    	}.execute();
+                return null;
+            }
+        }.execute();
     }
 
     /*
@@ -248,10 +248,10 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
      */
     public synchronized void resume() throws InterruptedException
     {
-    	new SynchronizedHelper<Void>()
-    	{
-    		public Void run() throws InterruptedException
-    		{
+        new SynchronizedHelper<Void>()
+        {
+            public Void run() throws InterruptedException
+            {
                 if (pauseCount == 0)
                 {
                     if(s_logger.isTraceEnabled())
@@ -271,23 +271,23 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
 
                         if (waitAndCheckForSubsystemShutdown())
                         {
-                        	break;
+                            break;
                         }
                     }
                     paused = false;
                 }
-				return null;
-    		}
-    	}.execute();
+                return null;
+            }
+        }.execute();
     }
 
     @SuppressWarnings("unused")
     private synchronized boolean isPaused() throws InterruptedException
     {
-    	return new SynchronizedHelper<Boolean>()
-    	{
-    		public Boolean run() throws InterruptedException
-    		{
+        return new SynchronizedHelper<Boolean>()
+        {
+            public Boolean run() throws InterruptedException
+            {
                 if (pauseCount == 0)
                 {
                     return paused;
@@ -298,13 +298,13 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
                     {
                         if (waitAndCheckForSubsystemShutdown())
                         {
-                        	break;
+                            break;
                         }
                     }
                     return paused;
                 }
-    		}
-    	}.execute();
+            }
+        }.execute();
     }
 
     /*
@@ -378,10 +378,10 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
 
     private synchronized StoreRef getNextRef()
     {
-    	return new SynchronizedHelper<StoreRef>()
-    	{
-    		public StoreRef run()
-    		{
+        return new SynchronizedHelper<StoreRef>()
+        {
+            public StoreRef run()
+            {
                 if (paused || (pauseCount > 0))
                 {
                     if(s_logger.isTraceEnabled())
@@ -410,8 +410,8 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
                 }
 
                 return nextStoreRef;
-    		}
-    	}.executeNoInterruptedException();
+            }
+        }.executeNoInterruptedException();
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -123,7 +123,12 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 }
                 catch(QueryModelException qme)
                 {
-                    logger.info("DB query failed for "+dbQueryLanguage.getName()+" for "+searchParameters, qme);
+                    // MNT-10323: Logging configuration on JBoss leads to clogging of the log with a lot of these errors because of INFO level when WQS module is installed
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("DB query failed for " + dbQueryLanguage.getName() + " for " + searchParameters, qme);
+                    }
+
                     if(indexQueryLanguage != null)
                     {
                         if(logger.isDebugEnabled())

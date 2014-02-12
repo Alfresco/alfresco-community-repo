@@ -28,6 +28,7 @@ import org.alfresco.repo.activities.feed.FeedGenerator;
 import org.alfresco.repo.activities.feed.local.LocalFeedTaskProcessor;
 import org.alfresco.repo.activities.post.lookup.PostLookup;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
@@ -35,6 +36,7 @@ import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.ApplicationContextHelper;
@@ -65,6 +67,7 @@ public abstract class AbstractSiteActivityTest
     private PersonService personService;
     private PostLookup postLookup;
     private FeedGenerator feedGenerator;
+    private NodeArchiveService nodeArchiveService;
     
     //
     // Test config & data
@@ -116,6 +119,7 @@ public abstract class AbstractSiteActivityTest
         this.siteService = (SiteService)applicationContext.getBean("SiteService");
         this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
         this.personService = (PersonService)applicationContext.getBean("PersonService");
+        this.nodeArchiveService = (NodeArchiveService)applicationContext.getBean("nodeArchiveService");
         
         LocalFeedTaskProcessor feedProcessor = null;
         
@@ -196,23 +200,13 @@ public abstract class AbstractSiteActivityTest
     
     protected void deleteSite(String siteId) throws Exception
     {
-        // delete site (and site's associated groups)
-        siteService.deleteSite(siteId);
-    }
-    
-    @Test
-    //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
-    public void testUserActivitiesOnSite() throws Exception
-    {
-        login(ADMIN_USER, ADMIN_PW);
-        
-        addMembership(site1, user4, SiteModel.SITE_CONSUMER);
-        
-        generateFeed();
-        
-        login(user4, USER_PW);
-        
-        getUserFeed(user4, site1, false, false, true, 1);
+        SiteInfo siteInfo = siteService.getSite(siteId);
+        if (siteInfo != null)
+        {
+            // delete site (and site's associated groups)
+            siteService.deleteSite(siteId);
+            nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteInfo.getNodeRef()));
+        }
     }
     
     @Test

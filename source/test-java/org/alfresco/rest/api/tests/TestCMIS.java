@@ -1274,7 +1274,8 @@ public class TestCMIS extends EnterpriseTestApi
         }
 		AlfrescoDocument doc1 = (AlfrescoDocument)doc.updateProperties(properties);
 		String versionLabel1 = doc1.getVersionLabel();
-		assertEquals(versionLabel, versionLabel1);
+
+		assertTrue(Double.parseDouble(versionLabel) < Double.parseDouble(versionLabel1));
 
 		// ...and check that updating its content does not create a new version
 		fileContent = new ContentStreamImpl();
@@ -1289,7 +1290,9 @@ public class TestCMIS extends EnterpriseTestApi
 		doc1.setContentStream(fileContent, true);
 		AlfrescoDocument doc2 = (AlfrescoDocument)doc1.getObjectOfLatestVersion(false);
 		String versionLabel2 = doc2.getVersionLabel();
-		assertEquals(versionLabel1, versionLabel2);
+
+		assertTrue(Double.parseDouble(versionLabel) < Double.parseDouble(versionLabel1));
+
 	}
 	
 	/*
@@ -1347,6 +1350,82 @@ public class TestCMIS extends EnterpriseTestApi
 		AlfrescoDocument doc1 = (AlfrescoDocument)doc.getObjectOfLatestVersion(false);
 		String versionLabel1 = doc1.getVersionLabel();
 		assertEquals("1.0", versionLabel1);
+	}
+	
+    /* MNT-10175 test */
+    @Test
+    public void testAppendContentVersioning() throws Exception
+    {
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+        String username = "user" + System.currentTimeMillis();
+        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+        TestPerson person1 = network1.createUser(personInfo);
+        String person1Id = person1.getId();
+
+        final String siteName = "site" + System.currentTimeMillis();
+
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
+                TestSite site = repoService.createSite(null, siteInfo);
+
+                String name = GUID.generate();
+                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+                return folderNodeRef;
+            }
+        }, person1Id, network1.getId());
+
+        // Create a document
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+        // Use CMIS 1.1 to test content appending
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.1");
+        Folder docLibrary = (Folder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
+        String name = GUID.generate() + ".txt";
+        Map<String, String> properties = new HashMap<String, String>();
+        {
+            properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+            properties.put(PropertyIds.NAME, name);
+        }
+        // Create content to append
+        ContentStreamImpl fileContent = new ContentStreamImpl();
+        {
+            ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+            writer.putContent("Ipsum and so on");
+            ContentReader reader = writer.getReader();
+            fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            fileContent.setStream(reader.getContentInputStream());
+        }
+
+        Document doc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+        String versionLabel1 = doc.getObjectOfLatestVersion(false).getVersionLabel();
+
+        // append a few times
+        for(int i = 0; i < 5; i++)
+        {
+            doc.appendContentStream(fileContent, false);
+        }
+        
+        String versionLabel2 = doc.getObjectOfLatestVersion(false).getVersionLabel();
+        
+        // Version label should not be incremented by appending with isLustChunk = false
+        assertEquals(versionLabel1, versionLabel2);
+
+        doc.appendContentStream(fileContent, true);	
+        
+        String versionLabel3 = doc.getObjectOfLatestVersion(false).getVersionLabel();
+        Integer majorVer1 = Integer.valueOf(versionLabel2.substring(0, 1));
+        Integer majorVer2 = Integer.valueOf(versionLabel3.substring(0, 1));
+        
+        Integer minorVer1 = Integer.valueOf(versionLabel2.substring(2, 3));
+        Integer minorVer2 = Integer.valueOf(versionLabel3.substring(2, 3));
+        
+        // Only one MINOR version should be created
+        assertEquals(majorVer1, majorVer2);
+        assertEquals(Integer.valueOf(minorVer1 + 1), minorVer2);
 	}
 	
 	@Test
@@ -1508,13 +1587,13 @@ public class TestCMIS extends EnterpriseTestApi
     	    doc.updateProperties(properties);
 
             {
+                doc = (Document)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary/" + name);
                 checkSecondaryTypes(doc, Collections.singleton("P:cm:summarizable"), null);
                 String summary = (String)doc.getProperty("cm:summary").getFirstValue();
                 assertEquals("My updated summary", summary);
             }
     
             {
-                doc = (Document)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary/" + name);
                 checkSecondaryTypes(doc, Collections.singleton("P:cm:summarizable"), null);
                 String summary = (String)doc.getProperty("cm:summary").getFirstValue();
                 assertEquals("My updated summary", summary);

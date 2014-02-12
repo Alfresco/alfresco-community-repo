@@ -33,6 +33,7 @@ import org.alfresco.service.namespace.QName;
 import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -53,6 +54,7 @@ public class BlogPut extends AbstractBlogWebScript
        {
           // They appear to have supplied a blog post itself...
           // Oh well, let's hope for the best!
+           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Blog post should not be updated via this web script.");
        }
        
        if (site != null && containerNodeRef == null)

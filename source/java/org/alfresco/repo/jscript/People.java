@@ -609,18 +609,18 @@ public class People extends BaseScopableProcessorExtension implements Initializi
         {
             filter = filter.trim();
             
-            String term = filter.replace("\\", "").replace("\"", "");
-            StringTokenizer t = new StringTokenizer(term, " ");
+            String term = filter.replace("\"", "");
+            String[] tokens = term.split("(?<!\\\\) ");
             int propIndex = term.lastIndexOf(':');
             int wildPosition = term.indexOf('*');
             
             // simple filter - can use CQ if search fails
-            useCQ = ((t.countTokens() == 1) && (propIndex == -1) && ((wildPosition == -1) || (wildPosition == (term.length() - 1))));
+            useCQ = ((tokens.length == 1) && (propIndex == -1) && ((wildPosition == -1) || (wildPosition == (term.length() - 1))));
             
             try
             {
                 // FTS
-                List<NodeRef> personRefs = getPeopleImplSearch(filter, pagingRequest, sortBy, sortAsc);
+                List<NodeRef> personRefs = getPeopleImplSearch(term, tokens, pagingRequest, sortBy, sortAsc);
                 
                 if (personRefs != null)
                 {
@@ -692,14 +692,12 @@ public class People extends BaseScopableProcessorExtension implements Initializi
     }
     
     // search query
-    protected List<NodeRef> getPeopleImplSearch(String filter, ScriptPagingDetails pagingRequest, String sortBy, Boolean sortAsc) throws Throwable
+    protected List<NodeRef> getPeopleImplSearch(String term, String[] tokens, ScriptPagingDetails pagingRequest, String sortBy, Boolean sortAsc) throws Throwable
     {
         List<NodeRef> personRefs = null;
         
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
         
-        String term = filter.replace("\\", "").replace("\"", "");
-        StringTokenizer t = new StringTokenizer(term, " ");
         int propIndex = term.indexOf(':');
         
         int maxResults = pagingRequest.getMaxItems();
@@ -715,7 +713,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
         
         query.append("TYPE:\"").append(ContentModel.TYPE_PERSON).append("\" AND (");
         
-        if (t.countTokens() == 1)
+        if (tokens.length == 1)
         {
             // single word with no field will go against _PERSON and expand
 
@@ -735,31 +733,28 @@ public class People extends BaseScopableProcessorExtension implements Initializi
         {
             // scan for non-fts-alfresco property search tokens
             int nonFtsTokens = 0;
-            while (t.hasMoreTokens())
+            for (String token : tokens)
             {
-                if (t.nextToken().indexOf(':') == -1)
-                    nonFtsTokens++;
+                if (token.indexOf(':') == -1) nonFtsTokens++;
             }
-            t = new StringTokenizer(term, " ");
+            tokens = term.split("(?<!\\\\) ");
 
             // multiple terms supplied - look for first and second name etc.
             // also allow fts-alfresco property search to reduce results
             params.setDefaultOperator(SearchParameters.Operator.AND);
             boolean propertySearch = false;
-            StringBuilder multiPartNames = new StringBuilder(term.length());
-            int numOfTokens = t.countTokens();
-            int counter = 1;
-            while (t.hasMoreTokens())
+            StringBuilder multiPartNames = new StringBuilder(tokens.length);
+            boolean firstToken = true;
+            for (String token : tokens)
             {
-                term = t.nextToken();
-                if (!propertySearch && term.indexOf(':') == -1)
+                if (!propertySearch && token.indexOf(':') == -1)
                 {
                     if (nonFtsTokens == 1)
                     {
                         // simple search: first name, last name and username
                         // starting with term
                         query.append("_PERSON:\"");
-                        query.append(term);
+                        query.append(token);
                         query.append("*\" ");
                     }
                     else
@@ -767,26 +762,26 @@ public class People extends BaseScopableProcessorExtension implements Initializi
                         // ALF-11311, in order to support multi-part firstNames/lastNames,
                         // we need to use the whole tokenized term for both
                         // firstName and lastName
-                        if (term.endsWith("*"))
+                        if (token.endsWith("*"))
                         {
-                            term = term.substring(0, term.lastIndexOf("*"));
+                            token = token.substring(0, token.lastIndexOf("*"));
                         }
                         multiPartNames.append("\"");
-                        multiPartNames.append(term);
+                        multiPartNames.append(token);
                         multiPartNames.append("*\"");
-                        if (numOfTokens > counter)
+                        if (firstToken)
                         {
                             multiPartNames.append(' ');
                         }
-                        counter++;
+                        firstToken = false;
                     }
                 }
                 else
                 {
                     // fts-alfresco property search i.e. "location:maidenhead"
-                    propIndex = term.lastIndexOf(':');
-                    query.append(term.substring(0, propIndex + 1)).append('"')
-                                .append(term.substring(propIndex + 1)).append('"').append(' ');
+                    propIndex = token.lastIndexOf(':');
+                    query.append(token.substring(0, propIndex + 1)).append('"')
+                                .append(token.substring(propIndex + 1)).append('"').append(' ');
 
                     propertySearch = true;
                 }

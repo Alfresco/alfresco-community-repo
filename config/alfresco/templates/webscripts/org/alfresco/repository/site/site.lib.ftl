@@ -45,7 +45,7 @@
 	<#elseif roles = "managers">
 	"siteManagers":
 	[
-		<#assign managers = site.listMembers(null, "SiteManager", 0, true)?keys />
+		<#assign managers = site.listMembers("", "SiteManager", 0, true)?keys />
 		<#list managers as manager>
 			"${manager}"<#if manager_has_next>,</#if>
 		</#list>

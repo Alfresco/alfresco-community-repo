@@ -89,6 +89,10 @@
                 	<artifactId>commons-logging</artifactId>
                 	<groupId>commons-logging</groupId>
                 </exclusion>
+                <exclusion>
+                  <groupId>org.freemarker</groupId>
+                  <artifactId>freemarker</artifactId>
+                </exclusion>            
             </exclusions>
         </dependency>
         <dependency>
@@ -235,6 +239,10 @@
                     <artifactId>commons-collections</artifactId>
                     <groupId>commons-collections</groupId>
                 </exclusion>
+                <exclusion>
+                  <groupId>org.freemarker</groupId>
+                  <artifactId>freemarker</artifactId>
+                </exclusion>   
             </exclusions>
         </dependency>
         <dependency>
@@ -271,8 +279,37 @@
             <version>7.3.0.v20110203</version>
         </dependency>
     </dependencies>
-
-    <build>
+   <profiles>
+      <profile>
+            <id>integration-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                  <plugin>
+                     <artifactId>maven-surefire-plugin</artifactId>
+                     <executions>
+                        <execution>
+                           <id>integration-tests</id>
+                           <goals>
+                              <goal>test</goal>
+                           </goals>
+                           <configuration>
+                              <forkMode>always</forkMode>
+                              <includes combine.self="override">
+                                 <include>**/org/alfresco/RemoteApi*TestSuite.java</include>
+				 <include>**/org/alfresco/repo/webdav/PutMethodTest.java</include>
+                              </includes>
+                           </configuration>
+                        </execution>
+                     </executions>
+                  </plugin>
+                </plugins>
+            </build>
+        </profile>
+   </profiles>
+   <build>
         <plugins>
             <!-- Wipe the database before starting tests -->
             <plugin>
@@ -303,14 +340,18 @@
             </plugin>
 
             <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <forkMode>always</forkMode>
-                    <includes combine.self="override">
-                        <include>**/org/alfresco/RemoteApi*TestSuite.java</include>
-                        <include>**/org/alfresco/repo/webdav/PutMethodTest.java</include>
-                    </includes>
-                </configuration>
+               <artifactId>maven-surefire-plugin</artifactId>
+               <executions>
+                  <execution>
+                     <id>default-test</id>
+                     <!-- There's also surefire configuration in the integration-tests profile -->
+                     <configuration>
+                          <includes>
+                              <include>**/org/alfresco/remoteapi/AllUnitTestsSuite.java</include>
+                          </includes>
+                     </configuration>
+                  </execution>
+               </executions>
             </plugin>
 
             <!-- We still use committed generated sources -->

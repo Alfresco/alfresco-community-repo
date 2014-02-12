@@ -18,9 +18,9 @@
  */
 package org.alfresco;
 
+import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import junit.framework.JUnit4TestAdapter;
 
 /**
  * All Remote API project test classes and test suites as a sequence of RemoteApi&lt;NN>TestSuite
@@ -69,16 +69,9 @@ public class RemoteApi01TestSuite extends TestSuite
     
     static void tests5(TestSuite suite) // 
     {
-        suite.addTestSuite(org.alfresco.repo.web.util.PagingCursorTest.class);
-        suite.addTestSuite(org.alfresco.repo.web.util.paging.PagingTest.class);
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.GetMethodTest.class));
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.LockInfoImplTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.MoveMethodTest.class));
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.RenameShuffleDetectionTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.UnlockMethodTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.WebDAVHelperIntegrationTest.class));
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.WebDAVHelperTest.class));
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.WebDAVLockServiceImplTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.WebDAVMethodTest.class));
         suite.addTestSuite(org.alfresco.repo.webservice.CMLUtilTest.class);
     }
@@ -97,7 +90,6 @@ public class RemoteApi01TestSuite extends TestSuite
     
     static void tests8(TestSuite suite) // 
     {
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.framework.tests.core.AllRestFrameworkTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.workflow.api.tests.DeploymentWorkflowApiTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.workflow.api.tests.ProcessDefinitionWorkflowApiTest.class));
     }

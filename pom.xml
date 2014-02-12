@@ -185,13 +185,19 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <!-- Test dependencies -->
+        <!-- ALF-19407 chemistry-tck-atompub and junit are dependencies of CMISTestRunnerWebScript, which is not a test -->
+        <dependency>
+            <groupId>org.apache.chemistry</groupId>
+            <artifactId>chemistry-tck-atompub</artifactId>
+            <version>0.1-incubating-unreleased</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <scope>provided</scope>
         </dependency>
+
+        <!-- Test dependencies -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
@@ -202,12 +208,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <version>${dependency.spring.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.chemistry</groupId>
-            <artifactId>chemistry-tck-atompub</artifactId>
-            <version>0.1-incubating-unreleased</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -257,41 +257,13 @@
 
     <build>
         <plugins>
-            <!-- Wipe the database before starting tests -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>sql-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>wipe-database</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <sqlCommand>drop database if exists alfresco</sqlCommand>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>create-database</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <sqlCommand>create database alfresco</sqlCommand>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- CLOUD-1967 Put core log4j config in WEB-INF/classes, so that it's first in classloader -->
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>fetch-log4j-config</id>
-                        <phase>generate-resources</phase>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>unpack</goal>
                         </goals>
@@ -355,6 +327,20 @@
 						<phase>prepare-package</phase>
 					</execution>
 				</executions>
+            </plugin>    
+            <plugin>
+               <artifactId>maven-surefire-plugin</artifactId>
+               <executions>
+                  <execution>
+                     <id>default-test</id>
+                     <!-- There's also surefire configuration in the integration-tests profile -->
+                     <configuration>
+                          <includes>
+                              <include>**/org/alfresco/web/AllUnitTestsSuite.java</include>
+                          </includes>
+                     </configuration>
+                  </execution>
+               </executions>
             </plugin>
         </plugins>
     </build>
@@ -451,6 +437,61 @@
 				</plugins>
 			</build>
 		</profile>
+      <profile>
+         <id>integration-tests</id>
+         <activation>
+             <activeByDefault>false</activeByDefault>
+         </activation>
+         <build>
+             <plugins>
+                 <!-- Wipe the database before starting tests -->
+                 <plugin>
+                     <groupId>org.codehaus.mojo</groupId>
+                     <artifactId>sql-maven-plugin</artifactId>
+                     <executions>
+                         <execution>
+                             <id>wipe-database</id>
+                             <phase>process-test-resources</phase>
+                             <goals>
+                                 <goal>execute</goal>
+                             </goals>
+                             <configuration>
+                                 <sqlCommand>drop database if exists alfresco</sqlCommand>
+                             </configuration>
+                         </execution>
+                         <execution>
+                             <id>create-database</id>
+                             <phase>process-test-resources</phase>
+                             <goals>
+                                 <goal>execute</goal>
+                             </goals>
+                             <configuration>
+                                 <sqlCommand>create database alfresco</sqlCommand>
+                             </configuration>
+                         </execution>
+                     </executions>
+                 </plugin>
+                 <plugin>
+                     <artifactId>maven-surefire-plugin</artifactId>
+                     <executions>
+                        <execution>
+                           <id>integration-tests</id>
+                           <goals>
+                              <goal>test</goal>
+                           </goals>
+                           <configuration>
+                             <includes>
+                               <include>**/org/alfresco/web/app/servlet/DefaultRemoteUserMapperTest.java</include>
+                               <include>**/org/alfresco/web/app/servlet/KerberosRemoteUserMapperTest.java</include>
+                               <include>**/org/alfresco/web/forms/FormsTest.java</include>
+                             </includes>
+                           </configuration>
+                        </execution>
+                     </executions>
+                 </plugin>
+             </plugins>
+         </build>
+      </profile>
 		<!-- Tweaks required to make the build work in Eclipse -->
 		<profile>
 			<id>m2e</id>

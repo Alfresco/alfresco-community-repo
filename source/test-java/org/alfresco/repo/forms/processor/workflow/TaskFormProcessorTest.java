@@ -246,7 +246,7 @@ public class TaskFormProcessorTest extends TestCase
 
     public void testGenerateMessage() throws Exception
     {
-        String message = null;
+        String message = "(No Message)";
         String fieldName = MessageFieldProcessor.KEY;
         Form form = processForm(fieldName);
         checkSingleProperty(form, fieldName, message);
@@ -557,7 +557,7 @@ public class TaskFormProcessorTest extends TestCase
         String dataKey = fieldDef.getDataKeyName();
         assertEquals(expDataKey, dataKey);
         FieldData data = form.getFormData().getFieldData(dataKey);
-        if (fieldData != null)
+        if (fieldData != null && data != null)
         {
             assertEquals(fieldData, data.getValue());
         }

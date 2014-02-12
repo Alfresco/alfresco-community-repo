@@ -92,6 +92,8 @@ public class StandardQuotaStrategyTest
         cacheRoot = cache.getCacheRoot();
         quota = (StandardQuotaStrategy) ctx.getBean("quotaManager");
         quota.setCurrentUsageBytes(0);
+        // No file size limit
+        quota.setMaxFileSizeMB(0);
         cleaner = (CachedContentCleaner) ctx.getBean("cachedContentCleaner");
         // Empty the in-memory cache
         cache.removeAll();

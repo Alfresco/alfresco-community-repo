@@ -273,10 +273,11 @@ public class ScriptNodeTest
     }
     
     @Test(expected=AccessDeniedException.class)
-    @RunAsUser(userName=USER_TWO_NAME)
     public void userTwoCannotAccessTestFile() throws Exception
     {
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO_NAME);
         touchFileToTriggerPermissionCheck(USER_ONES_TEST_FILE);
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
 
     @Test public void userOneCanAccessTestFile() throws Exception

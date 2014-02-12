@@ -26,6 +26,13 @@
 #swf.exe=./bin/pdf2swf
 
 #
+# Windows specific environment variables (should not be set on unix) for ImageMagick
+#
+#img.coders=${img.root}/modules/coders
+#img.config=${img.root}/config
+#img.gslib=${img.root}/lib
+
+#
 # Property to control whether schema updates are performed automatically.
 # Updates must be enabled during upgrades as, apart from the static upgrade scripts,
 # there are also auto-generated update scripts that will need to be executed.  After

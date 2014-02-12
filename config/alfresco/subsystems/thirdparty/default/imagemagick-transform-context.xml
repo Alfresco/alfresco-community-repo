@@ -20,28 +20,7 @@
                   </entry>
                </map>
             </property>
-            <property name="processProperties"> 
-               <map>
-                  <entry key="MAGICK_HOME">
-                     <value>${img.root}</value>
-                  </entry>
-                  <entry key="MAGICK_CODER_MODULE_PATH">
-                     <value>${img.coders}</value>
-                  </entry>
-                  <entry key="MAGICK_CONFIGURE_PATH">
-                     <value>${img.config}</value>
-                  </entry>
-                  <entry key="GS_LIB">
-                     <value>${img.gslib}</value>
-                  </entry>
-                  <entry key="DYLD_FALLBACK_LIBRARY_PATH">
-                     <value>${img.dyn}</value>
-                  </entry>
-                  <entry key="LD_LIBRARY_PATH">
-                     <value>${img.dyn}</value>
-                  </entry>
-               </map>
-            </property>
+            <property name="processProperties" ref="#{systemProperties['os.name'].contains('Windows') ? 'processPropertiesWindows' : 'processPropertiesUnix'}" />
             <property name="defaultProperties">
                <props>
                   <prop key="options"></prop>
@@ -66,6 +45,47 @@
                </map>
             </property>
          </bean>
+      </property>
+   </bean>
+
+   <bean id="processPropertiesWindows" class="org.springframework.beans.factory.config.MapFactoryBean">
+      <property name="sourceMap"> 
+         <map>
+            <entry key="MAGICK_HOME">
+               <value>${img.root}</value>
+            </entry>
+            <entry key="MAGICK_CODER_MODULE_PATH">
+               <value>${img.coders}</value>
+            </entry>
+            <entry key="MAGICK_CONFIGURE_PATH">
+               <value>${img.config}</value>
+            </entry>
+            <entry key="GS_LIB">
+               <value>${img.gslib}</value>
+            </entry>
+            <entry key="DYLD_FALLBACK_LIBRARY_PATH">
+               <value>${img.dyn}</value>
+            </entry>
+            <entry key="LD_LIBRARY_PATH">
+               <value>${img.dyn}</value>
+            </entry>
+         </map>
+      </property>
+   </bean>
+
+   <bean id="processPropertiesUnix" class="org.springframework.beans.factory.config.MapFactoryBean">
+      <property name="sourceMap">
+         <map>
+            <entry key="MAGICK_HOME">
+               <value>${img.root}</value>
+            </entry>
+            <entry key="DYLD_FALLBACK_LIBRARY_PATH">
+               <value>${img.dyn}</value>
+            </entry>
+            <entry key="LD_LIBRARY_PATH">
+               <value>${img.dyn}</value>
+            </entry>
+         </map>
       </property>
    </bean>
 

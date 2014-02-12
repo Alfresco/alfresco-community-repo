@@ -18,7 +18,7 @@
  */
 package org.alfresco.repo.cache;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Properties;
 
@@ -41,7 +41,21 @@ public class DefaultCacheFactoryTest
     {
         cacheFactory = new DefaultCacheFactory<String, String>();
         properties = new Properties();
+        // cache.someCache
         properties.setProperty("cache.someCache.maxItems", "4");
+        properties.setProperty("cache.someCache.eviction-policy", "EVICT"); // Anything but NONE
+        // cache.noSizeLimit
+        properties.setProperty("cache.noSizeLimit.maxItems", "2"); // No effect
+        properties.setProperty("cache.noSizeLimit.eviction-policy", "NONE");
+        // cache.withTTL
+        properties.setProperty("cache.withTTL.maxItems", "0");
+        properties.setProperty("cache.withTTL.eviction-policy", "NONE");
+        properties.setProperty("cache.withTTL.timeToLiveSeconds", "6");
+        // cache.withMaxIdle
+        properties.setProperty("cache.withMaxIdle.maxItems", "0");
+        properties.setProperty("cache.withMaxIdle.eviction-policy", "NONE");
+        properties.setProperty("cache.withMaxIdle.maxIdleSeconds", "7");
+        
         cacheFactory.setProperties(properties);
     }
 
@@ -51,5 +65,32 @@ public class DefaultCacheFactoryTest
         cache = (DefaultSimpleCache<String, String>) cacheFactory.createCache("cache.someCache");
         assertEquals(4, cache.getMaxItems());
         assertEquals("cache.someCache", cache.getCacheName());
+        assertTrue(cache.isUseMaxItems());
+    }
+    
+    @Test
+    public void canCreateUnboundedCache()
+    {
+        cache = (DefaultSimpleCache<String, String>) cacheFactory.createCache("cache.noSizeLimit");
+        assertEquals(2, cache.getMaxItems());
+        assertEquals("cache.noSizeLimit", cache.getCacheName());
+        assertFalse(cache.isUseMaxItems());        
+    }
+    
+    @Test
+    public void canCreateCacheWithTTL()
+    {
+        cache = (DefaultSimpleCache<String, String>) cacheFactory.createCache("cache.withTTL");
+        assertEquals("cache.withTTL", cache.getCacheName());
+        assertEquals(6, cache.getTTLSecs());        
+    }
+    
+    @Test
+    public void canCreateCacheWithMaxIdle()
+    {
+        cache = (DefaultSimpleCache<String, String>) cacheFactory.createCache("cache.withMaxIdle");
+        assertEquals("cache.withMaxIdle", cache.getCacheName());
+        assertEquals(0, cache.getTTLSecs());        
+        assertEquals(7, cache.getMaxIdleSecs());        
     }
 }

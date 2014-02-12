@@ -18,9 +18,7 @@
  */
 package org.alfresco.repo.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -34,14 +32,14 @@ public class DefaultSimpleCacheTest extends SimpleCacheTestBase<DefaultSimpleCac
     @Override
     protected DefaultSimpleCache<Integer, String> createCache()
     {
-        return new DefaultSimpleCache<Integer, String>(100, getClass().getName());
+        return new DefaultSimpleCache<Integer, String>(100, true, 0, 0, getClass().getName());
     }
     
     @Test
     public void boundedSizeCache() throws Exception
     {
         // We'll only keep the LAST 3 items
-        cache = new DefaultSimpleCache<Integer, String>(3, getClass().getName());
+        cache = new DefaultSimpleCache<Integer, String>(3, true, 0, 0, getClass().getName());
         
         cache.put(1, "1");
         cache.put(2, "2");
@@ -61,6 +59,31 @@ public class DefaultSimpleCacheTest extends SimpleCacheTestBase<DefaultSimpleCac
         assertEquals("3", cache.get(3));
         assertEquals("4", cache.get(4));
         assertEquals("5", cache.get(5));
+        
+        assertTrue(cache.isUseMaxItems());
+    }
+    
+    @Test
+    public void defaultMaxItems()
+    {
+        // maxItems of 0 results in a capacity of Integer.MAX_VALUE - this is to match Hazelcast cache behaviour.
+        cache = new DefaultSimpleCache<Integer, String>(0, true, 0, 0, getClass().getName());
+        assertEquals(Integer.MAX_VALUE, cache.getMaxItems());
+        assertTrue(cache.isUseMaxItems());
+    }
+    
+    @Test
+    public void sizeLimitConstructor()
+    {
+        cache = new DefaultSimpleCache<Integer, String>(123, getClass().getName());
+        assertEquals(123, cache.getMaxItems());
+        assertTrue(cache.isUseMaxItems());
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void noNegativeMaxItems()
+    {
+        cache = new DefaultSimpleCache<Integer, String>(-1, true, 0, 0, getClass().getName());
     }
     
     @Test
@@ -100,5 +123,73 @@ public class DefaultSimpleCacheTest extends SimpleCacheTestBase<DefaultSimpleCac
         cache.remove(104);
         assertEquals(false, cache.putAndCheckUpdate(104, "104"));
         assertEquals(true, cache.putAndCheckUpdate(104, null));
+    }
+    
+    // TODO: Timer-based tests are not ideal. An alternative approach is to factor out the CacheBuilder.newBuilder()
+    // call to a protected method, override that in this test class to return a mock and use the mock to check
+    // that the Cache is being configured correctly, e.g. assert that expireAfterWrite(int, TimeUnit) is called.
+    @Test
+    public void cachesCanHaveTTL()
+    {
+        // TTL of 7 seconds
+        cache = new DefaultSimpleCache<Integer, String>(0, false, 7, 0, getClass().getName());
+        assertFalse(cache.isUseMaxItems());
+        
+        cache.put(1, "1");
+        assertTrue(cache.contains(1));
+        assertFalse(cache.contains(2));
+        assertFalse(cache.contains(3));
+        
+        sleep(5);
+        cache.put(2, "2");
+        assertTrue(cache.contains(1));
+        assertTrue(cache.contains(2));
+        assertFalse(cache.contains(3));
+        
+        sleep(5);
+        cache.put(3, "3");
+        assertFalse(cache.contains(1));
+        assertTrue(cache.contains(2)); // Only ~5 seconds have passed for this key
+        assertTrue(cache.contains(3));
+    }
+     
+    @Test
+    public void cachesCanHaveTTI()
+    {
+        cache = new DefaultSimpleCache<Integer, String>(0, false, 0, 8, getClass().getName());
+        assertFalse(cache.isUseMaxItems());
+        assertEquals(0, cache.getTTLSecs());
+        assertEquals(8, cache.getMaxIdleSecs());
+        
+        cache.put(1, "1");
+        assertEquals("1", cache.get(1));
+        
+        sleep(4);
+        // cause zeroing of idle time
+        assertEquals("1", cache.get(1));
+        
+        sleep(4);
+        // cause zeroing of idle time
+        assertEquals("1", cache.get(1));
+        
+        sleep(4);
+        // At least 12 seconds have passed, but the item should still be present. 
+        assertEquals("1", cache.get(1));
+        
+        sleep(10);
+        // time-to-idle now exceeded without access
+        assertNotEquals("1", cache.get(1));      
+    }
+    
+    private void sleep(int seconds)
+    {
+        try
+        {
+            Thread.sleep(seconds * 1000);
+        }
+        catch (InterruptedException error)
+        {
+            throw new RuntimeException(error);
+        }
     }
 }

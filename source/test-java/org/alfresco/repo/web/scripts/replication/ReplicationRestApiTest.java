@@ -1546,7 +1546,7 @@ public class ReplicationRestApiTest extends BaseWebScriptTest
         super.setUp();
         ApplicationContext appContext = getServer().getApplicationContext();
 
-        nodeService = (NodeService)appContext.getBean("nodeService");
+        nodeService = (NodeService)appContext.getBean("NodeService");
         replicationService = (ReplicationService)appContext.getBean("ReplicationService");
         actionTrackingService = (ActionTrackingService)appContext.getBean("actionTrackingService");
         repositoryHelper = (Repository)appContext.getBean("repositoryHelper");

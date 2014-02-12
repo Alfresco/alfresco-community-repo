@@ -74,6 +74,7 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
     private SimpleCache<String, ExecutionDetails> executingActionsCache;
     
     private Repository repositoryHelper;
+    @SuppressWarnings("unused")
     private NodeRef dataDictionary;
     
     /**
@@ -499,7 +500,9 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
        replicationService.saveReplicationDefinition(rd);
        actionTrackingService.recordActionExecuting(rd);
        String id2 = rd.getId();
+       @SuppressWarnings("unused")
        String instance2 = Integer.toString( ((ActionImpl)rd).getExecutionInstance() );
+       @SuppressWarnings("unused")
        String startedAt2 = ISO8601DateFormat.format(rd.getExecutionStartDate()); 
        
        rd = replicationService.createReplicationDefinition("AnotherTest", "3rd Testing");
@@ -603,7 +606,9 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
        ActionImpl alt2 = new ActionImpl(null, "54321", "MadeUp2");
        actionTrackingService.recordActionExecuting(alt1);
        actionTrackingService.recordActionExecuting(alt2);
+       @SuppressWarnings("unused")
        String startAtAlt2 = ISO8601DateFormat.format( alt2.getExecutionStartDate() );
+       @SuppressWarnings("unused")
        String instanceAlt2 = Integer.toString( alt2.getExecutionInstance() );
        
        // 2 replication actions
@@ -878,21 +883,28 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
        // Should be pending 
        // Wait for it to fail (we didn't
        //  specify enough options for a valid transfer)
-       for(int i=0; i<50; i++) {
+       for(int i=0; i<50; i++)
+       {
           txn = transactionService.getUserTransaction();
           txn.begin();
           rd = replicationService.loadReplicationDefinition("Test1");
           txn.commit();
              
-          if(rd.getExecutionStatus() == ActionStatus.New) {
+          if(rd.getExecutionStatus() == ActionStatus.New)
+          {
              // Still pending, or maybe running
-             try {
+             try
+             {
                 Thread.sleep(100);
              } catch(InterruptedException e) {}
-          } else if (rd.getExecutionStatus() == ActionStatus.Failed) {
+          }
+          else if (rd.getExecutionStatus() == ActionStatus.Failed)
+          {
              // We're done
              break;
-          } else {
+          }
+          else
+          {
              fail("Unexpected status in repo of " + rd.getExecutionStatus());
           }
        }
@@ -960,21 +972,26 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
        // Should be pending 
        // Wait for it to fail (we didn't
        //  specify enough options for a valid transfer)
-       for(int i=0; i<50; i++) {
+       for(int i=0; i<50; i++)
+       {
           txn = transactionService.getUserTransaction();
           txn.begin();
           rd = replicationService.loadReplicationDefinition("Test1");
           txn.commit();
              
-          if(rd.getExecutionStatus() == ActionStatus.New) {
+          if(rd.getExecutionStatus() == ActionStatus.New)
+          {
              // Still pending, or maybe running
-             try {
+             try
+             {
                 Thread.sleep(100);
              } catch(InterruptedException e) {}
-          } else if (rd.getExecutionStatus() == ActionStatus.Failed) {
+          } else if (rd.getExecutionStatus() == ActionStatus.Failed)
+          {
              // We're done
              break;
-          } else {
+          } else
+          {
              fail("Unexpected status in repo of " + rd.getExecutionStatus());
           }
        }
@@ -990,13 +1007,14 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
     }
     
         
+    @SuppressWarnings("unchecked")
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
         ApplicationContext appContext = getServer().getApplicationContext();
 
-        nodeService = (NodeService)appContext.getBean("nodeService");
+        nodeService = (NodeService)appContext.getBean("NodeService");
         replicationService = (ReplicationService)appContext.getBean("ReplicationService");
         actionTrackingService = (ActionTrackingService)appContext.getBean("actionTrackingService");
         repositoryHelper = (Repository)appContext.getBean("repositoryHelper");
@@ -1015,7 +1033,8 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         // Ensure we start with no replication definitions
         // (eg another test left them behind)
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        for(ReplicationDefinition rd : replicationService.loadReplicationDefinitions()) {
+        for(ReplicationDefinition rd : replicationService.loadReplicationDefinitions())
+        {
            replicationService.deleteReplicationDefinition(rd);
         }
         txn.commit();
@@ -1030,9 +1049,6 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         AuthenticationUtil.clearCurrentSecurityContext();
     }
     
-    /* (non-Javadoc)
-     * @see junit.framework.TestCase#tearDown()
-     */
     @Override
     protected void tearDown() throws Exception
     {
@@ -1051,7 +1067,8 @@ public class RunningActionRestApiTest extends BaseWebScriptTest
         AuthenticationUtil.clearCurrentSecurityContext();
         
         // Clear out the running actions
-        for(ExecutionSummary es : actionTrackingService.getAllExecutingActions()) {
+        for(ExecutionSummary es : actionTrackingService.getAllExecutingActions())
+        {
            executingActionsCache.remove(
                  AbstractActionWebscript.getRunningId(es)
            );

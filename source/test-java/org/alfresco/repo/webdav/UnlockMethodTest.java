@@ -10,6 +10,7 @@ import java.util.Collections;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -320,9 +321,29 @@ public class UnlockMethodTest
             WebDAVHelper davHelper = (WebDAVHelper) appContext.getBean("webDAVHelper");
             unlockMethod.setDetails(request, new MockHttpServletResponse(), davHelper, folderNodeRef);
             unlockMethod.parseRequestHeaders();
-            unlockMethod.executeImpl();
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    unlockMethod.executeImpl();
+                    return null;
+                }
+            });
 
             fail("Exception should have been thrown, but wasn't.");
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            if (e.getCause() instanceof WebDAVServerException)
+            {
+                WebDAVServerException ee = (WebDAVServerException) e.getCause();
+                assertEquals(HttpServletResponse.SC_PRECONDITION_FAILED, ee.getHttpStatusCode());
+            }
+            else
+            {
+                fail("Incorrect exception thrown.");
+            }
         }
         catch (WebDAVServerException e)
         {

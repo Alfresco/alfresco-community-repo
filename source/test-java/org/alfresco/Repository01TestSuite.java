@@ -177,12 +177,7 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.deploy.DeploymentServiceImplFSTest.class);
     }
     
-    static void tests21(TestSuite suite) // // fails if not on own - tests="1" time="3.667" - error: "is WCM enabled?"
-    {
-        suite.addTestSuite(org.alfresco.repo.deploy.DeploymentServiceTest.class);
-    }
-    
-    static void tests22(TestSuite suite)
+    static void tests21(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.descriptor.DescriptorServiceTest.class);
         suite.addTestSuite(org.alfresco.repo.dictionary.DictionaryModelTypeTest.class);
@@ -192,41 +187,41 @@ public class Repository01TestSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.discussion.DiscussionServiceImplTest.class));
     }
     
-    static void tests23(TestSuite suite)
+    static void tests22(TestSuite suite)
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.domain.DomainTestSuite.class));
     }
     
-    static void tests24(TestSuite suite)
+    static void tests23(TestSuite suite)
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.download.DownloadServiceIntegrationTest.class));
         suite.addTestSuite(org.alfresco.repo.exporter.ExporterComponentTest.class);
         suite.addTestSuite(org.alfresco.repo.exporter.RepositoryExporterComponentTest.class);
     }
     
-    static void tests25(TestSuite suite)
+    static void tests24(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.forms.FormServiceImplTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.forms.processor.action.ActionFormProcessorTest.class));
         suite.addTestSuite(org.alfresco.repo.forms.processor.node.FieldProcessorTest.class);
     }
     
-    static void tests26(TestSuite suite) // tests="37" time="102.54" - 1 failure SOMETIMES (even if TaskFormProcessorTest is on its own)
+    static void tests25(TestSuite suite) // tests="37" time="102.54" - 1 failure SOMETIMES (even if TaskFormProcessorTest is on its own)
     {
         suite.addTestSuite(org.alfresco.repo.forms.processor.workflow.TaskFormProcessorTest.class);
     }
     
-    static void tests27(TestSuite suite)
+    static void tests26(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.forms.processor.workflow.WorkflowFormProcessorTest.class);
     }
     
-    static void tests28(TestSuite suite) // 
+    static void tests27(TestSuite suite) // 
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.forum.CommentsTest.class));
     }
     
-    static void tests29(TestSuite suite) // tests="53" time="178.25"
+    static void tests28(TestSuite suite) // tests="53" time="178.25"
     {
         suite.addTestSuite(org.alfresco.repo.i18n.MessageServiceImplTest.class); //  fails if with previous tests
         suite.addTestSuite(org.alfresco.repo.imap.ImapMessageTest.class);
@@ -238,7 +233,7 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.invitation.site.InviteSenderTest.class);
     }
     
-    static void tests30(TestSuite suite) // tests="12" time="93.965"
+    static void tests29(TestSuite suite) // tests="12" time="93.965"
     {
         suite.addTestSuite(org.alfresco.repo.jscript.PeopleTest.class); // fails if with previous tests
         suite.addTestSuite(org.alfresco.repo.jscript.RhinoScriptTest.class);
@@ -246,7 +241,7 @@ public class Repository01TestSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.jscript.ScriptNodeTest.class));
     }
     
-    static void tests31(TestSuite suite) // tests="70" time="62.041" failures="1"
+    static void tests30(TestSuite suite) // tests="70" time="62.041" failures="1"
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.links.LinksServiceImplTest.class)); // fails if run more than once // fails if with previous tests
         suite.addTestSuite(org.alfresco.repo.lock.JobLockServiceTest.class);
@@ -259,12 +254,12 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.management.JmxDumpUtilTest.class);
     }
     
-    static void tests32(TestSuite suite)
+    static void tests31(TestSuite suite)
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.model.ModelTestSuite.class));
     }
     
-    static void tests33(TestSuite suite)
+    static void tests32(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.module.ComponentsTest.class);
         suite.addTestSuite(org.alfresco.repo.module.ModuleComponentHelperTest.class);
@@ -277,25 +272,25 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.node.NodeRefPropertyMethodInterceptorTest.class);
     }
     
-    static void tests34(TestSuite suite)
+    static void tests33(TestSuite suite)
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.node.NodeServiceTest.class)); // moved to next test
     }
     
-    static void tests35(TestSuite suite)
+    static void tests34(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.node.PerformanceNodeServiceTest.class);
         suite.addTestSuite(org.alfresco.repo.node.archive.ArchiveAndRestoreTest.class);
     }
     
-    static void tests36(TestSuite suite) // tests="86" time="553.462"
+    static void tests35(TestSuite suite) // tests="86" time="553.462"
     {
         suite.addTestSuite(org.alfresco.repo.node.archive.LargeArchiveAndRestoreTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.node.cleanup.TransactionCleanupTest.class));
         suite.addTestSuite(org.alfresco.repo.node.db.DbNodeServiceImplTest.class);
     }
     
-    static void tests37(TestSuite suite) // Fails with previous tests
+    static void tests36(TestSuite suite) // Fails with previous tests
     {
         suite.addTestSuite(org.alfresco.repo.node.getchildren.GetChildrenCannedQueryTest.class);
         suite.addTestSuite(org.alfresco.repo.node.index.AVMRemoteSnapshotTrackerTest.class);
@@ -303,12 +298,12 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.node.index.IndexTransactionTrackerTest.class);
     }
     
-    static void tests38(TestSuite suite) // Hangs with the previous 4 tests
+    static void tests39(TestSuite suite) // Hangs with the previous 4 tests
     {
         suite.addTestSuite(org.alfresco.repo.node.index.MissingContentReindexComponentTest.class);
     }
     
-    static void tests39(TestSuite suite)
+    static void tests40(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.node.integrity.IncompleteNodeTaggerTest.class);
         suite.addTestSuite(org.alfresco.repo.node.integrity.IntegrityEventTest.class);
@@ -322,12 +317,12 @@ public class Repository01TestSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.preference.PreferenceServiceImplTest.class));
     }
     
-    static void tests40(TestSuite suite)
+    static void tests41(TestSuite suite)
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.publishing.WebPublishingTestSuite.class));
     }
     
-    static void tests41(TestSuite suite)
+    static void tests42(TestSuite suite)
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.quickshare.QuickShareServiceIntegrationTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.rating.RatingServiceIntegrationTest.class));
@@ -339,13 +334,13 @@ public class Repository01TestSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.rendition.RenditionServicePermissionsTest.class));
     }
     
-    static void tests42(TestSuite suite) // tests="6" time="120.585"
+    static void tests43(TestSuite suite) // tests="6" time="120.585"
     {
         suite.addTestSuite(org.alfresco.repo.rendition.StandardRenditionLocationResolverTest.class);
         suite.addTestSuite(org.alfresco.repo.rendition.executer.HTMLRenderingEngineTest.class);
     }
     
-    static void tests43(TestSuite suite) // tests="27" time="134.585"
+    static void tests44(TestSuite suite) // tests="27" time="134.585"
     {
         suite.addTestSuite(org.alfresco.repo.rendition.executer.XSLTFunctionsTest.class); // fails if with previous tests
         suite.addTestSuite(org.alfresco.repo.rendition.executer.XSLTRenderingEngineTest.class);
@@ -354,40 +349,40 @@ public class Repository01TestSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.rule.MiscellaneousRulesTest.class));
     }
     
-    static void tests44(TestSuite suite) // tests="53" time="113.999"
+    static void tests45(TestSuite suite) // tests="53" time="113.999"
     {
         suite.addTestSuite(org.alfresco.repo.rule.RuleLinkTest.class); // fails if with previous tests
         suite.addTestSuite(org.alfresco.repo.rule.RuleServiceCoverageTest.class);
         suite.addTestSuite(org.alfresco.repo.rule.RuleServiceImplTest.class);
     }
     
-    static void tests45(TestSuite suite) // tests="2" time="104.636" errors="1"
+    static void tests46(TestSuite suite) // tests="2" time="104.636" errors="1"
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.rule.RuleServiceIntegrationTest.class)); // fails locally even on its own
     }
     
-    static void tests46(TestSuite suite) // tests="13" time="97.186"
+    static void tests47(TestSuite suite) // tests="13" time="97.186"
     {
         suite.addTestSuite(org.alfresco.repo.rule.RuleTypeImplTest.class);
         suite.addTestSuite(org.alfresco.repo.rule.ruletrigger.RuleTriggerTest.class);
     }
     
-    static void tests47(TestSuite suite)
+    static void tests48(TestSuite suite)
     {
         suite.addTest(org.alfresco.repo.search.SearchTestSuite.suite());
     }
     
-    static void tests48(TestSuite suite)
+    static void tests49(TestSuite suite)
     {
         suite.addTest(org.alfresco.repo.security.SecurityTestSuite.suite());
     }
     
-    static void tests49(TestSuite suite)
+    static void tests50(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizerTest.class); // failed on agent - split from following tests?
     }
     
-    static void tests50(TestSuite suite) // Not sure this break is needed
+    static void tests51(TestSuite suite) // Not sure this break is needed
     {
         suite.addTestSuite(org.alfresco.repo.service.StoreRedirectorProxyFactoryTest.class);
         suite.addTestSuite(org.alfresco.repo.site.RoleComparatorImplTest.class);
@@ -395,42 +390,42 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.site.SiteServiceImplTest.class);
     }
     
-    static void tests51(TestSuite suite)
+    static void tests52(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.solr.SOLRTrackingComponentTest.class);
     }
     
-    static void tests52(TestSuite suite)
+    static void tests53(TestSuite suite)
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.subscriptions.SubscriptionServiceActivitiesTest.class));
     }
     
-    static void tests53(TestSuite suite)
+    static void tests54(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.subscriptions.SubscriptionServiceImplTest.class);
     }
     
-    static void tests54(TestSuite suite)
+    static void tests55(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.tagging.TaggingServiceImplTest.class);
     }
     
-    static void tests55(TestSuite suite)
+    static void tests56(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.template.AVMTemplateNodeTest.class);
     }
     
-    static void tests56(TestSuite suite)
+    static void tests57(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.template.TemplateServiceImplTest.class);
     }
     
-    static void tests57(TestSuite suite)
+    static void tests58(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.tenant.MultiTDemoTest.class);
     }
     
-    static void tests58(TestSuite suite)
+    static void tests59(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.tenant.MultiTNodeServiceInterceptorTest.class);
         suite.addTestSuite(org.alfresco.repo.template.XSLTProcessorTest.class); // Moved, was before MultiTDemoTest
@@ -455,32 +450,32 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.urlshortening.BitlyUrlShortenerTest.class);
     }
     
-    static void tests59(TestSuite suite)
+    static void tests60(TestSuite suite)
     {
         suite.addTest(org.alfresco.repo.usage.UsageTestSuite.suite());
     }
     
-    static void tests60(TestSuite suite)
+    static void tests61(TestSuite suite)
     {
         suite.addTest(org.alfresco.repo.version.VersionTestSuite.suite());
     }
     
-    static void tests61(TestSuite suite)
+    static void tests62(TestSuite suite)
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.wiki.WikiServiceImplTest.class));
     }
     
-    static void tests62(TestSuite suite)
+    static void tests63(TestSuite suite)
     {
         suite.addTest(org.alfresco.repo.workflow.WorkflowTestSuite.suite());
     }
     
-    static void tests63(TestSuite suite)
+    static void tests64(TestSuite suite)
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.service.cmr.calendar.CalendarRecurrenceHelperTest.class));
     }
     
-    static void tests64(TestSuite suite) // tests="187" time="364.334"
+    static void tests65(TestSuite suite) // tests="187" time="364.334"
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.service.cmr.calendar.CalendarTimezoneHelperTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.service.cmr.repository.TemporalSourceOptionsTest.class));

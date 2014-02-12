@@ -19,7 +19,6 @@
 package org.alfresco.repo.calendar.cannedqueries;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -84,6 +83,11 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
         this.nodeService = nodeService;
     }
     
+    private boolean isMidnightUTC(String isoDate)
+    {
+        return isoDate.endsWith("Z") && (isoDate.indexOf("T00:00:00") != -1);
+    }
+    
     @Override
     protected List<CalendarEntry> queryAndFilter(CannedQueryParameters parameters)
     {
@@ -110,16 +114,11 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
             
             String strFromDate = result.getFromDate();
             String strToDate = result.getToDate();
-            if (strFromDate != null && strFromDate.equals(strToDate))
+            if (strFromDate != null && strFromDate.equals(strToDate) && isMidnightUTC(strFromDate))
             {
                 // it is all day event and should conform with current server's timezone
                 fromDate = ISO8601DateFormat.parseDayOnly(strFromDate, TimeZone.getDefault());
-                // all day event should be from midnight till next midnight
-                Calendar defaultCalendar = ISO8601DateFormat.getCalendar();
-                defaultCalendar.setTime(fromDate);
-                // add one day to toDate
-                defaultCalendar.add(Calendar.DATE, 1);
-                toDate = defaultCalendar.getTime();
+                toDate = fromDate;
             }
             else
             {

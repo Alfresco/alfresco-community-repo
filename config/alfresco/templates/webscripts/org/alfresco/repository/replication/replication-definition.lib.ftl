@@ -36,6 +36,7 @@
       "transferRemoteReport": <#if replicationDefinition.transferRemoteReport??>"${replicationDefinition.transferRemoteReport.nodeRef}"<#else>null</#if>,
       "enabled": ${replicationDefinition.enabled?string},
       "targetName": <#if replicationDefinition.targetName??>"${replicationDefinition.targetName}"<#else>null</#if>,
+      "targetExists": <#if replicationDefinition.targetName??>true<#else>false</#if>,
       "schedule": <#if replicationDefinition.scheduleEnabled>
           {
             "start": { 

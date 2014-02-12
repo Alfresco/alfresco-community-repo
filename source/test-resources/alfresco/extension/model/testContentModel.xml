@@ -47,9 +47,9 @@
                <title>Name</title>
                <type>d:text</type>
                <mandatory enforced="true">true</mandatory>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
                <constraints>
@@ -208,55 +208,55 @@
                <type>d:text</type>
             </property>
             <property name="cm:presenceProvider">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:presenceUsername">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:organization">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:jobtitle">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:location">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:persondescription">
-            	<type>d:content</type>
+                <type>d:content</type>
             </property>
             <property name="cm:telephone">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:mobile">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:companyaddress1">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:companyaddress2">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:companyaddress3">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:companypostcode">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:companytelephone">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:companyfax">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:companyemail">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:skype">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:instantmsg">
-            	<type>d:text</type>
+                <type>d:text</type>
             </property>
             <property name="cm:userStatus">
                <type>d:text</type>
@@ -403,7 +403,7 @@
                   <mandatory>false</mandatory>
                   <many>true</many>
                </target>
-			   <duplicate>false</duplicate>
+               <duplicate>false</duplicate>
             </child-association>
          </associations>
       </type>
@@ -546,18 +546,18 @@
             <property name="cm:title">
                <title>Title</title>
                <type>d:mltext</type>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
             <property name="cm:description">
                <title>Description</title>
                <type>d:mltext</type>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
@@ -572,9 +572,9 @@
                <type>d:datetime</type>
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
@@ -589,9 +589,9 @@
                <type>d:datetime</type>
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
@@ -605,9 +605,9 @@
                <title>Accessed</title>
                <type>d:datetime</type>
                <protected>true</protected>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
@@ -683,9 +683,9 @@
             <property name="cm:removeAfter">
                <title>Remove After</title>
                <type>d:datetime</type>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
@@ -848,18 +848,18 @@
             <property name="cm:from">
                <title>Effective From</title>
                <type>d:datetime</type>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
             <property name="cm:to">
                <title>Effective To</title>
                <type>d:datetime</type>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
@@ -991,6 +991,10 @@
                <protected>true</protected>
             </property>
             <property name="cm:lockType">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="cm:lockLifetime">
                <type>d:text</type>
                <protected>true</protected>
             </property>
@@ -1192,9 +1196,9 @@
             <property name="cm:sentdate">
                <title>Sent Date</title>
                <type>d:datetime</type>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
@@ -1245,12 +1249,12 @@
       </aspect>
              
       <aspect name="cm:preferences">
-	     	<title>Preferences</title>
-	     	<properties>
-	        	<property name="cm:preferenceValues">
-	           	<type>d:content</type>
-	        	</property>
-			</properties>
+             <title>Preferences</title>
+             <properties>
+                <property name="cm:preferenceValues">
+                   <type>d:content</type>
+                </property>
+            </properties>
          <associations>
             <child-association name="cm:preferenceImage">
                <source>
@@ -1272,18 +1276,18 @@
             <property name="cm:published">
                <title>Published</title>
                <type>d:datetime</type>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
             <property name="cm:updated">
                <title>Updated</title>
                <type>d:datetime</type>
-			   <index enabled="true">
-				  <atomic>true</atomic>
-				  <stored>false</stored> 
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
                   <tokenised>both</tokenised>
                </index>
             </property>
@@ -1361,6 +1365,17 @@
                </target>
             </child-association>
          </associations>
+      </aspect>
+      
+      <aspect name="cm:thumbnailModification">
+         <title>Thumbnail Modification Data</title>
+         <properties>
+             <property name="cm:lastThumbnailModification">
+                <title>Last thumbnail modifcation data</title>
+                <type>d:text</type>
+                <multiple>true</multiple>
+             </property>
+         </properties>
       </aspect>
       
       <!--       -->

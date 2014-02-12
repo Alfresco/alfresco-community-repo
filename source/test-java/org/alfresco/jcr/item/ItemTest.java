@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.test_category.LegacyCategory;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.experimental.categories.Category;
 
 
@@ -46,7 +47,7 @@ import org.junit.experimental.categories.Category;
  * 
  * @author janv
  */
-@Category(LegacyCategory.class)
+@Category(OwnJVMTestsCategory.class)
 public class ItemTest extends BaseJCRTest
 {
     protected Session session;

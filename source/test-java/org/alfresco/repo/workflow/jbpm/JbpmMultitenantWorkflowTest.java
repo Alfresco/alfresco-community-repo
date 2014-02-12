@@ -20,7 +20,6 @@
 package org.alfresco.repo.workflow.jbpm;
 
 import org.alfresco.repo.workflow.AbstractMultitenantWorkflowTest;
-import org.alfresco.test_category.LegacyCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.experimental.categories.Category;
 
@@ -29,7 +28,7 @@ import org.junit.experimental.categories.Category;
  * @since 4.0
  *
  */
-@Category({OwnJVMTestsCategory.class, LegacyCategory.class})
+@Category(OwnJVMTestsCategory.class)
 public class JbpmMultitenantWorkflowTest extends AbstractMultitenantWorkflowTest
 {
     @Override

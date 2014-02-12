@@ -146,10 +146,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- Dependency on Alfresco patched version of Rhino available in artfifact.alfresco.com -->
         <dependency>
-            <groupId>rhino</groupId>
-            <artifactId>js</artifactId>
-            <version>1.6R7-patched</version>
+            <groupId>org.mozilla</groupId>
+            <artifactId>rhino</artifactId>
+            <version>1.7R4-alfresco-patched</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -373,9 +374,9 @@
         </dependency>
         <!-- Use patched FreeMarker to fix ALF-10188 -->
         <dependency>
-            <groupId>org.freemarker</groupId>
+            <groupId>org.alfresco</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.18-alfresco-patched-2</version>
+            <version>2.3.20-alfresco-patched</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>

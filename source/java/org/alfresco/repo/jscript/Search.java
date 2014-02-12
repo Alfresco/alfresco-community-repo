@@ -533,6 +533,8 @@ public class Search extends BaseScopableProcessorExtension
     {
         Object[] results = null;
         
+        // convert values from JS to Java - may contain native JS object such as ConsString etc.
+        search = new ValueConverter().convertValueForJava(search);
         if (search instanceof Serializable)
         {
             Serializable obj = new ValueConverter().convertValueForRepo((Serializable)search);

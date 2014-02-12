@@ -21,6 +21,49 @@
          <title>Surf AMD Page</title>
          <parent>cm:content</parent>
       </type>
+
+      <!-- A Surf application type-->
+      <type name="surf:applicationType">
+         <title>Surf Application Type</title>
+         <parent>cm:folder</parent>
+         <properties>
+            <property name="surf:rootRage">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="surf:groupVisibility">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <multiple>false</multiple>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </type>
+
+      <!-- A Surf application instance -->
+      <type name="surf:applicationInstance">
+         <title>Surf Application Instance</title>
+         <parent>cm:folder</parent>
+         <associations>
+            <association name="surf:applicationType">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>surf:applicationType</class>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+         </associations>
+      </type>
       
    </types>
    

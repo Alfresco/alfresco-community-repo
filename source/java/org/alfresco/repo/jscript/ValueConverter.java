@@ -158,11 +158,11 @@ public class ValueConverter
         }
         else if (value instanceof ChildAssociation)
         {
-        	   value = ((ChildAssociation)value).getChildAssociationRef();
+            value = ((ChildAssociation)value).getChildAssociationRef();
         }
         else if (value instanceof Association)
         {
-        	   value = ((Association)value).getAssociationRef();
+            value = ((Association)value).getAssociationRef();
         }
         else if (value instanceof Wrapper)
         {
@@ -274,6 +274,12 @@ public class ValueConverter
                 list.add(convertValueForJava(Array.get(value, i)));
             }
             value = list;
+        }
+        else if (value instanceof CharSequence)
+        {
+            // Rhino has some interesting internal classes such as ConsString which cannot be cast to String
+            // but fortunately are instanceof CharSequence so we can toString() them.
+            value = value.toString();
         }
         return value;
     }

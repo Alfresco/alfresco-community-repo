@@ -39,7 +39,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.domain.permissions.AclDAO;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.archive.NodeArchiveService;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -57,6 +60,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
@@ -81,6 +85,8 @@ public class AuthorityServiceTest extends TestCase
     private NodeService nodeService;
     private AuthorityBridgeTableAsynchronouslyRefreshedCache authorityBridgeTableCache;
     private NodeArchiveService nodeArchiveService;
+    private PolicyComponent policyComponent;
+    private TransactionService transactionService;
     
     public AuthorityServiceTest()
     {
@@ -114,6 +120,8 @@ public class AuthorityServiceTest extends TestCase
         nodeService = (NodeService) ctx.getBean("nodeService");
         authorityBridgeTableCache = (AuthorityBridgeTableAsynchronouslyRefreshedCache) ctx.getBean("authorityBridgeTableCache");
         nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
+        policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
+        transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
         
         String defaultAdminUser = AuthenticationUtil.getAdminUserName();
         AuthenticationUtil.setFullyAuthenticatedUser(defaultAdminUser);
@@ -127,7 +135,6 @@ public class AuthorityServiceTest extends TestCase
         GRP_CNT = DEFAULT_GRP_CNT + (DEFAULT_SITE_GRP_CNT * SITE_CNT);
         ROOT_GRP_CNT = DEFAULT_GRP_CNT + (DEFAULT_SITE_ROOT_GRP_CNT * SITE_CNT);
         
-        TransactionService transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
         tx = transactionService.getUserTransaction();
         tx.begin();
         for (String user : getAllAuthorities(AuthorityType.USER))
@@ -193,6 +200,45 @@ public class AuthorityServiceTest extends TestCase
         super.tearDown();
     }
 
+    public void testMNT10533() throws Exception
+    {
+
+        String GROUP_NAME = "testMNT10533";
+        String GROUP_FULL_NAME = "GROUP_" + GROUP_NAME;
+
+        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), ContentModel.TYPE_AUTHORITY_CONTAINER, new JavaBehaviour(
+                new GroupBehaviour(), "beforeDeleteNode"));
+
+        UserTransaction transaction = null;
+
+        transaction = transactionService.getUserTransaction();
+        transaction.begin();
+        try
+        {
+            authorityService.createAuthority(AuthorityType.GROUP, GROUP_NAME);
+
+            assertNotNull(authorityService.getAuthorityNodeRef(GROUP_FULL_NAME));
+            authorityService.deleteAuthority(GROUP_FULL_NAME);
+            assertNull(authorityService.getAuthorityNodeRef(GROUP_FULL_NAME));
+        }
+        finally
+        {
+            transaction.commit();
+        }
+    }
+
+    public class GroupBehaviour implements NodeServicePolicies.BeforeDeleteNodePolicy
+    {
+
+        @Override
+        public void beforeDeleteNode(NodeRef nodeRef)
+        {
+            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_NAME);
+            // this call refills the authority cache 
+            System.out.println("removing " + authorityService.getAuthorityNodeRef(name));
+        }
+    }
+      
     public void testZones()
     {
         assertNull(pubAuthorityService.getAuthorityZones("GROUP_DEFAULT"));

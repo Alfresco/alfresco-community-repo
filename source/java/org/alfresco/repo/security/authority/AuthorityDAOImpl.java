@@ -424,11 +424,12 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
         zoneAuthorityCache.remove(new Pair<String, String>(currentUserDomain, null));
         removeParentsFromChildAuthorityCache(nodeRef, false);
+        
+        nodeService.deleteNode(nodeRef);
+        
         authorityLookupCache.remove(cacheKey(name));
         userAuthorityCache.clear();
         authorityBridgeTableCache.refresh();
-
-        nodeService.deleteNode(nodeRef);
     }
     
     public PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType type, String zoneName, String displayNameFilter, String sortBy, boolean sortAscending, PagingRequest pagingRequest)

@@ -154,15 +154,26 @@ public class RecordCategoryType extends    BaseBehaviourBean
        kind = BehaviourKind.CLASS,
        notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
-    public void onCreateNode(ChildAssociationRef childAssocRef)
+    public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("rma:recordCategory|alf:onCreateNode|this.onCreateNode()|TRANSATION_COMMIT");
         }
         
-        // setup record category permissions
-        filePlanPermissionService.setupRecordCategoryPermissions(childAssocRef.getChildRef());        
+        // execute behaviour code as system user
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // setup record category permissions
+                filePlanPermissionService.setupRecordCategoryPermissions(childAssocRef.getChildRef()); 
+
+                return null;
+            }
+        });
+               
     }
     
     /**

@@ -56,14 +56,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Search Behaviour class.
+ * Search behaviour class.
  *
- * Manages the collapse of data onto the supporting aspect on the record/record folder
+ * Manages the collapse of data onto the supporting aspect on the record/record folder.
  *
  * @author Roy Wetherall
+ * @since 1.0
  */
 public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 {
+    /** logger */
     private static Log logger = LogFactory.getLog(RecordsManagementSearchBehaviour.class);
 
     /** Policy component */
@@ -229,6 +231,9 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                     new JavaBehaviour(this, "frozenAspectUpdateProperties", NotificationFrequency.TRANSACTION_COMMIT));
     }
 
+    /**
+     * Disabled disposition schedule behaviour
+     */
     public void disableDispositionScheduleBehaviour()
     {
         for (JavaBehaviour jb : jbDispositionBehaviours)
@@ -237,6 +242,9 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
 
+    /**
+     * Enables disposition schedule behaviour
+     */
     public void enableDispositionScheduleBehaviour()
     {
         for (JavaBehaviour jb : jbDispositionBehaviours)
@@ -248,7 +256,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     /**
      * Ensures the search aspect for the given node is present, complete and correct.
      *
-     * @param recordOrFolder
+     * @param recordOrFolder    node reference to record or record folder
      */
     public void fixupSearchAspect(NodeRef recordOrFolder)
     {
@@ -277,9 +285,9 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     /**
      * Updates the disposition action properties
      *
-     * @param nodeRef
-     * @param before
-     * @param after
+     * @param nodeRef   node reference
+     * @param before    value of properties before
+     * @param after     value of properties after
      */
     public void dispositionActionPropertiesUpdate(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
     {
@@ -309,6 +317,11 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
 
+    /**
+     * Helper method to apply the search aspect
+     * 
+     * @param nodeRef   node reference
+     */
     private void applySearchAspect(NodeRef nodeRef)
     {
         onAddSearchAspect.disable();
@@ -328,6 +341,12 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
 
+    /**
+     * On add record aspect behaviour implementation
+     * 
+     * @param nodeRef           node reference
+     * @param aspectTypeQName   aspect type qname
+     */
     public void onAddRecordAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
@@ -346,6 +365,11 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         });
     }
 
+    /**
+     * On create record folder behaviour implmentation
+     * 
+     * @param childAssocRef child association reference
+     */
     public void recordFolderCreate(final ChildAssociationRef childAssocRef)
     {
         AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
@@ -365,6 +389,11 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         });
     }
 
+    /**
+     * Helper method to setup the disposition schedule properties
+     * 
+     * @param recordOrFolder    node reference of record or record folder
+     */
     private void setupDispositionScheduleProperties(NodeRef recordOrFolder)
     {
         DispositionSchedule ds = dispositionService.getDispositionSchedule(recordOrFolder);
@@ -385,6 +414,11 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
 
+    /**
+     * On disposition action create behaviour implementation
+     * 
+     * @param childAssocRef child association reference
+     */
     public void dispositionActionCreate(ChildAssociationRef childAssocRef)
     {
         NodeRef child = childAssocRef.getChildRef();
@@ -406,9 +440,10 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     }
 
     /**
+     * On update disposition action properties behaviour implementation
      *
-     * @param record
-     * @param dispositionAction
+     * @param record            record node reference
+     * @param dispositionAction disposition action
      */
     private void updateDispositionActionProperties(NodeRef record, NodeRef dispositionAction)
     {
@@ -453,6 +488,12 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
 
+    /**
+     * On update of event execution information behaviour\
+     * 
+     * @param childAssocRef child association reference
+     * @param isNewNode     true if a new node, false otherwise
+     */
     @SuppressWarnings("unchecked")
     public void eventExecutionUpdate(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
@@ -482,6 +523,12 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
 
+    /**
+     * On event execution delete behaviour implementation.
+     * 
+     * @param childAssocRef     child association reference
+     * @param isNodeArchived    true if node is archived on delete, false otherwise
+     */
     public void eventExecutionDelete(ChildAssociationRef childAssocRef, boolean isNodeArchived)
     {
         NodeRef dispositionActionNode = childAssocRef.getParentRef();
@@ -503,6 +550,12 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
 
+    /**
+     * Helper method to setup disposition action events.
+     * 
+     * @param nodeRef   node reference
+     * @param da        disposition action
+     */
     private void setupDispositionActionEvents(NodeRef nodeRef, DispositionAction da)
     {
         if (da != null)
@@ -528,6 +581,12 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
 
+    /**
+     * On add search aspect behaviour implementation.
+     * 
+     * @param nodeRef           node reference
+     * @param aspectTypeQName   aspect type qname
+     */
     public void rmSearchAspectAdd(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
@@ -546,32 +605,67 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         });
     }
 
-    public void vitalRecordDefintionAddAspect(NodeRef nodeRef, QName aspectTypeQName)
+    /**
+     * On add aspect vital record defintion behaviour implementation.
+     * 
+     * @param nodeRef           node reference
+     * @param aspectTypeQName   aspect tyep qname
+     */
+    public void vitalRecordDefintionAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
-        // Only care about record folders
-        if (recordFolderService.isRecordFolder(nodeRef) == true)
+        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
         {
-            updateVitalRecordDefinitionValues(nodeRef);
-        }
-    }
-
-    public void vitalRecordDefintionUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
-    {
-        // Only care about record folders
-        if (recordFolderService.isRecordFolder(nodeRef) == true)
-        {
-            Set<QName> props = new HashSet<QName>(1);
-            props.add(PROP_REVIEW_PERIOD);
-            Set<QName> changed = determineChangedProps(before, after);
-            changed.retainAll(props);
-            if (changed.isEmpty() == false)
+            @Override
+            public Void doWork() throws Exception
             {
-                updateVitalRecordDefinitionValues(nodeRef);
+                // Only care about record folders
+                if (nodeService.exists(nodeRef) && recordFolderService.isRecordFolder(nodeRef))
+                {
+                    updateVitalRecordDefinitionValues(nodeRef);
+                }
+                
+                return null;
             }
-
-        }
+        });
     }
 
+    /**
+     * On update vital record definition properties behaviour implementation.
+     * 
+     * @param nodeRef   node reference
+     * @param before    before properties
+     * @param after     after properties
+     */
+    public void vitalRecordDefintionUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
+    {
+        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // Only care about record folders
+                if (nodeService.exists(nodeRef) && recordFolderService.isRecordFolder(nodeRef) == true)
+                {
+                    Set<QName> props = new HashSet<QName>(1);
+                    props.add(PROP_REVIEW_PERIOD);
+                    Set<QName> changed = determineChangedProps(before, after);
+                    changed.retainAll(props);
+                    if (changed.isEmpty() == false)
+                    {
+                        updateVitalRecordDefinitionValues(nodeRef);
+                    }
+                }
+                
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Helper method to update the vital record defintion values
+     * 
+     * @param nodeRef   node reference
+     */
     private void updateVitalRecordDefinitionValues(NodeRef nodeRef)
     {
         // ensure the folder itself reflects the correct details
@@ -589,6 +683,11 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
 
+    /**
+     * Helper method to set vital record definition details.
+     * 
+     * @param nodeRef   node reference
+     */
     private void setVitalRecordDefintionDetails(NodeRef nodeRef)
     {
         VitalRecordDefinition vrd = vitalRecordService.getVitalRecordDefinition(nodeRef);
@@ -615,6 +714,12 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
 
+    /**
+     * On remove frozen aspect aspect behaviour implementation
+     * 
+     * @param nodeRef           node reference
+     * @param aspectTypeQName   aspect type qname
+     */
     public void onRemoveFrozenAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
         if (nodeService.exists(nodeRef) == true &&
@@ -624,6 +729,13 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
 
+    /**
+     * Frozen aspect properties update behavour implementation.
+     *  
+     * @param nodeRef   node reference
+     * @param before    before properties
+     * @param after     after proeprties
+     */
     public void frozenAspectUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
     {
         AuthenticationUtil.RunAsWork<Void> work = new AuthenticationUtil.RunAsWork<Void>()
@@ -658,9 +770,9 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     /**
      * Updates the disposition schedule properties
      *
-     * @param nodeRef
-     * @param before
-     * @param after
+     * @param nodeRef   node reference
+     * @param before    properties before
+     * @param after     properties after
      */
     public void dispositionSchedulePropertiesUpdate(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
@@ -692,6 +804,12 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
 
+    /**
+     * Helper method to set disposition schedule properties
+     * 
+     * @param recordOrFolder    node reference
+     * @param schedule          dispostion schedule
+     */
     private void setDispositionScheduleProperties(NodeRef recordOrFolder, DispositionSchedule schedule)
     {
         if (schedule != null)
@@ -737,7 +855,13 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
         return result;
     }
-
+    
+    /**
+     * Helper method to get the record folders contained in the provided record category.
+     * 
+     * @param recordCategoryNode    record category node reference
+     * @return  List<NodeRef>       contained record folders
+     */
     private List<NodeRef> getRecordFolders(NodeRef recordCategoryNode)
     {
         List<NodeRef> results = new ArrayList<NodeRef>(8);

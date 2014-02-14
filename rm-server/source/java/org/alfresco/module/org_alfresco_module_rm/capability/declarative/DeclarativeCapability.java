@@ -33,23 +33,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Declarative capability implementation.
  * 
  * @author Roy Wetherall
  */
-public class DeclarativeCapability extends AbstractCapability 
-                                   implements ApplicationContextAware
+public class DeclarativeCapability extends AbstractCapability
 {
     /** Logger */
     protected static Log logger = LogFactory.getLog(DeclarativeCapability.class);
-    
-    /** Application Context */
-    protected ApplicationContext applicationContext;
     
     /** Required permissions */
     protected List<String> permissions;
@@ -65,12 +58,6 @@ public class DeclarativeCapability extends AbstractCapability
     
     /** Indicates whether to return an undetermined result */
     protected boolean isUndetermined = false;
-    
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
     
     /**
      * @param permissions   permissions
@@ -170,7 +157,7 @@ public class DeclarativeCapability extends AbstractCapability
     protected boolean checkPermissionsImpl(NodeRef nodeRef, String ... permissions)
     {
         boolean result = true;        
-        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
+        NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
         
         for (String permission : permissions)
         {
@@ -261,7 +248,7 @@ public class DeclarativeCapability extends AbstractCapability
     {
         boolean result = false;
         
-        FilePlanComponentKind actualKind = filePlanService.getFilePlanComponentKind(nodeRef);
+        FilePlanComponentKind actualKind = getFilePlanService().getFilePlanComponentKind(nodeRef);
         
         if (actualKind != null)        
         {
@@ -298,7 +285,7 @@ public class DeclarativeCapability extends AbstractCapability
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
         
         // Check we are dealing with a file plan component
-        if (filePlanService.isFilePlanComponent(nodeRef) == true)
+        if (getFilePlanService().isFilePlanComponent(nodeRef) == true)
         {
             // Check the kind of the object, the permissions and the conditions
             if (checkKinds(nodeRef) == true && checkPermissions(nodeRef) == true && checkConditions(nodeRef) == true)

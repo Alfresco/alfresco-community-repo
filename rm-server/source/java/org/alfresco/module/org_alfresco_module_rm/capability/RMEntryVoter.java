@@ -59,7 +59,7 @@ public class RMEntryVoter extends RMSecurityCommon
 
     /** Policy map */
     private HashMap<String, Policy> policies = new HashMap<String, Policy>();
-
+  
     /**
      * @param capabilityService     capability service
      */

@@ -72,9 +72,6 @@ import org.springframework.context.ApplicationContext;
  */
 public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 {
-    /** Collab site id */
-    protected static final String COLLAB_SITE_ID = "myCollabSite";
-
 	/** Common test utils */
 	protected CommonRMTestUtils utils;
 
@@ -123,6 +120,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected DispositionSchedule dispositionSchedule;
     protected NodeRef recordFolder;
     protected NodeRef recordFolder2;
+    protected String collabSiteId;
 
     /**
      * Indicates whether the test collaboration site should be created
@@ -222,7 +220,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         // Delete the collaboration site (if required)
         if (isCollaborationSiteTest() == true)
         {
-            siteService.deleteSite(COLLAB_SITE_ID);
+            siteService.deleteSite(collabSiteId);
         }
     }
 
@@ -328,9 +326,10 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected void setupCollaborationSiteTestDataImpl()
     {
         // create collaboration site
-        siteService.createSite("preset", COLLAB_SITE_ID, "title", "description", SiteVisibility.PRIVATE);
+        collabSiteId = GUID.generate();
+        siteService.createSite("preset", collabSiteId, "title", "description", SiteVisibility.PRIVATE);
         NodeRef documentLibrary = SiteServiceImpl.getSiteContainer(
-                COLLAB_SITE_ID,
+                collabSiteId,
                 SiteService.DOCUMENT_LIBRARY,
                 true,
                 siteService,

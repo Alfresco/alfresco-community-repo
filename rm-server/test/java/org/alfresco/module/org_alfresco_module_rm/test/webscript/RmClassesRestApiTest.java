@@ -88,7 +88,7 @@ public class RmClassesRestApiTest extends BaseRMWebScriptTestCase
         // Get the list of dm aspects and check them. It also contains rm related aspects.
 
         // Format url and send request
-        url = String.format(RM_ASPECTS_URL, "aspect", COLLAB_SITE_ID);
+        url = String.format(RM_ASPECTS_URL, "aspect", collabSiteId);
         response = sendRequest(new GetRequest(url), Status.STATUS_OK);
 
         // Check the content from the response

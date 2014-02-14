@@ -39,19 +39,28 @@ import org.alfresco.service.namespace.QName;
  */
 public class CreateCapability extends DeclarativeCapability
 {
+    /** record service */
     private RecordService recordService;
+    
+    /** record folder service */
     private RecordFolderService recordFolderService;
-
+    
+    /**
+     * @param recordService record service
+     */
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
     }
 
+    /**
+     * @param recordFolderService   record folder service
+     */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
     }
-
+    
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -62,6 +71,7 @@ public class CreateCapability extends DeclarativeCapability
     }
 
     /**
+     * Evaluate capability.
      *
      * @param destination
      * @param linkee
@@ -79,7 +89,7 @@ public class CreateCapability extends DeclarativeCapability
                 return AccessDecisionVoter.ACCESS_DENIED;
             }
         }
-        if (filePlanService.isFilePlanComponent(destination))
+        if (getFilePlanService().isFilePlanComponent(destination))
         {
             if ((assocType == null) || assocType.equals(ContentModel.ASSOC_CONTAINS) == false)
             {
@@ -129,7 +139,7 @@ public class CreateCapability extends DeclarativeCapability
             {
                 if (recordFolderService.isRecordFolder(destination))
                 {
-                    if (permissionService.hasPermission(filePlanService.getFilePlan(destination), RMPermissionModel.DECLARE_RECORDS_IN_CLOSED_FOLDERS) == AccessStatus.ALLOWED)
+                    if (permissionService.hasPermission(getFilePlanService().getFilePlan(destination), RMPermissionModel.DECLARE_RECORDS_IN_CLOSED_FOLDERS) == AccessStatus.ALLOWED)
                     {
                         return AccessDecisionVoter.ACCESS_GRANTED;
                     }
@@ -142,7 +152,7 @@ public class CreateCapability extends DeclarativeCapability
             {
                 if (recordFolderService.isRecordFolder(destination))
                 {
-                    if (permissionService.hasPermission(filePlanService.getFilePlan(destination), RMPermissionModel.CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS) == AccessStatus.ALLOWED)
+                    if (permissionService.hasPermission(getFilePlanService().getFilePlan(destination), RMPermissionModel.CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS) == AccessStatus.ALLOWED)
                     {
                         return AccessDecisionVoter.ACCESS_GRANTED;
                     }

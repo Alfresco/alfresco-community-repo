@@ -103,8 +103,8 @@ public class DeclarativeCompositeCapability extends DeclarativeCapability
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
         
         // Check we are dealing with a file plan component
-        if (filePlanService.isFilePlanComponent(source) == true && 
-            filePlanService.isFilePlanComponent(target) == true)
+        if (getFilePlanService().isFilePlanComponent(source) == true && 
+            getFilePlanService().isFilePlanComponent(target) == true)
         {
             // Check the kind of the object, the permissions and the conditions
             if (checkKinds(source) == true && checkPermissions(source) == true && checkConditions(source) == true)

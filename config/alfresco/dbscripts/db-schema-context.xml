@@ -130,6 +130,7 @@
                 <ref bean="patch.db-V4.1-rename-constraint-activiti" />
                 <ref bean="patch.db-V4.2-add-activti-index-historic-activity" />
                 <ref bean="patch.db-V4.2-upgrade-to-activiti-5.11" />
+                <ref bean="patch.db-V4.2-remove-old-index-act" />
                 <ref bean="patch.db-V4.2-upgrade-to-activiti-5.13" />
             </list>
         </property>

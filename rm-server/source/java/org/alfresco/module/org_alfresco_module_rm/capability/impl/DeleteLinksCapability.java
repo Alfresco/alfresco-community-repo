@@ -45,8 +45,8 @@ public class DeleteLinksCapability extends DeclarativeCapability
      */
     public int evaluate(NodeRef source, NodeRef target)
     {
-        if (filePlanService.isFilePlanComponent(source) == true && 
-        	filePlanService.isFilePlanComponent(target) == true)
+        if (getFilePlanService().isFilePlanComponent(source) == true && 
+        		getFilePlanService().isFilePlanComponent(target) == true)
         {            
             if (checkConditions(source) == true && checkConditions(target) == true)
             {

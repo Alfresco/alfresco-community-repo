@@ -39,8 +39,8 @@ public class CapabilityPolicy extends AbstractBasePolicy
             Class[] params, 
             ConfigAttributeDefinition cad)
     {
-        NodeRef assignee = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
-        return capabilityService.getCapability(RMPermissionModel.MANAGE_ACCESS_CONTROLS).evaluate(assignee);
+        NodeRef testNodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
+        return capabilityService.getCapability(RMPermissionModel.MANAGE_ACCESS_CONTROLS).evaluate(testNodeRef);
     }
 
 }

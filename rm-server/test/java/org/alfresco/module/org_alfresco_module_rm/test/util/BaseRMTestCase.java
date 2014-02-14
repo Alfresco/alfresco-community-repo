@@ -102,9 +102,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected QName ASPECT_CUSTOM_ASPECT = QName.createQName(URI, "customAspect");
     protected QName ASPECT_RECORD_META_DATA = QName.createQName(URI, "recordMetaData");
 
-    /** site id's */
-    protected static final String COLLABORATION_SITE_ID = "collab-site-id";
-
     /** Common test utils */
     protected CommonRMTestUtils utils;
 
@@ -161,6 +158,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected DispositionSchedule dispositionSchedule;
     protected NodeRef rmFolder;
     protected NodeRef unfiledContainer;
+    protected String collabSiteId;
 
     /** multi-hierarchy test data
      *
@@ -452,9 +450,9 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             }
 
             // delete the collaboration site (if required)
-            if (isCollaborationSiteTest() == true && siteService.getSite(COLLABORATION_SITE_ID) != null)
+            if (isCollaborationSiteTest() == true && siteService.getSite(collabSiteId) != null)
             {
-                siteService.deleteSite(COLLABORATION_SITE_ID);
+                siteService.deleteSite(collabSiteId);
             }
         }
         finally
@@ -739,9 +737,10 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected void setupCollaborationSiteTestDataImpl()
     {
         // create collaboration site
-        collaborationSite = siteService.createSite("preset", COLLABORATION_SITE_ID, "title", "description", SiteVisibility.PRIVATE);
+        collabSiteId = GUID.generate();
+        collaborationSite = siteService.createSite("preset", collabSiteId, "title", "description", SiteVisibility.PRIVATE);
         documentLibrary = SiteServiceImpl.getSiteContainer(
-                COLLABORATION_SITE_ID,
+                collabSiteId,
                 SiteService.DOCUMENT_LIBRARY,
                 true,
                 siteService,
@@ -756,11 +755,11 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
         dmConsumer = GUID.generate();
         dmConsumerNodeRef = createPerson(dmConsumer);
-        siteService.setMembership(COLLABORATION_SITE_ID, dmConsumer, SiteModel.SITE_CONSUMER);
+        siteService.setMembership(collabSiteId, dmConsumer, SiteModel.SITE_CONSUMER);
 
         dmCollaborator = GUID.generate();
         dmCollaboratorNodeRef = createPerson(dmCollaborator);
-        siteService.setMembership(COLLABORATION_SITE_ID, dmCollaborator, SiteModel.SITE_COLLABORATOR);
+        siteService.setMembership(collabSiteId, dmCollaborator, SiteModel.SITE_COLLABORATOR);
     }
 
     /**

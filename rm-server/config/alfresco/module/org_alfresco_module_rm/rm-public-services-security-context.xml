@@ -47,7 +47,6 @@
     	<property name="nodeService" ref="nodeService"/>
     	<property name="permissionService" ref="permissionService"/>
     	<property name="caveatConfigComponent" ref="caveatConfigComponent"/>
-    	<property name="filePlanService" ref="filePlanService"/>
     </bean>
 
     <!-- ====== -->

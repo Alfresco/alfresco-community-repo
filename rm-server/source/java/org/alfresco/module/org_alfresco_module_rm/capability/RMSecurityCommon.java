@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.capability;
 
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -36,6 +35,9 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 
 /**
@@ -46,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  * @since 2.0
  */
-public class RMSecurityCommon
+public class RMSecurityCommon implements ApplicationContextAware
 {
     /** No set value */
     protected int NOSET_VALUE = -100;
@@ -58,8 +60,20 @@ public class RMSecurityCommon
     protected NodeService nodeService; //This is the internal NodeService -- no permission checks
     protected PermissionService permissionService;
     protected RMCaveatConfigComponent caveatConfigComponent;
-    protected FilePlanService filePlanService;
+    private FilePlanService filePlanService;
 
+    /** Application context */
+    protected ApplicationContext applicationContext;
+    
+    /**
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException 
+    {
+    	this.applicationContext = applicationContext;
+    }
+    
     /**
      * @param nodeService   node service
      */
@@ -85,12 +99,16 @@ public class RMSecurityCommon
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @return	FilePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService)
+    protected FilePlanService getFilePlanService() 
     {
-        this.filePlanService = filePlanService;
-    }
+    	if (filePlanService == null)
+    	{
+    		filePlanService = (FilePlanService)applicationContext.getBean("filePlanService");
+    	}
+		return filePlanService;
+	}
 
     /**
      * Sets a value into the transaction cache
@@ -195,17 +213,8 @@ public class RMSecurityCommon
         }
 
         // Get the file plan for the node
-        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
+        NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
 
-        // Admin role
-        //if (permissionService.hasPermission(filePlan, RMPermissionModel.ROLE_ADMINISTRATOR) == AccessStatus.ALLOWED)
-        //{
-        //    if (logger.isDebugEnabled())
-        //    {
-        //        logger.debug("\t\tAdmin user, access granted.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
-        //    }
-        //    return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_GRANTED);
-       // }
 
         if (permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS) == AccessStatus.DENIED)
         {
@@ -242,16 +251,11 @@ public class RMSecurityCommon
         NodeRef testNodeRef = null;
         if (position < 0)
         {
-        	testNodeRef = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-        	if (testNodeRef == null)
-        	{
-        		throw new AlfrescoRuntimeException("Unable to find default file plan node.");
-        	}
-
             if (logger.isDebugEnabled())
             {
-            	logger.debug("\tPermission test against the file plan node " + nodeService.getPath(testNodeRef));
+            	logger.debug("\tNothing to test permission against.");
             }
+            testNodeRef = null;
         }
         else if (StoreRef.class.isAssignableFrom(params[position]))
         {

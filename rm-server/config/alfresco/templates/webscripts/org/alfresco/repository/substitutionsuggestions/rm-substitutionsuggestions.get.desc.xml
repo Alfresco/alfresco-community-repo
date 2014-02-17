@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Get substitution suggestions for RM</shortname>
   <description>Gets a collection of substitution suggestions for a text fragment for RM.</description>
-  <url>/api/rm/rm-substitutionsuggestions?fragment={fragment?}</url>
+  <url>/api/rm/rm-substitutionsuggestions?fragment={fragment}&amp;path={path?}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction allow="readonly">required</transaction>

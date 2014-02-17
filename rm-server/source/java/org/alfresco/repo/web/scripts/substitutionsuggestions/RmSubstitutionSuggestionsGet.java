@@ -23,7 +23,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.repo.action.parameter.ParameterProcessorComponent;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.namespace.QName;
+import org.apache.cxf.common.util.StringUtils;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -43,14 +54,59 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
 
     private final static String SUBSTITUTIONS_MODEL_KEY = "substitutions";
 
-    private ParameterProcessorComponent parameterProcessorComponent;
+    private final static String RECORD_FOLDER_TYPE = "recordFolder";
+    private final static String RECORD_CATEGORY_TYPE = "recordCategory";
 
+    private final static String CREATE_CAPABILITY = "Create";
+    private final static String VIEW_CAPABILITY = "ViewRecords";
+
+    private final static int PATH_SUBSTITUTION_MINIMUM_FRAGMENT_LENGTH = 0;
+    private final static int PATH_SUBSTITUTION_MAXIMUM_NUMBER_RESULTS = 10;
+
+    private ParameterProcessorComponent parameterProcessorComponent;
+    private NodeService nodeService;
+    private FilePlanService filePlanService;
+    private CapabilityService capabilityService;
+
+    /**
+     * Set the parameter processor component bean
+     *
+     * @param parameterProcessorComponent
+     */
     public void setParameterProcessorComponent(ParameterProcessorComponent parameterProcessorComponent)
     {
         this.parameterProcessorComponent = parameterProcessorComponent;
     }
 
     /**
+     * Set the parameter processor component bean
+     *
+     * @param parameterProcessorComponent
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
+
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
+    }
+
+    /**
+     * Return a list of substitutions for the given fragment.
+     *
      * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
      *      org.springframework.extensions.webscripts.Status,
      *      org.springframework.extensions.webscripts.Cache)
@@ -63,7 +119,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
 
         List<String> substitutionSuggestions = new ArrayList<String>();
 
-        substitutionSuggestions.addAll(getSubPathSuggestions(path, fragment));
+        substitutionSuggestions.addAll(getSubPathSuggestions(req, path, fragment));
         substitutionSuggestions.addAll(this.parameterProcessorComponent.getSubstitutionSuggestions(fragment));
 
         Map<String, Object> model = new HashMap<String, Object>();
@@ -72,12 +128,148 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
         return model;
     }
 
-    private List<String> getSubPathSuggestions(final String path, final String fragment) {
+    /**
+     * Return a list of path suggestions for the path fragment supplied.
+     *
+     * @param path
+     * @param fragment
+     * @return
+     */
+    private List<String> getSubPathSuggestions(WebScriptRequest req, final String path, final String fragment) {
         List<String> pathSuggestions = new ArrayList<String>();
-        if(path != null)
+        if((path != null) && path.startsWith("/") && (fragment != null) && (fragment.length() >= PATH_SUBSTITUTION_MINIMUM_FRAGMENT_LENGTH))
         {
-            // TODO - populate path suggestions
+            String[] pathFragments = path.split("/");
+
+            NodeRef currentNode = getFilePlan(req);
+            for(String pathFragment : pathFragments)
+            {
+                // ignore empty elements of the path produced by split
+                if(!pathFragment.isEmpty())
+                {
+                    boolean foundThisPathFragment = false;
+                    List<ChildAssociationRef> children = nodeService.getChildAssocs(currentNode);
+                    for (ChildAssociationRef childAssoc : children) {
+                        NodeRef childNodeRef = childAssoc.getChildRef();
+                        String fileName = (String) nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
+                        if(fileName.equals(pathFragment) && isNodeRefAppropriateForPathSuggestion(childNodeRef))
+                        {
+                            foundThisPathFragment = true;
+                            currentNode = childNodeRef;
+                            break;
+                        }
+                    }
+                    if(!foundThisPathFragment)
+                    {
+                        currentNode = null;
+                        break;
+                    }
+                }
+            }
+
+            if(currentNode != null)
+            {
+                String lowerCaseFragment = fragment.toLowerCase();
+                List<ChildAssociationRef> children = nodeService.getChildAssocs(currentNode);
+                for (ChildAssociationRef childAssoc : children) {
+                    NodeRef childNodeRef = childAssoc.getChildRef();
+                    String fileName = (String) nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
+                    if((fragment.isEmpty() || fileName.toLowerCase().startsWith(lowerCaseFragment)) && isNodeRefAppropriateForPathSuggestion(childNodeRef))
+                    {
+                        pathSuggestions.add("/" + fileName);
+                        if(pathSuggestions.size() >= PATH_SUBSTITUTION_MAXIMUM_NUMBER_RESULTS)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
         }
         return pathSuggestions;
+    }
+
+    /**
+     * Utility method to get the file plan from the passed parameters.
+     *
+     * @param req
+     * @return
+     */
+    protected NodeRef getFilePlan(WebScriptRequest req)
+    {
+        NodeRef filePlan = null;
+
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        String siteId = templateVars.get("siteid");
+        if (siteId != null)
+        {
+            filePlan = filePlanService.getFilePlanBySiteId(siteId);
+        }
+
+        if (filePlan == null)
+        {
+            String storeType = templateVars.get("store_type");
+            String storeId = templateVars.get("store_id");
+            String id = templateVars.get("id");
+
+            if (StringUtils.isEmpty(storeType) == false &&
+                StringUtils.isEmpty(storeId) == false &&
+                StringUtils.isEmpty(id) == false)
+            {
+                StoreRef storeRef = new StoreRef(storeType, storeId);
+                NodeRef nodeRef = new NodeRef(storeRef, id);
+                if (filePlanService.isFilePlan(nodeRef) == true)
+                {
+                    filePlan = nodeRef;
+                }
+            }
+        }
+
+        if (filePlan == null)
+        {
+            // Assume we are in a legacy repository and we will grab the default file plan
+            filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+        }
+
+        return filePlan;
+    }
+
+    /**
+     * Identifies record category and record folder types of nodeRef
+     *
+     * @param nodeRef  Instance of NodeRef to be tested
+     * @return True if the passed NodeRef instance is a record category or record folder
+     */
+    private boolean isNodeRefAppropriateForPathSuggestion(NodeRef nodeRef)
+    {
+        // check node type
+        QName type = nodeService.getType(nodeRef);
+        String typeLocalName = type.getLocalName();
+        boolean isCorrectType = (RECORD_FOLDER_TYPE.equals(typeLocalName) || RECORD_CATEGORY_TYPE.equals(typeLocalName));
+
+        // check permissions
+        boolean canView = false;
+        if(isCorrectType)
+        {
+            Capability createCapability = capabilityService.getCapability(CREATE_CAPABILITY);
+            Capability viewCapability = capabilityService.getCapability(VIEW_CAPABILITY);
+            if ((createCapability != null) && (viewCapability != null))
+            {
+                List<String> requiredCapabilities = new ArrayList<String>();
+                requiredCapabilities.add(CREATE_CAPABILITY);
+                requiredCapabilities.add(VIEW_CAPABILITY);
+                Map<Capability, AccessStatus> map = capabilityService.getCapabilitiesAccessState(nodeRef, requiredCapabilities);
+                if (map.containsKey(createCapability) && map.containsKey(viewCapability))
+                {
+                    AccessStatus createAccessStatus = map.get(createCapability);
+                    AccessStatus viewAccessStatus = map.get(viewCapability);
+                    if (createAccessStatus.equals(AccessStatus.ALLOWED) && viewAccessStatus.equals(AccessStatus.ALLOWED))
+                    {
+                        canView = true;
+                    }
+                }
+            }
+        }
+
+        return isCorrectType && canView;
     }
 }

@@ -571,6 +571,9 @@
          class="org.alfresco.repo.web.scripts.substitutionsuggestions.RmSubstitutionSuggestionsGet"
            parent="webscript">
       <property name="parameterProcessorComponent" ref="parameterProcessorComponent"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="filePlanService" ref="FilePlanService" />
+      <property name="capabilityService" ref="CapabilityService" />
    </bean>
 
 </beans>

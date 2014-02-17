@@ -176,8 +176,10 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(rmFolder, CompleteEventAction.NAME, params);
+                
                 rmActionService.executeRecordsManagementAction(rmFolder, CutOffAction.NAME);
                 rmActionService.executeRecordsManagementAction(rmFolder, DestroyAction.NAME);
+                
                 Map<String, Serializable> fileReportParams = new HashMap<String, Serializable>(2);
                 fileReportParams.put(DestructionReportAction.REPORT_TYPE, "rmr:destructionReport");
                 fileReportParams.put(DestructionReportAction.DESTINATION, filePlan.toString());

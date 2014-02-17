@@ -23,11 +23,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourBean;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
@@ -38,20 +42,14 @@ import org.alfresco.util.ParameterCheck;
  * @author Roy Wetherall
  * @since 2.0
  */
-public class VitalRecordServiceImpl implements VitalRecordService,
-                                               RecordsManagementModel
+@BehaviourBean
+public class VitalRecordServiceImpl extends ServiceBaseImpl
+                                    implements VitalRecordService,
+                                               RecordsManagementModel,
+                                               RecordsManagementPolicies.OnFileRecord
 {
-    /** Services */
-    private NodeService nodeService;
+    /** file plan service */
     private FilePlanService filePlanService;
-
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
 
     /**
      * @param filePlanService	file plan service
@@ -60,6 +58,48 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     {
 		this.filePlanService = filePlanService;
 	}
+
+    /**
+     * Behavior to initialize vital record.
+     * 
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFileRecord#onFileRecord(org.alfresco.service.cmr.repository.NodeRef)
+     * @since 2.2
+     */
+    @Override
+    @Behaviour(kind=BehaviourKind.CLASS, type="rma:record")
+    public void onFileRecord(NodeRef nodeRef)
+    {
+       // Calculate the review schedule
+       VitalRecordDefinition viDef = getVitalRecordDefinition(nodeRef);
+       if (viDef != null && viDef.isEnabled() == true)
+       {
+          Date reviewAsOf = viDef.getNextReviewDate();
+          if (reviewAsOf != null)
+          {
+              Map<QName, Serializable> reviewProps = new HashMap<QName, Serializable>(1);
+              reviewProps.put(RecordsManagementModel.PROP_REVIEW_AS_OF, reviewAsOf);
+    
+              if (nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD) == false)
+              {
+                  nodeService.addAspect(nodeRef, RecordsManagementModel.ASPECT_VITAL_RECORD, reviewProps);
+              }
+              else
+              {
+                  Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+                  props.putAll(reviewProps);
+                  nodeService.setProperties(nodeRef, props);
+              }
+          }
+       }
+       else
+       {
+          // if we are re-filling then remove the vital aspect if it is not longer a vital record
+          if (nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD) == true)
+          {
+              nodeService.removeAspect(nodeRef, ASPECT_VITAL_RECORD);
+          }
+       }
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService#setupVitalRecordDefinition(org.alfresco.service.cmr.repository.NodeRef)
@@ -92,43 +132,6 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                                             PROP_REVIEW_PERIOD,
                                             nodeService.getProperty(parentRef, PROP_REVIEW_PERIOD));
                 }
-            }
-        }
-    }
-
-    /**
-     * @see VitalRecordService#initialiseVitalRecord(NodeRef)
-     */
-    public void initialiseVitalRecord(NodeRef nodeRef)
-    {
-        // Calculate the review schedule
-        VitalRecordDefinition viDef = getVitalRecordDefinition(nodeRef);
-        if (viDef != null && viDef.isEnabled() == true)
-        {
-            Date reviewAsOf = viDef.getNextReviewDate();
-            if (reviewAsOf != null)
-            {
-                Map<QName, Serializable> reviewProps = new HashMap<QName, Serializable>(1);
-                reviewProps.put(RecordsManagementModel.PROP_REVIEW_AS_OF, reviewAsOf);
-
-                if (nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD) == false)
-                {
-                    nodeService.addAspect(nodeRef, RecordsManagementModel.ASPECT_VITAL_RECORD, reviewProps);
-                }
-                else
-                {
-                    Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-                    props.putAll(reviewProps);
-                    nodeService.setProperties(nodeRef, props);
-                }
-            }
-        }
-        else
-        {
-            // if we are re-filling then remove the vital aspect if it is not longer a vital record
-            if (nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD) == true)
-            {
-                nodeService.removeAspect(nodeRef, ASPECT_VITAL_RECORD);
             }
         }
     }

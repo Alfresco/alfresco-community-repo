@@ -35,6 +35,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagement
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementQueryDAOImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementSearchServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.ReportServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.ServiceBaseImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.VitalRecordServiceImplTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -49,6 +50,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses(
 {
+    ServiceBaseImplTest.class,
     ExtendedSecurityServiceImplTest.class,
     ModelSecurityServiceImplTest.class,
     RecordsManagementActionServiceImplTest.class,

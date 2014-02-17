@@ -192,7 +192,7 @@
    
    <!--  Test service -->
    
-   <bean id="testService" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestServiceImpl"/>
+   <bean id="testService" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestServiceImpl" parent="baseService" />
    
    <bean id="TestService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">

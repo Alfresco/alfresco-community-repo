@@ -22,6 +22,8 @@ import org.alfresco.module.org_alfresco_module_rm.capability.declarative.Abstrac
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
+ * Cut off capability condition.
+ * 
  * @author Roy Wetherall
  */
 public class CutoffCapabilityCondition extends AbstractCapabilityCondition
@@ -32,6 +34,7 @@ public class CutoffCapabilityCondition extends AbstractCapabilityCondition
     @Override
     public boolean evaluate(NodeRef nodeRef)
     {
+        // determine whether the item is already cutt off
         return dispositionService.isDisposableItemCutoff(nodeRef);
     }
 

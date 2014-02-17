@@ -27,15 +27,23 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourBean;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -53,18 +61,14 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Roy Wetherall
  */
-public class DispositionServiceImpl implements
-                                        DispositionService,
-                                        RecordsManagementModel
+@BehaviourBean
+public class DispositionServiceImpl extends    ServiceBaseImpl
+                                    implements DispositionService,
+                                               RecordsManagementModel,
+                                               RecordsManagementPolicies.OnFileRecord
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(DispositionServiceImpl.class);
-
-    /** Node service */
-    private NodeService nodeService;
-
-    /** Dictionary service */
-    private DictionaryService dictionaryService;
 
     /** Behaviour filter */
     private BehaviourFilter behaviourFilter;
@@ -160,6 +164,26 @@ public class DispositionServiceImpl implements
     {
         this.dispositionSelectionStrategy = dispositionSelectionStrategy;
     }
+    
+    /**
+     * Behavior to initialize the disposition schedule of a newly filed record.
+     * 
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFileRecord#onFileRecord(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    @Behaviour(kind=BehaviourKind.CLASS, type="rma:record")
+    public void onFileRecord(NodeRef nodeRef) 
+    {
+        // initialise disposition details
+        if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == false)
+        {
+            DispositionSchedule di = getDispositionSchedule(nodeRef);
+            if (di != null && di.isRecordLevelDisposition() == true)
+            {
+                nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
+            }
+        }
+    };
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#refreshDispositionAction(NodeRef)
@@ -233,7 +257,7 @@ public class DispositionServiceImpl implements
     {
         DispositionSchedule di = null;
         NodeRef diNodeRef = null;
-        if (recordService.isRecord(nodeRef) == true)
+        if (isRecord(nodeRef) == true)
         {
             // Get the record folders for the record
             List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);
@@ -769,7 +793,9 @@ public class DispositionServiceImpl implements
 
     /** ========= Disposition Action History Methods ========= */
 
-
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getCompletedDispositionActions(org.alfresco.service.cmr.repository.NodeRef)
+     */
     public List<DispositionAction> getCompletedDispositionActions(NodeRef nodeRef)
     {
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_ACTION_HISTORY, RegexQNamePattern.MATCH_ALL);
@@ -782,6 +808,9 @@ public class DispositionServiceImpl implements
         return result;
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getLastCompletedDispostionAction(org.alfresco.service.cmr.repository.NodeRef)
+     */
     public DispositionAction getLastCompletedDispostionAction(NodeRef nodeRef)
     {
        DispositionAction result = null;
@@ -808,124 +837,138 @@ public class DispositionServiceImpl implements
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#updateNextDispositionAction(NodeRef)
      */
     @Override
-    public void updateNextDispositionAction(NodeRef nodeRef)
+    public void updateNextDispositionAction(final NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        // Get this disposition instructions for the node
-        DispositionSchedule di = getDispositionSchedule(nodeRef);
-        if (di != null)
+        RunAsWork<Void> runAsWork = new RunAsWork<Void>()
         {
-            // Get the current action node
-            NodeRef currentDispositionAction = null;
-            if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true)
+            /**
+             * @see org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork#doWork()
+             */
+            @Override
+            public Void doWork() throws Exception
             {
-                List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, RegexQNamePattern.MATCH_ALL);
-                if (assocs.size() > 0)
+                // Get this disposition instructions for the node
+                DispositionSchedule di = getDispositionSchedule(nodeRef);
+                if (di != null)
                 {
-                    currentDispositionAction = assocs.get(0).getChildRef();
-                }
-            }
-
-            if (currentDispositionAction != null)
-            {
-                // Move it to the history association
-                nodeService.moveNode(currentDispositionAction, nodeRef, ASSOC_DISPOSITION_ACTION_HISTORY, ASSOC_DISPOSITION_ACTION_HISTORY);
-            }
-
-            List<DispositionActionDefinition> dispositionActionDefinitions = di.getDispositionActionDefinitions();
-            DispositionActionDefinition currentDispositionActionDefinition = null;
-            DispositionActionDefinition nextDispositionActionDefinition = null;
-
-            if (currentDispositionAction == null)
-            {
-                if (dispositionActionDefinitions.isEmpty() == false)
-                {
-                    // The next disposition action is the first action
-                    nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
-                }
-            }
-            else
-            {
-                // Get the current action
-                String currentADId = (String) nodeService.getProperty(currentDispositionAction, PROP_DISPOSITION_ACTION_ID);
-                currentDispositionActionDefinition = di.getDispositionActionDefinition(currentADId);
-
-                // Get the next disposition action
-                int index = currentDispositionActionDefinition.getIndex();
-                index++;
-                if (index < dispositionActionDefinitions.size())
-                {
-                    nextDispositionActionDefinition = dispositionActionDefinitions.get(index);
-                }
-            }
-
-            if (nextDispositionActionDefinition != null)
-            {
-                if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == false)
-                {
-                    // Add the disposition life cycle aspect
-                    nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
-                }
-
-                // Create the properties
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>(10);
-
-                // Calculate the asOf date
-                Date asOfDate = null;
-                Period period = nextDispositionActionDefinition.getPeriod();
-                if (period != null)
-                {
-                    Date contextDate = null;
-
-                    // Get the period properties value
-                    QName periodProperty = nextDispositionActionDefinition.getPeriodProperty();
-                    if (periodProperty != null &&
-                        RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty) == false)
+                    // Get the current action node
+                    NodeRef currentDispositionAction = null;
+                    if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true)
                     {
-                        // doesn't matter if the period property isn't set ... the asOfDate will get updated later
-                        // when the value of the period property is set
-                        contextDate = (Date) nodeService.getProperty(nodeRef, periodProperty);
+                        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, RegexQNamePattern.MATCH_ALL);
+                        if (assocs.size() > 0)
+                        {
+                            currentDispositionAction = assocs.get(0).getChildRef();
+                        }
+                    }
+
+                    if (currentDispositionAction != null)
+                    {
+                        // Move it to the history association
+                        nodeService.moveNode(currentDispositionAction, nodeRef, ASSOC_DISPOSITION_ACTION_HISTORY, ASSOC_DISPOSITION_ACTION_HISTORY);
+                    }
+
+                    List<DispositionActionDefinition> dispositionActionDefinitions = di.getDispositionActionDefinitions();
+                    DispositionActionDefinition currentDispositionActionDefinition = null;
+                    DispositionActionDefinition nextDispositionActionDefinition = null;
+
+                    if (currentDispositionAction == null)
+                    {
+                        if (dispositionActionDefinitions.isEmpty() == false)
+                        {
+                            // The next disposition action is the first action
+                            nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
+                        }
                     }
                     else
                     {
-                        // for now use 'NOW' as the default context date
-                        // TODO set the default period property ... cut off date or last disposition date depending on context
-                        contextDate = new Date();
+                        // Get the current action
+                        String currentADId = (String) nodeService.getProperty(currentDispositionAction, PROP_DISPOSITION_ACTION_ID);
+                        currentDispositionActionDefinition = di.getDispositionActionDefinition(currentADId);
+
+                        // Get the next disposition action
+                        int index = currentDispositionActionDefinition.getIndex();
+                        index++;
+                        if (index < dispositionActionDefinitions.size())
+                        {
+                            nextDispositionActionDefinition = dispositionActionDefinitions.get(index);
+                        }
                     }
 
-                    // Calculate the as of date
-                    if (contextDate != null)
+                    if (nextDispositionActionDefinition != null)
                     {
-                        asOfDate = period.getNextDate(contextDate);
+                        if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == false)
+                        {
+                            // Add the disposition life cycle aspect
+                            nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
+                        }
+
+                        // Create the properties
+                        Map<QName, Serializable> props = new HashMap<QName, Serializable>(10);
+
+                        // Calculate the asOf date
+                        Date asOfDate = null;
+                        Period period = nextDispositionActionDefinition.getPeriod();
+                        if (period != null)
+                        {
+                            Date contextDate = null;
+
+                            // Get the period properties value
+                            QName periodProperty = nextDispositionActionDefinition.getPeriodProperty();
+                            if (periodProperty != null &&
+                                RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty) == false)
+                            {
+                                // doesn't matter if the period property isn't set ... the asOfDate will get updated later
+                                // when the value of the period property is set
+                                contextDate = (Date) nodeService.getProperty(nodeRef, periodProperty);
+                            }
+                            else
+                            {
+                                // for now use 'NOW' as the default context date
+                                // TODO set the default period property ... cut off date or last disposition date depending on context
+                                contextDate = new Date();
+                            }
+
+                            // Calculate the as of date
+                            if (contextDate != null)
+                            {
+                                asOfDate = period.getNextDate(contextDate);
+                            }
+                        }
+
+                        // Set the property values
+                        props.put(PROP_DISPOSITION_ACTION_ID, nextDispositionActionDefinition.getId());
+                        props.put(PROP_DISPOSITION_ACTION, nextDispositionActionDefinition.getName());
+                        if (asOfDate != null)
+                        {
+                            props.put(PROP_DISPOSITION_AS_OF, asOfDate);
+                        }
+
+                        // Create a new disposition action object
+                        NodeRef dispositionActionNodeRef = nodeService.createNode(
+                                nodeRef,
+                                ASSOC_NEXT_DISPOSITION_ACTION,
+                                ASSOC_NEXT_DISPOSITION_ACTION,
+                                TYPE_DISPOSITION_ACTION,
+                                props).getChildRef();
+
+                        // Create the events
+                        List<RecordsManagementEvent> events = nextDispositionActionDefinition.getEvents();
+                        for (RecordsManagementEvent event : events)
+                        {
+                            // For every event create an entry on the action
+                            createEvent(event, dispositionActionNodeRef);
+                        }
                     }
                 }
-
-                // Set the property values
-                props.put(PROP_DISPOSITION_ACTION_ID, nextDispositionActionDefinition.getId());
-                props.put(PROP_DISPOSITION_ACTION, nextDispositionActionDefinition.getName());
-                if (asOfDate != null)
-                {
-                    props.put(PROP_DISPOSITION_AS_OF, asOfDate);
-                }
-
-                // Create a new disposition action object
-                NodeRef dispositionActionNodeRef = nodeService.createNode(
-                        nodeRef,
-                        ASSOC_NEXT_DISPOSITION_ACTION,
-                        ASSOC_NEXT_DISPOSITION_ACTION,
-                        TYPE_DISPOSITION_ACTION,
-                        props).getChildRef();
-
-                // Create the events
-                List<RecordsManagementEvent> events = nextDispositionActionDefinition.getEvents();
-                for (RecordsManagementEvent event : events)
-                {
-                    // For every event create an entry on the action
-                    createEvent(event, dispositionActionNodeRef);
-                }
+                
+                return null;
             }
-        }
+        };
+
+        AuthenticationUtil.runAsSystem(runAsWork);
     }
 
     /**
@@ -935,13 +978,43 @@ public class DispositionServiceImpl implements
     public void cutoffDisposableItem(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-
-        if (isDisposableItemCutoff(nodeRef) == false)
+        
+        // check that the node ref is a filed record or record folder
+        if (FilePlanComponentKind.RECORD_FOLDER.equals(filePlanService.getFilePlanComponentKind(nodeRef)) ||
+            FilePlanComponentKind.RECORD.equals(filePlanService.getFilePlanComponentKind(nodeRef)))
         {
-            // Apply the cut off aspect and set cut off date
-            Map<QName, Serializable> cutOffProps = new HashMap<QName, Serializable>(1);
-            cutOffProps.put(PROP_CUT_OFF_DATE, new Date());
-            nodeService.addAspect(nodeRef, ASPECT_CUT_OFF, cutOffProps);
+            if (isDisposableItemCutoff(nodeRef) == false)
+            {
+                if (recordFolderService.isRecordFolder(nodeRef))
+                {
+                    // cut off all the children first
+                    for (NodeRef record : recordService.getRecords(nodeRef))
+                    {
+                        applyCutoff(record);
+                    }
+                }
+                
+                // apply cut off
+                applyCutoff(nodeRef);
+                
+                if (recordFolderService.isRecordFolder(nodeRef))
+                {
+                    // close folder (manually since we can't normall close a folder that is cut off!!
+                    nodeService.setProperty(nodeRef, PROP_IS_CLOSED, true);
+                }
+            }
         }
+        else
+        {
+            throw new AlfrescoRuntimeException("Unable to peform cutoff, because node is not a disposible item. (nodeRef=" + nodeRef.toString() + ")");
+        }
+    }
+    
+    private void applyCutoff(NodeRef nodeRef)
+    {
+        // Apply the cut off aspect and set cut off date
+        Map<QName, Serializable> cutOffProps = new HashMap<QName, Serializable>(1);
+        cutOffProps.put(PROP_CUT_OFF_DATE, new Date());
+        nodeService.addAspect(nodeRef, ASPECT_CUT_OFF, cutOffProps);
     }
 }

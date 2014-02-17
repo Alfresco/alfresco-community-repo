@@ -216,7 +216,7 @@ public class DeclarativeCapability extends AbstractCapability
                     
                     if (logger.isDebugEnabled() == true)
                     {
-                        logger.debug("Condition " + condition.getName() + " failed for capability " + getName() + " on nodeRef " + nodeRef.toString());
+                        logger.debug("FAIL: Condition " + condition.getName() + " failed for capability " + getName() + " on nodeRef " + nodeRef.toString());
                     }
                     
                     break;
@@ -305,7 +305,7 @@ public class DeclarativeCapability extends AbstractCapability
         // log access denied to help with debug
         if (logger.isDebugEnabled() == true && AccessDecisionVoter.ACCESS_DENIED == result)
         {
-            logger.debug("Capability " + getName() + " returned an Access Denied result during evaluation of node " + nodeRef.toString());
+            logger.debug("FAIL: Capability " + getName() + " returned an Access Denied result during evaluation of node " + nodeRef.toString());
         }
         
         return result;

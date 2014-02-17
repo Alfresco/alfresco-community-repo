@@ -32,25 +32,23 @@ import org.alfresco.service.namespace.QName;
  */
 public class UpdateCapability extends DeclarativeCompositeCapability
 {
+    @Override
+    public int evaluate(NodeRef nodeRef)
+    {
+        // TODO Auto-generated method stub
+        return super.evaluate(nodeRef);
+    }
+    
     /**
+     * Evaluate capability
      * 
-     * @param nodeRef
-     * @param aspectQName
-     * @param properties
-     * @return
+     * @param nodeRef       node reference
+     * @param aspectQName   aspect qname
+     * @param properties    property values
+     * @return 
      */
     public int evaluate(NodeRef nodeRef, QName aspectQName, Map<QName, Serializable> properties)
     {
-       // if ((aspectQName != null) && (voter.isProtectedAspect(nodeRef, aspectQName)))
-       // {
-       //     return AccessDecisionVoter.ACCESS_DENIED;
-       // }
-        
-      //  if ((properties != null) && (voter.includesProtectedPropertyChange(nodeRef, properties)))
-      //  {
-      //      return AccessDecisionVoter.ACCESS_DENIED;
-      //  }
-        
         return evaluate(nodeRef);
     }
 }

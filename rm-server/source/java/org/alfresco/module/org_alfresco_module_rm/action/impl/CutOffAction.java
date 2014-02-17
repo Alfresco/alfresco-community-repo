@@ -38,17 +38,8 @@ public class CutOffAction extends RMDispositionActionExecuterAbstractBase
     @Override
     protected void executeRecordFolderLevelDisposition(Action action, NodeRef recordFolder)
     {
-        // Close the record folder
-        recordFolderService.closeRecordFolder(recordFolder);
-
         // Mark the folder as cut off
         dispositionService.cutoffDisposableItem(recordFolder);
-
-        // Mark all the declared children of the folder as cut off
-        for (NodeRef record : recordService.getRecords(recordFolder))
-        {
-            dispositionService.cutoffDisposableItem(record);
-        }
     }
 
     /**

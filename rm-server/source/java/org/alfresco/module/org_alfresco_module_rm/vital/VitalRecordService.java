@@ -70,5 +70,5 @@ public interface VitalRecordService
      *
      * @param nodeRef   node reference to initialise with vital record details
      */
-    void initialiseVitalRecord(NodeRef nodeRef);
+    //void initialiseVitalRecord(NodeRef nodeRef);
 }

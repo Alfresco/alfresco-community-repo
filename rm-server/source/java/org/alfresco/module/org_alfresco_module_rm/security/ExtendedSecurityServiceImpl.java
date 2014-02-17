@@ -27,7 +27,6 @@ import java.util.Set;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -51,22 +50,11 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     private final static QName PROP_EXTENDED_READER_ROLE = QName.createQName(RM_URI, "extendedReaderRole");
     private final static QName PROP_EXTENDED_WRITER_ROLE = QName.createQName(RM_URI, "extendedWriterRole");
 
-    /** Record service */
-    private RecordService recordService;
-
     /** File plan service */
     private FilePlanService filePlanService;
 
     /** File plan role service */
     private FilePlanRoleService filePlanRoleService;
-
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
-    }
 
     /**
      * @param filePlanService   file plan service
@@ -193,7 +181,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         }
 
         // apply the readers to any renditions of the content
-        if (recordService.isRecord(nodeRef) == true)
+        if (isRecord(nodeRef) == true)
         {
             List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)
@@ -322,7 +310,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             removeExtendedSecurityImpl(nodeRef, readers, writers);
 
             // remove the readers from any renditions of the content
-            if (recordService.isRecord(nodeRef) == true)
+            if (isRecord(nodeRef) == true)
             {
                 List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
                 for (ChildAssociationRef assoc : assocs)

@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
+import java.util.Set;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -54,6 +56,19 @@ public class ServiceBaseImpl implements RecordsManagementModel
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    /**
+     * Indicates whether the given node reference is a record or not.
+     * 
+     * @param nodeRef   node reference
+     * @return boolean  true if node reference is a record, false otherwise
+     */
+    public boolean isRecord(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+
+        return nodeService.hasAspect(nodeRef, ASPECT_RECORD);
     }
     
     /**
@@ -110,5 +125,17 @@ public class ServiceBaseImpl implements RecordsManagementModel
         }
         return counter;
     }
-
+    
+    /**
+     * Helper method to get a set containing the node's type and all it's aspects
+     * 
+     * @param nodeRef       nodeRef
+     * @return Set<QName>   set of qname's
+     */
+    protected Set<QName> getTypeAndApsects(NodeRef nodeRef)
+    {
+        Set<QName> result = nodeService.getAspects(nodeRef);        
+        result.add(nodeService.getType(nodeRef));
+        return result;
+    }
 }

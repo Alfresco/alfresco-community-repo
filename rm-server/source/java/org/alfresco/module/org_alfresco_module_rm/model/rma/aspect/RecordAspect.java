@@ -19,7 +19,6 @@
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +28,6 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
-import org.alfresco.module.org_alfresco_module_rm.model.security.ModelAccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
@@ -46,7 +44,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.EqualsHelper;
 
 /**
  * rma:record behaviour bean
@@ -62,8 +59,7 @@ public class RecordAspect extends    BaseBehaviourBean
                           implements NodeServicePolicies.OnCreateChildAssociationPolicy,
                                      RecordsManagementPolicies.OnCreateReference,
                                      RecordsManagementPolicies.OnRemoveReference,
-                                     NodeServicePolicies.OnMoveNodePolicy,
-                                     NodeServicePolicies.OnUpdatePropertiesPolicy
+                                     NodeServicePolicies.OnMoveNodePolicy
 {
     /** Well-known location of the scripts folder. */
     // TODO make configurable
@@ -249,66 +245,6 @@ public class RecordAspect extends    BaseBehaviourBean
                     return null;
                 }
             }, AuthenticationUtil.getAdminUserName());
-        }
-    }
-    
-    /**
-     * Ensure that the user only updates record properties that they have permission to.
-     *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
-     */
-    @Override
-    @Behaviour
-    (
-            name = "onUpdateProperties",
-            kind = BehaviourKind.CLASS
-    )
-    public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
-    {
-        if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
-            AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
-            nodeService.exists(nodeRef) == true)
-        {
-            if (recordService.isRecord(nodeRef) == true)
-            {
-                for (QName property : after.keySet())
-                {
-                    Serializable beforeValue = null;
-                    if (before != null)
-                    {
-                        beforeValue = before.get(property);
-                    }
-
-                    Serializable afterValue = null;
-                    if (after != null)
-                    {
-                        afterValue = after.get(property);
-                    }
-
-                    boolean propertyUnchanged = false;
-                    if (beforeValue != null && afterValue != null &&
-                        beforeValue instanceof Date && afterValue instanceof Date)
-                    {
-                        // deal with date values
-                        propertyUnchanged = (((Date)beforeValue).compareTo((Date)afterValue) == 0);
-                    }
-                    else
-                    {
-                        // otherwise
-                        propertyUnchanged = EqualsHelper.nullSafeEquals(beforeValue, afterValue);
-                    }
-
-                    if (propertyUnchanged == false &&
-                        recordService.isPropertyEditable(nodeRef, property) == false)
-                    {
-                        // the user can't edit the record property
-                        throw new ModelAccessDeniedException(
-                            "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
-                            " does not have the permission to edit the record property " + property.toString() +
-                            " on the node " + nodeRef.toString());
-                    }
-                }
-            }
         }
     }
     

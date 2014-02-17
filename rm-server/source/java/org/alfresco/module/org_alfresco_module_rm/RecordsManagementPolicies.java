@@ -40,7 +40,7 @@ public interface RecordsManagementPolicies
     public static final QName ON_CREATE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateReference");
     public static final QName BEFORE_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRemoveReference");
     public static final QName ON_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveReference");
-    
+        
     /** Before records management action execution */
     public interface BeforeRMActionExecution extends ClassPolicy
     {        
@@ -71,9 +71,50 @@ public interface RecordsManagementPolicies
         public void beforeRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference);
     }
     
-    /** On removal of reference */
+    /** 
+     * On removal of reference
+     * 
+     * @since 1.0 
+     */
     public interface OnRemoveReference extends ClassPolicy
     {
+        /**
+         * @param fromNodeRef   from node reference
+         * @param toNodeRef     to node reference
+         * @param reference     name of reference
+         */
         public void onRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference);
+    }
+    
+    /**
+     * Before record file policy
+     * 
+     * @since 2.2 
+     */
+    public interface BeforeFileRecord extends ClassPolicy
+    {
+        /** policy name */
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRecordFile");
+        
+        /**
+         * @param nodeRef   node reference
+         */
+        public void beforeFileRecord(NodeRef nodeRef);
+    }
+    
+    /**
+     * On record file policy
+     * 
+     * @since 2.2
+     */
+    public interface OnFileRecord extends ClassPolicy
+    {
+        /** policy name */
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordFile");
+        
+        /**
+         * @param nodeRef   node reference
+         */
+        public void onFileRecord(NodeRef nodeRef);
     }
 }

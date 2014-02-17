@@ -46,8 +46,7 @@
 
     <!--  Vital Record Service -->
 
-    <bean id="vitalRecordService" class="org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl">
-        <property name="nodeService" ref="NodeService"/>
+    <bean id="vitalRecordService" parent="baseService" class="org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl">
         <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
@@ -98,10 +97,8 @@
     </bean>
 
     <!--  Disposition Service -->
-    <bean id="dispositionService" class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl">
+    <bean id="dispositionService" parent="baseService" class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl">
         <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
-        <property name="nodeService" ref="nodeService"/>
-        <property name="dictionaryService" ref="DictionaryService"/>
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="filePlanService" ref="FilePlanService" />
         <property name="recordFolderService" ref="RecordFolderService"/>
@@ -633,7 +630,6 @@
     <bean id="extendedSecurityService"
           class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl"
           parent="baseService">
-        <property name="recordService" ref="recordService"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="filePlanService" ref="filePlanService" />
         <property name="filePlanRoleService" ref="filePlanRoleService" />
@@ -1166,14 +1162,11 @@
 
     <!--  Record Service -->
 
-    <bean id="recordService" class="org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl" init-method="init">
-        <property name="nodeService" ref="NodeService"/>
-        <property name="dictionaryService" ref="DictionaryService"/>
+    <bean id="recordService" parent="rm.baseBehaviour" class="org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl" init-method="init">
         <property name="identifierService" ref="recordsManagementIdentifierService"/>
         <property name="extendedPermissionService" ref="ExtendedPermissionService"/>
         <property name="extendedSecurityService" ref="ExtendedSecurityService" />
         <property name="policyComponent" ref="policyComponent" />
-        <property name="dispositionService" ref="DispositionService" />
         <property name="filePlanService" ref="FilePlanService" />
         <property name="ownableService" ref="OwnableService" />
         <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
@@ -1181,10 +1174,8 @@
         <property name="ruleService" ref="RuleService" />
         <property name="fileFolderService" ref="FileFolderService" />
         <property name="recordFolderService" ref="RecordFolderService" />
-        <property name="vitalRecordService" ref="VitalRecordService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
         <property name="permissionService" ref="permissionService" />
-        <property name="recordAspect" ref="rma.record" />
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">

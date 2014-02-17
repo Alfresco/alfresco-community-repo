@@ -49,9 +49,7 @@
       <property name="recordFolderService" ref="RecordFolderService"/>
    </bean>
 
-   <bean id="rm.baseBehaviour" abstract="true">
-        <property name="nodeService" ref="NodeService" />
-      <property name="dictionaryService" ref="DictionaryService" />
+   <bean id="rm.baseBehaviour" abstract="true" parent="baseService">
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
    </bean>
 

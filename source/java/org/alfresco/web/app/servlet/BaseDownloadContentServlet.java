@@ -50,6 +50,7 @@ import org.alfresco.web.app.Application;
 import org.apache.commons.logging.Log;
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.surf.util.URLEncoder;
+import org.springframework.extensions.webscripts.ui.common.StringUtils;
 
 /**
  * Base class for the download content servlets. Provides common
@@ -340,6 +341,32 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
                   res.setContentType(mimetype);
                   res.setCharacterEncoding(reader.getEncoding());
                   
+                  // MNT-10642 Alfresco Explorer has javascript vulnerability opening HTML files
+                  if (req.getRequestURI().contains("/d/d/") && (mimetype.equals("text/html") || mimetype.equals("application/xhtml+xml") || mimetype.equals("text/xml")))
+                  {
+                       String content = reader.getContentString();
+
+                       if (mimetype.equals("text/html") || mimetype.equals("application/xhtml+xml"))
+                       {
+                            // process with HTML stripper
+                            content = StringUtils.stripUnsafeHTMLTags(content, false);
+                       }
+                       else if (mimetype.equals("text/xml") && mimetype.equals("text/x-component"))
+                       {
+                            // IE supports "behaviour" which means that css can load a .htc file that could
+                            // contain XSS code in the form of jscript, vbscript etc, to stop it form being
+                            // evaluated we set the contient type to text/plain
+                            res.setContentType("text/plain");
+                       }
+
+                       String encoding = reader.getEncoding();
+                       byte[] bytes = encoding != null ? content.getBytes(encoding) : content.getBytes();
+                       res.setContentLength(bytes.length);
+                       res.getOutputStream().write(bytes);
+
+                       return;
+                  }
+                        
                   // return the complete entity range
                   long size = reader.getSize();
                   res.setHeader(HEADER_CONTENT_RANGE, "bytes 0-" + Long.toString(size-1L) + "/" + Long.toString(size));

@@ -26,7 +26,9 @@ public class AdvancedSearchTest extends BaseWebScriptTest
 {
     private static final String TEST_FILE_NAME1 = "qwe iop.txt";
     private static final String TEST_FILE_NAME2 = "qwe yu iop.txt";
+    private static final String TEST_IN_SITES_FILE_NAME = "qwesiteiop";
     private static final String SEARCH_NAME = "qwe iop";
+    private static final String SEARCH_IN_SITES = "qwesiteiop";
     private static final String TEST_FOLDER = "test_folder-" + System.currentTimeMillis();
     
     private TransactionService transactionService;
@@ -38,6 +40,7 @@ public class AdvancedSearchTest extends BaseWebScriptTest
     private NodeRef testNodeRef1;
     private NodeRef testNodeRef2;
     private NodeRef folderNodeRef;
+    private NodeRef rootNodeRef;
     
     @Override
     protected void setUp() throws Exception
@@ -52,9 +55,9 @@ public class AdvancedSearchTest extends BaseWebScriptTest
 
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
-        NodeRef rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        this.rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         
-        List<NodeRef> results = searchService.selectNodes(rootNodeRef, "/app:company_home", null, namespaceService, false);
+        List<NodeRef> results = searchService.selectNodes(this.rootNodeRef, "/app:company_home", null, namespaceService, false);
         if (results.size() == 0)
         {
             throw new AlfrescoRuntimeException("Can't find /app:company_home");
@@ -72,6 +75,14 @@ public class AdvancedSearchTest extends BaseWebScriptTest
         assertNotNull(testNodeRef2);
     }
     
+    private void deleteNodeIfExists(NodeRef nodeRef)
+    {
+        if (nodeService.exists(nodeRef))
+        {
+            nodeService.deleteNode(nodeRef);
+        }
+    }
+    
     @Override
     protected void tearDown() throws Exception
     {
@@ -87,13 +98,6 @@ public class AdvancedSearchTest extends BaseWebScriptTest
                 return null;
             }
             
-            private void deleteNodeIfExists(NodeRef nodeRef)
-            {
-                if (nodeService.exists(nodeRef))
-                {
-                    nodeService.deleteNode(nodeRef);
-                }
-            }
         };
         this.transactionService.getRetryingTransactionHelper().doInTransaction(deleteCallback);
         this.authenticationComponent.clearCurrentSecurityContext();
@@ -111,6 +115,31 @@ public class AdvancedSearchTest extends BaseWebScriptTest
         res =  sendRequest(new GetRequest(url), Status.STATUS_OK);
         result = new JSONObject(res.getContentAsString());
         assertEquals(1, result.getInt("totalRecords"));
+    }
+
+    public void testSearchInSites() throws IOException, JSONException
+    {
+    	List<NodeRef> results = searchService.selectNodes(this.rootNodeRef, "/app:company_home/st:sites", null, namespaceService, false);
+        if (results.size() == 0)
+        {
+            throw new AlfrescoRuntimeException("Can't find /app:company_home/st:sites");
+        }
+        
+        NodeRef sitesNodeRef = results.get(0);
+        
+        long time = System.currentTimeMillis();
+        
+        NodeRef sitefolderNodeRef = fileFolderService.create(sitesNodeRef, TEST_FOLDER, ContentModel.TYPE_FOLDER).getNodeRef();
+        NodeRef nodeRef = fileFolderService.create(sitefolderNodeRef, TEST_IN_SITES_FILE_NAME + time, ContentModel.TYPE_CONTENT).getNodeRef();
+       // String url = "/slingshot/search?site=&term=" + SEARCH_NAME + "&tag=&maxResults=251&sort=&query=&repo=false&rootNode=alfresco%3A%2F%2Fcompany%2Fhome&pageSize=50&startIndex=0";
+        String url = "/slingshot/search?site=&term=&tag=&maxResults=251&sort=&query={\"prop_cm_name\":\"" + SEARCH_IN_SITES + time + "\",\"datatype\":\"cm:content\"}&repo=true&rootNode=alfresco://company/home";
+        Response res =  sendRequest(new GetRequest(url), Status.STATUS_OK);
+        JSONObject result = new JSONObject(res.getContentAsString());
+        assertEquals(1, result.getInt("totalRecords"));
+        
+        deleteNodeIfExists(nodeRef);
+        deleteNodeIfExists(sitefolderNodeRef);
+        
     }
 
 }

@@ -44,7 +44,16 @@ function main()
    }
    
    // Link an existing group or user
-   group.addAuthority(fullAuthorityName);
+   try
+   {
+       group.addAuthority(fullAuthorityName);
+   }
+   catch(e)
+   {
+       status.code = status.STATUS_INTERNAL_SERVER_ERROR;
+       return;
+   }
+
    status.code = status.STATUS_OK;
    model.group 
 }

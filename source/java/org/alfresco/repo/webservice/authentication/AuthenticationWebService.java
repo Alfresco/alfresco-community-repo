@@ -56,7 +56,7 @@ public class AuthenticationWebService implements AuthenticationServiceSoapPort
     }
     
     /**
-     * Set the atuthentication component
+     * Set the authentication component
      * 
      * @param authenticationComponent
      */
@@ -69,20 +69,27 @@ public class AuthenticationWebService implements AuthenticationServiceSoapPort
      * @see org.alfresco.repo.webservice.authentication.AuthenticationServiceSoapPort#startSession(java.lang.String,
      *      java.lang.String)
      */
-    public AuthenticationResult startSession(String username, String password)
+    public AuthenticationResult startSession(final String username, final String password)
             throws RemoteException, AuthenticationFault
     {
         try
         {
-            this.authenticationService.authenticate(username, password.toCharArray());
-            String ticket = this.authenticationService.getCurrentTicket();
-
-            if (logger.isDebugEnabled())
+            RetryingTransactionCallback<AuthenticationResult> callback = new RetryingTransactionCallback<AuthenticationResult>()
             {
-                logger.debug("Issued ticket '" + ticket + "' for '" + username + "'");
-            }
-            
-            return new AuthenticationResult(username, ticket, Utils.getSessionId());
+                public AuthenticationResult execute() throws Throwable
+                {
+                    authenticationService.authenticate(username, password.toCharArray());
+                    String ticket = authenticationService.getCurrentTicket();
+
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Issued ticket '" + ticket + "' for '" + username + "'");
+                    }
+                    
+                    return new AuthenticationResult(username, ticket, Utils.getSessionId());
+                }
+            };
+            return Utils.getRetryingTransactionHelper(MessageContext.getCurrentContext()).doInTransaction(callback);
         } 
         catch (AuthenticationException ae)
         {
@@ -109,9 +116,9 @@ public class AuthenticationWebService implements AuthenticationServiceSoapPort
                 {
                     public Object execute() throws Throwable
                     {
-                    	AuthenticationWebService.this.authenticationComponent.setSystemUserAsCurrentUser();
-                    	AuthenticationWebService.this.authenticationService.invalidateTicket(ticket);
-                    	AuthenticationWebService.this.authenticationService.clearCurrentSecurityContext();
+                    	authenticationComponent.setSystemUserAsCurrentUser();
+                    	authenticationService.invalidateTicket(ticket);
+                    	authenticationService.clearCurrentSecurityContext();
     
 		                if (logger.isDebugEnabled())
 		                {

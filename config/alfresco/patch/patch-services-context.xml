@@ -3579,6 +3579,17 @@
         </property>
     </bean>
 
+    <bean id="patch.db-V4.2-remove-old-index-act" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.2-remove-old-index-act</value></property>
+        <property name="description"><value>patch.db-V4.2-remove-old-index-act.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6027</value></property>
+        <property name="targetSchema"><value>6028</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/remove-old-index-act.sql</value>
+        </property>
+    </bean>
+
     <bean id="patch.redeployParallelActivitiWorkflows-after-5-11-upgrade" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
         <property name="id"><value>patch.redeployParallelActivitiWorkflows-after-5-11-upgrade</value></property>
         <property name="description"><value>patch.redeployParallelActivitiWorkflows.description</value></property>

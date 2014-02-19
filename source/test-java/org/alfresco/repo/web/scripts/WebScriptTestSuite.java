@@ -33,6 +33,7 @@ import org.alfresco.repo.web.scripts.forms.FormRestApiJsonPost_Test;
 import org.alfresco.repo.web.scripts.groups.GroupsTest;
 import org.alfresco.repo.web.scripts.invitation.InvitationWebScriptTest;
 import org.alfresco.repo.web.scripts.invite.InviteServiceTest;
+import org.alfresco.repo.web.scripts.publishing.PublishingRestApiTest;
 import org.alfresco.repo.web.scripts.person.PersonServiceTest;
 import org.alfresco.repo.web.scripts.preference.PreferenceServiceTest;
 import org.alfresco.repo.web.scripts.quickshare.QuickShareRestApiTest;
@@ -95,6 +96,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( WorkflowModelBuilderTest.class );
         suite.addTestSuite( ActivitiWorkflowRestApiTest.class );
         suite.addTestSuite( JBPMWorkflowRestApiTest.class );
+        suite.addTestSuite( PublishingRestApiTest.class );
         
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,

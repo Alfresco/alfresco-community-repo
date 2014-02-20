@@ -31,6 +31,7 @@ import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.opencmis.dictionary.CMISObjectVariant;
 import org.alfresco.opencmis.dictionary.DocumentTypeDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.FolderTypeDefintionWrapper;
+import org.alfresco.opencmis.dictionary.ItemTypeDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.RelationshipTypeDefintionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -74,6 +75,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
     private String name;
     private boolean hasPWC;
     private Boolean isRootFolder;
+ 
     private String cmisPath;
     private VersionHistory versionHistory;
     private Version version;
@@ -281,6 +283,12 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         			}
         			return;
         		}
+        		
+        		if(isItem())
+        		{
+        			objecVariant = CMISObjectVariant.ITEM;
+        			return;
+        		}
 
         		if (versionLabel == null)
         		{
@@ -444,6 +452,13 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         if (isFolder())
         {
             objecVariant = CMISObjectVariant.FOLDER;
+            objectId = connector.constructObjectId(nodeRef, null);
+            currentObjectId = objectId;
+            return;
+        }
+        else if (isItem())
+        {
+            objecVariant = CMISObjectVariant.ITEM;
             objectId = connector.constructObjectId(nodeRef, null);
             currentObjectId = objectId;
             return;
@@ -687,6 +702,11 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
     {
         return getType() instanceof FolderTypeDefintionWrapper;
     }
+    
+    public boolean isItem()
+    {
+        return getType() instanceof ItemTypeDefinitionWrapper;
+    }
 
     public boolean isRootFolder()
     {
@@ -807,7 +827,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             {
                 return getVersion().getVersionProperty(VersionBaseModel.PROP_CREATED_DATE);
             }
-        } else if (isFolder())
+        } else if (isFolder() || isItem())
         {
             return connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_CREATED);
         } else
@@ -827,7 +847,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             {
                 return getVersion().getVersionProperty(ContentModel.PROP_MODIFIED.getLocalName());
             }
-        } else if (isFolder())
+        } else if (isFolder() || isItem())
         {
             return connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_MODIFIED);
         } else

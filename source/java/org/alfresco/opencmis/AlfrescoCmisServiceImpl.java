@@ -988,6 +988,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         case CMIS_POLICY:
             newId = createPolicy(repositoryId, properties, folderId, policies, null, null, extension);
             break;
+        case CMIS_ITEM:
+        	newId = createItem(repositoryId, properties, folderId, policies, null, null, extension);
+            
         }
 
         // check new object id
@@ -1042,6 +1045,44 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         String objectId = connector.createObjectId(nodeRef);
         return objectId;
+    }
+    
+
+    @Override
+    public String createItem(String repositoryId, Properties properties, String folderId, List<String> policies,
+            Acl addAces, Acl removeAces, ExtensionsData extension) 
+    {
+    	checkRepositoryId(repositoryId);
+    	
+        // get the parent folder node ref
+        final CMISNodeInfo parentInfo = getOrCreateFolderInfo(folderId, "Folder");
+
+        // get name and type
+        final String name = connector.getNameProperty(properties, null);
+        final String objectTypeId = connector.getObjectTypeIdProperty(properties);
+        final TypeDefinitionWrapper type = connector.getTypeForCreate(objectTypeId, BaseTypeId.CMIS_ITEM);
+
+        connector.checkChildObjectType(parentInfo, type.getTypeId());
+        
+        /**
+         * The above code specifies a folder - so the contents of a folder (as defined by the alfresco model) are 
+         * ASSOC cm:contains to a TYPE sys:base
+         */
+        QName assocQName = QName.createQName(
+                NamespaceService.CONTENT_MODEL_1_0_URI,
+                QName.createValidLocalName(name));
+        
+        ChildAssociationRef newRef = connector.getNodeService().createNode(parentInfo.getNodeRef(), ContentModel.ASSOC_CONTAINS, assocQName, type.getAlfrescoClass());
+
+        NodeRef nodeRef = newRef.getChildRef();
+
+        connector.setProperties(nodeRef, type, properties, new String[] { PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
+        connector.applyPolicies(nodeRef, type, policies);
+        connector.applyACL(nodeRef, type, addAces, removeAces);
+
+        String objectId = connector.createObjectId(nodeRef);
+        return objectId;
+    	
     }
 
     private String parseMimeType(ContentStream contentStream)

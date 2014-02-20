@@ -279,6 +279,23 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
                 false));
         registerEvaluator(BaseTypeId.CMIS_POLICY, new FixedValueActionEvaluator(serviceRegistry, Action.CAN_APPLY_ACL,
                 false));
+        
+        // permissions for ITEMS in order of CMIS-Core.xsd
+        registerEvaluator(BaseTypeId.CMIS_ITEM, new PermissionActionEvaluator(serviceRegistry,
+                Action.CAN_DELETE_OBJECT, PermissionService.DELETE_NODE));
+        registerEvaluator(BaseTypeId.CMIS_ITEM, new PermissionActionEvaluator(serviceRegistry,
+                Action.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
+        registerEvaluator(BaseTypeId.CMIS_ITEM, new PermissionActionEvaluator(serviceRegistry,
+                Action.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));       
+        registerEvaluator(BaseTypeId.CMIS_ITEM, new FixedValueActionEvaluator(serviceRegistry,
+                Action.CAN_GET_OBJECT_RELATIONSHIPS, true));    
+        registerEvaluator(BaseTypeId.CMIS_ITEM, new ParentActionEvaluator(new PermissionActionEvaluator(
+                serviceRegistry, Action.CAN_GET_OBJECT_PARENTS, PermissionService.READ_PERMISSIONS)));
+        registerEvaluator(BaseTypeId.CMIS_ITEM, new PermissionActionEvaluator(serviceRegistry, Action.CAN_GET_ACL,
+                PermissionService.READ_PERMISSIONS));
+        registerEvaluator(BaseTypeId.CMIS_ITEM, new PermissionActionEvaluator(serviceRegistry, Action.CAN_APPLY_ACL,
+                PermissionService.CHANGE_PERMISSIONS));
+      
     }
     
     public void init()

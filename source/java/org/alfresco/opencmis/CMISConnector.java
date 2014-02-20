@@ -1262,7 +1262,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      */
     public String createObjectId(NodeRef currentVersionNodeRef)
     {
-        if(getFileFolderService().getFileInfo(currentVersionNodeRef).isFolder())
+    	FileInfo fileInfo = getFileFolderService().getFileInfo(currentVersionNodeRef);
+    	
+    	if(fileInfo == null)
+    	{
+    		// not a file or a folder
+    		return constructObjectId(currentVersionNodeRef, null);
+    	}
+    	
+        if(fileInfo.isFolder())
         {
             return constructObjectId(currentVersionNodeRef, null);
         }
@@ -1407,7 +1415,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             return;
         }
-
+        
         if (!childTypes.contains(childType))
         {
             throw new CmisConstraintException("Objects of type '" + childType + "' cannot be added to this folder!");

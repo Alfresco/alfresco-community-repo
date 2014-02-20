@@ -48,9 +48,14 @@ public class BaseTypeIdProperty extends AbstractProperty
         if (nodeInfo.isFolder())
         {
             return BaseTypeId.CMIS_FOLDER.value();
-        } else if (nodeInfo.isRelationship())
+        } 
+        else if (nodeInfo.isRelationship())
         {
             return BaseTypeId.CMIS_RELATIONSHIP.value();
+        }
+        else if(nodeInfo.isItem())
+        {
+        	return BaseTypeId.CMIS_ITEM.value();
         }
 
         return BaseTypeId.CMIS_DOCUMENT.value();

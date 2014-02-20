@@ -1399,6 +1399,38 @@ public class CMISTest
             }
         });
     }
+    
+    /**
+     * ACE-33
+     * 
+     * Cmis Item support
+     */
+    @Test
+    public void testItems()
+    {
+
+        withCmisService(new CmisServiceCallback<String>() {
+            @Override
+            public String execute(CmisService cmisService) {
+                List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                assertTrue(repositories.size() > 0);
+                RepositoryInfo repo = repositories.get(0);
+                String repositoryId = repo.getId();
+                
+            	TypeDefinition def = cmisService.getTypeDefinition(repositoryId, "cmis:item", null);
+            	assertNotNull("the cmis:item type is not defined", def); 
+                
+            	TypeDefinition p = cmisService.getTypeDefinition(repositoryId, "I:cm:person", null);
+            	assertNotNull("the I:cm:person type is not defined", def); 
+            	
+            	ObjectList result = cmisService.query(repositoryId, "select * from cm:person", Boolean.FALSE, Boolean.TRUE, IncludeRelationships.NONE, "", BigInteger.TEN, BigInteger.ZERO, null);
+            	assertTrue("", result.getNumItems().intValue() > 0);
+            	return "";
+        
+            };
+        }, CmisVersion.CMIS_1_1);
+    	
+    }
 
     @Test
     public void testMNT10529() throws Exception

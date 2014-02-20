@@ -217,10 +217,11 @@ public class LuceneQueryEngine implements QueryEngine
                 {
                     LuceneSearcher luceneSearcher = (LuceneSearcher) searchService;
                     ClosingIndexSearcher searcher = luceneSearcher.getClosingIndexSearcher();
-                    LuceneQueryBuilderContext luceneContext = new LuceneQueryBuilderContextImpl(dictionaryService, namespaceService, tenantService, searchParameters, indexAndSearcher.getDefaultMLSearchAnalysisMode(),
+                    LuceneQueryBuilderContext<org.apache.lucene.search.Query, Sort, ParseException> luceneContext = new LuceneQueryBuilderContextImpl(dictionaryService, namespaceService, tenantService, searchParameters, indexAndSearcher.getDefaultMLSearchAnalysisMode(),
                             searcher.getIndexReader());
 
-                    LuceneQueryBuilder builder = (LuceneQueryBuilder) query;
+                    @SuppressWarnings("unchecked")
+                    LuceneQueryBuilder<org.apache.lucene.search.Query, Sort, ParseException> builder = (LuceneQueryBuilder<org.apache.lucene.search.Query, Sort, ParseException>) query;
                     org.apache.lucene.search.Query luceneQuery = builder.buildQuery(selectorGroup, luceneContext, functionContext);
 
                     if(logger.isDebugEnabled())

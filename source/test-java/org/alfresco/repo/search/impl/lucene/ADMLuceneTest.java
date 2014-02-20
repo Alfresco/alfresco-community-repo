@@ -1757,7 +1757,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         ftsQueryWithCount(searcher, "-lazy", 15);
         ftsQueryWithCount(searcher, "lazy -lazy", 16, null, n2);
         ftsQueryWithCount(searcher, "lazy^20 -lazy", 16, n14, null);
-        ftsQueryWithCount(searcher, "lazy^20 -lazy^20", 16, null, n14);
+        ftsQueryWithCount(searcher, "lazy^20 -lazy^20", 16, n14, null);
 
         ftsQueryWithCount(searcher, "cm:content:lazy", 1);
         // Simple template

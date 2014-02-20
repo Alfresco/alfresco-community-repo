@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParserAdaptor;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -33,7 +34,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.SearchLanguageConversion;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
@@ -82,15 +82,15 @@ public class FixedValueProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneEquality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public <Q, S, E extends Throwable> Q buildLuceneEquality(LuceneQueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         if (EqualsHelper.nullSafeEquals(value, fixedValue))
         {
-            return new MatchAllDocsQuery();
+            return lqpa.getMatchAllQuery();
         }
         else
         {
-            return new TermQuery(new Term("NO_TOKENS", "__"));
+            return lqpa.getMatchNoneQuery();
         }
     }
 
@@ -98,28 +98,28 @@ public class FixedValueProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.Boolean)
      */
-    public Query buildLuceneExists(AbstractLuceneQueryParser lqp, Boolean not) throws ParseException
+    public <Q, S, E extends Throwable> Q buildLuceneExists(LuceneQueryParserAdaptor<Q, S, E> lqpa, Boolean not) throws E
     {
         if (not)
         {
             if (fixedValue == null)
             {
-                return new MatchAllDocsQuery();
+                return lqpa.getMatchAllQuery();
             }
             else
             {
-                return new TermQuery(new Term("NO_TOKENS", "__"));
+                return lqpa.getMatchNoneQuery();
             }
         }
         else
         {
             if (fixedValue == null)
             {
-                return new TermQuery(new Term("NO_TOKENS", "__"));
+                return lqpa.getMatchNoneQuery();
             }
             else
             {
-                return new MatchAllDocsQuery();
+                return lqpa.getMatchAllQuery();
             }
         }
 
@@ -130,23 +130,23 @@ public class FixedValueProperty extends AbstractProperty
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneGreaterThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
     @SuppressWarnings("unchecked")
-    public Query buildLuceneGreaterThan(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public <Q, S, E extends Throwable> Q buildLuceneGreaterThan(LuceneQueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         if (value instanceof Comparable)
         {
             Comparable comparable = (Comparable) value;
             if (comparable.compareTo(fixedValue) > 0)
             {
-                return new MatchAllDocsQuery();
+                return lqpa.getMatchAllQuery();
             }
             else
             {
-                return new TermQuery(new Term("NO_TOKENS", "__"));
+                return lqpa.getMatchNoneQuery();
             }
         }
         else
         {
-            return new TermQuery(new Term("NO_TOKENS", "__"));
+            return lqpa.getMatchNoneQuery();
         }
     }
 
@@ -155,65 +155,23 @@ public class FixedValueProperty extends AbstractProperty
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneGreaterThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
     @SuppressWarnings("unchecked")
-    public Query buildLuceneGreaterThanOrEquals(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public <Q, S, E extends Throwable> Q buildLuceneGreaterThanOrEquals(LuceneQueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         if (value instanceof Comparable)
         {
             Comparable comparable = (Comparable) value;
             if (comparable.compareTo(fixedValue) >= 0)
             {
-                return new MatchAllDocsQuery();
+                return lqpa.getMatchAllQuery();
             }
             else
             {
-                return new TermQuery(new Term("NO_TOKENS", "__"));
+                return lqpa.getMatchNoneQuery();
             }
         }
         else
         {
-            return new TermQuery(new Term("NO_TOKENS", "__"));
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneIn(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.util.Collection, java.lang.Boolean, org.alfresco.repo.search.impl.querymodel.PredicateMode)
-     */
-    public Query buildLuceneIn(AbstractLuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
-    {
-        boolean in = false;
-        for (Serializable value : values)
-        {
-            if (EqualsHelper.nullSafeEquals(value, fixedValue))
-            {
-                in = true;
-                break;
-            }
-        }
-
-        if (in == !not)
-        {
-            return new MatchAllDocsQuery();
-        }
-        else
-        {
-            return new TermQuery(new Term("NO_TOKENS", "__"));
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneInequality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
-     */
-    public Query buildLuceneInequality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
-    {
-        if (!EqualsHelper.nullSafeEquals(value, fixedValue))
-        {
-            return new MatchAllDocsQuery();
-        }
-        else
-        {
-            return new TermQuery(new Term("NO_TOKENS", "__"));
+            return lqpa.getMatchNoneQuery();
         }
     }
 
@@ -222,23 +180,23 @@ public class FixedValueProperty extends AbstractProperty
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLessThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
     @SuppressWarnings("unchecked")
-    public Query buildLuceneLessThan(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public <Q, S, E extends Throwable> Q buildLuceneLessThan(LuceneQueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         if (value instanceof Comparable)
         {
             Comparable comparable = (Comparable) value;
             if (comparable.compareTo(fixedValue) < 0)
             {
-                return new MatchAllDocsQuery();
+                return lqpa.getMatchAllQuery();
             }
             else
             {
-                return new TermQuery(new Term("NO_TOKENS", "__"));
+                return lqpa.getMatchNoneQuery();
             }
         }
         else
         {
-            return new TermQuery(new Term("NO_TOKENS", "__"));
+            return lqpa.getMatchNoneQuery();
         }
     }
 
@@ -247,23 +205,23 @@ public class FixedValueProperty extends AbstractProperty
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLessThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
     @SuppressWarnings("unchecked")
-    public Query buildLuceneLessThanOrEquals(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public <Q, S, E extends Throwable> Q buildLuceneLessThanOrEquals(LuceneQueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         if (value instanceof Comparable)
         {
             Comparable comparable = (Comparable) value;
             if (comparable.compareTo(fixedValue) <= 0)
             {
-                return new MatchAllDocsQuery();
+                return lqpa.getMatchAllQuery();
             }
             else
             {
-                return new TermQuery(new Term("NO_TOKENS", "__"));
+                return lqpa.getMatchNoneQuery();
             }
         }
         else
         {
-            return new TermQuery(new Term("NO_TOKENS", "__"));
+            return lqpa.getMatchNoneQuery();
         }
     }
 
@@ -271,7 +229,7 @@ public class FixedValueProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, java.lang.Boolean)
      */
-    public Query buildLuceneLike(AbstractLuceneQueryParser lqp, Serializable value, Boolean not) throws ParseException
+    public <Q, S, E extends Throwable> Q buildLuceneLike(LuceneQueryParserAdaptor<Q, S, E> lqpa, Serializable value, Boolean not) throws E
     {
         if (value != null)
         {
@@ -290,16 +248,16 @@ public class FixedValueProperty extends AbstractProperty
 
             if (matches == !not)
             {
-                return new MatchAllDocsQuery();
+                return lqpa.getMatchAllQuery();
             }
             else
             {
-                return new TermQuery(new Term("NO_TOKENS", "__"));
+                return lqpa.getMatchNoneQuery();
             }
         }
         else
         {
-            return new TermQuery(new Term("NO_TOKENS", "__"));
+            return lqpa.getMatchNoneQuery();
         }
     }
 
@@ -307,7 +265,7 @@ public class FixedValueProperty extends AbstractProperty
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#getLuceneSortField()
      */
-    public String getLuceneSortField(AbstractLuceneQueryParser lqp)
+    public <Q, S, E extends Throwable> String getLuceneSortField(LuceneQueryParserAdaptor<Q, S, E> lqpa)
     {
         throw new UnsupportedOperationException();
     }

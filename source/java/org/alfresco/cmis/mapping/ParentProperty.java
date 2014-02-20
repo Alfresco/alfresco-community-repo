@@ -19,20 +19,22 @@
 package org.alfresco.cmis.mapping;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.AnalysisMode;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParserAdaptor;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
@@ -91,132 +93,82 @@ public class ParentProperty extends AbstractProperty
         return asString;
     }
     
+    private <Q, S, E extends Throwable> StoreRef getStore(LuceneQueryParserAdaptor<Q, S, E> lqpa)
+    {
+        ArrayList<StoreRef> stores = lqpa.getSearchParameters().getStores();
+        if(stores.size() < 1)
+        {
+            // default
+            return StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+        }
+        return stores.get(0);
+    }
+    
+    private <Q, S, E extends Throwable> String getValueAsString(LuceneQueryParserAdaptor<Q, S, E> lqpa, Serializable value)
+    {
+        String nodeRefStr = (String)value;
+        if(!NodeRef.isNodeRef((String)value))
+        {
+            // assume the value (object id) is the node guid
+            StoreRef storeRef = getStore(lqpa);
+            nodeRefStr = storeRef.toString() + "/" + (String)value;
+        }
+
+        Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.NODE_REF), nodeRefStr);
+        String asString = DefaultTypeConverter.INSTANCE.convert(String.class, converted);
+        return asString;
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneEquality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public <Q, S, E extends Throwable> Q buildLuceneEquality(LuceneQueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER, luceneFunction);
+        return lqpa.getFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER, luceneFunction);
     }
 
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.Boolean)
      */
-    public Query buildLuceneExists(AbstractLuceneQueryParser lqp, Boolean not) throws ParseException
+    public <Q, S, E extends Throwable> Q buildLuceneExists(LuceneQueryParserAdaptor<Q, S, E> lqpa, Boolean not) throws E
     {
         if (not)
         {
-            return new TermQuery(new Term("ISROOT", "T"));
-        }
-        else
+            return lqpa.getFieldQuery("ISROOT", "T", AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
+            //return new TermQuery(new Term("ISROOT", "T"));
+        } else
         {
-            return new MatchAllDocsQuery();
+            return lqpa.getNegatedQuery(lqpa.getFieldQuery("ISROOT", "T", AnalysisMode.IDENTIFIER, LuceneFunction.FIELD));
+            //return new MatchAllDocsQuery();
         }
     }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneIn(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.util.Collection, java.lang.Boolean, org.alfresco.repo.search.impl.querymodel.PredicateMode)
-     */
-    public Query buildLuceneIn(AbstractLuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
-    {
-        String field = getLuceneFieldName();
-
-        // Check type conversion
-
-        @SuppressWarnings("unused")
-        Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.NODE_REF), values);
-        Collection<String> asStrings = DefaultTypeConverter.INSTANCE.convert(String.class, values);
-
-        if (asStrings.size() == 0)
-        {
-            if (not)
-            {
-                return new MatchAllDocsQuery();
-            }
-            else
-            {
-                return new TermQuery(new Term("NO_TOKENS", "__"));
-            }
-        }
-        else if (asStrings.size() == 1)
-        {
-            String value = asStrings.iterator().next();
-            if (not)
-            {
-                return lqp.getDoesNotMatchFieldQuery(field, value, AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
-            }
-            else
-            {
-                return lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
-            }
-        }
-        else
-        {
-            BooleanQuery booleanQuery = new BooleanQuery();
-            if (not)
-            {
-                booleanQuery.add(new MatchAllDocsQuery(), Occur.MUST);
-            }
-            for (String value : asStrings)
-            {
-                Query any = lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
-                if (not)
-                {
-                    booleanQuery.add(any, Occur.MUST_NOT);
-                }
-                else
-                {
-                    booleanQuery.add(any, Occur.SHOULD);
-                }
-            }
-            return booleanQuery;
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneInequality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
-     */
-    public Query buildLuceneInequality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
-    {
-        String field = getLuceneFieldName();
-        String stringValue = getValueAsString(value);
-        return lqp.getDoesNotMatchFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER, luceneFunction);
-    }
-
 
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, java.lang.Boolean)
      */
-    public Query buildLuceneLike(AbstractLuceneQueryParser lqp, Serializable value, Boolean not) throws ParseException
+    public <Q, S, E extends Throwable> Q buildLuceneLike(LuceneQueryParserAdaptor<Q, S, E> lqpa, Serializable value, Boolean not) throws E
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
         
+        Q q = lqpa.getLikeQuery(field, stringValue, AnalysisMode.IDENTIFIER);
         if (not)
         {
-            BooleanQuery booleanQuery = new BooleanQuery();
-            booleanQuery.add(new MatchAllDocsQuery(), Occur.MUST);
-            booleanQuery.add(lqp.getLikeQuery(field, stringValue, AnalysisMode.IDENTIFIER), Occur.MUST_NOT);
-            return booleanQuery;
+            q = lqpa.getNegatedQuery(q);
         }
-        else
-        {
-            return lqp.getLikeQuery(field, stringValue, AnalysisMode.IDENTIFIER);
-        }
+        return q;
     }
 
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#getLuceneSortField()
      */
-    public String getLuceneSortField(AbstractLuceneQueryParser lqp)
+    public <Q, S, E extends Throwable> String getLuceneSortField(LuceneQueryParserAdaptor<Q, S, E> lqpa)
     {
         return getLuceneFieldName();
     }

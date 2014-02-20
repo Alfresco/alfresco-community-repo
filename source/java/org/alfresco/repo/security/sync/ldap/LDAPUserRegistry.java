@@ -1271,7 +1271,11 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                     callback.process(result);
 
                     // Close the contexts, see ALF-20682
-                    ((Context)result.getObject()).close();
+                    Context resultCtx = (Context)result.getObject();
+                    if(resultCtx != null)
+                    {
+                    	resultCtx.close();
+                    }
                     result = null;
                 }
             }
@@ -1293,7 +1297,11 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             {
                 try
                 {
-                    ((Context)result.getObject()).close();
+                	Context resultCtx = (Context)result.getObject();
+                    if(resultCtx != null)
+                    {
+                    	resultCtx.close();
+                    }
                 }
                 catch (Exception e)
                 {

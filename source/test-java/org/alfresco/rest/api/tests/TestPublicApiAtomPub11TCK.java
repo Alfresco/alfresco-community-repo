@@ -32,6 +32,7 @@ public class TestPublicApiAtomPub11TCK extends AbstractEnterpriseOpenCMIS11TCKTe
     	Map<String, String> cmisParameters = new HashMap<String, String>();
     	cmisParameters.put(TestParameters.DEFAULT_RELATIONSHIP_TYPE, "R:cm:replaces");
         cmisParameters.put(TestParameters.DEFAULT_SECONDARY_TYPE, "P:cm:author");
+        cmisParameters.put(TestParameters.DEFAULT_ITEM_TYPE, "I:cm:authority");
     	clientContext = new OpenCMISClientContext(BindingType.ATOMPUB,
     			MessageFormat.format(CMIS_URL, "localhost", String.valueOf(port), "alfresco", network.getId(), "public"),
     			"admin@" + network.getId(), "admin", cmisParameters);

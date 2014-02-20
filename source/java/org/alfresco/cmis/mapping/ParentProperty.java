@@ -103,11 +103,9 @@ public class ParentProperty extends AbstractProperty
         if (not)
         {
             return lqpa.getFieldQuery("ISROOT", "T", AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
-            //return new TermQuery(new Term("ISROOT", "T"));
         } else
         {
             return lqpa.getNegatedQuery(lqpa.getFieldQuery("ISROOT", "T", AnalysisMode.IDENTIFIER, LuceneFunction.FIELD));
-            //return new MatchAllDocsQuery();
         }
     }
 

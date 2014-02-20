@@ -18,7 +18,7 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
-import org.alfresco.repo.search.impl.lucene.LuceneFunction;
+import org.alfresco.repo.search.adaptor.lucene.LuceneFunction;
 
 /**
  * @author Andy

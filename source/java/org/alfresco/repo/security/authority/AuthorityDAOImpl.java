@@ -626,9 +626,9 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             if (displayNamePattern != null)
             {
                 query.append(" AND @").append(
-                        AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_USERNAME.getNamespaceURI() + "}"
+                        SearchLanguageConversion.escapeLuceneQuery("{" + ContentModel.PROP_USERNAME.getNamespaceURI() + "}"
                                 + ISO9075.encode(ContentModel.PROP_USERNAME.getLocalName()))).append(":\"").append(
-                                        AbstractLuceneQueryParser.escape(displayNamePattern)).append("\"");
+                                        SearchLanguageConversion.escapeLuceneQuery(displayNamePattern)).append("\"");
 
             }
             if (type == null)
@@ -659,23 +659,23 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                             query.append(" OR ");
                         }
                         query.append("@").append(
-                        AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
+                        SearchLanguageConversion.escapeLuceneQuery("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
                                         + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName()))).append(":\"");
-                        query.append(getName(subType, AbstractLuceneQueryParser.escape(displayNamePattern))).append("\"");
+                        query.append(getName(subType, SearchLanguageConversion.escapeLuceneQuery(displayNamePattern))).append("\"");
                         
                     }
                 }
                 else
                 {
                     query.append("@").append(
-                            AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
+                            SearchLanguageConversion.escapeLuceneQuery("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
                                     + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName()))).append(":\"");
-                    query.append(getName(type, AbstractLuceneQueryParser.escape(displayNamePattern))).append("\"");
+                    query.append(getName(type, SearchLanguageConversion.escapeLuceneQuery(displayNamePattern))).append("\"");
                 }
                 query.append(" OR @").append(
-                        AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getNamespaceURI() + "}"
+                        SearchLanguageConversion.escapeLuceneQuery("{" + ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getNamespaceURI() + "}"
                                 + ISO9075.encode(ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getLocalName()))).append(
-                        ":\"").append(AbstractLuceneQueryParser.escape(displayNamePattern)).append("\")");
+                        ":\"").append(SearchLanguageConversion.escapeLuceneQuery(displayNamePattern)).append("\")");
             }
             if (type == null)
             {
@@ -690,7 +690,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                NodeRef parentAuthorityNodeRef = getAuthorityNodeRefOrNull(parentAuthority); 
                if(parentAuthorityNodeRef != null)
                {
-                   query.append(" AND PARENT:\"").append(AbstractLuceneQueryParser.escape(parentAuthorityNodeRef.toString())).append("\""); 
+                   query.append(" AND PARENT:\"").append(SearchLanguageConversion.escapeLuceneQuery(parentAuthorityNodeRef.toString())).append("\""); 
                }
                else
                {
@@ -710,7 +710,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             NodeRef zoneNodeRef = getZone(zoneName);
             if (zoneNodeRef != null)
             {
-                query.append(" AND PARENT:\"").append(AbstractLuceneQueryParser.escape(zoneNodeRef.toString())).append("\"");
+                query.append(" AND PARENT:\"").append(SearchLanguageConversion.escapeLuceneQuery(zoneNodeRef.toString())).append("\"");
             } 
             else
             {

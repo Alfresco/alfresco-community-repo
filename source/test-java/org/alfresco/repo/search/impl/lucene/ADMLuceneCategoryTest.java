@@ -63,6 +63,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.SearchLanguageConversion;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -871,7 +872,7 @@ public class ADMLuceneCategoryTest extends TestCase
         tx = transactionService.getUserTransaction();
         tx.begin();
         start = System.nanoTime();
-        ResultSet set = searcher.query(serviceRegistry.getPersonService().getPeopleContainer().getStoreRef(), "lucene", "@"+LuceneQueryParser.escape(ContentModel.ASPECT_GEN_CLASSIFIABLE.toString())+":second*");
+        ResultSet set = searcher.query(serviceRegistry.getPersonService().getPeopleContainer().getStoreRef(), "lucene", "@"+SearchLanguageConversion.escapeLuceneQuery(ContentModel.ASPECT_GEN_CLASSIFIABLE.toString())+":second*");
         System.out.println("Query complete in "+(System.nanoTime()-start)/1e9f);
         set.close();
         tx.commit();

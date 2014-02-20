@@ -20,8 +20,7 @@ package org.alfresco.cmis.mapping;
 
 import java.io.Serializable;
 
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserAdaptor;
-import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
+import org.alfresco.repo.search.adaptor.lucene.LuceneQueryParserAdaptor;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -101,11 +100,7 @@ public class DirectProperty extends AbstractSimpleProperty
         }
         else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
         {
-            String analyserClassName = propertyDef.resolveAnalyserClassName();
-            if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName()))
-            {
-                field = field + ".sort";
-            }
+            field = lqpa.getDatetimeSortField(field, propertyDef);
         }
 
         return field;

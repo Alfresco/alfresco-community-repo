@@ -101,6 +101,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -833,7 +834,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 query.append(" +(");
                 if (filterIsPresentAndNecessary)
                 {
-                    String escNameFilter = AbstractLuceneQueryParser.escape(filter.replace('"', ' '));
+                    String escNameFilter = SearchLanguageConversion.escapeLuceneQuery(filter.replace('"', ' '));
                     
                     query.append(" @cm\\:name:\"*" + escNameFilter + "*\"")
                          .append(" @cm\\:title:\"" + escNameFilter + "\"")
@@ -841,7 +842,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 }
                 if (sitePresetFilterIsPresent)
                 {
-                    String escPresetFilter = AbstractLuceneQueryParser.escape(sitePresetFilter.replace('"', ' '));
+                    String escPresetFilter = SearchLanguageConversion.escapeLuceneQuery(sitePresetFilter.replace('"', ' '));
                     query.append(" @st\\:sitePreset:\"" + escPresetFilter + "\"");
                 }
                 

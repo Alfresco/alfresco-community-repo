@@ -92,6 +92,7 @@ import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO9075;
+import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Token;
@@ -741,7 +742,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         sp.addStore(nodeRef.getStoreRef());
         try
         {
-            sp.setQuery("ID:" + LuceneQueryParser.escape(nodeRef.toString()));
+            sp.setQuery("ID:" + SearchLanguageConversion.escapeLuceneQuery(nodeRef.toString()));
             results = searcher.query(sp);
             for (ResultSetRow row : results)
             {

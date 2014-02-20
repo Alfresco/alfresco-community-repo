@@ -55,6 +55,7 @@ import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.SearchLanguageConversion;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -849,7 +850,7 @@ public class HiddenAspectTest
         SearchParameters sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_NAME.toString()) + ":\"" + name + "\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_NAME.toString()) + ":\"" + name + "\"");
         sp.addLocale(new Locale("en"));
         return searchService.query(sp);
     }

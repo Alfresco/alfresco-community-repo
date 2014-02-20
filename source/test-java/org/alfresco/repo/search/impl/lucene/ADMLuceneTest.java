@@ -105,6 +105,7 @@ import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.CachingDateFormat.SimpleDateFormatAndResolution;
+import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
@@ -751,7 +752,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         // testQuery(searcher, runner, "PATH:\"/d-0//meep\"");
         testQuery(searcher, runner, "PATH:\"//*\"");
         // testQuery(searcher, runner, "PATH:\"//meep\"");
-        // testQuery(searcher, runner, "@"+LuceneQueryParser.escape(propQName.toString())+":\"lemon\"");
+        // testQuery(searcher, runner, "@"+SearchLanguageConversion.escapeLuceneQuery(propQName.toString())+":\"lemon\"");
 
     }
 
@@ -4795,32 +4796,32 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alfresco Tutorial\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alfresco Tutorial\"", null);
 
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"", null);
 
         assertEquals(0, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~0", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~0", null);
 
         assertEquals(0, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~1", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~1", null);
 
         assertEquals(0, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~2", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~2", null);
 
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~3", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Tutorial Alfresco\"~3", null);
 
         assertEquals(1, results.length());
         results.close();
@@ -4832,7 +4833,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         SearchParameters sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":лемур");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(multimlQName.toString()) + ":лемур");
         sp.addLocale(new Locale("ru"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -4841,7 +4842,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":lemur");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(multimlQName.toString()) + ":lemur");
         sp.addLocale(new Locale("en"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -4850,7 +4851,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":chou");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(multimlQName.toString()) + ":chou");
         sp.addLocale(new Locale("fr"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -4859,7 +4860,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":cabbage");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(multimlQName.toString()) + ":cabbage");
         sp.addLocale(new Locale("en"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -4868,7 +4869,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":cabba*");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(multimlQName.toString()) + ":cabba*");
         sp.addLocale(new Locale("en"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -4877,7 +4878,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":ca*ge");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(multimlQName.toString()) + ":ca*ge");
         sp.addLocale(new Locale("en"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -4886,7 +4887,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":*bage");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(multimlQName.toString()) + ":*bage");
         sp.addLocale(new Locale("en"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -4895,7 +4896,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":cabage~");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(multimlQName.toString()) + ":cabage~");
         sp.addLocale(new Locale("en"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -4904,7 +4905,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":*b?ag?");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(multimlQName.toString()) + ":*b?ag?");
         sp.addLocale(new Locale("en"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -4913,7 +4914,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(multimlQName.toString()) + ":cho*");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(multimlQName.toString()) + ":cho*");
         sp.setMlAnalaysisMode(MLAnalysisMode.LOCALE_AND_ALL_CONTAINED_LOCALES);
         sp.addLocale(new Locale("fr"));
         results = searcher.query(sp);
@@ -4926,7 +4927,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(QName.createQName(TEST_NAMESPACE, "content-many-ista").toString()) + ":multicontent");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(QName.createQName(TEST_NAMESPACE, "content-many-ista").toString()) + ":multicontent");
         results = searcher.query(sp);
         assertEquals(0, results.length());
         results.close();
@@ -5191,27 +5192,27 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":\"fox\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":\"fox\"", null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".mimetype:\"text/plain\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ".mimetype:\"text/plain\"", null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".locale:\"en_GB\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ".locale:\"en_GB\"", null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".locale:en_*", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ".locale:en_*", null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".locale:e*_GB", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ".locale:e*_GB", null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ".size:\"298\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ".size:\"298\"", null);
         assertEquals(1, results.length());
         results.close();
 
@@ -5225,7 +5226,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":\"fox\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":\"fox\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5639,7 +5640,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfresc?\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfresc?\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5647,7 +5648,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfres??\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfres??\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5655,7 +5656,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfre???\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfre???\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5663,7 +5664,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfr????\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfr????\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5671,7 +5672,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alf?????\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alf?????\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5679,7 +5680,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"al??????\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"al??????\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5687,7 +5688,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"a???????\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"a???????\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5695,7 +5696,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"a??re???\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"a??re???\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5703,7 +5704,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfresco\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfresco\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5711,7 +5712,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"?lfresco\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"?lfresco\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5719,7 +5720,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"??fresco\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"??fresco\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5727,7 +5728,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"???resco\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"???resco\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5735,7 +5736,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"???res?o\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"???res?o\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5743,7 +5744,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"????e?co\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"????e?co\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5751,7 +5752,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"????e?c?\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"????e?c?\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5759,7 +5760,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"???????o\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"???????o\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5767,7 +5768,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"???re???\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"???re???\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5775,7 +5776,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfresc*\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfresc*\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5783,7 +5784,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfres*\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfres*\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5791,7 +5792,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfre*\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfre*\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5799,7 +5800,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfr*\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alfr*\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5807,7 +5808,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alf*\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"alf*\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5815,7 +5816,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"al*\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"al*\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5823,7 +5824,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"a*\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"a*\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5831,7 +5832,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"a****\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"a****\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5839,7 +5840,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*lfresco\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*lfresco\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5847,7 +5848,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*fresco\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*fresco\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5855,7 +5856,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*resco\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*resco\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5863,7 +5864,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*esco\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*esco\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5871,7 +5872,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*sco\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*sco\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5879,7 +5880,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*co\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*co\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5887,7 +5888,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*o\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*o\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5895,7 +5896,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"****lf**sc***\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"****lf**sc***\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5903,7 +5904,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*??*lf**sc***\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*??*lf**sc***\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5911,7 +5912,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alfresc*tutorial\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alfresc*tutorial\"");
         results = searcher.query(sp);
         assertEquals(0, results.length());
         results.close();
@@ -5919,7 +5920,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alf* tut*\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"Alf* tut*\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -5927,7 +5928,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*co *al\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_DESCRIPTION.toString()) + ":\"*co *al\"");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -6001,7 +6002,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
         sp.setMlAnalaysisMode(MLAnalysisMode.ALL_ONLY);
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":and");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":and");
         results = searcher.query(sp);
         assertEquals(0, results.length());
         results.close();
@@ -6010,7 +6011,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
         sp.setMlAnalaysisMode(MLAnalysisMode.ALL_ONLY);
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":\"and\"");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":\"and\"");
         results = searcher.query(sp);
         assertEquals(0, results.length());
         results.close();
@@ -6019,7 +6020,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
         sp.setMlAnalaysisMode(MLAnalysisMode.ALL_ONLY);
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banana");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -6027,7 +6028,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banana");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana");
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
@@ -6035,7 +6036,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banana");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana");
         sp.addLocale(Locale.UK);
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6044,7 +6045,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banana");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana");
         sp.setMlAnalaysisMode(MLAnalysisMode.LOCALE_AND_ALL_CONTAINING_LOCALES);
         sp.addLocale(Locale.UK);
         results = searcher.query(sp);
@@ -6054,7 +6055,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banana");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana");
         sp.addLocale(Locale.ENGLISH);
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6063,7 +6064,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banane");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banane");
         sp.addLocale(Locale.FRENCH);
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6072,7 +6073,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":香蕉");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":香蕉");
         sp.addLocale(Locale.CHINESE);
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6081,7 +6082,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banaan");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banaan");
         sp.addLocale(new Locale("nl"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6090,7 +6091,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banane");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banane");
         sp.addLocale(Locale.GERMAN);
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6099,7 +6100,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":μπανάνα");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":μπανάνα");
         sp.addLocale(new Locale("el"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6108,7 +6109,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banana");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana");
         sp.addLocale(Locale.ITALIAN);
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6117,7 +6118,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":バナナ");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":バナナ");
         sp.addLocale(new Locale("ja"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6126,7 +6127,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":바나나");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":바나나");
         sp.addLocale(new Locale("ko"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6135,7 +6136,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":banana");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":banana");
         sp.addLocale(new Locale("pt"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6144,7 +6145,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":банан");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":банан");
         sp.addLocale(new Locale("ru"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6153,7 +6154,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":plátano");
+        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(mlQName.toString()) + ":plátano");
         sp.addLocale(new Locale("es"));
         results = searcher.query(sp);
         assertEquals(1, results.length());
@@ -6251,38 +6252,38 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":fox", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":fox", null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":fo*", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":fo*", null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":f*x", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":f*x", null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) + ":*ox", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toString()) + ":*ox", null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) + ":fox",
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) + ":fox",
                 null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) + ":fo*",
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) + ":fo*",
                 null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) + ":f*x",
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) + ":f*x",
                 null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) + ":*ox",
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_CONTENT.toPrefixString(namespacePrefixResolver)) + ":*ox",
                 null);
         assertEquals(1, results.length());
         results.close();
@@ -7408,7 +7409,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     private String escapeQName(QName qname)
     {
-        return LuceneQueryParser.escape(qname.toString());
+        return SearchLanguageConversion.escapeLuceneQuery(qname.toString());
     }
 
     /**

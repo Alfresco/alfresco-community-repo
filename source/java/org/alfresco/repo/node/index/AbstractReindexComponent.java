@@ -40,24 +40,22 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.search.Indexer;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.LuceneResultSetRow;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
-import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -65,6 +63,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -568,7 +567,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                     sp.addStore(nodeRef.getStoreRef());
                     try
                     {
-                        sp.setQuery("ID:" + LuceneQueryParser.escape(nodeRef.toString()));
+                        sp.setQuery("ID:" + SearchLanguageConversion.escapeLuceneQuery(nodeRef.toString()));
     
                         results = searcher.query(sp);
                         for (ResultSetRow row : results)
@@ -596,7 +595,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                     }
                     try
                     {
-                        sp.setQuery("FTSREF:" + LuceneQueryParser.escape(nodeRef.toString()));
+                        sp.setQuery("FTSREF:" + SearchLanguageConversion.escapeLuceneQuery(nodeRef.toString()));
     
                         results = searcher.query(sp);
                         for (ResultSetRow row : results)
@@ -662,7 +661,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             sp.addStore(storeRef);
             // search for it in the index, sorting with youngest first, fetching only 1
             sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-            sp.setQuery("TX:" + AbstractLuceneQueryParser.escape(changeTxnId));
+            sp.setQuery("TX:" + SearchLanguageConversion.escapeLuceneQuery(changeTxnId));
             sp.setLimit(1);
             
             results = searcher.query(sp);
@@ -713,7 +712,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 sp.addStore(storeRef);
                 // search for it in the index, sorting with youngest first, fetching only 1
                 sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-                sp.setQuery("ID:" + AbstractLuceneQueryParser.escape(nodeRef.toString()));
+                sp.setQuery("ID:" + SearchLanguageConversion.escapeLuceneQuery(nodeRef.toString()));
                 sp.setLimit(1);
 
                 results = searcher.query(sp);

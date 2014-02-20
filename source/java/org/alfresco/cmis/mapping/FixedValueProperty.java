@@ -22,8 +22,8 @@ import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.repo.search.impl.lucene.LuceneFunction;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParserAdaptor;
+import org.alfresco.repo.search.adaptor.lucene.LuceneFunction;
+import org.alfresco.repo.search.adaptor.lucene.LuceneQueryParserAdaptor;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;

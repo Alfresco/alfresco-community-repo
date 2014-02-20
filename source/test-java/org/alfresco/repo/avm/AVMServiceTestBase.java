@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.LegacyCategory;
+import org.alfresco.util.SearchLanguageConversion;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -307,38 +308,38 @@ public class AVMServiceTestBase extends TestCase
         
         // Note "a" is a stop word and therefore not findable ...
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_NAME)+":\"foo\"");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_NAME)+":\"foo\"");
         assertEquals(1, results.length());
         results.close();
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_NAME)+":foo");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_NAME)+":foo");
         assertEquals(1, results.length());
         results.close();
         
         // TODO: Fix auth in AVMDiskDriver and more??
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_CREATOR)+":admin");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_CREATOR)+":admin");
       
         assertEquals(9, results.length());
         results.close();
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_MODIFIER)+":admin");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_MODIFIER)+":admin");
         assertEquals(9, results.length());
         results.close();
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_OWNER)+":admin");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_OWNER)+":admin");
         assertEquals(9, results.length());
         results.close();
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_NODE_UUID)+":unknown");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_NODE_UUID)+":unknown");
         assertEquals(9, results.length());
         results.close();
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_STORE_PROTOCOL)+":avm");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_STORE_PROTOCOL)+":avm");
         assertEquals(9, results.length());
         results.close();
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_STORE_IDENTIFIER)+":"+store);
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_STORE_IDENTIFIER)+":"+store);
         assertEquals(9, results.length());
         results.close();
         
@@ -439,17 +440,17 @@ public class AVMServiceTestBase extends TestCase
         
         // Note "a" is a stop word and therefore not findable ...
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_NAME)+":\"foo\"");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_NAME)+":\"foo\"");
         assertEquals(1, results.length());
         results.close();
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_NAME)+":foo");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_NAME)+":foo");
         assertEquals(1, results.length());
         results.close();
         
         // TODO: Fix auth in AVMDiskDriver and more??
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_CREATOR)+":admin");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_CREATOR)+":admin");
         if(results.length() == 10)
         {
         for (ResultSetRow row : results)
@@ -460,23 +461,23 @@ public class AVMServiceTestBase extends TestCase
         assertEquals(6, results.length());
         results.close();
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_MODIFIER)+":admin");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_MODIFIER)+":admin");
         assertEquals(6, results.length());
         results.close();
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_OWNER)+":admin");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_OWNER)+":admin");
         assertEquals(6, results.length());
         results.close();
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_NODE_UUID)+":unknown");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_NODE_UUID)+":unknown");
         assertEquals(6, results.length());
         results.close();
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_STORE_PROTOCOL)+":avm");
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_STORE_PROTOCOL)+":avm");
         assertEquals(6, results.length());
         results.close();
         
-        results = searchService.query(storeRef, "lucene", AbstractLuceneQueryParser.escape("@"+ContentModel.PROP_STORE_IDENTIFIER)+":"+store);
+        results = searchService.query(storeRef, "lucene", SearchLanguageConversion.escapeLuceneQuery("@"+ContentModel.PROP_STORE_IDENTIFIER)+":"+store);
         assertEquals(6, results.length());
         results.close();
         

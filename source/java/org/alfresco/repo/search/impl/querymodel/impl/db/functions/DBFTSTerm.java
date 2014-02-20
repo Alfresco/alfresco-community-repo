@@ -24,8 +24,8 @@ import java.util.Set;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
-import org.alfresco.repo.search.impl.lucene.AnalysisMode;
+import org.alfresco.repo.search.adaptor.lucene.AnalysisMode;
+import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
@@ -82,7 +82,7 @@ public class DBFTSTerm extends FTSTerm implements DBQueryBuilderComponent
         {
             throw new QueryModelException("Default field not supported");
         }
-        else if (propArg.getPropertyName().equals(AbstractLuceneQueryParser.FIELD_PARENT))
+        else if (propArg.getPropertyName().equals(QueryConstants.FIELD_PARENT))
         {
             ParentSupport parentSupport = new ParentSupport();
             String id = (String) term;
@@ -90,27 +90,27 @@ public class DBFTSTerm extends FTSTerm implements DBQueryBuilderComponent
             parentSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.EQUALS);
             builderSupport = parentSupport;
         }
-        else if (propArg.getPropertyName().equals(AbstractLuceneQueryParser.FIELD_TYPE))
+        else if (propArg.getPropertyName().equals(QueryConstants.FIELD_TYPE))
         {
             TypeSupport typeSupport = new TypeSupport();
             typeSupport.setQnameIds(DBQuery.findTypeIds(term, namespaceService, dictionaryService, qnameDAO, false));
             typeSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.IN);
             builderSupport = typeSupport;
         }
-        else if (propArg.getPropertyName().equals(AbstractLuceneQueryParser.FIELD_ASPECT))
+        else if (propArg.getPropertyName().equals(QueryConstants.FIELD_ASPECT))
         {
             AspectSupport aspectSupport = new AspectSupport();
             aspectSupport.setQnameIds(DBQuery.findAspectIds(term, namespaceService, dictionaryService, qnameDAO, false));
             builderSupport = aspectSupport;
         }
-        else if (propArg.getPropertyName().equals(AbstractLuceneQueryParser.FIELD_EXACTTYPE))
+        else if (propArg.getPropertyName().equals(QueryConstants.FIELD_EXACTTYPE))
         {
             TypeSupport typeSupport = new TypeSupport();
             typeSupport.setQnameIds(DBQuery.findTypeIds(term, namespaceService, dictionaryService, qnameDAO, true));
             typeSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.IN);
             builderSupport = typeSupport;
         }
-        else if (propArg.getPropertyName().equals(AbstractLuceneQueryParser.FIELD_EXACTASPECT))
+        else if (propArg.getPropertyName().equals(QueryConstants.FIELD_EXACTASPECT))
         {
             AspectSupport aspectSupport = new AspectSupport();
             aspectSupport.setQnameIds(DBQuery.findAspectIds(term, namespaceService, dictionaryService, qnameDAO, true));

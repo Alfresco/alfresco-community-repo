@@ -439,14 +439,14 @@ public class SolrSearchService implements SearchService
             sb.append("+ID:\"").append(nodeRef.toString()).append("\" +(TEXT:(").append(googleLikePattern.toLowerCase()).append(") ");
             if (propertyQName != null)
             {
-                sb.append(" OR @").append(LuceneQueryParser.escape(QName.createQName(propertyQName.getNamespaceURI(), ISO9075.encode(propertyQName.getLocalName())).toString()));
+                sb.append(" OR @").append(SearchLanguageConversion.escapeLuceneQuery(QName.createQName(propertyQName.getNamespaceURI(), ISO9075.encode(propertyQName.getLocalName())).toString()));
                 sb.append(":(").append(googleLikePattern.toLowerCase()).append(")");
             }
             else
             {
                 for (QName key : nodeService.getProperties(nodeRef).keySet())
                 {
-                    sb.append(" OR @").append(LuceneQueryParser.escape(QName.createQName(key.getNamespaceURI(), ISO9075.encode(key.getLocalName())).toString()));
+                    sb.append(" OR @").append(SearchLanguageConversion.escapeLuceneQuery(QName.createQName(key.getNamespaceURI(), ISO9075.encode(key.getLocalName())).toString()));
                     sb.append(":(").append(googleLikePattern.toLowerCase()).append(")");
                 }
             }
@@ -501,7 +501,7 @@ public class SolrSearchService implements SearchService
             }
             if (propertyQName != null)
             {
-                sb.append(" @").append(LuceneQueryParser.escape(QName.createQName(propertyQName.getNamespaceURI(), ISO9075.encode(propertyQName.getLocalName())).toString()))
+                sb.append(" @").append(SearchLanguageConversion.escapeLuceneQuery(QName.createQName(propertyQName.getNamespaceURI(), ISO9075.encode(propertyQName.getLocalName())).toString()))
                         .append(":(").append(pattern).append(")");
             }
             sb.append(")");

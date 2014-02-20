@@ -38,14 +38,6 @@ import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.dictionary.constraint.NumericRangeConstraint;
 import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
-import org.alfresco.repo.search.impl.lucene.analysis.DateAnalyser;
-import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
-import org.alfresco.repo.search.impl.lucene.analysis.DoubleAnalyser;
-import org.alfresco.repo.search.impl.lucene.analysis.FloatAnalyser;
-import org.alfresco.repo.search.impl.lucene.analysis.IntegerAnalyser;
-import org.alfresco.repo.search.impl.lucene.analysis.LongAnalyser;
-import org.alfresco.repo.search.impl.lucene.analysis.PathAnalyser;
-import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -172,21 +164,19 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
                     break;
                 case TRUE:
                 default:
-                    String analyserClassName = propDef.resolveAnalyserClassName();
-                    if (propDef.getDataType().getName().equals(DataTypeDefinition.BOOLEAN))
+                    if (propDef.getDataType().getName().equals(DataTypeDefinition.BOOLEAN)
+                            || propDef.getDataType().getName().equals(DataTypeDefinition.DATE)
+                            || propDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)
+                            || propDef.getDataType().getName().equals(DataTypeDefinition.DOUBLE)
+                            || propDef.getDataType().getName().equals(DataTypeDefinition.FLOAT)
+                            || propDef.getDataType().getName().equals(DataTypeDefinition.INT)
+                            || propDef.getDataType().getName().equals(DataTypeDefinition.LONG)
+                            || propDef.getDataType().getName().equals(DataTypeDefinition.PATH)
+                            )
                     {
                         orderable = true;
-                    } else if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(DateAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(DoubleAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(FloatAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(IntegerAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(LongAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(PathAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(VerbatimAnalyser.class.getCanonicalName()))
-                    {
-                        orderable = true;
-                    } else
+                    } 
+                    else
                     {
                         orderable = false;
                     }

@@ -24,7 +24,7 @@ import java.util.Set;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.search.impl.lucene.AnalysisMode;
+import org.alfresco.repo.search.adaptor.lucene.AnalysisMode;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;

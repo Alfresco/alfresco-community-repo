@@ -25,16 +25,7 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.repo.search.Indexer;
-import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.I18NUtil;
 

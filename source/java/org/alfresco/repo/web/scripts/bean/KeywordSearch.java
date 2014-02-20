@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.GUID;
+import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.queryParser.QueryParser;
@@ -158,7 +159,7 @@ public class KeywordSearch extends DeclarativeWebScript
             // Escape special characters in the terms, so that they can't confuse the parser 
             for (int i=0; i<terms.length; i++) 
             { 
-                terms[i] = QueryParser.escape(terms[i]); 
+                terms[i] = SearchLanguageConversion.escapeLuceneQuery(terms[i]); 
             } 
 
             Map<String, Object> statementModel = new HashMap<String, Object>(7, 1.0f);

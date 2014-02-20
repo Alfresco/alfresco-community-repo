@@ -108,7 +108,16 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 {
                     logger.debug("Using SOLR query: "+dbQueryLanguage.getName()+" for "+searchParameters);
                 }
-                return indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                StopWatch stopWatch = new StopWatch("index only");
+                stopWatch.start();
+                ResultSet results = indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                stopWatch.stop();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("SOLR returned " + results.length() + " results in " +
+                                 stopWatch.getLastTaskTimeMillis() + "ms");
+                }
+                return results;
             }
             else
             {
@@ -121,7 +130,16 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 {
                     logger.debug("Trying db query for "+dbQueryLanguage.getName()+" for "+searchParameters);
                 }
-                return dbQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                StopWatch stopWatch = new StopWatch("database only");
+                stopWatch.start();
+                ResultSet results = dbQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                stopWatch.stop();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("DB returned " + results.length() + " results in " +
+                                 stopWatch.getLastTaskTimeMillis() + "ms");
+                }
+                return results;
             }
             else
             {
@@ -136,6 +154,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         case DEFAULT:
         case TRANSACTIONAL_IF_POSSIBLE:
         default:
+            StopWatch stopWatch = new StopWatch("DB if possible");
             if(dbQueryLanguage != null)
             {
                 try
@@ -144,7 +163,15 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                     {
                         logger.debug("Trying db query for "+dbQueryLanguage.getName()+" for "+searchParameters);
                     }
-                    return dbQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                    stopWatch.start();
+                    ResultSet results = dbQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                    stopWatch.stop();
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("DB returned " + results.length() + " results in " +
+                                     stopWatch.getLastTaskTimeMillis() + "ms");
+                    }
+                    return results;
                 }
                 catch(QueryModelException qme)
                 {
@@ -160,7 +187,15 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                         {
                             logger.debug("Using SOLR query: "+dbQueryLanguage.getName()+" for "+searchParameters);
                         }
-                        return indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                        stopWatch.start();
+                        ResultSet results = indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                        stopWatch.stop();
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("SOLR returned " + results.length() + " results in " +
+                                         stopWatch.getLastTaskTimeMillis() + "ms");
+                        }
+                        return results;
                     }
                 }
             }
@@ -172,7 +207,15 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                     {
                         logger.debug("(No DB QL) Using SOLR query: "+dbQueryLanguage.getName()+" for "+searchParameters);
                     }
-                    return indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                    stopWatch.start();
+                    ResultSet results = indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                    stopWatch.stop();
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("SOLR returned " + results.length() + " results in " +
+                                     stopWatch.getLastTaskTimeMillis() + "ms");
+                    }
+                    return results;
                 }
             }
             throw new QueryModelException("No query language available");

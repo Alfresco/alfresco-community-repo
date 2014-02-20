@@ -290,11 +290,11 @@ var ParseArgs =
          status.setCode(status.STATUS_GONE, "Location is 'null'. (No permission?)");
          return null;
       }
-      // Commented this out because it was generating duplicate entries in the path...
-      // if (path !== "")
-      // {
-      //    location.path = ParseArgs.combinePaths(location.path, location.file);
-      // }
+      // ACE-565 fix. Commenting current line causes the incorrect folder navigation into Document Library
+      if (path !== "")
+      {
+         location.path = ParseArgs.combinePaths(location.path, location.file);
+      }
       if (args.filter !== "node" && !pathNode.isContainer)
       {
          location.file = "";

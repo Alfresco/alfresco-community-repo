@@ -1149,7 +1149,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	/**
 	 * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#removeCustomReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
 	 */
-	public void removeCustomReference(NodeRef fromNode, NodeRef toNode, QName assocId)
+	public void removeCustomReference(final NodeRef fromNode, final NodeRef toNode, final QName assocId)
 	{
 		Map<QName, AssociationDefinition> availableAssocs = this.getCustomReferenceDefinitions();
 
@@ -1166,14 +1166,23 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 		    // TODO:  Ask for a more efficient method such as
 		    //        nodeService.removeChildAssociation(fromNode, toNode, chRef.getTypeQName(), null);
 
-			List<ChildAssociationRef> children = nodeService.getChildAssocs(fromNode);
-			for (ChildAssociationRef chRef : children)
-			{
-				if (assocId.equals(chRef.getTypeQName()) && chRef.getChildRef().equals(toNode))
-				{
-					nodeService.removeChildAssociation(chRef);
-				}
-			}
+		    AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+		    {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    List<ChildAssociationRef> children = nodeService.getChildAssocs(fromNode);
+                    for (ChildAssociationRef chRef : children)
+                    {
+                        if (assocId.equals(chRef.getTypeQName()) && chRef.getChildRef().equals(toNode))
+                        {
+                            nodeService.removeChildAssociation(chRef);
+                        }
+                    }
+                    
+                    return null;
+                }
+            });
 		}
 		else
 		{

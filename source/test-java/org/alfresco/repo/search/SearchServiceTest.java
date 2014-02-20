@@ -23,6 +23,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.solr.DisabledFeatureException;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -32,6 +33,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
+import org.alfresco.service.cmr.search.QueryConsistency;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
@@ -159,6 +161,27 @@ public class SearchServiceTest extends TestCase
         authenticationComponent.clearCurrentSecurityContext();
         tx.rollback();
         super.tearDown();
+    }
+
+    public void testHybridDisabledByDefault()
+    {
+        try
+        {
+            authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+            SearchParameters sp = new SearchParameters();
+            sp.setQueryConsistency(QueryConsistency.HYBRID);
+            sp.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
+            sp.setQuery("select * from cmis:document where cmis:name like '%alfresco%'");
+            sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+            
+            pubSearchService.query(sp);
+            
+            fail("Hybrid search should be disabled.");
+        }
+        catch (DisabledFeatureException e)
+        {
+            // Got here, good.
+        }
     }
 
     public void testAdmim()

@@ -41,6 +41,11 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
     LuceneQueryLanguageSPI indexQueryLanguage;
     
     QueryConsistency queryConsistency = QueryConsistency.DEFAULT;
+    private NodeService nodeService;
+    
+    private SOLRDAO solrDao;
+    
+    private boolean hybridEnabled;
     
     /**
      * @param dbQueryLanguage the dbQueryLanguage to set
@@ -70,7 +75,20 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         this.queryConsistency = queryConsistency;
     }
 
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
 
+    public void setSolrDao(SOLRDAO solrDao)
+    {
+        this.solrDao = solrDao;
+    }
+
+    public void setHybridEnabled(boolean hybridEnabled)
+    {
+        this.hybridEnabled = hybridEnabled;
+    }
 
     public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
     {
@@ -108,6 +126,12 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
             {
                 throw new QueryModelException("No query language available");
             }
+        case HYBRID:
+            if (!hybridEnabled)
+            {
+                throw new DisabledFeatureException("Hybrid query is disabled.");
+            }
+            return executeHybridQuery(searchParameters, admLuceneSearcher);
         case DEFAULT:
         case TRANSACTIONAL_IF_POSSIBLE:
         default:

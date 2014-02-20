@@ -22,6 +22,8 @@
         <property name="queryConsistency">
             <value>${solr.query.cmis.queryConsistency}</value>
         </property>
+        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
+        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
     </bean>
         
     <bean id="search.cmis.strict.switching" class="org.alfresco.repo.search.impl.solr.DbOrIndexSwitchingQueryLanguage" >
@@ -42,6 +44,8 @@
         <property name="queryConsistency">
             <value>${solr.query.cmis.queryConsistency}</value>
         </property>
+        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
+        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
     </bean>
      
     <bean id="search.cmis.alfresco.db" class="org.alfresco.repo.search.impl.solr.DbCmisQueryLanguage" >

@@ -84,6 +84,8 @@
         <property name="queryConsistency">
             <value>${solr.query.fts.queryConsistency}</value>
         </property>
+        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
+        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
     </bean>
     
     <bean id="search.fts.alfresco.db" class="org.alfresco.repo.search.impl.solr.DbAftsQueryLanguage" >

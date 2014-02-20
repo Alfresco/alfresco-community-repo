@@ -179,4 +179,80 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         
         
     }
+    private ResultSet executeHybridQuery(SearchParameters searchParameters,
+                                         ADMLuceneSearcherImpl admLuceneSearcher)
+    {
+        if (indexQueryLanguage == null || dbQueryLanguage == null)
+        {
+            throw new QueryModelException("Both index and DB query language required for hybrid search [index=" +
+                                          indexQueryLanguage + ", DB=" + dbQueryLanguage + "]");
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Hybrid search, using SOLR query: "+dbQueryLanguage.getName()+" for "+searchParameters);
+        }
+        ResultSet indexResults = indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("SOLR query returned " + indexResults.length() + " results.");
+        }
+        if (!(indexResults instanceof SolrJSONResultSet))
+        {
+            if (logger.isWarnEnabled())
+            {
+                logger.warn("Hybrid search can only use database when SOLR is also in use. " +
+                            "Skipping DB search, returning results from index.");
+            }
+            return indexResults;            
+        }
+        
+        long lastTxId = ((SolrJSONResultSet) indexResults).getLastIndexedTxId();
+        searchParameters.setSinceTxId(lastTxId);
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("Hybrid search, using DB query: "+dbQueryLanguage.getName()+" for "+searchParameters);
+        }
+        ResultSet dbResults = dbQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("DB query returned " + dbResults.length() + " results.");
+        }
+        // Merge result sets
+        List<ChildAssociationRef> childAssocs = new ArrayList<>();
+        NodeParameters nodeParameters = new NodeParameters();
+        nodeParameters.setFromTxnId(lastTxId+1);
+        // TODO: setToTxnId(null) when SolrDAO behaviour is fixed.
+        nodeParameters.setToTxnId(Long.MAX_VALUE);
+        List<Node> changedNodeList = solrDao.getNodes(nodeParameters);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Nodes changed since last indexed transaction (ID " + lastTxId + ") = " + changedNodeList.size());
+        }
+        Set<NodeRef> nodeRefs = new HashSet<>(changedNodeList.size());
+        for (Node n : changedNodeList)
+        {
+            nodeRefs.add(n.getNodeRef());
+        }
+        // Only use the SOLR results for nodes that haven't changed since indexing.
+        for (ChildAssociationRef car : indexResults.getChildAssocRefs())
+        {
+            if (!nodeRefs.contains(car.getChildRef()))
+            {
+                childAssocs.add(car);
+            }
+        }
+        // Merge in all the database results.
+        childAssocs.addAll(dbResults.getChildAssocRefs());
+        
+        ResultSet results = new ChildAssocRefResultSet(nodeService, childAssocs);
+        
+        if (logger.isDebugEnabled())
+        {
+            String stats = String.format("SOLR=%d, DB=%d, total=%d",
+                        indexResults.length(), dbResults.length(), results.length());
+            logger.debug("Hybrid search returning combined results with counts: " + stats);
+        }
+        return results;
+    }
 }

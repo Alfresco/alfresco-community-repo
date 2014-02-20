@@ -1337,6 +1337,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 throw new CmisConstraintException("Type is not a relationship type!");
             case CMIS_POLICY:
                 throw new CmisConstraintException("Type is not a policy type!");
+            case CMIS_ITEM:
+                throw new CmisConstraintException("Type is not an item type!");    
             }
         }
 

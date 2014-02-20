@@ -175,6 +175,10 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 }
                 catch(QueryModelException qme)
                 {
+                    if(stopWatch.isRunning())
+                    {
+                        stopWatch.stop();
+                    }
                     // MNT-10323: Logging configuration on JBoss leads to clogging of the log with a lot of these errors because of INFO level when WQS module is installed
                     if (logger.isDebugEnabled())
                     {

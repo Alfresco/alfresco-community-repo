@@ -120,6 +120,7 @@ public class CMISQueryParser
         this.validScopes = (options.getQueryMode() == CMISQueryMode.CMS_STRICT) ? CmisFunctionEvaluationContext.STRICT_SCOPES : CmisFunctionEvaluationContext.ALFRESCO_SCOPES;
     }
 
+    @SuppressWarnings("unused")
     public Query parse(QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext)
     {
 

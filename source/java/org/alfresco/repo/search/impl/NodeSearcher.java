@@ -127,6 +127,7 @@ public class NodeSearcher
             {
                 nsXPath.addNamespace(prefix, namespacePrefixResolver.getNamespaceURI(prefix));
             }
+            @SuppressWarnings("rawtypes")
             List list = nsXPath.selectNodes(nodeService.getPrimaryParent(contextNodeRef));
             HashSet<NodeRef> unique = new HashSet<NodeRef>(list.size());
             for (Object o : list)
@@ -183,7 +184,7 @@ public class NodeSearcher
             this.order = order;
         }
         
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         public int compare(NodeRef n1, NodeRef n2)
         {
             for (AttributeOrder attributeOrder : order)
@@ -244,6 +245,7 @@ public class NodeSearcher
             {
                 nsXPath.addNamespace(prefix, namespacePrefixResolver.getNamespaceURI(prefix));
             }
+            @SuppressWarnings("rawtypes")
             List list = nsXPath.selectNodes(nodeService.getPrimaryParent(contextNodeRef));
             List<Serializable> answer = new ArrayList<Serializable>(list.size());
             for (Object o : list)

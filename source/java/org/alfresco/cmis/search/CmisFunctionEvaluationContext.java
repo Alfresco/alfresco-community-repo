@@ -30,8 +30,6 @@ import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISQueryException;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
-import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
-import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserAdaptor;
@@ -47,11 +45,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
-import org.apache.lucene.search.Query;
 
 /**
  * @author andyh
  */
+@SuppressWarnings("deprecation")
 public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
 {
     private static HashSet<String> EXPOSED_FIELDS = new HashSet<String>();

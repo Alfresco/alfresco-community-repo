@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.LuceneResultSetRow;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -333,6 +332,7 @@ public class SortedResultSet implements ResultSet
             this.locale = locale;
         }
 
+        @SuppressWarnings({ "rawtypes", "unchecked" })
         public int compare(NodeRefAndScore n1, NodeRefAndScore n2)
         {
             // Treat missing nodes as null for comparison

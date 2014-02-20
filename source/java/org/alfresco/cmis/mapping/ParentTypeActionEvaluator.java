@@ -27,6 +27,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.apache.chemistry.abdera.ext.CMISAllowableActions;
+import org.apache.chemistry.opencmis.commons.impl.jaxb.MultiFilingServicePort;
 
 /**
  * This evaluator determines an action availability in accordance with parent(s) of object. The rules are:<br />

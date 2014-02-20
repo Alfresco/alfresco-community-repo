@@ -34,13 +34,13 @@ public class CanCheckInActionEvaluator extends AbstractActionEvaluator<NodeRef>
 {
     private NodeService nodeService;
 
-    private PermissionActionEvaluator permissionEvaluator;
+    private PermissionActionEvaluator<NodeRef> permissionEvaluator;
 
     protected CanCheckInActionEvaluator(ServiceRegistry serviceRegistry)
     {
         super(serviceRegistry, CMISAllowedActionEnum.CAN_CHECKIN);
 
-        permissionEvaluator = new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_CHECKIN, false, PermissionService.CHECK_IN);
+        permissionEvaluator = new PermissionActionEvaluator<NodeRef>(serviceRegistry, CMISAllowedActionEnum.CAN_CHECKIN, false, PermissionService.CHECK_IN);
 
         nodeService = serviceRegistry.getNodeService();
     }

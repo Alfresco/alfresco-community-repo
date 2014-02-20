@@ -37,6 +37,9 @@ import org.alfresco.cmis.CMISPropertyId;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeId;
+import org.alfresco.cmis.mapping.ParentTypeActionEvaluator.ParentTypeEnum;
+import org.alfresco.cmis.mapping.PropertyActionEvaluator.PropertyDescriptor;
+import org.alfresco.cmis.mapping.TypeAttributeActionEvaluator.TypeDefinitionAttributeEnum;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.CMISAccessControlFormatEnum;
@@ -55,9 +58,6 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.alfresco.cmis.mapping.ParentTypeActionEvaluator.ParentTypeEnum;
-import org.alfresco.cmis.mapping.PropertyActionEvaluator.PropertyDescriptor;
-import org.alfresco.cmis.mapping.TypeAttributeActionEvaluator.TypeDefinitionAttributeEnum;
 
 
 /**
@@ -140,6 +140,7 @@ public class CMISMapping implements InitializingBean
      * (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
+    @SuppressWarnings("deprecation")
     public void afterPropertiesSet() throws Exception
     {
         //

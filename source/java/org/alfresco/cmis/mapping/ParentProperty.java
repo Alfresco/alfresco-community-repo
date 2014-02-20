@@ -19,11 +19,8 @@
 package org.alfresco.cmis.mapping;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
 
 import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.AnalysisMode;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserAdaptor;
@@ -32,14 +29,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 /**
  * Get the CMIS parent property
@@ -89,32 +79,6 @@ public class ParentProperty extends AbstractProperty
     private String getValueAsString(Serializable value)
     {
         Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.NODE_REF), value);
-        String asString = DefaultTypeConverter.INSTANCE.convert(String.class, converted);
-        return asString;
-    }
-    
-    private <Q, S, E extends Throwable> StoreRef getStore(LuceneQueryParserAdaptor<Q, S, E> lqpa)
-    {
-        ArrayList<StoreRef> stores = lqpa.getSearchParameters().getStores();
-        if(stores.size() < 1)
-        {
-            // default
-            return StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-        }
-        return stores.get(0);
-    }
-    
-    private <Q, S, E extends Throwable> String getValueAsString(LuceneQueryParserAdaptor<Q, S, E> lqpa, Serializable value)
-    {
-        String nodeRefStr = (String)value;
-        if(!NodeRef.isNodeRef((String)value))
-        {
-            // assume the value (object id) is the node guid
-            StoreRef storeRef = getStore(lqpa);
-            nodeRefStr = storeRef.toString() + "/" + (String)value;
-        }
-
-        Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.NODE_REF), nodeRefStr);
         String asString = DefaultTypeConverter.INSTANCE.convert(String.class, converted);
         return asString;
     }

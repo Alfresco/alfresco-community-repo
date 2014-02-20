@@ -68,7 +68,6 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
-import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -94,7 +93,6 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
@@ -159,7 +157,9 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     private Map<String, NodeRef> defaultRootNodeRefs;
     
     // data types for query
+    @SuppressWarnings("unused")
     private DataTypeDefinition nodeRefDataType;
+    @SuppressWarnings("unused")
     private DataTypeDefinition textDataType;
     
     

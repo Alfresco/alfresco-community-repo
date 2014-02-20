@@ -69,6 +69,7 @@ public abstract class AbstractVersioningProperty extends AbstractProperty
         return getServiceRegistry().getCheckOutCheckInService().isWorkingCopy(nodeRef);
     }
     
+    @SuppressWarnings("deprecation")
     public boolean isImmutable(NodeRef nodeRef)
     {
         return getServiceRegistry().getLockService().getLockType(nodeRef) == LockType.READ_ONLY_LOCK;

@@ -20,14 +20,13 @@ package org.alfresco.cmis;
 
 import java.util.Locale;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
-import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * The options for a CMIS query

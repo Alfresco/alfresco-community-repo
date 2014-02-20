@@ -57,6 +57,7 @@ import org.apache.lucene.search.SortField;
 /**
  * @author andyh
  */
+@SuppressWarnings("deprecation")
 public class LuceneQueryEngine implements QueryEngine
 {
     protected static final Log logger = LogFactory.getLog(LuceneQueryEngine.class);
@@ -122,7 +123,7 @@ public class LuceneQueryEngine implements QueryEngine
 
     public QueryModelFactory getQueryModelFactory()
     {
-        return new LuceneQueryModelFactory();
+        return new LuceneQueryModelFactory<org.apache.lucene.search.Query, Sort, ParseException>();
     }
     
     /**

@@ -19,11 +19,9 @@
 package org.alfresco.cmis.mapping;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserAdaptor;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
@@ -33,10 +31,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.SearchLanguageConversion;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 /**
  * Property accessor for fixed value mapping (eg to null, true, etc)
@@ -134,6 +128,7 @@ public class FixedValueProperty extends AbstractProperty
     {
         if (value instanceof Comparable)
         {
+            @SuppressWarnings("rawtypes")
             Comparable comparable = (Comparable) value;
             if (comparable.compareTo(fixedValue) > 0)
             {
@@ -159,6 +154,7 @@ public class FixedValueProperty extends AbstractProperty
     {
         if (value instanceof Comparable)
         {
+            @SuppressWarnings("rawtypes")
             Comparable comparable = (Comparable) value;
             if (comparable.compareTo(fixedValue) >= 0)
             {
@@ -184,6 +180,7 @@ public class FixedValueProperty extends AbstractProperty
     {
         if (value instanceof Comparable)
         {
+            @SuppressWarnings("rawtypes")
             Comparable comparable = (Comparable) value;
             if (comparable.compareTo(fixedValue) < 0)
             {
@@ -209,6 +206,7 @@ public class FixedValueProperty extends AbstractProperty
     {
         if (value instanceof Comparable)
         {
+            @SuppressWarnings("rawtypes")
             Comparable comparable = (Comparable) value;
             if (comparable.compareTo(fixedValue) <= 0)
             {

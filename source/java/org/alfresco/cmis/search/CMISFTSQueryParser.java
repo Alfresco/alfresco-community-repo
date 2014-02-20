@@ -50,6 +50,7 @@ import org.antlr.runtime.tree.Tree;
 
 public class CMISFTSQueryParser
 {
+    @SuppressWarnings("unused")
     static public Constraint buildFTS(String ftsExpression, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext, Selector selector,
             Map<String, Column> columnMap, String defaultField)
     {

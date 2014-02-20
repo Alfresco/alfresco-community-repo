@@ -257,7 +257,7 @@ public class TypeAttributeActionEvaluator<ObjectType> extends AbstractActionEval
          * @return - {@link Boolean} value, which determines: <code>true</code> - actual attribute value satisfies all the conditions of the <code>comparator</code> parameter,
          *         <code>false</code> - actual attribute value doesn't satisfy conditions of the <code>comparator</code> parameter
          */
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         public boolean satisfies(CMISTypeDefinition typeDefinition, Pair<Object, Comparable<Object>> comparator, boolean nullExpected, boolean defaultAllowing)
         {
             if (null == typeDefinition)

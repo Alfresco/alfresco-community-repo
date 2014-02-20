@@ -19,11 +19,9 @@
       <property name="private" value="true"/>
       <property name="capabilities">
          <list>
-            <ref bean="rmDestroyRecordsScheduledForDestructionCapability"/>
-            <ref bean="rmDestroyRecordsCapability"/>
             <ref bean="rmDeleteRecordsCapability"/>
             <ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>
-            <ref bean="rmCreateModifyDestroyFoldersCapability"/>
+            <ref bean="rmDeleteRecordFolderCapability"/>
          </list>
       </property>
    </bean>
@@ -35,7 +33,7 @@
       <property name="private" value="true"/>
       <property name="capabilities">
          <list>
-            <ref bean="rmCreateModifyDestroyFoldersCapability"/>
+            <ref bean="rmModifyRecordFolderCapability"/>
             <ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>
             <ref bean="rmEditDeclaredRecordMetadataCapability"/>
             <ref bean="rmEditNonRecordMetadataCapability"/>
@@ -52,7 +50,7 @@
       <property name="private" value="true"/>
       <property name="capabilities">
          <list>
-            <ref bean="rmCreateModifyDestroyFoldersCapability"/>
+            <ref bean="rmModifyRecordFolderCapability"/>
             <ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>
             <ref bean="rmEditDeclaredRecordMetadataCapability"/>
             <ref bean="rmEditNonRecordMetadataCapability"/>

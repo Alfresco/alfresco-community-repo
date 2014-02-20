@@ -130,7 +130,7 @@ public class ChildAssocRefResultSet extends AbstractResultSet
 
     public boolean hasMore()
     {
-        throw new UnsupportedOperationException();
+        return false;
     }
 
     /* (non-Javadoc)

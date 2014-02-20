@@ -1238,6 +1238,20 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(11);
         properties.put(ContentModel.PROP_NAME, (Serializable) name);
         
+        // Check the type is valid for file/folder service
+        FileFolderServiceType type = getType(typeQName);
+        
+        switch (type)
+        {
+            case SYSTEM_FOLDER:
+                throw new InvalidTypeException("System Folders are not handled by this service :" + typeQName);
+            case INVALID:
+        	    throw new InvalidTypeException("Type is not handled by this service: " + typeQName);
+            case FILE:
+            case FOLDER:
+            default:
+        }
+        
         // create the node
         if (assocQName == null)
         {

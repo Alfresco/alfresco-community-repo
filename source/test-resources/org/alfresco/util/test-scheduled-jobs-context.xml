@@ -45,10 +45,10 @@
         </property>
         <!-- trigger at 3am each day -->
         <property name="cronExpression">
-            <value>0/1 * * * * ?</value>
+            <value>0/2 * * * * ?</value>
         </property>
         <property name="beanName">
-        	<value>dummy</value>
+        	<value>dummyTriggerBean</value>
         </property>
     </bean>
 

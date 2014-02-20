@@ -27,6 +27,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StopWatch;
 
 /**
  * @author Andy
@@ -181,21 +182,25 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
     }
     private ResultSet executeHybridQuery(SearchParameters searchParameters,
                                          ADMLuceneSearcherImpl admLuceneSearcher)
-    {
+    {        
         if (indexQueryLanguage == null || dbQueryLanguage == null)
         {
             throw new QueryModelException("Both index and DB query language required for hybrid search [index=" +
                                           indexQueryLanguage + ", DB=" + dbQueryLanguage + "]");
         }
         
+        StopWatch stopWatch = new StopWatch("hybrid search");
         if (logger.isDebugEnabled())
         {
             logger.debug("Hybrid search, using SOLR query: "+dbQueryLanguage.getName()+" for "+searchParameters);
         }
+        stopWatch.start("index query");
         ResultSet indexResults = indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+        stopWatch.stop();
         if (logger.isDebugEnabled())
         {
-            logger.debug("SOLR query returned " + indexResults.length() + " results.");
+            logger.debug("SOLR query returned " + indexResults.length() + " results in " +
+                         stopWatch.getLastTaskTimeMillis() + "ms");
         }
         if (!(indexResults instanceof SolrJSONResultSet))
         {
@@ -213,10 +218,13 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         {
             logger.debug("Hybrid search, using DB query: "+dbQueryLanguage.getName()+" for "+searchParameters);
         }
+        stopWatch.start("database query");
         ResultSet dbResults = dbQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+        stopWatch.stop();
         if (logger.isDebugEnabled())
         {
-            logger.debug("DB query returned " + dbResults.length() + " results.");
+            logger.debug("DB query returned " + dbResults.length() + " results in " +
+                         stopWatch.getLastTaskTimeMillis() + "ms");
         }
         // Merge result sets
         List<ChildAssociationRef> childAssocs = new ArrayList<>();
@@ -224,11 +232,15 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         nodeParameters.setFromTxnId(lastTxId+1);
         // TODO: setToTxnId(null) when SolrDAO behaviour is fixed.
         nodeParameters.setToTxnId(Long.MAX_VALUE);
+        stopWatch.start("get changed nodes");
         List<Node> changedNodeList = solrDao.getNodes(nodeParameters);
+        stopWatch.stop();
         if (logger.isDebugEnabled())
         {
-            logger.debug("Nodes changed since last indexed transaction (ID " + lastTxId + ") = " + changedNodeList.size());
+            logger.debug("Nodes changed since last indexed transaction (ID " + lastTxId + ") = " +
+                         changedNodeList.size() + " (took " + stopWatch.getLastTaskTimeMillis() + "ms)");
         }
+        stopWatch.start("merge result sets");
         Set<NodeRef> nodeRefs = new HashSet<>(changedNodeList.size());
         for (Node n : changedNodeList)
         {
@@ -246,12 +258,13 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         childAssocs.addAll(dbResults.getChildAssocRefs());
         
         ResultSet results = new ChildAssocRefResultSet(nodeService, childAssocs);
-        
+        stopWatch.stop(); // merge result sets
         if (logger.isDebugEnabled())
         {
             String stats = String.format("SOLR=%d, DB=%d, total=%d",
                         indexResults.length(), dbResults.length(), results.length());
             logger.debug("Hybrid search returning combined results with counts: " + stats);
+            logger.debug(stopWatch.prettyPrint());
         }
         return results;
     }

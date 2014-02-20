@@ -23,6 +23,9 @@
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.feed.cleaner.cronExpression}" />
         <property name="enabled" value="${activities.feed.cleaner.enabled}" />
+        <property name="startDelayMinutes">
+        	<value>${activities.feed.cleaner.startDelayMins}</value>
+       	</property>
     </bean>
     
     <!-- Activities Feed Generator -->
@@ -45,6 +48,9 @@
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.feed.generator.cronExpression}" />
         <property name="enabled" value="${activities.feed.generator.enabled}" />
+        <property name="startDelayMinutes">
+        	<value>${activities.feed.generator.startDelayMins}</value>
+       	</property>
     </bean>
     
     <!-- Activities Post Lookup (for secondary lookup) -->
@@ -66,6 +72,9 @@
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.post.lookup.cronExpression}" />
         <property name="enabled" value="${activities.post.lookup.enabled}" />
+        <property name="startDelayMinutes">
+        	<value>${activities.post.lookup.startDelayMins}</value>
+       	</property>
     </bean>
     
     <!-- Activities Post Cleaner -->
@@ -88,6 +97,9 @@
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.post.cleaner.cronExpression}" />
         <property name="enabled" value="${activities.post.cleaner.enabled}" />
+        <property name="startDelayMinutes">
+        	<value>${activities.post.cleaner.startDelayMins}</value>
+       	</property>
     </bean>
     
      <!-- Activities Email Notifier -->
@@ -113,6 +125,9 @@
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.feed.notifier.cronExpression}" />
         <property name="enabled" value="${activities.feed.notifier.enabled}" />
+        <property name="startDelayMinutes">
+        	<value>${activities.feed.notifier.startDelayMins}</value>
+       	</property>
     </bean>
     
 </beans>

@@ -146,6 +146,9 @@
         <property name="cronExpression">
             <value>${index.tracking.adm.cronExpression}</value>
         </property>
+        <property name="startDelayMinutes">
+        	<value>${system.cronJob.startDelayMinutes}</value>
+       	</property>
     </bean>
 
     <!--===========================-->
@@ -187,6 +190,9 @@
         <property name="cronExpression">
             <value>${index.tracking.avm.cronExpression}</value>
         </property>
+        <property name="startDelayMinutes">
+        	<value>${system.cronJob.startDelayMinutes}</value>
+       	</property>
     </bean>
     
    <!-- Failed FTS reindexer -->
@@ -228,6 +234,9 @@
         <property name="cronExpression">
             <value>${index.reindexMissingContent.cronExpression}</value>
         </property>
+        <property name="startDelayMinutes">
+        	<value>${system.cronJob.startDelayMinutes}</value>
+       	</property>
     </bean>
     
     <!-- Add enterprise clustering configuration when available. -->

@@ -56,6 +56,9 @@
         <property name="cronExpression">
             <value>${index.backup.cronExpression}</value>
         </property>
+        <property name="startDelayMinutes">
+        	<value>${system.cronJob.startDelayMinutes}</value>
+       	</property>
     </bean>
 
  

@@ -28,6 +28,9 @@
         <property name="cronExpression">
             <value>${solr.backup.alfresco.cronExpression}</value>
         </property>
+        <property name="startDelayMinutes">
+        	<value>${system.cronJob.startDelayMinutes}</value>
+       	</property>
     </bean>
     
     <bean id="search.alfrescoCoreSolrBackupClient" class="org.alfresco.repo.search.impl.solr.SolrBackupClient" >
@@ -74,6 +77,9 @@
         <property name="cronExpression">
             <value>${solr.backup.archive.cronExpression}</value>
         </property>
+        <property name="startDelayMinutes">
+        	<value>${system.cronJob.startDelayMinutes}</value>
+       	</property>
     </bean>
     
     <bean id="search.archiveCoreSolrBackupClient" class="org.alfresco.repo.search.impl.solr.SolrBackupClient" >

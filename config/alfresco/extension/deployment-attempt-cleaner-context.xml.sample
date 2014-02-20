@@ -49,6 +49,9 @@ that are older than 180 days.
         <property name="cronExpression">
             <value>0 0 4 * * ?</value>
         </property>
+        <property name="startDelayMinutes">
+        	<value>${system.cronJob.startDelayMinutes}</value>
+       	</property>
     </bean>
     
 </beans>

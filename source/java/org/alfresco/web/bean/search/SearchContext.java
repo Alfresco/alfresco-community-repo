@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
+import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
@@ -203,7 +204,7 @@ public class SearchContext implements Serializable
             if (text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"')
             {
                // as a single quoted phrase
-               String quotedSafeText = '"' + QueryParser.escape(text.substring(1, text.length() - 1)) + '"';
+               String quotedSafeText = '"' + SearchLanguageConversion.escapeLuceneQuery(text.substring(1, text.length() - 1)) + '"';
                if (appendText)
                {
                   plBuf.append("TEXT:").append(quotedSafeText);
@@ -339,7 +340,7 @@ public class SearchContext implements Serializable
             String escapedName = Repository.escapeQName(qname);
             String value = queryFixedValues.get(qname);
             attributeQuery.append(" +@").append(escapedName)
-                          .append(":\"").append(QueryParser.escape(value)).append('"');
+                          .append(":\"").append(SearchLanguageConversion.escapeLuceneQuery(value)).append('"');
          }
       }
       
@@ -354,8 +355,8 @@ public class SearchContext implements Serializable
          {
             String escapedName = Repository.escapeQName(qname);
             RangeProperties rp = rangeAttributes.get(qname);
-            String value1 = QueryParser.escape(rp.lower);
-            String value2 = QueryParser.escape(rp.upper);
+            String value1 = SearchLanguageConversion.escapeLuceneQuery(rp.lower);
+            String value2 = SearchLanguageConversion.escapeLuceneQuery(rp.upper);
             attributeQuery.append(" +@").append(escapedName)
                           .append(":").append(rp.inclusive ? "[" : "{").append(value1)
                           .append(" TO ").append(value2).append(rp.inclusive ? "]" : "}");

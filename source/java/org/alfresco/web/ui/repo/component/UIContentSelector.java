@@ -29,7 +29,6 @@ import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.LimitBy;
@@ -38,6 +37,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
@@ -348,7 +348,7 @@ public class UIContentSelector extends UIInput
       
       if (contains != null && contains.length() > 0)
       {
-    	 String safeContains = AbstractLuceneQueryParser.escape(contains.trim());
+    	 String safeContains = SearchLanguageConversion.escapeLuceneQuery(contains.trim());
          query.append(" AND +@");
          
          String nameAttr = Repository.escapeQName(QName.createQName(

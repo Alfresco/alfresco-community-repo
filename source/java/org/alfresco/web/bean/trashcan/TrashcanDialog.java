@@ -33,7 +33,6 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -47,6 +46,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.CachingDateFormat;
+import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -618,7 +618,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
       else
       {
          // search by name in the archive store
-         String safeText = AbstractLuceneQueryParser.escape(property.getSearchText());
+         String safeText = SearchLanguageConversion.escapeLuceneQuery(property.getSearchText());
          if (safeText.indexOf(' ') == -1)
          {
             if (property.isFullTextSearch())
@@ -680,8 +680,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
          if (fromDate != null)
          {
             SimpleDateFormat df = CachingDateFormat.getDateFormat();
-            String strFromDate = AbstractLuceneQueryParser.escape(df.format(fromDate));
-            String strToDate = AbstractLuceneQueryParser.escape(df.format(toDate));
+            String strFromDate = SearchLanguageConversion.escapeLuceneQuery(df.format(fromDate));
+            String strToDate = SearchLanguageConversion.escapeLuceneQuery(df.format(toDate));
             StringBuilder buf = new StringBuilder(128);
             buf.append("@").append(DATE_ATTR)
                .append(":").append("[").append(strFromDate)

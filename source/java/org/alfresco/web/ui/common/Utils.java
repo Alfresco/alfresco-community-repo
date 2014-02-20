@@ -51,7 +51,6 @@ import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeException;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.webdav.WebDAVHelper;
 import org.alfresco.repo.webdav.WebDAVServlet;
@@ -69,6 +68,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.app.servlet.ExternalAccessServlet;
@@ -1232,7 +1232,7 @@ public final class Utils extends StringUtils
       // define the query to find people by their first or last name
       for (StringTokenizer t = new StringTokenizer(term.trim(), " "); t.hasMoreTokens(); /**/)
       {
-         String token = AbstractLuceneQueryParser.escape(t.nextToken());
+         String token = SearchLanguageConversion.escapeLuceneQuery(t.nextToken());
          query.append("+TYPE:\"").append(ContentModel.TYPE_PERSON).append("\" ");
          query.append("+(@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
          query.append(token);

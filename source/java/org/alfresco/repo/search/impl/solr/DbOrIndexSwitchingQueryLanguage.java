@@ -18,10 +18,23 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.domain.solr.SOLRDAO;
 import org.alfresco.repo.search.impl.lucene.ADMLuceneSearcherImpl;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
+import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
+import org.alfresco.repo.search.results.ChildAssocRefResultSet;
+import org.alfresco.repo.solr.NodeParameters;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.QueryConsistency;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -31,7 +44,7 @@ import org.springframework.util.StopWatch;
 
 /**
  * @author Andy
- *
+ * @author Matt Ward
  */
 public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
 {
@@ -42,6 +55,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
     LuceneQueryLanguageSPI indexQueryLanguage;
     
     QueryConsistency queryConsistency = QueryConsistency.DEFAULT;
+    
     private NodeService nodeService;
     
     private SOLRDAO solrDao;
@@ -76,6 +90,11 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         this.queryConsistency = queryConsistency;
     }
 
+
+
+    /**
+     * @param nodeService the nodeService to set
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -227,6 +246,8 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         
         
     }
+
+
     private ResultSet executeHybridQuery(SearchParameters searchParameters,
                                          ADMLuceneSearcherImpl admLuceneSearcher)
     {        
@@ -249,6 +270,8 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
             logger.debug("SOLR query returned " + indexResults.length() + " results in " +
                          stopWatch.getLastTaskTimeMillis() + "ms");
         }
+        // TODO: if the results are up-to-date, then nothing more to do - return the results.
+        
         if (!(indexResults instanceof SolrJSONResultSet))
         {
             if (logger.isWarnEnabled())

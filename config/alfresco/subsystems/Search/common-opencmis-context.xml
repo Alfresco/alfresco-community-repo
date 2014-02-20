@@ -22,7 +22,8 @@
         <property name="queryConsistency">
             <value>${solr.query.cmis.queryConsistency}</value>
         </property>
-        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="solrDao" ref="solrDAO"/>
         <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
     </bean>
         
@@ -44,7 +45,8 @@
         <property name="queryConsistency">
             <value>${solr.query.cmis.queryConsistency}</value>
         </property>
-        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="solrDao" ref="solrDAO"/>
         <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
     </bean>
      

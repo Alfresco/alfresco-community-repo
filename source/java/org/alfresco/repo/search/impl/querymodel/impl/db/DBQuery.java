@@ -63,6 +63,8 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
 
     private Long sysDeletedType;
 
+    private Long sinceTxId;
+    
     Set<String> selectorGroup;
 
     /**
@@ -108,6 +110,22 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     public void setSysDeletedType(Long sysDeletedType)
     {
         this.sysDeletedType = sysDeletedType;
+    }
+
+    /**
+     * @return the sinceTxId
+     */
+    public Long getSinceTxId()
+    {
+        return this.sinceTxId;
+    }
+
+    /**
+     * @param sinceTxId the sinceTxId to set
+     */
+    public void setSinceTxId(Long sinceTxId)
+    {
+        this.sinceTxId = sinceTxId;
     }
 
     public List<DBQueryBuilderJoinCommand> getJoins()

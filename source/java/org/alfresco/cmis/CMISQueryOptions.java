@@ -74,6 +74,7 @@ public class CMISQueryOptions extends QueryOptions
         options.setDefaultFieldName(searchParameters.getDefaultFieldName());
         options.setBulkFetchEnabled(searchParameters.isBulkFetchEnabled());
         options.setExcludeTenantFilter(searchParameters.getExcludeTenantFilter());
+        options.setSinceTxId(searchParameters.getSinceTxId());
         return options;
     }
     /**

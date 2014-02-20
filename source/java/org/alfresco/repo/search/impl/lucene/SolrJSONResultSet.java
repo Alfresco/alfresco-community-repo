@@ -70,6 +70,8 @@ public class SolrJSONResultSet implements ResultSet
     
     private NodeDAO nodeDao;
     
+    private long lastIndexedTxId;
+    
     /**
      * Detached result set based on that provided
      * @param resultSet
@@ -89,6 +91,7 @@ public class SolrJSONResultSet implements ResultSet
             numberFound = response.getLong("numFound");
             start = response.getLong("start");
             maxScore = Float.valueOf(response.getString("maxScore"));
+            lastIndexedTxId = json.getLong("lastIndexedTx");
             
             JSONArray docs = response.getJSONArray("docs");
             
@@ -376,5 +379,10 @@ public class SolrJSONResultSet implements ResultSet
         {
             return Collections.<Pair<String, Integer>>emptyList();
         }
+    }
+    
+    public long getLastIndexedTxId()
+    {
+        return lastIndexedTxId;
     }
 }

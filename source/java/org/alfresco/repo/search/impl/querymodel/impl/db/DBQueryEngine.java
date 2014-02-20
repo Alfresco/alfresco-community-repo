@@ -170,6 +170,15 @@ public class DBQueryEngine implements QueryEngine
         {
             dbQuery.setSysDeletedType(sysDeletedType.getFirst());
         }
+        
+        Long sinceTxId = options.getSinceTxId();
+        if (sinceTxId == null)
+        {
+            // By default, return search results for all transactions.
+            sinceTxId = -1L;
+        }
+        dbQuery.setSinceTxId(sinceTxId);
+        
         dbQuery.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, null, functionContext);
         List<Node> nodes = (List<Node>)template.selectList(SELECT_BY_DYNAMIC_QUERY, dbQuery);
         LinkedHashSet<Long> set = new LinkedHashSet<Long>(nodes.size());

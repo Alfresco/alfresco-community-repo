@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+
+    <bean id="dummyJobTest" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.util.CronTriggerBeanTest$DummyJob</value>
+        </property>
+        <property name="name">
+        	<value>dummy</value>
+        </property>
+    </bean>
+    
+    <bean id="schedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="waitForJobsToCompleteOnShutdown">
+            <value>true</value>
+        </property>
+        <property name="schedulerFactoryClass">
+            <value>org.alfresco.repo.scheduler.AlfrescoSchedulerFactory</value>
+        </property>
+        <property name="jobFactory">
+            <bean class="org.alfresco.repo.scheduler.AlfrescoJobFactory" />
+        </property>
+        <property name="quartzProperties">
+            <ref bean="schedulerProperties" />
+        </property>
+        <property name="schedulerName">
+            <value>DefaultScheduler</value>
+        </property>
+        <!-- Do not auto start the scheduler - this is done at the end of the bootstrap process -->
+        <property name="autoStartup">
+            <value>false</value>
+        </property>
+    </bean>
+    
+    
+    <bean id="cronTriggerBean" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <ref bean="dummyJobTest" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <!-- trigger at 3am each day -->
+        <property name="cronExpression">
+            <value>0/1 * * * * ?</value>
+        </property>
+        <property name="beanName">
+        	<value>dummy</value>
+        </property>
+    </bean>
+
+ 
+</beans>

@@ -58,6 +58,8 @@ import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.opencmis.dictionary.CMISObjectVariant;
 import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
 import org.alfresco.opencmis.dictionary.DocumentTypeDefinitionWrapper;
+import org.alfresco.opencmis.dictionary.FolderTypeDefintionWrapper;
+import org.alfresco.opencmis.dictionary.ItemTypeDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.opencmis.mapping.DirectProperty;
@@ -1262,15 +1264,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      */
     public String createObjectId(NodeRef currentVersionNodeRef)
     {
-    	FileInfo fileInfo = getFileFolderService().getFileInfo(currentVersionNodeRef);
-    	
-    	if(fileInfo == null)
+    	QName typeQName = nodeService.getType(currentVersionNodeRef);
+        TypeDefinitionWrapper type = getOpenCMISDictionaryService().findNodeType(typeQName);
+    
+    	if(type instanceof ItemTypeDefinitionWrapper)
     	{
-    		// not a file or a folder
     		return constructObjectId(currentVersionNodeRef, null);
     	}
     	
-        if(fileInfo.isFolder())
+        if(type instanceof FolderTypeDefintionWrapper)
         {
             return constructObjectId(currentVersionNodeRef, null);
         }

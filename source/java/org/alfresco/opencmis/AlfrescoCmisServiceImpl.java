@@ -30,8 +30,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -462,11 +464,19 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         PagingRequest pageRequest = new PagingRequest(skip, max, null);
         pageRequest.setRequestTotalCountMax(skip + 10000); // TODO make this optional/configurable
-                                                           // - affects whether numItems may be returned
-
+                                                           // - affects whether numItems may be returned 
+        Set<QName> typeqnames = new HashSet<QName>();
+        List<TypeDefinitionWrapper> allTypes = connector.getOpenCMISDictionaryService().getAllTypes();
+        for (TypeDefinitionWrapper type : allTypes)
+        {
+        	typeqnames.add(type.getAlfrescoClass());
+        }
         PagingResults<FileInfo> pageOfNodeInfos = connector.getFileFolderService().list(
-                folderNodeRef, true, true,
-                null, sortProps, pageRequest);
+        		folderNodeRef, 
+        		typeqnames, 
+        		null, //ignoreAspectQNames, 
+        		sortProps, 
+        		pageRequest);
 
         if (max > 0)
         {
@@ -733,7 +743,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisConstraintException("Relationships are not fileable!");
         }
 
-        if (info.isFolder() && !info.isRootFolder())
+        if (info.isItem() || (info.isFolder() && !info.isRootFolder()))
         {
             List<CMISNodeInfo> parentInfos = info.getParents();
             if (!parentInfos.isEmpty())
@@ -1072,11 +1082,21 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 NamespaceService.CONTENT_MODEL_1_0_URI,
                 QName.createValidLocalName(name));
         
-        ChildAssociationRef newRef = connector.getNodeService().createNode(parentInfo.getNodeRef(), ContentModel.ASSOC_CONTAINS, assocQName, type.getAlfrescoClass());
-
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(11);
+        props.put(ContentModel.PROP_NAME, (Serializable) assocQName.getLocalName());
+        
+        ChildAssociationRef newRef = connector.getNodeService().createNode(
+        		parentInfo.getNodeRef(), 
+        		ContentModel.ASSOC_CONTAINS, 
+        		assocQName, 
+        		type.getAlfrescoClass(),
+        		props);
+        
         NodeRef nodeRef = newRef.getChildRef();
-
+        
         connector.setProperties(nodeRef, type, properties, new String[] { PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
+        connector.getNodeService().setProperty(nodeRef, ContentModel.PROP_NAME, assocQName.getLocalName());
+
         connector.applyPolicies(nodeRef, type, policies);
         connector.applyACL(nodeRef, type, addAces, removeAces);
 
@@ -2779,6 +2799,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             info.setHasAcl(true);
             info.setSupportsDescendants(true);
             info.setSupportsFolderTree(true);
+        }
+        else if (ni.isItem())
+        {
+        	info.setHasAcl(true);
+        	info.setHasContent(false);        	
         }
 
         return info;

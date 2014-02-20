@@ -266,7 +266,10 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
         // Is it a folder
         QName typeQName = nodeService.getType(nodeRef);
-        boolean isFolder = isFolder(typeQName);
+        
+        FileFolderServiceType type = getType(typeQName);
+       
+        boolean isFolder = type.equals(FileFolderServiceType.FOLDER);
         boolean isHidden = false;
 
         Client client = FileFilterMode.getClient();
@@ -461,6 +464,13 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         return getPagingResults(pagingRequest, results);
     }
     
+   
+    public PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    {
+    	CannedQueryResults<NodeRef> results = listImpl(rootNodeRef, null,  searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
+    	return getPagingResults(pagingRequest, results);
+    }
+    
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, boolean files, boolean folders)
     {
         Set<QName> searchTypeQNames = buildSearchTypesAndIgnoreAspects(files, folders, null).getFirst();
@@ -473,7 +483,18 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     }
     
     // note: similar to getChildAssocs(contextNodeRef, searchTypeQNames) but enables paging features, including max items, sorting etc (with permissions per-applied)
-    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+
+    /**
+     * 
+     * @param contextNodeRef
+     * @param pattern
+     * @param searchTypeQNames
+     * @param ignoreAspectQNames
+     * @param sortProps
+     * @param pagingRequest
+     * @return
+     */
+    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern,  Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
         

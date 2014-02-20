@@ -429,4 +429,18 @@ public interface FileFolderService
      */
     @Deprecated
     public void setHidden(NodeRef nodeRef, boolean isHidden);
+    
+    /**
+     * Lists page of immediate child objects of the given context node
+     * with specification of which types to list and optional filtering (exclusion of certain child file/folder subtypes) and sorting
+     * @param rootNodeRef
+     * @param searchTypeQNames   QNames of types to list
+     * @param ignoreAspectQNames
+     * @param sortProps
+     * @param pagingRequest
+     * @return list of node refs, never null
+     */
+    @Auditable(parameters = {"rootNodeRef"})
+    public PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
+    
 }

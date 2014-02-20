@@ -118,21 +118,7 @@
         <dependency>
             <groupId>org.alfresco.cmis.client</groupId>
             <artifactId>alfresco-opencmis-extension</artifactId>
-            <version>0.7</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>saaj-impl</artifactId>
-                    <groupId>com.sun.xml.messaging.saaj</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>stax-api</artifactId>
-                    <groupId>javax.xml.stream</groupId>
-                </exclusion>
-            </exclusions>
+            <version>0.8</version>
         </dependency>
         <dependency>
             <groupId>org.apache.ws.commons.schema</groupId>

@@ -134,7 +134,7 @@
    </bean>
    
    <bean id="rmCreateModifyDestroyUnfiledFoldersCapability"
-         parent="compositeCapability">
+         parent="declarativeCapability">
       <property name="name" value="CreateModifyDestroyUnfiledFolders"/>
       <property name="private" value="true"/>
       <property name="permission" value="CreateModifyDestroyFolders"/>

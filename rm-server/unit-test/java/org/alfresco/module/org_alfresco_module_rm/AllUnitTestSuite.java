@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm;
 
+import org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementTypeFormFilterUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrapUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTest;
 import org.junit.runner.RunWith;
@@ -34,7 +35,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses(
 {
     RecordMetadataBootstrapUnitTest.class,
-    RecordServiceImplUnitTest.class
+    RecordServiceImplUnitTest.class,
+    RecordsManagementTypeFormFilterUnitTest.class
 })
 public class AllUnitTestSuite
 {

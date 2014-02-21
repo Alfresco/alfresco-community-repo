@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm;
 
 import static org.mockito.Mockito.when;
 
+import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -28,6 +29,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.collections.CollectionUtils;
 import org.junit.Before;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -45,6 +47,7 @@ public class BaseUnitTest implements RecordsManagementModel
     @Mock(name="nodeService")       protected NodeService mockedNodeService; 
     @Mock(name="dictionaryService") protected DictionaryService mockedDictionaryService;
     @Mock(name="namespaceService")  protected NamespaceService mockedNamespaceService; 
+    @Mock(name="identifierService") protected IdentifierService mockedIdentifierService;
     
     @Before
     public void before()
@@ -57,6 +60,7 @@ public class BaseUnitTest implements RecordsManagementModel
         
         // set-up namespace service
         when(mockedNamespaceService.getNamespaceURI(RM_PREFIX)).thenReturn(RM_URI);
+        when(mockedNamespaceService.getPrefixes(RM_URI)).thenReturn(CollectionUtils.unmodifiableSet(RM_PREFIX));
         
     }
     

@@ -145,7 +145,7 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
 
         Map<QName, PropertyDefinition> customProps = rmAdminService.getCustomPropertyDefinitions(customisableType);
 
-        if (customProps != null)
+        if (customProps != null && customProps.isEmpty() == false)
         {
 	        if (logger.isDebugEnabled() == true)
 	        {

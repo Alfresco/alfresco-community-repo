@@ -223,5 +223,14 @@
             </value>
         </property>
     </bean>
+    
+    <!--  Test record metadata aspect -->
+    <bean id="testRecordMetadataAspectBootstrap" parent="recordMetadataAspectBootstrap">
+       <property name="recordMetadataAspects">
+	    	<map>
+	    		<entry key="rmt:recordMetaData" value="rma:filePlan" />
+	    	</map>
+    	</property>
+    </bean>
 
 </beans>

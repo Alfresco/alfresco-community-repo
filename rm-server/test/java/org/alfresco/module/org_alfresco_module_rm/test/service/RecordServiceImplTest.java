@@ -26,7 +26,6 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -94,9 +93,9 @@ public class RecordServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
-                Set<QName> aspects = recordService.getRecordMetaDataAspects();
+                Set<QName> aspects = recordService.getRecordMetadataAspects(filePlan);
                 assertNotNull(aspects);
-                assertEquals(6, aspects.size());
+                assertEquals(1, aspects.size());
                 assertTrue(aspects.containsAll(getAspectList()));
 
                 return null;
@@ -110,14 +109,9 @@ public class RecordServiceImplTest extends BaseRMTestCase
             private List<QName> getAspectList()
             {
                 QName[] aspects = new QName[] 
-                        { 
-                            DOD5015Model.ASPECT_DIGITAL_PHOTOGRAPH_RECORD,
-                            DOD5015Model.ASPECT_PDF_RECORD, 
-                            DOD5015Model.ASPECT_WEB_RECORD,
-                            DOD5015Model.ASPECT_SCANNED_RECORD, 
-                            ASPECT_RECORD_META_DATA,
-                            DOD5015Model.ASPECT_DOD_5015_RECORD
-                        };
+                { 
+                    ASPECT_RECORD_META_DATA
+                };
 
                 return Arrays.asList(aspects);
             }

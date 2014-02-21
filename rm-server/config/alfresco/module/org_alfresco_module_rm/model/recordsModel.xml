@@ -751,7 +751,9 @@
 
       </aspect>
 
-      <!--  Marker aspect used to indicate an aspect is used for record meta-data -->
+      <!--  Marker aspect used to indicate an aspect is used for record meta-data    -->
+      <!--  @deprecated since 2.2, record metadata aspects are configured via spring -->
+      <!--              using a bootstrap bean                                       -->
       <aspect name="rma:recordMetaData">
       </aspect>
 

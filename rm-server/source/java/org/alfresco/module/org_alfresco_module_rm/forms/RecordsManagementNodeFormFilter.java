@@ -182,7 +182,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
      */
     protected void addRecordMetadataPropertyFieldsToGroup(Form form, NodeRef nodeRef)
     {
-        Set<QName> aspects = recordService.getRecordMetaDataAspects();
+        Set<QName> aspects = recordService.getRecordMetadataAspects(nodeRef);
 
         for (QName aspect : aspects)
         {

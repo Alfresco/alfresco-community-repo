@@ -24,9 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
@@ -35,13 +37,19 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
+ * Record metadata aspects GET
+ * 
  * @author Roy Wetherall
  */
 public class RecordMetaDataAspectsGet extends DeclarativeWebScript
 {
+    /** parameters */
+    private static final String PARAM_NODEREF = "noderef";
+    
     protected DictionaryService dictionaryService;
     protected NamespaceService namespaceService;
     protected RecordService recordService;
+    protected FilePlanService filePlanService;
     
     /**
      * Set the dictionary service instance
@@ -71,14 +79,37 @@ public class RecordMetaDataAspectsGet extends DeclarativeWebScript
         this.recordService = recordService;
     }
     
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
+    
     /*
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
+        // Get the nodeRef and confirm it is valid        
+        NodeRef nodeRef = null;
+        String nodeRefValue = req.getParameter(PARAM_NODEREF);
+        if (nodeRefValue == null || nodeRefValue.trim().length() == 0)
+        {
+            // get the file plan if a node ref hasn't been specified
+            // TODO will need to remove when multi file plans supported
+            nodeRef = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+               
+        }
+        else
+        {
+            nodeRef = new NodeRef(nodeRefValue);
+        }
+        
         // Get the details of all the aspects
-        Set<QName> aspectQNames = recordService.getRecordMetaDataAspects();        
+        Set<QName> aspectQNames = recordService.getRecordMetadataAspects(nodeRef);        
         List<Map<String, Object>> aspects = new ArrayList<Map<String,Object>>(aspectQNames.size()+1);
         for (QName aspectQName : aspectQNames)
         {

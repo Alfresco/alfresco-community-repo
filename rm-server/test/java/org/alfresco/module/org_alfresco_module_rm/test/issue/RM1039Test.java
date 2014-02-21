@@ -32,6 +32,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 
 
 /**
@@ -68,7 +69,8 @@ public class RM1039Test extends BaseRMTestCase
             {
                 assertNotNull(result);
                 assertNull(dispositionService.getDispositionSchedule(result));
-                assertFalse(nodeService.hasAspect(result, ASPECT_DISPOSITION_LIFECYCLE));
+                assertFalse(nodeService.hasAspect(result, ASPECT_DISPOSITION_LIFECYCLE));                
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(result, FILING));
             }
         });
 
@@ -87,6 +89,7 @@ public class RM1039Test extends BaseRMTestCase
                 assertNotNull(result);
                 assertNull(dispositionService.getDispositionSchedule(result));
                 assertFalse(nodeService.hasAspect(result, ASPECT_DISPOSITION_LIFECYCLE));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(result, FILING));
             }
         });
 

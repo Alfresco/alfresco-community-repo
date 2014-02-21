@@ -54,6 +54,17 @@
                        </sources>
                    </configuration>
                </execution>
+               <execution>
+                   <id>add-test-source</id>
+                   <goals>
+                      <goal>add-test-source</goal>
+                   </goals>
+                   <configuration>
+                       <sources>
+                          <source>unit-test/java</source>
+                       </sources>
+                   </configuration>
+               </execution>
             </executions>
          </plugin>
          <plugin>
@@ -197,6 +208,12 @@
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
+      <dependency>
+	     <groupId>org.mockito</groupId>
+	     <artifactId>mockito-all</artifactId>
+	     <version>1.9.5</version>
+         <scope>test</scope>
+	  </dependency>
       <dependency>
          <groupId>org.springframework</groupId>
          <artifactId>spring-test</artifactId>

@@ -4,7 +4,7 @@
    Gets all the record meta data aspects available.
    ]]>
    </description>
-   <url>/api/rma/recordmetadataaspects</url>
+   <url>/api/rma/recordmetadataaspects?noderef={?nodeRef}</url>
    <format default="json"/>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>

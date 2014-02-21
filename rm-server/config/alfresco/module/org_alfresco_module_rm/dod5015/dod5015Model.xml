@@ -74,11 +74,8 @@
    
    	  <!--  DOD5015 Record Properties -->
       <!--  @since 2.2 -->
-      <aspect name="dod:dod5015record">
-        
-        <title>DOD5015 Record</title>
-        <parent>rma:recordMetaData</parent>
-        
+      <aspect name="dod:dod5015record">        
+        <title>DOD5015 Record</title>        
         <properties>
 
             <property name="dod:publicationDate">
@@ -168,7 +165,6 @@
      
       <aspect name="dod:scannedRecord">
         <title>Scanned Record</title>
-        <parent>rma:recordMetaData</parent>
         <properties>
             <property name="dod:scannedFormat">
                 <title>Image Format</title>
@@ -208,14 +204,10 @@
                 <mandatory>false</mandatory>
             </property>
         </properties>
-        <mandatory-aspects>
-            <aspect>rma:filePlanComponent</aspect>
-        </mandatory-aspects>
       </aspect>
    
       <aspect name="dod:pdfRecord">
         <title>PDF Record</title>
-        <parent>rma:recordMetaData</parent>
         <properties>            
             <property name="dod:producingApplication">
                 <title>Producing Application</title>
@@ -263,14 +255,10 @@
 			    </index>
             </property>
         </properties>
-        <mandatory-aspects>
-            <aspect>rma:filePlanComponent</aspect>
-        </mandatory-aspects>
       </aspect>
    
       <aspect name="dod:digitalPhotographRecord">
         <title>Digital Photograph Record</title>
-        <parent>rma:recordMetaData</parent>
         <properties>        
             <property name="dod:caption">
                 <title>Caption</title>
@@ -358,14 +346,10 @@
 			    </index>
             </property>
         </properties>
-        <mandatory-aspects>
-            <aspect>rma:filePlanComponent</aspect>
-        </mandatory-aspects>
       </aspect>     
       
       <aspect name="dod:webRecord">
         <title>Web Record</title>
-        <parent>rma:recordMetaData</parent>
         <properties>        
             <property name="dod:webFileName">
                 <title>Web File Name</title>
@@ -442,10 +426,7 @@
 			        <tokenised>false</tokenised>
 			    </index>
             </property>
-        </properties>
-        <mandatory-aspects>
-            <aspect>rma:filePlanComponent</aspect>
-        </mandatory-aspects>  
+        </properties> 
       </aspect>
       
    </aspects>

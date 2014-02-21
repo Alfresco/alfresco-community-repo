@@ -34,6 +34,7 @@
    <bean id="rm-ac-record-types" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.RecordTypeParameterConstraint" parent="action-constraint">
       <property name="recordService" ref="RecordService"/>
       <property name="dictionaryService" ref="DictionaryService"/>
+      <property name="filePlanService" ref="FilePlanService" />
    </bean>
 
    <bean id="rm-ac-manual-events" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.ManualEventParameterConstraint" parent="action-constraint">

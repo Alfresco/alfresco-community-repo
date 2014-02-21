@@ -22,11 +22,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -117,6 +119,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
        ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA
     };
 
+    /** always edit model URI's */
     private static final String[] ALWAYS_EDIT_URIS = new String[]
     {
         NamespaceService.SECURITY_MODEL_1_0_URI,
@@ -129,6 +132,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         NamespaceService.RENDITION_MODEL_1_0_URI
      };
 
+    /** record model URI's */
     private static final String[] RECORD_MODEL_URIS = new String[]
     {
        RM_URI,
@@ -136,6 +140,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
        DOD5015Model.DOD_URI
     };
 
+    /** non-record model URI's */
     private static final String[] NON_RECORD_MODEL_URIS = new String[]
     {
         NamespaceService.AUDIO_MODEL_1_0_URI,
@@ -187,8 +192,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /** Permission service */
     private PermissionService permissionService;
 
-    /** List of available record meta-data aspects */
-    private Set<QName> recordMetaDataAspects;
+    /** list of available record meta-data aspects and the file plan types the are applicable to */
+    private Map<QName, Set<QName>> recordMetaDataAspects;
     
     /** policies */
     private ClassPolicyDelegate<BeforeFileRecord> beforeFileRecord;
@@ -313,11 +318,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
      */
     public void init()
     {
-        /** bind policies */
+        // bind policies
         beforeFileRecord = policyComponent.registerClassPolicy(BeforeFileRecord.class);
         onFileRecord = policyComponent.registerClassPolicy(OnFileRecord.class);        
         
-        /** bind behaviours */
+        // bind behaviours 
         policyComponent.bindAssociationBehaviour(
                 NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
                 TYPE_RECORD_FOLDER,
@@ -327,9 +332,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 NodeServicePolicies.BeforeDeleteChildAssociationPolicy.QNAME,
                 ContentModel.TYPE_FOLDER,
                 ContentModel.ASSOC_CONTAINS,
-                onDeleteDeclaredRecordLink);
+                onDeleteDeclaredRecordLink);        
     }
-
+    
+    
+    
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
@@ -573,31 +580,125 @@ public class RecordServiceImpl extends BaseBehaviourBean
             }
         }
     }
-
+    
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetaDataAspects()
+     * Get map containing record metadata aspects.
+     * 
+     * @return  {@link Map}<{@link QName}, {@link Set}<{@link QName}>>  map containing record metadata aspects
+     * 
+     * @since 2.2
      */
-    @Override
-    public Set<QName> getRecordMetaDataAspects()
+    protected Map<QName, Set<QName>> getRecordMetadataAspectsMap()
     {
         if (recordMetaDataAspects == null)
         {
-            Collection<QName> aspects = dictionaryService.getAllAspects();
-            recordMetaDataAspects = new HashSet<QName>(aspects.size());
-            for (QName aspect : aspects)
+            // create map
+            recordMetaDataAspects = new HashMap<QName, Set<QName>>();
+            
+            // init with legacy aspects
+            initRecordMetaDataMap();
+        }
+        
+        return recordMetaDataAspects;
+    }
+    
+    /**
+     * Initialises the record meta-data map.
+     * <p>
+     * This is here to support backwards compatibility in case an existing 
+     * customization (pre 2.2) is still using the record meta-data aspect.
+     * 
+     * @since 2.2
+     */
+    private void initRecordMetaDataMap()
+    {
+        // populate the inital set of record meta-data aspects .. this is here for legacy reasons
+        Collection<QName> aspects = dictionaryService.getAllAspects();
+        for (QName aspect : aspects)
+        {
+            AspectDefinition def = dictionaryService.getAspect(aspect);
+            if (def != null)
             {
-                AspectDefinition def = dictionaryService.getAspect(aspect);
-                if (def != null)
+                QName parent = def.getParentName();
+                if (parent != null && ASPECT_RECORD_META_DATA.equals(parent) )
                 {
-                    QName parent = def.getParentName();
-                    if (parent != null && ASPECT_RECORD_META_DATA.equals(parent) )
-                    {
-                        recordMetaDataAspects.add(aspect);
-                    }
+                    recordMetaDataAspects.put(aspect, Collections.singleton(TYPE_FILE_PLAN));
                 }
             }
         }
-        return recordMetaDataAspects;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#registerRecordMetadataAspect(org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
+     */
+    @Override
+    public void registerRecordMetadataAspect(QName recordMetadataAspect, QName filePlanType)
+    {
+        ParameterCheck.mandatory("recordMetadataAspect", recordMetadataAspect);
+        ParameterCheck.mandatory("filePlanType", filePlanType);
+        
+        Set<QName> filePlanTypes = null;
+        
+        if (getRecordMetadataAspectsMap().containsKey(recordMetadataAspect))
+        {
+            // get the current set of file plan types for this aspect
+            filePlanTypes = (Set<QName>)getRecordMetadataAspectsMap().get(recordMetadataAspect);
+        }
+        else
+        {
+            // create a new set for the file plan type
+            filePlanTypes = new HashSet<QName>(1);
+            getRecordMetadataAspectsMap().put(recordMetadataAspect, filePlanTypes);
+        }
+        
+        // add the file plan type
+        filePlanTypes.add(filePlanType);        
+    }
+
+    /**
+     * @deprecated since 2.2, file plan is required to provide context
+     */
+    @Override
+    @Deprecated
+    public Set<QName> getRecordMetaDataAspects()
+    {
+        return getRecordMetadataAspects(TYPE_FILE_PLAN);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetaDataAspects(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public Set<QName> getRecordMetadataAspects(NodeRef nodeRef)
+    {
+        QName filePlanType = TYPE_FILE_PLAN;
+        
+        if (nodeRef != null)
+        {
+            NodeRef filePlan = getFilePlan(nodeRef);
+            filePlanType = nodeService.getType(filePlan);
+        }
+        
+        return getRecordMetadataAspects(filePlanType);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetadataAspects(org.alfresco.service.namespace.QName)
+     */
+    @Override
+    public Set<QName> getRecordMetadataAspects(QName filePlanType)
+    {
+        Set<QName> result = new HashSet<QName>(getRecordMetadataAspectsMap().size());
+        
+        for (Entry<QName, Set<QName>> entry : getRecordMetadataAspectsMap().entrySet())
+        {
+            if (entry.getValue().contains(filePlanType))
+            {
+                result.add(entry.getKey());
+            }
+        }
+        
+        return result; 
     }
 
     /**

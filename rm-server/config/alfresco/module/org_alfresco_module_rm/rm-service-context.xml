@@ -1177,6 +1177,11 @@
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
         <property name="permissionService" ref="permissionService" />
     </bean>
+    
+    <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
+    	<property name="recordService" ref="recordService"/>
+    	<property name="namespaceService" ref="namespaceService"/>
+    </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
@@ -1222,7 +1227,9 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.registerRecordMetadataAspect=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetaDataAspects=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetadataAspects=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isFiled=RM.Read.0

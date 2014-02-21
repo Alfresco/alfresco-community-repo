@@ -25,10 +25,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
@@ -37,7 +39,7 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * RM serach properties GET web script
+ * RM search properties GET web script
  *
  * @author Roy Wetherall
  */
@@ -48,6 +50,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     private RecordService recordService;
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
+    private FilePlanService filePlanService;
 
     /**
      * @param adminService  records management admin service
@@ -80,6 +83,14 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     {
         this.namespaceService = namespaceService;
     }
+    
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
 
     /**
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
@@ -90,8 +101,13 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
         Map<String, Object> model = new HashMap<String, Object>(13);
 
         List<Group> groups = new ArrayList<Group>(5);
+        
+        // get the file plan
+        // TODO the file plan should be passed to this web script
+        NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
 
-        Set<QName> aspects = recordService.getRecordMetaDataAspects();
+        // get the record metadata aspects
+        Set<QName> aspects = recordService.getRecordMetadataAspects(filePlan);
         for (QName aspect : aspects)
         {
             Map<QName, PropertyDefinition> properties = dictionaryService.getPropertyDefs(aspect);

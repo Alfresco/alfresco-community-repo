@@ -17,6 +17,19 @@
 	    </property>        
     </bean>
     
+    <!-- Bootstrap DoD record metadata aspects -->
+    <bean id="dod.recordMetadataAspectBootstrap" parent="recordMetadataAspectBootstrap">
+       <property name="recordMetadataAspects">
+	    	<map>
+	    		<entry key="dod:dod5015record" value="dod:filePlan" />
+	    		<entry key="dod:scannedRecord" value="dod:filePlan" />
+	    		<entry key="dod:pdfRecord" value="dod:filePlan" />
+	    		<entry key="dod:digitalPhotographRecord" value="dod:filePlan" />
+	    		<entry key="dod:webRecord" value="dod:filePlan" />
+	    	</map>
+    	</property>
+    </bean>
+    
     <!--  Bootstap the message property files -->
    <bean id="org_alfresco_module_rm_resourceBundles.dod5015" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
       <property name="resourceBundles">

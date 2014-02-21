@@ -330,36 +330,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlan(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public NodeRef getFilePlan(NodeRef nodeRef)
-    {
-        NodeRef result = null;
-        if (nodeRef != null)
-        {
-             result = (NodeRef)getInternalNodeService().getProperty(nodeRef, PROP_ROOT_NODEREF);
-             if (result == null)
-             {
-                 if (instanceOf(nodeRef, TYPE_FILE_PLAN) == true)
-                 {
-                     result = nodeRef;
-                 }
-                 else
-                 {
-                     ChildAssociationRef parentAssocRef = getInternalNodeService().getPrimaryParent(nodeRef);
-                     if (parentAssocRef != null)
-                     {
-                         result = getFilePlan(parentAssocRef.getParentRef());
-                     }
-                 }
-             }
-        }
-
-        return result;
-    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlanBySiteId(java.lang.String)
      */
     @Override

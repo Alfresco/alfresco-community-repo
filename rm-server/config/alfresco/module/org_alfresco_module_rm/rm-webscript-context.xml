@@ -168,6 +168,7 @@
       <property name="recordService" ref="RecordService" />
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="namespaceService" ref="NamespaceService" />
+      <property name="filePlanService" ref="FilePlanService" />
    </bean>
 
    <bean id="webscript.org.alfresco.rma.rmauditlogstatus.get"
@@ -474,6 +475,7 @@
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="adminService" ref="RecordsManagementAdminService" />
       <property name="recordService" ref="RecordService" />
+      <property name="filePlanService" ref="FilePlanService" />
    </bean>
 
    <bean id="webscript.org.alfresco.slingshot.forms.metadata.get"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,31 +16,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test;
+package org.alfresco.module.org_alfresco_module_rm;
 
-import org.alfresco.repo.ParameterProcessorTestSuite;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrapUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-
 /**
- * Convenience test suite that runs all the tests.
+ * All unit test suite.
  *
  * @author Roy Wetherall
- * @since 2.1
+ * @since 2.2
  */
 @RunWith(Suite.class)
 @SuiteClasses(
 {
-    ActionTestSuite.class,
-    CapabilitiesTestSuite.class,
-    ServicesTestSuite.class,
-    WebScriptTestSuite.class,
-    IssueTestSuite.class,
-    ParameterProcessorTestSuite.class,
-    DoD5015TestSuite.class
+    RecordMetadataBootstrapUnitTest.class,
+    RecordServiceImplUnitTest.class
 })
-public class AllTestSuite
+public class AllUnitTestSuite
 {
 }

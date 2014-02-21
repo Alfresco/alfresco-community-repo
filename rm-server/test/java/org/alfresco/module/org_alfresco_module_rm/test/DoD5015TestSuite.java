@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,29 +18,24 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
-import org.alfresco.repo.ParameterProcessorTestSuite;
+import org.alfresco.module.org_alfresco_module_rm.test.dod.RM1147DODRMSiteTest;
+import org.alfresco.module.org_alfresco_module_rm.test.dod.RM1194ExcludeDoDRecordTypesTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-
 /**
- * Convenience test suite that runs all the tests.
+ * DoD 5015 integration test suite
  *
  * @author Roy Wetherall
- * @since 2.1
+ * @since 2.2
  */
 @RunWith(Suite.class)
 @SuiteClasses(
 {
-    ActionTestSuite.class,
-    CapabilitiesTestSuite.class,
-    ServicesTestSuite.class,
-    WebScriptTestSuite.class,
-    IssueTestSuite.class,
-    ParameterProcessorTestSuite.class,
-    DoD5015TestSuite.class
+    RM1147DODRMSiteTest.class,
+    RM1194ExcludeDoDRecordTypesTest.class
 })
-public class AllTestSuite
+public class DoD5015TestSuite
 {
 }

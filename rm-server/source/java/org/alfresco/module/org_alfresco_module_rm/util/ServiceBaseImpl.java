@@ -21,7 +21,10 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -69,6 +72,50 @@ public class ServiceBaseImpl implements RecordsManagementModel
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         return nodeService.hasAspect(nodeRef, ASPECT_RECORD);
+    }
+    
+    /**
+     * Gets the file plan that a given file plan component resides within.
+     * 
+     * @param nodeRef           node reference
+     * @return {@link NodeRef}  file plan, null if none
+     */
+    public NodeRef getFilePlan(final NodeRef nodeRef)
+    {
+        NodeRef result = null;
+        if (nodeRef != null)
+        {
+            RunAsWork<NodeRef> runAsWork = new RunAsWork<NodeRef>()
+            {
+                @Override
+                public NodeRef doWork() throws Exception
+                {
+                    NodeRef result = (NodeRef)nodeService.getProperty(nodeRef, PROP_ROOT_NODEREF);
+                    if (result == null)
+                    {
+                        if (instanceOf(nodeRef, TYPE_FILE_PLAN) == true)
+                        {
+                            result = nodeRef;
+                        }
+                        else
+                        {
+                            ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
+                            if (parentAssocRef != null)
+                            {
+                                result = getFilePlan(parentAssocRef.getParentRef());
+                            }
+                        }
+                    }
+                    
+                    return result;
+                }
+            
+            };
+            
+            result = AuthenticationUtil.runAsSystem(runAsWork);
+        }
+
+        return result;
     }
     
     /**

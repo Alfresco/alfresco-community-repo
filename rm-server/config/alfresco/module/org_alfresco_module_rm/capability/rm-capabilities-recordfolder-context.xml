@@ -33,12 +33,7 @@
             <ref bean="rmCreateRecordFolderCapability"/>
             <ref bean="rmModifyRecordFolderCapability"/>
             <ref bean="rmDeleteRecordFolderCapability"/>
-         </list>
-      </property>
-      <property name="kinds">
-         <list>
-            <value>UNFILED_RECORD_CONTAINER</value>
-            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+            <ref bean="rmCreateModifyDestroyUnfiledFoldersCapability"/>
          </list>
       </property>
       <property name="group"><ref bean="folderControlGroup"/></property>
@@ -132,9 +127,22 @@
       <property name="undetermined" value="true"/>
       <property name="capabilities">
          <list>
-            <ref bean="rmCreateModifyDestroyFoldersCapability"/>
+            <ref bean="rmDeleteRecordFolderCapability"/>
          </list>
       </property>
-      <property name="targetCapability" ref="rmCreateModifyDestroyFoldersCapability"/>
+      <property name="targetCapability" ref="rmCreateRecordFolderCapability"/>
+   </bean>
+   
+   <bean id="rmCreateModifyDestroyUnfiledFoldersCapability"
+         parent="compositeCapability">
+      <property name="name" value="CreateModifyDestroyUnfiledFolders"/>
+      <property name="private" value="true"/>
+      <property name="permission" value="CreateModifyDestroyFolders"/>
+      <property name="kinds">
+         <list>
+            <value>UNFILED_RECORD_CONTAINER</value>
+            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+         </list>
+      </property>
    </bean>
 </beans>

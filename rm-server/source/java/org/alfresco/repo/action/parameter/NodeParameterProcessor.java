@@ -19,8 +19,13 @@
 package org.alfresco.repo.action.parameter;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -36,7 +41,7 @@ import org.apache.commons.lang.ArrayUtils;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class NodeParameterProcessor extends ParameterProcessor
+public class NodeParameterProcessor extends ParameterProcessor implements ParameterSubstitutionSuggester
 {
     /** Supported data types */
     private QName[] supportedDataTypes =
@@ -108,7 +113,7 @@ public class NodeParameterProcessor extends ParameterProcessor
             QName type = propertyDefinition.getDataType().getName();
             if (ArrayUtils.contains(supportedDataTypes, type) == true)
             {
-                Serializable propertyValue = nodeService.getProperty(actionedUponNodeRef, qname);   
+                Serializable propertyValue = nodeService.getProperty(actionedUponNodeRef, qname);
                 if (propertyValue != null)
                 {
                     result = propertyValue.toString();
@@ -126,5 +131,52 @@ public class NodeParameterProcessor extends ParameterProcessor
         }
 
         return result;
+    }
+
+    /**
+     * Get a list of node substitution suggestions for the specified fragment.
+     *
+     * @param substitutionFragment  The fragment to search for
+     * @returns  A list of node substitution suggestions, for example 'node.cm:title'
+     *
+     * @see org.alfresco.repo.action.parameter.ParameterSubstitutionSuggester#getSubstitutionSuggestions(java.lang.String)
+     */
+    @Override
+    public List<String> getSubstitutionSuggestions(String substitutionFragment)
+    {
+        List<String> suggestions = new ArrayList<String>();
+        getSubstitutionSuggestions(RecordsManagementModel.ASPECT_RECORD, substitutionFragment.toLowerCase(), suggestions);
+        return suggestions;
+    }
+
+    /**
+     * Get a list of node substitution suggestions for the given aspect specified fragment. Calls itself recursively for
+     * associated aspects.
+     *
+     * @param aspect  Aspect to get properties of and the call this method for associated aspects
+     * @param substitutionFragment  Substitution fragment to search for
+     * @param suggestions  The current list of suggestions to which we will add newly found suggestions
+     */
+    private void getSubstitutionSuggestions(QName aspect, String substitutionFragment, List<String> suggestions)
+    {
+        AspectDefinition recordAspect = this.dictionaryService.getAspect(aspect);
+        Map<QName, PropertyDefinition> properties = recordAspect.getProperties();
+        for(QName key : properties.keySet())
+        {
+            PropertyDefinition propertyDefinition = properties.get(key);
+            QName type = propertyDefinition.getDataType().getName();
+            if(ArrayUtils.contains(supportedDataTypes, type))
+            {
+                String suggestion = "node." + key.getPrefixString();
+                if(suggestion.toLowerCase().contains(substitutionFragment))
+                {
+                    suggestions.add(suggestion);
+                }
+            }
+        }
+        for(QName defaultAspect : recordAspect.getDefaultAspectNames())
+        {
+            getSubstitutionSuggestions(defaultAspect, substitutionFragment, suggestions);
+        }
     }
 }

@@ -47,13 +47,18 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
 
     private static final String[] ALL_FIELDS_FOR_SUBSTITUTION_QUERY = {
         DAY + SEP + SHORT,
+        DAY,
         DAY + SEP + LONG,
         DAY + SEP + NUMBER,
+        DAY + SEP + YEAR,
         MONTH + SEP + SHORT,
+        MONTH,
         MONTH + SEP + LONG,
         MONTH + SEP + NUMBER,
         YEAR + SEP + SHORT,
-        YEAR + SEP + LONG
+        YEAR,
+        YEAR + SEP + LONG,
+        YEAR + SEP + WEEK
     };
 
     /**
@@ -163,7 +168,7 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
         }
         else if (WEEK.equalsIgnoreCase(style))
         {
-            pattern = "w";
+            pattern = "ww";
         }
         else
         {

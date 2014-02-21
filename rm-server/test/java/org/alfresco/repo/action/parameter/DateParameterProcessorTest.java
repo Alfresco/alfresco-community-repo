@@ -47,14 +47,19 @@ public class DateParameterProcessorTest
     {
         List<String> suggestions = this.dateParameterProcessor.getSubstitutionSuggestions("date");
         assertTrue(suggestions.contains("date.day.short"));
+        assertTrue(suggestions.contains("date.day"));
         assertTrue(suggestions.contains("date.day.long"));
         assertTrue(suggestions.contains("date.day.number"));
+        assertTrue(suggestions.contains("date.day.year"));
         assertTrue(suggestions.contains("date.month.short"));
+        assertTrue(suggestions.contains("date.month"));
         assertTrue(suggestions.contains("date.month.long"));
         assertTrue(suggestions.contains("date.month.number"));
         assertTrue(suggestions.contains("date.year.short"));
+        assertTrue(suggestions.contains("date.year"));
         assertTrue(suggestions.contains("date.year.long"));
-        assertEquals(8, suggestions.size());
+        assertTrue(suggestions.contains("date.year.week"));
+        assertEquals(13, suggestions.size());
     }
 
     @Test
@@ -62,14 +67,19 @@ public class DateParameterProcessorTest
     {
         List<String> suggestions = this.dateParameterProcessor.getSubstitutionSuggestions("dat");
         assertTrue(suggestions.contains("date.day.short"));
+        assertTrue(suggestions.contains("date.day"));
         assertTrue(suggestions.contains("date.day.long"));
         assertTrue(suggestions.contains("date.day.number"));
+        assertTrue(suggestions.contains("date.day.year"));
         assertTrue(suggestions.contains("date.month.short"));
+        assertTrue(suggestions.contains("date.month"));
         assertTrue(suggestions.contains("date.month.long"));
         assertTrue(suggestions.contains("date.month.number"));
         assertTrue(suggestions.contains("date.year.short"));
+        assertTrue(suggestions.contains("date.year"));
         assertTrue(suggestions.contains("date.year.long"));
-        assertEquals(8, suggestions.size());
+        assertTrue(suggestions.contains("date.year.week"));
+        assertEquals(13, suggestions.size());
     }
 
     @Test
@@ -77,14 +87,19 @@ public class DateParameterProcessorTest
     {
         List<String> suggestions = this.dateParameterProcessor.getSubstitutionSuggestions("at");
         assertTrue(suggestions.contains("date.day.short"));
+        assertTrue(suggestions.contains("date.day"));
         assertTrue(suggestions.contains("date.day.long"));
         assertTrue(suggestions.contains("date.day.number"));
+        assertTrue(suggestions.contains("date.day.year"));
         assertTrue(suggestions.contains("date.month.short"));
+        assertTrue(suggestions.contains("date.month"));
         assertTrue(suggestions.contains("date.month.long"));
         assertTrue(suggestions.contains("date.month.number"));
         assertTrue(suggestions.contains("date.year.short"));
+        assertTrue(suggestions.contains("date.year"));
         assertTrue(suggestions.contains("date.year.long"));
-        assertEquals(8, suggestions.size());
+        assertTrue(suggestions.contains("date.year.week"));
+        assertEquals(13, suggestions.size());
     }
 
     @Test
@@ -92,9 +107,11 @@ public class DateParameterProcessorTest
     {
         List<String> suggestions = this.dateParameterProcessor.getSubstitutionSuggestions("ay");
         assertTrue(suggestions.contains("date.day.short"));
+        assertTrue(suggestions.contains("date.day"));
         assertTrue(suggestions.contains("date.day.long"));
         assertTrue(suggestions.contains("date.day.number"));
-        assertEquals(3, suggestions.size());
+        assertTrue(suggestions.contains("date.day.year"));
+        assertEquals(5, suggestions.size());
     }
 
     @Test
@@ -103,10 +120,11 @@ public class DateParameterProcessorTest
         List<String> suggestions = this.dateParameterProcessor.getSubstitutionSuggestions("on");
         assertTrue(suggestions.contains("date.day.long"));
         assertTrue(suggestions.contains("date.month.short"));
+        assertTrue(suggestions.contains("date.month"));
         assertTrue(suggestions.contains("date.month.long"));
         assertTrue(suggestions.contains("date.month.number"));
         assertTrue(suggestions.contains("date.year.long"));
-        assertEquals(5, suggestions.size());
+        assertEquals(6, suggestions.size());
     }
 
 }

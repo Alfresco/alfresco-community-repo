@@ -132,7 +132,7 @@
       </property>
       <property name="targetCapability" ref="rmCreateRecordFolderCapability"/>
    </bean>
-   
+
    <bean id="rmCreateModifyDestroyUnfiledFoldersCapability"
          parent="declarativeCapability">
       <property name="name" value="CreateModifyDestroyUnfiledFolders"/>
@@ -143,6 +143,27 @@
             <value>UNFILED_RECORD_CONTAINER</value>
             <value>UNFILED_RECORD_CONTAINER_CHILD</value>
          </list>
+      </property>
+   </bean>
+
+   <bean id="rmDeleteUnfiledRecordsContainerCapability"
+         parent="declarativeCapability">
+      <property name="name" value="DeleteUnfiledRecordsContainer"/>
+      <property name="private" value="true"/>
+      <property name="permission" value="CreateModifyDestroyFolders"/>
+      <property name="kinds">
+         <list>
+            <value>UNFILED_RECORD_CONTAINER</value>
+            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.closed" value="false"/>
+         </map>
       </property>
    </bean>
 </beans>

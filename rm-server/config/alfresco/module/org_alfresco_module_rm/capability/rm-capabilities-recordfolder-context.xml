@@ -33,12 +33,32 @@
             <ref bean="rmCreateRecordFolderCapability"/>
             <ref bean="rmModifyRecordFolderCapability"/>
             <ref bean="rmDeleteRecordFolderCapability"/>
-            <ref bean="rmCreateModifyDestroyUnfiledFoldersCapability"/>
+            <!-- FIXME: Move to separate capability -->
+            <ref bean="rmCreateUnfiledRecordsContainerFolderCapability"/>
+            <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
+            <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>
          </list>
       </property>
       <property name="group"><ref bean="folderControlGroup"/></property>
       <property name="index" value="20" />
    </bean>
+
+   <!-- FIXME: Will be added as a separate capability
+   <bean id="rmCreateModifyDestroyUnfiledRecordsContainerFolderCapability"
+         parent="compositeCapability">
+      <property name="name" value="CreateModifyDestroyUnfiledRecordsContainer"/>
+      <property name="permission" value="CreateModifyDestroyFolders"/>
+      <property name="capabilities">
+         <list>
+            <ref bean="rmCreateUnfiledRecordsContainerFolderCapability"/>
+            <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
+            <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>
+         </list>
+      </property>
+      <property name="group"><ref bean="folderControlGroup"/></property>
+      <property name="index" value="30" />
+   </bean>
+   -->
 
    <bean id="rmReOpenFoldersCapability"
       parent="declarativeCapability">
@@ -133,9 +153,27 @@
       <property name="targetCapability" ref="rmCreateRecordFolderCapability"/>
    </bean>
 
-   <bean id="rmCreateModifyDestroyUnfiledFoldersCapability"
-         parent="declarativeCapability">
-      <property name="name" value="CreateModifyDestroyUnfiledFolders"/>
+   <bean id="rmCreateUnfiledRecordsContainerFolderCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CreateUnfiledRecordsContainerFolder"/>
+      <property name="permission" value="CreateModifyDestroyFolders"/>
+      <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>UNFILED_RECORD_CONTAINER</value>
+            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
+   </bean>
+
+   <bean id="rmModifyUnfiledRecordsContainerFolderCapability"
+      parent="declarativeCapability">
+      <property name="name" value="ModifyUnfiledRecordsContainerFolder"/>
       <property name="private" value="true"/>
       <property name="permission" value="CreateModifyDestroyFolders"/>
       <property name="kinds">
@@ -144,11 +182,19 @@
             <value>UNFILED_RECORD_CONTAINER_CHILD</value>
          </list>
       </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.closed" value="false"/>
+         </map>
+      </property>
    </bean>
 
-   <bean id="rmDeleteUnfiledRecordsContainerCapability"
+   <bean id="rmDeleteUnfiledRecordsContainerFolderCapability"
          parent="declarativeCapability">
-      <property name="name" value="DeleteUnfiledRecordsContainer"/>
+      <property name="name" value="DeleteUnfiledRecordsContainerFolder"/>
       <property name="private" value="true"/>
       <property name="permission" value="CreateModifyDestroyFolders"/>
       <property name="kinds">

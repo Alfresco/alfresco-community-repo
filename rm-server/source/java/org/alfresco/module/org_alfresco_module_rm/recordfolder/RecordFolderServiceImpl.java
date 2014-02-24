@@ -99,7 +99,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef) == true && instanceOf(nodeRef, TYPE_RECORD_FOLDER))
         {
             initialiseRecordFolder(nodeRef);       
         }

@@ -21,10 +21,11 @@ package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -54,6 +55,9 @@ public class RecordContainerType implements RecordsManagementModel,
     
     /** Identity service */
     private IdentifierService recordsManagementIdentifierService;
+    
+    /** record folder service */
+    private RecordFolderServiceImpl recordFolderService;
     
     /**
      * Set the policy component
@@ -92,6 +96,14 @@ public class RecordContainerType implements RecordsManagementModel,
     public void setRecordsManagementIdentifierService(IdentifierService recordsManagementIdentifierService)
     {
         this.recordsManagementIdentifierService = recordsManagementIdentifierService;
+    }
+    
+    /**
+     * @param recordFolderService   record folder service
+     */
+    public void setRecordFolderService(RecordFolderServiceImpl recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
     }
     
     /**
@@ -140,11 +152,22 @@ public class RecordContainerType implements RecordsManagementModel,
                             // We need to automatically cast the created folder to RM type if it is a plain folder
                             // This occurs if the RM folder has been created via IMap, WebDav, etc
                             if (nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT) == false)
-                            {                
-                                // TODO it may not always be a record folder ... perhaps if the current user is a admin it would be a record category?? 
+                            {   
+                                // check the type of the parent to determine what 'kind' of artifact to create                              
+                                NodeRef parent = childAssocRef.getParentRef();
+                                QName parentType = nodeService.getType(parent);
                                 
-                                // Assume any created folder is a rma:recordFolder
-                                nodeService.setType(child, TYPE_RECORD_FOLDER);     
+                                if (dictionaryService.isSubClass(parentType, TYPE_FILE_PLAN))
+                                {
+                                    // create a rma:recordCategoty since we are in the root of the file plan
+                                    nodeService.setType(child, TYPE_RECORD_CATEGORY);
+                                }
+                                else
+                                {
+                                    // create a rma:recordFolder and initialise record folder
+                                    nodeService.setType(child, TYPE_RECORD_FOLDER);                                    
+                                    recordFolderService.initialiseRecordFolder(child);
+                                }
                             }                           
     
                             // Catch all to generate the rm id (assuming it doesn't already have one!)

@@ -782,4 +782,15 @@
       <property name="capability" value="EndRetention" />
    </bean>
 
+   <bean id="jsonConversionComponent.newHold"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="newHold"/>
+      <property name="kinds">
+         <set>
+            <value>HOLD</value>
+            <value>HOLD_CONTAINER_CHILD</value>
+         </set>
+      </property>
+      <property name="capability" value="CreateHold"/>
+   </bean>
 </beans>

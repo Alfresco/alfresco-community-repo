@@ -65,7 +65,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
 
     // Hold container
     public static final QName TYPE_HOLD_CONTAINER = QName.createQName(RM_URI, "holdContainer");
-    
+    public static final QName TYPE_HOLD_CONTAINER_CHILD = QName.createQName(RM_URI, "holdContainerChild");
+
     // Transfer container
     public static final QName TYPE_TRANSFER_CONTAINER = QName.createQName(RM_URI, "transferContainer");
 
@@ -255,9 +256,9 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     public static final QName PROP_RECORD_REJECTION_USER_ID = QName.createQName(RM_URI, "recordRejectionUserId");
     public static final QName PROP_RECORD_REJECTION_DATE = QName.createQName(RM_URI, "recordRejectionDate");
     public static final QName PROP_RECORD_REJECTION_REASON = QName.createQName(RM_URI, "recordRejectionReason");
-    
+
     // Countable aspect
     public static final QName ASPECT_COUNTABLE = QName.createQName(RM_URI, "countable");
     public static final QName PROP_COUNT = QName.createQName(RM_URI, "count");
-    
+
 }

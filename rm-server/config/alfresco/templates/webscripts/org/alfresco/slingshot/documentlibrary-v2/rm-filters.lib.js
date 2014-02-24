@@ -153,6 +153,7 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
 
       case "transfers":
       case "holds":
+         filterParams.variablePath = false;
          if (filterData == null)
          {
             filterParams.query = "";

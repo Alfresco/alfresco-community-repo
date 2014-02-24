@@ -138,7 +138,8 @@
           "FileUnfiledRecords",
           "RejectRecords",
           "LinkToRecords",
-          "FileTransferReport"
+          "FileTransferReport",
+          "CreateHold"
       ]
    },
    {
@@ -205,8 +206,8 @@
           "FileUnfiledRecords",
           "RejectRecords",
           "LinkToRecords",
-          "FileTransferReport"
+          "FileTransferReport",
+          "CreateHold"
       ]
    }
 ]
-

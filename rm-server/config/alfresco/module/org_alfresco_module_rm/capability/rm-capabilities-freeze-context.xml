@@ -53,4 +53,23 @@
       <property name="index" value="30" />
    </bean>
 
+   <bean id="rmCreateHoldCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CreateHold"/>
+      <property name="permission" value="CreateHold"/>
+      <property name="kinds">
+         <list>
+            <value>HOLD</value>
+            <value>HOLD_CONTAINER_CHILD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
+      <property name="group"><ref bean="holdControlsGroup"/></property>
+      <property name="index" value="40" />
+   </bean>
+
 </beans>

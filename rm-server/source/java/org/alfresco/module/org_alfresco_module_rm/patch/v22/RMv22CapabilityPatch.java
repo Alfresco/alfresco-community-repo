@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class RMv22CapabilityPatch extends AbstractModulePatch
 {
-    
+
     /** File plan service */
     private FilePlanService filePlanService;
 
@@ -119,7 +119,7 @@ public class RMv22CapabilityPatch extends AbstractModulePatch
             }
         }
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
      */
@@ -143,6 +143,10 @@ public class RMv22CapabilityPatch extends AbstractModulePatch
             // add new capability
             addCapability(filePlan,
                           "FileDestructionReport",
+                          FilePlanRoleService.ROLE_ADMIN,
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER);
+            addCapability(filePlan,
+                          "CreateHold",
                           FilePlanRoleService.ROLE_ADMIN,
                           FilePlanRoleService.ROLE_RECORDS_MANAGER);
         }

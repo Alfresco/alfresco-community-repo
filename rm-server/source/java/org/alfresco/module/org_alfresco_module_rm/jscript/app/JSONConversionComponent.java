@@ -260,6 +260,11 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                     result = "hold-container";
                     break;
                 }
+                case HOLD_CONTAINER_CHILD:
+                {
+                    result = "hold-container-child";
+                    break;
+                }
                 case TRANSFER:
                 {
                     result = "transfer-container";

@@ -102,13 +102,18 @@
       </type>
 
       <type name="rma:holdContainer">
-      	 <title>Hold Container</title>
+         <title>Hold Container</title>
          <parent>rma:recordsManagementContainer</parent>
          <mandatory-aspects>
             <aspect>rma:countable</aspect>
          </mandatory-aspects>
       </type>
-      
+
+      <type name="rma:holdContainerChild">
+         <title>Hold Container Child</title>
+         <parent>rma:recordsManagementContainer</parent>
+      </type>
+
       <type name="rma:transferContainer">
       	 <title>Transfer Container</title>
          <parent>rma:recordsManagementContainer</parent>
@@ -738,7 +743,7 @@
                <title>Original Name</title>
                <type>d:text</type>
                <protected>true</protected>
-            </property>            
+            </property>
 
          </properties>
 
@@ -751,7 +756,7 @@
 
       </aspect>
 
-      <!--  Marker aspect used to indicate an aspect is used for record meta-data    -->
+      <!--  Marker aspect used to indicate an aspect is used for record meta-data -->
       <!--  @deprecated since 2.2, record metadata aspects are configured via spring -->
       <!--              using a bootstrap bean                                       -->
       <aspect name="rma:recordMetaData">
@@ -1139,7 +1144,7 @@
             </property>
          </properties>
       </aspect>
-      
+
       <!--  Helper aspect that can be used to keep a count -->
       <aspect name="rma:countable">
          <title>Countable aspect</title>

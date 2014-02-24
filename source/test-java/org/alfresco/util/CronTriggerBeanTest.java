@@ -5,9 +5,7 @@ import static org.junit.Assert.*;
 import java.util.*;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.quartz.Job;
 import org.quartz.JobDetail;
@@ -19,23 +17,19 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class CronTriggerBeanTest {
+    // One second - an arbitrarily small amount of time to allow for the scheduler to start the jobs
+    final long PRECISION_LEEWAY = 1000L; 
+    final long INTERVAL = 1000L;// One run every second
 
-	private ClassPathXmlApplicationContext ctx;
+	private ClassPathXmlApplicationContext context;
 	private Scheduler scheduler;
 	private static Map<String, ArrayList<Long>> dummyJobRuns;
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
+	private static Object lockToken = new Object();
 
 	@Before
 	public void setUp() throws Exception {
 		dummyJobRuns = new HashMap<String, ArrayList<Long>>();
-		this.ctx = null;
+		this.context = null;
 		this.scheduler = null;
 	}
 
@@ -48,7 +42,7 @@ public class CronTriggerBeanTest {
 		}
 		
 		try {
-			ctx.close();
+			context.close();
 		} catch (Exception e) {
 			// do nothing
 		}
@@ -70,49 +64,56 @@ public class CronTriggerBeanTest {
 		ctBean.setScheduler(scheduler);
 		ctBean.afterPropertiesSet();
 
-		Thread.sleep(1000);
-		int runs = jobRuns.size();
-		assertTrue(runs > 0);
-
+		assertJobRunsAfterInterval(jobRuns);
 		scheduler.shutdown();
-		Thread.sleep(1000);
-		assertEquals(runs, jobRuns.size());
-		Thread.sleep(1000);
-		assertEquals(runs, jobRuns.size());
+		this.assertJobStopsAfterShutdown(jobRuns);
 	}
 
+    @Test
+    public void testConfiguredCronTriggerBean() throws BeansException, Exception {
+        final String JOB_NAME = "configuredCronJob";
+        List<Long> jobRuns = this.getRunList(JOB_NAME);
+        assertEquals(0, jobRuns.size());
+        context = new ClassPathXmlApplicationContext(
+                "alfresco/scheduler-core-context.xml",
+                "org/alfresco/util/test-scheduled-jobs-context.xml");
+        CronTriggerBean ctBean = context.getBean("cronTriggerBean", CronTriggerBean.class);
+        scheduler = ctBean.getScheduler();
+        scheduler.start();
+
+        assertJobRunsAfterInterval(jobRuns);
+        context.close(); // When the context closes, the scheduler should close, thereby stopping the job
+        assertJobStopsAfterShutdown(jobRuns);
+    }
+    
 	@Test
 	public void testCodedDelayedCronTriggerBean() throws Exception {
 		final String JOB_NAME = "codedDelayedCronJob";
 		List<Long> jobRuns = this.getRunList(JOB_NAME);
 		assertEquals(0, jobRuns.size());
-		Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
-		scheduler.start();
 		CronTriggerBean ctBean = new CronTriggerBean();
 		ctBean.setBeanName("Dummy");
 		ctBean.setCronExpression("0/1 * * * * ? *");
 		ctBean.setEnabled(true);
 		JobDetail jobDetail = new JobDetail(JOB_NAME, "DefaultGroup", DummyJob.class);
 		ctBean.setJobDetail(jobDetail);
+        scheduler = StdSchedulerFactory.getDefaultScheduler();
 		ctBean.setScheduler(scheduler);
 		final long START_DELAY = 4000L;
 		ctBean.setStartDelay(START_DELAY);
-		ctBean.afterPropertiesSet();
+		 
+        final long PRE_SCHEDULING = System.currentTimeMillis();
+		ctBean.afterPropertiesSet(); // This is when the trigger is actually scheduled
+        long startTime = ctBean.getTrigger().getStartTime().getTime();
+        assertTrue("The startTime should be the time when the trigger is scheduled plus the START_DELAY.", 
+                    startTime - PRE_SCHEDULING - START_DELAY <= PRECISION_LEEWAY);
+        assertEquals(0, jobRuns.size());
 
-		// It should not have run during the delay. Give a second precision leeway
-		Thread.sleep(START_DELAY - 1000);
-		assertEquals(0, jobRuns.size());
-		// It should have had a chance to run after the delay
-		Thread.sleep(1000);
-		int runs = jobRuns.size();
-		assertTrue(runs > 0);
-		// It should not have run again after shutdown
+        scheduler.start();
+        assertJobDoesNotRunBeforeStartTime(jobRuns, startTime);
+        assertJobRunsAfterInterval(jobRuns);
 		scheduler.shutdown();
-		Thread.sleep(1000);
-		assertEquals(runs, jobRuns.size());
-		// Indeed after another second, it should not have changed.
-		Thread.sleep(1000);
-		assertEquals(runs, jobRuns.size());
+		assertJobStopsAfterShutdown(jobRuns);
 	}
 
 	@Test
@@ -120,67 +121,71 @@ public class CronTriggerBeanTest {
 		final String JOB_NAME = "configuredDelayedCronJob";
 		List<Long> jobRuns = this.getRunList(JOB_NAME);
 		assertEquals(0, jobRuns.size());
-		ctx = new ClassPathXmlApplicationContext(
+		
+		// Captures the system time before the Spring context is initialized and the triggers are scheduled
+		final long PRE_INITIALIZATION = System.currentTimeMillis();
+		context = new ClassPathXmlApplicationContext(
 				"alfresco/scheduler-core-context.xml",
 				"org/alfresco/util/test-scheduled-jobs-context.xml");
-		CronTriggerBean ctBean = ctx.getBean("cronTriggerBeanDelayed", CronTriggerBean.class);
-		scheduler = ctBean.getScheduler();
-		scheduler.start();
-
-		// It should not have run during the delay. Give a second precision leeway
+		CronTriggerBean ctBean = context.getBean("cronTriggerBeanDelayed", CronTriggerBean.class);
 		final long START_DELAY = ctBean.getStartDelay();
-		Thread.sleep(START_DELAY - 1000);
+		long startTime = ctBean.getTrigger().getStartTime().getTime();
+		assertTrue("The startTime should be the time when the Spring context is initialized plus the START_DELAY.", 
+		            startTime - PRE_INITIALIZATION - START_DELAY <= PRECISION_LEEWAY);
 		assertEquals(0, jobRuns.size());
 
-		// After the interval, there should be at least one run
-		final long INTERVAL = 1000L;
-		Thread.sleep(INTERVAL);
-		int runs = jobRuns.size();
-		assertTrue(runs > 0);
-
-		// When the context closes, the scheduler should close, thereby stopping the job
-		ctx.close();
-		Thread.sleep(INTERVAL);
-		assertEquals(runs, jobRuns.size());
-		Thread.sleep(INTERVAL);
-		assertEquals(runs, jobRuns.size());
-	}
-	
-	@Test
-	public void testConfiguredCronTriggerBean() throws BeansException, Exception {
-		final String JOB_NAME = "configuredCronJob";
-		List<Long> jobRuns = this.getRunList(JOB_NAME);
-		assertEquals(0, jobRuns.size());
-		ctx = new ClassPathXmlApplicationContext(
-				"alfresco/scheduler-core-context.xml",
-				"org/alfresco/util/test-scheduled-jobs-context.xml");
-		CronTriggerBean ctBean = ctx.getBean("cronTriggerBean", CronTriggerBean.class);
 		scheduler = ctBean.getScheduler();
 		scheduler.start();
-
-		// After the interval, there should be at least one run
-		final long INTERVAL = 1000L;
-		Thread.sleep(INTERVAL);
-		int runs = jobRuns.size();
-		assertTrue(runs > 0);
-
-		// When the context closes, the scheduler should close, thereby stopping the job
-		ctx.close();
-		Thread.sleep(INTERVAL);
-		assertEquals(runs, jobRuns.size());
-		Thread.sleep(INTERVAL);
-		assertEquals(runs, jobRuns.size());
+		assertJobDoesNotRunBeforeStartTime(jobRuns, startTime);
+        assertJobRunsAfterInterval(jobRuns);
+		context.close(); // When the context closes, the scheduler should close, thereby stopping the job
+        assertJobStopsAfterShutdown(jobRuns);
 	}
 
+    private void assertJobStopsAfterShutdown(List<Long> jobRuns) throws InterruptedException
+    {
+        // Gives the job one final interval to stop, but after that, there should be no more runs 
+        Thread.sleep(INTERVAL);
+		int runs = jobRuns.size();
+		Thread.sleep(INTERVAL);
+		assertEquals(runs, jobRuns.size());
+        Thread.sleep(INTERVAL);
+        assertEquals(runs, jobRuns.size());
+    }
+
+    private void assertJobRunsAfterInterval(List<Long> jobRuns) throws InterruptedException
+    {
+        // After the interval, there should be at least one run
+		Thread.sleep(INTERVAL);
+		assertTrue(jobRuns.size() > 0);
+    }
+
+    private void assertJobDoesNotRunBeforeStartTime(List<Long> jobRuns, long startTime)
+                throws InterruptedException
+    {
+        // Synchronizing on an object prevents jobs from running while checking
+        synchronized (lockToken) 
+        {
+            // It should not run before the start time
+    		while (System.currentTimeMillis() < startTime) {
+    			assertEquals(0, jobRuns.size());
+                Thread.sleep(20); // Sleeps so as to not take up all the CPU
+    		}
+        }
+    }
+	
 	public static class DummyJob implements Job {
 		public void execute(JobExecutionContext context) throws JobExecutionException {
-			long now = System.currentTimeMillis();
-			ArrayList<Long> runs = dummyJobRuns.get(context.getJobDetail().getName());
-			if (runs == null) {
-				runs = new ArrayList<Long>();
-				dummyJobRuns.put(context.getJobDetail().getName(), runs);
-			}
-			runs.add(now);
+		    synchronized (lockToken) 
+		    {
+    			long now = System.currentTimeMillis();
+    			ArrayList<Long> runs = dummyJobRuns.get(context.getJobDetail().getName());
+    			if (runs == null) {
+    				runs = new ArrayList<Long>();
+    				dummyJobRuns.put(context.getJobDetail().getName(), runs);
+    			}
+    			runs.add(now);
+		    }
 		}
 	}
 	

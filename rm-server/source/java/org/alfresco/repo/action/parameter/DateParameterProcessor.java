@@ -61,6 +61,8 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
         YEAR + SEP + WEEK
     };
 
+    private int maximumNumberSuggestions = DEFAULT_MAXIMUM_NUMBER_SUGGESTIONS;
+
     /**
      * @see org.alfresco.repo.action.parameter.ParameterProcessor#process(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -194,6 +196,19 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
         return style;
     }
 
+    /**
+     * Set the maxmimum number of suggestions returned  from the global property
+     *
+     * @param maximumNumberSuggestions
+     */
+    public void setMaximumNumberSuggestions(int maximumNumberSuggestions)
+    {
+        this.maximumNumberSuggestions = (maximumNumberSuggestions <= 0 ? DEFAULT_MAXIMUM_NUMBER_SUGGESTIONS: maximumNumberSuggestions);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.action.parameter.ParameterSubstitutionSuggester#getSubstitutionSuggestions(java.lang.String)
+     */
     @Override
     public List<String> getSubstitutionSuggestions(String substitutionFragment)
     {
@@ -203,6 +218,10 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
         {
             for(String field: ALL_FIELDS_FOR_SUBSTITUTION_QUERY) {
                 suggestions.add(namePrefix + field);
+                if(suggestions.size() >= maximumNumberSuggestions)
+                {
+                    break;
+                }
             }
         }
         else
@@ -212,6 +231,10 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
                 if(prefixFieldName.toLowerCase().contains(substitutionFragment.toLowerCase()))
                 {
                     suggestions.add(namePrefix + field);
+                    if(suggestions.size() >= maximumNumberSuggestions)
+                    {
+                        break;
+                    }
                 }
             }
         }

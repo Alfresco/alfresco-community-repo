@@ -60,8 +60,11 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
     private final static String CREATE_CAPABILITY = "Create";
     private final static String VIEW_CAPABILITY = "ViewRecords";
 
-    private final static int PATH_SUBSTITUTION_MINIMUM_FRAGMENT_LENGTH = 0;
-    private final static int PATH_SUBSTITUTION_MAXIMUM_NUMBER_RESULTS = 10;
+    private final static int DEFAULT_SUBSTITUTION_MINIMUM_FRAGMENT_LENGTH = 0;
+    private final static int DEFAULT_MAXIMUM_NUMBER_PATH_SUGGESTIONS = 10;
+
+    private int pathSubstitutionMaximumNumberSuggestions = DEFAULT_MAXIMUM_NUMBER_PATH_SUGGESTIONS;
+    private int substitutionMinimumFragmentSize = DEFAULT_SUBSTITUTION_MINIMUM_FRAGMENT_LENGTH;
 
     private ParameterProcessorComponent parameterProcessorComponent;
     private NodeService nodeService;
@@ -105,6 +108,26 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
     }
 
     /**
+     * Set the minimum fragment size to process for suggestion processing
+     *
+     * @param maximumNumberSuggestions
+     */
+    public void setSubstitutionMinimumFragmentSize(int substitutionMinimumFragmentSize)
+    {
+        this.substitutionMinimumFragmentSize = Math.max(substitutionMinimumFragmentSize, DEFAULT_SUBSTITUTION_MINIMUM_FRAGMENT_LENGTH);
+    }
+
+    /**
+     * Set the maxmimum number of suggestions returned from the global property
+     *
+     * @param maximumNumberSuggestions
+     */
+    public void setPathSubstitutionMaximumNumberSuggestions(int pathSubstitutionMaximumNumberSuggestions)
+    {
+        this.pathSubstitutionMaximumNumberSuggestions = (pathSubstitutionMaximumNumberSuggestions <= 0 ? DEFAULT_MAXIMUM_NUMBER_PATH_SUGGESTIONS: pathSubstitutionMaximumNumberSuggestions);
+    }
+
+    /**
      * Return a list of substitutions for the given fragment.
      *
      * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
@@ -119,8 +142,11 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
 
         List<String> substitutionSuggestions = new ArrayList<String>();
 
-        substitutionSuggestions.addAll(getSubPathSuggestions(req, path, fragment));
-        substitutionSuggestions.addAll(this.parameterProcessorComponent.getSubstitutionSuggestions(fragment));
+        if((fragment != null) && (fragment.length() >= this.substitutionMinimumFragmentSize))
+        {
+            substitutionSuggestions.addAll(getSubPathSuggestions(req, path, fragment));
+            substitutionSuggestions.addAll(this.parameterProcessorComponent.getSubstitutionSuggestions(fragment));
+        }
 
         Map<String, Object> model = new HashMap<String, Object>();
         model.put(SUBSTITUTIONS_MODEL_KEY, substitutionSuggestions);
@@ -137,7 +163,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
      */
     private List<String> getSubPathSuggestions(WebScriptRequest req, final String path, final String fragment) {
         List<String> pathSuggestions = new ArrayList<String>();
-        if((path != null) && path.startsWith("/") && (fragment != null) && (fragment.length() >= PATH_SUBSTITUTION_MINIMUM_FRAGMENT_LENGTH))
+        if((path != null) && path.startsWith("/") && (fragment != null))
         {
             String[] pathFragments = path.split("/");
 
@@ -177,7 +203,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
                     if((fragment.isEmpty() || fileName.toLowerCase().startsWith(lowerCaseFragment)) && isNodeRefAppropriateForPathSuggestion(childNodeRef))
                     {
                         pathSuggestions.add("/" + fileName);
-                        if(pathSuggestions.size() >= PATH_SUBSTITUTION_MAXIMUM_NUMBER_RESULTS)
+                        if(pathSuggestions.size() >= pathSubstitutionMaximumNumberSuggestions)
                         {
                             break;
                         }

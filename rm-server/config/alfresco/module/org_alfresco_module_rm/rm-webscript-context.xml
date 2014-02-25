@@ -576,6 +576,12 @@
       <property name="nodeService" ref="NodeService"/>
       <property name="filePlanService" ref="FilePlanService" />
       <property name="capabilityService" ref="CapabilityService" />
+      <property name="substitutionMinimumFragmentSize">
+         <value>${rm.autocompletesuggestion.minfragmentsize}</value>
+      </property>
+      <property name="pathSubstitutionMaximumNumberSuggestions">
+         <value>${rm.autocompletesuggestion.maxsuggestions.path}</value>
+      </property>
    </bean>
 
 </beans>

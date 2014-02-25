@@ -24,7 +24,7 @@
                 <ref bean="patch.migrateTenantsFromAttrsToTable" />
                 <ref bean="patch.migrateAttrTenants" />
             </list>
-        </property> 
+        </property>
     </bean> -->
 
    <bean id="ExtendedPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -43,7 +43,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="ExtendedPermissionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
@@ -69,11 +69,11 @@
             </value>
         </property>
     </bean>
-    
+
     <bean name="writersSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
       <property name="maxItems" value="${cache.writersSharedCache.maxItems}"/>
     </bean>
-    
+
     <bean name="writersCache" class="org.alfresco.repo.cache.TransactionalCache">
       <property name="sharedCache">
          <ref bean="writersSharedCache" />
@@ -138,36 +138,36 @@
    </bean>
 
    <bean id="extendedReaderDynamicAuthority" class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority" />
-   
+
    <bean id="extendedWriterDynamicAuthority" class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority" />
-   
+
    <!-- Action Service -->
    <bean id="actionService" class="org.alfresco.repo.action.ExtendedActionServiceImpl" init-method="init">
-   
+
    		<property name="filePlanService" ref="FilePlanService" />
-   
+
         <property name="policyComponent">
             <ref bean="policyComponent" />
-        </property>         
+        </property>
         <property name="nodeService">
             <ref bean="NodeService" />
-        </property>         
+        </property>
         <property name="searchService">
             <ref bean="ADMSearchService" />
-        </property>         
+        </property>
         <property name="authenticationContext">
             <ref bean="authenticationContext" />
-        </property>        
+        </property>
         <property name="actionTrackingService">
             <ref bean="actionTrackingService" />
-        </property>        
+        </property>
         <property name="dictionaryService">
             <ref bean="DictionaryService" />
         </property>
         <property name="monitor">
             <ref bean="actionServiceMonitor"/>
         </property>
-        
+
         <property name="asynchronousActionExecutionQueues">
             <map>
                 <!--  This is the default async queue -->
@@ -177,33 +177,52 @@
                <entry key="deployment">
                       <ref bean="deploymentAsynchronousActionExecutionQueue"/>
                </entry>
-            </map>   
+            </map>
         </property>
     </bean>
-    
+
     <bean id="parameterProcessorComponent" class="org.alfresco.repo.action.parameter.ParameterProcessorComponent"/>
-    
+
     <bean id="baseParamenterProcessor" abstract="true" init-method="init">
     	<property name="parameterProcessorComponent" ref="parameterProcessorComponent"/>
     </bean>
-    
+
     <bean id="nodeParameterProcessor" parent="baseParamenterProcessor" class="org.alfresco.repo.action.parameter.NodeParameterProcessor" >
-    	<property name="name" value="node" />
-    	<property name="nodeService" ref="NodeService" />
-    	<property name="dictionaryService" ref="DictionaryService" />
-    	<property name="namespaceService" ref="NamespaceService" />
+       <property name="name" value="node" />
+       <property name="nodeService" ref="NodeService" />
+       <property name="dictionaryService" ref="DictionaryService" />
+       <property name="namespaceService" ref="NamespaceService" />
+       <property name="recordsManagementAdminService" ref="recordsManagementAdminService" />
+       <property name="maximumNumberSuggestions">
+          <value>${rm.autocompletesuggestion.maxsuggestions.node}</value>
+       </property>
     </bean>
-    
+
+    <!-- Bootstrap node parameter processor  -->
+    <bean id="nodeParameterSuggesterBootstrap" class="org.alfresco.repo.action.parameter.NodeParameterSuggesterBootstrap" init-method="init">
+       <property name="namespaceService" ref="namespaceService"/>
+       <property name="nodeParameterProcessor" ref="nodeParameterProcessor"/>
+       <property name="nodeParameterProcessorAspects">
+          <list>
+             <value>rma:record</value>
+             <value>cm:content</value>
+          </list>
+       </property>
+    </bean>
+
     <bean id="dateParameterProcessor" parent="baseParamenterProcessor" class="org.alfresco.repo.action.parameter.DateParameterProcessor">
-    	<property name="name" value="date" />
+       <property name="name" value="date" />
+       <property name="maximumNumberSuggestions">
+          <value>${rm.autocompletesuggestion.maxsuggestions.date}</value>
+       </property>
     </bean>
-    
+
     <bean id="messageParameterProcessor" parent="baseParamenterProcessor" class="org.alfresco.repo.action.parameter.MessageParameterProcessor">
-    	<property name="name" value="message" />
+       <property name="name" value="message" />
     </bean>
-    
+
     <!--  Rule Service -->
-    
+
     <bean id="ruleService" class="org.alfresco.repo.rule.ExtendedRuleServiceImpl" init-method="init">
         <property name="nodeService" ref="NodeService"/>
         <property name="nodeService2" ref="NodeService"/>
@@ -218,16 +237,16 @@
         <property name="rulesDisabled">
             <value>false</value>
         </property>
-    
+
     	<!--  Since RM 2.1 -->
     	<property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
     	<property name="filePlanService" ref="FilePlanService" />
     	<property name="runAsRmAdmin">
     		<value>${rm.rule.runasrmadmin}</value>
-    	</property>    
-        
+    	</property>
+
    </bean>
-    
+
     <bean id="FormService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
@@ -240,14 +259,14 @@
         	</value>
         </property>
     </bean>
-    
+
     <bean id="searchScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.ExtendedSearch">
         <property name="extensionName">
             <value>search</value>
         </property>
         <property name="searchSubsystemSwitchableApplicationContextFactory">
             <ref bean="Search" />
-        </property>        
+        </property>
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
@@ -258,11 +277,11 @@
             <value>${spaces.store}</value>
         </property>
     </bean>
-    
+
     <bean id="on-delete-child-association-trigger" class="org.alfresco.repo.rule.ruletrigger.ExtendedBeforeDeleteChildAssociationRuleTrigger" parent="rule-trigger-base">
       <property name="executeRuleImmediately">
           <value>true</value>
       </property>
    </bean>
-	
-</beans>    
+
+</beans>

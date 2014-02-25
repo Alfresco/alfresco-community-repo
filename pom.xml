@@ -72,6 +72,12 @@
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>fop</artifactId>
             <version>0.94</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>rhino</groupId>
+                    <artifactId>js</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>xalan</groupId>

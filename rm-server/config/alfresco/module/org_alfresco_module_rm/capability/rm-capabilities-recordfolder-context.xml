@@ -212,4 +212,23 @@
          </map>
       </property>
    </bean>
+
+   <bean id="rmDeleteHoldContainerCapability"
+         parent="declarativeCapability">
+      <property name="name" value="DeleteHoldContainer"/>
+      <property name="private" value="true"/>
+      <property name="permission" value="CreateModifyDestroyFolders"/>
+      <property name="kinds">
+         <list>
+            <value>HOLD_CONTAINER_CHILD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.closed" value="false"/>
+         </map>
+      </property>
+   </bean>
 </beans>

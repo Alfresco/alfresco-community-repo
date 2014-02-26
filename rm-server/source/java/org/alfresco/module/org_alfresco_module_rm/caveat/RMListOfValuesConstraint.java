@@ -27,8 +27,11 @@ import java.util.Map;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
+import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * RM Constraint implementation that ensures the value is one of a constrained
@@ -44,7 +47,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
     //private static final String ERR_NO_VALUES = "d_dictionary.constraint.list_of_values.no_values";
     private static final String ERR_NON_STRING = "d_dictionary.constraint.string_length.non_string";
     private static final String ERR_INVALID_VALUE = "d_dictionary.constraint.list_of_values.invalid_value";
-    
+    private static final String LOV_CONSTRAINT_VALUE = "listconstraint";
     private List<String> allowedValues;
     private List<String> allowedValuesUpper;
     private MatchLogic matchLogic = MatchLogic.AND; // defined match logic used by caveat matching (default = "AND") 
@@ -114,6 +117,22 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
         {
             return this.allowedValues;
         }
+    }
+    
+    public String getDisplayLabel(String constraintAllowableValue, MessageLookup messageLookup)
+    {
+        if (!this.allowedValues.contains(constraintAllowableValue))
+        {
+            return null;
+        }
+
+        String key = LOV_CONSTRAINT_VALUE;
+        key += "." + this.getShortName();
+        key += "." + constraintAllowableValue;
+        key = StringUtils.replace(key, ":", "_");
+
+        String message = messageLookup.getMessage(key, I18NUtil.getLocale());
+        return message == null ? constraintAllowableValue : message;
     }
     
     private List<String> getAllowedValuesUpper()

@@ -670,7 +670,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         return nodeService.createNode(
                 parent,
                 ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, (name.length() > QName.MAX_LENGTH ? name.substring(0, QName.MAX_LENGTH) : name)),
                 type,
                 props).getChildRef();
     }

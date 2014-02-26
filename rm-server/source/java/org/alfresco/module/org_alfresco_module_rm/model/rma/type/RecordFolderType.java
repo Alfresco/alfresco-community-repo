@@ -236,7 +236,7 @@ public class RecordFolderType extends    BaseBehaviourBean
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef) == true && instanceOf(nodeRef, TYPE_RECORD_FOLDER))
         {
             // ensure nothing is being added to a closed record folder
             NodeRef recordFolder = childAssocRef.getParentRef();

@@ -23,6 +23,7 @@ import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -53,6 +54,9 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     /** record service */
     protected RecordService recordService;
 
+    /** record folder service */
+    protected RecordFolderService recordFolderService;
+
     /**
      * @param identifierService identifier service
      */
@@ -67,6 +71,14 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
+    }
+
+    /**
+     * @param recordFolderService record folder service
+     */
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
     }
 
     /**
@@ -104,10 +116,21 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                             // This occurs if the RM folder has been created via IMap, WebDav, etc
                             if (nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT) == false)
                             {
-                                // TODO it may not always be a record folder ... perhaps if the current user is a admin it would be a record category??
+                                // check the type of the parent to determine what 'kind' of artifact to create
+                                NodeRef parent = childAssocRef.getParentRef();
+                                QName parentType = nodeService.getType(parent);
 
-                                // Assume any created folder is a rma:recordFolder
-                                nodeService.setType(child, TYPE_RECORD_FOLDER);
+                                if (dictionaryService.isSubClass(parentType, TYPE_FILE_PLAN))
+                                {
+                                    // create a rma:recordCategoty since we are in the root of the file plan
+                                    nodeService.setType(child, TYPE_RECORD_CATEGORY);
+                                }
+                                else
+                                {
+                                    // create a rma:recordFolder and initialise record folder
+                                    nodeService.setType(child, TYPE_RECORD_FOLDER);
+                                    recordFolderService.setupRecordFolder(child);
+                                }
                             }
 
                             // Catch all to generate the rm id (assuming it doesn't already have one!)

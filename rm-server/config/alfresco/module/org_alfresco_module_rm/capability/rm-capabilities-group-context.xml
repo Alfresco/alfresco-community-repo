@@ -23,6 +23,7 @@
             <ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>
             <ref bean="rmDeleteRecordFolderCapability"/>
             <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>
+            <ref bean="rmDeleteHoldContainerCapability"/>
          </list>
       </property>
    </bean>

@@ -28,7 +28,7 @@
 			"url" : "${url.serviceContext + "/api/rma/admin/rmconstraints/" + constraint.name}",
 			"constraintName" : "${constraint.name}",
 			"caseSensitive" :  "${constraint.caseSensitive?string("true", "false")}",
-			"constraintTitle" : "${constraint.title}",
+			"constraintTitle" : "${msg(constraint.title)}",
 			"values" : [
 				<#list constraint.values as value>
 				{

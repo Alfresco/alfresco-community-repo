@@ -349,6 +349,7 @@
             <value>RECORD_FOLDER</value>
             <value>UNFILED_RECORD_CONTAINER</value>
             <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+            <value>HOLD_CONTAINER</value>
          </set>
       </property>
       <property name="capability" value ="ManageAccessRights"/>

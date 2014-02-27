@@ -218,6 +218,7 @@
             <value>RECORD_FOLDER</value>
             <value>RECORD</value>
             <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+            <value>HOLD_CONTAINER_CHILD</value>
          </set>
       </property>
       <property name="capability" value ="UpdateProperties"/>

@@ -42,7 +42,9 @@ create index ACT_IDX_HI_IDENT_LNK_PROCINST on ACT_HI_IDENTITYLINK(PROC_INST_ID_)
 
 create index ACT_IDX_EXE_PROCDEF on ACT_RU_EXECUTION(PROC_DEF_ID_); 
 
+drop index ACT_IDX_TASK_EXEC; --(optional)
 create index ACT_IDX_TASK_EXEC on ACT_RU_TASK(EXECUTION_ID_);
+drop index ACT_IDX_TASK_PROCINST; --(optional)
 create index ACT_IDX_TASK_PROCINST on ACT_RU_TASK(PROC_INST_ID_);
 
 --

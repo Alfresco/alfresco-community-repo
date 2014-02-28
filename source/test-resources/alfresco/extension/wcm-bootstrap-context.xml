@@ -77,6 +77,9 @@
         <property name="cronExpression">
             <value>0 * * * * ?</value>
         </property>
+        <property name="startDelayMinutes">
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
 
     <!-- Job to scan for expired content in website staging areas -->
@@ -101,6 +104,9 @@
         <!-- trigger at 3:30am each day -->
         <property name="cronExpression">
             <value>0 30 3 * * ?</value>
+        </property>
+        <property name="startDelayMinutes">
+            <value>${system.cronJob.startDelayMinutes}</value>
         </property>
     </bean>
         

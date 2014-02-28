@@ -699,7 +699,17 @@
         </dependency>
         <dependency>
             <groupId>com.google.gdata</groupId>
+            <artifactId>com.google.gdata.gdata-client-meta</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gdata</groupId>
             <artifactId>com.google.gdata.gdata-docs</artifactId>
+            <version>3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gdata</groupId>
+            <artifactId>com.google.gdata.gdata-docs-meta</artifactId>
             <version>3.0</version>
         </dependency>
         <dependency>

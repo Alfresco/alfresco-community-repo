@@ -29,9 +29,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Saved search details.
- * 
+ *
  * Example format of posted Saved Search JSON:
- * 
+ *
  *      {
  *         "siteid" : "rm",
  *         "name": "search name",
@@ -39,7 +39,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *         "search": "the search sting as entered by the user",
  *         "public": boolean,
  *         "searchparams" :
- *         {    
+ *         {
  *            "maxItems" : 500,
  *            "records" : true,
  *            "undeclaredrecords" : false,
@@ -47,12 +47,12 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *            "recordfolders" : false,
  *            "frozen" : false,
  *            "cutoff" : false,
- *            "containertypes" : 
+ *            "containertypes" :
  *            [
  *              "rma:recordSeries",
  *              "rma:recordCategory"
  *            ]
- *            "sort" :    
+ *            "sort" :
  *            [
  *               {
  *                  "field" : "cm:name",
@@ -61,18 +61,18 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *            ]
  *         }
  *      }
- *      
+ *
  *      where: name and query values are mandatory,
  *             searchparams contains the filters, sort, etc information about the query
- *             query is there for backward compatibility             
+ *             query is there for backward compatibility
  *      note:
- *            "params": "terms=keywords:xyz&undeclared=true", 
+ *            "params": "terms=keywords:xyz&undeclared=true",
  *            "sort": "cm:name/asc"
- *            "query": "the complete search query string", 
+ *            "query": "the complete search query string",
  *            ... are sometimes found in the place of searchparams and are migrated to the new format when re-saved
  *            params are in URL encoded name/value pair format
  *            sort is in comma separated "property/dir" packed format i.e. "cm:name/asc,cm:title/desc"
- *             
+ *
  * @author Roy Wetherall
  */
 public class SavedSearchDetails extends ReportDetails
@@ -85,37 +85,37 @@ public class SavedSearchDetails extends ReportDetails
     public static final String PUBLIC = "public";
     public static final String REPORT = "report";
     public static final String SEARCHPARAMS = "searchparams";
-    
+
     // JSON values for backwards compatibility
     public static final String QUERY = "query";
     public static final String SORT = "sort";
     public static final String PARAMS = "params";
-    
+
     private static final String DEFAULT_SITE_ID = "rm";
-    
+
     /** Site id */
 	private String siteId;
-		
+
 	/** Indicates whether the saved search is public or not */
 	private boolean isPublic = true;
-	
+
 	/** Indicates whether the saved search is a report */
 	private boolean isReport = false;
-	
+
 	/** Helper method to link to search node ref if provided */
 	private NodeRef nodeRef = null;
-		  
+
     /** Namespace service */
     NamespaceService namespaceService;
-    
+
     /** Records management search service */
     RecordsManagementSearchServiceImpl searchService;
-    
+
     /** Saves search details compatibility */
     private SavedSearchDetailsCompatibility compatibility;
-    
+
 	/**
-	 * 
+	 *
 	 * @param jsonString
 	 * @return
 	 */
@@ -124,28 +124,31 @@ public class SavedSearchDetails extends ReportDetails
 	    try
 	    {
     	    JSONObject search = new JSONObject(jsonString);
-    	    
+
     	    // Get the site id
     	    String siteId = DEFAULT_SITE_ID;
     	    if (search.has(SITE_ID) == true)
     	    {
     	        siteId = search.getString(SITE_ID);
-    	    } 
-    	    
+    	    }
+
     	    // Get the name
     	    if (search.has(NAME) == false)
     	    {
     	        throw new AlfrescoRuntimeException("Can not create saved search details from json, because required name is not present. " + jsonString);
     	    }
     	    String name = search.getString(NAME);
-    	    
+
     	    // Get the description
     	    String description = "";
     	    if (search.has(DESCRIPTION) == true)
     	    {
     	        description = search.getString(DESCRIPTION);
                 String translated = I18NUtil.getMessage(description);
-                if (translated!=null ) description = translated;
+                if (translated != null)
+                {
+                    description = translated;
+                }
     	    }
 
     	    // Get the query
@@ -162,13 +165,13 @@ public class SavedSearchDetails extends ReportDetails
     	        {
     	            throw new AlfrescoRuntimeException("Can not create saved search details from json, because required search is not present. " + jsonString);
     	        }
-    	    
+
     	    }
     	    else
     	    {
     	        query = search.getString(SEARCH);
     	    }
-            
+
     	    // Get the search parameters
             RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
             if (search.has(SEARCHPARAMS) == true)
@@ -185,21 +188,21 @@ public class SavedSearchDetails extends ReportDetails
                     searchParameters = SavedSearchDetailsCompatibility.createSearchParameters(oldParams, oldSort, namespaceService);
                 }
             }
-    	    
+
     	    // Determine whether the saved query is public or not
     	    boolean isPublic = true;
     	    if (search.has(PUBLIC) == true)
     	    {
     	        isPublic = search.getBoolean(PUBLIC);
     	    }
-    	    
+
     	    // Determine whether the saved query is a report or not
     	    boolean isReport = false;
     	    if (search.has(REPORT) == true)
     	    {
     	        isReport = search.getBoolean(REPORT);
     	    }
-    	    
+
     	    // Create the saved search details object
     	    SavedSearchDetails savedSearchDetails = new SavedSearchDetails(siteId, name, description, query, searchParameters, isPublic, isReport, namespaceService, searchService);
     	    savedSearchDetails.nodeRef = nodeRef;
@@ -208,7 +211,7 @@ public class SavedSearchDetails extends ReportDetails
 	    catch (JSONException exception)
 	    {
 	        throw new AlfrescoRuntimeException("Can not create saved search details from json. " + jsonString, exception);
-	    }	    
+	    }
 	}
 
 	/**
@@ -218,22 +221,22 @@ public class SavedSearchDetails extends ReportDetails
 	 * @param isPublic
 	 */
 	/*package*/ SavedSearchDetails(
-	        String siteId, 
-	        String name, 
-	        String description, 
-	        String serach, 
-	        RecordsManagementSearchParameters searchParameters, 
-	        boolean isPublic, 
+	        String siteId,
+	        String name,
+	        String description,
+	        String serach,
+	        RecordsManagementSearchParameters searchParameters,
+	        boolean isPublic,
 	        boolean isReport,
 	        NamespaceService namespaceService,
-	        RecordsManagementSearchServiceImpl searchService) 
+	        RecordsManagementSearchServiceImpl searchService)
 	{
 	    super(name, description, serach, searchParameters);
-		
+
         ParameterCheck.mandatory("siteId", siteId);
         ParameterCheck.mandatory("namespaceService", namespaceService);
         ParameterCheck.mandatory("searchService", searchService);
-	    
+
 	    this.siteId = siteId;
 		this.isPublic = isPublic;
 		this.isReport = isReport;
@@ -241,23 +244,23 @@ public class SavedSearchDetails extends ReportDetails
 		this.compatibility = new SavedSearchDetailsCompatibility(this, namespaceService, searchService);
 		this.searchService = searchService;
 	}
-	
+
 	/**
 	 * @return
 	 */
-	public String getSiteId() 
+	public String getSiteId()
 	{
 		return siteId;
-	}	
-	
+	}
+
 	/**
 	 * @return
 	 */
-	public boolean isPublic() 
+	public boolean isPublic()
 	{
 		return isPublic;
 	}
-	
+
 	/**
 	 * @return
 	 */
@@ -265,12 +268,12 @@ public class SavedSearchDetails extends ReportDetails
     {
         return isReport;
     }
-	
+
 	public SavedSearchDetailsCompatibility getCompatibility()
 	{
 	    return compatibility;
 	}
-	
+
 	/**
 	 * @return NodeRef search node ref, null if not set
 	 */
@@ -278,7 +281,7 @@ public class SavedSearchDetails extends ReportDetails
 	{
 	    return nodeRef;
 	}
-	
+
 	/**
 	 * @return
 	 */
@@ -291,13 +294,13 @@ public class SavedSearchDetails extends ReportDetails
     	    jsonObject.put(NAME, name);
     	    jsonObject.put(DESCRIPTION, description);
     	    jsonObject.put(SEARCH, search);
-    	    jsonObject.put(SEARCHPARAMS, searchParameters.toJSONObject(namespaceService));    	    
+    	    jsonObject.put(SEARCHPARAMS, searchParameters.toJSONObject(namespaceService));
     	    jsonObject.put(PUBLIC, isPublic);
-    	    
+
     	    // Add full query for backward compatibility
     	    jsonObject.put(QUERY, searchService.buildQueryString(search, searchParameters));
     	    jsonObject.put(SORT, compatibility.getSort());
-    	    
+
     	    return jsonObject.toString();
 	    }
 	    catch (JSONException exception)

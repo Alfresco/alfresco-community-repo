@@ -46,9 +46,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * This webscript patches the RM custom model as fix for MOB-1573. It is only necessary for databases
  * that had their RM amps initialised before the fix went in.
  * There is no side-effect if it is called when it is not needed or if it is called multiple times.
- * 
+ *
  * TODO This webscript should be removed after DOD certification.
- * 
+ *
  * @author neilm
  */
 @Deprecated
@@ -56,7 +56,7 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
                                   implements RecordsManagementModel
 {
     private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef("workspace://SpacesStore/records_management_custom_model");
-    
+
     private ContentService contentService;
 
     public void setContentService(ContentService contentService)
@@ -68,17 +68,17 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         M2Model customModel = readCustomContentModel();
-        
+
         // Go through every custom reference defined in the custom model and make sure that it
         // has many-to-many multiplicity
         String aspectName = RecordsManagementAdminServiceImpl.RMC_CUSTOM_ASSOCS;
         M2Aspect customAssocsAspect = customModel.getAspect(aspectName);
-        
+
         if (customAssocsAspect == null)
         {
             throw new AlfrescoRuntimeException("Unknown aspect: "+aspectName);
         }
-        
+
         for (M2ClassAssociation classAssoc : customAssocsAspect.getAssociations())
         {
             classAssoc.setSourceMany(true);
@@ -86,20 +86,20 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
         }
 
         writeCustomContentModel(customModel);
-        
+
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
     	model.put("success", true);
-    	
+
         return model;
     }
-    
+
     private M2Model readCustomContentModel()
     {
         ContentReader reader = this.contentService.getReader(RM_CUSTOM_MODEL_NODE_REF,
                                                              ContentModel.TYPE_CONTENT);
-        
+
         if (reader.exists() == false) {throw new AlfrescoRuntimeException("RM CustomModel has no content.");}
-        
+
         InputStream contentIn = null;
         M2Model deserializedModel = null;
         try
@@ -111,7 +111,10 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
         {
             try
             {
-                if (contentIn != null) contentIn.close();
+                if (contentIn != null)
+                {
+                    contentIn.close();
+                }
             }
             catch (IOException ignored)
             {
@@ -127,10 +130,10 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
                                                              ContentModel.TYPE_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding("UTF-8");
-        
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         deserializedModel.toXML(baos);
-        
+
         String updatedModelXml;
         try
         {

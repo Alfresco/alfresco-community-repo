@@ -77,10 +77,10 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     private static final String MSG_FIRST_NAME = "bootstrap.rmadmin.firstName";
     private static final String MSG_LAST_NAME = "bootstrap.rmadmin.lastName";
     private static final String MSG_ALL_ROLES = "rm.role.all";
-    
+
     /** Location of bootstrap role JSON */
     private static final String BOOTSTRAP_ROLE_JSON_LOCATION = "alfresco/module/org_alfresco_module_rm/security/rm-default-roles-bootstrap.json";
-    
+
     /** Capability service */
     private CapabilityService capabilityService;
 
@@ -98,18 +98,18 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
     /** File plan authentication service */
     private FilePlanAuthenticationService filePlanAuthenticationService;
-    
+
     /** mutable authenticaiton service */
     private MutableAuthenticationService authenticationService;
-    
+
     /** person service */
     private PersonService personService;
-    
+
     private BootstrapImporterModuleComponent bootstrapImporterModule;
 
     /** Records management role zone */
     public static final String RM_ROLE_ZONE_PREFIX = "rmRoleZone";
-    
+
     /**
      * Records Management Config Node
      */
@@ -165,15 +165,15 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
-    
-    /**     
+
+    /**
      * @param personService person service
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     /**
      * @param authenticationService mutable authentication service
      */
@@ -181,9 +181,9 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         this.authenticationService = authenticationService;
     }
-    
+
     /**
-     * 
+     *
      * @param bootstrapImporterModuleComponent
      */
     public void setBootstrapImporterModuleComponent(BootstrapImporterModuleComponent bootstrapImporterModuleComponent)
@@ -203,7 +203,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
             // This is not the spaces store - probably the archive store
             return;
         }
-        
+
         if (nodeService.exists(filePlan) == true)
         {
             List<NodeRef> systemContainers = AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<List<NodeRef>>()
@@ -211,19 +211,19 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 public List<NodeRef> doWork()
                 {
                     List<NodeRef> systemContainers = new ArrayList<NodeRef>(3);
-                    
+
                     //In a multi tenant store we need to initialize the rm config if it has been done yet
-                    NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID); 
+                    NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
                     if (nodeService.exists(nodeRef) == false)
                     {
                         bootstrapImporterModule.execute();
                     }
-                    
+
                     // Create "all" role group for root node
                     String allRoles = authorityService.createAuthority(
-                    						AuthorityType.GROUP, 
-                    						getAllRolesGroupShortName(filePlan), 
-                    						I18NUtil.getMessage(MSG_ALL_ROLES), 
+                    						AuthorityType.GROUP,
+                    						getAllRolesGroupShortName(filePlan),
+                    						I18NUtil.getMessage(MSG_ALL_ROLES),
                     						new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                     // Set the permissions
@@ -235,10 +235,10 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     // Create the transfer and hold containers
                     systemContainers.add(filePlanService.createHoldContainer(filePlan));
                     systemContainers.add(filePlanService.createTransferContainer(filePlan));
-                    
+
                     // Create the unfiled record container
                     systemContainers.add(filePlanService.createUnfiledContainer(filePlan));
-                    
+
                     return systemContainers;
                 }
             });
@@ -389,7 +389,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                             {
                                 // Create the RM Admin User if it does not already exist
                                 createRMAdminUser();
-                                
+
                                 // add the dynamic admin authority
                                 authorityService.addAuthority(role.getRoleGroupName(), filePlanAuthenticationService.getRmAdminUserName());
                             }
@@ -491,7 +491,10 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                         String name = getShortRoleName(groupShortName, rmRootNode);
                         String displayLabel = authorityService.getAuthorityDisplayName(roleAuthority);
                         String translated = I18NUtil.getMessage(displayLabel);
-                        if (translated!=null ) displayLabel = translated;
+                        if (translated != null)
+                        {
+                            displayLabel = translated;
+                        }
                         Set<Capability> capabilities = getCapabilitiesImpl(rmRootNode, roleAuthority);
 
                         Role role = new Role(name, displayLabel, capabilities, roleAuthority, groupShortName);
@@ -534,7 +537,10 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                         String name = getShortRoleName(groupShortName, rmRootNode);
                         String displayLabel = authorityService.getAuthorityDisplayName(roleAuthority);
                         String translated = I18NUtil.getMessage(displayLabel);
-                        if (translated!=null ) displayLabel = translated;
+                        if (translated != null)
+                        {
+                            displayLabel = translated;
+                        }
                         Set<Capability> capabilities = getCapabilitiesImpl(rmRootNode, roleAuthority);
 
                         Role role = new Role(name, displayLabel, capabilities, roleAuthority, groupShortName);
@@ -697,14 +703,14 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 Set<String> zones = new HashSet<String>(2);
                 zones.add(getZoneName(rmRootNode));
                 zones.add(RMAuthority.ZONE_APP_RM);
-                
+
                 // Look up string, default to passed value if none found
                 String groupDisplayLabel = I18NUtil.getMessage(roleDisplayLabel);
                 if (groupDisplayLabel == null)
                 {
                     groupDisplayLabel = roleDisplayLabel;
                 }
-                
+
                 String roleGroup = authorityService.createAuthority(AuthorityType.GROUP, fullRoleName, groupDisplayLabel, zones);
 
                 // Add the roleGroup to the "all" role group
@@ -899,7 +905,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         return authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(filePlan));
     }
-    
+
     /**
      * Create the RMAdmin user if it does not already exist
      */
@@ -907,18 +913,18 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         /** generate rm admin password */
         String password = GUID.generate();
-        
+
         String user = filePlanAuthenticationService.getRmAdminUserName();
         String firstName = I18NUtil.getMessage(MSG_FIRST_NAME);
         String lastName = I18NUtil.getMessage(MSG_LAST_NAME);
-        
+
         if (authenticationService.authenticationExists(user) == false)
         {
             if (logger.isDebugEnabled() == true)
             {
                 logger.debug("   ... creating RM Admin user");
             }
-            
+
             authenticationService.createAuthentication(user, password.toCharArray());
             Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
             properties.put(ContentModel.PROP_USERNAME, user);

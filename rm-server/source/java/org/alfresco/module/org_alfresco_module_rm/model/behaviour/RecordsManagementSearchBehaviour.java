@@ -319,7 +319,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * Helper method to apply the search aspect
-     * 
+     *
      * @param nodeRef   node reference
      */
     private void applySearchAspect(NodeRef nodeRef)
@@ -332,7 +332,9 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 nodeService.addAspect(nodeRef, ASPECT_RM_SEARCH , null);
 
                 if (logger.isDebugEnabled())
+                {
                     logger.debug("Added search aspect to node: " + nodeRef);
+                }
             }
         }
         finally
@@ -343,7 +345,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * On add record aspect behaviour implementation
-     * 
+     *
      * @param nodeRef           node reference
      * @param aspectTypeQName   aspect type qname
      */
@@ -367,7 +369,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * On create record folder behaviour implmentation
-     * 
+     *
      * @param childAssocRef child association reference
      */
     public void recordFolderCreate(final ChildAssociationRef childAssocRef)
@@ -391,7 +393,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * Helper method to setup the disposition schedule properties
-     * 
+     *
      * @param recordOrFolder    node reference of record or record folder
      */
     private void setupDispositionScheduleProperties(NodeRef recordOrFolder)
@@ -416,7 +418,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * On disposition action create behaviour implementation
-     * 
+     *
      * @param childAssocRef child association reference
      */
     public void dispositionActionCreate(ChildAssociationRef childAssocRef)
@@ -490,7 +492,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * On update of event execution information behaviour\
-     * 
+     *
      * @param childAssocRef child association reference
      * @param isNewNode     true if a new node, false otherwise
      */
@@ -525,7 +527,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * On event execution delete behaviour implementation.
-     * 
+     *
      * @param childAssocRef     child association reference
      * @param isNodeArchived    true if node is archived on delete, false otherwise
      */
@@ -552,7 +554,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * Helper method to setup disposition action events.
-     * 
+     *
      * @param nodeRef   node reference
      * @param da        disposition action
      */
@@ -583,7 +585,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * On add search aspect behaviour implementation.
-     * 
+     *
      * @param nodeRef           node reference
      * @param aspectTypeQName   aspect type qname
      */
@@ -607,7 +609,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * On add aspect vital record defintion behaviour implementation.
-     * 
+     *
      * @param nodeRef           node reference
      * @param aspectTypeQName   aspect tyep qname
      */
@@ -623,7 +625,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 {
                     updateVitalRecordDefinitionValues(nodeRef);
                 }
-                
+
                 return null;
             }
         });
@@ -631,7 +633,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * On update vital record definition properties behaviour implementation.
-     * 
+     *
      * @param nodeRef   node reference
      * @param before    before properties
      * @param after     after properties
@@ -655,7 +657,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                         updateVitalRecordDefinitionValues(nodeRef);
                     }
                 }
-                
+
                 return null;
             }
         });
@@ -663,7 +665,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * Helper method to update the vital record defintion values
-     * 
+     *
      * @param nodeRef   node reference
      */
     private void updateVitalRecordDefinitionValues(NodeRef nodeRef)
@@ -685,7 +687,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * Helper method to set vital record definition details.
-     * 
+     *
      * @param nodeRef   node reference
      */
     private void setVitalRecordDefintionDetails(NodeRef nodeRef)
@@ -716,7 +718,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * On remove frozen aspect aspect behaviour implementation
-     * 
+     *
      * @param nodeRef           node reference
      * @param aspectTypeQName   aspect type qname
      */
@@ -731,7 +733,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * Frozen aspect properties update behavour implementation.
-     *  
+     *
      * @param nodeRef   node reference
      * @param before    before properties
      * @param after     after proeprties
@@ -806,7 +808,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /**
      * Helper method to set disposition schedule properties
-     * 
+     *
      * @param recordOrFolder    node reference
      * @param schedule          dispostion schedule
      */
@@ -855,10 +857,10 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
         return result;
     }
-    
+
     /**
      * Helper method to get the record folders contained in the provided record category.
-     * 
+     *
      * @param recordCategoryNode    record category node reference
      * @return  List<NodeRef>       contained record folders
      */

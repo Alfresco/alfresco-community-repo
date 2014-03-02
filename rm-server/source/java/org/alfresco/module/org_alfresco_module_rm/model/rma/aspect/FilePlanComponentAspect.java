@@ -46,7 +46,7 @@ import org.alfresco.util.PropertyMap;
 
 /**
  * rma:filePlanComponent behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -58,21 +58,21 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
                                      implements NodeServicePolicies.OnUpdatePropertiesPolicy,
                                                 NodeServicePolicies.OnAddAspectPolicy,
                                                 NodeServicePolicies.OnMoveNodePolicy
-                                                
-                               
+
+
 {
     /** Well-known location of the scripts folder. */
     private NodeRef scriptsFolderNodeRef = new NodeRef("workspace", "SpacesStore", "rm_behavior_scripts");
-    
+
     /** script service */
     private ScriptService scriptService;
-    
+
     /** namespace service */
     private NamespaceService namespaceService;
-    
+
     /** file plan service */
     private FilePlanService filePlanService;
-    
+
     /**
      * @param scriptService set script service
      */
@@ -80,15 +80,15 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     {
         this.scriptService = scriptService;
     }
-    
+
     /**
      * @param namespaceService  namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
-    }    
-    
+    }
+
     /**
      * @param filePlanService   file plan service
      */
@@ -96,7 +96,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
@@ -122,7 +122,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
             }
         }, AuthenticationUtil.getAdminUserName());
     }
-    
+
     /**
      * This method examines the old and new property sets and for those properties which
      * have changed, looks for script resources corresponding to those properties.
@@ -135,7 +135,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
      * @see #lookupScripts(Map<QName, Serializable>, Map<QName, Serializable>)
      */
     private void lookupAndExecuteScripts(NodeRef nodeWithChangedProperties,
-                                         Map<QName, Serializable> oldProps, 
+                                         Map<QName, Serializable> oldProps,
                                          Map<QName, Serializable> newProps)
     {
         List<NodeRef> scriptRefs = lookupScripts(oldProps, newProps);
@@ -150,7 +150,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
             scriptService.executeScript(scriptRef, null, objectModel);
         }
     }
-    
+
     /**
      * This method determines which properties have changed and for each such property
      * looks for a script resource in a well-known location.
@@ -179,12 +179,15 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
             String expectedScriptName = shortPrefix + "_" + localName + ".js";
 
             NodeRef nextElement = nodeService.getChildByName(scriptsFolderNodeRef, ContentModel.ASSOC_CONTAINS, expectedScriptName);
-            if (nextElement != null) result.add(nextElement);
+            if (nextElement != null)
+            {
+                result.add(nextElement);
+            }
         }
 
         return result;
     }
-    
+
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
@@ -202,7 +205,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
             public Void doWork() throws Exception
             {
                 if (nodeService.exists(nodeRef) == true)
-                {                   
+                {
                     // Look up the root and set on the aspect if found
                     NodeRef root = filePlanService.getFilePlan(nodeRef);
                     if (root != null)
@@ -210,10 +213,10 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
                         nodeService.setProperty(nodeRef, PROP_ROOT_NODEREF, root);
                     }
                 }
-                
+
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName());        
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**
@@ -232,7 +235,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.exists(newChildAssocRef.getParentRef()) == true && 
+                if (nodeService.exists(newChildAssocRef.getParentRef()) == true &&
                     nodeService.exists(newChildAssocRef.getChildRef()) == true)
                 {
                     // Look up the root and re-set the value currently stored on the aspect
@@ -240,15 +243,15 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
                     // NOTE: set the null value if no root found
                     nodeService.setProperty(newChildAssocRef.getChildRef(), PROP_ROOT_NODEREF, root);
                 }
-                
+
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName());        
+        }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * Copy behaviour call back
-     * 
+     *
      * @param   classRef    class reference
      * @param   copyDetail  details of the information being copied
      * @return  CopyBehaviourCallback
@@ -273,7 +276,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
                 // Do not copy the associations
                 return null;
             }
-            
+
             /**
              * @see org.alfresco.repo.copy.CopyBehaviourCallback#getCopyProperties(org.alfresco.service.namespace.QName, org.alfresco.repo.copy.CopyDetails, java.util.Map)
              */
@@ -298,8 +301,8 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
             {
                 // Ensure the aspect is copied
                 return true;
-            }            
+            }
         };
-    }   
-    
+    }
+
 }

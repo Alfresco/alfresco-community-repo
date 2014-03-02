@@ -170,7 +170,9 @@ public class TransferReportPost extends BaseTransferWebScript
             }
 
             if (logger.isDebugEnabled())
+            {
                 logger.debug("Filing transfer report as record in record folder: " + destination);
+            }
 
             // generate the report (will be in JSON format)
             report = generateHTMLTransferReport(transferNode);
@@ -179,7 +181,9 @@ public class TransferReportPost extends BaseTransferWebScript
             NodeRef record = fileTransferReport(report, destination);
 
             if (logger.isDebugEnabled())
+            {
                 logger.debug("Filed transfer report as new record: " + record);
+            }
 
             // return success flag and record noderef as JSON
             JSONObject responseJSON = new JSONObject();

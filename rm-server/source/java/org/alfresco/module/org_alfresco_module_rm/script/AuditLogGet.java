@@ -62,7 +62,9 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
             auditTrail = this.rmAuditService.getAuditTrailFile(parseQueryParameters(req), parseReportFormat(req));
 
             if (logger.isDebugEnabled())
+            {
                 logger.debug("Streaming audit trail from file: " + auditTrail.getAbsolutePath());
+            }
 
             boolean attach = false;
             String attachFileName = null;
@@ -73,7 +75,9 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
                 attachFileName = auditTrail.getName();
 
                 if (logger.isDebugEnabled())
+                {
                     logger.debug("Exporting audit trail using file name: " + attachFileName);
+                }
             }
 
             // stream the file back to the client

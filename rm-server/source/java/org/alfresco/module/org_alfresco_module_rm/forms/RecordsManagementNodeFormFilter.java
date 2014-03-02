@@ -190,14 +190,14 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             {
                 String aspectName = aspect.getPrefixedQName(namespaceService).toPrefixString().replace(":", "-");
                 String setId = RM_METADATA_PREFIX + aspectName;
-                                
+
                 String setLabel = null;
                 AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
                 if (aspectDefinition != null)
                 {
                     setLabel = aspectDefinition.getTitle(new StaticMessageLookup());
                 }
-                
+
                 addPropertyFieldsToGroup(form, dictionaryService.getPropertyDefs(aspect), setId, setLabel);
             }
         }
@@ -385,6 +385,8 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
         }
 
         if (logger.isDebugEnabled())
+        {
             logger.debug("Set 'rma:recordLevelDisposition' field to be protected as record folders or records are present");
+        }
     }
 }

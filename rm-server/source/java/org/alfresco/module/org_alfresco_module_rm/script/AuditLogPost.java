@@ -40,19 +40,19 @@ import org.json.JSONTokener;
 /**
  * Implementation for Java backed webscript to file an
  * audit log as a record.
- * 
+ *
  * @author Gavin Cornwell
  */
 public class AuditLogPost extends BaseAuditRetrievalWebScript
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(AuditLogPost.class);
-    
+
     protected static final String PARAM_DESTINATION = "destination";
     protected static final String RESPONSE_SUCCESS = "success";
     protected static final String RESPONSE_RECORD = "record";
     protected static final String RESPONSE_RECORD_NAME = "recordName";
-    
+
     @Override
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
@@ -60,74 +60,78 @@ public class AuditLogPost extends BaseAuditRetrievalWebScript
         {
             // retrieve requested format
             String format = req.getFormat();
-            
+
             // construct model for template
             Status status = new Status();
             Cache cache = new Cache(getDescription().getRequiredCache());
             Map<String, Object> model = new HashMap<String, Object>();
             model.put("status", status);
             model.put("cache", cache);
-            
+
             // extract the destination parameter, ensure it's present and it is
             // a record folder
             JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
             if (!json.has(PARAM_DESTINATION))
             {
-                status.setCode(HttpServletResponse.SC_BAD_REQUEST, 
+                status.setCode(HttpServletResponse.SC_BAD_REQUEST,
                             "Mandatory '" + PARAM_DESTINATION + "' parameter has not been supplied");
                 Map<String, Object> templateModel = createTemplateParameters(req, res, model);
                 sendStatus(req, res, status, cache, format, templateModel);
                 return;
             }
-            
+
             String destinationParam = json.getString(PARAM_DESTINATION);
             NodeRef destination = new NodeRef(destinationParam);
-            
+
             if (!this.nodeService.exists(destination))
             {
-                status.setCode(HttpServletResponse.SC_NOT_FOUND, 
+                status.setCode(HttpServletResponse.SC_NOT_FOUND,
                             "Node " + destination.toString() + " does not exist");
                 Map<String, Object> templateModel = createTemplateParameters(req, res, model);
                 sendStatus(req, res, status, cache, format, templateModel);
                 return;
             }
-            
+
             // ensure the node is a filePlan object
             if (!RecordsManagementModel.TYPE_RECORD_FOLDER.equals(this.nodeService.getType(destination)))
             {
-                status.setCode(HttpServletResponse.SC_BAD_REQUEST, 
+                status.setCode(HttpServletResponse.SC_BAD_REQUEST,
                             "Node " + destination.toString() + " is not a record folder");
                 Map<String, Object> templateModel = createTemplateParameters(req, res, model);
                 sendStatus(req, res, status, cache, format, templateModel);
                 return;
             }
-            
+
             if (logger.isDebugEnabled())
+            {
                 logger.debug("Filing audit trail as record in record folder: " + destination);
-        
+            }
+
             // parse the other parameters and get a file containing the audit trail
-            NodeRef record = this.rmAuditService.fileAuditTrailAsRecord(parseQueryParameters(req), 
+            NodeRef record = this.rmAuditService.fileAuditTrailAsRecord(parseQueryParameters(req),
                         destination, parseReportFormat(req));
-            
+
             if (logger.isDebugEnabled())
+            {
                 logger.debug("Filed audit trail as new record: " + record);
-            
+            }
+
             // return success flag and record noderef as JSON
             JSONObject responseJSON = new JSONObject();
             responseJSON.put(RESPONSE_SUCCESS, (record != null));
             if (record != null)
             {
                 responseJSON.put(RESPONSE_RECORD, record.toString());
-                responseJSON.put(RESPONSE_RECORD_NAME, 
+                responseJSON.put(RESPONSE_RECORD_NAME,
                             (String)nodeService.getProperty(record, ContentModel.PROP_NAME));
             }
-            
+
             // setup response
             String jsonString = responseJSON.toString();
             res.setContentType(MimetypeMap.MIMETYPE_JSON);
             res.setContentEncoding("UTF-8");
             res.setHeader("Content-Length", Long.toString(jsonString.length()));
-            
+
             // write the JSON response
             res.getWriter().write(jsonString);
         }

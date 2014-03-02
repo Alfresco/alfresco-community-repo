@@ -224,10 +224,10 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         beforeRemoveReferenceDelegate = policyComponent.registerClassPolicy(BeforeRemoveReference.class);
         onRemoveReferenceDelegate = policyComponent.registerClassPolicy(OnRemoveReference.class);
     }
-    
+
 	/**
      * Invoke before create reference policy
-     * 
+     *
      * @param fromNodeRef
      * @param toNodeRef
      * @param reference
@@ -243,7 +243,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 
     /**
      * Invoke on create reference policy
-     * 
+     *
      * @param fromNodeRef
      * @param toNodeRef
      * @param reference
@@ -259,7 +259,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 
     /**
      * Invoke before remove reference policy
-     * 
+     *
      * @param fromNodeRef
      * @param toNodeRef
      * @param reference
@@ -368,7 +368,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             public Void doWork() throws Exception
             {
                 if (dictionaryService.getAllModels().contains(RecordsManagementCustomModel.RM_CUSTOM_MODEL) == true)
-                {                              
+                {
                     NodeRef nodeRef = childAssocRef.getChildRef();
                     QName type = nodeService.getType(nodeRef);
                     while (type != null && ContentModel.TYPE_CMOBJECT.equals(type) == false)
@@ -378,7 +378,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
                             QName customPropertyAspect = getCustomAspect(type);
                             nodeService.addAspect(nodeRef, customPropertyAspect, null);
                         }
-    
+
                         TypeDefinition def = dictionaryService.getType(type);
                         if (def != null)
                         {
@@ -844,7 +844,10 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PROP_EXIST, propQName));
         }
 
-        if (newName == null) return propQName;
+        if (newName == null)
+        {
+            return propQName;
+        }
 
         QName newPropQName = getQNameForClientId(newName);
         if (newPropQName != null)
@@ -888,7 +891,10 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PROP_EXIST, propQName));
         }
 
-        if (newLabel == null) return propQName;
+        if (newLabel == null)
+        {
+            return propQName;
+        }
 
         NodeRef modelRef = getCustomModelRef(propQName.getNamespaceURI());
         M2Model deserializedModel = readCustomContentModel(modelRef);
@@ -1179,7 +1185,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
                             nodeService.removeChildAssociation(chRef);
                         }
                     }
-                    
+
                     return null;
                 }
             });
@@ -1619,7 +1625,10 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         {
             try
             {
-                if (contentIn != null) contentIn.close();
+                if (contentIn != null)
+                {
+                    contentIn.close();
+                }
             }
             catch (IOException ignored)
             {

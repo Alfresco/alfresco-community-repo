@@ -49,34 +49,36 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-    	if (nodeService.exists(actionedUponNodeRef) == true &&
-    		freezeService.isFrozen(actionedUponNodeRef) == false)
-    	{
-	        // TODO move re-open logic into a service method
-	        // TODO check that the user in question has the correct permission to re-open a records folder
+        if (nodeService.exists(actionedUponNodeRef) == true &&
+            freezeService.isFrozen(actionedUponNodeRef) == false)
+        {
+            // TODO move re-open logic into a service method
+            // TODO check that the user in question has the correct permission to re-open a records folder
 
-	        if (recordService.isRecord(actionedUponNodeRef))
-	        {
-	            ChildAssociationRef assocRef = nodeService.getPrimaryParent(actionedUponNodeRef);
-	            if (assocRef != null)
-	            {
-	                actionedUponNodeRef = assocRef.getParentRef();
-	            }
-	        }
+            if (recordService.isRecord(actionedUponNodeRef))
+            {
+                ChildAssociationRef assocRef = nodeService.getPrimaryParent(actionedUponNodeRef);
+                if (assocRef != null)
+                {
+                    actionedUponNodeRef = assocRef.getParentRef();
+                }
+            }
 
-	        if (recordFolderService.isRecordFolder(actionedUponNodeRef) == true)
-	        {
-	            Boolean isClosed = (Boolean) nodeService.getProperty(actionedUponNodeRef, PROP_IS_CLOSED);
-	            if (Boolean.TRUE.equals(isClosed) == true)
-	            {
-	                nodeService.setProperty(actionedUponNodeRef, PROP_IS_CLOSED, false);
-	            }
-	        }
-	        else
-	        {
-	            if (logger.isWarnEnabled())
-	                logger.warn(I18NUtil.getMessage(MSG_NO_OPEN_RECORD_FOLDER, actionedUponNodeRef.toString()));
-	        }
-    	}
+            if (recordFolderService.isRecordFolder(actionedUponNodeRef) == true)
+            {
+                Boolean isClosed = (Boolean) nodeService.getProperty(actionedUponNodeRef, PROP_IS_CLOSED);
+                if (Boolean.TRUE.equals(isClosed) == true)
+                {
+                    nodeService.setProperty(actionedUponNodeRef, PROP_IS_CLOSED, false);
+                }
+            }
+            else
+            {
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn(I18NUtil.getMessage(MSG_NO_OPEN_RECORD_FOLDER, actionedUponNodeRef.toString()));
+                }
+            }
+        }
     }
 }

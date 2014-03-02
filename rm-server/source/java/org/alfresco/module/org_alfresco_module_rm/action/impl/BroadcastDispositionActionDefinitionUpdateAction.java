@@ -285,8 +285,10 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
                 nodeService.removeChild(nextAction.getNodeRef(), event.getNodeRef());
 
                 if (logger.isDebugEnabled())
+                {
                     logger.debug("Removed '" + eventName + "' from next action '" + nextAction.getName() +
                                 "' (" + nextAction.getNodeRef() + ")");
+                }
             }
         }
 

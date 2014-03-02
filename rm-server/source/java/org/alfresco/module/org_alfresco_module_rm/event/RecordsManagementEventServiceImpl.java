@@ -135,7 +135,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
         }
         return false;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#canCreateEvent(java.lang.String, java.lang.String)
      */
@@ -227,7 +227,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
                         " has an undefined eventType. ("
                         + eventType + ")");
         }
-        
+
         // Create event and add to map
         RecordsManagementEvent event = new RecordsManagementEvent(eventType, eventName, eventDisplayLabel);
         getEventMap().put(event.getName(), event);
@@ -301,9 +301,12 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
 
                     String eventDisplayLabel = eventJSON.getString("eventDisplayLabel");
                     String translated = I18NUtil.getMessage(eventDisplayLabel);
-                    if (translated!=null ) eventDisplayLabel = translated;
+                    if (translated != null)
+                    {
+                        eventDisplayLabel = translated;
+                    }
 
-                    
+
                     // Check that the eventType is valid
                     if (eventTypes.containsKey(eventType) == false)
                     {

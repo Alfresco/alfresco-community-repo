@@ -55,10 +55,10 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * they are safe to apply to a live database i.e. without side-effect to existing data and safe
  * to call multiple times.
  * <P>
- * 
+ *
  * TODO This webscript should be removed after DOD certification as none of these patches are needed
  * for a newly-installed DoD amp.
- * 
+ *
  * @author neilm
  */
 @Deprecated
@@ -70,7 +70,7 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
     private static final String RMC_CUSTOM_RECORD_CATEGORY_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordCategoryProperties";
     private static final String RMC_CUSTOM_RECORD_FOLDER_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordFolderProperties";
     private static final String RMC_CUSTOM_RECORD_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordProperties";
-    
+
     /** Logger */
     private static Log logger = LogFactory.getLog(ApplyDodCertModelFixesGet.class);
 
@@ -88,11 +88,11 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
         {
             logger.info("Applying webscript-based patches to RM custom model in the repo.");
         }
-        
+
         M2Model customModel = readCustomContentModel();
-        
+
         M2Aspect customAssocsAspect = customModel.getAspect(RecordsManagementAdminServiceImpl.RMC_CUSTOM_ASSOCS);
-        
+
         if (customAssocsAspect == null)
         {
             final String msg = "Unknown aspect: " + RecordsManagementAdminServiceImpl.RMC_CUSTOM_ASSOCS;
@@ -102,8 +102,8 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
             }
             throw new AlfrescoRuntimeException(msg);
         }
-        
-        
+
+
         // MOB-1573. All custom references should have many-many multiplicity.
         if (logger.isInfoEnabled())
         {
@@ -114,17 +114,17 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
         {
             classAssoc.setSourceMany(true);
             classAssoc.setTargetMany(true);
-            
+
         }
 
-        
-        
+
+
         //MOB-1621. Custom fields should be created as untokenized by default.
         if (logger.isInfoEnabled())
         {
             logger.info("MOB-1621. Custom fields should be created as untokenized by default.");
         }
-        
+
         List<String> allCustomPropertiesAspects = new ArrayList<String>(4);
         allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_SERIES_PROPERTIES);
         allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_CATEGORY_PROPERTIES);
@@ -143,9 +143,9 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
             }
         }
 
-        
+
         writeCustomContentModel(customModel);
-        
+
         if (logger.isInfoEnabled())
         {
             logger.info("Completed application of webscript-based patches to RM custom model in the repo.");
@@ -153,17 +153,17 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
 
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
     	model.put("success", true);
-    	
+
         return model;
     }
-    
+
     private M2Model readCustomContentModel()
     {
         ContentReader reader = this.contentService.getReader(RM_CUSTOM_MODEL_NODE_REF,
                                                              ContentModel.TYPE_CONTENT);
-        
+
         if (reader.exists() == false) {throw new AlfrescoRuntimeException("RM CustomModel has no content.");}
-        
+
         InputStream contentIn = null;
         M2Model deserializedModel = null;
         try
@@ -175,7 +175,10 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
         {
             try
             {
-                if (contentIn != null) contentIn.close();
+                if (contentIn != null)
+                {
+                    contentIn.close();
+                }
             }
             catch (IOException ignored)
             {
@@ -191,10 +194,10 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
                                                              ContentModel.TYPE_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding("UTF-8");
-        
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         deserializedModel.toXML(baos);
-        
+
         String updatedModelXml;
         try
         {

@@ -206,7 +206,9 @@ public class ImportPost extends DeclarativeWebScript
                 FileCopyUtils.copy(acpContent.getInputStream(), fos);   // NOTE: this method closes both streams
 
                 if (logger.isDebugEnabled())
+                {
                     logger.debug("Importing uploaded ACP (" + acpFile.getAbsolutePath() + ") into " + nodeRef);
+                }
 
                 // setup the import handler
                 final ACPImportPackageHandler importHandler = new ACPImportPackageHandler(acpFile, "UTF-8");

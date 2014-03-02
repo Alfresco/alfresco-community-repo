@@ -307,7 +307,9 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         else
         {
             if (logger.isWarnEnabled())
+            {
                 logger.warn(I18NUtil.getMessage(MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER, nodeRef.toString()));
+            }
         }
     }
 }

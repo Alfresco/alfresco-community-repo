@@ -152,13 +152,17 @@ public class BaseAuditRetrievalWebScript extends StreamContent
             {
                 // log a warning
                 if (logger.isWarnEnabled())
+                {
                     logger.warn("Failed to parse JSON parameters for audit query: " + ioe.getMessage());
+                }
             }
             catch (JSONException je)
             {
                 // log a warning
                 if (logger.isWarnEnabled())
+                {
                     logger.warn("Failed to parse JSON parameters for audit query: " + je.getMessage());
+                }
             }
         }
         else
@@ -185,7 +189,9 @@ public class BaseAuditRetrievalWebScript extends StreamContent
             catch (NumberFormatException nfe)
             {
                 if (logger.isWarnEnabled())
+                {
                     logger.warn("Ignoring size parameter as '" + size + "' is not a number!");
+                }
             }
         }
 
@@ -199,7 +205,9 @@ public class BaseAuditRetrievalWebScript extends StreamContent
             catch (ParseException pe)
             {
                 if (logger.isWarnEnabled())
+                {
                     logger.warn("Ignoring from parameter as '" + from + "' does not conform to the date pattern: " + DATE_PATTERN);
+                }
             }
         }
 
@@ -213,7 +221,9 @@ public class BaseAuditRetrievalWebScript extends StreamContent
             catch (ParseException pe)
             {
                 if (logger.isWarnEnabled())
+                {
                     logger.warn("Ignoring to parameter as '" + to + "' does not conform to the date pattern: " + DATE_PATTERN);
+                }
             }
         }
 

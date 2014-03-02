@@ -110,7 +110,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     /**
      * Set the max number of permission checks
-     * 
+     *
      * @param maxPermissionChecks
      */
     public void setMaxPermissionChecks(int maxPermissionChecks)
@@ -120,7 +120,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     /**
      * Set the max time for permission checks
-     * 
+     *
      * @param maxPermissionCheckTimeMillis
      */
     public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
@@ -139,7 +139,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 logger.debug("Method is null.");
             }
             else
-            {           
+            {
                 logger.debug("Method: " + mi.getMethod().toString());
             }
         }
@@ -245,7 +245,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         // TODO: Get the filter that was applied and double-check
         return returnedObject;
     }
-    
+
     private PermissionCheckValue decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PermissionCheckValue returnedObject) throws AccessDeniedException
     {
         // Get the wrapped value
@@ -254,7 +254,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         // This passes
         return returnedObject;
     }
-    
+
     private NodeRef decide(Authentication authentication, Object object, ConfigAttributeDefinition config, NodeRef returnedObject) throws AccessDeniedException
 
     {
@@ -273,14 +273,14 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         {
             return returnedObject;
         }
-        
+
         int parentResult = checkRead(nodeService.getPrimaryParent(returnedObject).getParentRef());
-        int childResult = checkRead(returnedObject);        
+        int childResult = checkRead(returnedObject);
         checkSupportedDefinitions(supportedDefinitions, parentResult, childResult);
 
         return returnedObject;
     }
-    
+
     private void checkSupportedDefinitions(List<ConfigAttributeDefintion> supportedDefinitions, int parentResult, int childResult)
     {
         for (ConfigAttributeDefintion cad : supportedDefinitions)
@@ -336,7 +336,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         {
             return returnedObject;
         }
-        
+
         int parentReadCheck = checkRead(returnedObject.getParentRef());
         int childReadCheck = checkRead(returnedObject.getChildRef());
 
@@ -359,7 +359,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             {
                 continue;
             }
-            
+
             if (cad.typeString.equals(cad.parent) == true && parentReadCheck != AccessDecisionVoter.ACCESS_GRANTED)
             {
                 throw new AccessDeniedException("Access Denied");
@@ -453,17 +453,17 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             maxSize = new Integer(maxSize + returnedObject.getResultSetMetaData().getSearchParameters().getSkipCount());
         }
 
-        int maxChecks = maxPermissionChecks;
-        if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionChecks() >= 0)
-        {
-            maxChecks = returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionChecks();
-        }
+//        int maxChecks = maxPermissionChecks;
+//        if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionChecks() >= 0)
+//        {
+//            maxChecks = returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionChecks();
+//        }
 
-        long maxCheckTime = maxPermissionCheckTimeMillis;
-        if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionCheckTimeMillis() >= 0)
-        {
-            maxCheckTime = returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionCheckTimeMillis();
-        }
+//        long maxCheckTime = maxPermissionCheckTimeMillis;
+//        if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionCheckTimeMillis() >= 0)
+//        {
+//            maxCheckTime = returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionCheckTimeMillis();
+//        }
 
         if (supportedDefinitions.size() == 0)
         {
@@ -479,8 +479,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 }
                 filteringResultSet.setResultSetMetaData(
                         new SimpleResultSetMetaData(
-                                returnedObject.getResultSetMetaData().getLimitedBy(), 
-                                PermissionEvaluationMode.EAGER, 
+                                returnedObject.getResultSetMetaData().getLimitedBy(),
+                                PermissionEvaluationMode.EAGER,
                                 returnedObject.getResultSetMetaData().getSearchParameters()));
                 return filteringResultSet;
             }
@@ -492,8 +492,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 }
                 filteringResultSet.setResultSetMetaData(
                         new SimpleResultSetMetaData(
-                                returnedObject.getResultSetMetaData().getLimitedBy(), 
-                                PermissionEvaluationMode.EAGER, 
+                                returnedObject.getResultSetMetaData().getLimitedBy(),
+                                PermissionEvaluationMode.EAGER,
                                 returnedObject.getResultSetMetaData().getSearchParameters()));
                 return filteringResultSet;
             }
@@ -501,12 +501,12 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
         // record the start time
         long startTimeMillis = System.currentTimeMillis();
-        
+
         // set the default, unlimited resultset type
         filteringResultSet.setResultSetMetaData(
                 new SimpleResultSetMetaData(
-                        returnedObject.getResultSetMetaData().getLimitedBy(), 
-                        PermissionEvaluationMode.EAGER, 
+                        returnedObject.getResultSetMetaData().getLimitedBy(),
+                        PermissionEvaluationMode.EAGER,
                         returnedObject.getResultSetMetaData().getSearchParameters()));
 
         for (int i = 0; i < returnedObject.length(); i++)
@@ -516,15 +516,15 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 //            {
 //                filteringResultSet.setResultSetMetaData(
 //                        new SimpleResultSetMetaData(
-//                                LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, 
-//                                PermissionEvaluationMode.EAGER, 
+//                                LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS,
+//                                PermissionEvaluationMode.EAGER,
 //                                returnedObject.getResultSetMetaData().getSearchParameters()));
 //                break;
 //            }
 
             // All permission checks must pass
             inclusionMask.set(i, true);
-            
+
             if (nodeService.exists(returnedObject.getNodeRef(i)) == false)
             {
             	inclusionMask.set(i, false);
@@ -533,22 +533,22 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             {
 	            int parentCheckRead = checkRead(returnedObject.getChildAssocRef(i).getParentRef());
 	            int childCheckRead = checkRead(returnedObject.getNodeRef(i));
-	            
+
 	            for (ConfigAttributeDefintion cad : supportedDefinitions)
 	            {
 	                NodeRef testNodeRef = returnedObject.getNodeRef(i);
-	                int checkRead = childCheckRead; 
+	                int checkRead = childCheckRead;
 	                if (cad.parent)
 	                {
 	                    testNodeRef = returnedObject.getChildAssocRef(i).getParentRef();
 	                    checkRead = parentCheckRead;
 	                }
-	
+
 	                if (isUnfiltered(testNodeRef))
 	                {
 	                    continue;
 	                }
-	
+
 	                if (inclusionMask.get(i) && (testNodeRef != null) && (checkRead != AccessDecisionVoter.ACCESS_GRANTED))
 	                {
 	                    inclusionMask.set(i, false);
@@ -613,9 +613,9 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         }
 
         // Default to the system-wide values and we'll see if they need to be reduced
-        long targetResultCount = returnedObject.size(); 
+        long targetResultCount = returnedObject.size();
         int maxPermissionChecks = Integer.MAX_VALUE;
-        long maxPermissionCheckTimeMillis = this.maxPermissionCheckTimeMillis; 
+        long maxPermissionCheckTimeMillis = this.maxPermissionCheckTimeMillis;
         if (returnedObject instanceof PermissionCheckCollection<?>)
         {
             PermissionCheckCollection permissionCheckCollection = (PermissionCheckCollection) returnedObject;
@@ -630,20 +630,20 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 maxPermissionCheckTimeMillis = permissionCheckCollection.getCutOffAfterTimeMs();
             }
         }
-        
+
         // Start timer and counter for cut-off
         boolean cutoff = false;
         long startTimeMillis = System.currentTimeMillis();
         int count = 0;
-        
+
         // Keep values explicitly
         List<Object> keepValues = new ArrayList<Object>(returnedObject.size());
-        
+
         for (Object nextObject : returnedObject)
         {
             // if the maximum result size or time has been exceeded, then we have to remove only
             long currentTimeMillis = System.currentTimeMillis();
-            
+
             // NOTE: for reference - the "maxPermissionChecks" has never been honoured by this loop (since previously the count was not being incremented)
             if (count >= targetResultCount)
             {
@@ -670,7 +670,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 }
                 break;
             }
-            
+
             boolean allowed = true;
             for (ConfigAttributeDefintion cad : supportedDefinitions)
             {
@@ -744,8 +744,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                         continue;                       // Continue to next ConfigAttributeDefintion
                     }
 
-                    if (allowed && 
-                        testNodeRef != null && 
+                    if (allowed &&
+                        testNodeRef != null &&
                         checkRead(testNodeRef) != AccessDecisionVoter.ACCESS_GRANTED)
                     {
                         allowed = false;
@@ -753,10 +753,10 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                     }
                 }
             }
-            
+
             // Failure or success, increase the count
             count++;
-            
+
             if (allowed)
             {
                 keepValues.add(nextObject);
@@ -800,10 +800,10 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         for (int i = 0, l = returnedObject.length; i < l; i++)
         {
             Object current = returnedObject[i];
-            
+
             int parentReadCheck = checkRead(getParentReadCheckNode(current));
-            int childReadChek = checkRead(getChildReadCheckNode(current));            
-            
+            int childReadChek = checkRead(getChildReadCheckNode(current));
+
             for (ConfigAttributeDefintion cad : supportedDefinitions)
             {
                 incudedSet.set(i, true);
@@ -865,7 +865,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 {
                     continue;
                 }
-                
+
                 int readCheck = childReadChek;
                 if (cad.parent == true)
                 {
@@ -894,7 +894,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             return answer;
         }
     }
-    
+
     private NodeRef getParentReadCheckNode(Object current)
     {
         NodeRef testNodeRef = null;
@@ -921,7 +921,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         }
         return testNodeRef;
     }
-    
+
     private NodeRef getChildReadCheckNode(Object current)
     {
         NodeRef testNodeRef = null;
@@ -962,7 +962,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 String uuid = DefaultTypeConverter.INSTANCE.convert(String.class, filtered.get(ContentModel.PROP_NODE_UUID));
                 StoreRef storeRef = new StoreRef(protocol, identifier);
                 NodeRef nodeRef = new NodeRef(storeRef, uuid);
-                if ((nodeRef == null) || 
+                if ((nodeRef == null) ||
                     (permissionService.hasPermission(getFilePlanService().getFilePlan(nodeRef), RMPermissionModel.VIEW_UPDATE_REASONS_FOR_FREEZE) != AccessStatus.ALLOWED))
                 {
                     filtered.remove(RecordsManagementModel.PROP_HOLD_REASON);

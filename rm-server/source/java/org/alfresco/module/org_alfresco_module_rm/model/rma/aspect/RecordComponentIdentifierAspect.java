@@ -44,7 +44,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:recordComponentIdentifier behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -59,19 +59,19 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
 {
     /** I18N */
     private final static String MSG_SET_ID = "rm.service.set-id";
-    
+
     /** attribute context value */
     private static final String CONTEXT_VALUE = "rma:identifier";
-    
+
     /** file plan service */
     private FilePlanService filePlanService;
-    
+
     /** attribute service */
     private AttributeService attributeService;
-    
+
     /** identifier service */
     private IdentifierService identifierService;
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -79,7 +79,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @param attributeService  attribute service
      */
@@ -87,7 +87,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
     {
         this.attributeService = attributeService;
     }
-    
+
     /**
      * @param identifierService identifier service
      */
@@ -95,11 +95,11 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
     {
         this.identifierService = identifierService;
     }
-    
+
     /**
      * Ensures that the {@link RecordsManagementModel#PROP_IDENTIFIER rma:identifier} property remains
      * unique within the context of the parent node.
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
@@ -122,18 +122,18 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                     {
                         throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_SET_ID, nodeRef.toString()));
                     }
-                    
-                    // update uniqueness 
+
+                    // update uniqueness
                     updateUniqueness(nodeRef, oldIdValue, newIdValue);
                 }
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName()); 
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**
      * Cleans up the {@link RecordsManagementModel#PROP_IDENTIFIER rma:identifier} property unique triplet.
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
@@ -152,9 +152,9 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                 updateUniqueness(nodeRef, beforeId, null);
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName()); 
+        }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * Record component identifier aspect copy callback
      */
@@ -167,7 +167,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
     {
         return new DoNothingCopyBehaviourCallback();
     }
-    
+
     @SuppressWarnings("rawtypes")
     @Override
     @Behaviour
@@ -193,11 +193,11 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
             behaviourFilter.enableBehaviour();
         }
     }
-    
+
     /**
      * Updates the uniqueness check using the values provided.  If the after value is <tt>null</tt>
      * then this is considered to be a removal.
-     * 
+     *
      * @param nodeRef   node reference
      * @param beforeId  id before
      * @param afterId   id after
@@ -205,7 +205,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
     private void updateUniqueness(NodeRef nodeRef, String beforeId, String afterId)
     {
         NodeRef contextNodeRef = filePlanService.getFilePlan(nodeRef);
-        
+
         if (beforeId == null)
         {
             if (afterId != null)
@@ -216,11 +216,8 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
         }
         else if (afterId == null)
         {
-            if (beforeId != null)
-            {
-                // The before value was not null, so remove it
-                attributeService.removeAttribute(CONTEXT_VALUE, contextNodeRef, beforeId);
-            }
+            // The before value was not null, so remove it
+            attributeService.removeAttribute(CONTEXT_VALUE, contextNodeRef, beforeId);
             // Do a blanket removal in case this is a contextual nodes
             attributeService.removeAttributes(CONTEXT_VALUE, nodeRef);
         }

@@ -45,7 +45,7 @@ import org.json.JSONTokener;
 
 /**
  * This class provides the implementation for the rmaction webscript.
- * 
+ *
  * @author Neil McErlean
  */
 public class RmActionPost extends DeclarativeWebScript
@@ -78,7 +78,7 @@ public class RmActionPost extends DeclarativeWebScript
       try
       {
          reqContentAsString = req.getContent().getContent();
-      } 
+      }
       catch (IOException iox)
       {
          throw new WebScriptException(Status.STATUS_BAD_REQUEST,
@@ -136,7 +136,7 @@ public class RmActionPost extends DeclarativeWebScript
                      String dateStringValue = ((JSONObject)nextValue).getString("iso8601");
                      nextValue = ISO8601DateFormat.parse(dateStringValue);
                   }
-               } 
+               }
 
                actionParams.put(nextKeyString, (Serializable)nextValue);
             }
@@ -144,7 +144,7 @@ public class RmActionPost extends DeclarativeWebScript
       }
       catch (JSONException exception)
       {
-         throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unable to parse request JSON.");
+         throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unable to parse request JSON.", exception);
       }
 
       // validate input: check for mandatory params.

@@ -83,7 +83,7 @@ public class EmailMapPost extends DeclarativeWebScript
         catch (AlfrescoRuntimeException are)
         {
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                    are.getMessage());
+                    are.getMessage(), are);
         }
 
         return model;

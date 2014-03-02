@@ -197,7 +197,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
             }
             catch (UnsupportedEncodingException error)
             {
-               throw new AlfrescoRuntimeException("The Character Encoding '" + charsetName + "' is not supported.");
+               throw new AlfrescoRuntimeException("The Character Encoding '" + charsetName + "' is not supported.", error);
             }
             Location location = new Location(filePlan);
             importerService.importView(viewReader, location, null, null);

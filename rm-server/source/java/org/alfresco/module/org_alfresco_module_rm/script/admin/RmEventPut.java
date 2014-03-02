@@ -43,7 +43,7 @@ public class RmEventPut extends RMEventBase
 {
 	/** Parameter names */
 	public static final String PARAM_EVENTNAME = "eventname";
-	
+
     /** Records management event service */
     private RecordsManagementEventService rmEventService;
 
@@ -77,8 +77,8 @@ public class RmEventPut extends RMEventBase
             // Check the event name
             Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
             String eventName = templateVars.get(PARAM_EVENTNAME);
-            if (eventName == null || 
-                eventName.isEmpty() || 
+            if (eventName == null ||
+                eventName.isEmpty() ||
                 rmEventService.existsEvent(eventName) == false)
             {
                 throw new WebScriptException(Status.STATUS_NOT_FOUND, "No event name was provided.");
@@ -140,7 +140,7 @@ public class RmEventPut extends RMEventBase
         }
         catch (AlfrescoRuntimeException are)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, are.getLocalizedMessage());
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, are.getLocalizedMessage(), are);
         }
 
         return canEditEvent;

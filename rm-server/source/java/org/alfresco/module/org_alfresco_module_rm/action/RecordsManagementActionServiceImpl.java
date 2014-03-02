@@ -32,7 +32,6 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRM
 import org.alfresco.module.org_alfresco_module_rm.util.PoliciesUtil;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -42,7 +41,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Records Management Action Service Implementation
- * 
+ *
  * @author Roy Wetherall
  */
 public class RecordsManagementActionServiceImpl implements RecordsManagementActionService
@@ -50,7 +49,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /** I18N */
     private static final String MSG_NOT_DEFINED = "rm.action.not-defined";
     private static final String MSG_NO_IMPLICIT_NODEREF = "rm.action.no-implicit-noderef";
-    
+
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordsManagementActionServiceImpl.class);
 
@@ -59,37 +58,37 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     private Map<String, RecordsManagementActionCondition> rmConditions = new HashMap<String, RecordsManagementActionCondition>(13);
 
     private Map<String, RecordsManagementAction> dispositionActions = new HashMap<String, RecordsManagementAction>(5);
-    
+
     /** Policy component */
     PolicyComponent policyComponent;
-    
+
     /** Node service */
     NodeService nodeService;
-    
+
     /** Policy delegates */
     private ClassPolicyDelegate<BeforeRMActionExecution> beforeRMActionExecutionDelegate;
     private ClassPolicyDelegate<OnRMActionExecution> onRMActionExecutionDelegate;
-    
+
     /**
      * Set the policy component
-     * 
+     *
      * @param policyComponent policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * Set the node service
-     * 
+     *
      * @param nodeService   node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Initialise RM action service
      */
@@ -99,7 +98,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
         beforeRMActionExecutionDelegate = policyComponent.registerClassPolicy(BeforeRMActionExecution.class);
         onRMActionExecutionDelegate = policyComponent.registerClassPolicy(OnRMActionExecution.class);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementActionService#register(org.alfresco.module.org_alfresco_module_rm.RecordsManagementAction)
      */
@@ -108,14 +107,14 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
         if (rmActions.containsKey(rmAction.getName()) == false)
         {
             rmActions.put(rmAction.getName(), rmAction);
-            
+
             if (rmAction.isDispositionAction() == true)
             {
                 dispositionActions.put(rmAction.getName(), rmAction);
             }
         }
     }
-    
+
     public void register(RecordsManagementActionCondition rmCondition)
     {
         if (rmConditions.containsKey(rmCondition.getName()) == false)
@@ -123,10 +122,10 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
             rmConditions.put(rmCondition.getName(), rmCondition);
         }
     }
-    
+
     /**
      * Invoke beforeRMActionExecution policy
-     * 
+     *
      * @param nodeRef       node reference
      * @param name          action name
      * @param parameters    action parameters
@@ -139,10 +138,10 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
         BeforeRMActionExecution policy = beforeRMActionExecutionDelegate.get(qnames);
         policy.beforeRMActionExecution(nodeRef, name, parameters);
     }
-    
+
     /**
      * Invoke onRMActionExecution policy
-     * 
+     *
      * @param nodeRef       node reference
      * @param name          action name
      * @param parameters    action parameters
@@ -182,18 +181,18 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
      */
     @SuppressWarnings("unused")
     public List<RecordsManagementAction> getDispositionActions(NodeRef nodeRef)
-    {        
-        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+    {
+        //String userName = AuthenticationUtil.getFullyAuthenticatedUser();
         List<RecordsManagementAction> result = new ArrayList<RecordsManagementAction>(this.rmActions.size());
-        
+
         for (RecordsManagementAction action : this.rmActions.values())
         {
-            // TODO check the permissions on the action ...           
+            // TODO check the permissions on the action ...
         }
-        
+
         return Collections.unmodifiableList(result);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementActionService#getDispositionActionDefinitions()
      */
@@ -203,7 +202,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
         result.addAll(dispositionActions.values());
         return Collections.unmodifiableList(result);
     }
-    
+
     /*
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getDispositionAction(java.lang.String)
      */
@@ -235,7 +234,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     {
         return executeRecordsManagementAction(nodeRefs, name, null);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementActionService#executeRecordsManagementAction(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map)
      */
@@ -247,7 +246,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
             logger.debug("    actionName = " + name);
             logger.debug("    parameters = " + parameters);
         }
-        
+
         RecordsManagementAction rmAction = this.rmActions.get(name);
         if (rmAction == null)
         {
@@ -258,15 +257,15 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
             }
             throw new AlfrescoRuntimeException(msg);
         }
-        
+
         // Execute action
         invokeBeforeRMActionExecution(nodeRef, name, parameters);
-        RecordsManagementActionResult result = rmAction.execute(nodeRef, parameters);        
+        RecordsManagementActionResult result = rmAction.execute(nodeRef, parameters);
         if (nodeService.exists(nodeRef) == true)
         {
             invokeOnRMActionExecution(nodeRef, name, parameters);
         }
-        
+
         return result;
     }
 
@@ -276,7 +275,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     public RecordsManagementActionResult executeRecordsManagementAction(String name, Map<String, Serializable> parameters)
     {
         RecordsManagementAction rmAction = rmActions.get(name);
-        
+
         NodeRef implicitTargetNode = rmAction.getImplicitTargetNodeRef();
         if (implicitTargetNode == null)
         {
@@ -305,7 +304,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
             RecordsManagementActionResult result = executeRecordsManagementAction(nodeRef, name, parameters);
             results.put(nodeRef, result);
         }
-        
+
         return results;
     }
 }

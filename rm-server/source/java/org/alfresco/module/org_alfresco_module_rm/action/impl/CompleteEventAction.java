@@ -36,7 +36,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Complete event action
- * 
+ *
  * @author Roy Wetherall
  */
 public class CompleteEventAction extends RMActionExecuterAbstractBase
@@ -45,7 +45,7 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
 	public static final String PARAM_EVENT_NAME = "eventName";
     public static final String PARAM_EVENT_COMPLETED_BY = "eventCompletedBy";
     public static final String PARAM_EVENT_COMPLETED_AT = "eventCompletedAt";
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
      */
@@ -69,7 +69,7 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
             String eventName = (String)action.getParameterValue(PARAM_EVENT_NAME);
             String eventCompletedBy = (String)action.getParameterValue(PARAM_EVENT_COMPLETED_BY);
             Date eventCompletedAt = (Date)action.getParameterValue(PARAM_EVENT_COMPLETED_AT);
-    
+
             if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true)
             {
                 // Get the next disposition action
@@ -84,12 +84,12 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
                         {
                             eventCompletedAt = new Date();
                         }
-    
+
                         if (eventCompletedBy == null)
                         {
                             eventCompletedBy = AuthenticationUtil.getRunAsUser();
                         }
-    
+
                         // Update the event so that it is complete
                         NodeRef eventNodeRef = event.getNodeRef();
                         Map<QName, Serializable> props = this.nodeService.getProperties(eventNodeRef);
@@ -97,24 +97,24 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
                         props.put(PROP_EVENT_EXECUTION_COMPLETED_AT, eventCompletedAt);
                         props.put(PROP_EVENT_EXECUTION_COMPLETED_BY, eventCompletedBy);
                         this.nodeService.setProperties(eventNodeRef, props);
-                        
+
                         // Check to see if the events eligible property needs to be updated
                         updateEventEligible(da);
-                        
+
                     }
-                    else
-                    {
+                    // else
+                    // {
                         // RM-695: Commenting error handling out. If the current disposition stage does not define the event being completed nothing should happen.
                         // throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EVENT_NO_DISP_LC, eventName));
-                    }
+                    // }
                 }
             }
         }
     }
-    
+
     /**
      * Get the event from the dispostion action
-     * 
+     *
      * @param da
      * @param eventName
      * @return

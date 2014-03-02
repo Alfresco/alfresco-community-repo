@@ -212,7 +212,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             validateAndReset(caveatConfigNodeRef);
         }
     }
-    
+
     /**
      * @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
@@ -232,7 +232,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour(kind = BehaviourKind.CLASS)    
+    @Behaviour(kind = BehaviourKind.CLASS)
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         if (logger.isInfoEnabled())
@@ -247,7 +247,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    @Behaviour(kind = BehaviourKind.CLASS)    
+    @Behaviour(kind = BehaviourKind.CLASS)
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         if (logger.isInfoEnabled())
@@ -352,6 +352,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                         Map<String, List<String>> caveatMap = (Map<String, List<String>>)conEntry.getValue();
 
                         List<String> allowedValues = null;
+                        @SuppressWarnings("unused")
                         boolean found = false;
 
                         for (QName propertyName : props)
@@ -382,10 +383,10 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                             }
                         }
 
-                        if (! found)
-                        {
+                        //if (! found)
+                        //{
                             //throw new AlfrescoRuntimeException("Constraint does not exist (or is not used): "+conStr);
-                        }
+                        //}
 
                         if (allowedValues != null)
                         {
@@ -547,7 +548,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             if (! (AuthenticationUtil.isMtEnabled() && AuthenticationUtil.isRunAsUserTheSystemUser()))
             {
                 // note: userName and userGroupNames must not be null
-                caveatConfig.get(constraintName);                
+                caveatConfig.get(constraintName);
 
                 Set<String> userGroupFullNames = authorityService.getAuthoritiesForUser(userName);
                 allowedValues = getRMAllowedValues(userName, userGroupFullNames, constraintName);
@@ -922,11 +923,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             readLock.lock();
 
             members = caveatConfig.get(listName);
-            if(members == null)
-            {
-                // list does not exist
-            }
-            else
+            if (members != null)
             {
                 try
                 {
@@ -934,11 +931,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                     writeLock.lock();
                     // check again
                     members = caveatConfig.get(listName);
-                    if(members == null)
-                    {
-                        // list does not exist
-                    }
-                    else
+                    if (members != null)
                     {
                         // authorities contains authority, values[]
                         // pivot contains value, members[]
@@ -964,7 +957,6 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                     readLock.lock();
                     writeLock.unlock();
                 }
-
             }
         }
         finally

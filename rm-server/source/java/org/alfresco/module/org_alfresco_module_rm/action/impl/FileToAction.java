@@ -8,6 +8,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -93,14 +95,24 @@ public class FileToAction extends RMActionExecuterAbstractBase
                 if (recordFolderService.isRecordFolder(recordFolder) == true)
                 {
                     final NodeRef finalRecordFolder = recordFolder;
-                    try
+
+                    AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
                     {
-                        fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
-                    }
-                    catch (FileNotFoundException fileNotFound)
-                    {
-                       throw new AlfrescoRuntimeException("Unable to execute file to action, because the move operation failed.", fileNotFound);
-                    }
+                        @Override
+                        public Void doWork() throws Exception
+                        {
+                            try
+                            {
+                                fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
+                            }
+                            catch (FileNotFoundException fileNotFound)
+                            {
+                               throw new AlfrescoRuntimeException("Unable to execute file to action, because the move operation failed.", fileNotFound);
+                            }
+
+                            return null;
+                        }
+                    });
                 }
                 else
                 {

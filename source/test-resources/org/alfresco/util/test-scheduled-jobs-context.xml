@@ -3,81 +3,81 @@
 
 <beans>
 
-    <bean id="dummyJobTestDelayed" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass">
-            <value>org.alfresco.util.CronTriggerBeanTest$DummyJob</value>
-        </property>
-        <property name="name">
-        	<value>configuredDelayedCronJob</value>
-        </property>
-    </bean>
+   <bean id="dummyJobTestDelayed" class="org.springframework.scheduling.quartz.JobDetailBean">
+      <property name="jobClass">
+         <value>org.alfresco.util.CronTriggerBeanTest$DummyJob</value>
+      </property>
+      <property name="name">
+         <value>configuredDelayedCronJob</value>
+      </property>
+   </bean>
 
-    <bean id="dummyJobTest" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass">
-            <value>org.alfresco.util.CronTriggerBeanTest$DummyJob</value>
-        </property>
-        <property name="name">
-        	<value>configuredCronJob</value>
-        </property>
-    </bean>
-    
-    <bean id="schedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
-        <property name="waitForJobsToCompleteOnShutdown">
-            <value>true</value>
-        </property>
-        <property name="schedulerFactoryClass">
-            <value>org.alfresco.repo.scheduler.AlfrescoSchedulerFactory</value>
-        </property>
-        <property name="jobFactory">
-            <bean class="org.alfresco.repo.scheduler.AlfrescoJobFactory" />
-        </property>
-        <property name="quartzProperties">
-            <ref bean="schedulerProperties" />
-        </property>
-        <property name="schedulerName">
-            <value>DefaultScheduler</value>
-        </property>
-        <!-- Do not auto start the scheduler - this is done at the end of the bootstrap process -->
-        <property name="autoStartup">
-            <value>false</value>
-        </property>
-    </bean>
-    
-    
-    <bean id="cronTriggerBean" class="org.alfresco.util.CronTriggerBean">
-        <property name="jobDetail">
-            <ref bean="dummyJobTest" />
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-        <!-- trigger at 3am each day -->
-        <property name="cronExpression">
-            <value>0/1 * * * * ?</value>
-        </property>
-        <property name="beanName">
-        	<value>dummyTriggerBean</value>
-        </property>
-    </bean>
+   <bean id="dummyJobTest" class="org.springframework.scheduling.quartz.JobDetailBean">
+      <property name="jobClass">
+         <value>org.alfresco.util.CronTriggerBeanTest$DummyJob</value>
+      </property>
+      <property name="name">
+         <value>configuredCronJob</value>
+      </property>
+   </bean>
 
-    
-    <bean id="cronTriggerBeanDelayed" class="org.alfresco.util.CronTriggerBean">
-        <property name="jobDetail">
-            <ref bean="dummyJobTestDelayed" />
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-        <!-- trigger at 3am each day -->
-        <property name="cronExpression">
-            <value>0/1 * * * * ?</value>
-        </property>
-        <property name="beanName">
-        	<value>dummyTriggerBeanDelayed</value>
-        </property>
-        <property name="startDelay">
-        	<value>4000</value>
-       	</property>
-    </bean>
+   <bean id="schedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+      <property name="waitForJobsToCompleteOnShutdown">
+         <value>true</value>
+      </property>
+      <property name="schedulerFactoryClass">
+         <value>org.alfresco.repo.scheduler.AlfrescoSchedulerFactory</value>
+      </property>
+      <property name="jobFactory">
+         <bean class="org.alfresco.repo.scheduler.AlfrescoJobFactory" />
+      </property>
+      <property name="quartzProperties">
+         <ref bean="schedulerProperties" />
+      </property>
+      <property name="schedulerName">
+         <value>DefaultScheduler</value>
+      </property>
+      <!-- Do not auto start the scheduler - this is done at the end of the bootstrap process -->
+      <property name="autoStartup">
+         <value>false</value>
+      </property>
+   </bean>
 
- </beans>
+
+   <bean id="cronTriggerBean" class="org.alfresco.util.CronTriggerBean">
+      <property name="jobDetail">
+         <ref bean="dummyJobTest" />
+      </property>
+      <property name="scheduler">
+         <ref bean="schedulerFactory" />
+      </property>
+      <!-- trigger at 3am each day -->
+      <property name="cronExpression">
+         <value>0/1 * * * * ?</value>
+      </property>
+      <property name="beanName">
+         <value>dummyTriggerBean</value>
+      </property>
+   </bean>
+
+
+   <bean id="cronTriggerBeanDelayed" class="org.alfresco.util.CronTriggerBean">
+      <property name="jobDetail">
+         <ref bean="dummyJobTestDelayed" />
+      </property>
+      <property name="scheduler">
+         <ref bean="schedulerFactory" />
+      </property>
+      <!-- trigger at 3am each day -->
+      <property name="cronExpression">
+         <value>0/1 * * * * ?</value>
+      </property>
+      <property name="beanName">
+         <value>dummyTriggerBeanDelayed</value>
+      </property>
+      <property name="startDelay">
+         <value>4000</value>
+      </property>
+   </bean>
+
+</beans>

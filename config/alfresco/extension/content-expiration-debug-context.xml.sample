@@ -25,7 +25,7 @@
             <value>0 0/2 * * * ?</value>
         </property>
         <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
 </beans>

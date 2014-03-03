@@ -101,7 +101,7 @@
             <value>${system.content.caching.contentCleanup.cronExpression}</value>
         </property>
         <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>    
 </beans>

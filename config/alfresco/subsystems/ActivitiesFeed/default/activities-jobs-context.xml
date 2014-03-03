@@ -4,7 +4,7 @@
 <beans>
 
     <!-- Activities Feed Cleaner -->
-    
+
     <bean id="feedCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
             <value>org.alfresco.repo.activities.feed.cleanup.FeedCleanupJob</value>
@@ -17,19 +17,19 @@
             </map>
         </property>
     </bean>
-    
+
     <bean id="feedCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail" ref="feedCleanerJobDetail" />
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.feed.cleaner.cronExpression}" />
         <property name="enabled" value="${activities.feed.cleaner.enabled}" />
         <property name="startDelayMinutes">
-        	<value>${activities.feed.cleaner.startDelayMins}</value>
-       	</property>
+            <value>${activities.feed.cleaner.startDelayMins}</value>
+        </property>
     </bean>
-    
+
     <!-- Activities Feed Generator -->
-    
+
     <bean id="feedGeneratorJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
             <value>org.alfresco.repo.activities.feed.FeedGeneratorJob</value>
@@ -42,19 +42,19 @@
             </map>
         </property>
     </bean>
-    
+
     <bean id="feedGeneratorTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail" ref="feedGeneratorJobDetail" />
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.feed.generator.cronExpression}" />
         <property name="enabled" value="${activities.feed.generator.enabled}" />
         <property name="startDelayMinutes">
-        	<value>${activities.feed.generator.startDelayMins}</value>
-       	</property>
+            <value>${activities.feed.generator.startDelayMins}</value>
+        </property>
     </bean>
-    
+
     <!-- Activities Post Lookup (for secondary lookup) -->
-    
+
     <bean id="postLookupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
             <value>org.alfresco.repo.activities.post.lookup.PostLookupJob</value>
@@ -73,12 +73,12 @@
         <property name="cronExpression" value="${activities.post.lookup.cronExpression}" />
         <property name="enabled" value="${activities.post.lookup.enabled}" />
         <property name="startDelayMinutes">
-        	<value>${activities.post.lookup.startDelayMins}</value>
-       	</property>
+            <value>${activities.post.lookup.startDelayMins}</value>
+        </property>
     </bean>
-    
+
     <!-- Activities Post Cleaner -->
-    
+
     <bean id="postCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
             <value>org.alfresco.repo.activities.post.cleanup.PostCleanupJob</value>
@@ -91,19 +91,19 @@
             </map>
         </property>
     </bean>
-    
+
     <bean id="postCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail" ref="postCleanerJobDetail" />
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.post.cleaner.cronExpression}" />
         <property name="enabled" value="${activities.post.cleaner.enabled}" />
         <property name="startDelayMinutes">
-        	<value>${activities.post.cleaner.startDelayMins}</value>
-       	</property>
+            <value>${activities.post.cleaner.startDelayMins}</value>
+        </property>
     </bean>
-    
-     <!-- Activities Email Notifier -->
-    
+
+    <!-- Activities Email Notifier -->
+
     <bean id="feedNotifierJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
             <value>org.alfresco.repo.activities.feed.FeedNotifierJob</value>
@@ -111,23 +111,23 @@
         <property name="jobDataAsMap">
             <map>
                 <entry key="feedNotifier">
-                    <ref bean="feedNotifier"/>
+                    <ref bean="feedNotifier" />
                 </entry>
                 <entry key="tenantAdminService">
-                    <ref bean="tenantAdminService"/>
+                    <ref bean="tenantAdminService" />
                 </entry>
             </map>
         </property>
     </bean>
-    
+
     <bean id="feedNotifierTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail" ref="feedNotifierJobDetail" />
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${activities.feed.notifier.cronExpression}" />
         <property name="enabled" value="${activities.feed.notifier.enabled}" />
         <property name="startDelayMinutes">
-        	<value>${activities.feed.notifier.startDelayMins}</value>
-       	</property>
+            <value>${activities.feed.notifier.startDelayMins}</value>
+        </property>
     </bean>
-    
+
 </beans>

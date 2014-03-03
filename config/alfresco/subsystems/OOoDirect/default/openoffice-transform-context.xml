@@ -119,9 +119,9 @@
       <property name="enabledFromBean">
          <ref bean="startListener" />
       </property>
-        <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+      <property name="startDelayMinutes">
+         <value>${system.cronJob.startDelayMinutes}</value>
+      </property>
    </bean>
 
    <bean id="extracter.worker.OpenOffice" class="org.alfresco.repo.content.metadata.DefaultOpenOfficeMetadataWorker">

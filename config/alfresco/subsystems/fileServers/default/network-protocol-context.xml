@@ -102,9 +102,9 @@
       <property name="cronExpression">
          <value>${filesystem.lockKeeperRefreshCronExpression}</value>
       </property>
-        <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+      <property name="startDelayMinutes">
+         <value>${system.cronJob.startDelayMinutes}</value>
+      </property>
     </bean>
    
    

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
-<!-- This file enables Alfresco WCM.  It should be placed in shared/classes/alfresco/extension -->
+<!-- This file enables Alfresco WCM. It should be placed in shared/classes/alfresco/extension -->
 
 <beans>
 
@@ -9,12 +9,22 @@
         Patch in the WCM folders for the Authoring Environment 
         Adds WCM Forms and WCM Projects
     -->
-    <bean id="patch.wcmFolders" class="org.alfresco.repo.admin.patch.impl.WCMFoldersPatch" parent="basePatch" >
-        <property name="id"><value>patch.wcmFolders</value></property>
-        <property name="description"><value>patch.wcmFolders.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>${version.schema}</value></property>
-        <property name="targetSchema"><value>10000</value></property>
+    <bean id="patch.wcmFolders" class="org.alfresco.repo.admin.patch.impl.WCMFoldersPatch" parent="basePatch">
+        <property name="id">
+            <value>patch.wcmFolders</value>
+        </property>
+        <property name="description">
+            <value>patch.wcmFolders.description</value>
+        </property>
+        <property name="fixesFromSchema">
+            <value>0</value>
+        </property>
+        <property name="fixesToSchema">
+            <value>${version.schema}</value>
+        </property>
+        <property name="targetSchema">
+            <value>10000</value>
+        </property>
         <!-- helper beans for execution -->
         <property name="messageSource">
             <ref bean="bootstrapSpacesMessageSource" />
@@ -24,22 +34,31 @@
         </property>
     </bean>
 
-    <!--  Bootstrap the WCM Deployment Receiver Subsystem -->
-    <bean id="wcm_deployment_receiver"
-        class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory"
+    <!-- Bootstrap the WCM Deployment Receiver Subsystem -->
+    <bean id="wcm_deployment_receiver" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory"
         parent="abstractPropertyBackedBean">
-		<property name="autoStart">
-		    <value>true</value>
+        <property name="autoStart">
+            <value>true</value>
         </property>
     </bean>
-    
-    <!--  Patch bean to add the "WCM Deployed" space to the company home folder -->
-    <bean id="patch.wcmDeployed" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
-        <property name="id"><value>patch.wcmDeployed</value></property>
-        <property name="description"><value>patch.wcmDeployed.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>${version.schema}</value></property>
-        <property name="targetSchema"><value>10000</value></property>
+
+    <!-- Patch bean to add the "WCM Deployed" space to the company home folder -->
+    <bean id="patch.wcmDeployed" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch">
+        <property name="id">
+            <value>patch.wcmDeployed</value>
+        </property>
+        <property name="description">
+            <value>patch.wcmDeployed.description</value>
+        </property>
+        <property name="fixesFromSchema">
+            <value>0</value>
+        </property>
+        <property name="fixesToSchema">
+            <value>${version.schema}</value>
+        </property>
+        <property name="targetSchema">
+            <value>10000</value>
+        </property>
         <!-- bootstrap view -->
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
@@ -62,17 +81,17 @@
                 <property name="jobClass">
                     <value>org.alfresco.repo.avm.OrphanReaperJob</value>
                 </property>
-		        <property name="jobDataAsMap">
-            		<map>
-                		<entry key="orphanReaper">
-                    		<ref bean="orphanReaper"/>
-                		</entry>
-            		</map>
-        		</property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="orphanReaper">
+                            <ref bean="orphanReaper" />
+                        </entry>
+                    </map>
+                </property>
             </bean>
         </property>
         <property name="scheduler">
-            <ref bean="schedulerFactory"/>
+            <ref bean="schedulerFactory" />
         </property>
         <property name="cronExpression">
             <value>0 * * * * ?</value>
@@ -91,9 +110,9 @@
                 </property>
                 <property name="jobDataAsMap">
                     <map>
-                       <entry key="expiredContentProcessor">
-                           <ref bean="avmExpiredContentProcessor" />
-                       </entry>
+                        <entry key="expiredContentProcessor">
+                            <ref bean="avmExpiredContentProcessor" />
+                        </entry>
                     </map>
                 </property>
             </bean>
@@ -109,10 +128,10 @@
             <value>${system.cronJob.startDelayMinutes}</value>
         </property>
     </bean>
-        
-    <!-- There is a job available to purge old deploymentattempt nodes  -->
+
+    <!-- There is a job available to purge old deploymentattempt nodes -->
     <!-- from the repository. The maximum age of the node can be configured. -->
     <!-- See the wiki (http://wiki.alfresco.com/wikiDeployment) for details -->
     <!-- and the deployment-attempt-cleaner-context.xml.sample file. -->
-    
+
 </beans>

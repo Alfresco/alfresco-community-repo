@@ -32,8 +32,8 @@
             <value>0 30 * * * ?</value>
         </property>
         <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
 
     <bean id="contentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
@@ -59,8 +59,8 @@
             <value>${system.content.orphanCleanup.cronExpression}</value>
         </property>
         <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
 
     <bean id="contentUrlConverterJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
@@ -86,8 +86,8 @@
             <value>${system.content.contentUrlConverter.cronExpression}</value>
         </property>
         <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
     
     <bean id="patchSharedFolderJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
@@ -113,8 +113,8 @@
             <value>${system.patch.sharedFolder.cronExpression}</value>
         </property>
         <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
 
     <bean id="nodeServiceCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
@@ -140,8 +140,8 @@
             <value>0 0 21 * * ?</value>
         </property>
         <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
     
     <!-- enable scheduler property to activate -->
@@ -163,8 +163,8 @@
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="0 0/5 * * * ?" />            <!-- run every 5 minutes -->
         <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
     
     <!--  note: Activities (feed) jobs have moved to Activities subsystem (since 3.5) -->
@@ -194,8 +194,8 @@
             <value>${version.store.migrateVersionStore.cronExpression}</value>
         </property>
         <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
     
     <!-- enable scheduler property to activate -->
@@ -308,8 +308,8 @@
             <value>${ticket.cleanup.cronExpression}</value>
         </property>
         <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
     
 </beans>

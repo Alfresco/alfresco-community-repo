@@ -32,8 +32,8 @@
             <ref bean="schedulerFactory" />
         </property>
         <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
 
     <!-- The chaining user registry synchronizer -->

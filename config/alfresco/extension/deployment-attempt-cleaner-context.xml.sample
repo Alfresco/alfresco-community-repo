@@ -50,8 +50,8 @@ that are older than 180 days.
             <value>0 0 4 * * ?</value>
         </property>
         <property name="startDelayMinutes">
-        	<value>${system.cronJob.startDelayMinutes}</value>
-       	</property>
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
     
 </beans>

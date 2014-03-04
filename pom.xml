@@ -684,38 +684,38 @@
         <!-- GData -->
         <dependency>
             <groupId>com.google.gdata</groupId>
-            <artifactId>com.google.gdata.gdata-core</artifactId>
-            <version>1.0</version>
+            <artifactId>gdata-core-1.0</artifactId>
+            <version>1.47.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.gdata</groupId>
-            <artifactId>com.google.gdata.gdata-media</artifactId>
-            <version>1.0</version>
+            <artifactId>gdata-media-1.0</artifactId>
+            <version>1.47.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.gdata</groupId>
-            <artifactId>com.google.gdata.gdata-client</artifactId>
-            <version>1.0</version>
+            <artifactId>gdata-client-1.0</artifactId>
+            <version>1.47.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.gdata</groupId>
-            <artifactId>com.google.gdata.gdata-client-meta</artifactId>
-            <version>1.0</version>
+            <artifactId>gdata-client-meta-1.0</artifactId>
+            <version>1.47.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.gdata</groupId>
-            <artifactId>com.google.gdata.gdata-docs</artifactId>
-            <version>3.0</version>
+            <artifactId>gdata-docs-3.0</artifactId>
+            <version>1.47.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.gdata</groupId>
-            <artifactId>com.google.gdata.gdata-docs-meta</artifactId>
-            <version>3.0</version>
+            <artifactId>gdata-docs-meta-3.0</artifactId>
+            <version>1.47.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.gdata</groupId>
-            <artifactId>gdata-youtube</artifactId>
-            <version>2.0</version>
+            <artifactId>gdata-youtube-2.0</artifactId>
+            <version>1.47.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

@@ -18,9 +18,13 @@
  */
 package org.alfresco.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -44,15 +48,12 @@ public class CronTriggerBeanTest
     // One second - an arbitrarily small amount of time to allow for the
     // scheduler to start the jobs
     final long PRECISION_LEEWAY = 1000L;
-
     final long INTERVAL = 1000L;// One run every second
 
     private ClassPathXmlApplicationContext context;
-
     private Scheduler scheduler;
 
     private static Map<String, ArrayList<Long>> dummyJobRuns;
-
     private static Object lockToken = new Object();
 
     @Before

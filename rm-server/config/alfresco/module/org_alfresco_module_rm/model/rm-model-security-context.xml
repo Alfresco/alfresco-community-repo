@@ -2,30 +2,30 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-	
+
 	<!--  Helper abstract bean definitions -->
-	
+
 	<bean id="protectedArtifact"
 	      abstract="true"
-	      init-method="init">	      
+	      init-method="init">
 		<property name="modelSecurityService" ref="modelSecurityService" />
-		<property name="namespaceService" ref="namespaceService" />	
+		<property name="namespaceService" ref="namespaceService" />
 	</bean>
-	
-	<bean id="protectedProperty" 
-		  abstract="true" 
+
+	<bean id="protectedProperty"
+		  abstract="true"
 		  parent="protectedArtifact"
 		  class="org.alfresco.module.org_alfresco_module_rm.model.security.ProtectedProperty">
 	</bean>
-	
-	<bean id="protectedAspect" 
-		  abstract="true" 
+
+	<bean id="protectedAspect"
+		  abstract="true"
 		  parent="protectedArtifact"
 		  class="org.alfresco.module.org_alfresco_module_rm.model.security.ProtectedAspect">
-	</bean>	
-	
+	</bean>
+
 	<!--  Protected Aspects -->
-	
+
 	<bean id="rm.protectedAspect.rma_cutOff" parent="protectedAspect">
 	    <property name="name" value="rma:cutOff"/>
 		<property name="capabilities">
@@ -35,7 +35,7 @@
 			</set>
 		</property>
 	</bean>
-	
+
 	<bean id="rm.protectedAspect.rma_declaredRecord" parent="protectedAspect">
 	    <property name="name" value="rma:declaredRecord"/>
 	    <property name="capabilities">
@@ -46,7 +46,7 @@
 		</property>
 	</bean>
 
-	
+
 	<bean id="rm.protectedAspect.rma_frozen" parent="protectedAspect">
 	    <property name="name" value="rma:frozen" />
 	    <property name="capabilities">
@@ -58,7 +58,7 @@
 	</bean>
 
 	<!--  Protected Properties -->
-	
+
 	<bean id="rm.protectedProperty.rma_cutoffDate" parent="protectedProperty">
 		<property name="name" value="rma:cutOffDate"/>
 		<property name="capabilities">
@@ -68,7 +68,7 @@
 			</set>
 		</property>
 	</bean>
-	
+
 	<bean id="rm.protectedProperty.rma_isClosed" parent="protectedProperty">
 		<property name="name" value="rma:isClosed"/>
 		<property name="capabilities">
@@ -88,7 +88,7 @@
 			</set>
 		</property>
 	</bean>
-	
+
     <bean id="rm.protectedProperty.rma_declaredBy" parent="protectedProperty">
 		<property name="name" value="rma:declaredBy"/>
 		<property name="capabilities">
@@ -98,7 +98,7 @@
 			</set>
 		</property>
 	</bean>
-    
+
     <bean id="rm.protectedProperty.rma_dateFiled" parent="protectedProperty">
 		<property name="name" value="rma:dateFiled"/>
 		<property name="capabilities">
@@ -107,7 +107,7 @@
 			</set>
 		</property>
 	</bean>
-    
+
     <bean id="rm.protectedProperty.rma_reviewAsOf" parent="protectedProperty">
 		<property name="name" value="rma:reviewAsOf"/>
 		<property name="allwaysAllowNew" value = "true" />
@@ -118,7 +118,7 @@
 			</set>
 		</property>
 	</bean>
-    
+
     <bean id="rm.protectedProperty.rma_dispositionAsOf" parent="protectedProperty">
 		<property name="name" value="rma:dispositionAsOf"/>
 		<property name="capabilities">
@@ -127,7 +127,7 @@
 			</set>
 		</property>
 	</bean>
-    
+
     <bean id="rm.protectedProperty.rma_holdReason" parent="protectedProperty">
 		<property name="name" value="rma:holdReason"/>
 		<property name="capabilities">
@@ -135,6 +135,7 @@
 				<ref bean="rmViewUpdateReasonsForFreezeCapability" />
 				<ref bean="rmExtendRetentionPeriodOrFreezeCapability" />
 				<ref bean="rmUnfreezeCapability" />
+                <ref bean="rmModifyHoldCapability" />
 			</set>
 		</property>
 	</bean>
@@ -149,7 +150,7 @@
 			</set>
 		</property>
 	</bean>
-	
+
     <bean id="rm.protectedProperty.rma_frozenBy" parent="protectedProperty">
 		<property name="name" value="rma:frozenBy"/>
 		<property name="capabilities">

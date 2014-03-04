@@ -42,6 +42,7 @@
             <ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>
             <ref bean="rmEditRecordMetadataCapability"/>
             <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
+            <ref bean="rmModifyHoldCapability"/>
          </list>
       </property>
    </bean>

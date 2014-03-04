@@ -437,5 +437,6 @@ public class Repository01TestSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.test.junitrules.TemporaryNodesTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.test.junitrules.TemporarySitesTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.CronTriggerBeanTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.util.CronTriggerBeanSystemTest.class));
     }
 }

@@ -40,7 +40,9 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 
 /**
- * This class tests that the CronTriggerBean correctly delays jobs when specified. 
+ * This class tests that the CronTriggerBean correctly delays jobs when specified.
+ * This test runs in about 25 seconds.
+ * 
  * @author Ahmed Owian
  */
 public class CronTriggerBeanTest

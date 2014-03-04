@@ -22,15 +22,17 @@ package org.alfresco.util;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * This class tests that the CronTriggerBean correctly delays jobs when
- * specified.
+ * This class tests the CronTriggerBean within the full Alfresco context.
+ * This test runs in about 45 seconds.
  * 
  * @author Ahmed Owian
  */
@@ -41,8 +43,7 @@ public class CronTriggerBeanSystemTest
     @Before
     public void setUp() throws Exception
     {
-        this.context = (ClassPathXmlApplicationContext) ApplicationContextHelper
-                    .getApplicationContext();
+        this.context = (ClassPathXmlApplicationContext) ApplicationContextHelper.getApplicationContext();
     }
 
     /**

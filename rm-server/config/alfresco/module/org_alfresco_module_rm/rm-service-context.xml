@@ -1177,7 +1177,7 @@
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
         <property name="permissionService" ref="permissionService" />
     </bean>
-    
+
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
     	<property name="recordService" ref="recordService"/>
     	<property name="namespaceService" ref="namespaceService"/>
@@ -1637,4 +1637,45 @@
     </bean>
     -->
 
+   <!--  Hold Service -->
+
+   <bean id="holdService"
+         class="org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldServiceImpl">
+      <property name="filePlanService" ref="FilePlanService" />
+      <property name="nodeService" ref="NodeService" />
+   </bean>
+
+   <bean id="HoldService"
+         class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService</value>
+      </property>
+      <property name="target">
+         <ref bean="holdService"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="HoldService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="HoldService_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="HoldService_transaction" parent="baseTransaction" />
+
+   <bean id="HoldService_security" parent="baseSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            <![CDATA[
+               org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService.getHolds=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService.addToHoldContainer=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService.addToHoldContainers=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService.removeFromHoldContainer=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService.removeFromHoldContainers=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService.*=RM_DENY
+            ]]>
+         </value>
+      </property>
+   </bean>
 </beans>

@@ -1,0 +1,10 @@
+<webscript>
+   <shortname>Get the list of holds</shortname>
+   <description>WebScript to get the list of available holds in the holds container</description>
+   <url>/api/rma/{store_type}/{store_id}/{id}/holds</url>
+   <url>/api/rma/holds</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

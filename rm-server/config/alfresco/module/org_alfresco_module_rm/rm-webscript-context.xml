@@ -584,4 +584,12 @@
       </property>
    </bean>
 
+   <!-- REST impl for GET Holds -->
+   <bean id="webscript.org.alfresco.rma.holds.get"
+         class="org.alfresco.module.org_alfresco_module_rm.script.hold.HoldsGet"
+         parent="webscript">
+      <property name="filePlanService" ref="FilePlanService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="holdService" ref="HoldService" />
+   </bean>
 </beans>

@@ -29,16 +29,14 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
@@ -74,15 +72,12 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     /** File Plan Service */
     protected FilePlanService filePlanService;
 
-    /** Permission service */
-    protected PermissionService permissionService;
-
-    /** File plan role service */
-    protected FilePlanRoleService filePlanRoleService;
-
     /** Record folder service */
     protected RecordFolderService recordFolderService;
-    
+
+    /** Hold service */
+    protected HoldService holdService;
+
     /**
      * @param recordService record service
      */
@@ -100,27 +95,19 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @param permissionService  permission service
-     */
-    public void setPermissionService(PermissionService permissionService)
-    {
-		this.permissionService = permissionService;
-	}
-
-    /**
-     * @param filePlanRoleService	file plan role service
-     */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
-		this.filePlanRoleService = filePlanRoleService;
-	}
-
-    /**
      * @param recordFolderService record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
+    }
+
+    /**
+     * @param holdService hold service
+     */
+    public void setHoldService(HoldService holdService)
+    {
+        this.holdService = holdService;
     }
 
     /**
@@ -227,43 +214,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("hold", hold);
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        // Link the record to the hold
-        nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
-
-        // Apply the freeze aspect
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
-        props.put(PROP_FROZEN_AT, new Date());
-        props.put(PROP_FROZEN_BY, AuthenticationUtil.getFullyAuthenticatedUser());
-        nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
-
-        // Log a message about applying the the frozen aspect
-        if (logger.isDebugEnabled())
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Frozen aspect applied to '").append(nodeRef).append("'.");
-            logger.debug(msg.toString());
-        }
-
-        // Mark all the folders contents as frozen
-        if (recordFolderService.isRecordFolder(nodeRef))
-        {
-            List<NodeRef> records = recordService.getRecords(nodeRef);
-            for (NodeRef record : records)
-            {
-                // no need to freeze if already frozen!
-                if (nodeService.hasAspect(record, ASPECT_FROZEN) == false)
-                {
-                    nodeService.addAspect(record, ASPECT_FROZEN, props);
-
-                    if (logger.isDebugEnabled())
-                    {
-                        StringBuilder msg = new StringBuilder();
-                        msg.append("Frozen aspect applied to '").append(record).append("'.");
-                        logger.debug(msg.toString());
-                    }
-                }
-            }
-        }
+        holdService.addToHoldContainer(hold, nodeRef);
     }
 
     /**
@@ -430,18 +381,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     {
         ParameterCheck.mandatory("filePlan", filePlan);
 
-        Set<NodeRef> holds = new HashSet<NodeRef>();
-        NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
-        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(holdContainer, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-        if (childAssocs != null && !childAssocs.isEmpty())
-        {
-            for (ChildAssociationRef childAssoc : childAssocs)
-            {
-                holds.add(childAssoc.getChildRef());
-            }
-        }
-
-        return holds;
+        return new HashSet<NodeRef>(holdService.getHolds(filePlan));
     }
 
     /**

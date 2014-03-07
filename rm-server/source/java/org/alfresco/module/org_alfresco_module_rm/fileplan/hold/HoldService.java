@@ -42,31 +42,31 @@ public interface HoldService
      * Adds the record to the given hold
      *
      * @param hold The {@link NodeRef} of the hold
-     * @param record The {@link NodeRef} of the record which will be added to the given hold
+     * @param nodeRef The {@link NodeRef} of the record / record folder which will be added to the given hold
      */
-    void addToHoldContainer(NodeRef hold, NodeRef record);
+    void addToHoldContainer(NodeRef hold, NodeRef nodeRef);
 
     /**
      * Adds the record to the given list of holds
      *
      * @param holds The list of {@link NodeRef}s of the holds
-     * @param record The {@link NodeRef} of the record which will be added to the given holds
+     * @param nodeRef The {@link NodeRef} of the record / record folder which will be added to the given holds
      */
-    void addToHoldContainers(List<NodeRef> holds, NodeRef record);
+    void addToHoldContainers(List<NodeRef> holds, NodeRef nodeRef);
 
     /**
      * Removes the record from the given hold
      *
      * @param hold The {@link NodeRef} of the hold
-     * @param record The {@link NodeRef} of the record which will be removed from the given hold
+     * @param nodeRef The {@link NodeRef} of the record / record folder which will be removed from the given hold
      */
-    void removeFromHoldContainer(NodeRef hold, NodeRef record);
+    void removeFromHoldContainer(NodeRef hold, NodeRef nodeRef);
 
     /**
      * Removes the record from the given list of hold
      *
      * @param holds The list {@link NodeRef}s of the holds
-     * @param record The {@link NodeRef} of the record which will be removed from the given holds
+     * @param nodeRef The {@link NodeRef} of the record / record folder which will be removed from the given holds
      */
-    void removeFromHoldContainers(List<NodeRef> holds, NodeRef record);
+    void removeFromHoldContainers(List<NodeRef> holds, NodeRef nodeRef);
 }

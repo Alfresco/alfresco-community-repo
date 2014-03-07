@@ -953,9 +953,8 @@
         <property name="dictionaryService" ref="DictionaryService" />
         <property name="recordService" ref="RecordService" />
         <property name="filePlanService" ref="FilePlanService" />
-        <property name="permissionService" ref="PermissionService" />
-        <property name="filePlanRoleService" ref="FilePlanRoleService" />
         <property name="recordFolderService" ref="RecordFolderService" />
+        <property name="holdService" ref="HoldService" />
     </bean>
 
     <bean id="FreezeService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1643,6 +1642,8 @@
          class="org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldServiceImpl">
       <property name="filePlanService" ref="FilePlanService" />
       <property name="nodeService" ref="NodeService" />
+      <property name="recordService" ref="RecordService" />
+      <property name="recordFolderService" ref="RecordFolderService" />
    </bean>
 
    <bean id="HoldService"

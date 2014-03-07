@@ -20,8 +20,8 @@ package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
@@ -34,6 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedul
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -146,6 +147,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected ReportService reportService;
     protected RecordsManagementAuditService rmAuditService;
     protected IdentifierService identifierService;
+    protected HoldService holdService;
 
     /** test data */
     protected String siteId;
@@ -251,15 +253,15 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected String dmCollaborator;
     protected NodeRef dmCollaboratorNodeRef;
 
-    /** 
-     * Indicates whether this is a RM site test or not.  If true then the test RM site is created along with a basic 
+    /**
+     * Indicates whether this is a RM site test or not.  If true then the test RM site is created along with a basic
      * file plan structure, otherwise not.
      */
     protected boolean isRMSiteTest()
     {
     	return true;
     }
-    
+
     /**
      * Indicates whether this is a multi-hierarchy test or not.  If it is then the multi-hierarchy record
      * taxonomy test data is loaded.
@@ -395,6 +397,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         reportService = (ReportService) applicationContext.getBean("ReportService");
         rmAuditService = (RecordsManagementAuditService) applicationContext.getBean("RecordsManagementAuditService");
         identifierService = (IdentifierService) applicationContext.getBean("recordsManagementIdentifierService");
+        holdService = (HoldService) applicationContext.getBean("HoldService");
     }
 
     /**
@@ -430,7 +433,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         {
             if (filePlan != null && nodeService.exists(filePlan) == true)
             {
-                Set<NodeRef> holds = freezeService.getHolds(filePlan);
+                List<NodeRef> holds = holdService.getHolds(filePlan);
                 for (NodeRef hold : holds)
                 {
                     freezeService.relinquish(hold);
@@ -500,7 +503,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 	                    utils.declareRecord(recordDeclaredOne);
 	                    utils.declareRecord(recordDeclaredTwo);
 	                }
-	
+
 	                // unfiled container
 	                unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
 	                assertNotNull(unfiledContainer);
@@ -540,7 +543,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         permissionService.setPermission(folder, "rmadmin", PermissionService.ADD_CHILDREN, true);
 
         if (isRMSiteTest() == true)
-        {        
+        {
 	        siteId = GUID.generate();
 	        siteInfo = siteService.createSite(
 	                        "rm-site-dashboard",
@@ -549,17 +552,17 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 	                        "descrition",
 	                        SiteVisibility.PUBLIC,
 	                        RecordsManagementModel.TYPE_RM_SITE);
-	
+
 	        filePlan = siteService.getContainer(siteId, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
 	        assertNotNull("Site document library container was not created successfully.", filePlan);
-	
+
 	        // Create RM container
 	        rmContainer = filePlanService.createRecordCategory(filePlan, "rmContainer");
 	        assertNotNull("Could not create rm container", rmContainer);
-	
+
 	        // Create disposition schedule
 	        dispositionSchedule = utils.createBasicDispositionSchedule(rmContainer);
-	
+
 	        // Create RM folder
 	        rmFolder = recordFolderService.createRecordFolder(rmContainer, "rmFolder");
 	        assertNotNull("Could not create rm folder", rmFolder);

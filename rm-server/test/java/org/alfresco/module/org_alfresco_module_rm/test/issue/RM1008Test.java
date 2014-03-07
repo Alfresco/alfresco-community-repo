@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
@@ -128,7 +127,7 @@ public class RM1008Test extends BaseRMTestCase
             {
                 // create hold object
                 freezeService.freeze("test", rmFolder);
-                Set<NodeRef> holds = freezeService.getHolds(filePlan);
+                List<NodeRef> holds = holdService.getHolds(filePlan);
                 return holds.iterator().next();
             }
         }, rmAdminName);

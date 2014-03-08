@@ -59,8 +59,7 @@
       <property name="permission" value="CreateHold"/>
       <property name="kinds">
          <list>
-            <value>HOLD</value>
-            <value>HOLD_CONTAINER_CHILD</value>
+            <value>HOLD_CONTAINER</value>
          </list>
       </property>
       <property name="conditions">

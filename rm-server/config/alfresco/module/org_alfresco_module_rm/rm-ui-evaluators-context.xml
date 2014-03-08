@@ -791,8 +791,7 @@
       <property name="name" value="newHold"/>
       <property name="kinds">
          <set>
-            <value>HOLD</value>
-            <value>HOLD_CONTAINER_CHILD</value>
+            <value>HOLD_CONTAINER</value>
          </set>
       </property>
       <property name="capability" value="CreateHold"/>

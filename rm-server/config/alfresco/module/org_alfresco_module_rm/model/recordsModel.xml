@@ -103,7 +103,7 @@
 
       <type name="rma:holdContainer">
          <title>Hold Container</title>
-         <parent>rma:recordsManagementContainer</parent>
+         <parent>rma:hold</parent>
          <mandatory-aspects>
             <aspect>rma:countable</aspect>
          </mandatory-aspects>
@@ -111,7 +111,7 @@
 
       <type name="rma:holdContainerChild">
          <title>Hold Container Child</title>
-         <parent>rma:recordsManagementContainer</parent>
+         <parent>rma:hold</parent>
       </type>
 
       <type name="rma:transferContainer">

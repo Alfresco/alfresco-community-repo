@@ -214,10 +214,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             {
                 result = FilePlanComponentKind.RECORD;
             }
-            else if (getFreezeService().isHold(nodeRef) == true)
-            {
-                result = FilePlanComponentKind.HOLD;
-            }
             else if (instanceOf(nodeRef, TYPE_HOLD_CONTAINER))
             {
                 result = FilePlanComponentKind.HOLD_CONTAINER;
@@ -225,6 +221,10 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             else if (instanceOf(nodeRef, TYPE_HOLD_CONTAINER_CHILD))
             {
                 result = FilePlanComponentKind.HOLD_CONTAINER_CHILD;
+            }
+            else if (getFreezeService().isHold(nodeRef) == true)
+            {
+                result = FilePlanComponentKind.HOLD;
             }
             else if (getTransferService().isTransfer(nodeRef) == true)
             {

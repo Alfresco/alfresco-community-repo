@@ -1,0 +1,17 @@
+<webscript>
+   <shortname>Adds an item to the hold(s)</shortname>
+   <description><![CDATA[
+   WebScript to add an item (record / record folder) to the hold(s) in the holds container.<br/>
+   The body of the post should be in the form<br/>
+   {<br/>
+   &nbsp;&nbsp;&nbsp;"nodeRef" : nodeRef of the item (record / record folder),<br/>
+   &nbsp;&nbsp;&nbsp;"holds" : array of nodeRef for the hold(s)<br/>
+   }<br/>
+   ]]>
+   </description>
+   <url>/api/rma/holds</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

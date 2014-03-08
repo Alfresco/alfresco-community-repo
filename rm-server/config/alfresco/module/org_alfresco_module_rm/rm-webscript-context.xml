@@ -592,4 +592,11 @@
       <property name="nodeService" ref="NodeService" />
       <property name="holdService" ref="HoldService" />
    </bean>
+
+   <!-- REST impl for POST Hold -->
+   <bean id="webscript.org.alfresco.rma.hold.post"
+         class="org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPost"
+         parent="webscript">
+      <property name="holdService" ref="HoldService" />
+   </bean>
 </beans>

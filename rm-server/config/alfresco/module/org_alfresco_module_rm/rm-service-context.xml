@@ -1641,7 +1641,7 @@
    <bean id="holdService"
          class="org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldServiceImpl">
       <property name="filePlanService" ref="FilePlanService" />
-      <property name="nodeService" ref="NodeService" />
+      <property name="nodeService" ref="nodeService" />
       <property name="recordService" ref="RecordService" />
       <property name="recordFolderService" ref="RecordFolderService" />
    </bean>

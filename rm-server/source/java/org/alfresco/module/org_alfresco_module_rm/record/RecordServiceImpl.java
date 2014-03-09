@@ -554,8 +554,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
 
                 boolean propertyUnchanged = false;
-                if (beforeValue != null && afterValue != null &&
-                        beforeValue instanceof Date && afterValue instanceof Date)
+                if (beforeValue instanceof Date && afterValue instanceof Date)
                 {
                     // deal with date values
                     propertyUnchanged = (((Date)beforeValue).compareTo((Date)afterValue) == 0);

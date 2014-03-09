@@ -34,7 +34,7 @@ import org.alfresco.service.cmr.repository.NodeService;
  * An extractor that uses a node context to determine the currently-authenticated
  * user's RM roles.  This is not a data generator because it can only function in
  * the context of a give node.
- * 
+ *
  * @author Derek Hulley
  * @since 3.2
  */
@@ -74,7 +74,7 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
      */
     public boolean isSupported(Serializable data)
     {
-        if (data == null || !(data instanceof NodeRef))
+        if (!(data instanceof NodeRef))
         {
             return false;
         }
@@ -93,10 +93,10 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
             // No-one is authenticated
             return null;
         }
-        
+
         // Get the rm root
         NodeRef rmRootNodeRef = filePlanService.getFilePlan(nodeRef);
-        
+
         Set<Role> roles = filePlanRoleService.getRolesByUser(rmRootNodeRef, user);
         StringBuilder sb = new StringBuilder(100);
         for (Role role : roles)
@@ -107,7 +107,7 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
             }
             sb.append(role.getDisplayLabel());
         }
-        
+
         // Done
         return sb.toString();
     }

@@ -75,7 +75,7 @@ public class ParameterProcessorComponent implements ParameterSubstitutionSuggest
             Object parameterValue = entry.getValue();
 
             // only sub string property values
-            if (parameterValue != null && parameterValue instanceof String)
+            if (parameterValue instanceof String)
             {
                 // set the updated parameter value
                 ruleItem.setParameterValue(parameterName, process((String)parameterValue, actionedUponNodeRef));

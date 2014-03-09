@@ -65,7 +65,7 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
      */
     public boolean isSupported(Serializable data)
     {
-        if (data == null || !(data instanceof NodeRef))
+        if (!(data instanceof NodeRef))
         {
             return false;
         }

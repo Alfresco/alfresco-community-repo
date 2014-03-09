@@ -30,11 +30,11 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:ghosted behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean 
+@BehaviourBean
 (
    defaultType = "rma:ghosted" // optional
 )
@@ -43,12 +43,12 @@ public class GhostedAspect extends    BaseBehaviourBean
 {
     /** I18N */
     private static final String MSG_GHOSTED_PROP_UPDATE = "rm.action.ghosted-prop-update";
-    
+
     /**
      * Ensure that the content of a ghosted node can not be updated.
-     * 
+     *
      * @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean)
-     */ 
+     */
     @Override
     @Behaviour
     (
@@ -56,13 +56,13 @@ public class GhostedAspect extends    BaseBehaviourBean
        notificationFrequency = NotificationFrequency.EVERY_EVENT, // (defaults to EVERY_EVENT)
        policy = "alf:onContentUpdate",                            // (defaults to alf:<methodname>)
        type = "rma:ghosted"                                       // required, unless defaultType set
-       
+
        // isService (default false)
        // name (only needs to specified if associated behvaiour object needs to be accessed)
        // assocType (defaults to cm:contains, used with BehaviourKind.ASSOC)
     )
-    public void onContentUpdate(NodeRef Content, boolean bNew)
+    public void onContentUpdate(NodeRef content, boolean bNew)
     {
-        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_GHOSTED_PROP_UPDATE));  
-    }   
+        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_GHOSTED_PROP_UPDATE));
+    }
 }

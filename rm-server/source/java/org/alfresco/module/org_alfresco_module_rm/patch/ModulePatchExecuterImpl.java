@@ -32,31 +32,31 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Module patch executer base implementation
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
-public class ModulePatchExecuterImpl extends   AbstractModuleComponent 
-                                    implements ModulePatchExecuter 
+public class ModulePatchExecuterImpl extends   AbstractModuleComponent
+                                    implements ModulePatchExecuter
 {
     /** logger */
     protected static Log logger = LogFactory.getLog(ModulePatchExecuterImpl.class);
-    
+
     /** default start schema */
     private static final int START_SCHEMA = 0;
-    
+
     /** attribute key */
     private static final String KEY_MODULE_SCHEMA = "module-schema";
-    
+
     /** configured module schema version */
     protected int moduleSchema = START_SCHEMA;
-    
+
     /** attribute service */
     protected AttributeService attributeService;
-    
+
     /** module patches */
     protected Map<String, ModulePatch> modulePatches = new HashMap<String, ModulePatch>(21);
-    
+
     /**
      * @param attributeService  attribute service
      */
@@ -72,7 +72,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     {
         this.moduleSchema = moduleSchema;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuter#register(org.alfresco.module.org_alfresco_module_rm.patch.ModulePatch)
      */
@@ -84,12 +84,12 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
         {
             throw new AlfrescoRuntimeException("Unable to register module patch, becuase module id is invalid.");
         }
-        
+
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Registering module patch " + modulePatch.getId() + " for module " + getModuleId());
         }
-        
+
         modulePatches.put(modulePatch.getId(), modulePatch);
     }
 
@@ -101,16 +101,16 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     {
         // get current schema version
         int currentSchema = getCurrentSchema();
-        
+
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Running module patch executer (currentSchema=" + currentSchema + ", configuredSchema=" + moduleSchema + ")");
         }
-        
+
         if (moduleSchema > currentSchema)
         {
             // determine what patches should be applied
-            List<ModulePatch> patchesToApply = new ArrayList<ModulePatch>(13);            
+            List<ModulePatch> patchesToApply = new ArrayList<ModulePatch>(13);
             for (ModulePatch modulePatch : modulePatches.values())
             {
                 if (modulePatch.getFixesFromSchema() <= currentSchema &&
@@ -119,22 +119,22 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
                     patchesToApply.add(modulePatch);
                 }
             }
-            
+
             // apply the patches in the correct order
             Collections.sort(patchesToApply);
             for (ModulePatch patchToApply : patchesToApply)
             {
                 patchToApply.apply();
             }
-            
+
             // update the schema
             updateSchema(moduleSchema);
         }
     }
-    
+
     /**
-     * Get the currently recorded schema version for the module 
-     * 
+     * Get the currently recorded schema version for the module
+     *
      * @return  int currently recorded schema version
      */
     protected int getCurrentSchema()
@@ -146,15 +146,15 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
         }
         return result;
     }
-    
+
     /**
      * Update the recorded schema version for the module.
-     * 
+     *
      * @param newSchema new schema version
      */
     protected void updateSchema(int newSchema)
     {
-        attributeService.setAttribute(new Integer(newSchema), KEY_MODULE_SCHEMA,  getModuleId());
+        attributeService.setAttribute(Integer.valueOf(newSchema), KEY_MODULE_SCHEMA,  getModuleId());
     }
 
     /**

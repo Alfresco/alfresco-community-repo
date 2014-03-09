@@ -1057,7 +1057,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         Date fromDate = getFromDate(date);
         if (fromDate != null)
         {
-            fromDateTime = new Long(fromDate.getTime());
+            fromDateTime = Long.valueOf(fromDate.getTime());
         }
         return fromDateTime;
     }
@@ -1099,7 +1099,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         Date toDate = getToDate(date);
         if (toDate != null)
         {
-            toDateTime = new Long(toDate.getTime());
+            toDateTime = Long.valueOf(toDate.getTime());
         }
         return toDateTime;
     }

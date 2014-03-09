@@ -28,53 +28,53 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Interface containing records management policies
- * 
+ *
  * @author Roy Wetherall
  */
 public interface RecordsManagementPolicies
 {
     /** Policy names */
-    public static final QName BEFORE_RM_ACTION_EXECUTION = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRMActionExecution");
-    public static final QName ON_RM_ACTION_EXECUTION = QName.createQName(NamespaceService.ALFRESCO_URI, "onRMActionExecution");
-    public static final QName BEFORE_CREATE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateReference");
-    public static final QName ON_CREATE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateReference");
-    public static final QName BEFORE_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRemoveReference");
-    public static final QName ON_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveReference");
-        
+    static final QName BEFORE_RM_ACTION_EXECUTION = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRMActionExecution");
+    static final QName ON_RM_ACTION_EXECUTION = QName.createQName(NamespaceService.ALFRESCO_URI, "onRMActionExecution");
+    static final QName BEFORE_CREATE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateReference");
+    static final QName ON_CREATE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateReference");
+    static final QName BEFORE_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRemoveReference");
+    static final QName ON_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveReference");
+
     /** Before records management action execution */
     public interface BeforeRMActionExecution extends ClassPolicy
-    {        
-        public void beforeRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters);
+    {
+        void beforeRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters);
     }
-    
+
     /** On records management action execution */
     public interface OnRMActionExecution extends ClassPolicy
-    {        
-        public void onRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters);
+    {
+        void onRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters);
     }
-    
+
     /** Before creation of reference */
     public interface BeforeCreateReference extends ClassPolicy
     {
-        public void beforeCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference);
+        void beforeCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference);
     }
-    
+
     /** On creation of reference */
     public interface OnCreateReference extends ClassPolicy
     {
-        public void onCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference);
+        void onCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference);
     }
-    
+
     /** Before removal of reference */
     public interface BeforeRemoveReference extends ClassPolicy
     {
-        public void beforeRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference);
+        void beforeRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference);
     }
-    
-    /** 
+
+    /**
      * On removal of reference
-     * 
-     * @since 1.0 
+     *
+     * @since 1.0
      */
     public interface OnRemoveReference extends ClassPolicy
     {
@@ -83,38 +83,38 @@ public interface RecordsManagementPolicies
          * @param toNodeRef     to node reference
          * @param reference     name of reference
          */
-        public void onRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference);
+        void onRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference);
     }
-    
+
     /**
      * Before record file policy
-     * 
-     * @since 2.2 
+     *
+     * @since 2.2
      */
     public interface BeforeFileRecord extends ClassPolicy
     {
         /** policy name */
-        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRecordFile");
-        
+        static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRecordFile");
+
         /**
          * @param nodeRef   node reference
          */
-        public void beforeFileRecord(NodeRef nodeRef);
+        void beforeFileRecord(NodeRef nodeRef);
     }
-    
+
     /**
      * On record file policy
-     * 
+     *
      * @since 2.2
      */
     public interface OnFileRecord extends ClassPolicy
     {
         /** policy name */
-        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordFile");
-        
+        static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordFile");
+
         /**
          * @param nodeRef   node reference
          */
-        public void onFileRecord(NodeRef nodeRef);
+        void onFileRecord(NodeRef nodeRef);
     }
 }

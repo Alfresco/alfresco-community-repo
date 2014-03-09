@@ -22,31 +22,31 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Helper class containing records management custom model qualified names
- * 
+ *
  * @author Gavin Cornwell
  */
 public interface RecordsManagementCustomModel
 {
     // Namespace details
-    public static String RM_CUSTOM_URI = "http://www.alfresco.org/model/rmcustom/1.0";
-    public static String RM_CUSTOM_PREFIX = "rmc";
-    
+    static String RM_CUSTOM_URI = "http://www.alfresco.org/model/rmcustom/1.0";
+    static String RM_CUSTOM_PREFIX = "rmc";
+
     // Model
-    public static QName RM_CUSTOM_MODEL = QName.createQName(RM_CUSTOM_URI, "rmcustom");
-    
+    static QName RM_CUSTOM_MODEL = QName.createQName(RM_CUSTOM_URI, "rmcustom");
+
     // Custom constraint for Supplemental Marking List
-    public static QName CONSTRAINT_CUSTOM_SMLIST = QName.createQName(RM_CUSTOM_URI, "smList");
-    
+    static QName CONSTRAINT_CUSTOM_SMLIST = QName.createQName(RM_CUSTOM_URI, "smList");
+
     // Custom property for for Supplemental Marking List
-    public static QName PROP_SUPPLEMENTAL_MARKING_LIST = QName.createQName(RM_CUSTOM_URI, "supplementalMarkingList");
-    
+    static QName PROP_SUPPLEMENTAL_MARKING_LIST = QName.createQName(RM_CUSTOM_URI, "supplementalMarkingList");
+
     // Supplemental Marking List aspect
-    public static QName ASPECT_SUPPLEMENTAL_MARKING_LIST = QName.createQName(RM_CUSTOM_URI, "customSupplementalMarkingList");
-    
+    static QName ASPECT_SUPPLEMENTAL_MARKING_LIST = QName.createQName(RM_CUSTOM_URI, "customSupplementalMarkingList");
+
     // Custom associations aspect
-    public static QName ASPECT_CUSTOM_ASSOCIATIONS = QName.createQName(RM_CUSTOM_URI, "customAssocs");
-        
+    static QName ASPECT_CUSTOM_ASSOCIATIONS = QName.createQName(RM_CUSTOM_URI, "customAssocs");
+
     // Some Custom references which are present on system startup.
-    public static QName CUSTOM_REF_VERSIONS = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions");
-    public static QName CUSTOM_REF_SUPERSEDES = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "supersedes");
+    static QName CUSTOM_REF_VERSIONS = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions");
+    static QName CUSTOM_REF_SUPERSEDES = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "supersedes");
 }

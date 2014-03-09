@@ -29,125 +29,124 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 public interface RMCaveatConfigService
 {
-    public void init();
-    
+    void init();
+
     /**
      * Get allowed values for given caveat list (for current user)
      * @param constraintName
      * @return
      */
-    public List<String> getRMAllowedValues(String constraintName);
-    
+    List<String> getRMAllowedValues(String constraintName);
+
     /**
      * Check whether access to 'record component' node is vetoed for current user due to caveat(s)
-     * 
+     *
      * @param nodeRef
      * @return false, if caveat(s) veto access otherwise return true
      */
-    public boolean hasAccess(NodeRef nodeRef);
-    
+    boolean hasAccess(NodeRef nodeRef);
+
     /*
      *  Get a single RM constraint
      */
-    public RMConstraintInfo getRMConstraint(String listName);
-    
+    RMConstraintInfo getRMConstraint(String listName);
+
     /*
      *  Get the names of all the caveat lists
      */
-    public Set<RMConstraintInfo> getAllRMConstraints();
-    
+    Set<RMConstraintInfo> getAllRMConstraints();
+
     /**
      * Get the details of a caveat list
      * @param listName
      * @return
      */
-    public Map<String, List<String>> getListDetails(String listName);
-    
-    public NodeRef updateOrCreateCaveatConfig(File jsonFile);
-     
-    public NodeRef updateOrCreateCaveatConfig(String jsonString);
-    
-    public NodeRef updateOrCreateCaveatConfig(InputStream is);
-    
+    Map<String, List<String>> getListDetails(String listName);
+
+    NodeRef updateOrCreateCaveatConfig(File jsonFile);
+
+    NodeRef updateOrCreateCaveatConfig(String jsonString);
+
+    NodeRef updateOrCreateCaveatConfig(InputStream is);
+
     /**
      * add RM constraint list
      * @param listName the name of the RMConstraintList
-     * @param listTitle 
+     * @param listTitle
      */
-    public RMConstraintInfo addRMConstraint(String listName, String listTitle, String[] allowedValues);
-    
+    RMConstraintInfo addRMConstraint(String listName, String listTitle, String[] allowedValues);
+
     /**
      * update RM constraint list allowed values
      * @param listName the name of the RMConstraintList - can not be changed
      * @param allowedValues
      */
-    public RMConstraintInfo updateRMConstraintAllowedValues(String listName, String[] allowedValues);
+    RMConstraintInfo updateRMConstraintAllowedValues(String listName, String[] allowedValues);
 
     /**
      * update RM constraint Title
      * @param listName the name of the RMConstraintList - can not be changed
      * @param allowedValues
      */
-    public RMConstraintInfo updateRMConstraintTitle(String listName, String newTitle);
+    RMConstraintInfo updateRMConstraintTitle(String listName, String newTitle);
 
-    
+
     /**
      * delete RM Constraint
-     * 
+     *
      * @param listName the name of the RMConstraintList
      */
-    public void deleteRMConstraint(String listName);
-     
+    void deleteRMConstraint(String listName);
+
     /**
      * Add a single value to an authority in a list.   The existing values of the list remain.
-     * 
+     *
      * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param values
      * @throws AlfrescoRuntimeException if either the list or the authority do not already exist.
      */
-    public void addRMConstraintListValue(String listName, String authorityName, String value);
-    
+    void addRMConstraintListValue(String listName, String authorityName, String value);
+
     /**
-     * Replace the values for an authority in a list.   
+     * Replace the values for an authority in a list.
      * The existing values are removed.
-     * 
+     *
      * If the authority does not already exist in the list, it will be added
-     * 
+     *
      * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param values
      */
-    public void updateRMConstraintListAuthority(String listName, String authorityName, List<String>values);
-     
+    void updateRMConstraintListAuthority(String listName, String authorityName, List<String>values);
+
     /**
      * Remove an authority from a list
-     * 
+     *
      * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param values
      */
-    public void removeRMConstraintListAuthority(String listName, String authorityName);
- 
+    void removeRMConstraintListAuthority(String listName, String authorityName);
+
     /**
-     * Replace the values for an authority in a list.   
+     * Replace the values for an authority in a list.
      * The existing values are removed.
-     * 
+     *
      * If the authority does not already exist in the list, it will be added
-     * 
+     *
      * @param listName the name of the RMConstraintList
      * @param value
      * @param authorities
      */
-    public void updateRMConstraintListValue(String listName, String value, List<String>authorities);
-     
+    void updateRMConstraintListValue(String listName, String value, List<String>authorities);
+
     /**
      * Remove an authority from a list
-     * 
+     *
      * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param value
      */
-    public void removeRMConstraintListValue(String listName, String valueName);
-
+    void removeRMConstraintListValue(String listName, String valueName);
 }

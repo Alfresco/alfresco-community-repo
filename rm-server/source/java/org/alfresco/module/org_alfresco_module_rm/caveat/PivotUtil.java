@@ -25,11 +25,16 @@ import java.util.Map;
 
 /* package scope */ class PivotUtil
 {
+    private PivotUtil()
+    {
+        // Will not be called
+    }
+
     static Map<String, List<String>> getPivot(Map<String, List<String>> source)
     {
-    
+
         Map<String, List<String>> pivot = new HashMap<String, List<String>>();
-    
+
         for(String authority : source.keySet())
         {
             List<String>values = source.get(authority);

@@ -42,6 +42,11 @@ import org.apache.commons.lang.StringUtils;
  */
 public class RequestInfoUtils
 {
+    private RequestInfoUtils()
+    {
+        // Will not be called
+    }
+
     /**
      * Helper method to get the service registry in order to call services
      *

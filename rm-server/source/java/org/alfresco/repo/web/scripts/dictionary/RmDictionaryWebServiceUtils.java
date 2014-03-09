@@ -34,6 +34,11 @@ public class RmDictionaryWebServiceUtils
     private static final String SITE_ID = "siteId";
     private static final String SITE_PRESET = "rm-site-dashboard";
 
+    private RmDictionaryWebServiceUtils()
+    {
+        // Will not be called
+    }
+
     public static boolean isRmSite(WebScriptRequest req, SiteService siteService)
     {
         boolean isRmSite = false;

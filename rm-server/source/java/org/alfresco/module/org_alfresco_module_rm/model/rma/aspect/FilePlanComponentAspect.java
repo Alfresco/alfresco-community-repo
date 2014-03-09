@@ -144,7 +144,6 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
         objectModel.put("node", nodeWithChangedProperties);
         objectModel.put("oldProperties", oldProps);
         objectModel.put("newProperties", newProps);
-;
         for (NodeRef scriptRef : scriptRefs)
         {
             scriptService.executeScript(scriptRef, null, objectModel);

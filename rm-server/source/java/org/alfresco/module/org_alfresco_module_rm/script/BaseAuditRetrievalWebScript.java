@@ -236,7 +236,9 @@ public class BaseAuditRetrievalWebScript extends StreamContent
             catch (InvalidQNameException iqe)
             {
                 if (logger.isWarnEnabled())
+                {
                     logger.warn("Ignoring property parameter as '" + property + "' is an invalid QName");
+                }
             }
         }
 

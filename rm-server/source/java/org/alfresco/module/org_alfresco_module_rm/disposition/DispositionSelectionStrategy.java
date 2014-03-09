@@ -36,41 +36,41 @@ import org.apache.commons.logging.LogFactory;
  * disposition schedule for a record when there is more than one which is applicable.
  * An example of where this strategy might be used would be in the case of a record
  * which was multiply filed.
- * 
+ *
  * @author neilm
  */
 public class DispositionSelectionStrategy implements RecordsManagementModel
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(DispositionSelectionStrategy.class);
-    
+
     /** Disposition service */
     private DispositionService dispositionService;
-    
+
     /** File plan authentication service */
     private FilePlanAuthenticationService filePlanAuthenticationService;
-    
+
     /**
      * Set the disposition service
-     * 
+     *
      * @param dispositionService    disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @param filePlanAuthenticationService	file plan authentication service
      */
-    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService) 
+    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
     {
 		this.filePlanAuthenticationService = filePlanAuthenticationService;
 	}
-    
+
     /**
      * Select the disposition schedule to use given there is more than one
-     * 
+     *
      * @param recordFolders
      * @return
      */
@@ -82,21 +82,21 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
         }
         else
         {
-            //      46 CHAPTER 2 
-            //      Records assigned more than 1 disposition must be retained and linked to the record folder (category) with the longest 
+            //      46 CHAPTER 2
+            //      Records assigned more than 1 disposition must be retained and linked to the record folder (category) with the longest
             //      retention period.
 
             // Assumption: an event-based disposition action has a longer retention
             // period than a time-based one - as we cannot know when an event will occur
             // TODO Automatic events?
-            
+
         	NodeRef recordFolder = null;
         	if (recordFolders.size() == 1)
         	{
         		recordFolder = recordFolders.get(0);
         	}
         	else
-        	{        	
+        	{
 	            SortedSet<NodeRef> sortedFolders = new TreeSet<NodeRef>(new DispositionableNodeRefComparator());
 	            for (NodeRef f : recordFolders)
 	            {
@@ -104,14 +104,14 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
 	            }
 	            recordFolder = sortedFolders.first();
         	}
-        	
+
             DispositionSchedule dispSchedule = dispositionService.getDispositionSchedule(recordFolder);
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug("Selected disposition schedule: " + dispSchedule);
             }
-            
+
             NodeRef result = null;
             if (dispSchedule != null)
             {
@@ -137,19 +137,19 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
             {
                 public Integer doWork() throws Exception
                 {
-                    return new Integer(compareImpl(f1, f2));
+                    return Integer.valueOf(compareImpl(f1, f2));
                 }
-                
-            }).intValue();           
+
+            }).intValue();
         }
-        
+
         private int compareImpl(NodeRef f1, NodeRef f2)
         {
             //TODO Check the nodeRefs have the correct aspect
-            
+
             DispositionAction da1 = dispositionService.getNextDispositionAction(f1);
             DispositionAction da2 = dispositionService.getNextDispositionAction(f2);
-            
+
             if (da1 != null && da2 != null)
             {
                 Date asOfDate1 = da1.getAsOfDate();
@@ -172,7 +172,7 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
                     DispositionActionDefinition dad2 = da2.getDispositionActionDefinition();
                     int eventsCount1 = 0;
                     int eventsCount2 = 0;
-                    
+
                     if (dad1 != null)
                     {
                         eventsCount1 = dad1.getEvents().size();
@@ -181,7 +181,7 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
                     {
                         eventsCount2 = dad2.getEvents().size();
                     }
-                    return new Integer(eventsCount1).compareTo(eventsCount2);
+                    return Integer.valueOf(eventsCount1).compareTo(eventsCount2);
                 }
             }
 

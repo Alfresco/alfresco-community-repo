@@ -285,7 +285,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
     {
         for (ConfigAttributeDefintion cad : supportedDefinitions)
         {
-            if (cad.parent == true && parentResult == AccessDecisionVoter.ACCESS_DENIED)
+            if (cad.parent && parentResult == AccessDecisionVoter.ACCESS_DENIED)
             {
                 throw new AccessDeniedException("Access Denied");
             }
@@ -344,7 +344,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         {
             NodeRef testNodeRef = null;
 
-            if (cad.typeString.equals(cad.parent) == true)
+            if (cad.typeString.equals(cad.parent))
             {
                 testNodeRef = returnedObject.getParentRef();
             }
@@ -360,7 +360,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 continue;
             }
 
-            if (cad.typeString.equals(cad.parent) == true && parentReadCheck != AccessDecisionVoter.ACCESS_GRANTED)
+            if (cad.typeString.equals(cad.parent) && parentReadCheck != AccessDecisionVoter.ACCESS_GRANTED)
             {
                 throw new AccessDeniedException("Access Denied");
             }
@@ -441,16 +441,16 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         Integer maxSize = null;
         if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxItems() >= 0)
         {
-            maxSize = new Integer(returnedObject.getResultSetMetaData().getSearchParameters().getMaxItems());
+            maxSize = Integer.valueOf(returnedObject.getResultSetMetaData().getSearchParameters().getMaxItems());
         }
         if ((maxSize == null) && (returnedObject.getResultSetMetaData().getSearchParameters().getLimitBy() == LimitBy.FINAL_SIZE))
         {
-            maxSize = new Integer(returnedObject.getResultSetMetaData().getSearchParameters().getLimit());
+            maxSize = Integer.valueOf(returnedObject.getResultSetMetaData().getSearchParameters().getLimit());
         }
         // Allow for skip
         if ((maxSize != null) && (returnedObject.getResultSetMetaData().getSearchParameters().getSkipCount() >= 0))
         {
-            maxSize = new Integer(maxSize + returnedObject.getResultSetMetaData().getSearchParameters().getSkipCount());
+            maxSize = Integer.valueOf(maxSize + returnedObject.getResultSetMetaData().getSearchParameters().getSkipCount());
         }
 
 //        int maxChecks = maxPermissionChecks;
@@ -867,7 +867,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 }
 
                 int readCheck = childReadChek;
-                if (cad.parent == true)
+                if (cad.parent)
                 {
                     readCheck = parentReadCheck;
                 }

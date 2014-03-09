@@ -27,7 +27,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
@@ -42,25 +41,18 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  * VitalRecordIndicator or the reviewPeriod properties are changed on a record container, then any descendant folders or
  * records must be updated as a consequence. Descendant folders should have their reviewPeriods and/or
  * vitalRecordIndicators updated to match the new value. Descendant records should have their reviewAsOf date updated.
- * 
+ *
  * @author Neil McErlean
  */
 public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstractBase
 {
 	protected FilePlanService filePlanService;
-	
-    protected FilePlanAuthenticationService filePlanAuthenticationService;
-    
-    public void setFilePlanService(FilePlanService filePlanService) 
+
+    public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
-    
-    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
-    {
-        this.filePlanAuthenticationService = filePlanAuthenticationService;
+        this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
      *      org.alfresco.service.cmr.repository.NodeRef)
@@ -76,18 +68,18 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
                 propagateChangeToChildrenOf(actionedUponNodeRef);
                 return null;
             }
-        }, AuthenticationUtil.getAdminUserName());        
+        }, AuthenticationUtil.getAdminUserName());
     }
 
     /**
      * Propagates the changes to the children of the node specified.
-     * 
+     *
      * @param actionedUponNodeRef   actioned upon node reference
      */
     private void propagateChangeToChildrenOf(NodeRef actionedUponNodeRef)
     {
         Map<QName, Serializable> parentProps = nodeService.getProperties(actionedUponNodeRef);
-        
+
         // parent vital record indicator, default to null if not set
         boolean parentVri = false;
         Boolean parentVriValue = (Boolean) parentProps.get(PROP_VITAL_RECORD_INDICATOR);
@@ -95,7 +87,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
         {
             parentVri = parentVriValue.booleanValue();
         }
-        
+
         Period parentReviewPeriod = (Period) parentProps.get(PROP_REVIEW_PERIOD);
 
         List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(actionedUponNodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
@@ -114,7 +106,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
                         VitalRecordDefinition vrDefn = vitalRecordService.getVitalRecordDefinition(nextChild);
                         Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>();
                         aspectProps.put(PROP_REVIEW_AS_OF, vrDefn.getNextReviewDate());
-    
+
                         nodeService.addAspect(nextChild, RecordsManagementModel.ASPECT_VITAL_RECORD, aspectProps);
                     }
                     else
@@ -130,7 +122,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
                     childProps.put(PROP_VITAL_RECORD_INDICATOR, parentVri);
                     nodeService.setProperties(nextChild, childProps);
                 }
-    
+
                 // Recurse down the containment hierarchy to all containers
                 if (recordService.isRecord(nextChild) == false)
                 {

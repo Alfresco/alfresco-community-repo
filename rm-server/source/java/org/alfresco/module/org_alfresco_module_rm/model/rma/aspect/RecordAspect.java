@@ -28,7 +28,6 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
@@ -47,7 +46,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * rma:record behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -64,16 +63,13 @@ public class RecordAspect extends    BaseBehaviourBean
     /** Well-known location of the scripts folder. */
     // TODO make configurable
     private NodeRef scriptsFolderNodeRef = new NodeRef("workspace", "SpacesStore", "rm_behavior_scripts");
-    
+
     /** extended security service */
     protected ExtendedSecurityService extendedSecurityService;
-    
+
     /** script service */
     protected ScriptService scriptService;
-    
-    /** record service */
-    protected RecordService recordService;
-    
+
     /**
      * @param extendedSecurityService   extended security service
      */
@@ -89,18 +85,10 @@ public class RecordAspect extends    BaseBehaviourBean
     {
         this.scriptService = scriptService;
     }
-    
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
-    }
-    
+
     /**
      * Behaviour to ensure renditions have the appropriate extended security.
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Override
@@ -158,7 +146,7 @@ public class RecordAspect extends    BaseBehaviourBean
         }
 
         // Execute script if for the reference event
-        executeReferenceScript("onCreate", reference, fromNodeRef, toNodeRef);        
+        executeReferenceScript("onCreate", reference, fromNodeRef, toNodeRef);
     }
 
     /**
@@ -180,9 +168,9 @@ public class RecordAspect extends    BaseBehaviourBean
         }
 
         // Execute script if for the reference event
-        executeReferenceScript("onRemove", reference, fromNodeRef, toNodeRef);        
+        executeReferenceScript("onRemove", reference, fromNodeRef, toNodeRef);
     }
-    
+
     /**
      * Record copy callback
      */
@@ -217,7 +205,7 @@ public class RecordAspect extends    BaseBehaviourBean
 
     /**
      * Record move behaviour
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
@@ -247,7 +235,7 @@ public class RecordAspect extends    BaseBehaviourBean
             }, AuthenticationUtil.getAdminUserName());
         }
     }
-    
+
     /**
      * Executes a reference script if present
      *

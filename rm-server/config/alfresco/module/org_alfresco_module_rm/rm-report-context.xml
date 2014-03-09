@@ -31,9 +31,6 @@
    <!--  Report Service -->
 
    <bean id="reportService" parent="baseService" class="org.alfresco.module.org_alfresco_module_rm.report.ReportServiceImpl">
-      <property name="fileFolderService" ref="FileFolderService" />
-      <property name="filePlanService" ref="FilePlanService" />
-      <property name="contentService" ref="ContentService" />
       <property name="recordService" ref="RecordService" />
    </bean>
 
@@ -77,7 +74,6 @@
       <property name="mimetypeService" ref="MimetypeService"/>
       <property name="fileFolderService" ref="FileFolderService"/>
       <property name="templateService" ref="TemplateService"/>
-      <property name="nodeService" ref="NodeService" />
       <property name="parameterProcessorComponent" ref="parameterProcessorComponent"/>
       <property name="repository" ref="repositoryHelper" />
       <property name="sysAdminParams" ref="sysAdminParams" />

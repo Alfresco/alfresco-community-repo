@@ -1321,7 +1321,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 // we need to strip off the first part of the path
                 String path = entry.getPath();
                 String displayPath = path;
-                int idx = path.indexOf("/", 1);
+                int idx = path.indexOf('/', 1);
                 if (idx != -1)
                 {
                     displayPath = "/File Plan" + path.substring(idx);

@@ -897,7 +897,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             String name = (String)nodeService.getProperty(document, ContentModel.PROP_NAME);
 
             // rename the record
-            int dotIndex = name.lastIndexOf(".");
+            int dotIndex = name.lastIndexOf('.');
             String prefix = name;
             String postfix = "";
             if (dotIndex != -1)

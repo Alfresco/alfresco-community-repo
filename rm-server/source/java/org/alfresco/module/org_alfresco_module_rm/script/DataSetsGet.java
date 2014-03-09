@@ -33,7 +33,7 @@ public class DataSetsGet extends DeclarativeWebScript
 
    /**
     * Set data set service
-    * 
+    *
     * @param dataSetService the data set service
     */
    public void setDataSetService(DataSetService dataSetService)
@@ -43,7 +43,7 @@ public class DataSetsGet extends DeclarativeWebScript
 
    /**
     * Set site service
-    * 
+    *
     * @param siteService the site service
     */
    public void setSiteService(SiteService siteService)
@@ -72,10 +72,10 @@ public class DataSetsGet extends DeclarativeWebScript
       boolean unloadedOnly = false;
       if (StringUtils.isNotBlank(unloadedOnlyParam))
       {
-         unloadedOnly = new Boolean(unloadedOnlyParam).booleanValue();
+         unloadedOnly = Boolean.valueOf(unloadedOnlyParam).booleanValue();
       }
 
-      // Get the loaded/unloaded data sets depending on the "unloadedOnly" parameter 
+      // Get the loaded/unloaded data sets depending on the "unloadedOnly" parameter
       Map<String, DataSet> dataSets = dataSetService.getDataSets(filePlan, unloadedOnly);
       List<Map<String, String>> dataSetList = new ArrayList<Map<String, String>>(dataSets.size());
 

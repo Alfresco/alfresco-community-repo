@@ -652,7 +652,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                 String zone = getZoneName(rmRootNode);
                 Set<String> roles = authorityService.getAllAuthoritiesInZone(zone, AuthorityType.GROUP);
-                return new Boolean(roles.contains(fullRoleName));
+                return Boolean.valueOf(roles.contains(fullRoleName));
             }
         }, AuthenticationUtil.getSystemUserName()).booleanValue();
     }

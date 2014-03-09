@@ -34,34 +34,34 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface FilePlanRoleService
 {
     /** Default role names */
-    public static final String ROLE_USER                = "User";
-    public static final String ROLE_POWER_USER          = "PowerUser";
-    public static final String ROLE_SECURITY_OFFICER    = "SecurityOfficer";
-    public static final String ROLE_RECORDS_MANAGER     = "RecordsManager";
-    public static final String ROLE_ADMIN               = "Administrator";
-    public static final String ROLE_EXTENDED_READERS    = "ExtendedReaders";
-    public static final String ROLE_EXTENDED_WRITERS    = "ExtendedWriters";
+    static final String ROLE_USER                = "User";
+    static final String ROLE_POWER_USER          = "PowerUser";
+    static final String ROLE_SECURITY_OFFICER    = "SecurityOfficer";
+    static final String ROLE_RECORDS_MANAGER     = "RecordsManager";
+    static final String ROLE_ADMIN               = "Administrator";
+    static final String ROLE_EXTENDED_READERS    = "ExtendedReaders";
+    static final String ROLE_EXTENDED_WRITERS    = "ExtendedWriters";
 
     /** System roles */
-    public static final List<String> SYSTEM_ROLES = Arrays.asList(
+    static final List<String> SYSTEM_ROLES = Arrays.asList(
         ROLE_EXTENDED_READERS,
         ROLE_EXTENDED_WRITERS
     );
-    
+
     /**
      * Sets up the roles on a new file plan.
-     * 
+     *
      * @param filePlan  file plan
      */
     void setupFilePlanRoles(NodeRef filePlan);
 
     /**
      * Tears down the roles on a file plan.
-     * 
+     *
      * @param filePlan  file plan
      */
     void tearDownFilePlanRoles(NodeRef filePlan);
-    
+
     /**
      * Returns the name of the container group for all roles of a specified file
      * plan.

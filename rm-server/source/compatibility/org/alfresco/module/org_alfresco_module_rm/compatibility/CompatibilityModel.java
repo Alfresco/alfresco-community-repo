@@ -23,17 +23,17 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * RM 1.0 compatibility model
- * 
+ *
  * @author Roy Wetherall
  */
 public interface CompatibilityModel extends DOD5015Model
-{    
+{
     // Record series DOD type
-    public static final QName TYPE_RECORD_SERIES = QName.createQName(DOD_URI, "recordSeries");
-    
+    static final QName TYPE_RECORD_SERIES = QName.createQName(DOD_URI, "recordSeries");
+
     // V1.0 custom property aspect names
-    public static final String NAME_CUSTOM_RECORD_PROPERTIES = "customRecordProperties";
-    public static final String NAME_CUSTOM_RECORD_FOLDER_PROPERTIES = "customRecordFolderProperties";
-    public static final String NAME_CUSTOM_RECORD_CATEGORY_PROPERTIES = "customRecordCategoryProperties";
-    public static final String NAME_CUSTOM_RECORD_SERIES_PROPERTIES = "customRecordSeriesProperties";
+    static final String NAME_CUSTOM_RECORD_PROPERTIES = "customRecordProperties";
+    static final String NAME_CUSTOM_RECORD_FOLDER_PROPERTIES = "customRecordFolderProperties";
+    static final String NAME_CUSTOM_RECORD_CATEGORY_PROPERTIES = "customRecordCategoryProperties";
+    static final String NAME_CUSTOM_RECORD_SERIES_PROPERTIES = "customRecordSeriesProperties";
 }

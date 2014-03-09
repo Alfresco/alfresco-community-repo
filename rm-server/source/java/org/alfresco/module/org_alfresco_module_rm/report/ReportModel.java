@@ -28,10 +28,10 @@ import org.alfresco.service.namespace.QName;
 public interface ReportModel
 {
     // Namespace details
-    public static final String RMR_URI = "http://www.alfresco.org/model/recordsmanagementreport/1.0";
-    public static final String RMR_PREFIX = "rmr";
+    static final String RMR_URI = "http://www.alfresco.org/model/recordsmanagementreport/1.0";
+    static final String RMR_PREFIX = "rmr";
 
-    public static final QName TYPE_REPORT = QName.createQName(RMR_URI, "report");
-    public static final QName TYPE_DESTRUCTION_REPORT = QName.createQName(RMR_URI, "destructionReport");
-    public static final QName TYPE_TRANSFER_REPORT = QName.createQName(RMR_URI, "transferReport");
+    static final QName TYPE_REPORT = QName.createQName(RMR_URI, "report");
+    static final QName TYPE_DESTRUCTION_REPORT = QName.createQName(RMR_URI, "destructionReport");
+    static final QName TYPE_TRANSFER_REPORT = QName.createQName(RMR_URI, "transferReport");
 }

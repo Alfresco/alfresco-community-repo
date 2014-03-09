@@ -23,71 +23,70 @@ import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
-
 /**
  * Record Management Action
- * 
+ *
  * @author Roy Wetherall
  */
 public interface RecordsManagementAction
 {
     /**
      * Get the name of the action
-     * 
+     *
      * @return  String  action name
      */
-    public String getName();
-    
+    String getName();
+
     /**
      * Get the label of the action
-     * 
+     *
      * @return  String  action label
      */
-    public String getLabel();
-    
+    String getLabel();
+
     /**
      * Get the description of the action
-     * 
-     * @return  String  action description 
+     *
+     * @return  String  action description
      */
-    public String getDescription();
-    
+    String getDescription();
+
     /**
      * Indicates whether this is a disposition action or not
-     * 
+     *
      * @return  boolean     true if a disposition action, false otherwise
      */
     boolean isDispositionAction();
-    
+
     /**
      * Execution of the action
-     * 
+     *
      * @param filePlanComponent     file plan component the action is executed upon
      * @param parameters            action parameters
      */
-    public RecordsManagementActionResult execute(NodeRef filePlanComponent, Map<String, Serializable> parameters);
+    RecordsManagementActionResult execute(NodeRef filePlanComponent, Map<String, Serializable> parameters);
 
     /**
      * Some admin-related rmActions execute against a target nodeRef which is not provided
      * by the calling code, but is instead an implementation detail of the action.
-     * 
+     *
      * @return the target nodeRef
      */
-    public NodeRef getImplicitTargetNodeRef();
-    
+    NodeRef getImplicitTargetNodeRef();
+
     /**
      * Get the records management action definition.
-     * 
+     *
      * @return
      * @since 2.1
      */
-    public RecordsManagementActionDefinition getRecordsManagementActionDefinition();
-    
+    RecordsManagementActionDefinition getRecordsManagementActionDefinition();
+
     /**
      * Indicates whether the action is public or not
-     * 
+     *
      * @return
      * @since 2.1
      */
-    public boolean isPublicAction();
+    boolean isPublicAction();
 }

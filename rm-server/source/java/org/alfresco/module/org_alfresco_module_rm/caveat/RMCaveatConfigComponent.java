@@ -28,85 +28,85 @@ import org.alfresco.service.namespace.QName;
 
 public interface RMCaveatConfigComponent
 {
-    public void init();
-    
+    void init();
+
     /**
      * Get allowed values for given caveat list (for current user)
-     * 
+     *
      * @param constraintName
      * @return
      */
-    public List<String> getRMAllowedValues(String constraintName);
-    
+    List<String> getRMAllowedValues(String constraintName);
+
     /**
      * Get custom caveat models
-     * 
+     *
      * @return
      */
-    public List<QName> getRMCaveatModels();
-    
+    List<QName> getRMCaveatModels();
+
     /**
      * Check whether access to 'record component' node is vetoed for current user due to caveat(s)
-     * 
+     *
      * @param nodeRef
      * @return false, if caveat(s) veto access otherwise return true
      */
-    public boolean hasAccess(NodeRef nodeRef);
-    
+    boolean hasAccess(NodeRef nodeRef);
+
     /**
      * Get RM constraint list
-     * 
+     *
      * @param listName the name of the RMConstraintList
      */
-    public RMConstraintInfo getRMConstraint(String listName);
-    
+    RMConstraintInfo getRMConstraint(String listName);
+
     /**
      * Add RM constraint
      */
-    public void addRMConstraint(String listName);
-    
+    void addRMConstraint(String listName);
+
     /**
      * Add RM constraint value for given authority
      */
-    public void addRMConstraintListValue(String listName, String authorityName, String value);
-    
+    void addRMConstraintListValue(String listName, String authorityName, String value);
+
     /**
      * Update RM constraint values for given authority
      */
-    public void updateRMConstraintListAuthority(String listName, String authorityName, List<String>values);
-    
+    void updateRMConstraintListAuthority(String listName, String authorityName, List<String>values);
+
     /**
      * Update RM constraint authorities for given value
      */
-    public void updateRMConstraintListValue(String listName, String valueName, List<String>authorities);
-    
+    void updateRMConstraintListValue(String listName, String valueName, List<String>authorities);
+
     /**
      * Remove RM constraint value (all authorities)
      */
-    public void removeRMConstraintListValue(String listName, String valueName);
-    
+    void removeRMConstraintListValue(String listName, String valueName);
+
     /**
      * Remove RM constraint authority (all values)
      */
-    public void removeRMConstraintListAuthority(String listName, String authorityName);
-    
+    void removeRMConstraintListAuthority(String listName, String authorityName);
+
     /**
      * Delete RM Constraint
-     * 
+     *
      * @param listName the name of the RMConstraintList
      */
-    public void deleteRMConstraint(String listName);
-    
+    void deleteRMConstraint(String listName);
+
     /**
      * Get the details of a caveat list
      * @param listName
      * @return
      */
-    public Map<String, List<String>> getListDetails(String listName);
-    
-    public NodeRef updateOrCreateCaveatConfig(File jsonFile);
-     
-    public NodeRef updateOrCreateCaveatConfig(String jsonString);
-    
-    public NodeRef updateOrCreateCaveatConfig(InputStream is);
+    Map<String, List<String>> getListDetails(String listName);
+
+    NodeRef updateOrCreateCaveatConfig(File jsonFile);
+
+    NodeRef updateOrCreateCaveatConfig(String jsonString);
+
+    NodeRef updateOrCreateCaveatConfig(InputStream is);
 }

@@ -24,11 +24,11 @@ import org.alfresco.service.cmr.security.PermissionService;
 
 /**
  * Extended Permission Service Interface used in RM.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
 public interface ExtendedPermissionService extends PermissionService
 {
-    public Set<String> getWriters(Long aclId);    
+    Set<String> getWriters(Long aclId);
 }

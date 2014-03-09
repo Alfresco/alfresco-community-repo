@@ -30,14 +30,19 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Utility class with policy helper methods.
- * 
+ *
  * @author Roy Wetherall
  */
 public class PoliciesUtil
 {
+    private PoliciesUtil()
+    {
+        // Will not be called
+    }
+
     /**
      * Get all aspect and node type qualified names
-     * 
+     *
      * @param nodeRef
      *            the node we are interested in
      * @return Returns a set of qualified names containing the node type and all
@@ -51,11 +56,11 @@ public class PoliciesUtil
             {
                 Set<QName> qnames = null;
                 try
-                {            
+                {
                     Set<QName> aspectQNames = nodeService.getAspects(nodeRef);
-                    
+
                     QName typeQName = nodeService.getType(nodeRef);
-                    
+
                     qnames = new HashSet<QName>(aspectQNames.size() + 1);
                     qnames.addAll(aspectQNames);
                     qnames.add(typeQName);
@@ -67,6 +72,6 @@ public class PoliciesUtil
                 // done
                 return qnames;
             }
-        }, AuthenticationUtil.getAdminUserName());   
+        }, AuthenticationUtil.getAdminUserName());
     }
 }

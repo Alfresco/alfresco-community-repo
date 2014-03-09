@@ -64,16 +64,16 @@ public class RMSecurityCommon implements ApplicationContextAware
 
     /** Application context */
     protected ApplicationContext applicationContext;
-    
+
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException 
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
     	this.applicationContext = applicationContext;
     }
-    
+
     /**
      * @param nodeService   node service
      */
@@ -101,7 +101,7 @@ public class RMSecurityCommon implements ApplicationContextAware
     /**
      * @return	FilePlanService	file plan service
      */
-    protected FilePlanService getFilePlanService() 
+    protected FilePlanService getFilePlanService()
     {
     	if (filePlanService == null)
     	{
@@ -331,28 +331,25 @@ public class RMSecurityCommon implements ApplicationContextAware
                 }
             }
         }
-        else if (AssociationRef.class.isAssignableFrom(params[position]))
+        else if (AssociationRef.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
         {
-            if (invocation.getArguments()[position] != null)
+            if (parent)
             {
-                if (parent)
+                testNodeRef = ((AssociationRef) invocation.getArguments()[position]).getSourceRef();
+            }
+            else
+            {
+                testNodeRef = ((AssociationRef) invocation.getArguments()[position]).getTargetRef();
+            }
+            if (logger.isDebugEnabled())
+            {
+                if (nodeService.exists(testNodeRef))
                 {
-                    testNodeRef = ((AssociationRef) invocation.getArguments()[position]).getSourceRef();
+                    logger.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
                 }
                 else
                 {
-                    testNodeRef = ((AssociationRef) invocation.getArguments()[position]).getTargetRef();
-                }
-                if (logger.isDebugEnabled())
-                {
-                    if (nodeService.exists(testNodeRef))
-                    {
-                        logger.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
-                    }
-                    else
-                    {
-                        logger.debug("\tPermission test on non-existing node " + testNodeRef);
-                    }
+                    logger.debug("\tPermission test on non-existing node " + testNodeRef);
                 }
             }
         }

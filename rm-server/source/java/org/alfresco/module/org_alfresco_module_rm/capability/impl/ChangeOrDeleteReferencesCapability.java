@@ -25,7 +25,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Change or delete references capability
- * 
+ *
  * @author Roy Wetherall
  */
 public class ChangeOrDeleteReferencesCapability extends DeclarativeCapability
@@ -39,7 +39,7 @@ public class ChangeOrDeleteReferencesCapability extends DeclarativeCapability
         // Can't be sure, because we don't have information about the target so we still abstain
         return AccessDecisionVoter.ACCESS_ABSTAIN;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability#evaluate(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -49,25 +49,21 @@ public class ChangeOrDeleteReferencesCapability extends DeclarativeCapability
         {
             if (target != null)
             {
-                if (getFilePlanService().isFilePlanComponent(target) == true)
+                if (getFilePlanService().isFilePlanComponent(target) &&
+                        checkConditions(source) &&
+                        checkConditions(target) &&
+                        checkPermissions(source) &&
+                        checkPermissions(target))
                 {
-                    if (checkConditions(source) == true && checkConditions(target) == true)
-                    {                        
-                        if (checkPermissions(source) == true && checkPermissions(target) == true)
-                        {                                
-                            return AccessDecisionVoter.ACCESS_GRANTED;
-                        }
-                    }
+                    return AccessDecisionVoter.ACCESS_GRANTED;
                 }
             }
             else
             {
-                if (checkConditions(source) == true)
+                if (checkConditions(source) &&
+                        checkPermissions(source))
                 {
-                    if (checkPermissions(source) == true)
-                    {
-                        return AccessDecisionVoter.ACCESS_GRANTED;
-                    }
+                    return AccessDecisionVoter.ACCESS_GRANTED;
                 }
             }
 

@@ -212,12 +212,9 @@ public class CapabilityServiceImpl implements CapabilityService
         for (Capability capability : getCapabilities())
         {
             Group group = capability.getGroup();
-            if (group != null)
+            if (group != null && group.getId().equalsIgnoreCase(id))
             {
-                if (group.getId().equalsIgnoreCase(id))
-                {
-                    capabilities.add(capability);
-                }
+                capabilities.add(capability);
             }
         }
 

@@ -32,26 +32,26 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Abstract base policy implementation 
- * 
+ * Abstract base policy implementation
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
-public abstract class AbstractBasePolicy extends RMSecurityCommon 
+public abstract class AbstractBasePolicy extends RMSecurityCommon
                                          implements Policy
 {
     /** Logger */
     protected static Log logger = LogFactory.getLog(AbstractBasePolicy.class);
-    
+
     /** Capability service */
     protected CapabilityService capabilityService;
-    
+
     /** Policy register */
     protected PolicyRegister policyRegister;
-    
+
     /** Policy name */
     protected String name;
-    
+
     /**
      * @param name  policy name
      */
@@ -59,7 +59,7 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     {
         this.name = name;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.policy.Policy#getName()
      */
@@ -68,7 +68,7 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     {
         return name;
     }
-    
+
     /**
      * @param capabilityService capability service
      */
@@ -76,15 +76,15 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     {
         this.capabilityService = capabilityService;
     }
-    
+
     /**
      * @param policyRegister	policy register
      */
-    public void setPolicyRegister(PolicyRegister policyRegister) 
+    public void setPolicyRegister(PolicyRegister policyRegister)
     {
 		this.policyRegister = policyRegister;
 	}
-    
+
     /**
      * Init method
      */
@@ -92,9 +92,9 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     {
     	policyRegister.registerPolicy(this);
     }
-    
+
     /**
-     * 
+     *
      * @param invocation
      * @param params
      * @param position
@@ -112,20 +112,17 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
                 return qname;
             }
         }
-        else if (NodeRef.class.isAssignableFrom(params[position]))
+        else if (NodeRef.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
         {
-            if (invocation.getArguments()[position] != null)
-            {
-                NodeRef nodeRef = (NodeRef) invocation.getArguments()[position];
-                return nodeService.getType(nodeRef);
-            }
+            NodeRef nodeRef = (NodeRef) invocation.getArguments()[position];
+            return nodeService.getType(nodeRef);
         }
 
         return null;
     }
-    
+
     /**
-     * 
+     *
      * @param invocation
      * @param params
      * @param position
@@ -134,19 +131,16 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     @SuppressWarnings("rawtypes")
     protected QName getQName(MethodInvocation invocation, Class[] params, int position)
     {
-        if (QName.class.isAssignableFrom(params[position]))
+        if (QName.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
         {
-            if (invocation.getArguments()[position] != null)
-            {
-                QName qname = (QName) invocation.getArguments()[position];
-                return qname;
-            }
+            QName qname = (QName) invocation.getArguments()[position];
+            return qname;
         }
         throw new ACLEntryVoterException("Unknown type");
     }
 
     /**
-     * 
+     *
      * @param invocation
      * @param params
      * @param position
@@ -159,19 +153,16 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
         {
             return null;
         }
-        if (Serializable.class.isAssignableFrom(params[position]))
+        if (Serializable.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
         {
-            if (invocation.getArguments()[position] != null)
-            {
-                Serializable property = (Serializable) invocation.getArguments()[position];
-                return property;
-            }
+            Serializable property = (Serializable) invocation.getArguments()[position];
+            return property;
         }
         throw new ACLEntryVoterException("Unknown type");
     }
 
     /**
-     * 
+     *
      * @param invocation
      * @param params
      * @param position
@@ -184,13 +175,10 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
         {
             return null;
         }
-        if (Map.class.isAssignableFrom(params[position]))
+        if (Map.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
         {
-            if (invocation.getArguments()[position] != null)
-            {
-                Map<QName, Serializable> properties = (Map<QName, Serializable>) invocation.getArguments()[position];
-                return properties;
-            }
+            Map<QName, Serializable> properties = (Map<QName, Serializable>) invocation.getArguments()[position];
+            return properties;
         }
         throw new ACLEntryVoterException("Unknown type");
     }

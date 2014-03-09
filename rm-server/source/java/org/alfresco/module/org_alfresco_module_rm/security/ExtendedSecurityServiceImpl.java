@@ -142,7 +142,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
 
     /**
      * Add extended security implementation method
-     * 
+     *
      * @param nodeRef
      * @param readers
      * @param writers
@@ -181,7 +181,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         }
 
         // apply the readers to any renditions of the content
-        if (isRecord(nodeRef) == true)
+        if (isRecord(nodeRef))
         {
             List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)
@@ -194,12 +194,12 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         // add to the extended security roles
         addExtendedSecurityRoles(nodeRef, readers, writers);
 
-        if (applyToParents == true)
+        if (applyToParents)
         {
             // apply the extended readers up the file plan primary hierarchy
             NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
             if (parent != null &&
-                filePlanService.isFilePlanComponent(parent) == true)
+                filePlanService.isFilePlanComponent(parent))
             {
                 addExtendedSecurityImpl(parent, readers, null, applyToParents);
                 addExtendedSecurityImpl(parent, writers, null, applyToParents);
@@ -238,15 +238,11 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
 
             for (String authority : authorities)
             {
-                if (authority.equals(PermissionService.ALL_AUTHORITIES) == false &&
-                    authority.equals(PermissionService.OWNER_AUTHORITY) == false)
+                if ((authority.equals(PermissionService.ALL_AUTHORITIES) == false && authority.equals(PermissionService.OWNER_AUTHORITY) == false) &&
+                    (referenceCountMap == null || referenceCountMap.containsKey(authority) == false))
                 {
-                    if (referenceCountMap == null ||
-                        referenceCountMap.containsKey(authority) == false)
-                    {
-                        // add the authority to the role
-                        filePlanRoleService.assignRoleToAuthority(filePlan, roleName, authority);
-                    }
+                    // add the authority to the role
+                    filePlanRoleService.assignRoleToAuthority(filePlan, roleName, authority);
                 }
             }
 
@@ -273,7 +269,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         {
             if (key.equals(PermissionService.ALL_AUTHORITIES) == false)
             {
-                if (map.containsKey(key) == true)
+                if (map.containsKey(key))
                 {
                     // increment reference count
                     Integer count = map.get(key);
@@ -305,12 +301,12 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     @Override
     public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String>writers, boolean applyToParents)
     {
-        if (hasExtendedSecurity(nodeRef) == true)
+        if (hasExtendedSecurity(nodeRef))
         {
             removeExtendedSecurityImpl(nodeRef, readers, writers);
 
             // remove the readers from any renditions of the content
-            if (isRecord(nodeRef) == true)
+            if (isRecord(nodeRef))
             {
                 List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
                 for (ChildAssociationRef assoc : assocs)
@@ -320,12 +316,12 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 }
             }
 
-            if (applyToParents == true)
+            if (applyToParents)
             {
                 // apply the extended readers up the file plan primary hierarchy
                 NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
                 if (parent != null &&
-                    filePlanService.isFilePlanComponent(parent) == true)
+                    filePlanService.isFilePlanComponent(parent))
                 {
                     removeExtendedSecurity(parent, readers, null, applyToParents);
                     removeExtendedSecurity(parent, writers, null, applyToParents);
@@ -361,7 +357,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
 
     /**
      * Helper method to remove items from map or reduce reference count
-     * 
+     *
      * @param map                       ref count map
      * @param keys                      keys
      * @return Map<String, Integer>     ref count map
@@ -394,7 +390,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         }
 
         // reset the map to null if now empty
-        if (map != null && map.isEmpty() == true)
+        if (map != null && map.isEmpty())
         {
             map = null;
         }
@@ -417,7 +413,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     @Override
     public void removeAllExtendedSecurity(NodeRef nodeRef, boolean applyToParents)
     {
-        if (hasExtendedSecurity(nodeRef) == true)
+        if (hasExtendedSecurity(nodeRef))
         {
             removeExtendedSecurity(nodeRef, getExtendedReaders(nodeRef), getExtendedWriters(nodeRef));
         }

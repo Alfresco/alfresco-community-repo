@@ -57,12 +57,9 @@ public class HasDispositionDateCapabilityCondition extends AbstractCapabilityCon
                 result = true;
             }
         }
-        else if (filePlanService.isFilePlanComponent(nodeRef))
+        else if (filePlanService.isFilePlanComponent(nodeRef) && nodeService.getProperty(nodeRef, PROP_DISPOSITION_AS_OF) != null)
         {
-            if (nodeService.getProperty(nodeRef, PROP_DISPOSITION_AS_OF) != null)
-            {
-                result = true;
-            }
+            result = true;
         }
 
         return result;

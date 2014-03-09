@@ -223,13 +223,11 @@ public abstract class BaseEvaluator implements RecordsManagementModel
         boolean result = false;
 
         // Check that we are dealing with the correct kind of RM object
-        if (kinds == null || checkKinds(nodeRef) == true)
+        if ((kinds == null || checkKinds(nodeRef) == true) &&
+                // Check we have the required capabilities
+                (capabilities == null || checkCapabilities(nodeRef) == true))
         {
-            // Check we have the required capabilities
-            if (capabilities == null || checkCapabilities(nodeRef) == true)
-            {
-                result = evaluateImpl(nodeRef);
-            }
+            result = evaluateImpl(nodeRef);
         }
 
         return result;

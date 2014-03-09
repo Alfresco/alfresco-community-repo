@@ -170,23 +170,20 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
         {
             public Object doWork() throws Exception
             {
-                if (nodeService.exists(nodeRef) == true)
+                if (nodeService.exists(nodeRef) && name.equals(actionName))
                 {
-                    if (name.equals(actionName) == true)
+                    QName type = nodeService.getType(nodeRef);
+                    if (TYPE_TRANSFER.equals(type))
                     {
-                        QName type = nodeService.getType(nodeRef);
-                        if (TYPE_TRANSFER.equals(type) == true)
+                        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
+                        for (ChildAssociationRef assoc : assocs)
                         {
-                            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
-                            for (ChildAssociationRef assoc : assocs)
-                            {
-                                processRecordFolder(assoc.getChildRef());
-                            }
+                            processRecordFolder(assoc.getChildRef());
                         }
-                        else
-                        {
-                            processRecordFolder(nodeRef);
-                        }
+                    }
+                    else
+                    {
+                        processRecordFolder(nodeRef);
                     }
                 }
 
@@ -200,11 +197,11 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
 
     private void processRecordFolder(NodeRef recordFolder)
     {
-        if (recordService.isRecord(recordFolder) == true)
+        if (recordService.isRecord(recordFolder))
         {
             processRecord(recordFolder);
         }
-        else if (recordFolderService.isRecordFolder(recordFolder) == true)
+        else if (recordFolderService.isRecordFolder(recordFolder))
         {
             for (NodeRef record : recordService.getRecords(recordFolder))
             {
@@ -218,7 +215,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
         List<AssociationRef> fromAssocs = recordsManagementAdminService.getCustomReferencesFrom(record);
         for (AssociationRef fromAssoc : fromAssocs)
         {
-            if (reference.equals(fromAssoc.getTypeQName()) == true)
+            if (reference.equals(fromAssoc.getTypeQName()))
             {
                 NodeRef nodeRef = fromAssoc.getTargetRef();
                 doEventComplete(nodeRef);
@@ -228,7 +225,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
         List<AssociationRef> toAssocs = recordsManagementAdminService.getCustomReferencesTo(record);
         for (AssociationRef toAssoc : toAssocs)
         {
-            if (reference.equals(toAssoc.getTypeQName()) == true)
+            if (reference.equals(toAssoc.getTypeQName()))
             {
                 NodeRef nodeRef = toAssoc.getSourceRef();
                 doEventComplete(nodeRef);
@@ -246,7 +243,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
             {
                 RecordsManagementEvent rmEvent = recordsManagementEventService.getEvent(event.getEventName());
                 if (event.isEventComplete() == false &&
-                    rmEvent.getType().equals(getName()) == true)
+                    rmEvent.getType().equals(getName()))
                 {
                     // Complete the event
                     Map<String, Serializable> params = new HashMap<String, Serializable>(3);

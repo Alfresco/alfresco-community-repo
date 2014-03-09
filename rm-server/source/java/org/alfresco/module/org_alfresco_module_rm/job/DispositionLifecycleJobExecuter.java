@@ -41,11 +41,11 @@ import org.apache.commons.logging.LogFactory;
 /**
  * The Disposition Lifecycle Job Finds all disposition action nodes which are
  * for "retain" or "cutOff" actions Where asOf > now OR
- * dispositionEventsEligible = true; 
- * 
+ * dispositionEventsEligible = true;
+ *
  * Runs the cut off or retain action for
- * elligible records. 
- * 
+ * elligible records.
+ *
  * @author mrogers
  */
 public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecuter
@@ -53,26 +53,26 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     private static Log logger = LogFactory.getLog(DispositionLifecycleJobExecuter.class);
 
     private RecordsManagementActionService recordsManagementActionService;
-    
+
     private NodeService nodeService;
-    
+
     private SearchService searchService;
-    
+
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
         this.recordsManagementActionService = recordsManagementActionService;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#execute()
      */
@@ -81,75 +81,72 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         try
         {
             logger.debug("Job Starting");
-           
+
             StringBuilder sb = new StringBuilder();
             sb.append("+TYPE:\"rma:dispositionAction\" ");
             sb.append("+(@rma\\:dispositionAction:(\"cutoff\" OR \"retain\"))");
             sb.append("+ISNULL:\"rma:dispositionActionCompletedAt\" ");
             sb.append("+( ");
-            sb.append("@rma\\:dispositionEventsEligible:true "); 
+            sb.append("@rma\\:dispositionEventsEligible:true ");
             sb.append("OR @rma\\:dispositionAsOf:[MIN TO NOW] ");
             sb.append(") ");
-    
+
             String query = sb.toString();
-    
+
             ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
                         SearchService.LANGUAGE_LUCENE, query);
             List<NodeRef> resultNodes = results.getNodeRefs();
             results.close();
-    
-    
+
+
             for (NodeRef node : resultNodes)
             {
                 final NodeRef currentNode = node;
-                
+
                 RetryingTransactionCallback<Boolean> processTranCB = new RetryingTransactionCallback<Boolean>()
                 {
                     public Boolean execute() throws Throwable
                     {
                         final String dispAction = (String) nodeService.getProperty(currentNode,
                                     RecordsManagementModel.PROP_DISPOSITION_ACTION);
-    
+
                         // Run "retain" and "cutoff" actions.
-    
-                        if (dispAction != null)
+
+                        if (dispAction != null && (dispAction.equalsIgnoreCase("cutoff") ||
+                                dispAction.equalsIgnoreCase("retain")))
                         {
-                            if (dispAction.equalsIgnoreCase("cutoff") ||
-                                dispAction.equalsIgnoreCase("retain"))
+                            ChildAssociationRef parent = nodeService.getPrimaryParent(currentNode);
+                            if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
                             {
-                                ChildAssociationRef parent = nodeService.getPrimaryParent(currentNode);
-                                if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
+                                Map<String, Serializable> props = new HashMap<String, Serializable>(1);
+                                props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK, Boolean.FALSE);
+                                recordsManagementActionService.executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
+                                if (logger.isDebugEnabled())
                                 {
-                                    Map<String, Serializable> props = new HashMap<String, Serializable>(1);
-                                    props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK, Boolean.FALSE);
-                                    recordsManagementActionService.executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
-                                    if (logger.isDebugEnabled())
-                                    {
-                                        logger.debug("Processed action: " + dispAction + "on" + parent);
-                                    }
+                                    logger.debug("Processed action: " + dispAction + "on" + parent);
                                 }
-                                return null;
                             }
+                            return null;
                         }
                         return Boolean.TRUE;
                     }
                 };
-                
+
                 /**
                  * Now do the work, one action in each transaction
                  */
 
                 if (nodeService.exists(currentNode) == false)
                 {
-                    retryingTransactionHelper.doInTransaction(processTranCB);                    
+                    retryingTransactionHelper.doInTransaction(processTranCB);
                 }
             }
-     
+
             logger.debug("Job Finished");
         }
         catch (AlfrescoRuntimeException exception)
         {
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug(exception);
             }

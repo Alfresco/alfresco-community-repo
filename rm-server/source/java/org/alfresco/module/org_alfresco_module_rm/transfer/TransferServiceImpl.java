@@ -236,12 +236,9 @@ public class TransferServiceImpl extends ServiceBaseImpl implements TransferServ
         nodeService.deleteNode(nodeRef);
 
         NodeRef transferNodeRef = (NodeRef) AlfrescoTransactionSupport.getResource(KEY_TRANSFER_NODEREF);
-        if (transferNodeRef != null)
+        if (transferNodeRef != null && transferNodeRef.equals(nodeRef))
         {
-            if (transferNodeRef.equals(nodeRef))
-            {
-                AlfrescoTransactionSupport.bindResource(KEY_TRANSFER_NODEREF, null);
-            }
+            AlfrescoTransactionSupport.bindResource(KEY_TRANSFER_NODEREF, null);
         }
     }
 

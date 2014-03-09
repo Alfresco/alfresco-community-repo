@@ -93,12 +93,13 @@ public class CreateCapability extends DeclarativeCapability
         {
             if ((assocType == null) || assocType.equals(ContentModel.ASSOC_CONTAINS) == false)
             {
-                if(linkee == null &&
-                        recordService.isRecord(destination) &&
-                        recordService.isDeclared(destination) == false &&
-                        permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
+                if (linkee == null)
                 {
-                    return AccessDecisionVoter.ACCESS_GRANTED;
+                    if (recordService.isRecord(destination) && recordService.isDeclared(destination) == false &&
+                            permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
+                    {
+                        return AccessDecisionVoter.ACCESS_GRANTED;
+                    }
                 }
                 else
                 {

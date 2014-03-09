@@ -46,7 +46,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
 {
-	private static final String REFERENCE_TYPE = "referenceType";
+    private static final String REFERENCE_TYPE = "referenceType";
     private static final String REF_ID = "refId";
     private static final String LABEL = "label";
     private static final String SOURCE = "source";
@@ -75,52 +75,51 @@ public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String refId = templateVars.get(REF_ID);
 
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Getting custom reference definitions with refId: " + refId);
+        }
 
-    	if (logger.isDebugEnabled())
-    	{
-    		logger.debug("Getting custom reference definitions with refId: " + String.valueOf(refId));
-    	}
+        Map<QName, AssociationDefinition> currentCustomRefs = rmAdminService.getCustomReferenceDefinitions();
 
-    	Map<QName, AssociationDefinition> currentCustomRefs = rmAdminService.getCustomReferenceDefinitions();
-
-    	// If refId has been provided then this is a request for a single custom-ref-defn.
+        // If refId has been provided then this is a request for a single custom-ref-defn.
         // else it is a request for them all.
         if (refId != null)
         {
             QName qn = rmAdminService.getQNameForClientId(refId);
 
-        	AssociationDefinition assDef = currentCustomRefs.get(qn);
-        	if (assDef == null)
-        	{
-        		StringBuilder msg = new StringBuilder();
-        		msg.append("Unable to find reference: ").append(refId);
-        		if (logger.isDebugEnabled())
-        		{
-        		    logger.debug(msg.toString());
-        		}
-				throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND,
-                		msg.toString());
-        	}
+            AssociationDefinition assDef = currentCustomRefs.get(qn);
+            if (assDef == null)
+            {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Unable to find reference: ").append(refId);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(msg.toString());
+                }
+                throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND,
+                        msg.toString());
+            }
 
-        	currentCustomRefs = new HashMap<QName, AssociationDefinition>(1);
-        	currentCustomRefs.put(qn, assDef);
+            currentCustomRefs = new HashMap<QName, AssociationDefinition>(1);
+            currentCustomRefs.put(qn, assDef);
         }
 
         List<Map<String, String>> listOfReferenceData = new ArrayList<Map<String, String>>();
 
         for (Entry<QName, AssociationDefinition> entry : currentCustomRefs.entrySet())
         {
-    		Map<String, String> data = new HashMap<String, String>();
+            Map<String, String> data = new HashMap<String, String>();
 
-    		AssociationDefinition nextValue = entry.getValue();
+            AssociationDefinition nextValue = entry.getValue();
 
-    		CustomReferenceType referenceType = nextValue instanceof ChildAssociationDefinition ?
-    				CustomReferenceType.PARENT_CHILD : CustomReferenceType.BIDIRECTIONAL;
+            CustomReferenceType referenceType = nextValue instanceof ChildAssociationDefinition ?
+                    CustomReferenceType.PARENT_CHILD : CustomReferenceType.BIDIRECTIONAL;
 
-			data.put(REFERENCE_TYPE, referenceType.toString());
+            data.put(REFERENCE_TYPE, referenceType.toString());
 
-			// It is the title which stores either the label, or the source and target.
-			String nextTitle = nextValue.getTitle(dictionaryService);
+            // It is the title which stores either the label, or the source and target.
+            String nextTitle = nextValue.getTitle(dictionaryService);
             if (CustomReferenceType.PARENT_CHILD.equals(referenceType))
             {
                 if (nextTitle != null)
@@ -144,15 +143,15 @@ public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
                 throw new WebScriptException("Unsupported custom reference type: " + referenceType);
             }
 
-    		listOfReferenceData.add(data);
+            listOfReferenceData.add(data);
         }
 
-    	if (logger.isDebugEnabled())
-    	{
-    		logger.debug("Retrieved custom reference definitions: " + listOfReferenceData.size());
-    	}
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Retrieved custom reference definitions: " + listOfReferenceData.size());
+        }
 
-    	model.put(CUSTOM_REFS, listOfReferenceData);
+        model.put(CUSTOM_REFS, listOfReferenceData);
 
         return model;
     }

@@ -101,7 +101,6 @@
    <bean id="rma.record" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.RecordAspect" parent="rm.baseBehaviour">
         <property name="scriptService" ref="ScriptService" />
         <property name="extendedSecurityService" ref="ExtendedSecurityService" />
-        <property name="recordService" ref="RecordService" />
    </bean>
 
    <bean id="rma.recordComponentIdentifier" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.RecordComponentIdentifierAspect" parent="rm.baseBehaviour">

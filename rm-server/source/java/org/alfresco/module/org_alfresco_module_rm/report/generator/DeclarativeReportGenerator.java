@@ -32,7 +32,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.util.UrlUtil;
@@ -64,9 +63,6 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
 
     /** template service */
     protected TemplateService templateService;
-
-    /** node service */
-    protected NodeService nodeService;
 
     /** repository helper */
     protected Repository repository;
@@ -107,14 +103,6 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
-    }
-
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 
     /**

@@ -24,12 +24,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -43,44 +40,11 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 public class ReportServiceImpl extends ServiceBaseImpl
                                implements ReportService
 {
-    /** file folder service */
-    protected FileFolderService fileFolderService;
-
-    /** file plan service */
-    protected FilePlanService filePlanService;
-
-    /** content service */
-    protected ContentService contentService;
-
     /** record service */
     protected RecordService recordService;
 
     /** report generator registry */
     private Map<QName, ReportGenerator> registry = new HashMap<QName, ReportGenerator>();
-
-    /**
-     * @param fileFolderService file folder service
-     */
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
-
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
-
-    /**
-     * @param contentService    content service
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
-    }
 
     /**
      * @param recordService record service

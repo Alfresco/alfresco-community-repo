@@ -28,7 +28,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -48,7 +47,7 @@ import org.alfresco.util.PropertyMap;
 
 /**
  * Behaviour associated with the RM Site type
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -65,40 +64,28 @@ public class RmSiteType extends    BaseBehaviourBean
 	public static final String COMPONENT_DOCUMENT_LIBRARY = "documentLibrary";
     public static final String DEFAULT_SITE_NAME = "rm";
     public static final QName DEFAULT_FILE_PLAN_TYPE = TYPE_FILE_PLAN;
-	
-    /** Policy component */
-    protected PolicyComponent policyComponent;
-    
+
     /** Site service */
     protected SiteService siteService;
-    
+
     /** Record Management Search Service */
     protected RecordsManagementSearchService recordsManagementSearchService;
-    
+
     /** Capability service */
     protected CapabilityService capabilityService;
-    
+
     /** Map of file plan type's key'ed by corresponding site types */
     protected Map<QName, QName> mapFilePlanType = new HashMap<QName, QName>(3);
-    
-    /**
-     * Set the policy component
-     * @param policyComponent   policy component
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
-    
+
     /**
      * Set the site service
      * @param siteService	site service
      */
-    public void setSiteService(SiteService siteService) 
+    public void setSiteService(SiteService siteService)
     {
 		this.siteService = siteService;
 	}
-    
+
     /**
      * @param recordsManagementSearchService    records management search service
      */
@@ -106,7 +93,7 @@ public class RmSiteType extends    BaseBehaviourBean
     {
         this.recordsManagementSearchService = recordsManagementSearchService;
     }
-    
+
     /**
      * @param capabilityService capability service
      */
@@ -114,10 +101,10 @@ public class RmSiteType extends    BaseBehaviourBean
     {
         this.capabilityService = capabilityService;
     }
-    
+
     /**
      * Registers a file plan type for a specific site type.
-     * 
+     *
      * @param siteType		siteType		sub-type of rma:rmsite
      * @param filePlanType  filePlanType	sub-type of rma:filePlan
      * @since 2.2
@@ -126,21 +113,21 @@ public class RmSiteType extends    BaseBehaviourBean
     {
     	ParameterCheck.mandatory("siteType", siteType);
     	ParameterCheck.mandatory("filePlanType", filePlanType);
-    	
+
     	// check that the registered site type is a subtype of rma:rmsite
     	if (dictionaryService.isSubClass(siteType, TYPE_RM_SITE) == false)
     	{
     		throw new AlfrescoRuntimeException(
     				"Can't register site type, because site type is not a sub type of rma:rmsite (siteType=" + siteType.toString() + ")");
     	}
-    	
+
     	// check that the registered file plan type is a sub type of rma:filePlan
     	if (dictionaryService.isSubClass(filePlanType, TYPE_FILE_PLAN) == false)
     	{
     		throw new AlfrescoRuntimeException(
     				"Can't register file plan type, because site type is not a sub type of rma:filePlan (filePlanType=" + filePlanType.toString() + ")");
     	}
-    	
+
     	// add site and file plan types to map
     	mapFilePlanType.put(siteType, filePlanType);
     }
@@ -154,17 +141,17 @@ public class RmSiteType extends    BaseBehaviourBean
 	        kind = BehaviourKind.CLASS,
 	        notificationFrequency = NotificationFrequency.FIRST_EVENT
 	)
-	public void onCreateNode(ChildAssociationRef childAssocRef) 
-	{    
+	public void onCreateNode(ChildAssociationRef childAssocRef)
+	{
 		final NodeRef rmSite = childAssocRef.getChildRef();
-        
+
         // Do not execute behaviour if this has been created in the archive store
         if(rmSite.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE) == true)
         {
             // This is not the spaces store - probably the archive store
             return;
         }
-        
+
         if (nodeService.exists(rmSite) == true)
         {
             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
@@ -173,10 +160,10 @@ public class RmSiteType extends    BaseBehaviourBean
                 {
                 	SiteInfo siteInfo = siteService.getSite(rmSite);
                 	if (siteInfo != null)
-                	{	                
+                	{
 	                	// Create the file plan component
 	                	siteService.createContainer(siteInfo.getShortName(), COMPONENT_DOCUMENT_LIBRARY, getFilePlanType(siteInfo), null);
-	                	
+
 	                	// Add the reports
 	                	recordsManagementSearchService.addReports(siteInfo.getShortName());
                 	}
@@ -185,10 +172,10 @@ public class RmSiteType extends    BaseBehaviourBean
             }, AuthenticationUtil.getAdminUserName());
         }
 	}
-	
+
 	/**
 	 * Get the file plan type for the given site.
-	 * 
+	 *
 	 * @param siteInfo	site info
 	 * @return QName	file plan type to create as a container
 	 * @since 2.2
@@ -196,25 +183,25 @@ public class RmSiteType extends    BaseBehaviourBean
 	private QName getFilePlanType(SiteInfo siteInfo)
 	{
 		ParameterCheck.mandatory("siteInfo", siteInfo);
-		
+
 		// set default file plan
 		QName result = DEFAULT_FILE_PLAN_TYPE;
-		
+
 		// check to see if there is an 'override' for the file plan type given the site type
 		QName siteType = nodeService.getType(siteInfo.getNodeRef());
 		if (mapFilePlanType.containsKey(siteType) == true)
 		{
 			result = mapFilePlanType.get(siteType);
 		}
-		
+
 		return result;
 	}
 
 	/**
 	 * Ensure that the visibility of a RM site can not be changed to anything but public.
-	 * 
+	 *
 	 * TODO support other site visibilities
-	 * 
+	 *
 	 * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
 	 */
     @Behaviour
@@ -226,10 +213,10 @@ public class RmSiteType extends    BaseBehaviourBean
     {
         if (nodeService.exists(nodeRef) == true)
         {
-            Map<QName, Serializable> changed = PropertyMap.getChangedProperties(before, after);   
+            Map<QName, Serializable> changed = PropertyMap.getChangedProperties(before, after);
             if (changed.containsKey(SiteModel.PROP_SITE_VISIBILITY) == true &&
                 changed.get(SiteModel.PROP_SITE_VISIBILITY) != null &&
-                SiteVisibility.PUBLIC.equals(changed.get(SiteModel.PROP_SITE_VISIBILITY)) == false)                
+                SiteVisibility.PUBLIC.equals(changed.get(SiteModel.PROP_SITE_VISIBILITY)) == false)
             {
                 // we do not current support non-public RM sites
                 throw new AlfrescoRuntimeException("The records management site must have public visibility.  It can't be changed to " + changed.get(SiteModel.PROP_SITE_VISIBILITY));
@@ -251,16 +238,16 @@ public class RmSiteType extends    BaseBehaviourBean
         if (siteInfo != null)
         {
             // grab the file plan for the RM site
-            NodeRef filePlan = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>() 
+            NodeRef filePlan = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
             {
                 @Override
                 public NodeRef doWork() throws Exception
                 {
                     return siteService.getContainer(siteInfo.getShortName(), COMPONENT_DOCUMENT_LIBRARY);
                 }
-                
+
             });
-            
+
             if (filePlan != null)
             {
                 // determine whether the current user has delete capability on the file plan node

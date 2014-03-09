@@ -586,7 +586,6 @@
          class="org.alfresco.module.org_alfresco_module_rm.vital.BroadcastVitalRecordDefinitionAction"
          parent="rmAction">
       <property name="filePlanService" ref="FilePlanService"/>
-      <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
       <property name="auditable" value="false"/>
    </bean>
 

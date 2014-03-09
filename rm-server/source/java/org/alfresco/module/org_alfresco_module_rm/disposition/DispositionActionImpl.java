@@ -36,25 +36,25 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 /**
  * @author Roy Wetherall
  */
-public class DispositionActionImpl implements DispositionAction, 
+public class DispositionActionImpl implements DispositionAction,
                                               RecordsManagementModel
 {
     private RecordsManagementServiceRegistry services;
     private NodeRef dispositionNodeRef;
-    private DispositionActionDefinition dispositionActionDefinition;    
-    
+    private DispositionActionDefinition dispositionActionDefinition;
+
     /**
-     * Constructor 
-     * 
+     * Constructor
+     *
      * @param services
      * @param dispositionActionNodeRef
      */
-    public DispositionActionImpl(RecordsManagementServiceRegistry services, NodeRef dispositionActionNodeRef)    
+    public DispositionActionImpl(RecordsManagementServiceRegistry services, NodeRef dispositionActionNodeRef)
     {
         this.services = services;
         this.dispositionNodeRef = dispositionActionNodeRef;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction#getDispositionActionDefinition()
      */
@@ -64,13 +64,13 @@ public class DispositionActionImpl implements DispositionAction,
         {
             // Get the current action
             String id = (String)services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_ID);
-            
+
             // Get the disposition instructions for the owning node
             NodeRef recordNodeRef = this.services.getNodeService().getPrimaryParent(this.dispositionNodeRef).getParentRef();
             if (recordNodeRef != null)
             {
                 DispositionSchedule ds = this.services.getDispositionService().getDispositionSchedule(recordNodeRef);
-            
+
                 if (ds != null)
                 {
                     // Get the disposition action definition
@@ -78,9 +78,9 @@ public class DispositionActionImpl implements DispositionAction,
                 }
             }
         }
-        
+
         return this.dispositionActionDefinition;
-        
+
     }
 
     /**
@@ -90,7 +90,7 @@ public class DispositionActionImpl implements DispositionAction,
     {
        return this.dispositionNodeRef;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction#getLabel()
      */
@@ -98,14 +98,14 @@ public class DispositionActionImpl implements DispositionAction,
     {
         String name = getName();
         String label = name;
-        
+
         // get the disposition action from the RM action service
         RecordsManagementAction action = this.services.getRecordsManagementActionService().getDispositionAction(name);
         if (action != null)
         {
             label = action.getLabel();
         }
-        
+
         return label;
     }
 
@@ -116,7 +116,7 @@ public class DispositionActionImpl implements DispositionAction,
     {
         return (String)this.services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION_ID);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction#getName()
      */
@@ -124,7 +124,7 @@ public class DispositionActionImpl implements DispositionAction,
     {
         return (String)this.services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_ACTION);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction#getAsOfDate()
      */
@@ -132,7 +132,7 @@ public class DispositionActionImpl implements DispositionAction,
     {
         return (Date)this.services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_AS_OF);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction#isEventsEligible()
      */
@@ -140,7 +140,7 @@ public class DispositionActionImpl implements DispositionAction,
     {
         return ((Boolean)this.services.getNodeService().getProperty(this.dispositionNodeRef, PROP_DISPOSITION_EVENTS_ELIGIBLE)).booleanValue();
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction#getCompletedAt()
      */
@@ -179,16 +179,16 @@ public class DispositionActionImpl implements DispositionAction,
     public List<EventCompletionDetails> getEventCompletionDetails()
     {
         List<ChildAssociationRef> assocs = this.services.getNodeService().getChildAssocs(
-                                                        this.dispositionNodeRef, 
-                                                        ASSOC_EVENT_EXECUTIONS, 
+                                                        this.dispositionNodeRef,
+                                                        ASSOC_EVENT_EXECUTIONS,
                                                         RegexQNamePattern.MATCH_ALL);
         List<EventCompletionDetails> result = new ArrayList<EventCompletionDetails>(assocs.size());
         for (ChildAssociationRef assoc : assocs)
         {
-            Map<QName, Serializable> props = this.services.getNodeService().getProperties(assoc.getChildRef()); 
-            String eventName = (String)props.get(PROP_EVENT_EXECUTION_NAME); 
+            Map<QName, Serializable> props = this.services.getNodeService().getProperties(assoc.getChildRef());
+            String eventName = (String)props.get(PROP_EVENT_EXECUTION_NAME);
             EventCompletionDetails ecd = new EventCompletionDetails(
-                    assoc.getChildRef(), eventName, 
+                    assoc.getChildRef(), eventName,
                     this.services.getRecordsManagementEventService().getEvent(eventName).getDisplayLabel(),
                     getBooleanValue(props.get(PROP_EVENT_EXECUTION_AUTOMATIC), false),
                     getBooleanValue(props.get(PROP_EVENT_EXECUTION_COMPLETE), false),
@@ -196,13 +196,13 @@ public class DispositionActionImpl implements DispositionAction,
                     (String)props.get(PROP_EVENT_EXECUTION_COMPLETED_BY));
             result.add(ecd);
         }
-        
+
         return result;
     }
-    
+
     /**
      * Helper method to deal with boolean values
-     * 
+     *
      * @param value
      * @param defaultValue
      * @return
@@ -210,7 +210,7 @@ public class DispositionActionImpl implements DispositionAction,
     private boolean getBooleanValue(Object value, boolean defaultValue)
     {
         boolean result = defaultValue;
-        if (value != null && value instanceof Boolean)
+        if (value instanceof Boolean)
         {
             result = ((Boolean)value).booleanValue();
         }

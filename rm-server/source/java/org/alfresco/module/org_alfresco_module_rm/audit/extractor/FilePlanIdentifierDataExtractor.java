@@ -29,7 +29,7 @@ import org.alfresco.service.cmr.repository.NodeService;
  * An extractor that gets a node's {@link RecordsManagementModel#PROP_IDENTIFIER identifier} property.
  * This will only extract data if the node is a
  * {@link RecordsManagementModel#ASPECT_RECORD_COMPONENT_ID Record component identifier}.
- * 
+ *
  * @author Derek Hulley
  * @since 3.2
  */
@@ -51,7 +51,7 @@ public final class FilePlanIdentifierDataExtractor extends AbstractDataExtractor
      */
     public boolean isSupported(Serializable data)
     {
-        if (data == null || !(data instanceof NodeRef))
+        if (!(data instanceof NodeRef))
         {
             return false;
         }
@@ -61,9 +61,9 @@ public final class FilePlanIdentifierDataExtractor extends AbstractDataExtractor
     public Serializable extractData(Serializable value) throws Throwable
     {
         NodeRef nodeRef = (NodeRef) value;
-        
+
         String identifier = (String) nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_IDENTIFIER);
-        
+
         // Done
         return identifier;
     }

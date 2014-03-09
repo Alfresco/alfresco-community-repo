@@ -34,7 +34,7 @@ import org.springframework.context.ApplicationContextAware;
 
 /**
  * Extended action service implementation.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -42,7 +42,7 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
 {
     /** File plan service */
     private FilePlanService filePlanService;
-    
+
     /** Application context */
     private ApplicationContext extendedApplicationContext;
 
@@ -54,15 +54,15 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
         super.setApplicationContext(applicationContext);
         extendedApplicationContext = applicationContext;
     }
-    
+
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
-    
+
     /**
      * @see org.alfresco.repo.action.ActionServiceImpl#getActionConditionDefinition(java.lang.String)
      */
@@ -71,7 +71,7 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
         // get direct access to action condition definition (i.e. ignoring public flag of executer)
         ActionConditionDefinition definition = null;
         Object bean = extendedApplicationContext.getBean(name);
-        if (bean != null && bean instanceof ActionConditionEvaluator)
+        if (bean instanceof ActionConditionEvaluator)
         {
             ActionConditionEvaluator evaluator = (ActionConditionEvaluator) bean;
             definition = evaluator.getActionConditionDefintion();
@@ -86,10 +86,10 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
     public List<ActionDefinition> getActionDefinitions(NodeRef nodeRef)
     {
         List<ActionDefinition> result = null;
-        
+
         // first use the base implementation to get the list of action definitions
         List<ActionDefinition> actionDefinitions = super.getActionDefinitions(nodeRef);
-        
+
         if (nodeRef == null)
         {
             // nothing to filter
@@ -100,21 +100,21 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
             // get the file component kind of the node reference
             FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
             result = new ArrayList<ActionDefinition>(actionDefinitions.size());
-            
+
             // check each action definition
             for (ActionDefinition actionDefinition : actionDefinitions)
             {
                 if (actionDefinition instanceof RecordsManagementActionDefinition)
                 {
                     if (kind != null)
-                    {                        
+                    {
                         Set<FilePlanComponentKind> applicableKinds = ((RecordsManagementActionDefinition)actionDefinition).getApplicableKinds();
                         if (applicableKinds == null || applicableKinds.size() == 0 || applicableKinds.contains(kind))
                         {
                             // an RM action can only act on a RM artifact
                             result.add(actionDefinition);
                         }
-                    }  
+                    }
                 }
                 else
                 {
@@ -122,11 +122,11 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
                     {
                         // a non-RM action can only act on a non-RM artifact
                         result.add(actionDefinition);
-                    }                    
+                    }
                 }
-            }            
+            }
         }
-        
+
         return result;
     }
 }

@@ -27,25 +27,18 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Update capability implementation.
- * 
+ *
  * @author andyh
  */
 public class UpdateCapability extends DeclarativeCompositeCapability
 {
-    @Override
-    public int evaluate(NodeRef nodeRef)
-    {
-        // TODO Auto-generated method stub
-        return super.evaluate(nodeRef);
-    }
-    
     /**
      * Evaluate capability
-     * 
+     *
      * @param nodeRef       node reference
      * @param aspectQName   aspect qname
      * @param properties    property values
-     * @return 
+     * @return
      */
     public int evaluate(NodeRef nodeRef, QName aspectQName, Map<QName, Serializable> properties)
     {

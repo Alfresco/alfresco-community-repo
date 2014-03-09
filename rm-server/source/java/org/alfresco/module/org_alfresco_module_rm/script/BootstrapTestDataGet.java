@@ -75,7 +75,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
     private static final String ARG_IMPORT = "import";
 
     private static final String XML_IMPORT = "alfresco/module/org_alfresco_module_rm/dod5015/DODExampleFilePlan.xml";
-    private static final String charsetName = "UTF-8";
+    private static final String CHARSET_NAME = "UTF-8";
 
     private static final StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
@@ -193,11 +193,11 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
             Reader viewReader = null;
             try
             {
-               viewReader = new InputStreamReader(is, charsetName);
+               viewReader = new InputStreamReader(is, CHARSET_NAME);
             }
             catch (UnsupportedEncodingException error)
             {
-               throw new AlfrescoRuntimeException("The Character Encoding '" + charsetName + "' is not supported.", error);
+               throw new AlfrescoRuntimeException("The Character Encoding '" + CHARSET_NAME + "' is not supported.", error);
             }
             Location location = new Location(filePlan);
             importerService.importView(viewReader, location, null, null);

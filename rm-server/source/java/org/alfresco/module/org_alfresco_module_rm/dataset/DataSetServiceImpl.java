@@ -55,7 +55,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     private static final StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
     /** Charset name */
-    private static final String charsetName = "UTF-8";
+    private static final String CHARSET_NAME = "UTF-8";
 
     /** Importer service */
     private ImporterService importerService;
@@ -252,7 +252,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
                     + "' import file could not be found!"); }
 
             // Import view
-            Reader viewReader = new InputStreamReader(is, charsetName);
+            Reader viewReader = new InputStreamReader(is, CHARSET_NAME);
             Location location = new Location(filePlan);
             importerService.importView(viewReader, location, null, null);
 

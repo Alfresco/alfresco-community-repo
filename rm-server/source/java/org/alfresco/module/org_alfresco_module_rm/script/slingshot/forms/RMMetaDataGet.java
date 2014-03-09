@@ -40,7 +40,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * RM metadata used by form extension
- * 
+ *
  * @author Roy Wetherall
  */
 public class RMMetaDataGet extends DeclarativeWebScript
@@ -49,22 +49,22 @@ public class RMMetaDataGet extends DeclarativeWebScript
     private static final String PARAM_NODEREF = "noderef";
     private static final String PARAM_TYPE = "type";
     private static final String PARAM_EXTENDED = "extended";
-    
+
     /** NodeRef pattern */
-    private static final Pattern nodeRefPattern = Pattern.compile(".+://.+/.+");
-    
+    private static final Pattern NODE_REF_PATTERN = Pattern.compile(".+://.+/.+");
+
     /** QName pattern */
-    private static final Pattern qnamePattern = Pattern.compile(".+:[^=,]+");
-    
+    private static final Pattern QNAME_PATTERN = Pattern.compile(".+:[^=,]+");
+
     /** Namespace service */
     private NamespaceService namespaceService;
-    
+
     /** Node service */
     private NodeService nodeService;
-    
+
     /** File Plan Service */
     private FilePlanService filePlanService;
-    
+
     /**
      * @param namespaceService  namespace service
      */
@@ -72,15 +72,15 @@ public class RMMetaDataGet extends DeclarativeWebScript
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
-    
+
     /**
      * @param nodeService   node service
      */
@@ -88,7 +88,7 @@ public class RMMetaDataGet extends DeclarativeWebScript
     {
         this.nodeService = nodeService;
     }
-    
+
     /*
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
@@ -100,15 +100,15 @@ public class RMMetaDataGet extends DeclarativeWebScript
 
         boolean extended = false;
         String result = "NONE";
-        
-        // Get the nodeRef and confirm it is valid        
+
+        // Get the nodeRef and confirm it is valid
         String nodeRef = req.getParameter(PARAM_NODEREF);
         if (nodeRef == null || nodeRef.length() == 0)
         {
             String type = req.getParameter(PARAM_TYPE);
             if (type != null && type.length() != 0 && type.indexOf(':') != -1)
             {
-            	Matcher m = qnamePattern.matcher(type);
+            	Matcher m = QNAME_PATTERN.matcher(type);
             	if (m.matches() == true)
             	{
 	                QName qname = QName.createQName(type, namespaceService);
@@ -118,30 +118,30 @@ public class RMMetaDataGet extends DeclarativeWebScript
 	                    result = kind.toString();
 	                }
             	}
-            }          
+            }
         }
         else
         {
             // quick test before running slow match for full NodeRef pattern
             if (nodeRef.indexOf(':') != -1)
             {
-                Matcher m = nodeRefPattern.matcher(nodeRef);
+                Matcher m = NODE_REF_PATTERN.matcher(nodeRef);
                 if (m.matches())
                 {
                     NodeRef nodeRefObj = new NodeRef(nodeRef);
-                    
+
                     FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRefObj);
                     if (kind != null)
                     {
                         result = kind.toString();
                     }
-                    
+
                     String extendedValue = req.getParameter(PARAM_EXTENDED);
                     if (extendedValue != null && extendedValue.length() != 0)
                     {
                         extended = Boolean.parseBoolean(extendedValue);
                         if (extended == true)
-                        {                        
+                        {
                             // get the aspects of the node
                             model.put("aspects", getAspects(nodeRefObj));
                         }
@@ -149,15 +149,15 @@ public class RMMetaDataGet extends DeclarativeWebScript
                 }
             }
         }
-        
+
         model.put("kind", result);
         model.put("extended", extended);
         return model;
     }
-    
+
     /**
      * Gets the current node aspects
-     * 
+     *
      * @return node aspects
      */
     public List<Aspect> getAspects(NodeRef nodeRef)
@@ -170,31 +170,31 @@ public class RMMetaDataGet extends DeclarativeWebScript
         }
         return aspects;
     }
-    
+
     /**
      * Qname wrapper class
      */
     public class QNameBean implements Serializable
     {
         private static final long serialVersionUID = 6982292337846270774L;
-        
+
         protected QName name;
 
         public QNameBean(QName name)
         {
             this.name = name;
         }
-        
+
         public String getName()
         {
             return name.toString();
         }
-        
+
         public String getPrefixedName()
         {
             return name.toPrefixString(namespaceService);
         }
-        
+
         public String toString()
         {
             return getName();

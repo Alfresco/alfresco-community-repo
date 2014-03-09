@@ -148,8 +148,8 @@ public class CustomisableGet extends DeclarativeWebScript
         @Override
         public int hashCode()
         {
-            int var_code = (null == name ? 0 : name.hashCode());
-            return 31 + var_code;
+            int varCode = (null == name ? 0 : name.hashCode());
+            return 31 + varCode;
         }
 
         @Override

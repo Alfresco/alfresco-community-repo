@@ -74,50 +74,48 @@ public class FileToAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) == true &&
-            freezeService.isFrozen(actionedUponNodeRef) == false)
+        if (nodeService.exists(actionedUponNodeRef) &&
+            freezeService.isFrozen(actionedUponNodeRef) == false &&
+            recordService.isFiled(actionedUponNodeRef) == false)
         {
-            if (recordService.isFiled(actionedUponNodeRef) == false)
+            // first look to see if the destination record folder has been specified
+            NodeRef recordFolder = (NodeRef)action.getParameterValue(PARAM_DESTINATION_RECORD_FOLDER);
+            if (recordFolder == null)
             {
-                // first look to see if the destination record folder has been specified
-                NodeRef recordFolder = (NodeRef)action.getParameterValue(PARAM_DESTINATION_RECORD_FOLDER);
-                if (recordFolder == null)
-                {
-                    // get the reference to the record folder based on the relative path
-                    recordFolder = createOrResolveRecordFolder(action, actionedUponNodeRef);
-                }
+                // get the reference to the record folder based on the relative path
+                recordFolder = createOrResolveRecordFolder(action, actionedUponNodeRef);
+            }
 
-                if (recordFolder == null)
-                {
-                    throw new AlfrescoRuntimeException("Unable to execute file to action, because the destination record folder could not be determined.");
-                }
+            if (recordFolder == null)
+            {
+                throw new AlfrescoRuntimeException("Unable to execute file to action, because the destination record folder could not be determined.");
+            }
 
-                if (recordFolderService.isRecordFolder(recordFolder) == true)
-                {
-                    final NodeRef finalRecordFolder = recordFolder;
+            if (recordFolderService.isRecordFolder(recordFolder))
+            {
+                final NodeRef finalRecordFolder = recordFolder;
 
-                    AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                {
+                    @Override
+                    public Void doWork() throws Exception
                     {
-                        @Override
-                        public Void doWork() throws Exception
+                        try
                         {
-                            try
-                            {
-                                fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
-                            }
-                            catch (FileNotFoundException fileNotFound)
-                            {
-                               throw new AlfrescoRuntimeException("Unable to execute file to action, because the move operation failed.", fileNotFound);
-                            }
-
-                            return null;
+                            fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
                         }
-                    });
-                }
-                else
-                {
-                    throw new AlfrescoRuntimeException("Unable to execute file to action, becuase the destination was not a record folder.");
-                }
+                        catch (FileNotFoundException fileNotFound)
+                        {
+                            throw new AlfrescoRuntimeException("Unable to execute file to action, because the move operation failed.", fileNotFound);
+                        }
+
+                        return null;
+                    }
+                });
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException("Unable to execute file to action, becuase the destination was not a record folder.");
             }
         }
     }
@@ -164,7 +162,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
 
         if (recordFolder == null)
         {
-            if (create == true)
+            if (create)
             {
                 // get the parent into which we are going to create the new record folder
                 NodeRef parent = resolveParent(context, pathValues, create);
@@ -259,7 +257,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
     {
         NodeRef result = null;
 
-        if (ArrayUtils.isEmpty(pathValues) == true)
+        if (ArrayUtils.isEmpty(pathValues))
         {
             // this should never occur since if the path is empty then the context it the resolution of the
             // path .. the context must already exist

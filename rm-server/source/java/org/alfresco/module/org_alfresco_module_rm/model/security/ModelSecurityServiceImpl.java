@@ -59,7 +59,7 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
 
     /** Namespace service */
     private NamespaceService namespaceService;
-    
+
     /** File plan service */
     private FilePlanService filePlanService;
 
@@ -100,27 +100,27 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService#disable()
      */
     @Override
-    public void disable() 
+    public void disable()
     {
     	getBehaviour("beforeAddAspect").disable();
     	getBehaviour("beforeRemoveAspect").disable();
     	getBehaviour("onUpdateProperties").disable();
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService#enable()
      */
     @Override
-    public void enable() 
+    public void enable()
     {
         getBehaviour("beforeAddAspect").enable();
         getBehaviour("beforeRemoveAspect").enable();
-        getBehaviour("onUpdateProperties").enable();	
+        getBehaviour("onUpdateProperties").enable();
     }
 
     /**
@@ -203,15 +203,15 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
 
         NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
         if (filePlan != null)
-        {            
+        {
             for (Capability capability : artifact.getCapabilities())
             {
-                if (capability.hasPermission(nodeRef).equals(AccessStatus.ALLOWED) == true)
+                if (capability.hasPermission(nodeRef).equals(AccessStatus.ALLOWED))
                 {
                     result = true;
                     break;
                 }
-            }                
+            }
         }
 
         return result;
@@ -277,20 +277,18 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     )
     public void beforeAddAspect(NodeRef nodeRef, QName aspect)
     {
-        if (enabled == true)
-        {
-            if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
+        if (enabled &&
+                AuthenticationUtil.getFullyAuthenticatedUser() != null &&
                 AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
-                isProtectedAspect(aspect) == true &&
-                nodeService.exists(nodeRef) == true &&
+                isProtectedAspect(aspect) &&
+                nodeService.exists(nodeRef) &&
                 canEditProtectedAspect(nodeRef, aspect) == false)
-            {
-                // the user can't edit the protected aspect
-                throw new ModelAccessDeniedException(
-                        "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
-                        " does not have the permission to add the protected aspect " + aspect.toPrefixString(namespaceService) +
-                        " from the node " + nodeRef.toString());
-            }
+        {
+            // the user can't edit the protected aspect
+            throw new ModelAccessDeniedException(
+                    "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
+                    " does not have the permission to add the protected aspect " + aspect.toPrefixString(namespaceService) +
+                    " from the node " + nodeRef.toString());
         }
     }
 
@@ -306,20 +304,18 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     )
     public void beforeRemoveAspect(NodeRef nodeRef, QName aspect)
     {
-        if (enabled == true)
-        {
-            if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
+        if (enabled &&
+                AuthenticationUtil.getFullyAuthenticatedUser() != null &&
                 AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
-                isProtectedAspect(aspect) == true &&
-                nodeService.exists(nodeRef) == true &&
+                isProtectedAspect(aspect) &&
+                nodeService.exists(nodeRef) &&
                 canEditProtectedAspect(nodeRef, aspect) == false)
-            {
-                // the user can't edit the protected aspect
-                throw new ModelAccessDeniedException(
-                        "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
-                        " does not have the permission to remove the protected aspect " + aspect.toPrefixString(namespaceService) +
-                        " from the node " + nodeRef.toString());
-            }
+        {
+            // the user can't edit the protected aspect
+            throw new ModelAccessDeniedException(
+                    "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
+                    " does not have the permission to remove the protected aspect " + aspect.toPrefixString(namespaceService) +
+                    " from the node " + nodeRef.toString());
         }
     }
 
@@ -335,31 +331,29 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        if (enabled == true)
-        {
-            if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
+        if (enabled &&
+                AuthenticationUtil.getFullyAuthenticatedUser() != null &&
                 AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
-                nodeService.exists(nodeRef) == true)
+                nodeService.exists(nodeRef))
+        {
+            for (QName property : after.keySet())
             {
-                for (QName property : after.keySet())
+                if (isProtectedProperty(property))
                 {
-                    if (isProtectedProperty(property) == true)
+                    // always allow if this is the first time we are setting the protected property
+                    if (before == null || before.isEmpty() || before.get(property) == null)
                     {
-                        // always allow if this is the first time we are setting the protected property
-                        if (before == null || before.isEmpty() || before.get(property) == null)
-                        {
-                            return;
-                        }
+                        return;
+                    }
 
-                        if (EqualsHelper.nullSafeEquals(before.get(property), after.get(property)) == false &&
-                           canEditProtectedProperty(nodeRef, property) == false)
-                        {
-                            // the user can't edit the protected property
-                            throw new ModelAccessDeniedException(
+                    if (EqualsHelper.nullSafeEquals(before.get(property), after.get(property)) == false &&
+                            canEditProtectedProperty(nodeRef, property) == false)
+                    {
+                        // the user can't edit the protected property
+                        throw new ModelAccessDeniedException(
                                 "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
                                 " does not have the permission to edit the protected property " + property.toPrefixString(namespaceService) +
                                 " on the node " + nodeRef.toString());
-                        }
                     }
                 }
             }

@@ -98,7 +98,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @since 2.1
  */
 @BehaviourBean
-public class RecordServiceImpl extends BaseBehaviourBean 
+public class RecordServiceImpl extends BaseBehaviourBean
                                implements RecordService,
                                           RecordsManagementModel,
                                           RecordsManagementCustomModel,
@@ -194,7 +194,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
-    
+
     /** policies */
     private ClassPolicyDelegate<BeforeFileRecord> beforeFileRecord;
     private ClassPolicyDelegate<OnFileRecord> onFileRecord;
@@ -320,9 +320,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         // bind policies
         beforeFileRecord = policyComponent.registerClassPolicy(BeforeFileRecord.class);
-        onFileRecord = policyComponent.registerClassPolicy(OnFileRecord.class);        
-        
-        // bind behaviours 
+        onFileRecord = policyComponent.registerClassPolicy(OnFileRecord.class);
+
+        // bind behaviours
         policyComponent.bindAssociationBehaviour(
                 NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
                 TYPE_RECORD_FOLDER,
@@ -332,11 +332,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 NodeServicePolicies.BeforeDeleteChildAssociationPolicy.QNAME,
                 ContentModel.TYPE_FOLDER,
                 ContentModel.ASSOC_CONTAINS,
-                onDeleteDeclaredRecordLink);        
+                onDeleteDeclaredRecordLink);
     }
-    
-    
-    
+
+
+
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
@@ -519,7 +519,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         getBehaviour("onUpdateProperties").enable();
     }
-    
+
     /**
      * Ensure that the user only updates record properties that they have permission to.
      *
@@ -536,56 +536,54 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
             AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
-            nodeService.exists(nodeRef) )
+            nodeService.exists(nodeRef) &&
+            isRecord(nodeRef))
         {
-            if (isRecord(nodeRef) )
+            for (QName property : after.keySet())
             {
-                for (QName property : after.keySet())
+                Serializable beforeValue = null;
+                if (before != null)
                 {
-                    Serializable beforeValue = null;
-                    if (before != null)
-                    {
-                        beforeValue = before.get(property);
-                    }
+                    beforeValue = before.get(property);
+                }
 
-                    Serializable afterValue = null;
-                    if (after != null)
-                    {
-                        afterValue = after.get(property);
-                    }
+                Serializable afterValue = null;
+                if (after != null)
+                {
+                    afterValue = after.get(property);
+                }
 
-                    boolean propertyUnchanged = false;
-                    if (beforeValue != null && afterValue != null &&
+                boolean propertyUnchanged = false;
+                if (beforeValue != null && afterValue != null &&
                         beforeValue instanceof Date && afterValue instanceof Date)
-                    {
-                        // deal with date values
-                        propertyUnchanged = (((Date)beforeValue).compareTo((Date)afterValue) == 0);
-                    }
-                    else
-                    {
-                        // otherwise
-                        propertyUnchanged = EqualsHelper.nullSafeEquals(beforeValue, afterValue);
-                    }
+                {
+                    // deal with date values
+                    propertyUnchanged = (((Date)beforeValue).compareTo((Date)afterValue) == 0);
+                }
+                else
+                {
+                    // otherwise
+                    propertyUnchanged = EqualsHelper.nullSafeEquals(beforeValue, afterValue);
+                }
 
-                    if (propertyUnchanged == false &&
+                if (propertyUnchanged == false &&
                         isPropertyEditable(nodeRef, property) == false)
-                    {
-                        // the user can't edit the record property
-                        throw new ModelAccessDeniedException(
+                {
+                    // the user can't edit the record property
+                    throw new ModelAccessDeniedException(
                             "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
                             " does not have the permission to edit the record property " + property.toString() +
                             " on the node " + nodeRef.toString());
-                    }
                 }
             }
         }
     }
-    
+
     /**
      * Get map containing record metadata aspects.
-     * 
+     *
      * @return  {@link Map}<{@link QName}, {@link Set}<{@link QName}>>  map containing record metadata aspects
-     * 
+     *
      * @since 2.2
      */
     protected Map<QName, Set<QName>> getRecordMetadataAspectsMap()
@@ -594,20 +592,20 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             // create map
             recordMetaDataAspects = new HashMap<QName, Set<QName>>();
-            
+
             // init with legacy aspects
             initRecordMetaDataMap();
         }
-        
+
         return recordMetaDataAspects;
     }
-    
+
     /**
      * Initialises the record meta-data map.
      * <p>
-     * This is here to support backwards compatibility in case an existing 
+     * This is here to support backwards compatibility in case an existing
      * customization (pre 2.2) is still using the record meta-data aspect.
-     * 
+     *
      * @since 2.2
      */
     private void initRecordMetaDataMap()
@@ -636,9 +634,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         ParameterCheck.mandatory("recordMetadataAspect", recordMetadataAspect);
         ParameterCheck.mandatory("filePlanType", filePlanType);
-        
+
         Set<QName> filePlanTypes = null;
-        
+
         if (getRecordMetadataAspectsMap().containsKey(recordMetadataAspect))
         {
             // get the current set of file plan types for this aspect
@@ -650,9 +648,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
             filePlanTypes = new HashSet<QName>(1);
             getRecordMetadataAspectsMap().put(recordMetadataAspect, filePlanTypes);
         }
-        
+
         // add the file plan type
-        filePlanTypes.add(filePlanType);        
+        filePlanTypes.add(filePlanType);
     }
 
     /**
@@ -664,7 +662,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         return getRecordMetadataAspects(TYPE_FILE_PLAN);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetaDataAspects(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -672,16 +670,16 @@ public class RecordServiceImpl extends BaseBehaviourBean
     public Set<QName> getRecordMetadataAspects(NodeRef nodeRef)
     {
         QName filePlanType = TYPE_FILE_PLAN;
-        
+
         if (nodeRef != null)
         {
             NodeRef filePlan = getFilePlan(nodeRef);
             filePlanType = nodeService.getType(filePlan);
         }
-        
+
         return getRecordMetadataAspects(filePlanType);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetadataAspects(org.alfresco.service.namespace.QName)
      */
@@ -689,7 +687,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     public Set<QName> getRecordMetadataAspects(QName filePlanType)
     {
         Set<QName> result = new HashSet<QName>(getRecordMetadataAspectsMap().size());
-        
+
         for (Entry<QName, Set<QName>> entry : getRecordMetadataAspectsMap().entrySet())
         {
             if (entry.getValue().contains(filePlanType))
@@ -697,8 +695,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 result.add(entry.getKey());
             }
         }
-        
-        return result; 
+
+        return result;
     }
 
     /**
@@ -980,7 +978,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             // fire before file record policy
             beforeFileRecord.get(getTypeAndApsects(record)).beforeFileRecord(record);
-            
+
             // check whether this item is already an item or not
             if (isRecord(record) == false)
             {
@@ -994,12 +992,12 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 Calendar fileCalendar = Calendar.getInstance();
                 nodeService.setProperty(record, PROP_DATE_FILED, fileCalendar.getTime());
             }
-            
+
             // file on file record policy
             onFileRecord.get(getTypeAndApsects(record)).onFileRecord(record);
         }
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#hideRecord(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -1189,12 +1187,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
             }
         }
 
-        if (permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA).equals(AccessStatus.ALLOWED))
+        if (permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA).equals(AccessStatus.ALLOWED) &&
+                logger.isDebugEnabled())
         {
-            if (logger.isDebugEnabled() )
-            {
-                logger.debug(" ... user has the edit non record metadata permission on the file plan");
-            }
+            logger.debug(" ... user has the edit non record metadata permission on the file plan");
         }
 
         // END DEBUG ...

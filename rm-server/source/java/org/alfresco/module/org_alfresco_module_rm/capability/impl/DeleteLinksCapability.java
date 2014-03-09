@@ -25,7 +25,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Delete links capability.
- * 
+ *
  * @author Roy Wetherall
  */
 public class DeleteLinksCapability extends DeclarativeCapability
@@ -45,15 +45,15 @@ public class DeleteLinksCapability extends DeclarativeCapability
      */
     public int evaluate(NodeRef source, NodeRef target)
     {
-        if (getFilePlanService().isFilePlanComponent(source) == true && 
-        		getFilePlanService().isFilePlanComponent(target) == true)
-        {            
-            if (checkConditions(source) == true && checkConditions(target) == true)
+        if (getFilePlanService().isFilePlanComponent(source) &&
+                getFilePlanService().isFilePlanComponent(target))
+        {
+            if (checkConditions(source) &&
+                    checkConditions(target) &&
+                    checkPermissions(source) &&
+                    checkPermissions(target))
             {
-                if (checkPermissions(source) == true && checkPermissions(target) == true)
-                {
-                    return AccessDecisionVoter.ACCESS_GRANTED;
-                }        
+                return AccessDecisionVoter.ACCESS_GRANTED;
             }
             return AccessDecisionVoter.ACCESS_DENIED;
         }

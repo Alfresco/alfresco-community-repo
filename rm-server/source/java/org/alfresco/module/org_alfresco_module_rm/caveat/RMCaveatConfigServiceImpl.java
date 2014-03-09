@@ -43,35 +43,35 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * RM Caveat Config Service impl
- * 
+ *
  * @author janv
  */
 public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
 {
     private static Log logger = LogFactory.getLog(RMCaveatConfigServiceImpl.class);
-    
+
     private NamespaceService namespaceService;
     private DictionaryService dictionaryService;
-    
+
     private RMCaveatConfigComponent rmCaveatConfigComponent;
     private RecordsManagementAdminService recordsManagementAdminService;
-    
-    
+
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     public void setCaveatConfigComponent(RMCaveatConfigComponent rmCaveatConfigComponent)
     {
         this.rmCaveatConfigComponent = rmCaveatConfigComponent;
     }
-    
+
     public void setRecordsManagementAdminService(RecordsManagementAdminService recordsManagementAdminService)
     {
         this.recordsManagementAdminService = recordsManagementAdminService;
@@ -81,36 +81,36 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     {
         return recordsManagementAdminService;
     }
-    
+
     public void init()
     {
         rmCaveatConfigComponent.init();
     }
-    
+
     public NodeRef updateOrCreateCaveatConfig(InputStream is)
     {
         return rmCaveatConfigComponent.updateOrCreateCaveatConfig(is);
     }
-    
+
     public NodeRef updateOrCreateCaveatConfig(File jsonFile)
     {
         return rmCaveatConfigComponent.updateOrCreateCaveatConfig(jsonFile);
     }
-    
+
     public NodeRef updateOrCreateCaveatConfig(String jsonString)
     {
         return rmCaveatConfigComponent.updateOrCreateCaveatConfig(jsonString);
     }
-    
+
     // Get allowed values for given caveat (for current user)
     public List<String> getRMAllowedValues(String constraintName)
     {
         return rmCaveatConfigComponent.getRMAllowedValues(constraintName);
     }
-    
+
     /**
      * Check whether access to 'record component' node is vetoed for current user due to caveat(s)
-     * 
+     *
      * @param nodeRef
      * @return false, if caveat(s) veto access otherwise return true
      */
@@ -118,7 +118,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     {
         return rmCaveatConfigComponent.hasAccess(nodeRef);
     }
-    
+
     /**
      * add RM constraint list
      * @param listName the name of the RMConstraintList
@@ -127,7 +127,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     {
         return addRMConstraint(listName, title, values, MatchLogic.AND);
     }
-    
+
     public RMConstraintInfo addRMConstraint(String listName, String title, String[] values, MatchLogic matchLogic)
     {
         if(listName == null)
@@ -136,15 +136,15 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
             // FIXME: hardcoded namespace
             listName = "rmc:" + UUID.randomUUID().toString();
         }
-        
+
         List<String>allowedValues = new ArrayList<String>();
         for(String value : values)
         {
             allowedValues.add(value);
         }
-        
+
         QName listQName = QName.createQName(listName, namespaceService);
-        
+
         // TEMP review - if it already exists then change it for now
         try
         {
@@ -158,9 +158,9 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
                 recordsManagementAdminService.changeCustomConstraintTitle(listQName, title);
             }
         }
-        
+
         rmCaveatConfigComponent.addRMConstraint(listName);
-        
+
         RMConstraintInfo info = new RMConstraintInfo();
         info.setName(listQName.toPrefixString());
         info.setTitle(title);
@@ -168,24 +168,24 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
         info.setCaseSensitive(true);
         return info;
     }
-    
+
     /**
      * delete RM Constraint List
-     * 
+     *
      * @param listName the name of the RMConstraintList
      */
     public void deleteRMConstraint(String listName)
     {
         rmCaveatConfigComponent.deleteRMConstraint(listName);
-        
+
         QName listQName = QName.createQName(listName, namespaceService);
-        
+
         recordsManagementAdminService.removeCustomConstraintDefinition(listQName);
     }
-    
+
     /**
      * Add a single value to an authority in a list.   The existing values of the list remain.
-     * 
+     *
      * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param values
@@ -195,7 +195,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     {
         rmCaveatConfigComponent.addRMConstraintListValue(listName, authorityName, value);
     }
-    
+
     /**
      * Get the details of the specified list
      * @param listName
@@ -205,13 +205,13 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     {
         return rmCaveatConfigComponent.getListDetails(listName);
     }
-    
+
     /**
-     * Replace the values for an authority in a list.   
+     * Replace the values for an authority in a list.
      * The existing values are removed.
-     * 
+     *
      * If the authority does not already exist in the list, it will be added
-     * 
+     *
      * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param values
@@ -220,10 +220,10 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     {
         rmCaveatConfigComponent.updateRMConstraintListAuthority(listName, authorityName, values);
     }
-    
+
     /**
      * Replace the authorities for a value in a list
-     * 
+     *
      * @param listName
      * @param valueName
      * @param authorities
@@ -232,10 +232,10 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     {
         rmCaveatConfigComponent.updateRMConstraintListValue(listName, valueName, authorities);
     }
-    
+
     /**
      * Remove an authority from a list
-     * 
+     *
      * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param values
@@ -244,20 +244,20 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     {
         rmCaveatConfigComponent.removeRMConstraintListAuthority(listName, authorityName);
     }
-    
+
     /**
      * Get all Constraint Lists
      */
     public Set<RMConstraintInfo> getAllRMConstraints()
     {
         Set<RMConstraintInfo> info = new HashSet<RMConstraintInfo>();
-        
+
         List<ConstraintDefinition> defs = new ArrayList<ConstraintDefinition>(10);
         for (QName caveatModelQName : rmCaveatConfigComponent.getRMCaveatModels())
         {
             defs.addAll(recordsManagementAdminService.getCustomConstraintDefinitions(caveatModelQName));
         }
-        
+
         for(ConstraintDefinition dictionaryDef : defs)
         {
             Constraint con = dictionaryDef.getConstraint();
@@ -267,7 +267,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
                 RMConstraintInfo i = new RMConstraintInfo();
                 i.setName(def.getShortName());
                 i.setTitle(def.getTitle());
-                
+
                 // note: assumes only one caveat/LOV against a given property
                 List<String> allowedValues = AuthenticationUtil.runAs(new RunAsWork<List<String>>()
                 {
@@ -276,17 +276,17 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
                         return def.getAllowedValues();
                     }
                 }, AuthenticationUtil.getSystemUserName());
-                
+
                 i.setAllowedValues(allowedValues.toArray(new String[allowedValues.size()]));
                 i.setCaseSensitive(def.isCaseSensitive());
                 info.add(i);
             }
-            
+
         }
-        
+
         return info;
     }
-    
+
     /**
      * Get an RMConstraintInfo
      * @param listQName
@@ -301,7 +301,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
             if (con instanceof RMListOfValuesConstraint)
             {
                 final RMListOfValuesConstraint def = (RMListOfValuesConstraint)con;
-                
+
                 RMConstraintInfo info = new RMConstraintInfo();
                 info.setName(listQName.toPrefixString());
                 info.setTitle(con.getTitle());
@@ -312,7 +312,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
                         return def.getAllowedValues();
                     }
                 }, AuthenticationUtil.getSystemUserName());
-                
+
                 info.setAllowedValues(allowedValues.toArray(new String[allowedValues.size()]));
                 info.setCaseSensitive(def.isCaseSensitive());
                 return info;
@@ -320,30 +320,30 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
         }
         return null;
     }
-    
+
     /**
      * Get RM Constraint detail.
-     * 
+     *
      * @return the constraintInfo or null
      */
     public RMConstraintInfo getRMConstraint(String listName)
     {
         QName listQName = QName.createQName(listName, namespaceService);
         return getRMConstraint(listQName);
-        
+
     }
-    
+
     /**
      * Update The allowed values for an RM Constraint.
-     * 
+     *
      * @param listName  The name of the list.
      * @param allowedValues the new alowed values
-     * 
+     *
      */
     public RMConstraintInfo updateRMConstraintAllowedValues(String listName, String[] allowedValues)
     {
         QName listQName = QName.createQName(listName, namespaceService);
-        
+
         if(allowedValues != null)
         {
             List<String>allowedValueList = new ArrayList<String>();
@@ -351,12 +351,12 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
             {
                 allowedValueList.add(value);
             }
-            
+
             ConstraintDefinition dictionaryDef = dictionaryService.getConstraint(listQName);
             Constraint con = dictionaryDef.getConstraint();
             if (con instanceof RMListOfValuesConstraint)
             {
-                final RMListOfValuesConstraint def = (RMListOfValuesConstraint)con; 
+                final RMListOfValuesConstraint def = (RMListOfValuesConstraint)con;
                 List<String> oldAllowedValues = AuthenticationUtil.runAs(new RunAsWork<List<String>>()
                 {
                     public List<String> doWork()
@@ -364,22 +364,19 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
                        return def.getAllowedValues();
                     }
                 }, AuthenticationUtil.getSystemUserName());
-                
+
                 /**
                  * Deal with any additions
                  */
                 for(String newValue : allowedValueList)
                 {
-                    if(!oldAllowedValues.contains(newValue))
+                    if(!oldAllowedValues.contains(newValue) && logger.isDebugEnabled())
                     {
                         // This is an addition
-                        if(logger.isDebugEnabled())
-                        {
-                            logger.debug("value added to list:" + listQName + ":" + newValue);
-                        }
+                        logger.debug("value added to list:" + listQName + ":" + newValue);
                     }
                 }
-                
+
                 /**
                  * Deal with any deletions
                  */
@@ -396,13 +393,13 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
                     }
                 }
             }
-            
+
             recordsManagementAdminService.changeCustomConstraintValues(listQName, allowedValueList);
         }
-        
+
         return getRMConstraint(listName);
     }
-    
+
     /**
      * Remove a value from a list and cascade delete.
      */
@@ -410,17 +407,17 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     {
         //TODO need to update the rm constraint definition
         // recordsManagementAdminService.
-        
+
         rmCaveatConfigComponent.removeRMConstraintListValue(listName, valueName);
     }
-    
+
     /**
      * Update the title of this RM Constraint.
      */
     public RMConstraintInfo updateRMConstraintTitle(String listName, String newTitle)
     {
         QName listQName = QName.createQName(listName, namespaceService);
-        
+
         recordsManagementAdminService.changeCustomConstraintTitle(listQName, newTitle);
         return getRMConstraint(listName);
     }

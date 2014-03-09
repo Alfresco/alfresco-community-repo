@@ -543,16 +543,13 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         List<String> allowedValues = new ArrayList<String>(0);
 
         String userName = AuthenticationUtil.getRunAsUser();
-        if (userName != null)
+        if (userName != null && !(AuthenticationUtil.isMtEnabled() && AuthenticationUtil.isRunAsUserTheSystemUser()))
         {
-            if (! (AuthenticationUtil.isMtEnabled() && AuthenticationUtil.isRunAsUserTheSystemUser()))
-            {
-                // note: userName and userGroupNames must not be null
-                caveatConfig.get(constraintName);
+            // note: userName and userGroupNames must not be null
+            caveatConfig.get(constraintName);
 
-                Set<String> userGroupFullNames = authorityService.getAuthoritiesForUser(userName);
-                allowedValues = getRMAllowedValues(userName, userGroupFullNames, constraintName);
-            }
+            Set<String> userGroupFullNames = authorityService.getAuthoritiesForUser(userName);
+            allowedValues = getRMAllowedValues(userName, userGroupFullNames, constraintName);
         }
 
         return allowedValues;

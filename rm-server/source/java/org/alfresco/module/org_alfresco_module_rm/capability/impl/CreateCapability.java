@@ -41,10 +41,10 @@ public class CreateCapability extends DeclarativeCapability
 {
     /** record service */
     private RecordService recordService;
-    
+
     /** record folder service */
     private RecordFolderService recordFolderService;
-    
+
     /**
      * @param recordService record service
      */
@@ -60,7 +60,7 @@ public class CreateCapability extends DeclarativeCapability
     {
         this.recordFolderService = recordFolderService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -93,24 +93,21 @@ public class CreateCapability extends DeclarativeCapability
         {
             if ((assocType == null) || assocType.equals(ContentModel.ASSOC_CONTAINS) == false)
             {
-                if(linkee == null)
+                if(linkee == null &&
+                        recordService.isRecord(destination) &&
+                        recordService.isDeclared(destination) == false &&
+                        permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
                 {
-                    if(recordService.isRecord(destination) && recordService.isDeclared(destination) == false)
-                    {
-                        if (permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
-                        {
-                            return AccessDecisionVoter.ACCESS_GRANTED;
-                        }
-                    }
+                    return AccessDecisionVoter.ACCESS_GRANTED;
                 }
                 else
                 {
-                    if(recordService.isRecord(linkee) && recordService.isRecord(destination) && recordService.isDeclared(destination) == false)
+                    if (recordService.isRecord(linkee) &&
+                            recordService.isRecord(destination) &&
+                            recordService.isDeclared(destination) == false &&
+                            permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
                     {
-                        if (permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
-                        {
-                            return AccessDecisionVoter.ACCESS_GRANTED;
-                        }
+                        return AccessDecisionVoter.ACCESS_GRANTED;
                     }
                 }
 
@@ -123,40 +120,28 @@ public class CreateCapability extends DeclarativeCapability
             conditions.put("capabilityCondition.closed", Boolean.FALSE);
             conditions.put("capabilityCondition.cutoff", Boolean.FALSE);
 
-            if (checkConditions(destination, conditions) == true)
+            if (checkConditions(destination, conditions) &&
+                    recordFolderService.isRecordFolder(destination) &&
+                    permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
             {
-                if (recordFolderService.isRecordFolder(destination))
-                {
-                    if (permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
-                    {
-                        return AccessDecisionVoter.ACCESS_GRANTED;
-                    }
-                }
+                return AccessDecisionVoter.ACCESS_GRANTED;
             }
 
             conditions.put("capabilityCondition.closed", Boolean.TRUE);
-            if (checkConditions(destination, conditions) == true)
+            if (checkConditions(destination, conditions) &&
+                    recordFolderService.isRecordFolder(destination) &&
+                    permissionService.hasPermission(getFilePlanService().getFilePlan(destination), RMPermissionModel.DECLARE_RECORDS_IN_CLOSED_FOLDERS) == AccessStatus.ALLOWED)
             {
-                if (recordFolderService.isRecordFolder(destination))
-                {
-                    if (permissionService.hasPermission(getFilePlanService().getFilePlan(destination), RMPermissionModel.DECLARE_RECORDS_IN_CLOSED_FOLDERS) == AccessStatus.ALLOWED)
-                    {
-                        return AccessDecisionVoter.ACCESS_GRANTED;
-                    }
-                }
+                return AccessDecisionVoter.ACCESS_GRANTED;
             }
 
             conditions.remove("capabilityCondition.closed");
             conditions.put("capabilityCondition.cutoff", Boolean.TRUE);
-            if (checkConditions(destination, conditions) == true)
+            if (checkConditions(destination, conditions) &&
+                    recordFolderService.isRecordFolder(destination) &&
+                    permissionService.hasPermission(getFilePlanService().getFilePlan(destination), RMPermissionModel.CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS) == AccessStatus.ALLOWED)
             {
-                if (recordFolderService.isRecordFolder(destination))
-                {
-                    if (permissionService.hasPermission(getFilePlanService().getFilePlan(destination), RMPermissionModel.CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS) == AccessStatus.ALLOWED)
-                    {
-                        return AccessDecisionVoter.ACCESS_GRANTED;
-                    }
-                }
+                return AccessDecisionVoter.ACCESS_GRANTED;
             }
         }
         if (capabilityService.getCapability(RMPermissionModel.CREATE_MODIFY_DESTROY_FOLDERS).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED)

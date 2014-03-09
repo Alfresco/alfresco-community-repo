@@ -30,29 +30,23 @@ public class UpdatePolicy extends AbstractBasePolicy
 {
 
     @SuppressWarnings("rawtypes")
-	public int evaluate( 
-            MethodInvocation invocation, 
-            Class[] params, 
+	public int evaluate(
+            MethodInvocation invocation,
+            Class[] params,
             ConfigAttributeDefinition cad)
     {
         NodeRef updatee = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
         QName aspectQName = null;
-        if (cad.getParameters().size() > 1)
+        if (cad.getParameters().size() > 1 && cad.getParameters().get(1) > -1)
         {
-            if (cad.getParameters().get(1) > -1)
-            {
-                aspectQName = getQName(invocation, params, cad.getParameters().get(1));
-            }
+            aspectQName = getQName(invocation, params, cad.getParameters().get(1));
         }
         Map<QName, Serializable> properties = null;
-        if (cad.getParameters().size() > 2)
+        if (cad.getParameters().size() > 2 && cad.getParameters().get(2) > -1)
         {
-            if (cad.getParameters().get(2) > -1)
-            {
-                properties = getProperties(invocation, params, cad.getParameters().get(2));
-            }
+            properties = getProperties(invocation, params, cad.getParameters().get(2));
         }
-        
+
         UpdateCapability updateCapability = (UpdateCapability)capabilityService.getCapability("Update");
         return updateCapability.evaluate(updatee, aspectQName, properties);
     }

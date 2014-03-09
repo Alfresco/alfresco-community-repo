@@ -149,7 +149,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         this.recordFolderService = recordFolderService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService#setupRecordCategoryPermissions(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -157,13 +157,13 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     public void setupRecordCategoryPermissions(final NodeRef recordCategory)
     {
         ParameterCheck.mandatory("recordCategory", recordCategory);
-        
+
         // assert that we have a record category in our hands
         if (instanceOf(recordCategory, TYPE_RECORD_CATEGORY) == false)
         {
             throw new AlfrescoRuntimeException("Unable to setup record category permissions, because node is not a record category.");
         }
-        
+
         // init permissions
         initPermissions(recordCategory);
 
@@ -405,7 +405,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
     /**
      * Initiliase the permissions for the given node.
-     * 
+     *
      * @param nodeRef   node reference
      */
     private void initPermissions(final NodeRef nodeRef)

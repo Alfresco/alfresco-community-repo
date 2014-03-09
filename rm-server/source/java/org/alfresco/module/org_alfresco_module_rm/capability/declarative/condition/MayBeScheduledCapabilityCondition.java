@@ -62,20 +62,16 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
         boolean result = false;
 
         DispositionSchedule dispositionSchedule = dispositionService.getDispositionSchedule(nodeRef);
-        if (dispositionSchedule != null)
+        if (dispositionSchedule != null && checkDispositionLevel(nodeRef, dispositionSchedule))
         {
-            if (checkDispositionLevel(nodeRef, dispositionSchedule) == true)
+            for (DispositionActionDefinition dispositionActionDefinition : dispositionSchedule.getDispositionActionDefinitions())
             {
-                for (DispositionActionDefinition dispositionActionDefinition : dispositionSchedule.getDispositionActionDefinitions())
+                if (dispositionActionDefinition.getName().equals(dispositionAction))
                 {
-                    if (dispositionActionDefinition.getName().equals(dispositionAction) == true)
-                    {
-                        result = true;
-                        break;
-                    }
+                    result = true;
+                    break;
                 }
             }
-
         }
         return result;
     }
@@ -91,11 +87,11 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
     {
         boolean result = false;
         boolean isRecordLevelDisposition = dispositionSchedule.isRecordLevelDisposition();
-        if (recordService.isRecord(nodeRef) == true && isRecordLevelDisposition == true)
+        if (recordService.isRecord(nodeRef) && isRecordLevelDisposition)
         {
             result = true;
         }
-        else if (recordFolderService.isRecordFolder(nodeRef) == true && isRecordLevelDisposition == false)
+        else if (recordFolderService.isRecordFolder(nodeRef) && isRecordLevelDisposition == false)
 
         {
             result = true;

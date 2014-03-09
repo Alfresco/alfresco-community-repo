@@ -306,9 +306,9 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.exists(nodeRef) == true &&
-                    dictionaryService.getAllModels().contains(RM_CUSTOM_MODEL) == true &&
-                    isCustomisable(aspectTypeQName) == true)
+                if (nodeService.exists(nodeRef) &&
+                    dictionaryService.getAllModels().contains(RM_CUSTOM_MODEL) &&
+                    isCustomisable(aspectTypeQName))
                 {
                     QName customPropertyAspect = getCustomAspect(aspectTypeQName);
                     nodeService.addAspect(nodeRef, customPropertyAspect, null);
@@ -336,8 +336,8 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.exists(nodeRef) == true &&
-                    isCustomisable(aspectTypeQName) == true)
+                if (nodeService.exists(nodeRef) &&
+                    isCustomisable(aspectTypeQName))
                 {
                     QName customPropertyAspect = getCustomAspect(aspectTypeQName);
                     nodeService.removeAspect(nodeRef, customPropertyAspect);
@@ -367,13 +367,13 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             @Override
             public Void doWork() throws Exception
             {
-                if (dictionaryService.getAllModels().contains(RecordsManagementCustomModel.RM_CUSTOM_MODEL) == true)
+                if (dictionaryService.getAllModels().contains(RecordsManagementCustomModel.RM_CUSTOM_MODEL))
                 {
                     NodeRef nodeRef = childAssocRef.getChildRef();
                     QName type = nodeService.getType(nodeRef);
                     while (type != null && ContentModel.TYPE_CMOBJECT.equals(type) == false)
                     {
-                        if (isCustomisable(type) == true)
+                        if (isCustomisable(type))
                         {
                             QName customPropertyAspect = getCustomAspect(type);
                             nodeService.addAspect(nodeRef, customPropertyAspect, null);
@@ -438,7 +438,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         while (type != null && ContentModel.TYPE_CMOBJECT.equals(type) == false)
         {
             // Add to the list if the type is customisable
-            if (isCustomisable(type) == true)
+            if (isCustomisable(type))
             {
                 result.add(type);
             }
@@ -463,7 +463,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             while (tempAspect != null)
             {
                 // Add to the list if the aspect is customisable
-                if (isCustomisable(tempAspect) == true)
+                if (isCustomisable(tempAspect))
                 {
                     result.add(tempAspect);
                 }
@@ -499,33 +499,31 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	    	{
 	    		AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
 	    		String name = aspectDef.getName().getLocalName();
-	    		if (name.endsWith("Properties") == true)
+	    		if (name.endsWith("Properties"))
 	    		{
 	    			QName type = null;
 	    			String prefixString = aspectDef.getDescription(dictionaryService);
 	    			if (prefixString == null)
 	    			{
 	    				// Backward compatibility from previous RM V1.0 custom models
-	    				if (CompatibilityModel.NAME_CUSTOM_RECORD_PROPERTIES.equals(name) == true)
+	    				if (CompatibilityModel.NAME_CUSTOM_RECORD_PROPERTIES.equals(name))
 	    				{
 	    					type = RecordsManagementModel.ASPECT_RECORD;
 	    				}
-	    				else if (CompatibilityModel.NAME_CUSTOM_RECORD_FOLDER_PROPERTIES.equals(name) == true)
+	    				else if (CompatibilityModel.NAME_CUSTOM_RECORD_FOLDER_PROPERTIES.equals(name))
 	    				{
 	    					type = RecordsManagementModel.TYPE_RECORD_FOLDER;
 	    				}
-	    				else if (CompatibilityModel.NAME_CUSTOM_RECORD_CATEGORY_PROPERTIES.equals(name) == true)
+	    				else if (CompatibilityModel.NAME_CUSTOM_RECORD_CATEGORY_PROPERTIES.equals(name))
 	    				{
 	    					type = RecordsManagementModel.TYPE_RECORD_CATEGORY;
 	    				}
-	    				else if (CompatibilityModel.NAME_CUSTOM_RECORD_SERIES_PROPERTIES.equals(name) == true)
+	    				else if (CompatibilityModel.NAME_CUSTOM_RECORD_SERIES_PROPERTIES.equals(name) &&
+	                            // Only add the deprecated record series type as customisable if
+	                            // a v1.0 installation has added custom properties
+	    				        aspectDef.getProperties().size() != 0)
 	    				{
-	    				    // Only add the deprecated record series type as customisable if
-	    				    // a v1.0 installation has added custom properties
-	    				    if (aspectDef.getProperties().size() != 0)
-	    				    {
-	    				        type = CompatibilityModel.TYPE_RECORD_SERIES;
-	    				    }
+	    				    type = CompatibilityModel.TYPE_RECORD_SERIES;
 	    				}
 	    			}
 	    			else
@@ -539,7 +537,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	    			    customisableTypes.put(type, aspect);
 
             			// Remove customisable type from the pending list
-            			if (pendingCustomisableTypes != null && pendingCustomisableTypes.contains(type) == true)
+            			if (pendingCustomisableTypes != null && pendingCustomisableTypes.contains(type))
             			{
             			    pendingCustomisableTypes.remove(type);
             			}
@@ -692,7 +690,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     	ParameterCheck.mandatory("propertyName", propertyName);
 
     	boolean result = false;
-    	if (RM_CUSTOM_URI.equals(propertyName.getNamespaceURI()) == true &&
+    	if (RM_CUSTOM_URI.equals(propertyName.getNamespaceURI()) &&
     	    dictionaryService.getProperty(propertyName) != null)
     	{
     		result = true;
@@ -1403,12 +1401,9 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 
         for (M2ClassAssociation assoc : customAssocsAspect.getAssociations())
         {
-            if (refQName.toPrefixString(namespaceService).equals(assoc.getName()))
+            if (refQName.toPrefixString(namespaceService).equals(assoc.getName()) && newTitle != null)
             {
-                if (newTitle != null)
-                {
-                    assoc.setTitle(newTitle);
-                }
+                assoc.setTitle(newTitle);
             }
         }
         writeCustomContentModel(modelRef, deserializedModel);

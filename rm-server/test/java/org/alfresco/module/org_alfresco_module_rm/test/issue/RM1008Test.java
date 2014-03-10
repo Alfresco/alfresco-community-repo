@@ -127,7 +127,7 @@ public class RM1008Test extends BaseRMTestCase
             {
                 // create hold object
                 freezeService.freeze("test", rmFolder);
-                List<NodeRef> holds = holdService.getHolds(filePlan);
+                List<NodeRef> holds = holdService.getHoldsInFilePlan(filePlan);
                 return holds.iterator().next();
             }
         }, rmAdminName);

@@ -433,7 +433,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         {
             if (filePlan != null && nodeService.exists(filePlan) == true)
             {
-                List<NodeRef> holds = holdService.getHolds(filePlan);
+                List<NodeRef> holds = holdService.getHoldsInFilePlan(filePlan);
                 for (NodeRef hold : holds)
                 {
                     freezeService.relinquish(hold);

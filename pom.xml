@@ -21,6 +21,7 @@
    <scm>
       <connection>https://svn.alfresco.com/repos/alfresco-open-mirror/modules/recordsmanagement/HEAD</connection>
       <developerConnection>https://svn.alfresco.com/repos/alfresco-enterprise/modules/recordsmanagement/HEAD</developerConnection>
+      <url>https://fisheye.alfresco.com/changelog/alfresco-enterprise</url>
    </scm>
    <issueManagement>
       <system>JIRA</system>

@@ -105,22 +105,37 @@ public class HoldServiceImpl implements HoldService, RecordsManagementModel
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService#getHolds(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService#getHoldsInFilePlan(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public List<NodeRef> getHolds(NodeRef filePlan)
+    public List<NodeRef> getHoldsInFilePlan(NodeRef filePlan)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
 
         NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
         List<ChildAssociationRef> holdsAssocs = nodeService.getChildAssocs(holdContainer, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
         List<NodeRef> holds = new ArrayList<NodeRef>(holdsAssocs.size());
-        if (holdsAssocs != null && !holdsAssocs.isEmpty())
+        for (ChildAssociationRef holdAssoc : holdsAssocs)
         {
-            for (ChildAssociationRef holdAssoc : holdsAssocs)
-            {
-                holds.add(holdAssoc.getChildRef());
-            }
+            holds.add(holdAssoc.getChildRef());
+        }
+
+        return holds;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService#getHoldsForItem(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public List<NodeRef> getHoldsForItem(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+
+        List<ChildAssociationRef> holdsAssocs = nodeService.getParentAssocs(nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        List<NodeRef> holds = new ArrayList<NodeRef>(holdsAssocs.size());
+        for (ChildAssociationRef holdAssoc : holdsAssocs)
+        {
+            holds.add(holdAssoc.getParentRef());
         }
 
         return holds;

@@ -92,7 +92,18 @@ public class HoldsGet extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         NodeRef filePlan = getFilePlan(req);
-        List<NodeRef> holds = holdService.getHolds(filePlan);
+        NodeRef itemNodeRef = getItemNodeRef(req);
+        List<NodeRef> holds = new ArrayList<NodeRef>();
+
+        if (itemNodeRef == null)
+        {
+            holds.addAll(holdService.getHoldsInFilePlan(filePlan));
+        }
+        else
+        {
+            holds.addAll(holdService.getHoldsForItem(itemNodeRef));
+        }
+
         List<String> holdNames = new ArrayList<String>(holds.size());
         for (NodeRef hold : holds)
         {
@@ -136,6 +147,23 @@ public class HoldsGet extends DeclarativeWebScript
         }
 
         return filePlan;
+    }
+
+    /**
+     * Helper method to get the item node reference
+     *
+     * @param req The webscript request
+     * @return The {@link NodeRef} of the item (record / record folder) or null if the parameter has not been passed
+     */
+    private NodeRef getItemNodeRef(WebScriptRequest req)
+    {
+        String nodeRef = req.getParameter("itemNodeRef");
+        NodeRef itemNodeRef = null;
+        if (StringUtils.isNotBlank(nodeRef))
+        {
+            itemNodeRef = new NodeRef(nodeRef);
+        }
+        return itemNodeRef;
     }
 
     /**

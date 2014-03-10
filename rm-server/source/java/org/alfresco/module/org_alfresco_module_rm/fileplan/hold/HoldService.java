@@ -31,12 +31,20 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface HoldService
 {
     /**
-     * Gets the list of the holds within the holds container for the given file plan
+     * Gets the list of all the holds within the holds container in the given file plan
      *
      * @param filePlan The {@link NodeRef} of the file plan
      * @return List of hold node references
      */
-    List<NodeRef> getHolds(NodeRef filePlan);
+    List<NodeRef> getHoldsInFilePlan(NodeRef filePlan);
+
+    /**
+     * Gets the list of all the holds within the holds container for the given node reference
+     *
+     * @param nodeRef The {@link NodeRef} of the record / record folder which will be in the retrieved list of hold(s)
+     * @return List of hold node references which has the node reference of the given record / record folder in it
+     */
+    List<NodeRef> getHoldsForItem(NodeRef nodeRef);
 
     /**
      * Adds the record to the given hold

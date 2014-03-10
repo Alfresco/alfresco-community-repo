@@ -149,7 +149,7 @@ public interface FreezeService
     * @param filePlan      file plan for which the hold nodes will be retrieved
     * @return Set<NodeRef> hold node references
     *
-    * @deprecated as of 2.2, use {@link HoldService#getHolds(NodeRef)} instead
+    * @deprecated as of 2.2, use {@link HoldService#getHoldsInFilePlan(NodeRef)} instead
     */
    @Deprecated
    Set<NodeRef> getHolds(NodeRef filePlan);

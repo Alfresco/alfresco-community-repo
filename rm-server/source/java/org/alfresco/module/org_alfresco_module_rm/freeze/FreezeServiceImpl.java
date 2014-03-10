@@ -381,7 +381,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     {
         ParameterCheck.mandatory("filePlan", filePlan);
 
-        return new HashSet<NodeRef>(holdService.getHolds(filePlan));
+        return new HashSet<NodeRef>(holdService.getHoldsInFilePlan(filePlan));
     }
 
     /**

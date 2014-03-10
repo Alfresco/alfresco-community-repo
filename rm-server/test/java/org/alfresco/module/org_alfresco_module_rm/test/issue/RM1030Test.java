@@ -46,7 +46,7 @@ public class RM1030Test extends BaseRMTestCase
             public NodeRef run()
             {
                 // show there are no holds when we start
-                List<NodeRef> holds = holdService.getHolds(filePlan);
+                List<NodeRef> holds = holdService.getHoldsInFilePlan(filePlan);
                 assertNotNull(holds);
                 assertEquals(0, holds.size());
 
@@ -64,7 +64,7 @@ public class RM1030Test extends BaseRMTestCase
                 assertTrue(freezeService.isFrozen(recordOne));
 
                 // count the number of holds
-                List<NodeRef> holds = holdService.getHolds(filePlan);
+                List<NodeRef> holds = holdService.getHoldsInFilePlan(filePlan);
                 assertNotNull(holds);
                 assertEquals(1, holds.size());
             }
@@ -91,7 +91,7 @@ public class RM1030Test extends BaseRMTestCase
                 assertTrue(freezeService.isFrozen(rmFolder));
 
                 // count the number of holds
-                List<NodeRef> holds = holdService.getHolds(filePlan);
+                List<NodeRef> holds = holdService.getHoldsInFilePlan(filePlan);
                 assertNotNull(holds);
                 assertEquals(2, holds.size());
             }
@@ -113,7 +113,7 @@ public class RM1030Test extends BaseRMTestCase
                 assertTrue(freezeService.isFrozen(recordOne));
                 assertFalse(freezeService.isFrozen(rmFolder));
 
-                List<NodeRef> holds = holdService.getHolds(filePlan);
+                List<NodeRef> holds = holdService.getHoldsInFilePlan(filePlan);
                 assertNotNull(holds);
                 assertEquals(1, holds.size());
             }
@@ -135,7 +135,7 @@ public class RM1030Test extends BaseRMTestCase
                 assertFalse(freezeService.isFrozen(recordOne));
                 assertFalse(freezeService.isFrozen(rmFolder));
 
-                List<NodeRef> holds = holdService.getHolds(filePlan);
+                List<NodeRef> holds = holdService.getHoldsInFilePlan(filePlan);
                 assertNotNull(holds);
                 assertEquals(0, holds.size());
             }

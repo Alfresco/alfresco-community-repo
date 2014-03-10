@@ -104,16 +104,16 @@ public class HoldsGet extends DeclarativeWebScript
             holds.addAll(holdService.getHoldsForItem(itemNodeRef));
         }
 
-        List<String> holdNames = new ArrayList<String>(holds.size());
-        for (NodeRef hold : holds)
+        List<Hold> holdObjects = new ArrayList<Hold>(holds.size());
+        for (NodeRef nodeRef : holds)
         {
-            String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
-            holdNames.add(holdName);
+            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            holdObjects.add(new Hold(name, nodeRef));
         }
 
         Map<String, Object> model = new HashMap<String, Object>(1);
-        sortByName(holdNames);
-        model.put("holds", holdNames);
+        sortHoldByName(holdObjects);
+        model.put("holds", holdObjects);
 
         return model;
     }
@@ -169,16 +169,16 @@ public class HoldsGet extends DeclarativeWebScript
     /**
      * Helper method to sort the holds by their names
      *
-     * @param holdNames List of hold names to sort
+     * @param holds List of holds to sort
      */
-    private void sortByName(List<String> holdNames)
+    private void sortHoldByName(List<Hold> holds)
     {
-        Collections.sort(holdNames, new Comparator<String>()
+        Collections.sort(holds, new Comparator<Hold>()
         {
             @Override
-            public int compare(String o1, String o2)
+            public int compare(Hold h1, Hold h2)
             {
-                return o1.toLowerCase().compareTo(o2.toLowerCase());
+                return h1.getName().toLowerCase().compareTo(h2.getName().toLowerCase());
             }
         });
     }

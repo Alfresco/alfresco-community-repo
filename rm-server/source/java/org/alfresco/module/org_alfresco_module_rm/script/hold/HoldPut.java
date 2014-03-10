@@ -23,12 +23,12 @@ import java.util.List;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Implementation for Java backed webscript to add an item to the given hold(s) in the hold container.
+ * Implementation for Java backed webscript to remove an item from the given hold(s) in the hold container.
  *
  * @author Tuna Aksoy
  * @since 2.2
  */
-public class HoldPost extends BaseHold
+public class HoldPut extends BaseHold
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.script.hold.BaseHold#doAction(java.util.List, org.alfresco.service.cmr.repository.NodeRef)
@@ -36,6 +36,6 @@ public class HoldPost extends BaseHold
     @Override
     void doAction(List<NodeRef> holds, NodeRef nodeRef)
     {
-        getHoldService().addToHoldContainers(holds, nodeRef);
+        getHoldService().removeFromHoldContainers(holds, nodeRef);
     }
 }

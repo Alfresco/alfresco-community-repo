@@ -593,10 +593,18 @@
       <property name="holdService" ref="HoldService" />
    </bean>
 
+   <!-- Abstract parent bean for many POST and PUT Hold beans -->
+   <bean id="rmBaseHold" parent="webscript" abstract="true">
+      <property name="holdService" ref="HoldService" />
+   </bean>
+
    <!-- REST impl for POST Hold -->
    <bean id="webscript.org.alfresco.rma.hold.post"
          class="org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPost"
-         parent="webscript">
-      <property name="holdService" ref="HoldService" />
-   </bean>
+         parent="rmBaseHold" />
+
+   <!-- REST impl for PUT Hold -->
+   <bean id="webscript.org.alfresco.rma.hold.put"
+         class="org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPut"
+         parent="rmBaseHold" />
 </beans>

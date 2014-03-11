@@ -38,20 +38,20 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Records management saved search POST web script.
- * 
+ *
  * @author Roy Wetherall
  */
 public class RMSavedSearchesPost extends DeclarativeWebScript
 {
     /** Records management search service */
     protected RecordsManagementSearchService recordsManagementSearchService;
-    
+
     /** Site service */
     protected SiteService siteService;
-    
+
     /** Namespace service */
     protected NamespaceService namespaceService;
-    
+
     /**
      * @param recordsManagementSearchService    records management search service
      */
@@ -59,7 +59,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
     {
         this.recordsManagementSearchService = recordsManagementSearchService;
     }
-    
+
     /**
      * @param siteService   site service
      */
@@ -67,7 +67,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
     {
         this.siteService = siteService;
     }
-    
+
     /**
      * @param namespaceService  namespace service
      */
@@ -75,7 +75,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
@@ -83,7 +83,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         // Get the site id and confirm it is valid
-        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();        
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String siteId = templateVars.get("site");
         if (siteId == null || siteId.length() == 0)
         {
@@ -93,7 +93,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "Site not found.");
         }
-        
+
         // Example format of posted Saved Search JSON:
         // {
         //    "name": "search name",
@@ -103,12 +103,12 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
         //    "params": "terms=keywords:xyz&undeclared=true",
         //    "sort": "cm:name/asc"
         //}
-        
+
         try
         {
             // Parse the JSON passed in the request
             JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
+
             // Get the details of the saved search
             if (json.has("name") == false)
             {
@@ -117,12 +117,12 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
             }
             String name = json.getString("name");
             String description = null;
-            if (json.has("description") == true)
+            if (json.has("description"))
             {
                 description = json.getString("description");
             }
             boolean isPublic = true;
-            if (json.has("public") == true)
+            if (json.has("public"))
             {
                 isPublic = json.getBoolean("public");
             }
@@ -134,11 +134,11 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
             }
             String params = json.getString("params");
             String sort = null;
-            if (json.has("sort") == true)
+            if (json.has("sort"))
             {
                 sort = json.getString("sort");
-            }            
-            
+            }
+
             // Use the compatibility class to create a saved search details and save
             String search = SavedSearchDetailsCompatibility.getSearchFromParams(params);
             if (search == null)
@@ -148,7 +148,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
             }
             RecordsManagementSearchParameters searchParameters = SavedSearchDetailsCompatibility.createSearchParameters(params, sort, namespaceService);
             recordsManagementSearchService.saveSearch(siteId, name, description, search, searchParameters, isPublic);
-            
+
         }
         catch (IOException iox)
         {
@@ -159,8 +159,8 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                         "Could not parse JSON from req.", je);
-        }        
-        
+        }
+
         // Indicate success in the model
         Map<String, Object> model = new HashMap<String, Object>(1);
         model.put("success", true);

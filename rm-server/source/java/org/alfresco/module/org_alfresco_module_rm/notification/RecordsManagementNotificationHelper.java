@@ -238,7 +238,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
             NodeRef root = getRMRoot(records.get(0));
             String groupName = getGroupName(root);
 
-            if (doesGroupContainUsers(groupName) == true)
+            if (doesGroupContainUsers(groupName))
             {
                 NotificationContext notificationContext = new NotificationContext();
                 notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORDS_DUE_FOR_REVIEW));
@@ -257,7 +257,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
             }
             else
             {
-                if (logger.isWarnEnabled() == true)
+                if (logger.isWarnEnabled())
                 {
                     logger.warn("Unable to send record due for review email notification, because notification group was empty.");
                 }
@@ -279,7 +279,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
         NodeRef root = getRMRoot(record);
         String groupName = getGroupName(root);
 
-        if (doesGroupContainUsers(groupName) == true)
+        if (doesGroupContainUsers(groupName))
         {
             NotificationContext notificationContext = new NotificationContext();
             notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORD_SUPERCEDED));
@@ -298,7 +298,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
         }
         else
         {
-            if (logger.isWarnEnabled() == true)
+            if (logger.isWarnEnabled())
             {
                 logger.warn("Unable to send record superseded email notification, because notification group was empty.");
             }
@@ -314,7 +314,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     {
         ParameterCheck.mandatory("record", record);
 
-        if (canSendRejectEmail(record, recordCreator) == true)
+        if (canSendRejectEmail(record, recordCreator))
         {
             String site = siteService.getSite(record).getShortName();
             String rejectReason = (String) nodeService.getProperty(record, PROP_RECORD_REJECTION_REASON);
@@ -361,17 +361,17 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
             result = false;
             logger.warn(msg1 + "the site which should contain the node '" + record.toString() + "'" + msg2);
         }
-        if (StringUtils.isBlank(recordCreator) == true)
+        if (StringUtils.isBlank(recordCreator))
         {
             result = false;
             logger.warn(msg1 + "the user, who created the record" + msg2);
         }
-        if (StringUtils.isBlank((String) nodeService.getProperty(record, PROP_RECORD_REJECTION_REASON)) == true)
+        if (StringUtils.isBlank((String) nodeService.getProperty(record, PROP_RECORD_REJECTION_REASON)))
         {
             result = false;
             logger.warn(msg1 + "the reason for rejection" + msg2);
         }
-        if (StringUtils.isBlank((String) nodeService.getProperty(record, PROP_RECORD_REJECTION_USER_ID)) == true)
+        if (StringUtils.isBlank((String) nodeService.getProperty(record, PROP_RECORD_REJECTION_USER_ID)))
         {
             result = false;
             logger.warn(msg1 + "the user, who rejected the record" + msg2);

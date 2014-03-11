@@ -105,7 +105,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     private boolean checkForDestroyRecordsCapability(NodeRef actionedUponNodeRef)
     {
         boolean result = true;
-        if (AccessStatus.ALLOWED.equals(capabilityService.getCapability("DestroyRecords").hasPermission(actionedUponNodeRef)) == true)
+        if (AccessStatus.ALLOWED.equals(capabilityService.getCapability("DestroyRecords").hasPermission(actionedUponNodeRef)))
         {
             result = false;
         }
@@ -124,7 +124,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
             executeRecordLevelDisposition(action, record);
         }
 
-        if (ghostingEnabled == true)
+        if (ghostingEnabled)
         {
             nodeService.addAspect(recordFolder, ASPECT_GHOSTED, Collections.<QName, Serializable> emptyMap());
         }
@@ -156,7 +156,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
         // Clear thumbnail content
         clearThumbnails(nodeRef);
 
-        if (ghostingEnabled == true)
+        if (ghostingEnabled)
         {
             // Add the ghosted aspect
             nodeService.addAspect(nodeRef, ASPECT_GHOSTED, null);

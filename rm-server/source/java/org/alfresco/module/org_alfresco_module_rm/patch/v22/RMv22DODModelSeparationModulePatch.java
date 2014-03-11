@@ -32,27 +32,27 @@ import org.alfresco.util.Pair;
 
 /**
  * DOD model separation module patch implementation
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
-public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch 
+public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
                                            implements RecordsManagementModel
 {
     /** query batch size */
     private static long BATCH_SIZE = 100000L;
-    
+
     /** QName DAO */
     private QNameDAO qnameDAO;
-    
+
     /** Patch DAO */
     private PatchDAO patchDAO;
-    
+
     /** Node DAO */
     private NodeDAO nodeDAO;
-    
+
     /** qnames to update (switch to dod namespace) */
-    private QName[] qnames = 
+    private QName[] qnames =
         {
             DOD5015Model.PROP_ORIGINATOR,
             DOD5015Model.PROP_ORIGINATING_ORGANIZATION,
@@ -61,7 +61,7 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
             DOD5015Model.PROP_FORMAT,
             DOD5015Model.PROP_DATE_RECEIVED
         };
-    
+
     /**
      * @param qnameDAO  QName DAO
      */
@@ -69,7 +69,7 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
     {
         this.qnameDAO = qnameDAO;
     }
-    
+
     /**
      * @param patchDAO  patch DAO
      */
@@ -77,7 +77,7 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
     {
         this.patchDAO = patchDAO;
     }
-    
+
     /**
      * @param nodeDAO   node DAO
      */
@@ -85,7 +85,7 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
     {
         this.nodeDAO = nodeDAO;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
      */
@@ -93,7 +93,7 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
     public void applyInternal()
     {
         Long maxNodeId = patchDAO.getMaxAdmNodeID();
-        
+
         // switch each qname from the rma namespace to the dod namespace
         for (QName qname : qnames)
         {
@@ -103,13 +103,13 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
                 qnameDAO.updateQName(origional, qname);
             }
         }
-        
+
         long recordCount = patchDAO.getCountNodesWithAspects(Collections.singleton(ASPECT_RECORD));
-        if (logger.isDebugEnabled() == true)
+        if (logger.isDebugEnabled())
         {
             logger.debug(" ... updating " + recordCount + " records");
         }
-        
+
         // apply the DOD record aspect to all exiting records
         int completed = 0;
         Pair<Long, QName> recordAspect = qnameDAO.getQName(ASPECT_RECORD);
@@ -122,9 +122,9 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
                 {
                     nodeDAO.addNodeAspects(nodeId, Collections.singleton(DOD5015Model.ASPECT_DOD_5015_RECORD));
                 }
-                
+
                 completed += completed + nodeIds.size();
-                if (logger.isDebugEnabled() == true)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("    ... completed " + completed + " of " + recordCount);
                 }

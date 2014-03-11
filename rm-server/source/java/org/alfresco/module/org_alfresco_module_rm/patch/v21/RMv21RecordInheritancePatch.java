@@ -35,29 +35,29 @@ import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * RM v2.1 patch to change the record inheritance of permissions.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
 @SuppressWarnings("deprecation")
-public class RMv21RecordInheritancePatch extends RMv21PatchComponent 
+public class RMv21RecordInheritancePatch extends RMv21PatchComponent
                                          implements BeanNameAware, RecordsManagementModel, DOD5015Model
-{  
+{
     /** file plan permission service */
     private FilePlanPermissionServiceImpl filePlanPermissionServiceImpl;
-    
+
     /** node service */
     private NodeService nodeService;
-    
+
     /** patch DAO */
     private PatchDAO patchDAO;
-    
+
     /** qname DAO */
     private QNameDAO qnameDAO;
-    
+
     /** node DAO */
     private NodeDAO nodeDAO;
-    
+
     /**
      * @param patchDAO  patch DAO
      */
@@ -65,7 +65,7 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
     {
         this.patchDAO = patchDAO;
     }
-    
+
     /**
      * @param qnameDAO  qname DAO
      */
@@ -73,7 +73,7 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
     {
         this.qnameDAO = qnameDAO;
     }
-    
+
     /**
      * @param nodeDAO   node DAO
      */
@@ -81,7 +81,7 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
     {
         this.nodeDAO = nodeDAO;
     }
-    
+
     /**
      * @param filePlanPermissionServiceImpl file plan permission service implementation
      */
@@ -89,7 +89,7 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
     {
         this.filePlanPermissionServiceImpl = filePlanPermissionServiceImpl;
     }
-    
+
     /**
      * @param nodeService node service
      */
@@ -97,7 +97,7 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
@@ -108,30 +108,30 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
         if (aspectPair != null)
         {
             List<Long> records = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
-    
-            if (logger.isDebugEnabled() == true)
+
+            if (logger.isDebugEnabled())
             {
-                logger.debug("  ... updating " + records.size() + " records" );
+                logger.debug("  ... updating " + records.size() + " records");
             }
-            
+
             for (Long record : records)
             {
                 Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(record);
                 NodeRef recordNodeRef = recordPair.getSecond();
-                
-                if (logger.isDebugEnabled() == true)
+
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("  ... updating record " + recordNodeRef.toString());
-                    
+
                     // get the primary parent
                     ChildAssociationRef assoc = nodeService.getPrimaryParent(recordNodeRef);
                     NodeRef parent = assoc.getParentRef();
                     if (parent != null)
-                    {                
+                    {
                         filePlanPermissionServiceImpl.initialiseRecordPermissions(recordNodeRef, parent);
                     }
                 }
             }
         }
-    }       
+    }
 }

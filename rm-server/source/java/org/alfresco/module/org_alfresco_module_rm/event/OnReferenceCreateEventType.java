@@ -109,7 +109,7 @@ public class OnReferenceCreateEventType extends SimpleRecordsManagementEventType
             public Object doWork() throws Exception
             {
                 // Check whether it is the reference type we care about
-                if (reference.equals(OnReferenceCreateEventType.this.reference) == true)
+                if (reference.equals(OnReferenceCreateEventType.this.reference))
                 {
                     DispositionAction da = dispositionService.getNextDispositionAction(toNodeRef);
                     if (da != null)
@@ -119,7 +119,7 @@ public class OnReferenceCreateEventType extends SimpleRecordsManagementEventType
                         {
                             RecordsManagementEvent rmEvent = recordsManagementEventService.getEvent(event.getEventName());
                             if (event.isEventComplete() == false &&
-                                rmEvent.getType().equals(getName()) == true)
+                                rmEvent.getType().equals(getName()))
                             {
                                 // Complete the event
                                 Map<String, Serializable> params = new HashMap<String, Serializable>(3);

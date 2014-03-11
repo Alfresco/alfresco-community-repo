@@ -63,14 +63,14 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) == true &&
+        if (nodeService.exists(actionedUponNodeRef) &&
             freezeService.isFrozen(actionedUponNodeRef) == false)
         {
             String eventName = (String)action.getParameterValue(PARAM_EVENT_NAME);
             String eventCompletedBy = (String)action.getParameterValue(PARAM_EVENT_COMPLETED_BY);
             Date eventCompletedAt = (Date)action.getParameterValue(PARAM_EVENT_COMPLETED_AT);
 
-            if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true)
+            if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE))
             {
                 // Get the next disposition action
                 DispositionAction da = this.dispositionService.getNextDispositionAction(actionedUponNodeRef);
@@ -125,7 +125,7 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
         List<EventCompletionDetails> events = da.getEventCompletionDetails();
         for (EventCompletionDetails event : events)
         {
-            if (eventName.equals(event.getEventName()) == true)
+            if (eventName.equals(event.getEventName()))
             {
                 result = event;
                 break;

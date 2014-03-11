@@ -109,7 +109,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         // has been updated
         DispositionSchedule itemDs = dispositionService.getDispositionSchedule(disposableItem);
         if (itemDs != null &&
-            itemDs.getNodeRef().equals(ds.getNodeRef()) == true)
+            itemDs.getNodeRef().equals(ds.getNodeRef()))
         {
             if (nodeService.hasAspect(disposableItem, ASPECT_DISPOSITION_LIFECYCLE))
             {

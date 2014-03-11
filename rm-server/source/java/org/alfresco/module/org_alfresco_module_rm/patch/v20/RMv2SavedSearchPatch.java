@@ -34,26 +34,26 @@ import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * RM v2.0 Saved Search Patch
- * 
+ *
  * @author Roy Wetherall
  * @since 2.0
  */
 @SuppressWarnings("deprecation")
-public class RMv2SavedSearchPatch extends ModulePatchComponent 
+public class RMv2SavedSearchPatch extends ModulePatchComponent
                                   implements BeanNameAware, RecordsManagementModel, DOD5015Model
-{    
+{
     /** RM site id */
     private static final String RM_SITE_ID = "rm";
-    
+
     /** Records management search service */
     private RecordsManagementSearchService recordsManagementSearchService;
-    
+
     /** Site service */
     private SiteService siteService;
-    
+
     /** Content service */
     private ContentService contentService;
-    
+
     /**
      * @param recordsManagementSearchService    records management search service
      */
@@ -61,7 +61,7 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
     {
         this.recordsManagementSearchService = recordsManagementSearchService;
     }
-    
+
     /**
      * @param siteService   site service
      */
@@ -69,7 +69,7 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
     {
         this.siteService = siteService;
     }
-    
+
     /**
      * @param contentService    content service
      */
@@ -77,7 +77,7 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
     {
         this.contentService = contentService;
     }
-    
+
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
@@ -88,30 +88,30 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
         {
             // get the saved searches
             List<SavedSearchDetails> savedSearches = recordsManagementSearchService.getSavedSearches(RM_SITE_ID);
-            
-            if (logger.isDebugEnabled() == true)
+
+            if (logger.isDebugEnabled())
             {
                 logger.debug("  ... updating " + savedSearches.size() + " saved searches");
             }
-            
+
             for (SavedSearchDetails savedSearchDetails : savedSearches)
             {
                 // refresh the query
                 String refreshedJSON = savedSearchDetails.toJSONString();
-                NodeRef nodeRef = savedSearchDetails.getNodeRef(); 
- 
+                NodeRef nodeRef = savedSearchDetails.getNodeRef();
+
                 if (nodeRef != null)
                 {
                     ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
                     writer.putContent(refreshedJSON);
-                    
-                    
-                    if (logger.isDebugEnabled() == true)
+
+
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("    ... updated saved search " + savedSearchDetails.getName() + " (nodeRef=" + nodeRef.toString() + ")");
                     }
-                }                
+                }
             }
-        }       
+        }
     }
 }

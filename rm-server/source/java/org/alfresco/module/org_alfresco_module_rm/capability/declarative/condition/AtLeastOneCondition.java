@@ -27,14 +27,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * Composite capability condition implementation that required at least one of the
  * capability conditions to be true.
- * 
+ *
  * @author Roy Wetherall
  */
 public class AtLeastOneCondition extends AbstractCapabilityCondition
 {
     /** capability conditions */
     private List<CapabilityCondition> conditions;
-    
+
     /**
      * @param conditions    capability conditions
      */
@@ -42,7 +42,7 @@ public class AtLeastOneCondition extends AbstractCapabilityCondition
     {
         this.conditions = conditions;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -50,19 +50,19 @@ public class AtLeastOneCondition extends AbstractCapabilityCondition
     public boolean evaluate(NodeRef nodeRef)
     {
         boolean result = false;
-        
+
         if (conditions != null)
         {
             for (CapabilityCondition condition : conditions)
             {
-                if (condition.evaluate(nodeRef) == true)
+                if (condition.evaluate(nodeRef))
                 {
                     result = true;
                     break;
                 }
             }
         }
-        
+
         return result;
     }
 }

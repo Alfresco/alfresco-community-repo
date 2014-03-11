@@ -164,21 +164,21 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     {
         this.dispositionSelectionStrategy = dispositionSelectionStrategy;
     }
-    
+
     /**
      * Behavior to initialize the disposition schedule of a newly filed record.
-     * 
+     *
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFileRecord#onFileRecord(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     @Behaviour(kind=BehaviourKind.CLASS, type="rma:record")
-    public void onFileRecord(NodeRef nodeRef) 
+    public void onFileRecord(NodeRef nodeRef)
     {
         // initialise disposition details
         if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == false)
         {
             DispositionSchedule di = getDispositionSchedule(nodeRef);
-            if (di != null && di.isRecordLevelDisposition() == true)
+            if (di != null && di.isRecordLevelDisposition())
             {
                 nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
             }
@@ -231,7 +231,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         for (DispositionProperty dispositionProperty : values)
         {
             boolean test = dispositionProperty.applies(isRecordLevel, dispositionAction);
-            if (test == true)
+            if (test)
             {
                 result.add(dispositionProperty);
             }
@@ -257,7 +257,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     {
         DispositionSchedule di = null;
         NodeRef diNodeRef = null;
-        if (isRecord(nodeRef) == true)
+        if (isRecord(nodeRef))
         {
             // Get the record folders for the record
             List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);
@@ -292,7 +292,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (result == null)
         {
             NodeRef parent = this.nodeService.getPrimaryParent(nodeRef).getParentRef();
-            if (parent != null && filePlanService.isRecordCategory(parent) == true)
+            if (parent != null && filePlanService.isRecordCategory(parent))
             {
                 result = getDispositionScheduleImpl(parent);
             }
@@ -309,7 +309,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
         // Check the noderef parameter
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef))
         {
             // Get the associated disposition schedule node reference
             NodeRef dsNodeRef = getAssociatedDispositionScheduleImpl(nodeRef);
@@ -340,7 +340,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             throw new AlfrescoRuntimeException("Can not find the associated disposition schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
         }
 
-        if (this.nodeService.hasAspect(nodeRef, ASPECT_SCHEDULED) == true)
+        if (this.nodeService.hasAspect(nodeRef, ASPECT_SCHEDULED))
         {
             List<ChildAssociationRef> childAssocs = this.nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
             if (childAssocs.size() != 0)
@@ -363,7 +363,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         NodeRef result = null;
 
         NodeRef dsNodeRef = dispositionSchedule.getNodeRef();
-        if (nodeService.exists(dsNodeRef) == true)
+        if (nodeService.exists(dsNodeRef))
         {
             List<ChildAssociationRef> assocs = this.nodeService.getParentAssocs(dsNodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
             if (assocs.size() != 0)
@@ -372,7 +372,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 {
                     // TODO in the future we should be able to support disposition schedule reuse, but for now just warn that
                     //      only the first disposition schedule will be considered
-                    if (logger.isWarnEnabled() == true)
+                    if (logger.isWarnEnabled())
                     {
                         logger.warn("Disposition schedule has more than one associated records management container.  " +
                         		    "This is not currently supported so only the first container will be considered. " +
@@ -434,9 +434,9 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         List<NodeRef> result = new ArrayList<NodeRef>(items.size());
         for (NodeRef item : items)
         {
-            if (recordFolderService.isRecordFolder(item) == true)
+            if (recordFolderService.isRecordFolder(item))
             {
-                if (isRecordLevelDisposition == true)
+                if (isRecordLevelDisposition)
                 {
                     result.addAll(recordService.getRecords(item));
                 }
@@ -445,7 +445,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     result.add(item);
                 }
             }
-            else if (filePlanService.isRecordCategory(item) == true)
+            else if (filePlanService.isRecordCategory(item))
             {
                 if (getAssociatedDispositionScheduleImpl(item) == null)
                 {
@@ -564,7 +564,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public void removeDispositionActionDefinition(DispositionSchedule schedule, DispositionActionDefinition actionDefinition)
     {
         // check first whether action definitions can be removed
-        if (hasDisposableItems(schedule) == true)
+        if (hasDisposableItems(schedule))
         {
             throw new AlfrescoRuntimeException("Can not remove action definitions from schedule '" +
                         schedule.getNodeRef() + "' as one or more record or record folders are present.");
@@ -703,13 +703,13 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         DispositionSchedule di = getDispositionSchedule(nodeRef);
         NodeRef nextDa = getNextDispositionActionNodeRef(nodeRef);
         if (di != null &&
-            this.nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true &&
+            this.nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
             nextDa != null)
         {
             // If it has an asOf date and it is greater than now the action is eligible
             Date asOf = (Date)this.nodeService.getProperty(nextDa, PROP_DISPOSITION_AS_OF);
             if (asOf != null &&
-                asOf.before(new Date()) == true)
+                asOf.before(new Date()))
             {
                 result = true;
             }
@@ -733,10 +733,10 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                             isComplete = isCompleteValue.booleanValue();
 
                             // implement AND and OR combination of event completions
-                            if (isComplete == true)
+                            if (isComplete)
                             {
                                 result = true;
-                                if (firstComplete == true)
+                                if (firstComplete)
                                 {
                                     break;
                                 }
@@ -855,7 +855,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 {
                     // Get the current action node
                     NodeRef currentDispositionAction = null;
-                    if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true)
+                    if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE))
                     {
                         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, RegexQNamePattern.MATCH_ALL);
                         if (assocs.size() > 0)
@@ -963,7 +963,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         }
                     }
                 }
-                
+
                 return null;
             }
         };
@@ -978,7 +978,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public void cutoffDisposableItem(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         // check that the node ref is a filed record or record folder
         if (FilePlanComponentKind.RECORD_FOLDER.equals(filePlanService.getFilePlanComponentKind(nodeRef)) ||
             FilePlanComponentKind.RECORD.equals(filePlanService.getFilePlanComponentKind(nodeRef)))
@@ -993,10 +993,10 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         applyCutoff(record);
                     }
                 }
-                
+
                 // apply cut off
                 applyCutoff(nodeRef);
-                
+
                 if (recordFolderService.isRecordFolder(nodeRef))
                 {
                     // close folder (manually since we can't normall close a folder that is cut off!!
@@ -1009,7 +1009,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             throw new AlfrescoRuntimeException("Unable to peform cutoff, because node is not a disposible item. (nodeRef=" + nodeRef.toString() + ")");
         }
     }
-    
+
     private void applyCutoff(NodeRef nodeRef)
     {
         // Apply the cut off aspect and set cut off date

@@ -116,7 +116,7 @@ public class RecordsManagementEventServiceImplTest extends BaseRMTestCase implem
         boolean result = false;
         for (RecordsManagementEvent event : events)
         {
-            if (eventName.equals(event.getName()) == true)
+            if (eventName.equals(event.getName()))
             {
                 result = true;
                 break;

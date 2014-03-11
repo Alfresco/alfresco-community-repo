@@ -349,7 +349,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     public void onRemoveAspect(NodeRef nodeRef, QName aspect)
     {
 
-        if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) )
+        if (nodeService.hasAspect(nodeRef, ASPECT_RECORD))
         {
             ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
 
@@ -363,7 +363,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             // check whether filling is pending aspect removal
             Set<NodeRef> pendingFilling = TransactionalResourceHelper.getSet("pendingFilling");
-            if (pendingFilling.contains(nodeRef) )
+            if (pendingFilling.contains(nodeRef))
             {
                 file(nodeRef);
             }
@@ -394,7 +394,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         try
         {
-            if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) )
+            if (nodeService.hasAspect(nodeRef, ASPECT_RECORD))
             {
                 String origionalName =  (String)nodeService.getProperty(nodeRef, PROP_ORIGIONAL_NAME);
                 if (origionalName != null)
@@ -407,21 +407,21 @@ public class RecordServiceImpl extends BaseBehaviourBean
         }
         catch (FileExistsException e)
         {
-            if (logger.isDebugEnabled() )
+            if (logger.isDebugEnabled())
             {
                 logger.debug(e.getMessage());
             }
         }
         catch (InvalidNodeRefException e)
         {
-            if (logger.isDebugEnabled() )
+            if (logger.isDebugEnabled())
             {
                 logger.debug(e.getMessage());
             }
         }
         catch (FileNotFoundException e)
         {
-            if (logger.isDebugEnabled() )
+            if (logger.isDebugEnabled())
             {
                 logger.debug(e.getMessage());
             }
@@ -450,7 +450,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) == false &&
                         nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY) == false)
                     {
-                        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT) )
+                        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
                         {
                             // we need to postpone filling until the NO_CONTENT aspect is removed
                             Set<NodeRef> pendingFilling = TransactionalResourceHelper.getSet("pendingFilling");
@@ -617,7 +617,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             if (def != null)
             {
                 QName parent = def.getParentName();
-                if (parent != null && ASPECT_RECORD_META_DATA.equals(parent) )
+                if (parent != null && ASPECT_RECORD_META_DATA.equals(parent))
                 {
                     recordMetaDataAspects.put(aspect, Collections.singleton(TYPE_FILE_PLAN));
                 }
@@ -785,7 +785,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         // make the document a record
                         makeRecord(nodeRef);
 
-                        if (isLinked )
+                        if (isLinked)
                         {
                             // turn off rules
                             ruleService.disableRules();
@@ -828,7 +828,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         ParameterCheck.mandatory("name", name);
 
         NodeRef destination = nodeRef;
-        if (filePlanService.isFilePlan(nodeRef) )
+        if (filePlanService.isFilePlan(nodeRef))
         {
             // get the unfiled record container for the file plan
             destination = filePlanService.getUnfiledContainer(nodeRef);
@@ -908,7 +908,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             String recordName = prefix + " (" + recordId + ")" + postfix;
             fileFolderService.rename(document, recordName);
 
-            if (logger.isDebugEnabled() )
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Rename " + name + " to " + recordName);
             }
@@ -940,13 +940,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
         boolean result = false;
 
-        if (isRecord(nodeRef) )
+        if (isRecord(nodeRef))
         {
             ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(nodeRef);
             if (childAssocRef != null)
             {
                 NodeRef parent = childAssocRef.getParentRef();
-                if (parent != null && recordFolderService.isRecordFolder(parent) )
+                if (parent != null && recordFolderService.isRecordFolder(parent))
                 {
                     result = true;
                 }
@@ -973,7 +973,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // TODO composite record support needs to file containers too
         QName type = nodeService.getType(record);
         if (ContentModel.TYPE_CONTENT.equals(type)  ||
-            dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) )
+            dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
         {
             // fire before file record policy
             beforeFileRecord.get(getTypeAndApsects(record)).beforeFileRecord(record);
@@ -1075,7 +1075,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     Set<QName> aspects = nodeService.getAspects(nodeRef);
                     for (QName aspect : aspects)
                     {
-                        if (RM_URI.equals(aspect.getNamespaceURI()) )
+                        if (RM_URI.equals(aspect.getNamespaceURI()))
                         {
                             // remove the aspect
                             nodeService.removeAspect(nodeRef, aspect);
@@ -1093,7 +1093,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     {
                         fileFolderService.rename(nodeRef, origionalName);
 
-                        if (logger.isDebugEnabled() )
+                        if (logger.isDebugEnabled())
                         {
                             String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                             logger.debug("Rename " + name + " to " + origionalName);
@@ -1141,7 +1141,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             throw new AlfrescoRuntimeException("Can not check if the property " + property.toString() + " is editable, because node reference is not a record.");
         }
 
-        if (logger.isDebugEnabled() )
+        if (logger.isDebugEnabled())
         {
             logger.debug("Checking whether property " + property.toString() + " is editable for user " + AuthenticationUtil.getRunAsUser());
         }
@@ -1150,28 +1150,28 @@ public class RecordServiceImpl extends BaseBehaviourBean
         NodeRef filePlan = filePlanService.getFilePlan(record);
         Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, AuthenticationUtil.getRunAsUser());
 
-        if (logger.isDebugEnabled() )
+        if (logger.isDebugEnabled())
         {
             logger.debug(" ... users roles");
         }
 
         for (Role role : roles)
         {
-            if (logger.isDebugEnabled() )
+            if (logger.isDebugEnabled())
             {
                 logger.debug("     ... user has role " + role.getName() + " with capabilities ");
             }
 
             for (Capability cap : role.getCapabilities())
             {
-                if (logger.isDebugEnabled() )
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("         ... " + cap.getName());
                 }
             }
         }
 
-        if (logger.isDebugEnabled() )
+        if (logger.isDebugEnabled())
         {
             logger.debug(" ... user has the following set permissions on the file plan");
         }
@@ -1195,9 +1195,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // END DEBUG ...
 
         boolean result = alwaysEditProperty(property);
-        if (result )
+        if (result)
         {
-            if (logger.isDebugEnabled() )
+            if (logger.isDebugEnabled())
             {
                 logger.debug(" ... property marked as always editable.");
             }
@@ -1211,9 +1211,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
             AccessStatus accessDeclaredRecord = capabilityService.getCapabilityAccessState(record, RMPermissionModel.EDIT_DECLARED_RECORD_METADATA);
             AccessStatus accessRecord = capabilityService.getCapabilityAccessState(record, RMPermissionModel.EDIT_RECORD_METADATA);
 
-            if (AccessStatus.ALLOWED.equals(accessNonRecord) )
+            if (AccessStatus.ALLOWED.equals(accessNonRecord))
             {
-                if (logger.isDebugEnabled() )
+                if (logger.isDebugEnabled())
                 {
                     logger.debug(" ... user has edit nonrecord metadata capability");
                 }
@@ -1222,9 +1222,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
             }
 
             if (AccessStatus.ALLOWED.equals(accessRecord)  ||
-                AccessStatus.ALLOWED.equals(accessDeclaredRecord) )
+                AccessStatus.ALLOWED.equals(accessDeclaredRecord))
             {
-                if (logger.isDebugEnabled() )
+                if (logger.isDebugEnabled())
                 {
                     logger.debug(" ... user has edit record or declared metadata capability");
                 }
@@ -1234,7 +1234,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             if (allowNonRecordEdit && allowRecordEdit)
             {
-                if (logger.isDebugEnabled() )
+                if (logger.isDebugEnabled())
                 {
                     logger.debug(" ... so all properties can be edited.");
                 }
@@ -1246,7 +1246,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 // can only edit non record properties
                 if (isRecordMetadata(property) == false)
                 {
-                    if (logger.isDebugEnabled() )
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug(" ... property is not considered record metadata so editable.");
                     }
@@ -1255,18 +1255,18 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
                 else
                 {
-                    if (logger.isDebugEnabled() )
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug(" ... property is considered record metadata so not editable.");
                     }
                 }
             }
-            else if (allowNonRecordEdit == false && allowRecordEdit )
+            else if (allowNonRecordEdit == false && allowRecordEdit)
             {
                 // can only edit record properties
-                if (isRecordMetadata(property) )
+                if (isRecordMetadata(property))
                 {
-                    if (logger.isDebugEnabled() )
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug(" ... property is considered record metadata so editable.");
                     }
@@ -1275,7 +1275,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
                 else
                 {
-                    if (logger.isDebugEnabled() )
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug(" ... property is not considered record metadata so not editable.");
                     }
@@ -1302,7 +1302,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             if (def != null)
             {
                 ClassDefinition parent = def.getContainerClass();
-                if (parent != null && parent.isAspect() )
+                if (parent != null && parent.isAspect())
                 {
                     result = getRecordMetaDataAspects().contains(parent.getName());
                 }
@@ -1368,7 +1368,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             for (ChildAssociationRef assoc : assocs)
             {
                 NodeRef child = assoc.getChildRef();
-                if (isRecord(child) )
+                if (isRecord(child))
                 {
                     result.add(child);
                 }

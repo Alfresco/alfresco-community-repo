@@ -61,7 +61,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
 
         // make sure the node passed in has a disposition schedule attached
         DispositionSchedule schedule = null;
-        if (inherited == true)
+        if (inherited)
         {
             schedule = this.dispositionService.getDispositionSchedule(nodeRef);
         }
@@ -195,7 +195,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         for (DispositionActionDefinition actionDef : schedule.getDispositionActionDefinitions())
         {
             NodeRef actionDefNodeRef = actionDef.getNodeRef();
-            if (nodeService.hasAspect(actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE) == true)
+            if (nodeService.hasAspect(actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE))
             {
                 unpublishedUpdates = true;
                 publishInProgress = ((Boolean)nodeService.getProperty(actionDefNodeRef, RecordsManagementModel.PROP_PUBLISH_IN_PROGRESS)).booleanValue();

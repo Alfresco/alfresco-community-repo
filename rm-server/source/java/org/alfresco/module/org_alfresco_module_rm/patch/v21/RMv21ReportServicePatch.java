@@ -44,17 +44,17 @@ import org.springframework.beans.factory.BeanNameAware;
 public class RMv21ReportServicePatch extends RMv21PatchComponent
                                      implements BeanNameAware
 {
-    private static final NodeRef TEMPLATE_ROOT = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_report_templates");    
+    private static final NodeRef TEMPLATE_ROOT = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_report_templates");
     private static final NodeRef RM_CONFIG_FOLDER = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
-    
+
     private static final String PATH_DESTRUCTION_TEMPLATE = "alfresco/module/org_alfresco_module_rm/bootstrap/report/report_rmr_destructionReport.html.ftl";
-    
+
     /** node service */
     private NodeService nodeService;
-    
+
     /** content service */
     private ContentService contentService;
-    
+
     /**
      * @param nodeService   node service
      */
@@ -62,49 +62,49 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
-    
+
     @Override
     protected void executePatch() throws Throwable
     {
         // check whether report dir exists or not
-        if (nodeService.exists(RM_CONFIG_FOLDER) == true && nodeService.exists(TEMPLATE_ROOT) == false)
+        if (nodeService.exists(RM_CONFIG_FOLDER) && nodeService.exists(TEMPLATE_ROOT) == false)
         {
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug(" ... adding template root folder");
             }
-            
+
             // create report dir
             NodeRef templateRoot = createNode(ContentModel.TYPE_FOLDER,
-                                              RM_CONFIG_FOLDER, 
-                                              "rm_report_templates", 
-                                              "Records Management Report Templates", 
-                                              "rm_report_templates", 
-                                              "Records Management Report Templates", 
+                                              RM_CONFIG_FOLDER,
+                                              "rm_report_templates",
+                                              "Records Management Report Templates",
+                                              "rm_report_templates",
+                                              "Records Management Report Templates",
                                               "Records management report templates.");
-            
-            if (logger.isDebugEnabled() == true)
+
+            if (logger.isDebugEnabled())
             {
                 logger.debug(" ... adding destruction report template");
             }
-                        
+
             // create report templates
             NodeRef destructionTemplate = createNode(
                     ContentModel.TYPE_CONTENT,
-                    templateRoot, 
-                    "rmr_destructionReport", 
-                    "report_rmr_destructionReport.html.ftl", 
-                    "report_rmr_destructionReport.html.ftl", 
-                    "Destruction Report Template", 
+                    templateRoot,
+                    "rmr_destructionReport",
+                    "report_rmr_destructionReport.html.ftl",
+                    "report_rmr_destructionReport.html.ftl",
+                    "Destruction Report Template",
                     "Desruction report template.");
             nodeService.addAspect(destructionTemplate, ContentModel.ASPECT_TITLED, null);
             nodeService.addAspect(destructionTemplate, ContentModel.ASPECT_AUTHOR, null);
-            
+
             // put the content
             ContentWriter writer = contentService.getWriter(destructionTemplate, ContentModel.PROP_CONTENT, true);
             InputStream is = getClass().getClassLoader().getResourceAsStream(PATH_DESTRUCTION_TEMPLATE);
@@ -113,7 +113,7 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
             writer.putContent(is);
         }
     }
-    
+
     private NodeRef createNode(QName type, NodeRef parent, String id, String name, String assocName,  String title, String description)
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(4);
@@ -124,7 +124,7 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
 
         // get the assoc qname
         QName assocQName = QName.createQName(
-                NamespaceService.CONTENT_MODEL_1_0_URI, 
+                NamespaceService.CONTENT_MODEL_1_0_URI,
                 QName.createValidLocalName(assocName));
 
         // create the node

@@ -429,7 +429,7 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
         assertEquals(enabled, vitalRecordIndicator.booleanValue());
         assertEquals(enabled, def.isEnabled());
 
-        if (enabled == true)
+        if (enabled)
         {
             Period reviewPeriod = (Period)nodeService.getProperty(nodeRef, PROP_REVIEW_PERIOD);
             assertNotNull(reviewPeriod);
@@ -443,7 +443,7 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
     private void assertVitalRecord(NodeRef nodeRef, boolean enabled, Period period)
     {
         assertEquals(enabled, nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD));
-        if (enabled == true)
+        if (enabled)
         {
             Date reviewAsOf = (Date)nodeService.getProperty(nodeRef, PROP_REVIEW_AS_OF);
             assertNotNull(reviewAsOf);

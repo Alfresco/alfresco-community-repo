@@ -40,15 +40,15 @@ import org.springframework.extensions.surf.util.I18NUtil;
 /**
  * This class applies the aspect specified in the spring bean property customTypeAspect.
  * It is used to apply one of the 4 "custom type" aspects from the DOD 5015 model.
- * 
+ *
  * @author Neil McErlean
  */
 public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
 {
     /** I18N */
-    private static final String MSG_ACTIONED_UPON_NOT_RECORD = "rm.action.actioned-upon-not-record";    
+    private static final String MSG_ACTIONED_UPON_NOT_RECORD = "rm.action.actioned-upon-not-record";
     private static final String MSG_CUSTOM_ASPECT_NOT_RECOGNISED = "rm.action.custom-aspect-not-recognised";
-    
+
     private static Log logger = LogFactory.getLog(ApplyCustomTypeAction.class);
     private QName customTypeAspect;
     private List<ParameterDefinition> parameterDefinitions;
@@ -68,14 +68,14 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
         {
             logger.debug("Executing action [" + action.getActionDefinitionName() + "] on " + actionedUponNodeRef);
         }
-        
-        if (recordService.isRecord(actionedUponNodeRef) == true)
+
+        if (recordService.isRecord(actionedUponNodeRef))
         {
             // Apply the appropriate aspect and set the properties.
             Map<QName, Serializable> aspectProps = getPropertyValues(action);
             this.nodeService.addAspect(actionedUponNodeRef, customTypeAspect, aspectProps);
         }
-        else if (logger.isWarnEnabled() == true)
+        else if (logger.isWarnEnabled())
         {
             logger.warn(I18NUtil.getMessage(MSG_ACTIONED_UPON_NOT_RECORD, this.getClass().getSimpleName(), actionedUponNodeRef.toString()));
         }
@@ -105,14 +105,14 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
     private Map<QName, Serializable> getPropertyValues(Action action)
     {
         Map<String, Serializable> paramValues = action.getParameterValues();
-        
+
         Map<QName, Serializable> result = new HashMap<QName, Serializable>(paramValues.size());
         for (String paramName : paramValues.keySet())
         {
             QName propQName = QName.createQName(paramName, this.namespaceService);
             result.put(propQName, paramValues.get(paramName));
         }
-    
+
         return result;
     }
 
@@ -127,11 +127,11 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
             {
                 throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CUSTOM_ASPECT_NOT_RECOGNISED, customTypeAspect));
             }
-            
+
             Map<QName, PropertyDefinition> props = aspectDefinition.getProperties();
-            
+
             this.parameterDefinitions = new ArrayList<ParameterDefinition>(props.size());
-            
+
             for (QName qn : props.keySet())
             {
                 String paramName = qn.toPrefixString(namespaceService);

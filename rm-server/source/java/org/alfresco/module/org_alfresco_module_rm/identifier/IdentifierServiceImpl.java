@@ -39,30 +39,30 @@ import org.apache.commons.logging.LogFactory;
 public class IdentifierServiceImpl implements IdentifierService
 {
     /** Logger */
-    private static Log logger = LogFactory.getLog(IdentifierServiceImpl.class);  
-    
+    private static Log logger = LogFactory.getLog(IdentifierServiceImpl.class);
+
     /** Registry map */
     private Map<QName, IdentifierGenerator> register = new HashMap<QName, IdentifierGenerator>(5);
-    
+
     /** Node service */
     private NodeService nodeService;
-    
+
     /** Dictionary service */
     private DictionaryService dictionaryService;
-    
+
     /**
      * Set the node service
-     * 
+     *
      * @param nodeService   node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set the dictionary service
-     * 
+     *
      * @param dictionaryService dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -77,7 +77,7 @@ public class IdentifierServiceImpl implements IdentifierService
     public String generateIdentifier(QName type, NodeRef parent)
     {
         ParameterCheck.mandatory("type", type);
-        
+
         // Build the context
         Map<String, Serializable> context = new HashMap<String, Serializable>(2);
         if (parent != null)
@@ -85,11 +85,11 @@ public class IdentifierServiceImpl implements IdentifierService
             context.put(CONTEXT_PARENT_NODEREF, parent);
         }
         context.put(CONTEXT_ORIG_TYPE, type);
-        
+
         // Generate the id
         return generateIdentifier(type, context);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService#generateIdentifier(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -97,31 +97,31 @@ public class IdentifierServiceImpl implements IdentifierService
     public String generateIdentifier(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         Map<String, Serializable> context = new HashMap<String, Serializable>(3);
-        
+
         // Set the original type
         QName type = nodeService.getType(nodeRef);
         context.put(CONTEXT_ORIG_TYPE, type);
-        
+
         // Set the parent reference
         ChildAssociationRef assocRef = nodeService.getPrimaryParent(nodeRef);
         if (assocRef != null && assocRef.getParentRef() != null)
         {
             context.put(CONTEXT_PARENT_NODEREF, assocRef.getParentRef());
         }
-        
+
         // Set the node reference
         context.put(CONTEXT_NODEREF, nodeRef);
-        
+
         // Generate the identifier
         return generateIdentifier(type, context);
-        
+
     }
-    
+
     /**
      * Generate an identifier for a given type of object with the accompanying context.
-     * 
+     *
      * @param type      content type
      * @param context   context
      * @return String   identifier
@@ -129,19 +129,19 @@ public class IdentifierServiceImpl implements IdentifierService
     private String generateIdentifier(QName type, Map<String, Serializable> context)
     {
         ParameterCheck.mandatory("type", type);
-        ParameterCheck.mandatory("context", context);        
-        
+        ParameterCheck.mandatory("context", context);
+
         // Get the identifier generator
         IdentifierGenerator idGen = lookupGenerator(type);
         if (idGen == null)
         {
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Unable to generate id for object of type " + type.toString() + ", because no identifier generator was found.");
             }
             throw new AlfrescoRuntimeException("Unable to generate id for object of type " + type.toString() + ", because no identifier generator was found.");
         }
-        
+
         // Generate the identifier
         return idGen.generateId(context);
     }
@@ -155,24 +155,24 @@ public class IdentifierServiceImpl implements IdentifierService
     }
 
     /**
-     * 
+     *
      * @param type content type (could be aspect or type)
      * @return
      */
     private IdentifierGenerator lookupGenerator(QName type)
     {
         ParameterCheck.mandatory("type", type);
-        
-        if (logger.isDebugEnabled() == true)
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("Looking for idGenerator for type " + type.toString());
         }
-        
+
         // Look for the generator related to the type
         IdentifierGenerator result = register.get(type);
         if (result == null)
         {
-            // Check the parent type 
+            // Check the parent type
             ClassDefinition typeDef = dictionaryService.getClass(type);
             if (typeDef != null)
             {
@@ -185,7 +185,7 @@ public class IdentifierServiceImpl implements IdentifierService
             }
             else
             {
-                if (logger.isDebugEnabled() == true)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Unable to find type definition for " + type.toString() + " when generating identifier.");
                 }

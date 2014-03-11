@@ -94,18 +94,18 @@ public class RmActionPost extends DeclarativeWebScript
          JSONObject jsonObj = new JSONObject(new JSONTokener(reqContentAsString));
 
          // Get the action name
-         if (jsonObj.has(PARAM_NAME) == true)
+         if (jsonObj.has(PARAM_NAME))
          {
             actionName = jsonObj.getString(PARAM_NAME);
          }
 
          // Get the target references
-         if (jsonObj.has(PARAM_NODE_REF) == true)
+         if (jsonObj.has(PARAM_NODE_REF))
          {
             NodeRef nodeRef = new NodeRef(jsonObj.getString(PARAM_NODE_REF));
             targetNodeRefs.add(nodeRef);
          }
-         if (jsonObj.has(PARAM_NODE_REFS) == true)
+         if (jsonObj.has(PARAM_NODE_REFS))
          {
             JSONArray jsonArray = jsonObj.getJSONArray(PARAM_NODE_REFS);
             if (jsonArray.length() != 0)
@@ -131,7 +131,7 @@ public class RmActionPost extends DeclarativeWebScript
                // Check for date values
                if (nextValue instanceof JSONObject)
                {
-                  if (((JSONObject)nextValue).has("iso8601") == true)
+                  if (((JSONObject)nextValue).has("iso8601"))
                   {
                      String dateStringValue = ((JSONObject)nextValue).getString("iso8601");
                      nextValue = ISO8601DateFormat.parse(dateStringValue);
@@ -167,7 +167,7 @@ public class RmActionPost extends DeclarativeWebScript
          }
 
          // Build the string
-         if (firstTime == true)
+         if (firstTime)
          {
             firstTime = false;
          }

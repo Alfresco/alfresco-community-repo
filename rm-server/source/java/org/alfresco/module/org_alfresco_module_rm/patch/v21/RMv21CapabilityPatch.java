@@ -79,7 +79,7 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
     {
         return filePlanService.getFilePlans();
     }
-    
+
     /**
      * Adds a new capability to the specified roles.
      *
@@ -107,7 +107,7 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
                 // only update if the capability is missing
                 if (capabilities.contains(capability) == false)
                 {
-                    if (logger.isDebugEnabled() == true)
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("  ... adding capability " + capabilityName + " to role " + role.getName());
                     }
@@ -118,7 +118,7 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
             }
         }
     }
-    
+
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
@@ -127,14 +127,14 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
     {
         Set<NodeRef> filePlans = getFilePlans();
 
-        if (logger.isDebugEnabled() == true)
+        if (logger.isDebugEnabled())
         {
             logger.debug("  ... updating " + filePlans.size() + " file plans");
         }
 
         for (NodeRef filePlan : filePlans)
         {
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("  ... updating file plan " + filePlan.toString());
             }

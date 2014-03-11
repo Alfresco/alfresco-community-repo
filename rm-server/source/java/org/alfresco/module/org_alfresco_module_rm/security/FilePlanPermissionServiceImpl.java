@@ -169,7 +169,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         // Pull any permissions found on the parent (ie the record category)
         final NodeRef parentNodeRef = nodeService.getPrimaryParent(recordCategory).getParentRef();
-        if (parentNodeRef != null && nodeService.exists(parentNodeRef) == true)
+        if (parentNodeRef != null && nodeService.exists(parentNodeRef))
         {
             AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
             {
@@ -182,11 +182,11 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     for (AccessPermission perm : perms)
                     {
                         if (fillingOnly == false ||
-                            RMPermissionModel.FILING.equals(perm.getPermission()) == true)
+                            RMPermissionModel.FILING.equals(perm.getPermission()))
                         {
                             AccessStatus accessStatus = perm.getAccessStatus();
                             boolean allow = false;
-                            if (AccessStatus.ALLOWED.equals(accessStatus) == true)
+                            if (AccessStatus.ALLOWED.equals(accessStatus))
                             {
                                 allow = true;
                             }
@@ -216,7 +216,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         // Pull any permissions found on the parent (ie the record category)
         final NodeRef catNodeRef = childAssocRef.getParentRef();
-        if (nodeService.exists(catNodeRef) == true)
+        if (nodeService.exists(catNodeRef))
         {
             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
@@ -230,7 +230,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                         {
                             AccessStatus accessStatus = perm.getAccessStatus();
                             boolean allow = false;
-                            if (AccessStatus.ALLOWED.equals(accessStatus) == true)
+                            if (AccessStatus.ALLOWED.equals(accessStatus))
                             {
                                 allow = true;
                             }
@@ -262,7 +262,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         {
             public Object doWork()
             {
-                if (nodeService.exists(record) == true && nodeService.hasAspect(record, aspectTypeQName) == true)
+                if (nodeService.exists(record) && nodeService.hasAspect(record, aspectTypeQName))
                 {
                     NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();
                     initialiseRecordPermissions(record, recordFolder);
@@ -285,7 +285,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             public Void doWork()
             {
                 NodeRef nodeRef = childAssocRef.getChildRef();
-                if (nodeService.exists(nodeRef) == true)
+                if (nodeService.exists(nodeRef))
                 {
                     initPermissions(nodeRef);
 
@@ -298,7 +298,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                         {
                             AccessStatus accessStatus = perm.getAccessStatus();
                             boolean allow = false;
-                            if (AccessStatus.ALLOWED.equals(accessStatus) == true)
+                            if (AccessStatus.ALLOWED.equals(accessStatus))
                             {
                                 allow = true;
                             }
@@ -336,7 +336,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             {
                 AccessStatus accessStatus = perm.getAccessStatus();
                 boolean allow = false;
-                if (AccessStatus.ALLOWED.equals(accessStatus) == true)
+                if (AccessStatus.ALLOWED.equals(accessStatus))
                 {
                     allow = true;
                 }
@@ -363,7 +363,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             public Void doWork()
             {
                 NodeRef record = sourceAssocRef.getChildRef();
-                if (nodeService.exists(record) == true && nodeService.hasAspect(record, ASPECT_RECORD) == true)
+                if (nodeService.exists(record) && nodeService.hasAspect(record, ASPECT_RECORD))
                 {
                     Set<AccessPermission> keepPerms = new HashSet<AccessPermission>(5);
 
@@ -375,8 +375,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                         if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false &&
                             ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()) == false)
                         {
-                            if ((perm.getPermission().equals(RMPermissionModel.FILING) == true ||
-                                 perm.getPermission().equals(RMPermissionModel.FILE_RECORDS) == true) &&
+                            if ((perm.getPermission().equals(RMPermissionModel.FILING) ||
+                                 perm.getPermission().equals(RMPermissionModel.FILE_RECORDS)) &&
                                 origionalParentPerms.contains(perm) == false)
                             {
                                 // then we can assume this is a permission we want to preserve
@@ -410,7 +410,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      */
     private void initPermissions(final NodeRef nodeRef)
     {
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef))
         {
             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
@@ -442,20 +442,20 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         {
             public Boolean doWork() throws Exception
             {
-                if (filePlanService.isFilePlan(nodeRef) == true)
+                if (filePlanService.isFilePlan(nodeRef))
                 {
                    setPermissionDown(nodeRef, authority, permission);
                 }
-                else if (filePlanService.isFilePlanContainer(nodeRef) == true ||
-                         recordFolderService.isRecordFolder(nodeRef) == true ||
-                         recordService.isRecord(nodeRef) == true)
+                else if (filePlanService.isFilePlanContainer(nodeRef) ||
+                         recordFolderService.isRecordFolder(nodeRef) ||
+                         recordService.isRecord(nodeRef))
                 {
                     setReadPermissionUp(nodeRef, authority);
                     setPermissionDown(nodeRef, authority, permission);
                 }
                 else
                 {
-                    if (logger.isWarnEnabled() == true)
+                    if (logger.isWarnEnabled())
                     {
                         logger.warn("Setting permissions for this node is not supported.  (nodeRef=" + nodeRef + ", authority=" + authority + ", permission=" + permission + ")");
                     }
@@ -475,7 +475,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     private void setReadPermissionUp(NodeRef nodeRef, String authority)
     {
         NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-        if (parent != null && filePlanService.isFilePlanComponent(parent) == true)
+        if (parent != null && filePlanService.isFilePlanComponent(parent))
         {
             setReadPermissionUpImpl(parent, authority);
         }
@@ -492,7 +492,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         setPermissionImpl(nodeRef, authority, RMPermissionModel.READ_RECORDS);
 
         NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-        if (parent != null && filePlanService.isFilePlanComponent(parent) == true)
+        if (parent != null && filePlanService.isFilePlanComponent(parent))
         {
             setReadPermissionUpImpl(parent, authority);
         }
@@ -513,18 +513,18 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             // set permissions
             setPermissionImpl(nodeRef, authority, permission);
 
-            if (filePlanService.isFilePlanContainer(nodeRef) == true ||
-                recordFolderService.isRecordFolder(nodeRef) == true)
+            if (filePlanService.isFilePlanContainer(nodeRef) ||
+                recordFolderService.isRecordFolder(nodeRef))
             {
                 List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                 for (ChildAssociationRef assoc : assocs)
                 {
                     NodeRef child = assoc.getChildRef();
-                    if (filePlanService.isFilePlanContainer(child) == true ||
-                        recordFolderService.isRecordFolder(child) == true ||
-                        recordService.isRecord(child) == true ||
-                        instanceOf(child, TYPE_HOLD) == true ||
-                        instanceOf(child, TYPE_TRANSFER) == true)
+                    if (filePlanService.isFilePlanContainer(child) ||
+                        recordFolderService.isRecordFolder(child) ||
+                        recordService.isRecord(child) ||
+                        instanceOf(child, TYPE_HOLD) ||
+                        instanceOf(child, TYPE_TRANSFER))
                     {
                         setPermissionDown(child, authority, permission);
                     }
@@ -542,7 +542,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      */
     private void setPermissionImpl(NodeRef nodeRef, String authority, String permission)
     {
-        if (RMPermissionModel.FILING.equals(permission) == true)
+        if (RMPermissionModel.FILING.equals(permission))
         {
             // Remove record read permission before adding filing permission
             permissionService.deletePermission(nodeRef, authority, RMPermissionModel.READ_RECORDS);
@@ -566,18 +566,18 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     // Delete permission on this node
                     permissionService.deletePermission(nodeRef, authority, permission);
 
-                    if (filePlanService.isFilePlanContainer(nodeRef) == true ||
-                        recordFolderService.isRecordFolder(nodeRef) == true)
+                    if (filePlanService.isFilePlanContainer(nodeRef) ||
+                        recordFolderService.isRecordFolder(nodeRef))
                     {
                         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                         for (ChildAssociationRef assoc : assocs)
                         {
                             NodeRef child = assoc.getChildRef();
-                            if (filePlanService.isFilePlanContainer(child) == true ||
-                                recordFolderService.isRecordFolder(child) == true ||
-                                recordService.isRecord(child) == true||
-                                instanceOf(child, TYPE_HOLD) == true ||
-                                instanceOf(child, TYPE_TRANSFER) == true)
+                            if (filePlanService.isFilePlanContainer(child) ||
+                                recordFolderService.isRecordFolder(child) ||
+                                recordService.isRecord(child)||
+                                instanceOf(child, TYPE_HOLD) ||
+                                instanceOf(child, TYPE_TRANSFER))
                             {
                                 deletePermission(child, authority, permission);
                             }

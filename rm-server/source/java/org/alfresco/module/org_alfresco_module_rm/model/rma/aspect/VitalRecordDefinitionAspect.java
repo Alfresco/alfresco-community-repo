@@ -36,7 +36,7 @@ import org.alfresco.util.PropertyMap;
 
 /**
  * rma:ghosted behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -49,10 +49,10 @@ public class VitalRecordDefinitionAspect extends    BaseBehaviourBean
 {
     /** file plan authentication service */
     protected FilePlanAuthenticationService filePlanAuthenticationService;
-    
+
     /** records management action service */
     protected RecordsManagementActionService recordsManagementActionService;
-    
+
     /**
      * @param filePlanAuthenticationService file plan authentication service
      */
@@ -60,7 +60,7 @@ public class VitalRecordDefinitionAspect extends    BaseBehaviourBean
     {
         this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
-    
+
     /**
      * @param recordsManagementActionService    records management action service
      */
@@ -68,7 +68,7 @@ public class VitalRecordDefinitionAspect extends    BaseBehaviourBean
     {
         this.recordsManagementActionService = recordsManagementActionService;
     }
-    
+
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
@@ -80,13 +80,13 @@ public class VitalRecordDefinitionAspect extends    BaseBehaviourBean
     )
     public void onUpdateProperties(final NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        if (nodeService.exists(nodeRef) == true &&
-            nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
+        if (nodeService.exists(nodeRef) &&
+            nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT))
         {
             // check that vital record definition has been changed in the first place
             Map<QName, Serializable> changedProps = PropertyMap.getChangedProperties(before, after);
-            if (changedProps.containsKey(PROP_VITAL_RECORD_INDICATOR) == true ||
-                changedProps.containsKey(PROP_REVIEW_PERIOD) == true)
+            if (changedProps.containsKey(PROP_VITAL_RECORD_INDICATOR) ||
+                changedProps.containsKey(PROP_REVIEW_PERIOD))
             {
                 filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>()
                 {
@@ -100,5 +100,5 @@ public class VitalRecordDefinitionAspect extends    BaseBehaviourBean
             }
         }
     }
-    
+
 }

@@ -103,13 +103,13 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             Form form,
             Map<String, Object> context)
     {
-        if (filePlanService.isFilePlanComponent(nodeRef) == true)
+        if (filePlanService.isFilePlanComponent(nodeRef))
         {
             // add all the custom properties
             addCustomPropertyFieldsToGroup(form, nodeRef);
 
             FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
-            if (FilePlanComponentKind.RECORD.equals(kind) == true)
+            if (FilePlanComponentKind.RECORD.equals(kind))
             {
                 // add all the record meta-data aspect properties
                 addRecordMetadataPropertyFieldsToGroup(form, nodeRef);
@@ -129,7 +129,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                     protectEmailExtractedFields(form, nodeRef);
                 }
             }
-            else if (FilePlanComponentKind.RECORD_FOLDER.equals(kind) == true)
+            else if (FilePlanComponentKind.RECORD_FOLDER.equals(kind))
             {
                 // add the supplemental marking list property
                 forceSupplementalMarkingListProperty(form, nodeRef);
@@ -137,13 +137,13 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                 // add required transient properties
                 addTransientProperties(form, nodeRef);
             }
-            else if (FilePlanComponentKind.DISPOSITION_SCHEDULE.equals(kind) == true)
+            else if (FilePlanComponentKind.DISPOSITION_SCHEDULE.equals(kind))
             {
                  // use the same mechanism used to determine whether steps can be removed from the
                  // schedule to determine whether the disposition level can be changed i.e. record
                  // level or folder level.
                  DispositionSchedule schedule = new DispositionScheduleImpl(this.rmServiceRegistry, this.nodeService, nodeRef);
-                 if (dispositionService.hasDisposableItems(schedule) == true)
+                 if (dispositionService.hasDisposableItems(schedule))
                  {
                      protectRecordLevelDispositionPropertyField(form);
                  }
@@ -163,7 +163,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
 
         // Compatibility support: don't show category properties if node of type series
         QName type = nodeService.getType(nodeRef);
-        if (CompatibilityModel.TYPE_RECORD_SERIES.equals(type) == true)
+        if (CompatibilityModel.TYPE_RECORD_SERIES.equals(type))
         {
             // remove record category from the list of customisable types to apply to the form
             customisables.remove(TYPE_RECORD_CATEGORY);
@@ -186,7 +186,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
 
         for (QName aspect : aspects)
         {
-            if (nodeService.hasAspect(nodeRef, aspect) == true)
+            if (nodeService.hasAspect(nodeRef, aspect))
             {
                 String aspectName = aspect.getPrefixedQName(namespaceService).toPrefixString().replace(":", "-");
                 String setId = RM_METADATA_PREFIX + aspectName;
@@ -240,7 +240,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
      */
     protected void addTransientProperties(Form form, NodeRef nodeRef)
     {
-        if (recordService.isRecord(nodeRef) == true)
+        if (recordService.isRecord(nodeRef))
         {
             addTransientPropertyField(form, TRANSIENT_DECLARED, DataTypeDefinition.BOOLEAN, recordService.isDeclared(nodeRef));
         }
@@ -308,7 +308,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                     prefixName = fieldDef.getName();
                 }
 
-                if (logger.isDebugEnabled() == true)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Checking property " + prefixName + " is editable by user " + AuthenticationUtil.getFullyAuthenticatedUser());
                 }
@@ -316,7 +316,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                 QName qname = QName.createQName(prefixName, namespaceService);
                 if (recordService.isPropertyEditable(nodeRef, qname) == false)
                 {
-                    if (logger.isDebugEnabled() == true)
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("   ... protected property");
                     }
@@ -360,7 +360,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             }
         }
 
-        if (logger.isDebugEnabled() == true)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Set email related fields to be protected");
         }

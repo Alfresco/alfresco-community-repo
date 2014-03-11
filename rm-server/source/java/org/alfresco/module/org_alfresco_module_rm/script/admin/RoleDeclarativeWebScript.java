@@ -103,7 +103,7 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
             {
                 StoreRef storeRef = new StoreRef(storeType, storeId);
                 NodeRef nodeRef = new NodeRef(storeRef, id);
-                if (filePlanService.isFilePlan(nodeRef) == true)
+                if (filePlanService.isFilePlan(nodeRef))
                 {
                     filePlan = nodeRef;
                 }
@@ -145,7 +145,7 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
         for (Role role : roles)
         {
             RoleItem item = null;
-            if (showAuths == true)
+            if (showAuths)
             {
                 item = new RoleItem(role,
                                     createAuthorityItems(filePlanRoleService.getUsersAssignedToRole(filePlan, role.getName())),

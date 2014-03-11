@@ -27,17 +27,17 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class FrozenCapabilityCondition extends AbstractCapabilityCondition
 {
 private boolean checkChildren = false;
-    
+
     public void setCheckChildren(boolean checkChildren)
     {
         this.checkChildren = checkChildren;
     }
-    
+
     @Override
     public boolean evaluate(NodeRef nodeRef)
     {
         boolean result = freezeService.isFrozen(nodeRef);
-        if (result == false && checkChildren == true)
+        if (result == false && checkChildren)
         {
             result = freezeService.hasFrozenChildren(nodeRef);
         }

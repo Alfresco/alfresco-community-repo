@@ -194,7 +194,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         // "properties" is not mandatory
 
         // Check that we are not trying to create a record folder in a root container
-        if (filePlanService.isFilePlan(rmContainer) == true)
+        if (filePlanService.isFilePlan(rmContainer))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PARENT_RECORD_FOLDER_ROOT));
         }
@@ -265,13 +265,13 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("record", record);
 
         List<NodeRef> result = new ArrayList<NodeRef>(1);
-        if (recordService.isRecord(record) == true)
+        if (recordService.isRecord(record))
         {
             List<ChildAssociationRef> assocs = nodeService.getParentAssocs(record, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)
             {
                 NodeRef parent = assoc.getParentRef();
-                if (isRecordFolder(parent) == true)
+                if (isRecordFolder(parent))
                 {
                     result.add(parent);
                 }
@@ -297,7 +297,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
             }
         }
 
-        if (isRecordFolder(nodeRef) == true)
+        if (isRecordFolder(nodeRef))
         {
             if (isRecordFolderClosed(nodeRef) == false)
             {

@@ -107,7 +107,7 @@ public class RecordAspect extends    BaseBehaviourBean
             {
                 NodeRef thumbnail = childAssocRef.getChildRef();
 
-                if (nodeService.exists(thumbnail) == true)
+                if (nodeService.exists(thumbnail))
                 {
                     // apply file plan component aspect to thumbnail
                     nodeService.addAspect(thumbnail, ASPECT_FILE_PLAN_COMPONENT, null);
@@ -139,7 +139,7 @@ public class RecordAspect extends    BaseBehaviourBean
     public void onCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // Deal with versioned records
-        if (reference.equals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions")) == true)
+        if (reference.equals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions")))
         {
             // Apply the versioned aspect to the from node
             nodeService.addAspect(fromNodeRef, ASPECT_VERSIONED_RECORD, null);
@@ -161,7 +161,7 @@ public class RecordAspect extends    BaseBehaviourBean
     public void onRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // Deal with versioned records
-        if (reference.equals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions")) == true)
+        if (reference.equals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions")))
         {
             // Apply the versioned aspect to the from node
             nodeService.removeAspect(fromNodeRef, ASPECT_VERSIONED_RECORD);
@@ -224,7 +224,7 @@ public class RecordAspect extends    BaseBehaviourBean
             {
                 public Object doWork() throws Exception
                 {
-                    if (nodeService.exists(newNodeRef) == true)
+                    if (nodeService.exists(newNodeRef))
                     {
                         // only remove the search details .. the rest will be resolved automatically
                         nodeService.removeAspect(newNodeRef, RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH);

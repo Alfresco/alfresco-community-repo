@@ -210,11 +210,11 @@ public class RecordFolderType extends    BaseBehaviourBean
             {
                 boolean result = true;
 
-                if (nodeService.getType(copyDetails.getTargetParentNodeRef()).equals(TYPE_RECORD_FOLDER) == true)
+                if (nodeService.getType(copyDetails.getTargetParentNodeRef()).equals(TYPE_RECORD_FOLDER))
                 {
                     result = false;
                 }
-                else if (ArrayUtils.contains(unwantedAspects, classQName) == true)
+                else if (ArrayUtils.contains(unwantedAspects, classQName))
                 {
                     result = false;
                 }
@@ -236,12 +236,12 @@ public class RecordFolderType extends    BaseBehaviourBean
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeService.exists(nodeRef) == true && instanceOf(nodeRef, TYPE_RECORD_FOLDER))
+        if (nodeService.exists(nodeRef) && instanceOf(nodeRef, TYPE_RECORD_FOLDER))
         {
             // ensure nothing is being added to a closed record folder
             NodeRef recordFolder = childAssocRef.getParentRef();
             Boolean isClosed = (Boolean) nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
-            if (isClosed != null && Boolean.TRUE.equals(isClosed) == true)
+            if (isClosed != null && Boolean.TRUE.equals(isClosed))
             {
                 throw new AlfrescoRuntimeException("You can't add new items to a closed record folder.");
             }
@@ -295,7 +295,7 @@ public class RecordFolderType extends    BaseBehaviourBean
         // Remove unwanted aspects
         for (QName aspect : unwantedAspects)
         {
-            if (nodeService.hasAspect(nodeRef, aspect) == true)
+            if (nodeService.hasAspect(nodeRef, aspect))
             {
                 nodeService.removeAspect(nodeRef, aspect);
             }

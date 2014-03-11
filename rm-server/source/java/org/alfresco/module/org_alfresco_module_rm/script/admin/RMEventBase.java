@@ -44,7 +44,7 @@ public class RMEventBase extends DeclarativeWebScript
     protected String getValue(JSONObject json, String key) throws JSONException
     {
         String result = null;
-        if (json.has(key) == true)
+        if (json.has(key))
         {
             result = json.getString(key);
         }

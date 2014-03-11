@@ -25,17 +25,17 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Indicates whether the given disposition action is scheduled next
- * 
+ *
  * @author Roy Wetherall
  */
 public class IsScheduledCapabilityCondition extends AbstractCapabilityCondition
 {
     /** Disposition action */
     private String dispositionAction;
-    
+
     /** Disposition service */
     private DispositionService dispositionService;
-    
+
     /**
      * @param dispositionAction     disposition action
      */
@@ -43,7 +43,7 @@ public class IsScheduledCapabilityCondition extends AbstractCapabilityCondition
     {
         this.dispositionAction = dispositionAction;
     }
-    
+
     /**
      * @param dispositionService    disposition service
      */
@@ -51,27 +51,27 @@ public class IsScheduledCapabilityCondition extends AbstractCapabilityCondition
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     public boolean evaluate(NodeRef nodeRef)
     {
-        boolean result = false;        
-    
+        boolean result = false;
+
         DispositionAction nextDispositionAction = dispositionService.getNextDispositionAction(nodeRef);
         if (nextDispositionAction != null)
         {
             // Get the disposition actions name
-            String actionName = nextDispositionAction.getName();            
-            if (actionName.equals(dispositionAction) == true &&
-                dispositionService.isNextDispositionActionEligible(nodeRef) == true)
+            String actionName = nextDispositionAction.getName();
+            if (actionName.equals(dispositionAction) &&
+                dispositionService.isNextDispositionActionEligible(nodeRef))
             {
-                result = true;                
+                result = true;
             }
         }
-    
+
         return result;
     }
 }

@@ -34,17 +34,17 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Undo event action
- * 
+ *
  * @author Roy Wetherall
  */
 public class UndoEventAction extends RMActionExecuterAbstractBase
 {
     /** I18N */
     private static final String MSG_EVENT_NOT_DONE = "rm.action.event-not-undone";
-    
+
     /** Params */
     public static final String PARAM_EVENT_NAME = "eventName";
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -52,8 +52,8 @@ public class UndoEventAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         String eventName = (String)action.getParameterValue(PARAM_EVENT_NAME);
-        
-        if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true)
+
+        if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE))
         {
             // Get the next disposition action
             DispositionAction da = this.dispositionService.getNextDispositionAction(actionedUponNodeRef);
@@ -70,10 +70,10 @@ public class UndoEventAction extends RMActionExecuterAbstractBase
                     props.put(PROP_EVENT_EXECUTION_COMPLETED_AT, null);
                     props.put(PROP_EVENT_EXECUTION_COMPLETED_BY, null);
                     this.nodeService.setProperties(eventNodeRef, props);
-                    
+
                     // Check to see if the events eligible property needs to be updated
                     updateEventEigible(da);
-                    
+
                 }
                 else
                 {
@@ -82,10 +82,10 @@ public class UndoEventAction extends RMActionExecuterAbstractBase
             }
         }
     }
-    
+
     /**
      * Get the event from the disposition action
-     * 
+     *
      * @param da
      * @param eventName
      * @return
@@ -96,7 +96,7 @@ public class UndoEventAction extends RMActionExecuterAbstractBase
         List<EventCompletionDetails> events = da.getEventCompletionDetails();
         for (EventCompletionDetails event : events)
         {
-            if (eventName.equals(event.getEventName()) == true)
+            if (eventName.equals(event.getEventName()))
             {
                 result = event;
                 break;
@@ -104,16 +104,16 @@ public class UndoEventAction extends RMActionExecuterAbstractBase
         }
         return result;
     }
-    
+
     /**
-     * 
+     *
      * @param da
      * @param nodeRef
      */
     private void updateEventEigible(DispositionAction da)
     {
         List<EventCompletionDetails> events = da.getEventCompletionDetails();
-        
+
         boolean eligible = false;
         if (da.getDispositionActionDefinition().eligibleOnFirstCompleteEvent() == false)
         {
@@ -131,18 +131,18 @@ public class UndoEventAction extends RMActionExecuterAbstractBase
         {
             for (EventCompletionDetails event : events)
             {
-                if (event.isEventComplete() == true)
+                if (event.isEventComplete())
                 {
                     eligible = true;
                     break;
                 }
             }
         }
-        
+
         // Update the property with the eligible value
         this.nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_EVENTS_ELIGIBLE, eligible);
     }
-    
+
 
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
@@ -153,5 +153,5 @@ public class UndoEventAction extends RMActionExecuterAbstractBase
         // TODO add parameter definitions ....
         // eventName
 
-    }    
+    }
 }

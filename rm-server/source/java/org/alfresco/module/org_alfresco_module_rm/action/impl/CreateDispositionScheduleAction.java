@@ -52,7 +52,7 @@ public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBas
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (eligibleForAction(actionedUponNodeRef) == true)
+        if (eligibleForAction(actionedUponNodeRef))
         {
             // Create the disposition schedule
             dispositionService.createDispositionSchedule(actionedUponNodeRef, null);
@@ -75,8 +75,8 @@ public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBas
     private boolean eligibleForAction(NodeRef actionedUponNodeRef)
     {
         boolean result = false;
-        if (nodeService.exists(actionedUponNodeRef) == true &&
-                filePlanService.isRecordCategory(actionedUponNodeRef) == true)
+        if (nodeService.exists(actionedUponNodeRef) &&
+                filePlanService.isRecordCategory(actionedUponNodeRef))
         {
             result = true;
         }

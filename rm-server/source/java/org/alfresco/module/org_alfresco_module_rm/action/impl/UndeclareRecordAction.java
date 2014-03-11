@@ -27,7 +27,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Undeclare record action
- * 
+ *
  * @author Roy Wetherall
  */
 public class UndeclareRecordAction extends RMActionExecuterAbstractBase
@@ -37,19 +37,19 @@ public class UndeclareRecordAction extends RMActionExecuterAbstractBase
 
     /** I18N */
     private static final String MSG_RECORDS_ONLY_UNDECLARED = "rm.action.records_only_undeclared";
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-    	if (nodeService.exists(actionedUponNodeRef) == true)
+    	if (nodeService.exists(actionedUponNodeRef))
     	{
-	        if (recordService.isRecord(actionedUponNodeRef) == true)
+	        if (recordService.isRecord(actionedUponNodeRef))
 	        {
 	        	// repoen if already complete and not frozen
-	            if (recordService.isDeclared(actionedUponNodeRef) == true &&
+	            if (recordService.isDeclared(actionedUponNodeRef) &&
 	                freezeService.isFrozen(actionedUponNodeRef) == false)
 	            {
 	                // Remove the declared aspect
@@ -64,5 +64,5 @@ public class UndeclareRecordAction extends RMActionExecuterAbstractBase
 	            }
 	        }
     	}
-    } 
+    }
 }

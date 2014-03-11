@@ -125,7 +125,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
         dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, isRecordLevel);
         DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(container, dsProps);
 
-        if (defaultDispositionActions == true)
+        if (defaultDispositionActions)
         {
             Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
             adParams.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
@@ -137,7 +137,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
             dispositionService.addDispositionActionDefinition(dispositionSchedule, adParams);
 
-            if (extendedDispositionSchedule == true)
+            if (extendedDispositionSchedule)
             {
                 adParams = new HashMap<QName, Serializable>(4);
                 adParams.put(PROP_DISPOSITION_ACTION_NAME, TransferAction.NAME);

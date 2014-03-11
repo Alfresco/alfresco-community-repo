@@ -64,16 +64,16 @@ public class CustomRefsGet extends AbstractRmWebScript
 
     /** logger */
     private static Log logger = LogFactory.getLog(CustomRefsGet.class);
-    
+
     /** records management admin service */
     private RecordsManagementAdminService rmAdminService;
-    
+
     /** dictionary service */
     private DictionaryService dictionaryService;
-    
+
     /** capability service */
     private CapabilityService capabilityService;
-    
+
     /**
      * @param rmAdminService    records management admin service
      */
@@ -89,7 +89,7 @@ public class CustomRefsGet extends AbstractRmWebScript
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * @param capabilityService capability service
      */
@@ -166,8 +166,8 @@ public class CustomRefsGet extends AbstractRmWebScript
             AssociationDefinition assDef = rmAdminService.getCustomReferenceDefinitions().get(typeQName);
 
             if (assDef != null &&
-                hasView(childAssRef.getParentRef()) == true &&   
-                hasView(childAssRef.getChildRef()) == true)
+                hasView(childAssRef.getParentRef()) &&
+                hasView(childAssRef.getChildRef()))
             {
                 String compoundTitle = assDef.getTitle(dictionaryService);
 
@@ -200,9 +200,9 @@ public class CustomRefsGet extends AbstractRmWebScript
     		QName typeQName = assRef.getTypeQName();
             AssociationDefinition assDef = rmAdminService.getCustomReferenceDefinitions().get(typeQName);
 
-            if (assDef != null && 
-                hasView(assRef.getTargetRef()) == true &&
-                hasView(assRef.getSourceRef()) == true)
+            if (assDef != null &&
+                hasView(assRef.getTargetRef()) &&
+                hasView(assRef.getSourceRef()))
             {
                 data.put(LABEL, assDef.getTitle(dictionaryService));
                 data.put(REF_ID, typeQName.getLocalName());
@@ -214,19 +214,19 @@ public class CustomRefsGet extends AbstractRmWebScript
             }
         }
     }
-    
+
     /**
      * Determine whether the current user has view capabilities on the given node.
-     * 
+     *
      * @param  nodeRef   node reference
      * @return boolean   true if current user has view capability, false otherwise
      */
     private boolean hasView(NodeRef nodeRef)
     {
         boolean result = false;
-        
+
         Capability viewRecordCapability = capabilityService.getCapability(ViewRecordsCapability.NAME);
-        if (AccessStatus.ALLOWED.equals(viewRecordCapability.hasPermission(nodeRef)) == true)
+        if (AccessStatus.ALLOWED.equals(viewRecordCapability.hasPermission(nodeRef)))
         {
             result = true;
         }

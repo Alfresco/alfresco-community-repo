@@ -27,16 +27,16 @@ import org.alfresco.module.org_alfresco_module_rm.capability.CompositeCapability
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Generic implementation of a composite capability 
- * 
+ * Generic implementation of a composite capability
+ *
  * @author Roy Wetherall
  */
-public class DeclarativeCompositeCapability extends DeclarativeCapability 
+public class DeclarativeCompositeCapability extends DeclarativeCapability
                                             implements CompositeCapability
 {
     /** set of capabilities */
     private Set<Capability> capabilities;
-    
+
     /**
      * @param capabilites   set of capabilities
      */
@@ -44,7 +44,7 @@ public class DeclarativeCompositeCapability extends DeclarativeCapability
     {
         this.capabilities = capabilities;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.CompositeCapability#getCapabilities()
      */
@@ -53,25 +53,25 @@ public class DeclarativeCompositeCapability extends DeclarativeCapability
     {
         return this.capabilities;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability#evaluateImpl(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     public int evaluateImpl(NodeRef nodeRef)
-    {   
+    {
         int result = AccessDecisionVoter.ACCESS_DENIED;
-        
+
         // Check each capability using 'OR' logic
         for (Capability capability : capabilities)
         {
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Evaluating child capability " + capability.getName() + " on nodeRef " + nodeRef.toString() + " for composite capability " + name);
             }
 
             int capabilityResult = capability.evaluate(nodeRef);
-            if (capabilityResult != AccessDecisionVoter.ACCESS_DENIED) 
+            if (capabilityResult != AccessDecisionVoter.ACCESS_DENIED)
             {
                 result = AccessDecisionVoter.ACCESS_ABSTAIN;
                 if (isUndetermined() == false && capabilityResult == AccessDecisionVoter.ACCESS_GRANTED)
@@ -82,50 +82,50 @@ public class DeclarativeCompositeCapability extends DeclarativeCapability
             }
             else
             {
-                if (logger.isDebugEnabled() == true)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Access denied for child capability " + capability.getName() + " on nodeRef " + nodeRef.toString() + " for composite capability " + name);
                 }
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * If a target capability is specified then we evaluate that.  Otherwise we combine the results of the provided capabilities.
-     * 
+     *
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability#evaluate(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     public int evaluate(NodeRef source, NodeRef target)
     {
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
-        
+
         // Check we are dealing with a file plan component
-        if (getFilePlanService().isFilePlanComponent(source) == true && 
-            getFilePlanService().isFilePlanComponent(target) == true)
+        if (getFilePlanService().isFilePlanComponent(source) &&
+            getFilePlanService().isFilePlanComponent(target))
         {
             // Check the kind of the object, the permissions and the conditions
-            if (checkKinds(source) == true && checkPermissions(source) == true && checkConditions(source) == true)
+            if (checkKinds(source) && checkPermissions(source) && checkConditions(source))
             {
                 if (targetCapability != null)
                 {
                     result = targetCapability.evaluate(target);
                 }
-                
+
                 if (AccessDecisionVoter.ACCESS_DENIED != result)
                 {
                     // Check each capability using 'OR' logic
                     for (Capability capability : capabilities)
                     {
                         result = capability.evaluate(source, target);
-                        if (result == AccessDecisionVoter.ACCESS_GRANTED) 
-                        {                            
+                        if (result == AccessDecisionVoter.ACCESS_GRANTED)
+                        {
                             break;
                         }
                     }
-                    
+
                 }
             }
             else
@@ -133,7 +133,7 @@ public class DeclarativeCompositeCapability extends DeclarativeCapability
                 result = AccessDecisionVoter.ACCESS_DENIED;
             }
         }
-        
+
         return result;
     }
 }

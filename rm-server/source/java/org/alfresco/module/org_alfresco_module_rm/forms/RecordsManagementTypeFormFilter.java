@@ -86,14 +86,14 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
      * java.util.Map)
      */
     public void afterGenerate(
-                    TypeDefinition type, 
-                    List<String> fields, 
-                    List<String> forcedFields, 
+                    TypeDefinition type,
+                    List<String> fields,
+                    List<String> forcedFields,
                     Form form,
                     Map<String, Object> context)
     {
         QName typeName = type.getName();
-        if (rmAdminService.isCustomisable(typeName) == true)
+        if (rmAdminService.isCustomisable(typeName))
         {
         	addCustomRMProperties(typeName, form);
         }
@@ -102,28 +102,28 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
         Set<QName> aspects = type.getDefaultAspectNames();
         for (QName aspect : aspects)
         {
-            if (rmAdminService.isCustomisable(aspect) == true)
+            if (rmAdminService.isCustomisable(aspect))
             {
                 addCustomRMProperties(aspect, form);
             }
         }
 
-        // set the id 
+        // set the id
         List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         for (FieldDefinition fieldDef : fieldDefs)
         {
-            String prefixName = fieldDef.getName();                       
-            if (prefixName.equals("rma:identifier") == true)
+            String prefixName = fieldDef.getName();
+            if (prefixName.equals("rma:identifier"))
             {
-                String defaultId = identifierService.generateIdentifier(typeName, null);                
+                String defaultId = identifierService.generateIdentifier(typeName, null);
                 fieldDef.setDefaultValue(defaultId);
             }
             // NOTE: we set these defaults in the form for backwards compatibility reasons (RM-753)
-            else if (prefixName.equals("rma:vitalRecordIndicator") == true)
+            else if (prefixName.equals("rma:vitalRecordIndicator"))
             {
                 fieldDef.setDefaultValue(Boolean.FALSE.toString());
             }
-            else if (prefixName.equals("rma:reviewPeriod") == true)
+            else if (prefixName.equals("rma:reviewPeriod"))
             {
                 fieldDef.setDefaultValue("none|0");
             }
@@ -147,7 +147,7 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
 
         if (customProps != null && customProps.isEmpty() == false)
         {
-	        if (logger.isDebugEnabled() == true)
+	        if (logger.isDebugEnabled())
 	        {
 	            logger.debug("Found " + customProps.size() + " custom properties for customisable type " + customisableType);
 	        }

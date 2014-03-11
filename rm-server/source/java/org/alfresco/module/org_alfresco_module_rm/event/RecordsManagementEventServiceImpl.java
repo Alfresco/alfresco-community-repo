@@ -147,17 +147,17 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
 
         boolean canCreateEvent = true;
 
-        if (existsEvent(eventName) == true)
+        if (existsEvent(eventName))
         {
             canCreateEvent = false;
         }
 
-        if (canCreateEvent == true)
+        if (canCreateEvent)
         {
             for (Iterator iterator = getEventMap().values().iterator(); iterator.hasNext();)
             {
                 RecordsManagementEvent recordsManagementEvent = (RecordsManagementEvent) iterator.next();
-                if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel) == true)
+                if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel))
                 {
                     canCreateEvent = false;
                     break;
@@ -188,9 +188,9 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
         for (Iterator iterator = getEventMap().values().iterator(); iterator.hasNext();)
         {
             RecordsManagementEvent recordsManagementEvent = (RecordsManagementEvent) iterator.next();
-            if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel) == true)
+            if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel))
             {
-                if (recordsManagementEvent.getName().equalsIgnoreCase(eventName) == true)
+                if (recordsManagementEvent.getName().equalsIgnoreCase(eventName))
                 {
                     if (recordsManagementEvent.getType().equalsIgnoreCase(eventType) == false)
                     {

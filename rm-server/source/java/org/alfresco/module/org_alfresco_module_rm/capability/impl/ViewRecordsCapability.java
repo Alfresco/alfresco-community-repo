@@ -27,7 +27,7 @@ public final class ViewRecordsCapability extends DeclarativeCapability
 {
     /** capability name */
     public static final String NAME = "ViewRecords";
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -35,19 +35,19 @@ public final class ViewRecordsCapability extends DeclarativeCapability
     {
         if (nodeRef != null)
         {
-            if (getFilePlanService().isFilePlanComponent(nodeRef) == true)
+            if (getFilePlanService().isFilePlanComponent(nodeRef))
             {
                 return checkRmRead(nodeRef);
             }
             else
             {
-                if (logger.isDebugEnabled() == true)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("View Records capability abstains, because node is not a file plan component. (nodeRef=" + nodeRef.toString() + ")");
                 }
             }
         }
-        
+
         return AccessDecisionVoter.ACCESS_ABSTAIN;
     }
 }

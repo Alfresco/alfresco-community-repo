@@ -41,33 +41,33 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class RmActionConditionDefinitionsGet extends DeclarativeWebScript
 {
     private ActionService actionService;
-    
+
     private RecordsManagementActionService recordsManagementActionService;
-    
+
     public void setActionService(ActionService actionService)
     {
         this.actionService = actionService;
     }
-    
+
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
         this.recordsManagementActionService = recordsManagementActionService;
     }
-    
+
     /**
      * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        List<ActionConditionDefinition> dmDefs = actionService.getActionConditionDefinitions();        
+        List<ActionConditionDefinition> dmDefs = actionService.getActionConditionDefinitions();
         List<RecordsManagementActionCondition> conditions = recordsManagementActionService.getRecordsManagementActionConditions();
-        
+
         List<ActionConditionDefinition> defs = new ArrayList<ActionConditionDefinition>(dmDefs.size()+conditions.size());
         defs.addAll(dmDefs);
         for (RecordsManagementActionCondition condition: conditions)
         {
-            if (condition.isPublicCondition() == true)
+            if (condition.isPublicCondition())
             {
                 defs.add(condition.getRecordsManagementActionConditionDefinition());
             }

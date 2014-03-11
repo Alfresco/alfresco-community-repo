@@ -34,9 +34,9 @@ public class IsTransferAccessionCapabilityCondition extends AbstractCapabilityCo
     public boolean evaluate(NodeRef nodeRef)
     {
         boolean result = false;
-        
+
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
-        if (FilePlanComponentKind.TRANSFER.equals(kind) == true)
+        if (FilePlanComponentKind.TRANSFER.equals(kind))
         {
             Boolean value = (Boolean)nodeService.getProperty(nodeRef, PROP_TRANSFER_ACCESSION_INDICATOR);
             if (value != null)

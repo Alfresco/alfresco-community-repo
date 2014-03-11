@@ -36,29 +36,29 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Declarative capability implementation.
- * 
+ *
  * @author Roy Wetherall
  */
 public class DeclarativeCapability extends AbstractCapability
 {
     /** Logger */
     protected static Log logger = LogFactory.getLog(DeclarativeCapability.class);
-    
+
     /** Required permissions */
     protected List<String> permissions;
-    
+
     /** Map of conditions and expected evaluation result */
     protected Map<String, Boolean> conditions;
-    
+
     /** List of file plan component kinds one of which must be satisfied */
     protected List<String> kinds;
-    
+
     /** Capability to be evaluated against the target node reference */
     protected Capability targetCapability;
-    
+
     /** Indicates whether to return an undetermined result */
     protected boolean isUndetermined = false;
-    
+
     /**
      * @param permissions   permissions
      */
@@ -66,7 +66,7 @@ public class DeclarativeCapability extends AbstractCapability
     {
         this.permissions = permissions;
     }
-    
+
     /**
      * @param conditions    conditions and expected values
      */
@@ -74,7 +74,7 @@ public class DeclarativeCapability extends AbstractCapability
     {
         this.conditions = conditions;
     }
-    
+
     /**
      * @return  {@link Map}<String, Boolean>    conditions and expected values
      */
@@ -82,15 +82,15 @@ public class DeclarativeCapability extends AbstractCapability
     {
         return conditions;
     }
-    
+
     /**
-     * @param kinds     list of file plan component kinds  
+     * @param kinds     list of file plan component kinds
      */
     public void setKinds(List<String> kinds)
     {
         this.kinds = kinds;
     }
-    
+
     /**
      * @return {@link List}<@link String>   list of expected file plan component kinds
      */
@@ -98,28 +98,28 @@ public class DeclarativeCapability extends AbstractCapability
     {
         return kinds;
     }
-    
+
     /**
      * Helper method to set a single kind.
-     * 
+     *
      * @param kind  file plan component kind
      */
     public void setKind(String kind)
     {
         this.kinds = Collections.singletonList(kind);
     }
-    
+
     /**
      * Sets whether the capability will return an undetermined result when evaluating permissions
      * for a single node reference or not.  The default is to return grant.
-     * 
+     *
      * @param isUndetermined    true if undetermined result, false otherwise
      */
     public void setUndetermined(boolean isUndetermined)
     {
         this.isUndetermined = isUndetermined;
     }
-    
+
     /**
      * @return
      */
@@ -127,10 +127,10 @@ public class DeclarativeCapability extends AbstractCapability
     {
         return isUndetermined;
     }
-    
+
     /**
      * Helper @see #setPermissions(List)
-     * 
+     *
      * @param permission    permission
      */
     public void setPermission(String permission)
@@ -139,7 +139,7 @@ public class DeclarativeCapability extends AbstractCapability
         permissions.add(permission);
         this.permissions = permissions;
     }
-    
+
     /**
      * @param targetCapability  target capability
      */
@@ -147,18 +147,18 @@ public class DeclarativeCapability extends AbstractCapability
     {
         this.targetCapability = targetCapability;
     }
-    
+
     /**
      * Check the permissions passed.
-     * 
+     *
      * @param nodeRef   node reference
      * @return boolean  true if the permissions are present, false otherwise
      */
     protected boolean checkPermissionsImpl(NodeRef nodeRef, String ... permissions)
     {
-        boolean result = true;        
+        boolean result = true;
         NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
-        
+
         for (String permission : permissions)
         {
              if (permissionService.hasPermission(filePlan, permission) != AccessStatus.ALLOWED)
@@ -167,13 +167,13 @@ public class DeclarativeCapability extends AbstractCapability
                 break;
             }
         }
-        
+
         return result;
-    }    
-    
+    }
+
     /**
      * Checks the permissions required for the capability.
-     * 
+     *
      * @param nodeRef
      * @return
      */
@@ -186,10 +186,10 @@ public class DeclarativeCapability extends AbstractCapability
         }
         return result;
     }
-    
+
     /**
      * Checks the passed conditions.
-     * 
+     *
      * @param nodeRef
      * @return
      */
@@ -202,34 +202,34 @@ public class DeclarativeCapability extends AbstractCapability
             {
                 boolean expected = entry.getValue().booleanValue();
                 String conditionName = entry.getKey();
-                
+
                 CapabilityCondition condition = (CapabilityCondition)applicationContext.getBean(conditionName);
                 if (condition == null)
                 {
                     throw new AlfrescoRuntimeException("Capability condition " + conditionName + " does not exist.  Check the configuration of the capability " + name + ".");
                 }
-                
+
                 boolean actual = condition.evaluate(nodeRef);
                 if (expected != actual)
                 {
                     result = false;
-                    
-                    if (logger.isDebugEnabled() == true)
+
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("FAIL: Condition " + condition.getName() + " failed for capability " + getName() + " on nodeRef " + nodeRef.toString());
                     }
-                    
+
                     break;
                 }
             }
-            
+
         }
         return result;
     }
-    
-    /** 
+
+    /**
      * Checks the set conditions.
-     * 
+     *
      * @param nodeRef   node reference
      * @return boolean  true if conditions satisfied, false otherwise
      */
@@ -237,20 +237,20 @@ public class DeclarativeCapability extends AbstractCapability
     {
         return checkConditions(nodeRef, conditions);
     }
-    
+
     /**
      * Checks that the node ref is of the expected kind
-     * 
+     *
      * @param nodeRef
      * @return
      */
     protected boolean checkKinds(NodeRef nodeRef)
     {
         boolean result = false;
-        
+
         FilePlanComponentKind actualKind = getFilePlanService().getFilePlanComponentKind(nodeRef);
-        
-        if (actualKind != null)        
+
+        if (actualKind != null)
         {
             if (kinds != null && kinds.isEmpty() == false)
             {
@@ -258,7 +258,7 @@ public class DeclarativeCapability extends AbstractCapability
                 for (String kindString : kinds)
                 {
                     FilePlanComponentKind kind = FilePlanComponentKind.valueOf(kindString);
-                    if (actualKind.equals(kind) == true)
+                    if (actualKind.equals(kind))
                     {
                         result = true;
                         break;
@@ -272,10 +272,10 @@ public class DeclarativeCapability extends AbstractCapability
                 result = true;
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability#hasPermissionImpl(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -283,14 +283,14 @@ public class DeclarativeCapability extends AbstractCapability
     public int evaluate(NodeRef nodeRef)
     {
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
-        
+
         // Check we are dealing with a file plan component
-        if (getFilePlanService().isFilePlanComponent(nodeRef) == true)
+        if (getFilePlanService().isFilePlanComponent(nodeRef))
         {
             // Check the kind of the object, the permissions and the conditions
-            if (checkKinds(nodeRef) == true && checkPermissions(nodeRef) == true && checkConditions(nodeRef) == true)
+            if (checkKinds(nodeRef) && checkPermissions(nodeRef) && checkConditions(nodeRef))
             {
-                // Opportunity for child implementations to extend 
+                // Opportunity for child implementations to extend
                 result = evaluateImpl(nodeRef);
             }
             else
@@ -298,19 +298,19 @@ public class DeclarativeCapability extends AbstractCapability
                 result = AccessDecisionVoter.ACCESS_DENIED;
             }
         }
-        
+
         // Last chance for child implementations to veto/change the result
         result = onEvaluate(nodeRef, result);
-        
+
         // log access denied to help with debug
-        if (logger.isDebugEnabled() == true && AccessDecisionVoter.ACCESS_DENIED == result)
+        if (logger.isDebugEnabled() && AccessDecisionVoter.ACCESS_DENIED == result)
         {
             logger.debug("FAIL: Capability " + getName() + " returned an Access Denied result during evaluation of node " + nodeRef.toString());
         }
-        
+
         return result;
     }
-    
+
     @Override
     public int evaluate(NodeRef source, NodeRef target)
     {
@@ -321,29 +321,29 @@ public class DeclarativeCapability extends AbstractCapability
         }
         return result;
     }
-    
+
     /**
      * Default implementation.  Given extending classes a hook point for further checks.
-     * 
+     *
      * @param nodeRef   node reference
      * @return
      */
     protected int evaluateImpl(NodeRef nodeRef)
     {
         int result = AccessDecisionVoter.ACCESS_GRANTED;
-        if (isUndetermined == true)
-        {    
+        if (isUndetermined)
+        {
             result = AccessDecisionVoter.ACCESS_ABSTAIN;
         }
         return result;
     }
-    
+
     /**
-     * Default implementation. 
-     * 
+     * Default implementation.
+     *
      * Called before evaluate completes.  The result returned overwrites the already discovered result.
      * Provides a hook point for child implementations that wish to veto the result.
-     * 
+     *
      * @param nodeRef
      * @param result
      * @return

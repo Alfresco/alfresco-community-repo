@@ -38,7 +38,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class HideRecordAction extends AuditableActionExecuterAbstractBase 
+public class HideRecordAction extends AuditableActionExecuterAbstractBase
 							  implements RecordsManagementModel
 {
 
@@ -79,7 +79,7 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
         if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD) == false)
         {
             // we cannot hide a document which is not a record
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Cannot hide the document, because '" + actionedUponNodeRef.toString() + "' is not a record.");
             }

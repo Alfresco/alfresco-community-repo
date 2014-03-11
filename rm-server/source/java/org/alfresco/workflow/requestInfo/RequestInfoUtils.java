@@ -113,7 +113,7 @@ public class RequestInfoUtils
         String userName = null;
 
         String ruleCreator = (String) delegateTask.getVariable("rmwf_ruleCreator");
-        if (StringUtils.isBlank(ruleCreator) == true)
+        if (StringUtils.isBlank(ruleCreator))
         {
             ActivitiScriptNode initiator = (ActivitiScriptNode) delegateTask.getVariable("initiator");
             if (initiator.exists())

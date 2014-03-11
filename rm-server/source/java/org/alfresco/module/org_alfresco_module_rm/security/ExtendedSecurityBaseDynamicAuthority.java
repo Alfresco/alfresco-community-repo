@@ -33,29 +33,29 @@ import org.springframework.context.ApplicationContextAware;
 
 /**
  * Extended readers dynamic authority implementation.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
-public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAuthority, 
-                                                                      RecordsManagementModel, 
+public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAuthority,
+                                                                      RecordsManagementModel,
                                                                       ApplicationContextAware
 {
     /** Authority service */
     private AuthorityService authorityService;
-    
+
     /** Extended security service */
     private ExtendedSecurityService extendedSecurityService;
-    
+
     /** Node service */
     private NodeService nodeService;
-    
+
     /** Application context */
     protected ApplicationContext applicationContext;
-    
+
     // NOTE: we get the services directly from the application context in this way to avoid
     //       cyclic relationships and issues when loading the application context
-    
+
     /**
      * @return  authority service
      */
@@ -67,7 +67,7 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
         }
         return authorityService;
     }
-    
+
     /**
      * @return  extended security service
      */
@@ -79,7 +79,7 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
         }
         return extendedSecurityService;
     }
-    
+
     /**
      * @return  node service
      */
@@ -100,11 +100,11 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
     {
         this.applicationContext = applicationContext;
     }
-    
+
     /**
      * Gets a list of the authorities from the extended security aspect that this dynamic
      * authority is checking against.
-     * 
+     *
      * @param nodeRef
      * @return
      */
@@ -117,26 +117,26 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
     public boolean hasAuthority(NodeRef nodeRef, String userName)
     {
         boolean result = false;
-        
-        if (getNodeService().hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY) == true)
+
+        if (getNodeService().hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY))
         {
             Set<String> authorities = getAuthorites(nodeRef);
             if (authorities != null)
             {
                 for (String authority : authorities)
                 {
-                    if ("GROUP_EVERYONE".equals(authority) == true)
+                    if ("GROUP_EVERYONE".equals(authority))
                     {
                         // 'eveyone' is there so break
                         result = true;
                         break;
                     }
-                    else if (authority.startsWith("GROUP_") == true)
+                    else if (authority.startsWith("GROUP_"))
                     {
                         // check group to see if the user is contained
                         Set<String> contained = getAuthorityService().getContainedAuthorities(AuthorityType.USER, authority, false);
-                        if (contained.isEmpty() == false && 
-                            contained.contains(userName) == true)
+                        if (contained.isEmpty() == false &&
+                            contained.contains(userName))
                         {
                             result = true;
                             break;
@@ -145,7 +145,7 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
                     else
                     {
                         // presume we have a user
-                        if (authority.equals(userName) == true)
+                        if (authority.equals(userName))
                         {
                             result = true;
                             break;
@@ -154,13 +154,13 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
                 }
             }
         }
-        
+
         return result;
-    }    
-    
+    }
+
     /**
      * Base implementation
-     * 
+     *
      * @see org.alfresco.repo.security.permissions.DynamicAuthority#requiredFor()
      */
     @Override

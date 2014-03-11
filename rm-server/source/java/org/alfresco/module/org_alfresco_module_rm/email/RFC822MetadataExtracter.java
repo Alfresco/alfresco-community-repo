@@ -66,7 +66,7 @@ public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.
             Map<QName, Serializable> clone = new HashMap<QName, Serializable>(systemProperties);
             for (QName propName : clone.keySet())
             {
-                if (RecordsManagementModel.RM_URI.equals(propName.getNamespaceURI()) == true)
+                if (RecordsManagementModel.RM_URI.equals(propName.getNamespaceURI()))
                 {
                     systemProperties.remove(propName);
                 }

@@ -61,15 +61,15 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) == true &&
-                recordService.isRecord(actionedUponNodeRef) == true &&
+        if (nodeService.exists(actionedUponNodeRef) &&
+                recordService.isRecord(actionedUponNodeRef) &&
                 freezeService.isFrozen(actionedUponNodeRef) == false)
         {
             if (recordService.isDeclared(actionedUponNodeRef) == false)
             {
                 List<String> missingProperties = new ArrayList<String>(5);
                 // Aspect not already defined - check mandatory properties then add
-                if (mandatoryPropertiesSet(actionedUponNodeRef, missingProperties) == true)
+                if (mandatoryPropertiesSet(actionedUponNodeRef, missingProperties))
                 {
                     recordService.disablePropertyEditableCheck();
                     try

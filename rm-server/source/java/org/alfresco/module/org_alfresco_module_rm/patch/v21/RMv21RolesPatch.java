@@ -41,10 +41,10 @@ public class RMv21RolesPatch extends RMv21PatchComponent implements BeanNameAwar
 {
     /** file plan service */
     private FilePlanService filePlanService;
-    
+
     /** file plan role service */
     private FilePlanRoleService filePlanRoleService;
-    
+
     /** authority service */
     private AuthorityService authorityService;
 
@@ -70,26 +70,26 @@ public class RMv21RolesPatch extends RMv21PatchComponent implements BeanNameAwar
     protected void executePatch() throws Throwable
     {
         Set<NodeRef> filePlans = filePlanService.getFilePlans();
-        
-        if (logger.isDebugEnabled() == true)
+
+        if (logger.isDebugEnabled())
         {
             logger.debug(" ... updating " + filePlans.size() + " file plans");
         }
-        
+
         for (NodeRef filePlan : filePlans)
         {
             boolean parentAddedToZone = false;
             Set<Role> roles = filePlanRoleService.getRoles(filePlan);
             for (Role role : roles)
             {
-                String roleGroupName = role.getRoleGroupName();                
+                String roleGroupName = role.getRoleGroupName();
                 if (authorityService.getAuthorityZones(roleGroupName).contains(RMAuthority.ZONE_APP_RM) == false)
                 {
-                    if (logger.isDebugEnabled() == true)
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug(" ... updating " + roleGroupName + " in file plan " + filePlan.toString());
                     }
-                    
+
                     addAuthorityToZone(roleGroupName);
                     if (parentAddedToZone == false)
                     {

@@ -146,13 +146,13 @@ public class RmSiteType extends    BaseBehaviourBean
 		final NodeRef rmSite = childAssocRef.getChildRef();
 
         // Do not execute behaviour if this has been created in the archive store
-        if(rmSite.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE) == true)
+        if(rmSite.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
         {
             // This is not the spaces store - probably the archive store
             return;
         }
 
-        if (nodeService.exists(rmSite) == true)
+        if (nodeService.exists(rmSite))
         {
             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
@@ -189,7 +189,7 @@ public class RmSiteType extends    BaseBehaviourBean
 
 		// check to see if there is an 'override' for the file plan type given the site type
 		QName siteType = nodeService.getType(siteInfo.getNodeRef());
-		if (mapFilePlanType.containsKey(siteType) == true)
+		if (mapFilePlanType.containsKey(siteType))
 		{
 			result = mapFilePlanType.get(siteType);
 		}
@@ -211,10 +211,10 @@ public class RmSiteType extends    BaseBehaviourBean
     )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef))
         {
             Map<QName, Serializable> changed = PropertyMap.getChangedProperties(before, after);
-            if (changed.containsKey(SiteModel.PROP_SITE_VISIBILITY) == true &&
+            if (changed.containsKey(SiteModel.PROP_SITE_VISIBILITY) &&
                 changed.get(SiteModel.PROP_SITE_VISIBILITY) != null &&
                 SiteVisibility.PUBLIC.equals(changed.get(SiteModel.PROP_SITE_VISIBILITY)) == false)
             {
@@ -252,7 +252,7 @@ public class RmSiteType extends    BaseBehaviourBean
             {
                 // determine whether the current user has delete capability on the file plan node
                 AccessStatus accessStatus = capabilityService.getCapabilityAccessState(filePlan, "Delete");
-                if (AccessStatus.DENIED.equals(accessStatus) == true)
+                if (AccessStatus.DENIED.equals(accessStatus))
                 {
                     throw new AlfrescoRuntimeException("The records management site can not be deleted, because the user doesn't have sufficient privillages to delete the file plan.");
                 }

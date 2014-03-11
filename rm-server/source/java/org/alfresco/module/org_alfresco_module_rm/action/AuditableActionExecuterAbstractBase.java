@@ -28,7 +28,7 @@ import org.springframework.context.ApplicationContextAware;
 
 /**
  * Auditable action executer abstract base
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -42,7 +42,7 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
 
     /** Application context */
     protected ApplicationContext applicationContext;
-    
+
     /** Records management audit service */
     private RecordsManagementAuditService auditService;
 
@@ -70,7 +70,7 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
     {
         this.applicationContext = applicationContext;
     }
-    
+
     /**
      * @return  records management audit service
      */
@@ -82,7 +82,7 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
         }
         return auditService;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#init()
      */
@@ -93,13 +93,13 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
         {
             super.init();
         }
-            
-        if (auditable == true)
+
+        if (auditable)
         {
             getAuditService().registerAuditEvent(this.getActionDefinition().getName(), this.getActionDefinition().getTitle());
         }
     }
-    
+
 	/**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#execute(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -107,9 +107,9 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
     public void execute(Action action, NodeRef actionedUponNodeRef)
     {
         // audit the execution of the action
-        if (auditable == true)
+        if (auditable)
         {
-            if (auditedImmediately == true)
+            if (auditedImmediately)
             {
                 // To be audited immediately before the action is executed, eg. to audit before actionedUponNodeRef gets deleted during the execution.
                 getAuditService().auditEvent(actionedUponNodeRef, this.getActionDefinition().getName(), null, null, true);

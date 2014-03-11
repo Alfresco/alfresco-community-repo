@@ -99,7 +99,7 @@ public abstract class BaseReportAction extends RMActionExecuterAbstractBase impl
     private String getParameterValue(Action action, String parameter)
     {
         String paramValue = (String) action.getParameterValue(parameter);
-        if (StringUtils.isBlank(paramValue) == true)
+        if (StringUtils.isBlank(paramValue))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PARAM_NOT_SUPPLIED, parameter));
         }

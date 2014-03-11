@@ -44,7 +44,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
 
     /** ignore types */
     private Set<QName> ignoredTypes = new HashSet<QName>();
-    
+
     /** file plan service */
     private FilePlanService filePlanService;
 
@@ -53,7 +53,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
 
     /** node service */
     protected NodeService nodeService;
-    
+
     /**
      * @param runAsRmAdmin	true if run rules as rmadmin, false otherwise
      */
@@ -77,11 +77,11 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
@@ -107,7 +107,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     @Override
     public void saveRule(final NodeRef nodeRef, final Rule rule)
     {
-        if (filePlanService.isFilePlanComponent(nodeRef) == true)
+        if (filePlanService.isFilePlanComponent(nodeRef))
         {
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
@@ -132,7 +132,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     @Override
     public void removeRule(final NodeRef nodeRef, final Rule rule)
     {
-        if (filePlanService.isFilePlanComponent(nodeRef) == true)
+        if (filePlanService.isFilePlanComponent(nodeRef))
         {
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
@@ -157,24 +157,24 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     @Override
     public void executeRule(final Rule rule, final NodeRef nodeRef, final Set<ExecutedRuleData> executedRules)
     {
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef))
         {
             QName typeQName = nodeService.getType(nodeRef);
-    
+
             // check if this is a rm rule on a rm artifact
-            if (filePlanService.isFilePlanComponent(nodeRef) == true && 
-            	isFilePlanComponentRule(rule) == true)
+            if (filePlanService.isFilePlanComponent(nodeRef) &&
+            	isFilePlanComponentRule(rule))
             {
             	// ignore and
                 if (isIgnoredType(typeQName) == false)
     	        {
-    	        	if (runAsRmAdmin == true)
+    	        	if (runAsRmAdmin)
     	            {
                 		// run as rmadmin
-    	            	filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>() 
+    	            	filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>()
     	            	{
     						@Override
-    						public Void doWork() throws Exception 
+    						public Void doWork() throws Exception
     						{
     							ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
     							return null;
@@ -198,7 +198,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
 
     /**
      * Indicates whether the rule is a file plan component
-     * 
+     *
      * @param rule		rule
      * @return boolean	true if rule is set on a file plan component, false otherwise
      */
@@ -209,7 +209,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     }
 
     /**
-     * @param  typeQName	type qname 
+     * @param  typeQName	type qname
      * @return boolean		true if ignore type, false otherwise
      */
     private boolean isIgnoredType(QName typeQName)

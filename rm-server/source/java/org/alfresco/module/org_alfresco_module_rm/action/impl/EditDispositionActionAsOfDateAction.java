@@ -48,7 +48,7 @@ public class EditDispositionActionAsOfDateAction extends RMActionExecuterAbstrac
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true)
+        if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE))
         {
             // Get the action parameter
             Date asOfDate = (Date)action.getParameterValue(PARAM_AS_OF_DATE);

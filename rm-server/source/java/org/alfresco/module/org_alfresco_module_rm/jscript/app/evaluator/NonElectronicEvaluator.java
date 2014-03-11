@@ -29,21 +29,21 @@ import org.alfresco.service.namespace.QName;
 public class NonElectronicEvaluator extends BaseEvaluator
 {
     private DictionaryService dictionaryService;
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     @Override
     protected boolean evaluateImpl(NodeRef nodeRef)
     {
         boolean result = false;
         QName qName = nodeService.getType(nodeRef);
-        if (qName != null && dictionaryService.isSubClass(qName, TYPE_NON_ELECTRONIC_DOCUMENT) == true)
+        if (qName != null && dictionaryService.isSubClass(qName, TYPE_NON_ELECTRONIC_DOCUMENT))
         {
             result = true;
-        }        
+        }
         return result;
     }
 }

@@ -84,7 +84,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
         Map<QName, AssociationDefinition> map = recordsManagementAdminService.getCustomReferenceDefinitions();
         for (Map.Entry<QName, AssociationDefinition> entry : map.entrySet())
         {
-            if (compoundId.equals(entry.getValue().getTitle(dictionaryService)) == true)
+            if (compoundId.equals(entry.getValue().getTitle(dictionaryService)))
             {
                 relationshipQName = entry.getKey();
                 break;
@@ -107,12 +107,12 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
         // get node type
         nodeService.getType(actionedUponNodeRef);
 
-        if (logger.isDebugEnabled() == true)
+        if (logger.isDebugEnabled())
         {
             logger.debug("split email:" + actionedUponNodeRef);
         }
 
-        if (recordService.isRecord(actionedUponNodeRef) == true)
+        if (recordService.isRecord(actionedUponNodeRef))
         {
             if (recordService.isDeclared(actionedUponNodeRef) == false)
             {
@@ -124,7 +124,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
                 List<AssociationRef> refs = nodeService.getTargetAssocs(actionedUponNodeRef, ImapModel.ASSOC_IMAP_ATTACHMENT);
                 if(refs.size() > 0)
                 {
-                    if (logger.isDebugEnabled() == true)
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("mail message has already been split - do nothing");
                     }

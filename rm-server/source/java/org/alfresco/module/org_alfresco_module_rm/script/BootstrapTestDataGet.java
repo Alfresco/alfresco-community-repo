@@ -243,7 +243,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                 logger.info("Bootstraping " + rmRoots.size() + " rm roots ...");
                 for (NodeRef rmRoot : rmRoots)
                 {
-                    if (permissionService.getInheritParentPermissions(rmRoot) == true)
+                    if (permissionService.getInheritParentPermissions(rmRoot))
                     {
                         logger.info("Updating permissions for rm root: " + rmRoot);
                         permissionService.setInheritParentPermissions(rmRoot, false);
@@ -286,7 +286,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                         String containerName = (String)nodeService.getProperty(container, ContentModel.PROP_NAME);
 
                         // Set permissions
-                        if (permissionService.getInheritParentPermissions(container) == true)
+                        if (permissionService.getInheritParentPermissions(container))
                         {
                             logger.info("Updating permissions for record container: " + containerName);
                             permissionService.setInheritParentPermissions(container, false);
@@ -309,7 +309,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                         String folderName = (String)nodeService.getProperty(recordFolder, ContentModel.PROP_NAME);
 
                         // Set permissions
-                        if (permissionService.getInheritParentPermissions(recordFolder) == true)
+                        if (permissionService.getInheritParentPermissions(recordFolder))
                         {
                             logger.info("Updating permissions for record folder: " + folderName);
                             permissionService.setInheritParentPermissions(recordFolder, false);

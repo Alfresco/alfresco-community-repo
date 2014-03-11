@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -295,15 +295,18 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     
     private NodeRef getUserFolderLocation(String caseSensitiveUserName)
     {
-        NodeRef userNodeRef = singletonCache.get(KEY_USERFOLDER_NODEREF);
+        // Use the tenant aware cache key
+        // see MNT-10338
+        final String cacheKey = tenantService.getUserDomain(caseSensitiveUserName) + KEY_USERFOLDER_NODEREF;
+        NodeRef userNodeRef = singletonCache.get(cacheKey);
         if (userNodeRef == null)
         {
             QName qnameAssocSystem = QName.createQName("sys", "system", namespacePrefixResolver);
             QName qnameAssocUsers = QName.createQName("sys", "people", namespacePrefixResolver);
-            
-            //StoreRef userStoreRef = tenantService.getName(caseSensitiveUserName, new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier()));
-            StoreRef userStoreRef = new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier());
-            
+
+            // Use tenant domain to get a valid storeRef
+            StoreRef userStoreRef = tenantService.getName(caseSensitiveUserName, new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier()));
+
             // AR-527
             NodeRef rootNode = nodeService.getRootNode(userStoreRef);
             List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNode, RegexQNamePattern.MATCH_ALL, qnameAssocSystem);
@@ -325,7 +328,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             {
                 userNodeRef = tenantService.getName(results.get(0).getChildRef());
             }
-            singletonCache.put(KEY_USERFOLDER_NODEREF, userNodeRef);
+            singletonCache.put(cacheKey, userNodeRef);
         }
         return userNodeRef;
     }

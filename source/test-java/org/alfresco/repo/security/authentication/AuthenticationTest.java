@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -51,9 +51,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.ExpiryMode;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket;
 import org.alfresco.repo.security.authentication.RepositoryAuthenticationDao.CacheEntry;
-import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -69,12 +67,15 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 @SuppressWarnings("unchecked")
+@Category(OwnJVMTestsCategory.class)
 public class AuthenticationTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -95,7 +96,6 @@ public class AuthenticationTest extends TestCase
     private TransactionService transactionService;
     private PersonService pubPersonService;
     private PersonService personService;
-    private TenantAdminService tenantAdminService;
 
     private UserTransaction userTransaction;
     private NodeRef rootNodeRef;
@@ -111,11 +111,6 @@ public class AuthenticationTest extends TestCase
 
     private SimpleCache<String, CacheEntry> authenticationCache;    
     private SimpleCache<String, NodeRef> immutableSingletonCache;
-
-    private static final String TEST_RUN = System.currentTimeMillis()+"";
-    private static final String TEST_TENANT_DOMAIN = TEST_RUN+".my.test";
-    private static final String DEFAULT_ADMIN_PW = "admin";
-    private static final String TENANT_ADMIN_PW = DEFAULT_ADMIN_PW + TEST_TENANT_DOMAIN;
 
     public AuthenticationTest()
     {
@@ -157,7 +152,6 @@ public class AuthenticationTest extends TestCase
         // permissionServiceSPI = (PermissionServiceSPI)
         // ctx.getBean("permissionService");
         ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");
-        tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
 
         dao = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
         
@@ -444,40 +438,6 @@ public class AuthenticationTest extends TestCase
         dao.setAuthenticationCache(authenticationCache);
         dao.setSingletonCache(immutableSingletonCache);
         return dao;
-    }
-
-    /**
-     * Test for ALF-20680
-     * Test of the {@link RepositoryAuthenticationDao#getUserFolderLocation(String)} in multitenancy
-     */
-    public void testAuthenticateMultiTenant()
-    {
-        // Create a tenant domain
-        TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
-            {
-                if (!tenantAdminService.existsTenant(TEST_TENANT_DOMAIN))
-                {
-                    tenantAdminService.createTenant(TEST_TENANT_DOMAIN, TENANT_ADMIN_PW.toCharArray(), null);
-                }
-                return null;
-            }
-        }, TenantService.DEFAULT_DOMAIN);
-
-        // Use default admin
-        authenticateMultiTenantWork(AuthenticationUtil.getAdminUserName(), DEFAULT_ADMIN_PW);
-
-        // Use tenant admin
-        authenticateMultiTenantWork(AuthenticationUtil.getAdminUserName() + TenantService.SEPARATOR + TEST_TENANT_DOMAIN, TENANT_ADMIN_PW);
-    }
-
-    private void authenticateMultiTenantWork(String userName, String password)
-    {
-        String hashedPassword = dao.getMD4HashedPassword(userName);
-        assertNotNull(hashedPassword);
-        UserDetails userDetails = (UserDetails) dao.loadUserByUsername(userName);
-        assertEquals(passwordEncoder.encodePassword(password, dao.getSalt(userDetails)), hashedPassword);
     }
 
     public void testCreateAndyUserAndOtherCRUD() throws NoSuchAlgorithmException, UnsupportedEncodingException

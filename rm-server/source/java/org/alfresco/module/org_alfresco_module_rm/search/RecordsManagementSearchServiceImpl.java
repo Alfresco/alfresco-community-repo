@@ -141,7 +141,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
 
                    // Get the description
                    String description = "";
-                   if (report.has(SavedSearchDetails.DESCRIPTION) == true)
+                   if (report.has(SavedSearchDetails.DESCRIPTION))
                    {
                        description = report.getString(SavedSearchDetails.DESCRIPTION);
                        String translatedDescription = I18NUtil.getMessage(description);
@@ -152,7 +152,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
                    }
 
                    RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
-                   if (report.has("searchparams") == true)
+                   if (report.has("searchparams"))
                    {
                        searchParameters = RecordsManagementSearchParameters.createFromJSON(report.getJSONObject("searchparams"), namespaceService);
                    }
@@ -221,21 +221,21 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     /*package*/ String buildQueryString(String queryTerm, RecordsManagementSearchParameters searchParameters)
     {
        StringBuilder aspectQuery = new StringBuilder();
-       if (searchParameters.isIncludeRecords() == true)
+       if (searchParameters.isIncludeRecords())
        {
            appendAspect(aspectQuery, "rma:record");
            if (searchParameters.isIncludeUndeclaredRecords() == false)
            {
                appendAspect(aspectQuery, "rma:declaredRecord");
            }
-           if (searchParameters.isIncludeVitalRecords() == true)
+           if (searchParameters.isIncludeVitalRecords())
            {
                appendAspect(aspectQuery, "rma:vitalRecord");
            }
        }
 
        StringBuilder typeQuery = new StringBuilder();
-       if (searchParameters.isIncludeRecordFolders() == true)
+       if (searchParameters.isIncludeRecordFolders())
        {
            appendType(typeQuery, "rma:recordFolder");
        }
@@ -256,7 +256,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
        }
        else
        {
-           if (isComplexQueryTerm(queryTerm) == true)
+           if (isComplexQueryTerm(queryTerm))
            {
                query.append(queryTerm);
            }
@@ -290,7 +290,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
            }
        }
 
-       if (searchParameters.isIncludeFrozen() == true)
+       if (searchParameters.isIncludeFrozen())
        {
            appendAspect(fullQuery, "rma:frozen");
        }
@@ -298,7 +298,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
        {
            appendNotAspect(fullQuery, "rma:frozen");
        }
-       if (searchParameters.isIncludeCutoff() == true)
+       if (searchParameters.isIncludeCutoff())
        {
            appendAspect(fullQuery, "rma:cutOff");
        }
@@ -543,7 +543,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
 
 	    // Get the search node for the saved query
         NodeRef searchNode = getSearchNodeRef(siteId, name);
-        if (searchNode != null && fileFolderService.exists(searchNode) == true)
+        if (searchNode != null && fileFolderService.exists(searchNode))
         {
             fileFolderService.delete(searchNode);
         }

@@ -218,7 +218,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         siteService.deleteSite(siteId);
 
         // Delete the collaboration site (if required)
-        if (isCollaborationSiteTest() == true)
+        if (isCollaborationSiteTest())
         {
             siteService.deleteSite(collabSiteId);
         }
@@ -300,7 +300,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         assertNotNull("Could not create rm folder 2", recordFolder2);
 
         // Create collaboration data
-        if (isCollaborationSiteTest() == true)
+        if (isCollaborationSiteTest())
         {
             setupCollaborationSiteTestData();
         }
@@ -359,7 +359,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 
     protected void deleteUser(String userName)
     {
-        if (authenticationService.authenticationExists(userName) == true)
+        if (authenticationService.authenticationExists(userName))
         {
             personService.deletePerson(userName);
         }
@@ -375,7 +375,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 
     protected void deleteGroup(String groupName)
     {
-        if (authorityService.authorityExists(groupName) == true)
+        if (authorityService.authorityExists(groupName))
         {
             authorityService.deleteAuthority(groupName, true);
         }

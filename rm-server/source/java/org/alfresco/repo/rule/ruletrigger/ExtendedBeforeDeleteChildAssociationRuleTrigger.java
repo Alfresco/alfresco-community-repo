@@ -33,7 +33,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Prevent multiple triggering of outbound rules when moving records.
- * 
+ *
  * @author Roy Wetherall
  */
 public class ExtendedBeforeDeleteChildAssociationRuleTrigger
@@ -44,33 +44,33 @@ public class ExtendedBeforeDeleteChildAssociationRuleTrigger
      * The logger
      */
     private static Log logger = LogFactory.getLog(BeforeDeleteChildAssociationRuleTrigger.class);
-    
+
     private static final String POLICY = "beforeDeleteChildAssociation";
-    
+
     private boolean isClassBehaviour = false;
-    
+
     public void setIsClassBehaviour(boolean isClassBehaviour)
     {
         this.isClassBehaviour = isClassBehaviour;
     }
-    
+
     /**
      * @see org.alfresco.repo.rule.ruletrigger.RuleTrigger#registerRuleTrigger()
      */
     public void registerRuleTrigger()
     {
-        if (isClassBehaviour == true)
+        if (isClassBehaviour)
         {
             this.policyComponent.bindClassBehaviour(
-                    QName.createQName(NamespaceService.ALFRESCO_URI, POLICY), 
-                    this, 
+                    QName.createQName(NamespaceService.ALFRESCO_URI, POLICY),
+                    this,
                     new JavaBehaviour(this, POLICY, NotificationFrequency.FIRST_EVENT));
         }
         else
         {
             this.policyComponent.bindAssociationBehaviour(
-                    QName.createQName(NamespaceService.ALFRESCO_URI, POLICY), 
-                    this, 
+                    QName.createQName(NamespaceService.ALFRESCO_URI, POLICY),
+                    this,
                     new JavaBehaviour(this, POLICY, NotificationFrequency.FIRST_EVENT));
         }
     }
@@ -91,12 +91,12 @@ public class ExtendedBeforeDeleteChildAssociationRuleTrigger
         {
             return;
         }
-        
-        if (logger.isDebugEnabled() == true)
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("Single child assoc trigger (policy = " + POLICY + ") fired for parent node " + childAssocRef.getParentRef() + " and child node " + childAssocRef.getChildRef());
         }
-        
+
         triggerRules(childAssocRef.getParentRef(), childNodeRef);
     }
 

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.alfresco.module.org_alfresco_module_rm.model;
 
@@ -15,7 +15,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Convenient base class for behaviour beans.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -25,13 +25,13 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
 {
     /** Logger */
     protected static Log logger = LogFactory.getLog(BaseBehaviourBean.class);
-    
+
     /** behaviour filter */
     protected BehaviourFilter behaviourFilter;
-    
+
     /** behaviour map */
     protected Map<String, org.alfresco.repo.policy.Behaviour> behaviours = new HashMap<String, org.alfresco.repo.policy.Behaviour>(7);
-    
+
     /**
      * @param behaviourFilter   behaviour filter
      */
@@ -46,11 +46,11 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
     @Override
     public void registerBehaviour(String name, org.alfresco.repo.policy.Behaviour behaviour)
     {
-        if (behaviours.containsKey(name) == true)
+        if (behaviours.containsKey(name))
         {
             throw new AlfrescoRuntimeException("Can not register behaviour, because name " + name + "has already been used.");
         }
-        
+
         behaviours.put(name, behaviour);
     }
 

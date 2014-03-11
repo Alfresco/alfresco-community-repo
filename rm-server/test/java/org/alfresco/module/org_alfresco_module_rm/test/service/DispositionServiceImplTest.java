@@ -773,7 +773,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
         {
             String origEvent = i.next();
 
-            if (expectedEvents.contains(origEvent) == true)
+            if (expectedEvents.contains(origEvent))
             {
                 i.remove();
                 copy.remove(origEvent);
@@ -804,7 +804,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             fail(buff.toString());
         }
 
-        if (CommonRMTestUtils.PERIOD_NONE.equals(strPeriod) == true)
+        if (CommonRMTestUtils.PERIOD_NONE.equals(strPeriod))
         {
             assertNull(da.getAsOfDate());
         }
@@ -972,7 +972,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
 
                 dispositionService.updateDispositionActionDefinition(
                         actionDefinition,
-                        adParams );
+                        adParams);
 
                 return actionDefinition;
             }

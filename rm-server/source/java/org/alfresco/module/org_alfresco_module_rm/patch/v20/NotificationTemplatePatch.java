@@ -41,7 +41,7 @@ import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Notification template patch implementation
- * 
+ *
  * @author Roy Wetherall
  * @since 2.0
  */
@@ -145,7 +145,7 @@ public class NotificationTemplatePatch extends ModulePatchComponent
     {
         if (template == null || nodeService.exists(template) == false)
         {
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Skipping template update, because template has not been bootstraped.");
             }
@@ -156,7 +156,7 @@ public class NotificationTemplatePatch extends ModulePatchComponent
             String lastPatchUpdate = (String)nodeService.getProperty(template, PROP_LAST_PATCH_UPDATE);
             if (lastPatchUpdate == null || name.equals(lastPatchUpdate) == false)
             {
-                if (logger.isDebugEnabled() == true)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Applying update to template. (template=" + template.toString() + ", templateUpdate=" + templateUpdate + ")");
                 }
@@ -192,7 +192,7 @@ public class NotificationTemplatePatch extends ModulePatchComponent
             }
             else
             {
-                if (logger.isDebugEnabled() == true)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Skipping template update, because template has already been patched. (template=" + template.toString() + ")");
                 }

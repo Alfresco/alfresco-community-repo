@@ -167,7 +167,7 @@ public class TransferServiceImpl extends ServiceBaseImpl implements TransferServ
             List<ChildAssociationRef> transferredAlready = nodeService.getChildAssocs(transferNodeRef, ASSOC_TRANSFERRED, ASSOC_TRANSFERRED);
             for(ChildAssociationRef car : transferredAlready)
             {
-                if(car.getChildRef().equals(nodeRef) == true)
+                if(car.getChildRef().equals(nodeRef))
                 {
                     throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NODE_ALREADY_TRANSFER, nodeRef.toString()));
 
@@ -197,7 +197,7 @@ public class TransferServiceImpl extends ServiceBaseImpl implements TransferServ
      */
    private void setPDFIndicationFlag(NodeRef transferNodeRef, NodeRef dispositionLifeCycleNodeRef)
    {
-      if (recordFolderService.isRecordFolder(dispositionLifeCycleNodeRef) == true)
+      if (recordFolderService.isRecordFolder(dispositionLifeCycleNodeRef))
       {
           List<NodeRef> records = recordService.getRecords(dispositionLifeCycleNodeRef);
           for (NodeRef record : records)
@@ -209,7 +209,7 @@ public class TransferServiceImpl extends ServiceBaseImpl implements TransferServ
       {
           ContentData contentData = (ContentData)nodeService.getProperty(dispositionLifeCycleNodeRef, ContentModel.PROP_CONTENT);
           if (contentData != null &&
-              MimetypeMap.MIMETYPE_PDF.equals(contentData.getMimetype()) == true)
+              MimetypeMap.MIMETYPE_PDF.equals(contentData.getMimetype()))
           {
               // Set the property indicator
               nodeService.setProperty(transferNodeRef, PROP_TRANSFER_PDF_INDICATOR, true);
@@ -264,7 +264,7 @@ public class TransferServiceImpl extends ServiceBaseImpl implements TransferServ
 
         // Determine which marker aspect to use
         QName markerAspectQName = null;
-        if (accessionIndicator == true)
+        if (accessionIndicator)
         {
             markerAspectQName = ASPECT_ASCENDED;
         }
@@ -275,7 +275,7 @@ public class TransferServiceImpl extends ServiceBaseImpl implements TransferServ
 
         // Mark the object and children accordingly
         nodeService.addAspect(nodeRef, markerAspectQName, null);
-        if (recordFolderService.isRecordFolder(nodeRef) == true)
+        if (recordFolderService.isRecordFolder(nodeRef))
         {
             List<NodeRef> records = recordService.getRecords(nodeRef);
             for (NodeRef record : records)

@@ -178,7 +178,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 AccessStatus accessStatus = capability.hasPermission(filePlanComponent);
 
                 Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, userName);
-                if (roles.isEmpty() == true)
+                if (roles.isEmpty())
                 {
                     assertEquals("User " + userName + " has no RM role so we expect access to be denied for capability " + capability.getName(),
                                  AccessStatus.DENIED,
@@ -191,7 +191,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                     List<String> kinds = capability.getKinds();
 
                     if (kinds == null ||
-                        kinds.contains(actualKind.toString()) == true)
+                        kinds.contains(actualKind.toString()))
                     {
                         Map<String, Boolean> conditions = capability.getConditions();
                         boolean conditionResult = getConditionResult(filePlanComponent, conditions);
@@ -201,7 +201,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                         assertNotNull(role);
 
                         Set<Capability> roleCapabilities = role.getCapabilities();
-                        if (roleCapabilities.contains(capability) == true && conditionResult == true)
+                        if (roleCapabilities.contains(capability) && conditionResult)
                         {
                             assertEquals("User " + userName + " has the role " + role.getDisplayLabel() +
                                          " so we expect access to be allowed for capability " + capability.getName() + " on the object " +

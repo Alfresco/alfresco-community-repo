@@ -49,7 +49,7 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) == true &&
+        if (nodeService.exists(actionedUponNodeRef) &&
             freezeService.isFrozen(actionedUponNodeRef) == false)
         {
             // TODO move re-open logic into a service method
@@ -64,10 +64,10 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
                 }
             }
 
-            if (recordFolderService.isRecordFolder(actionedUponNodeRef) == true)
+            if (recordFolderService.isRecordFolder(actionedUponNodeRef))
             {
                 Boolean isClosed = (Boolean) nodeService.getProperty(actionedUponNodeRef, PROP_IS_CLOSED);
-                if (Boolean.TRUE.equals(isClosed) == true)
+                if (Boolean.TRUE.equals(isClosed))
                 {
                     nodeService.setProperty(actionedUponNodeRef, PROP_IS_CLOSED, false);
                 }

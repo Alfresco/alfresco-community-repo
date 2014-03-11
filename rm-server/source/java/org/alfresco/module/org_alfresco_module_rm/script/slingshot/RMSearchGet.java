@@ -259,7 +259,7 @@ public class RMSearchGet extends DeclarativeWebScript
 
             // Determine if container or not
             isContainer = true;
-            if (dictionaryService.isSubClass(nodeRefType, ContentModel.TYPE_CONTENT) == true)
+            if (dictionaryService.isSubClass(nodeRefType, ContentModel.TYPE_CONTENT))
             {
                 isContainer = false;
             }
@@ -272,7 +272,7 @@ public class RMSearchGet extends DeclarativeWebScript
                 parent = assoc.getParentRef();
             }
 
-            if (isContainer == true)
+            if (isContainer)
             {
                 this.size = -1;
 

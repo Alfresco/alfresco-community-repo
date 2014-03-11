@@ -123,7 +123,7 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
 
         for (ActionDefinition actionDefinition : list)
         {
-            if (actionDefinition.getName().equals(actionName) == true)
+            if (actionDefinition.getName().equals(actionName))
             {
                 result = true;
                 break;

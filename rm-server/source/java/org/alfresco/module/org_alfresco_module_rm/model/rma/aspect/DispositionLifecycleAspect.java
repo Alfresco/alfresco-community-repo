@@ -35,7 +35,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * rma:dispositionLifecycle behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -48,7 +48,7 @@ public class DispositionLifecycleAspect extends BaseBehaviourBean
 {
     /** disposition service */
     protected DispositionService dispositionService;
-    
+
     /**
      * @param dispositionService    disposition service
      */
@@ -56,7 +56,7 @@ public class DispositionLifecycleAspect extends BaseBehaviourBean
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * Copy callback for disposition lifecycle
      */
@@ -81,7 +81,7 @@ public class DispositionLifecycleAspect extends BaseBehaviourBean
     )
     public void onAddAspect(final NodeRef nodeRef, final QName aspect)
     {
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef))
         {
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
@@ -93,5 +93,5 @@ public class DispositionLifecycleAspect extends BaseBehaviourBean
                 }
             });
         }
-    }   
+    }
 }

@@ -40,7 +40,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * rma:recordCategory behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -51,16 +51,16 @@ import org.alfresco.service.namespace.QName;
 public class RecordCategoryType extends    BaseBehaviourBean
                                 implements NodeServicePolicies.OnCreateChildAssociationPolicy,
                                            NodeServicePolicies.OnCreateNodePolicy
-{    
+{
     /** vital record service */
     protected VitalRecordService vitalRecordService;
-    
+
     /** file plan permission service */
     protected FilePlanPermissionService filePlanPermissionService;
-    
+
     /** record folder service */
     private RecordFolderService recordFolderService;
-    
+
     /**
      * @param vitalRecordService    vital record service
      */
@@ -68,7 +68,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
     {
         this.vitalRecordService = vitalRecordService;
     }
-    
+
     /**
      * @param filePlanPermissionService file plan permission service
      */
@@ -76,7 +76,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
     {
         this.filePlanPermissionService = filePlanPermissionService;
     }
-    
+
     /**
      * @param recordFolderService   record folder service
      */
@@ -84,10 +84,10 @@ public class RecordCategoryType extends    BaseBehaviourBean
     {
         this.recordFolderService = recordFolderService;
     }
-    
+
     /**
      * On every event
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Override
@@ -99,19 +99,19 @@ public class RecordCategoryType extends    BaseBehaviourBean
     {
         // ensure content is not placed directly into a record category
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true)
+        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
         {
             throw new AlfrescoRuntimeException("Operation failed, because you can't place content directly into a record category.");
-        }  
-        
+        }
+
         // setup the record folder
         // TODO review
         recordFolderService.setupRecordFolder(nodeRef);
     }
-    
+
     /**
      * On transaction commit
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Behaviour
@@ -123,7 +123,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
     public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
     {
         final NodeRef recordCategory = childAssocRef.getChildRef();
-        
+
         behaviourFilter.disableBehaviour();
         try
         {
@@ -142,7 +142,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
         finally
         {
             behaviourFilter.enableBehaviour();
-        }    
+        }
     }
 
     /**
@@ -156,11 +156,11 @@ public class RecordCategoryType extends    BaseBehaviourBean
     )
     public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
-        if (logger.isDebugEnabled() == true)
+        if (logger.isDebugEnabled())
         {
             logger.debug("rma:recordCategory|alf:onCreateNode|this.onCreateNode()|TRANSATION_COMMIT");
         }
-        
+
         // execute behaviour code as system user
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
@@ -168,14 +168,14 @@ public class RecordCategoryType extends    BaseBehaviourBean
             public Void doWork() throws Exception
             {
                 // setup record category permissions
-                filePlanPermissionService.setupRecordCategoryPermissions(childAssocRef.getChildRef()); 
+                filePlanPermissionService.setupRecordCategoryPermissions(childAssocRef.getChildRef());
 
                 return null;
             }
         });
-               
+
     }
-    
+
     /**
      * Copy callback for record category
      */

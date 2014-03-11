@@ -291,7 +291,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     public void dispositionActionPropertiesUpdate(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
     {
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef))
         {
             AuthenticationUtil.runAs(new RunAsWork<Void>()
             {
@@ -299,7 +299,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 public Void doWork() throws Exception
                 {
                     ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
-                    if (assoc.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION) == true)
+                    if (assoc.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
                     {
                         // Get the record (or record folder)
                         NodeRef record = assoc.getParentRef();
@@ -356,7 +356,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.exists(nodeRef) == true && nodeService.hasAspect(nodeRef, ASPECT_RECORD) == true)
+                if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, ASPECT_RECORD))
                 {
                     applySearchAspect(nodeRef);
                     setupDispositionScheduleProperties(nodeRef);
@@ -380,7 +380,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             public Void doWork() throws Exception
             {
                 NodeRef nodeRef = childAssocRef.getChildRef();
-                if (nodeService.exists(nodeRef) == true)
+                if (nodeService.exists(nodeRef))
                 {
                     applySearchAspect(nodeRef);
                     setupDispositionScheduleProperties(nodeRef);
@@ -424,8 +424,8 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     public void dispositionActionCreate(ChildAssociationRef childAssocRef)
     {
         NodeRef child = childAssocRef.getChildRef();
-        if (nodeService.exists(child) == true &&
-            childAssocRef.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION) == true)
+        if (nodeService.exists(child) &&
+            childAssocRef.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
         {
             // Get the record (or record folder)
             NodeRef record = childAssocRef.getParentRef();
@@ -502,11 +502,11 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         NodeRef dispositionAction = childAssocRef.getParentRef();
         NodeRef eventExecution = childAssocRef.getChildRef();
 
-        if (nodeService.exists(dispositionAction) == true &&
-            nodeService.exists(eventExecution) == true)
+        if (nodeService.exists(dispositionAction) &&
+            nodeService.exists(eventExecution))
         {
             ChildAssociationRef assoc = nodeService.getPrimaryParent(dispositionAction);
-            if (assoc.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION) == true)
+            if (assoc.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
             {
                 // Get the record (or record folder)
                 NodeRef record = assoc.getParentRef();
@@ -538,7 +538,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         if (nodeService.exists(dispositionActionNode))
         {
             ChildAssociationRef assoc = nodeService.getPrimaryParent(dispositionActionNode);
-            if (assoc.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION) == true)
+            if (assoc.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
             {
                 // Get the record (or record folder)
                 NodeRef record = assoc.getParentRef();
@@ -596,7 +596,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.exists(nodeRef) == true)
+                if (nodeService.exists(nodeRef))
                 {
                     // Initialise the search parameteres as required
                     setVitalRecordDefintionDetails(nodeRef);
@@ -646,7 +646,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             public Void doWork() throws Exception
             {
                 // Only care about record folders
-                if (nodeService.exists(nodeRef) && recordFolderService.isRecordFolder(nodeRef) == true)
+                if (nodeService.exists(nodeRef) && recordFolderService.isRecordFolder(nodeRef))
                 {
                     Set<QName> props = new HashSet<QName>(1);
                     props.add(PROP_REVIEW_PERIOD);
@@ -694,7 +694,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     {
         VitalRecordDefinition vrd = vitalRecordService.getVitalRecordDefinition(nodeRef);
 
-        if (vrd != null && vrd.isEnabled() == true && vrd.getReviewPeriod() != null)
+        if (vrd != null && vrd.isEnabled() && vrd.getReviewPeriod() != null)
         {
             // Set the property values
             nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD, vrd.getReviewPeriod().getPeriodType());
@@ -724,7 +724,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     public void onRemoveFrozenAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (nodeService.exists(nodeRef) == true &&
+        if (nodeService.exists(nodeRef) &&
             nodeService.hasAspect(nodeRef, ASPECT_RM_SEARCH))
         {
             nodeService.setProperty(nodeRef, PROP_RS_HOLD_REASON, null);
@@ -745,7 +745,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.exists(nodeRef) == true)
+                if (nodeService.exists(nodeRef))
                 {
                     // get the changed hold reason
                     String holdReason = (String)nodeService.getProperty(nodeRef, PROP_HOLD_REASON);
@@ -778,7 +778,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     public void dispositionSchedulePropertiesUpdate(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef))
         {
             // create the schedule object and get the record category for it
             DispositionSchedule schedule = new DispositionScheduleImpl(recordsManagementServiceRegistry, nodeService, nodeRef);

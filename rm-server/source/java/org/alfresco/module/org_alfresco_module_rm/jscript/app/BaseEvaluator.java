@@ -223,9 +223,9 @@ public abstract class BaseEvaluator implements RecordsManagementModel
         boolean result = false;
 
         // Check that we are dealing with the correct kind of RM object
-        if ((kinds == null || checkKinds(nodeRef) == true) &&
+        if ((kinds == null || checkKinds(nodeRef)) &&
                 // Check we have the required capabilities
-                (capabilities == null || checkCapabilities(nodeRef) == true))
+                (capabilities == null || checkCapabilities(nodeRef)))
         {
             result = evaluateImpl(nodeRef);
         }
@@ -259,7 +259,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
             Map<Capability, AccessStatus> accessStatus = capabilityService.getCapabilitiesAccessState(nodeRef, capabilities);
             for (AccessStatus value : accessStatus.values())
             {
-                if (AccessStatus.DENIED.equals(value) == true)
+                if (AccessStatus.DENIED.equals(value))
                 {
                     result = false;
                     break;

@@ -185,7 +185,7 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
             }
         }
 
-        if (classdef.isEmpty() == true)
+        if (classdef.isEmpty())
         {
             for (QName qnameObj : qnames)
             {
@@ -213,7 +213,7 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
      */
     private Collection<QName> getTypes(boolean isRM)
     {
-        if (isRM == true)
+        if (isRM)
         {
             return this.dictionaryservice.getTypes(RM_MODEL);
         }
@@ -231,7 +231,7 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
      */
     private Collection<QName> getAspects(boolean isRM)
     {
-        if (isRM == true)
+        if (isRM)
         {
             return this.dictionaryservice.getAspects(RM_MODEL);
         }

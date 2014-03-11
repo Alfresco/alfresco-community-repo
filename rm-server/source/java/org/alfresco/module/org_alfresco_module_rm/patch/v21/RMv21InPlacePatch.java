@@ -43,12 +43,12 @@ import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * RM v2.1 patch to support InPlace functional updates
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
 @SuppressWarnings("deprecation")
-public class RMv21InPlacePatch extends RMv21PatchComponent 
+public class RMv21InPlacePatch extends RMv21PatchComponent
                                implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     /** Extended reader and writer role details */
@@ -65,25 +65,25 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
        "ViewRecords",
        "EditNonRecordMetadata"
     };
-    
+
     /** file plan role service */
     private FilePlanRoleService filePlanRoleService;
-    
+
     /** file plan service */
     private FilePlanService filePlanService;
-    
+
     /** File plan permission service */
     private FilePlanPermissionService filePlanPermissionService;
-    
+
     /** capability service */
     private CapabilityService capabilityService;
-    
+
     /** rule service */
     private RuleService ruleService;
-    
+
     /** node service */
     private NodeService nodeService;
-    
+
     /**
      * @param filePlanRoleService   file plan role service
      */
@@ -91,7 +91,7 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     {
         this.filePlanRoleService = filePlanRoleService;
     }
-    
+
     /**
      * @param filePlanPermissionService file plan permission service
      */
@@ -99,7 +99,7 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     {
         this.filePlanPermissionService = filePlanPermissionService;
     }
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -107,7 +107,7 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @param capabilityService capability service
      */
@@ -115,7 +115,7 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     {
         this.capabilityService = capabilityService;
     }
-    
+
     /**
      * @param ruleService   rule service
      */
@@ -123,7 +123,7 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     {
         this.ruleService = ruleService;
     }
-    
+
     /**
      * @param nodeService   node service
      */
@@ -131,47 +131,47 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
     protected void executePatch() throws Throwable
-    {      
+    {
         Set<NodeRef> filePlans = filePlanService.getFilePlans();
-        
-        if (logger.isDebugEnabled() == true)
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("  ... updating " + filePlans.size() + " file plans");
         }
-        
+
         for (NodeRef filePlan : filePlans)
         {
             if (filePlanService.getUnfiledContainer(filePlan) == null)
             {
-                if (logger.isDebugEnabled() == true)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("  ... updating file plan " + filePlan.toString());
-                }        
-                
+                }
+
                 ruleService.disableRules();
                 try
                 {
                     // set permissions
                     filePlanPermissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS);
                     filePlanPermissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING);
-                                
+
                     // create fileplan containers
                     filePlanService.createHoldContainer(filePlan);
                     filePlanService.createTransferContainer(filePlan);
-                    filePlanService.createUnfiledContainer(filePlan);            
-                    
+                    filePlanService.createUnfiledContainer(filePlan);
+
                     // move any existing holds to new container
                     moveExistingHolds(filePlan);
-                    
+
                     // move any existing transfers to new container
                     moveExistingTransfers(filePlan);
-                    
+
                     // add the inplace roles
                     filePlanRoleService.createRole(filePlan, ROLE_READERS, ROLE_READERS_LABEL, getCapabilities(ROLE_READERS_CAPABILITIES));
                     filePlanRoleService.createRole(filePlan, ROLE_WRITERS, ROLE_WRITERS_LABEL, getCapabilities(ROLE_WRITERS_CAPABILITIES));
@@ -182,8 +182,8 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
                 }
             }
         }
-    }   
-    
+    }
+
     private Set<Capability> getCapabilities(String[] capabilityNames)
     {
         Set<Capability> capabilities = new HashSet<Capability>(3);
@@ -193,16 +193,16 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
         }
         return capabilities;
     }
-    
+
     private void moveExistingHolds(NodeRef filePlan)
     {
-        if (logger.isDebugEnabled() == true)
+        if (logger.isDebugEnabled())
         {
             logger.debug("  ... moving existing holds for file plan " + filePlan.toString());
         }
-                
+
         NodeRef container = filePlanService.getHoldContainer(filePlan);
-        
+
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_HOLDS, RegexQNamePattern.MATCH_ALL);
         for (ChildAssociationRef assoc : assocs)
         {
@@ -211,16 +211,16 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
             nodeService.moveNode(hold, container, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, name));
         }
     }
-    
+
     private void moveExistingTransfers(NodeRef filePlan)
     {
-        if (logger.isDebugEnabled() == true)
+        if (logger.isDebugEnabled())
         {
             logger.debug("  ... moving existing transfers for file plan " + filePlan.toString());
         }
-        
+
         NodeRef container = filePlanService.getTransferContainer(filePlan);
-        
+
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_TRANSFERS, RegexQNamePattern.MATCH_ALL);
         for (ChildAssociationRef assoc : assocs)
         {
@@ -228,6 +228,6 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
             String name = (String)nodeService.getProperty(transfer, ContentModel.PROP_NAME);
             nodeService.moveNode(transfer, container, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, name));
         }
-        
+
     }
 }

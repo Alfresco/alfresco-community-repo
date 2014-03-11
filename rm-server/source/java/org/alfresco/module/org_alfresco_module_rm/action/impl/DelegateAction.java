@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * Records management action who's implementation is delegated to an existing Action.
  * <p>
  * Useful for creating a RM version of an existing action implementation.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -38,10 +38,10 @@ public class DelegateAction extends RMActionExecuterAbstractBase
 {
     /** Delegate action executer*/
     private ActionExecuter delegateActionExecuter;
-    
+
     /** should we check whether the node is frozen */
     private boolean checkFrozen = false;
-    
+
     /**
      * @param delegateActionExecuter    delegate action executer
      */
@@ -49,7 +49,7 @@ public class DelegateAction extends RMActionExecuterAbstractBase
     {
         this.delegateActionExecuter = delegateActionExecuter;
     }
-    
+
     /**
      * @param checkFrozen   true if we check whether the actioned upon node reference is frozen, false otherwise
      */
@@ -64,19 +64,19 @@ public class DelegateAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) == true &&
+        if (nodeService.exists(actionedUponNodeRef) &&
             (checkFrozen == false || freezeService.isFrozen(actionedUponNodeRef) == false))
         {
             // do the property subs (if any exist)
-            if (allowParameterSubstitutions == true)
+            if (allowParameterSubstitutions)
             {
                parameterProcessorComponent.process(action, delegateActionExecuter.getActionDefinition(), actionedUponNodeRef);
             }
-            
+
             delegateActionExecuter.execute(action, actionedUponNodeRef);
         }
     }
-    
+
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#getParameterDefintions()
      */

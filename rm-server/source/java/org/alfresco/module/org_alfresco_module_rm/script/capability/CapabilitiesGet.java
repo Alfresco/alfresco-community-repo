@@ -46,7 +46,7 @@ public class CapabilitiesGet extends DeclarativeWebScript
 {
 	/** File plan service */
     private FilePlanService filePlanService;
-    
+
     /** Capability service */
     private CapabilityService capabilityService;
 
@@ -61,11 +61,11 @@ public class CapabilitiesGet extends DeclarativeWebScript
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
-    
+
     /**
      * @see org.alfresco.repo.web.scripts.content.StreamContent#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
@@ -101,7 +101,7 @@ public class CapabilitiesGet extends DeclarativeWebScript
         }
 
         Map<String, Object> model = new TreeMap<String, Object>();
-        if (grouped == true)
+        if (grouped)
         {
             // Construct the map which is needed to build the model
             Map<String, GroupedCapabilities> groupedCapabilitiesMap = new TreeMap<String, GroupedCapabilities>();

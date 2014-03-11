@@ -150,7 +150,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
         if (customMappings == null)
         {
             // if we have a config file
-            if (nodeService.exists(CONFIG_NODE_REF) == true)
+            if (nodeService.exists(CONFIG_NODE_REF))
             {
                 // load the contents of the config file
                 customMappings = loadConfig();
@@ -213,7 +213,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
 
         // check whether we already have this mapping or not
         Set<CustomMapping> customMappings = getCustomMappings();
-        if (customMappings.contains(customMapping) == true)
+        if (customMappings.contains(customMapping))
         {
             throw new AlfrescoRuntimeException("Can not add custom email mapping, because duplicate mapping already exists.");
         }
@@ -244,7 +244,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
 
         // check whether we already have this mapping or not
         Set<CustomMapping> customMappings = getCustomMappings();
-        if (customMappings.contains(customMapping) == true)
+        if (customMappings.contains(customMapping))
         {
             // else remove the custom mapping (since we have already called getCustomMapping we can be sure
             // the member variable is populated)
@@ -402,7 +402,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
                         catch (Throwable e)
                         {
                             // log a warning
-                            if (logger.isWarnEnabled() == true)
+                            if (logger.isWarnEnabled())
                             {
                                 logger.warn(e.getMessage());
                             }

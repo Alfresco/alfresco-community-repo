@@ -42,14 +42,14 @@ import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * RM v2.0 File Plan Node Ref Patch
- * 
+ *
  * @author Roy Wetherall
  * @since 2.0
  */
 @SuppressWarnings("deprecation")
-public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent 
+public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
                                       implements BeanNameAware, RecordsManagementModel, DOD5015Model
-{    
+{
     private NodeService nodeService;
     private PatchDAO patchDAO;
     private NodeDAO nodeDAO;
@@ -57,27 +57,27 @@ public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
     private PermissionService permissionService;
     private FilePlanService filePlanService;
     private FilePlanRoleService filePlanRoleService;
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setPatchDAO(PatchDAO patchDAO)
     {
         this.patchDAO = patchDAO;
     }
-    
+
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
     }
-    
+
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
     }
-    
+
     /**
      * @param permissionService permission service
      */
@@ -85,58 +85,58 @@ public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
      * @param filePlanRoleService	file plan role service
      */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService) 
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
 		this.filePlanRoleService = filePlanRoleService;
 	}
-    
+
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
-    
+
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
     protected void executePatch() throws Throwable
-    {        
+    {
     	Pair<Long, QName> aspectPair = qnameDAO.getQName(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
         if (aspectPair != null)
         {
             List<Long> filePlanComponents = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
-    
-            if (logger.isDebugEnabled() == true)
+
+            if (logger.isDebugEnabled())
             {
-                logger.debug("   ... updating " + filePlanComponents.size() + " items" );
+                logger.debug("   ... updating " + filePlanComponents.size() + " items");
             }
-            
-            
+
+
             for (Long filePlanComponent : filePlanComponents)
             {
                 Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(filePlanComponent);
                 NodeRef filePlanComponentNodeRef = recordPair.getSecond();
-                
+
                 NodeRef filePlan =  filePlanService.getFilePlan(filePlanComponentNodeRef);
-                
+
                 // set the file plan node reference
                 if (nodeService.getProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF) == null)
                 {
                    nodeService.setProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF, filePlan);
-                }                    
-                
+                }
+
                 // only set the rmadmin permissions on record categories, record folders and records
                 FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(filePlanComponentNodeRef);
-                if (FilePlanComponentKind.RECORD_CATEGORY.equals(kind) == true ||
-                    FilePlanComponentKind.RECORD_FOLDER.equals(kind) == true ||
-                    FilePlanComponentKind.RECORD.equals(kind) == true )
+                if (FilePlanComponentKind.RECORD_CATEGORY.equals(kind) ||
+                    FilePlanComponentKind.RECORD_FOLDER.equals(kind) ||
+                    FilePlanComponentKind.RECORD.equals(kind))
                 {
                     // ensure the that the records management role has read and file on the node
                     Role adminRole = filePlanRoleService.getRole(filePlan, "Administrator");
@@ -144,7 +144,7 @@ public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
                     {
                         permissionService.setPermission(filePlanComponentNodeRef, adminRole.getRoleGroupName(), RMPermissionModel.FILING, true);
                     }
-                    
+
                     // ensure that the default vital record default values have been set (RM-753)
                     Serializable vitalRecordIndicator = nodeService.getProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR);
                     if (vitalRecordIndicator == null)
@@ -157,7 +157,7 @@ public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
                         nodeService.setProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD, new Period("none|0"));
                     }
                 }
-            }            
+            }
         }
     }
 }

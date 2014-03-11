@@ -110,13 +110,13 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
         NodeRef nodeRef = nodeInfo.getNodeRef();
 
         if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef,
-                RMPermissionModel.VIEW_RECORDS)) == true)
+                RMPermissionModel.VIEW_RECORDS)))
         {
             // Indicate whether the node is a RM object or not
             boolean isFilePlanComponent = filePlanService.isFilePlanComponent(nodeInfo.getNodeRef());
             rootJSONObject.put("isRmNode", isFilePlanComponent);
 
-            if (isFilePlanComponent == true)
+            if (isFilePlanComponent)
             {
                 rootJSONObject.put("rmNode", setRmNodeValues(nodeRef, rootJSONObject, useShortQNames));
             }
@@ -173,7 +173,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
 
             for (BaseEvaluator indicator : indicators)
             {
-                if (indicator.evaluate(nodeRef) == true)
+                if (indicator.evaluate(nodeRef))
                 {
                     jsonIndicators.add(indicator.getName());
                 }
@@ -192,7 +192,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
 
             for (BaseEvaluator action : actions)
             {
-                if (action.evaluate(nodeRef) == true)
+                if (action.evaluate(nodeRef))
                 {
                     jsonActions.add(action.getName());
                 }
@@ -226,7 +226,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                 }
                 case RECORD_FOLDER:
                 {
-                    if (recordService.isMetadataStub(nodeRef) == true)
+                    if (recordService.isMetadataStub(nodeRef))
                     {
                         result = "metadata-stub-folder";
                     }
@@ -238,13 +238,13 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                 }
                 case RECORD:
                 {
-                    if (recordService.isMetadataStub(nodeRef) == true)
+                    if (recordService.isMetadataStub(nodeRef))
                     {
                         result = "metadata-stub";
                     }
                     else
                     {
-                        if (recordService.isDeclared(nodeRef) == true)
+                        if (recordService.isDeclared(nodeRef))
                         {
                             result = "record";
                         }

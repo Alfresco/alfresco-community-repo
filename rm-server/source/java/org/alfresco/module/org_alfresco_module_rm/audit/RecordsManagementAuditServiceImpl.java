@@ -291,7 +291,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void registerAuditEvent(AuditEvent auditEvent)
     {
-        if (logger.isDebugEnabled() == true)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Registering audit event " + auditEvent.getName());
         }
@@ -475,7 +475,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after, boolean immediate, boolean removeIfNoPropertyChanged)
     {
         // deal with immediate auditing if required
-        if (immediate == true)
+        if (immediate)
         {
             Map<String, Serializable> auditMap = buildAuditMap(nodeRef, eventName, before, after, removeIfNoPropertyChanged);
             auditComponent.recordAuditValues(RM_AUDIT_PATH_ROOT, auditMap);
@@ -552,7 +552,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         Pair<Map<QName, Serializable>, Map<QName, Serializable>> deltaPair = PropertyMap.getBeforeAndAfterMapsForChanges(propertiesBefore, propertiesAfter);
 
         // If both the first and second Map in the deltaPair are empty and removeOnNoPropertyChange is true, the entire auditMap is discarded so it won't be audited.
-        if (deltaPair.getFirst().isEmpty() && deltaPair.getSecond().isEmpty() && removeOnNoPropertyChange == true)
+        if (deltaPair.getFirst().isEmpty() && deltaPair.getSecond().isEmpty() && removeOnNoPropertyChange)
         {
             auditMap.clear();
         }
@@ -1371,7 +1371,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 json.put("fullName", entry.getFullName() == null ? "": entry.getFullName());
                 json.put("nodeRef", entry.getNodeRef() == null ? "": entry.getNodeRef());
 
-                if (entry.getEvent().equals("createPerson") == true && entry.getNodeRef() != null)
+                if (entry.getEvent().equals("createPerson") && entry.getNodeRef() != null)
                 {
                     NodeRef nodeRef = entry.getNodeRef();
                     String userName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);

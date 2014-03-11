@@ -29,7 +29,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Compatibility class.
- * 
+ *
  * Used to bridge between the old style of saved search passed and required by the UI and the new actual saved search details.
  * Eventually will be factored out as web scripts are brought up to date.
  */
@@ -37,10 +37,10 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
 {
     /** Saved search details */
     private final SavedSearchDetails savedSearchDetails;
-    
+
     /** Namespace service */
     private final NamespaceService namespaceService;
-    
+
     /** Records management search service implementation */
     private final RecordsManagementSearchServiceImpl searchService;
 
@@ -51,11 +51,11 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
      */
     public static String getSearchFromParams(String params)
     {
-        String search = null;        
+        String search = null;
         String[] values = params.split("&");
         for (String value : values)
         {
-            if (value.startsWith("terms") == true)
+            if (value.startsWith("terms"))
             {
                 String[] terms = value.trim().split("=");
                 try
@@ -70,17 +70,17 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
                 break;
             }
         }
-        
+
         return search;
     }
-    
+
     public static RecordsManagementSearchParameters createSearchParameters(String params, String sort, NamespaceService namespaceService)
     {
         return createSearchParameters(params, new String[]{"&", "="}, sort, namespaceService);
     }
-    
+
     /**
-     * 
+     *
      * @param params
      * @param sort
      * @param namespaceService
@@ -90,7 +90,7 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
     {
         RecordsManagementSearchParameters result = new RecordsManagementSearchParameters();
         List<QName> includedContainerTypes = new ArrayList<QName>(2);
-        
+
         // Map the param values into the search parameter object
         String[] values = params.split(paramsDelim[0]);
         for (String value : values)
@@ -98,37 +98,37 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
             String[] paramValues = value.split(paramsDelim[1]);
             String paramName = paramValues[0].trim();
             String paramValue = paramValues[1].trim();
-            if ("records".equals(paramName) == true)
+            if ("records".equals(paramName))
             {
                 result.setIncludeRecords(Boolean.parseBoolean(paramValue));
             }
-            else if ("undeclared".equals(paramName) == true)
+            else if ("undeclared".equals(paramName))
             {
                 result.setIncludeUndeclaredRecords(Boolean.parseBoolean(paramValue));
             }
-            else if ("vital".equals(paramName) == true)
+            else if ("vital".equals(paramName))
             {
                 result.setIncludeVitalRecords(Boolean.parseBoolean(paramValue));
             }
-            else if ("folders".equals(paramName) == true)
+            else if ("folders".equals(paramName))
             {
                 result.setIncludeRecordFolders(Boolean.parseBoolean(paramValue));
             }
-            else if ("frozen".equals(paramName) == true)
+            else if ("frozen".equals(paramName))
             {
                 result.setIncludeFrozen(Boolean.parseBoolean(paramValue));
             }
-            else if ("cutoff".equals(paramName) == true)
+            else if ("cutoff".equals(paramName))
             {
                 result.setIncludeCutoff(Boolean.parseBoolean(paramValue));
             }
-            else if ("categories".equals(paramName) == true && Boolean.parseBoolean(paramValue) == true)
+            else if ("categories".equals(paramName) && Boolean.parseBoolean(paramValue))
             {
                 includedContainerTypes.add(TYPE_RECORD_CATEGORY);
             }
         }
         result.setIncludedContainerTypes(includedContainerTypes);
-        
+
         if (sort != null)
         {
             // Map the sort string into the search details
@@ -139,7 +139,7 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
                 String[] sortPair = sortPairString.split("/");
                 QName field = QName.createQName(sortPair[0], namespaceService);
                 Boolean isAcsending = Boolean.FALSE;
-                if ("asc".equals(sortPair[1]) == true)
+                if ("asc".equals(sortPair[1]))
                 {
                     isAcsending = Boolean.TRUE;
                 }
@@ -147,15 +147,15 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
             }
             result.setSortOrder(sortOrder);
         }
-        
+
         return result;
     }
-    
+
     /**
      * Constructor
      * @param savedSearchDetails
      */
-    public SavedSearchDetailsCompatibility(SavedSearchDetails savedSearchDetails, 
+    public SavedSearchDetailsCompatibility(SavedSearchDetails savedSearchDetails,
                                            NamespaceService namespaceService,
                                            RecordsManagementSearchServiceImpl searchService)
     {
@@ -163,7 +163,7 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
         this.namespaceService = namespaceService;
         this.searchService = searchService;
     }
-    
+
     /**
      * Get the sort string from the saved search details
      * @return
@@ -171,16 +171,16 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
     public String getSort()
     {
         StringBuilder builder = new StringBuilder(64);
-        
+
         for (SortItem entry : this.savedSearchDetails.getSearchParameters().getSortOrder())
         {
             if (builder.length() !=0)
             {
                 builder.append(",");
             }
-            
+
             String order = "desc";
-            if (entry.assc == true)
+            if (entry.assc)
             {
                 order = "asc";
             }
@@ -188,18 +188,18 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
                    .append("/")
                    .append(order);
         }
-        	        
+
         return builder.toString();
     }
-    
+
     /**
      * Get the parameter string from the saved search details
      * @return
      */
     public String getParams()
     {
-        List<QName> includeContainerTypes = this.savedSearchDetails.getSearchParameters().getIncludedContainerTypes();            
-        StringBuilder builder = new StringBuilder(128);	        	       
+        List<QName> includeContainerTypes = this.savedSearchDetails.getSearchParameters().getIncludedContainerTypes();
+        StringBuilder builder = new StringBuilder(128);
         builder.append("terms=").append(this.savedSearchDetails.getSearch()).append("&")
                .append("records=").append(this.savedSearchDetails.getSearchParameters().isIncludeRecords()).append("&")
                .append("undeclared=").append(this.savedSearchDetails.getSearchParameters().isIncludeUndeclaredRecords()).append("&")
@@ -208,10 +208,10 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
                .append("frozen=").append(this.savedSearchDetails.getSearchParameters().isIncludeFrozen()).append("&")
                .append("cutoff=").append(this.savedSearchDetails.getSearchParameters().isIncludeCutoff()).append("&")
                .append("categories=").append(includeContainerTypes.contains(TYPE_RECORD_CATEGORY)).append("&")
-               .append("series=").append(false);	        
+               .append("series=").append(false);
         return builder.toString();
     }
-    
+
     /**
      * Build the full query string
      * @return

@@ -95,11 +95,11 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
         {
             NodeRef nextChild = nextAssoc.getChildRef();
 
-            if (filePlanService.isFilePlanComponent(nextChild) == true &&
+            if (filePlanService.isFilePlanComponent(nextChild) &&
                 freezeService.isFrozen(nextChild) == false)
             {
                 // If the child is a record, then the VitalRecord aspect needs to be applied or updated
-                if (recordService.isRecord(nextChild) == true)
+                if (recordService.isRecord(nextChild))
                 {
                     if (parentVri)
                     {

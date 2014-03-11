@@ -129,7 +129,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         if (nodeService.exists(actionedUponNodeRef) == false)
         {
             // do not create record if the actioned upon node does not exist!
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Can not create record, because " + actionedUponNodeRef.toString() + " does not exist.");
             }
@@ -137,40 +137,40 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         else if (dictionaryService.isSubClass(nodeService.getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT) == false)
         {
             // TODO eventually we should support other types .. either as record folders or as composite records
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Can not create record, because " + actionedUponNodeRef.toString() + " is not a supported type.");
             }
         }
-        else if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD) == true)
+        else if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD))
         {
             // Do not create record if the actioned upon node is already a record!
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Can not create record, because " + actionedUponNodeRef.toString() + " is already a record.");
             }
         }
-        else if (nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY) == true)
+        else if (nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
             // We can not create records from working copies
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Can node create record, because " + actionedUponNodeRef.toString() + " is a working copy.");
             }
 
         }
-        else if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS) == true)
+        else if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS))
         {
             // can not create a record from a previously rejected one
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Can not create record, because " + actionedUponNodeRef.toString() + " has previously been rejected.");
             }
         }
-        else if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_SYNCED) == true)
+        else if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_SYNCED))
         {
             // can't declare the record if the node is sync'ed
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Can't declare as record, because " + actionedUponNodeRef.toString() + " is synched content.");
             }
@@ -193,7 +193,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                 // if the file plan is still null, raise an exception
                 if (filePlan == null)
                 {
-                    if (logger.isDebugEnabled() == true)
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("Can not create record, because the default file plan can not be determined.  Make sure at least one file plan has been created.");
                     }
@@ -205,7 +205,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                 // verify that the provided file plan is actually a file plan
                 if (filePlanService.isFilePlan(filePlan) == false)
                 {
-                    if (logger.isDebugEnabled() == true)
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("Can not create record, because the provided file plan node reference is not a file plan.");
                     }

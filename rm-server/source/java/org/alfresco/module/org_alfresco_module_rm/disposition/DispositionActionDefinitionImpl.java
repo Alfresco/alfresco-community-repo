@@ -34,38 +34,38 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Disposition action implementation
- * 
+ *
  * @author Roy Wetherall
  */
 public class DispositionActionDefinitionImpl implements DispositionActionDefinition, RecordsManagementModel
 {
     /** Name */
     private String name;
-    
+
     /** Description */
     private String description;
-    
+
     /** Label */
     private String label;
-    
+
     /** Node service */
     private NodeService nodeService;
 
     /** Records management action service */
     private RecordsManagementActionService recordsManagementActionService;
-    
+
     /** Records management event service */
     private RecordsManagementEventService recordsManagementEventService;
-    
+
     /** Disposition action node reference */
     private NodeRef dispositionActionNodeRef;
-    
+
     /** Action index */
     private int index;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param services  service registry
      * @param nodeRef   disposition action node reference
      * @param index     index of disposition action
@@ -79,7 +79,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
         this.dispositionActionNodeRef = nodeRef;
         this.index = index;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getNodeRef()
      */
@@ -95,7 +95,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     {
         return this.index;
     }
-    
+
     /**
      *  @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getId()
      */
@@ -127,7 +127,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
         }
         return name;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getLabel()
      */
@@ -137,7 +137,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
         {
             String name = getName();
             label = name;
-            
+
             // get the disposition action from the RM action service
             RecordsManagementAction action = recordsManagementActionService.getDispositionAction(name);
             if (action != null)
@@ -145,7 +145,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
                 label = action.getLabel();
             }
         }
-        
+
         return label;
     }
 
@@ -168,7 +168,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
         {
             result = QName.createQName(value);
         }
-        return result;        
+        return result;
     }
 
     /**
@@ -194,21 +194,21 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
         }
         return events;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#eligibleOnFirstCompleteEvent()
      */
     public boolean eligibleOnFirstCompleteEvent()
     {
-        boolean result = true;        
+        boolean result = true;
         String value = (String)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_EVENT_COMBINATION);
-        if (value != null && value.equals("and") == true)
+        if (value != null && value.equals("and"))
         {
             result = false;
         }
         return result;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getLocation()
      */

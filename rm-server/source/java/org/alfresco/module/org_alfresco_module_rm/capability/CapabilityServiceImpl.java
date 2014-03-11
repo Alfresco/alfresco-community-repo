@@ -81,7 +81,7 @@ public class CapabilityServiceImpl implements CapabilityService
     public Set<Capability> getCapabilities(boolean includePrivate)
     {
         Set<Capability> result = null;
-        if (includePrivate == true)
+        if (includePrivate)
         {
             result = new HashSet<Capability>(capabilities.values());
         }

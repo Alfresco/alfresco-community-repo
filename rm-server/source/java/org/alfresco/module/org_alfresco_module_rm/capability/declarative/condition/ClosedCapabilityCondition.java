@@ -38,18 +38,18 @@ public class ClosedCapabilityCondition extends AbstractCapabilityCondition
     public boolean evaluate(NodeRef nodeRef)
     {
         boolean result = false;
-        if (recordFolderService.isRecordFolder(nodeRef) == true)
+        if (recordFolderService.isRecordFolder(nodeRef))
         {
             result = recordFolderService.isRecordFolderClosed(nodeRef);
         }
-        else if (recordService.isRecord(nodeRef) == true)
+        else if (recordService.isRecord(nodeRef))
         {
             List<ChildAssociationRef> assocs = nodeService.getParentAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)
             {
                 NodeRef parent = assoc.getParentRef();
-                if (recordFolderService.isRecordFolder(parent) == true &&
-                    recordFolderService.isRecordFolderClosed(parent) == true)
+                if (recordFolderService.isRecordFolder(parent) &&
+                    recordFolderService.isRecordFolderClosed(parent))
                 {
                     result = true;
                     break;

@@ -105,7 +105,7 @@ public abstract class AbstractCapability extends RMSecurityCommon
         if (StringUtils.isBlank(title))
         {
             title = I18NUtil.getMessage("capability." + getName() + ".title");
-            if (StringUtils.isBlank(title) == true)
+            if (StringUtils.isBlank(title))
             {
                 title = getName();
             }

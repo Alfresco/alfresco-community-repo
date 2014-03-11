@@ -85,7 +85,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
             throw new AlfrescoRuntimeException("Unable to register module patch, becuase module id is invalid.");
         }
 
-        if (logger.isDebugEnabled() == true)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Registering module patch " + modulePatch.getId() + " for module " + getModuleId());
         }
@@ -102,7 +102,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
         // get current schema version
         int currentSchema = getCurrentSchema();
 
-        if (logger.isDebugEnabled() == true)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Running module patch executer (currentSchema=" + currentSchema + ", configuredSchema=" + moduleSchema + ")");
         }
@@ -140,7 +140,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     protected int getCurrentSchema()
     {
         Integer result = START_SCHEMA;
-        if (attributeService.exists(KEY_MODULE_SCHEMA, getModuleId()) == true)
+        if (attributeService.exists(KEY_MODULE_SCHEMA, getModuleId()))
         {
             result = (Integer)attributeService.getAttribute(KEY_MODULE_SCHEMA, getModuleId());
         }

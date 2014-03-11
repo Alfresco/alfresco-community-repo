@@ -29,7 +29,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Copy audit event.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -38,7 +38,7 @@ public class CopyAuditEvent extends AuditEvent implements OnCopyCompletePolicy
 {
     /**
      * Audit copy of file plan components
-     * 
+     *
      * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy#onCopyComplete(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, boolean, java.util.Map)
      */
     @Override
@@ -47,15 +47,15 @@ public class CopyAuditEvent extends AuditEvent implements OnCopyCompletePolicy
             kind = BehaviourKind.CLASS,
             type = "rma:filePlanComponent"
     )
-    public void onCopyComplete(QName classRef, 
-                               NodeRef sourceNodeRef, 
-                               NodeRef targetNodeRef, 
+    public void onCopyComplete(QName classRef,
+                               NodeRef sourceNodeRef,
+                               NodeRef targetNodeRef,
                                boolean copyToNewNode,
                                Map<NodeRef, NodeRef> copyMap)
     {
-        if (copyToNewNode == true)
+        if (copyToNewNode)
         {
             recordsManagementAuditService.auditEvent(targetNodeRef, getName());
         }
-    }    
+    }
 }

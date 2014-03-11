@@ -108,7 +108,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
         {
             rmActions.put(rmAction.getName(), rmAction);
 
-            if (rmAction.isDispositionAction() == true)
+            if (rmAction.isDispositionAction())
             {
                 dispositionActions.put(rmAction.getName(), rmAction);
             }
@@ -261,7 +261,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
         // Execute action
         invokeBeforeRMActionExecution(nodeRef, name, parameters);
         RecordsManagementActionResult result = rmAction.execute(nodeRef, parameters);
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef))
         {
             invokeOnRMActionExecution(nodeRef, name, parameters);
         }

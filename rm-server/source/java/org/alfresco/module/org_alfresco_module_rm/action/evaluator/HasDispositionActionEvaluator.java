@@ -36,7 +36,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Records management hasDispositionAction evaluator that evaluates whether the given node's disposition schedule has the specified disposition action.
- * 
+ *
  * @author Craig Tan
  * @since 2.1
  */
@@ -69,7 +69,7 @@ public class HasDispositionActionEvaluator extends RecordsManagementActionCondit
         String action = ((QName) actionCondition.getParameterValue(PARAM_DISPOSITION_ACTION)).getLocalName();
 
 
-        if (dispositionService.isDisposableItem(actionedUponNodeRef) == true)
+        if (dispositionService.isDisposableItem(actionedUponNodeRef))
         {
 
             if (position.equals(DispositionActionRelativePositions.ANY.toString()))
@@ -80,7 +80,7 @@ public class HasDispositionActionEvaluator extends RecordsManagementActionCondit
                 {
                     for (DispositionActionDefinition dispositionActionDefinition : dispositionSchedule.getDispositionActionDefinitions())
                     {
-                        if (dispositionActionDefinition.getName().equals(action) == true)
+                        if (dispositionActionDefinition.getName().equals(action))
                         {
                             result = true;
                             break;
@@ -95,7 +95,7 @@ public class HasDispositionActionEvaluator extends RecordsManagementActionCondit
                 {
                     // Get the disposition actions name
                     String actionName = nextDispositionAction.getName();
-                    if (actionName.equals(action) == true)
+                    if (actionName.equals(action))
                     {
                         result = true;
                     }
@@ -108,7 +108,7 @@ public class HasDispositionActionEvaluator extends RecordsManagementActionCondit
                 {
                     // Get the disposition actions name
                     String actionName = lastCompletedDispositionAction.getName();
-                    if (actionName.equals(action) == true)
+                    if (actionName.equals(action))
                     {
                         result = true;
                     }

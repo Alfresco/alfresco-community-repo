@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * rma:frozen behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -49,10 +49,10 @@ public class FrozenAspect extends    BaseBehaviourBean
 {
     /** file plan service */
     protected FilePlanService filePlanService;
-    
+
     /** freeze service */
     protected FreezeService freezeService;
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -60,7 +60,7 @@ public class FrozenAspect extends    BaseBehaviourBean
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @param freezeService freeze service
      */
@@ -68,10 +68,10 @@ public class FrozenAspect extends    BaseBehaviourBean
     {
         this.freezeService = freezeService;
     }
-    
+
     /**
      * Ensure that no frozen node is deleted.
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
@@ -87,10 +87,10 @@ public class FrozenAspect extends    BaseBehaviourBean
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.exists(nodeRef) == true &&
-                    filePlanService.isFilePlanComponent(nodeRef) == true)
+                if (nodeService.exists(nodeRef) &&
+                    filePlanService.isFilePlanComponent(nodeRef))
                 {
-                    if (freezeService.isFrozen(nodeRef) == true)
+                    if (freezeService.isFrozen(nodeRef))
                     {
                         // never allowed to delete a frozen node
                         throw new AccessDeniedException("Frozen nodes can not be deleted.");
@@ -115,10 +115,10 @@ public class FrozenAspect extends    BaseBehaviourBean
         for (ChildAssociationRef assoc : assocs)
         {
             // we only care about primary children
-            if (assoc.isPrimary() == true)
+            if (assoc.isPrimary())
             {
                 NodeRef nodeRef = assoc.getChildRef();
-                if (freezeService.isFrozen(nodeRef) == true)
+                if (freezeService.isFrozen(nodeRef))
                 {
                     // never allowed to delete a node with a frozen child
                     throw new AccessDeniedException("Can not delete node, because it contains a frozen child node.");
@@ -129,5 +129,5 @@ public class FrozenAspect extends    BaseBehaviourBean
             }
         }
     }
-   
+
 }

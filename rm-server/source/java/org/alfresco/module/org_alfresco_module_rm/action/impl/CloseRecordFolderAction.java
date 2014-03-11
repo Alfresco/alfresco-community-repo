@@ -39,7 +39,7 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (eligibleForAction(actionedUponNodeRef) == true)
+        if (eligibleForAction(actionedUponNodeRef))
         {
             recordFolderService.closeRecordFolder(actionedUponNodeRef);
         }
@@ -57,7 +57,7 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
     private boolean eligibleForAction(NodeRef actionedUponNodeRef)
     {
         boolean result = false;
-        if (nodeService.exists(actionedUponNodeRef) == true &&
+        if (nodeService.exists(actionedUponNodeRef) &&
                 freezeService.isFrozen(actionedUponNodeRef) == false)
         {
             result = true;

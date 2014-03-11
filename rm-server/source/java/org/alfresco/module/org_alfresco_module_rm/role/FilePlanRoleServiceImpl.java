@@ -198,13 +198,13 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     public void setupFilePlanRoles(final NodeRef filePlan)
     {
         // Do not execute behaviour if this has been created in the archive store
-        if(filePlan.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE) == true)
+        if(filePlan.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
         {
             // This is not the spaces store - probably the archive store
             return;
         }
 
-        if (nodeService.exists(filePlan) == true)
+        if (nodeService.exists(filePlan))
         {
             List<NodeRef> systemContainers = AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<List<NodeRef>>()
             {
@@ -320,10 +320,10 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                         // Get the name of the role
                         String name = null;
-                        if (object.has("name") == true)
+                        if (object.has("name"))
                         {
                             name = object.getString("name");
-                            if (existsRole(filePlan, name) == true)
+                            if (existsRole(filePlan, name))
                             {
                                 throw new AlfrescoRuntimeException("The bootstrap role " + name + " already exists on the rm root node " + filePlan.toString());
                             }
@@ -336,21 +336,21 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                         // Get the role's display label
                         String displayLabel = name;
-                        if (object.has("displayLabel") == true)
+                        if (object.has("displayLabel"))
                         {
                             displayLabel = object.getString("displayLabel");
                         }
 
                         // Determine whether the role is an admin role or not
                         boolean isAdmin = false;
-                        if (object.has("isAdmin") == true)
+                        if (object.has("isAdmin"))
                         {
                             isAdmin = object.getBoolean("isAdmin");
                         }
 
                         // Get the roles capabilities
                         Set<Capability> capabilities = new HashSet<Capability>(30);
-                        if (object.has("capabilities") == true)
+                        if (object.has("capabilities"))
                         {
                             JSONArray arrCaps = object.getJSONArray("capabilities");
                             for (int index = 0; index < arrCaps.length(); index++)
@@ -369,7 +369,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                         Role role = createRole(filePlan, name, displayLabel, capabilities);
 
                         // Add any additional admin permissions
-                        if (isAdmin == true)
+                        if (isAdmin)
                         {
                             // Admin has filing
                             permissionService.setPermission(filePlan, role.getRoleGroupName(), RMPermissionModel.FILING, true);
@@ -485,7 +485,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 Set<String> roleAuthorities = authorityService.getAllAuthoritiesInZone(getZoneName(rmRootNode), AuthorityType.GROUP);
                 for (String roleAuthority : roleAuthorities)
                 {
-                    if (includeSystemRoles == true || isSystemRole(roleAuthority) == false)
+                    if (includeSystemRoles || isSystemRole(roleAuthority) == false)
                     {
                         String groupShortName = authorityService.getShortName(roleAuthority);
                         String name = getShortRoleName(groupShortName, rmRootNode);
@@ -531,7 +531,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 for (String roleAuthority : roleAuthorities)
                 {
                     Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, roleAuthority, false);
-                    if (users.contains(user) == true && (includeSystemRoles == true || isSystemRole(roleAuthority) == false))
+                    if (users.contains(user) && (includeSystemRoles || isSystemRole(roleAuthority) == false))
                     {
                         String groupShortName = authorityService.getShortName(roleAuthority);
                         String name = getShortRoleName(groupShortName, rmRootNode);
@@ -599,7 +599,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 Role result = null;
 
                 String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, rmRootNode));
-                if (authorityService.authorityExists(roleAuthority) == true)
+                if (authorityService.authorityExists(roleAuthority))
                 {
                     String name = getShortRoleName(authorityService.getShortName(roleAuthority), rmRootNode);
                     String displayLabel = authorityService.getAuthorityDisplayName(roleAuthority);
@@ -625,7 +625,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         Set<Capability> capabilities = new HashSet<Capability>(52);
         for (AccessPermission permission : permissions)
         {
-            if (permission.getAuthority().equals(roleAuthority) == true)
+            if (permission.getAuthority().equals(roleAuthority))
             {
                 String capabilityName = permission.getPermission();
                 Capability capability = capabilityService.getCapability(capabilityName);
@@ -778,7 +778,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     public void deleteRole(final NodeRef rmRootNode, final String role)
     {
         // ensure that we are not trying to delete the admin role
-        if (ROLE_ADMIN.equals(role) == true)
+        if (ROLE_ADMIN.equals(role))
         {
             throw new AlfrescoRuntimeException("Can not delete the records management administration role.");
         }
@@ -920,7 +920,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
         if (authenticationService.authenticationExists(user) == false)
         {
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("   ... creating RM Admin user");
             }

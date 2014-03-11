@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Module patch component base class.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -37,16 +37,16 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
 {
     /** logger */
     protected static Log logger = LogFactory.getLog(ModulePatchComponent.class);
-    
+
     /** Retrying transaction helper */
     protected RetryingTransactionHelper retryingTransactionHelper;
-    
+
     /** Behaviour filter */
     protected BehaviourFilter behaviourFilter;
-    
+
     /** module patch executer */
     protected ModulePatchExecuterImpl modulePatchExecuter;
-    
+
     /**
      * @param retryingTransactionHelper retrying transaction helper
      */
@@ -54,7 +54,7 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
-    
+
     /**
      * @param behaviourFilter   behaviour filter
      */
@@ -62,7 +62,7 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     {
         this.behaviourFilter = behaviourFilter;
     }
-    
+
     /**
      * @param modulePatchExecuter   module patch executer
      */
@@ -70,17 +70,17 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     {
         this.modulePatchExecuter = modulePatchExecuter;
     }
-    
+
     /**
      * Init method
      */
     @Override
     public void init()
     {
-        super.init();        
+        super.init();
         modulePatchExecuter.getDependsOn().add(this);
     }
-    
+
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
@@ -89,14 +89,14 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     {
         try
         {
-            if (logger.isInfoEnabled() == true)
+            if (logger.isInfoEnabled())
             {
                 logger.info("Module patch component '" + getName() + "' is executing ...");
             }
-            
+
             // execute path within an isolated transaction
             retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {   
+            {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -111,10 +111,10 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
                     }
                     return null;
                 }
-                
+
             }, false, true);
-            
-            if (logger.isInfoEnabled() == true)
+
+            if (logger.isInfoEnabled())
             {
                 logger.info(" ... completed module patch '" + getName() + "'");
             }
@@ -122,17 +122,17 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
         catch (Throwable exception)
         {
             // record the exception otherwise it gets swallowed
-            if (logger.isInfoEnabled() == true)
+            if (logger.isInfoEnabled())
             {
                 logger.info("  ... error encountered.  " + exception.getMessage(), exception);
             }
             throw exception;
         }
     }
-    
+
     /**
      * Execute patch work.
-     * 
+     *
      * @throws Throwable
      */
     protected abstract void executePatch() throws Throwable;

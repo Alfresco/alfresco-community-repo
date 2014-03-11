@@ -35,9 +35,9 @@ import org.quartz.JobExecutionException;
 
 /**
  * Scheduled disposition job.
- * 
+ *
  * Automatically cuts off eligible nodes.
- * 
+ *
  * @author Roy Wetherall
  */
 public class ScheduledDispositionJob implements Job
@@ -53,7 +53,7 @@ public class ScheduledDispositionJob implements Job
     	RecordsManagementActionService rmActionService
     	    = (RecordsManagementActionService)context.getJobDetail().getJobDataMap().get("recordsManagementActionService");
     	NodeService nodeService = (NodeService)context.getJobDetail().getJobDataMap().get("nodeService");
-    	
+
 
     	// Calculate the date range used in the query
     	Calendar cal = Calendar.getInstance();
@@ -63,11 +63,11 @@ public class ScheduledDispositionJob implements Job
 
     	//TODO These pad() calls are in RMActionExecuterAbstractBase. I've copied them
     	//     here as I have no access to that class.
-    	
+
     	final String currentDate = padString(year, 2) + "-" + padString(month, 2) +
     	    "-" + padString(dayOfMonth, 2) + "T00:00:00.00Z";
-		
-    	if (logger.isDebugEnabled() == true)
+
+    	if (logger.isDebugEnabled())
     	{
     		StringBuilder msg = new StringBuilder();
     		msg.append("Executing ")
@@ -76,28 +76,28 @@ public class ScheduledDispositionJob implements Job
     		    .append(currentDate);
     		logger.debug(msg.toString());
     	}
-    	
+
     	//TODO Copied the 1970 start date from the old RM JavaScript impl.
     	String dateRange = "[\"1970-01-01T00:00:00.00Z\" TO \"" + currentDate + "\"]";
 
     	// Execute the query and process the results
-    	String query = "+ASPECT:\"rma:record\" +ASPECT:\"rma:dispositionSchedule\" +@rma\\:dispositionAsOf:" + dateRange;      
+    	String query = "+ASPECT:\"rma:record\" +ASPECT:\"rma:dispositionSchedule\" +@rma\\:dispositionAsOf:" + dateRange;
 
     	SearchService search = (SearchService)context.getJobDetail().getJobDataMap().get("searchService");
     	ResultSet results = search.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, query);
-    	
+
     	List<NodeRef> resultNodes = results.getNodeRefs();
     	results.close();
-    	
-    	if (logger.isDebugEnabled() == true)
-    	{    	 
+
+    	if (logger.isDebugEnabled())
+    	{
     		StringBuilder msg = new StringBuilder();
     		msg.append("Found ")
     		    .append(resultNodes.size())
     		    .append(" records eligible for disposition.");
     		logger.debug(msg.toString());
     	}
-    	
+
     	for (NodeRef node : resultNodes	)
     	{
     		String dispActionName = (String)nodeService.getProperty(node, RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME);
@@ -107,15 +107,15 @@ public class ScheduledDispositionJob implements Job
     		if (dispActionName != null && dispActionName.equalsIgnoreCase("cutoff"))
     		{
     			rmActionService.executeRecordsManagementAction(node, dispActionName);
-    			
-    			if (logger.isDebugEnabled() == true)
+
+    			if (logger.isDebugEnabled())
     			{
     			    logger.debug("Performing " + dispActionName + " dispoition action on disposable item " + node.toString());
     			}
     		}
     	}
     }
-    
+
     //TODO This has been pasted out of RMActionExecuterAbstractBase. To be relocated.
     private String padString(String s, int len)
     {

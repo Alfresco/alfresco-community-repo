@@ -173,11 +173,11 @@ public class RMSecurityCommon implements ApplicationContextAware
     {
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
 
-        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT)== true)
+        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
         {
             result = checkRmRead(nodeRef);
         }
-        else if (allowDMRead == true)
+        else if (allowDMRead)
         {
             // Check DM read for copy etc
             // DM does not grant - it can only deny

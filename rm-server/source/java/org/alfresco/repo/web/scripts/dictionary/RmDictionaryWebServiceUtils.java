@@ -43,12 +43,12 @@ public class RmDictionaryWebServiceUtils
     {
         boolean isRmSite = false;
         String siteId = req.getParameter(SITE_ID);
-        if (StringUtils.isNotBlank(siteId) == true)
+        if (StringUtils.isNotBlank(siteId))
         {
             SiteInfo site = siteService.getSite(siteId);
             if (site != null)
             {
-                if (site.getSitePreset().equals(SITE_PRESET) == true)
+                if (site.getSitePreset().equals(SITE_PRESET))
                 {
                     isRmSite = true;
                 }

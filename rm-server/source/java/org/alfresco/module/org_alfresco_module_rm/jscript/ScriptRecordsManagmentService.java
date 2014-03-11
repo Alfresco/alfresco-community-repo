@@ -28,51 +28,51 @@ import org.alfresco.scripts.ScriptException;
 
 /**
  * Records management service
- * 
+ *
  * @author Roy Wetherall
  */
 public class ScriptRecordsManagmentService extends BaseScopableProcessorExtension
-                                           implements RecordsManagementModel 
+                                           implements RecordsManagementModel
 {
     /** Records management service registry */
     private RecordsManagementServiceRegistry rmServices;
-    
+
     /** Records management notification helper */
     private RecordsManagementNotificationHelper notificationHelper;
-    
+
     /**
-     * Set records management service registry 
-     * 
+     * Set records management service registry
+     *
      * @param rmServices    records management service registry
      */
     public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry rmServices)
     {
         this.rmServices = rmServices;
     }
-    
+
     /**
      * Sets the notification helper
-     * 
+     *
      * @param notificationHelper    notification helper
      */
     public void setNotificationHelper(RecordsManagementNotificationHelper notificationHelper)
     {
         this.notificationHelper = notificationHelper;
     }
-    
+
     /**
      * Get records management node
-     * 
+     *
      * @param node                          script node
      * @return ScriptRecordsManagementNode  records management script node
      */
     public ScriptRecordsManagmentNode getRecordsManagementNode(ScriptNode node)
     {
         ScriptRecordsManagmentNode result = null;
-        
-        if (rmServices.getNodeService().hasAspect(node.getNodeRef(), ASPECT_FILE_PLAN_COMPONENT) == true)
+
+        if (rmServices.getNodeService().hasAspect(node.getNodeRef(), ASPECT_FILE_PLAN_COMPONENT))
         {
-            // TODO .. at this point determine what type of records management node is it and 
+            // TODO .. at this point determine what type of records management node is it and
             //         create the appropriate sub-type
             result = new ScriptRecordsManagmentNode(node.getNodeRef(), rmServices);
         }
@@ -80,13 +80,13 @@ public class ScriptRecordsManagmentService extends BaseScopableProcessorExtensio
         {
             throw new ScriptException("Node is not a records management node type.");
         }
-        
+
         return result;
     }
-    
+
     /**
      * Set the RM permission
-     * 
+     *
      * @param node
      * @param permission
      * @param authority
@@ -96,10 +96,10 @@ public class ScriptRecordsManagmentService extends BaseScopableProcessorExtensio
         FilePlanPermissionService filePlanPermissionService = rmServices.getFilePlanPermissionService();
         filePlanPermissionService.setPermission(node.getNodeRef(), authority, permission);
     }
-    
+
     /**
      * Delete the RM permission
-     * 
+     *
      * @param node
      * @param permission
      * @param authority
@@ -109,10 +109,10 @@ public class ScriptRecordsManagmentService extends BaseScopableProcessorExtensio
         FilePlanPermissionService filePlanPermissionService = rmServices.getFilePlanPermissionService();
         filePlanPermissionService.deletePermission(node.getNodeRef(), authority, permission);
     }
-    
+
     /**
      * Send superseded notification
-     * 
+     *
      * @param record    superseded record
      */
     public void sendSupersededNotification(ScriptNode record)

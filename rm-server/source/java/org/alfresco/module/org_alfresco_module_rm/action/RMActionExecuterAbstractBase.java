@@ -522,7 +522,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
         {
             for (EventCompletionDetails event : events)
             {
-                if (event.isEventComplete() == true)
+                if (event.isEventComplete())
                 {
                     eligible = true;
                     break;

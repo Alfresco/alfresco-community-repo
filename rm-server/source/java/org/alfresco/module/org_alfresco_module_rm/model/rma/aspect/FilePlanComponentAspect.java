@@ -113,7 +113,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.exists(nodeRef) == true)
+                if (nodeService.exists(nodeRef))
                 {
                     lookupAndExecuteScripts(nodeRef, before, after);
                 }
@@ -203,7 +203,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.exists(nodeRef) == true)
+                if (nodeService.exists(nodeRef))
                 {
                     // Look up the root and set on the aspect if found
                     NodeRef root = filePlanService.getFilePlan(nodeRef);
@@ -234,8 +234,8 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.exists(newChildAssocRef.getParentRef()) == true &&
-                    nodeService.exists(newChildAssocRef.getChildRef()) == true)
+                if (nodeService.exists(newChildAssocRef.getParentRef()) &&
+                    nodeService.exists(newChildAssocRef.getChildRef()))
                 {
                     // Look up the root and re-set the value currently stored on the aspect
                     NodeRef root = filePlanService.getFilePlan(newChildAssocRef.getParentRef());

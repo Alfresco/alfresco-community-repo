@@ -139,7 +139,7 @@ public class RmPropertiesGet extends DictionaryWebServiceBase implements Records
         for (Map.Entry<QName, PropertyDefinition> entry : propMap.entrySet())
         {
             if ((namespaceURI != null &&
-                 namespaceURI.equals(entry.getKey().getNamespaceURI()) == true) ||
+                 namespaceURI.equals(entry.getKey().getNamespaceURI())) ||
                 namespaceURI == null)
             {
                 props.add(entry.getValue());
@@ -165,7 +165,7 @@ public class RmPropertiesGet extends DictionaryWebServiceBase implements Records
      */
     private Collection<QName> getProperties(boolean isRM)
     {
-        if (isRM == true)
+        if (isRM)
         {
             return dictionaryservice.getProperties(RM_MODEL);
         }

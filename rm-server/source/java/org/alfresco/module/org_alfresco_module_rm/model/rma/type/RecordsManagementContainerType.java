@@ -98,14 +98,14 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
             {
                 // Get the elements of the created association
                 final NodeRef child = childAssocRef.getChildRef();
-                if (nodeService.exists(child) == true)
+                if (nodeService.exists(child))
                 {
                     QName childType = nodeService.getType(child);
 
                     // We only care about "folder" or sub-types
-                    if (dictionaryService.isSubClass(childType, ContentModel.TYPE_FOLDER) == true)
+                    if (dictionaryService.isSubClass(childType, ContentModel.TYPE_FOLDER))
                     {
-                        if (dictionaryService.isSubClass(childType, ContentModel.TYPE_SYSTEM_FOLDER) == true)
+                        if (dictionaryService.isSubClass(childType, ContentModel.TYPE_SYSTEM_FOLDER))
                         {
                             // this is a rule container, make sure it is an file plan component
                             nodeService.addAspect(child, ASPECT_FILE_PLAN_COMPONENT, null);
@@ -174,7 +174,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
         {
             public Object doWork() throws Exception
             {
-                if (nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true &&
+                if (nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) &&
                     nodeService.getProperty(nodeRef, PROP_IDENTIFIER) == null)
                 {
                     String id = identifierService.generateIdentifier(nodeRef);

@@ -254,7 +254,7 @@ public class TransferReportPost extends BaseTransferWebScript
             writer.write("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
             writer.write("<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n");
             Boolean isAccession = (Boolean)this.nodeService.getProperty(transferNode, PROP_TRANSFER_ACCESSION_INDICATOR);
-            if (isAccession == true)
+            if (isAccession)
             {
                 writer.write("<title>Accession Report</title></head>\n");
             }
@@ -270,7 +270,7 @@ public class TransferReportPost extends BaseTransferWebScript
             writer.write(".nodeName { font-weight: bold; }\n");
             writer.write(".transferred-item { background-color: #eee; padding: 10px; margin-bottom: 15px; }\n");
             writer.write("</style>\n");
-            if (isAccession == true)
+            if (isAccession)
             {
                 writer.write("<body>\n<h1>Accession Report</h1>\n");
             }
@@ -285,7 +285,7 @@ public class TransferReportPost extends BaseTransferWebScript
             writer.write(StringEscapeUtils.escapeHtml(transferDate.toString()));
             writer.write("</td></tr>");
             writer.write("<tr><td class=\"label\">Transfer Location:</td><td>");
-            if (isAccession == true)
+            if (isAccession)
             {
                 writer.write("NARA");
             }

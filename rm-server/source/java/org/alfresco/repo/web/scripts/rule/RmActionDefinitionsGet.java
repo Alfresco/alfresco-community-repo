@@ -41,12 +41,12 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class RmActionDefinitionsGet extends DeclarativeWebScript
 {
     private RecordsManagementActionService recordsManagementActionService;
-    
+
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
         this.recordsManagementActionService = recordsManagementActionService;
     }
-    
+
     /**
      * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
@@ -57,15 +57,15 @@ public class RmActionDefinitionsGet extends DeclarativeWebScript
         Set<ActionDefinition> defs = new HashSet<ActionDefinition>(actions.size());
         for (RecordsManagementAction action : actions)
         {
-            if (action.isPublicAction() == true)
+            if (action.isPublicAction())
             {
                 defs.add(action.getRecordsManagementActionDefinition());
             }
         }
-        
+
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("actiondefinitions", defs);
-        
+
         return model;
     }
 }

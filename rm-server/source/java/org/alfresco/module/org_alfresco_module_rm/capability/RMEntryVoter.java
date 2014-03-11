@@ -59,7 +59,7 @@ public class RMEntryVoter extends RMSecurityCommon
 
     /** Policy map */
     private HashMap<String, Policy> policies = new HashMap<String, Policy>();
-  
+
     /**
      * @param capabilityService     capability service
      */
@@ -125,7 +125,7 @@ public class RMEntryVoter extends RMSecurityCommon
     {
     	MethodInvocation mi = (MethodInvocation)object;
 
-    	if (TransactionalResourceHelper.isResourcePresent("voting") == true)
+    	if (TransactionalResourceHelper.isResourcePresent("voting"))
     	{
     		if (logger.isDebugEnabled())
             {

@@ -43,8 +43,8 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true &&
-            nodeService.hasAspect(actionedUponNodeRef, ASPECT_CUT_OFF) == true)
+        if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
+            nodeService.hasAspect(actionedUponNodeRef, ASPECT_CUT_OFF))
         {
             // Get the last disposition action
             DispositionAction da = dispositionService.getLastCompletedDispostionAction(actionedUponNodeRef);
@@ -58,7 +58,7 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
 
             // Remove the cutoff aspect
             nodeService.removeAspect(actionedUponNodeRef, ASPECT_CUT_OFF);
-            if (recordFolderService.isRecordFolder(actionedUponNodeRef) == true)
+            if (recordFolderService.isRecordFolder(actionedUponNodeRef))
             {
                 List<NodeRef> records = recordService.getRecords(actionedUponNodeRef);
                 for (NodeRef record : records)

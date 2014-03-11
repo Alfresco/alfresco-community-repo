@@ -612,7 +612,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
 
         // Remove the freezes on the child records as long as there is no other
         // hold referencing them
-        if (recordFolderService.isRecordFolder(nodeRef) == true)
+        if (recordFolderService.isRecordFolder(nodeRef))
         {
             if (logger.isDebugEnabled())
             {

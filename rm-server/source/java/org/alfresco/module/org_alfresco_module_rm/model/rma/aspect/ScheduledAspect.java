@@ -30,7 +30,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Behaviour associated with the scheduled aspect
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -38,12 +38,12 @@ import org.alfresco.service.namespace.QName;
 (
         defaultType = "rma:scheduled"
 )
-public class ScheduledAspect extends    BaseBehaviourBean 
+public class ScheduledAspect extends    BaseBehaviourBean
                              implements NodeServicePolicies.OnAddAspectPolicy
 {
     /** disposition service */
     private DispositionService dispositionService;
-    
+
     /**
      * @param dispositionService    disposition service
      */
@@ -63,10 +63,10 @@ public class ScheduledAspect extends    BaseBehaviourBean
     )
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (nodeService.exists(nodeRef) == true && 
+        if (nodeService.exists(nodeRef) &&
             dispositionService.getAssociatedDispositionSchedule(nodeRef) == null)
         {
-           dispositionService.createDispositionSchedule(nodeRef, null);           
+           dispositionService.createDispositionSchedule(nodeRef, null);
         }
     }
 }

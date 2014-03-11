@@ -243,7 +243,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
             {
                 StoreRef storeRef = new StoreRef(storeType, storeId);
                 NodeRef nodeRef = new NodeRef(storeRef, id);
-                if (filePlanService.isFilePlan(nodeRef) == true)
+                if (filePlanService.isFilePlan(nodeRef))
                 {
                     filePlan = nodeRef;
                 }

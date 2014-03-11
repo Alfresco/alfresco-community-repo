@@ -43,7 +43,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Disposition property implementation bean.
- * 
+ *
  * @author Roy Wetherall
  */
 @BehaviourBean
@@ -52,22 +52,22 @@ public class DispositionProperty extends BaseBehaviourBean
 {
     /** Property QName */
     private QName propertyName;
-    
+
     /** Namespace service */
     private NamespaceService namespaceService;
-    
+
     /** Disposition service */
     private DispositionService dispositionService;
-    
+
     /** Indicates whether this disposition property applies to a folder level disposition */
     private boolean appliesToFolderLevel = true;
 
     /** Indicates whether this disposition property applies to a record level disposition */
     private boolean appliesToRecordLevel = true;
-    
+
     /** Set of disposition actions this property does not apply to */
     private Set<String> excludedDispositionActions;
-    
+
     /**
      * @param namespaceService  namespace service
      */
@@ -75,7 +75,7 @@ public class DispositionProperty extends BaseBehaviourBean
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @param dispositionService    disposition service
      */
@@ -83,7 +83,7 @@ public class DispositionProperty extends BaseBehaviourBean
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @param propertyName property name (as string)
      */
@@ -91,7 +91,7 @@ public class DispositionProperty extends BaseBehaviourBean
     {
         this.propertyName = QName.createQName(propertyName, namespaceService);
     }
-    
+
     /**
      * @return  property QName
      */
@@ -99,7 +99,7 @@ public class DispositionProperty extends BaseBehaviourBean
     {
         return this.propertyName;
     }
-    
+
     /**
      * @return  property definition
      */
@@ -107,7 +107,7 @@ public class DispositionProperty extends BaseBehaviourBean
     {
         return dictionaryService.getProperty(propertyName);
     }
-    
+
     /**
      * @param excludedDispositionActions    list of excluded disposition actions
      */
@@ -115,7 +115,7 @@ public class DispositionProperty extends BaseBehaviourBean
     {
         this.excludedDispositionActions = excludedDispositionActions;
     }
-    
+
     /**
      * @param appliesToFolderLevel
      */
@@ -123,7 +123,7 @@ public class DispositionProperty extends BaseBehaviourBean
     {
         this.appliesToFolderLevel = appliesToFolderLevel;
     }
-    
+
     /**
      * @param appliesToRecordLevel
      */
@@ -131,19 +131,19 @@ public class DispositionProperty extends BaseBehaviourBean
     {
         this.appliesToRecordLevel = appliesToRecordLevel;
     }
-    
+
     /**
      * Bean initialisation method
      */
     public void init()
     {
         // register with disposition service
-        dispositionService.registerDispositionProperty(this);   
+        dispositionService.registerDispositionProperty(this);
     }
-    
+
     /**
      * Indicates whether the disposition property applies given the context.
-     * 
+     *
      * @param isRecordLevel      true if record level disposition schedule, false otherwise
      * @param dispositionAction  disposition action name
      * @return boolean           true if applies, false otherwise
@@ -151,9 +151,9 @@ public class DispositionProperty extends BaseBehaviourBean
     public boolean applies(boolean isRecordLevel, String dispositionAction)
     {
         boolean result = false;
-        
-        if ((isRecordLevel == true && appliesToRecordLevel == true) ||
-            (isRecordLevel == false && appliesToFolderLevel == true))
+
+        if ((isRecordLevel && appliesToRecordLevel) ||
+            (isRecordLevel == false && appliesToFolderLevel))
         {
             if (excludedDispositionActions != null && excludedDispositionActions.size() != 0)
             {
@@ -167,7 +167,7 @@ public class DispositionProperty extends BaseBehaviourBean
                 result = true;
             }
         }
-        
+
         return result;
     }
 
@@ -182,15 +182,15 @@ public class DispositionProperty extends BaseBehaviourBean
             notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
     public void onUpdateProperties(
-            final NodeRef nodeRef, 
-            final Map<QName, Serializable> before, 
+            final NodeRef nodeRef,
+            final Map<QName, Serializable> before,
             final Map<QName, Serializable> after)
     {
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef))
         {
             // has the property we care about changed?
-            if (isPropertyUpdated(before, after) == true)
-            {  
+            if (isPropertyUpdated(before, after))
+            {
                 AuthenticationUtil.runAs(new RunAsWork<Void>()
                 {
                     @Override
@@ -198,7 +198,7 @@ public class DispositionProperty extends BaseBehaviourBean
                     {
                         Date updatedDateValue = (Date)after.get(propertyName);
                         if (updatedDateValue != null)
-                        {                    
+                        {
                             DispositionAction dispositionAction = dispositionService.getNextDispositionAction(nodeRef);
                             if (dispositionAction != null)
                             {
@@ -206,11 +206,11 @@ public class DispositionProperty extends BaseBehaviourBean
                                 if (daDefinition != null)
                                 {
                                     // check whether the next disposition action matches this disposition property
-                                    if (propertyName.equals(daDefinition.getPeriodProperty()) == true)
+                                    if (propertyName.equals(daDefinition.getPeriodProperty()))
                                     {
                                         Period period = daDefinition.getPeriod();
                                         Date updatedAsOf = period.getNextDate(updatedDateValue);
-                                        
+
                                         // update asOf date on the disposition action based on the new property value
                                         NodeRef daNodeRef = dispositionAction.getNodeRef();
                                         nodeService.setProperty(daNodeRef, PROP_DISPOSITION_AS_OF, updatedAsOf);
@@ -224,22 +224,22 @@ public class DispositionProperty extends BaseBehaviourBean
                             if (before.get(propertyName) != null)
                             {
                                 throw new AlfrescoRuntimeException(
-                                        "Error updating property " + propertyName.toPrefixString(namespaceService) + 
+                                        "Error updating property " + propertyName.toPrefixString(namespaceService) +
                                         " to null, because property is being used to determine a disposition date.");
                             }
                         }
-                        
+
                         return null;
                     }
-                    
-                }, AuthenticationUtil.getSystemUserName());    
+
+                }, AuthenticationUtil.getSystemUserName());
             }
         }
     }
-    
+
     /**
      * Indicates whether the property has been updated or not.
-     * 
+     *
      * @param before
      * @param after
      * @return
@@ -247,10 +247,10 @@ public class DispositionProperty extends BaseBehaviourBean
     private boolean isPropertyUpdated(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         boolean result = false;
-        
+
         Serializable beforeValue = before.get(propertyName);
         Serializable afterValue = after.get(propertyName);
-        
+
         if (beforeValue == null && afterValue != null)
         {
             result = true;
@@ -264,7 +264,7 @@ public class DispositionProperty extends BaseBehaviourBean
         {
             result = true;
         }
-        
+
         return result;
     }
 }

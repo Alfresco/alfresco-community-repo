@@ -179,8 +179,8 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     public boolean isFilePlanComponent(NodeRef nodeRef)
     {
         boolean result = false;
-        if (getInternalNodeService().exists(nodeRef) == true &&
-            getInternalNodeService().hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
+        if (getInternalNodeService().exists(nodeRef) &&
+            getInternalNodeService().hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT))
         {
             result = true;
         }
@@ -194,23 +194,23 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     {
         FilePlanComponentKind result = null;
 
-        if (isFilePlanComponent(nodeRef) == true)
+        if (isFilePlanComponent(nodeRef))
         {
             result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
 
-            if (isFilePlan(nodeRef) == true)
+            if (isFilePlan(nodeRef))
             {
                 result = FilePlanComponentKind.FILE_PLAN;
             }
-            else if (isRecordCategory(nodeRef) == true)
+            else if (isRecordCategory(nodeRef))
             {
                 result = FilePlanComponentKind.RECORD_CATEGORY;
             }
-            else if (getRecordFolderService().isRecordFolder(nodeRef) == true)
+            else if (getRecordFolderService().isRecordFolder(nodeRef))
             {
                 result = FilePlanComponentKind.RECORD_FOLDER;
             }
-            else if (getRecordService().isRecord(nodeRef) == true)
+            else if (getRecordService().isRecord(nodeRef))
             {
                 result = FilePlanComponentKind.RECORD;
             }
@@ -222,23 +222,23 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             {
                 result = FilePlanComponentKind.HOLD_CONTAINER_CHILD;
             }
-            else if (getFreezeService().isHold(nodeRef) == true)
+            else if (getFreezeService().isHold(nodeRef))
             {
                 result = FilePlanComponentKind.HOLD;
             }
-            else if (getTransferService().isTransfer(nodeRef) == true)
+            else if (getTransferService().isTransfer(nodeRef))
             {
                 result = FilePlanComponentKind.TRANSFER;
             }
-            else if (instanceOf(nodeRef, TYPE_DISPOSITION_SCHEDULE) == true || instanceOf(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION) == true)
+            else if (instanceOf(nodeRef, TYPE_DISPOSITION_SCHEDULE) || instanceOf(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION))
             {
                 result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
             }
-            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER) == true)
+            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER))
             {
                 result = FilePlanComponentKind.UNFILED_RECORD_CONTAINER;
             }
-            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER_CHILD) == true)
+            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER_CHILD))
             {
                 result = FilePlanComponentKind.UNFILED_RECORD_CONTAINER_CHILD;
             }
@@ -255,36 +255,36 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     {
         FilePlanComponentKind result = null;
 
-        if (ASPECT_FILE_PLAN_COMPONENT.equals(type) == true)
+        if (ASPECT_FILE_PLAN_COMPONENT.equals(type))
         {
             result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
         }
-        else if (dictionaryService.isSubClass(type, ASPECT_RECORD) == true)
+        else if (dictionaryService.isSubClass(type, ASPECT_RECORD))
         {
             result = FilePlanComponentKind.RECORD;
         }
-        else if (dictionaryService.isSubClass(type, TYPE_FILE_PLAN) == true)
+        else if (dictionaryService.isSubClass(type, TYPE_FILE_PLAN))
         {
             result = FilePlanComponentKind.FILE_PLAN;
         }
-        else if (dictionaryService.isSubClass(type, TYPE_RECORD_CATEGORY) == true)
+        else if (dictionaryService.isSubClass(type, TYPE_RECORD_CATEGORY))
         {
             result = FilePlanComponentKind.RECORD_CATEGORY;
         }
-        else if (dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER) == true)
+        else if (dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER))
         {
             result = FilePlanComponentKind.RECORD_FOLDER;
         }
-        else if (dictionaryService.isSubClass(type, TYPE_HOLD) == true)
+        else if (dictionaryService.isSubClass(type, TYPE_HOLD))
         {
             result = FilePlanComponentKind.HOLD;
         }
-        else if (dictionaryService.isSubClass(type, TYPE_TRANSFER) == true)
+        else if (dictionaryService.isSubClass(type, TYPE_TRANSFER))
         {
             result = FilePlanComponentKind.TRANSFER;
         }
-        else if (dictionaryService.isSubClass(type, TYPE_DISPOSITION_SCHEDULE) == true ||
-                 dictionaryService.isSubClass(type, TYPE_DISPOSITION_ACTION_DEFINITION) == true)
+        else if (dictionaryService.isSubClass(type, TYPE_DISPOSITION_SCHEDULE) ||
+                 dictionaryService.isSubClass(type, TYPE_DISPOSITION_ACTION_DEFINITION))
         {
             result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
         }
@@ -326,7 +326,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             public boolean handle(Pair<Long, NodeRef> nodePair)
             {
                 NodeRef nodeRef = nodePair.getSecond();
-                if (storeRef.equals(nodeRef.getStoreRef()) == true)
+                if (storeRef.equals(nodeRef.getStoreRef()))
                 {
                     results.add(nodeRef);
                 }
@@ -348,10 +348,10 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         SiteInfo siteInfo = getSiteService().getSite(siteId);
         if (siteInfo != null)
         {
-            if (getSiteService().hasContainer(siteId, FILE_PLAN_CONTAINER) == true)
+            if (getSiteService().hasContainer(siteId, FILE_PLAN_CONTAINER))
             {
                 NodeRef nodeRef = getSiteService().getContainer(siteId, FILE_PLAN_CONTAINER);
-                if (instanceOf(nodeRef, TYPE_FILE_PLAN) == true)
+                if (instanceOf(nodeRef, TYPE_FILE_PLAN))
                 {
                     filePlan = nodeRef;
                 }
@@ -517,7 +517,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 
         // Check the parent is not already an RM component node
         // ie: you can't create a rm root in an existing rm hierarchy
-        if (isFilePlanComponent(parent) == true)
+        if (isFilePlanComponent(parent))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_DUP_ROOT));
         }
@@ -742,16 +742,16 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             NodeRef child = assoc.getChildRef();
             QName childType = nodeService.getType(child);
             if (typeFilter == null ||
-                typeFilter.equals(childType) == true ||
-                dictionaryService.isSubClass(childType, typeFilter) == true)
+                typeFilter.equals(childType) ||
+                dictionaryService.isSubClass(childType, typeFilter))
             {
                 result.add(child);
             }
 
             // Inspect the containers and add children if deep
-            if (deep == true &&
-                (TYPE_RECORD_CATEGORY.equals(childType) == true ||
-                 dictionaryService.isSubClass(childType, TYPE_RECORD_CATEGORY) == true))
+            if (deep &&
+                (TYPE_RECORD_CATEGORY.equals(childType) ||
+                 dictionaryService.isSubClass(childType, TYPE_RECORD_CATEGORY)))
             {
                 result.addAll(getContained(child, typeFilter, deep));
             }

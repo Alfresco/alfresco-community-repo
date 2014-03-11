@@ -94,7 +94,7 @@ public class TransferReportAction extends BaseReportAction
         boolean isFolder = dictionaryService.isSubClass(nodeService.getType(childRef), ContentModel.TYPE_FOLDER);
         transferNodeProperties.put("isFolder", isFolder);
 
-        if (isFolder == true)
+        if (isFolder)
         {
             Map<String, Serializable> folderProperties = getFolderProperties(childRef);
             transferNodeProperties.putAll(folderProperties);
@@ -121,7 +121,7 @@ public class TransferReportAction extends BaseReportAction
         for (ChildAssociationRef child : assocs)
         {
             NodeRef record = child.getChildRef();
-            if (nodeService.hasAspect(record, RecordsManagementModel.ASPECT_RECORD) == true)
+            if (nodeService.hasAspect(record, RecordsManagementModel.ASPECT_RECORD))
             {
                 Map<String, Serializable> recordProperties = getRecordProperties(record);
                 TransferNode transferNode = new TransferNode(record, recordProperties);

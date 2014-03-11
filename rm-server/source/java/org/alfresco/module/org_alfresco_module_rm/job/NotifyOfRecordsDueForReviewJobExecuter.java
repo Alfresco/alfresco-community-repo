@@ -37,40 +37,40 @@ import org.apache.commons.logging.LogFactory;
 /**
  * This job finds all Vital Records which are due for review, optionally
  * excluding those for which notification has already been issued.
- * 
+ *
  * @author Neil McErlean
  */
 public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJobExecuter
 {
     private static Log logger = LogFactory.getLog(NotifyOfRecordsDueForReviewJobExecuter.class);
-    
+
     private RecordsManagementNotificationHelper recordsManagementNotificationHelper;
-    
+
     private NodeService nodeService;
-    
+
     private SearchService searchService;
-    
+
     public void setRecordsManagementNotificationHelper(
             RecordsManagementNotificationHelper recordsManagementNotificationHelper)
     {
         this.recordsManagementNotificationHelper = recordsManagementNotificationHelper;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#execute()
      */
-    public void executeImpl() 
-    {       
+    public void executeImpl()
+    {
         if (logger.isDebugEnabled())
         {
             logger.debug("Job " + this.getClass().getSimpleName() + " starting.");
@@ -83,23 +83,23 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                 // Query is for all records that are due for review and for which
                 // notification has not been sent.
                 StringBuilder queryBuffer = new StringBuilder();
-                queryBuffer.append("+ASPECT:\"rma:vitalRecord\" ");                
+                queryBuffer.append("+ASPECT:\"rma:vitalRecord\" ");
                 queryBuffer.append("+(@rma\\:reviewAsOf:[MIN TO NOW] ) ");
                 queryBuffer.append("+( ");
-                queryBuffer.append("@rma\\:notificationIssued:false "); 
+                queryBuffer.append("@rma\\:notificationIssued:false ");
                 queryBuffer.append("OR ISNULL:\"rma:notificationIssued\" ");
-                queryBuffer.append(") ");                
+                queryBuffer.append(") ");
                 String query = queryBuffer.toString();
 
-                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, query);             
+                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, query);
                 final List<NodeRef> resultNodes = results.getNodeRefs();
                 results.close();
-                
-                if (logger.isDebugEnabled() == true)
+
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Found " + resultNodes.size() + " nodes due for review and without notification.");
-                }                
-                    
+                }
+
                 //If we have something to do and a template to do it with
                 if(resultNodes.size() != 0)
                 {
@@ -111,11 +111,11 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                         {
                             // Send notification
                             recordsManagementNotificationHelper.recordsDueForReviewEmailNotification(resultNodes);
-                                    
+
                             return null;
                         }
                     };
-                    
+
                     RetryingTransactionCallback<Boolean> txUpdateNodesCallback = new RetryingTransactionCallback<Boolean>()
                     {
                         // Set the notification issued property.
@@ -128,7 +128,7 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                             return Boolean.TRUE;
                         }
                     };
-      
+
                     /**
                      * Now do the work, one action in each transaction
                      */
@@ -139,15 +139,15 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                 }
                 return null;
             }
-            
+
         }, AuthenticationUtil.getSystemUserName());
 
         if (logger.isDebugEnabled())
         {
             logger.debug("Job " + this.getClass().getSimpleName() + " finished");
-        }     
+        }
     }  // end of execute method
-        
+
 }
 
 

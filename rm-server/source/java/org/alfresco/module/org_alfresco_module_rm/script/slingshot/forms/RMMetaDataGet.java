@@ -109,7 +109,7 @@ public class RMMetaDataGet extends DeclarativeWebScript
             if (type != null && type.length() != 0 && type.indexOf(':') != -1)
             {
             	Matcher m = QNAME_PATTERN.matcher(type);
-            	if (m.matches() == true)
+            	if (m.matches())
             	{
 	                QName qname = QName.createQName(type, namespaceService);
 	                FilePlanComponentKind kind = filePlanService.getFilePlanComponentKindFromType(qname);
@@ -140,7 +140,7 @@ public class RMMetaDataGet extends DeclarativeWebScript
                     if (extendedValue != null && extendedValue.length() != 0)
                     {
                         extended = Boolean.parseBoolean(extendedValue);
-                        if (extended == true)
+                        if (extended)
                         {
                             // get the aspects of the node
                             model.put("aspects", getAspects(nodeRefObj));

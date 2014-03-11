@@ -37,7 +37,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * RM v2.1: RM admin user patch
- * 
+ *
  * @author Roy Wetherall
  */
 @SuppressWarnings("deprecation")
@@ -49,30 +49,30 @@ public class RMv21RMAdminUserPatch extends RMv21PatchComponent implements BeanNa
 
     /** generate rm admin password */
     private String password = GUID.generate();
-    
+
     /** mutable authenticaiton service */
     private MutableAuthenticationService authenticationService;
-    
+
     /** person service */
     private PersonService personService;
-    
+
     /** file plan service */
     private FilePlanService filePlanService;
-    
+
     /** file plan role service */
     private FilePlanRoleService filePlanRoleService;
-    
+
     /** file plan authentication service */
     private FilePlanAuthenticationService filePlanAuthenticationService;
-    
-    /**     
+
+    /**
      * @param personService person service
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     /**
      * @param authenticationService mutable authentication service
      */
@@ -80,7 +80,7 @@ public class RMv21RMAdminUserPatch extends RMv21PatchComponent implements BeanNa
     {
         this.authenticationService = authenticationService;
     }
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -96,7 +96,7 @@ public class RMv21RMAdminUserPatch extends RMv21PatchComponent implements BeanNa
     {
         this.filePlanRoleService = filePlanRoleService;
     }
-    
+
     /**
      * @param filePlanAuthenticationService file plan authentication service
      */
@@ -104,7 +104,7 @@ public class RMv21RMAdminUserPatch extends RMv21PatchComponent implements BeanNa
     {
         this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
-    
+
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
@@ -117,20 +117,20 @@ public class RMv21RMAdminUserPatch extends RMv21PatchComponent implements BeanNa
 
         if (authenticationService.authenticationExists(user) == false)
         {
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug("   ... creating RM Admin user");
             }
-            
+
             authenticationService.createAuthentication(user, password.toCharArray());
-            
+
             if (personService.personExists(user) == false)
             {
-                if (logger.isDebugEnabled() == true)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("   ... creating RM Admin person");
                 }
-                
+
                 Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
                 properties.put(ContentModel.PROP_USERNAME, user);
                 properties.put(ContentModel.PROP_FIRSTNAME, firstName);
@@ -139,17 +139,17 @@ public class RMv21RMAdminUserPatch extends RMv21PatchComponent implements BeanNa
             }
             else
             {
-                if (logger.isInfoEnabled() == true)
+                if (logger.isInfoEnabled())
                 {
                     logger.debug("   ... RM Admin person already exists");
                 }
             }
-                
-            if (logger.isDebugEnabled() == true)
+
+            if (logger.isDebugEnabled())
             {
                 logger.debug("   ... assigning RM Admin user to file plans");
             }
-            
+
             Set<NodeRef> filePlans = filePlanService.getFilePlans();
             for (NodeRef filePlan : filePlans)
             {

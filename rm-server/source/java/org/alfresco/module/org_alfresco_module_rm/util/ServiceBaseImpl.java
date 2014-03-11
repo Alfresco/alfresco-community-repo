@@ -33,7 +33,7 @@ import org.alfresco.util.PropertyMap;
 
 /**
  * Helper base class for service implementations.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -41,10 +41,10 @@ public class ServiceBaseImpl implements RecordsManagementModel
 {
     /** Node service */
     protected NodeService nodeService;
-    
+
     /** Dictionary service */
     protected DictionaryService dictionaryService;
-    
+
     /**
      * @param nodeService   node service
      */
@@ -52,7 +52,7 @@ public class ServiceBaseImpl implements RecordsManagementModel
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param dictionaryService dictionary service
      */
@@ -60,10 +60,10 @@ public class ServiceBaseImpl implements RecordsManagementModel
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Indicates whether the given node reference is a record or not.
-     * 
+     *
      * @param nodeRef   node reference
      * @return boolean  true if node reference is a record, false otherwise
      */
@@ -73,10 +73,10 @@ public class ServiceBaseImpl implements RecordsManagementModel
 
         return nodeService.hasAspect(nodeRef, ASPECT_RECORD);
     }
-    
+
     /**
      * Gets the file plan that a given file plan component resides within.
-     * 
+     *
      * @param nodeRef           node reference
      * @return {@link NodeRef}  file plan, null if none
      */
@@ -93,7 +93,7 @@ public class ServiceBaseImpl implements RecordsManagementModel
                     NodeRef result = (NodeRef)nodeService.getProperty(nodeRef, PROP_ROOT_NODEREF);
                     if (result == null)
                     {
-                        if (instanceOf(nodeRef, TYPE_FILE_PLAN) == true)
+                        if (instanceOf(nodeRef, TYPE_FILE_PLAN))
                         {
                             result = nodeRef;
                         }
@@ -106,21 +106,21 @@ public class ServiceBaseImpl implements RecordsManagementModel
                             }
                         }
                     }
-                    
+
                     return result;
                 }
-            
+
             };
-            
+
             result = AuthenticationUtil.runAsSystem(runAsWork);
         }
 
         return result;
     }
-    
+
     /**
      * Utility method to safely and quickly determine if a node is a type (or sub-type) of the one specified.
-     * 
+     *
      * @param nodeRef       node reference
      * @param ofClassName   class name to check
      */
@@ -129,20 +129,20 @@ public class ServiceBaseImpl implements RecordsManagementModel
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("ofClassName", ofClassName);
         boolean result = false;
-        if (nodeService.exists(nodeRef) == true &&
-            (ofClassName.equals(nodeService.getType(nodeRef)) == true ||
-             dictionaryService.isSubClass(nodeService.getType(nodeRef), ofClassName) == true))            
+        if (nodeService.exists(nodeRef) &&
+            (ofClassName.equals(nodeService.getType(nodeRef)) ||
+             dictionaryService.isSubClass(nodeService.getType(nodeRef), ofClassName)))
         {
             result = true;
-        }    
+        }
         return result;
     }
-    
+
     /**
-     * Utility method to get the next counter for a node.  
+     * Utility method to get the next counter for a node.
      * <p>
      * If the node is not already countable, then rma:countable is added and 0 returned.
-     * 
+     *
      * @param nodeRef   node reference
      * @return int      next counter value
      */
@@ -163,25 +163,25 @@ public class ServiceBaseImpl implements RecordsManagementModel
             {
                 counter = value.intValue() + 1;
             }
-            else 
+            else
             {
                 counter = 1;
             }
             nodeService.setProperty(nodeRef, PROP_COUNT, counter);
-            
+
         }
         return counter;
     }
-    
+
     /**
      * Helper method to get a set containing the node's type and all it's aspects
-     * 
+     *
      * @param nodeRef       nodeRef
      * @return Set<QName>   set of qname's
      */
     protected Set<QName> getTypeAndApsects(NodeRef nodeRef)
     {
-        Set<QName> result = nodeService.getAspects(nodeRef);        
+        Set<QName> result = nodeService.getAspects(nodeRef);
         result.add(nodeService.getType(nodeRef));
         return result;
     }

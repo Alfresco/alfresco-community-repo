@@ -33,35 +33,35 @@ import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * RM v2.0 Model Updates Patch
- * 
+ *
  * @author Roy Wetherall
  * @since 2.0
  */
 @SuppressWarnings("deprecation")
-public class RMv2ModelPatch extends ModulePatchComponent 
+public class RMv2ModelPatch extends ModulePatchComponent
                             implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     private static long BATCH_SIZE = 100000L;
-    
+
     private PatchDAO patchDAO;
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
-    
+
     public void setPatchDAO(PatchDAO patchDAO)
     {
         this.patchDAO = patchDAO;
     }
-    
+
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
     }
-    
+
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
     }
-    
+
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
@@ -71,23 +71,23 @@ public class RMv2ModelPatch extends ModulePatchComponent
         updateQName(QName.createQName(DOD_URI, "filePlan"), TYPE_FILE_PLAN, "TYPE");
         updateQName(QName.createQName(DOD_URI, "recordCategory"), TYPE_RECORD_CATEGORY, "TYPE");
         updateQName(QName.createQName(DOD_URI, "ghosted"), ASPECT_GHOSTED, "ASPECT");
-    }   
-    
-    private void updateQName(QName qnameBefore, QName qnameAfter, String reindexClass) 
-    {        
+    }
+
+    private void updateQName(QName qnameBefore, QName qnameAfter, String reindexClass)
+    {
         Work work = new Work(qnameBefore, qnameAfter, reindexClass);
         retryingTransactionHelper.doInTransaction(work, false, true);
     }
-    
+
     private class Work implements RetryingTransactionHelper.RetryingTransactionCallback<Integer>
     {
-        private QName qnameBefore;        
+        private QName qnameBefore;
         private QName qnameAfter;
         private String reindexClass;
 
         /**
-         * Constructor 
-         * 
+         * Constructor
+         *
          * @param qnameBefore   qname before
          * @param qnameAfter    qname after
          * @param reindexClass  reindex class
@@ -106,9 +106,9 @@ public class RMv2ModelPatch extends ModulePatchComponent
         public Integer execute() throws Throwable
         {
             Long maxNodeId = patchDAO.getMaxAdmNodeID();
-            
+
             Pair<Long, QName> before = qnameDAO.getQName(qnameBefore);
-            
+
             if (before != null)
             {
             	for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
@@ -124,24 +124,24 @@ public class RMv2ModelPatch extends ModulePatchComponent
             			nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
             		}
             	}
-        	
+
             	qnameDAO.updateQName(qnameBefore, qnameAfter);
-            
-            	if (logger.isDebugEnabled() == true)
+
+            	if (logger.isDebugEnabled())
             	{
             		logger.debug(" ... updated qname " + qnameBefore.toString());
             	}
         	}
             else
             {
-                if (logger.isDebugEnabled() == true)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug(" ... no need to update qname " + qnameBefore.toString());
                 }
             }
-            
+
         	//nothing to do
         	return 0;
-        } 
-    }   
+        }
+    }
 }

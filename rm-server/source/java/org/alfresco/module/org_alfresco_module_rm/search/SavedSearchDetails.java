@@ -127,7 +127,7 @@ public class SavedSearchDetails extends ReportDetails
 
     	    // Get the site id
     	    String siteId = DEFAULT_SITE_ID;
-    	    if (search.has(SITE_ID) == true)
+    	    if (search.has(SITE_ID))
     	    {
     	        siteId = search.getString(SITE_ID);
     	    }
@@ -141,7 +141,7 @@ public class SavedSearchDetails extends ReportDetails
 
     	    // Get the description
     	    String description = "";
-    	    if (search.has(DESCRIPTION) == true)
+    	    if (search.has(DESCRIPTION))
     	    {
     	        description = search.getString(DESCRIPTION);
                 String translated = I18NUtil.getMessage(description);
@@ -156,7 +156,7 @@ public class SavedSearchDetails extends ReportDetails
     	    if (search.has(SEARCH) == false)
     	    {
     	        // We are probably dealing with a "old" style saved search
-    	        if (search.has(PARAMS) == true)
+    	        if (search.has(PARAMS))
     	        {
     	            String oldParams = search.getString(PARAMS);
     	            query = SavedSearchDetailsCompatibility.getSearchFromParams(oldParams);
@@ -174,14 +174,14 @@ public class SavedSearchDetails extends ReportDetails
 
     	    // Get the search parameters
             RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
-            if (search.has(SEARCHPARAMS) == true)
+            if (search.has(SEARCHPARAMS))
             {
                 searchParameters = RecordsManagementSearchParameters.createFromJSON(search.getJSONObject(SEARCHPARAMS), namespaceService);
             }
             else
             {
                 // See if we are dealing with the old style of saved search
-                if (search.has(PARAMS) == true)
+                if (search.has(PARAMS))
                 {
                     String oldParams = search.getString(PARAMS);
                     String oldSort = search.getString(SORT);
@@ -191,14 +191,14 @@ public class SavedSearchDetails extends ReportDetails
 
     	    // Determine whether the saved query is public or not
     	    boolean isPublic = true;
-    	    if (search.has(PUBLIC) == true)
+    	    if (search.has(PUBLIC))
     	    {
     	        isPublic = search.getBoolean(PUBLIC);
     	    }
 
     	    // Determine whether the saved query is a report or not
     	    boolean isReport = false;
-    	    if (search.has(REPORT) == true)
+    	    if (search.has(REPORT))
     	    {
     	        isReport = search.getBoolean(REPORT);
     	    }

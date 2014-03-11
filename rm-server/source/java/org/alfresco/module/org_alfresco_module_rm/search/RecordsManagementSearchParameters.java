@@ -150,37 +150,37 @@ public class RecordsManagementSearchParameters
             RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
 
             // Get the search parameter properties
-            if (jsonObject.has(JSON_MAXITEMS) == true)
+            if (jsonObject.has(JSON_MAXITEMS))
             {
                 searchParameters.setMaxItems(jsonObject.getInt(JSON_MAXITEMS));
             }
-            if (jsonObject.has(JSON_RECORDS) == true)
+            if (jsonObject.has(JSON_RECORDS))
             {
                 searchParameters.setIncludeRecords(jsonObject.getBoolean(JSON_RECORDS));
             }
-            if (jsonObject.has(JSON_UNDECLAREDRECORDS) == true)
+            if (jsonObject.has(JSON_UNDECLAREDRECORDS))
             {
                 searchParameters.setIncludeUndeclaredRecords(jsonObject.getBoolean(JSON_UNDECLAREDRECORDS));
             }
-            if (jsonObject.has(JSON_VITALRECORDS) == true)
+            if (jsonObject.has(JSON_VITALRECORDS))
             {
                 searchParameters.setIncludeVitalRecords(jsonObject.getBoolean(JSON_VITALRECORDS));
             }
-            if (jsonObject.has(JSON_RECORDFOLDERES) == true)
+            if (jsonObject.has(JSON_RECORDFOLDERES))
             {
                 searchParameters.setIncludeRecordFolders(jsonObject.getBoolean(JSON_RECORDFOLDERES));
             }
-            if (jsonObject.has(JSON_FROZEN) == true)
+            if (jsonObject.has(JSON_FROZEN))
             {
                 searchParameters.setIncludeFrozen(jsonObject.getBoolean(JSON_FROZEN));
             }
-            if (jsonObject.has(JSON_CUTOFF) == true)
+            if (jsonObject.has(JSON_CUTOFF))
             {
                 searchParameters.setIncludeCutoff(jsonObject.getBoolean(JSON_CUTOFF));
             }
 
             // Get container types
-            if (jsonObject.has(JSON_CONTAINERTYPES) == true)
+            if (jsonObject.has(JSON_CONTAINERTYPES))
             {
                 JSONArray jsonArray = jsonObject.getJSONArray(JSON_CONTAINERTYPES);
                 List<QName> containerTypes = new ArrayList<QName>(jsonArray.length());
@@ -193,15 +193,15 @@ public class RecordsManagementSearchParameters
             }
 
             // Get sort details
-            if (jsonObject.has(JSON_SORT) == true)
+            if (jsonObject.has(JSON_SORT))
             {
                 JSONArray jsonArray = jsonObject.getJSONArray(JSON_SORT);
                 List<SortItem> sortOrder = new ArrayList<SortItem>(jsonArray.length());
                 for (int i = 0; i < jsonArray.length(); i++)
                 {
                     JSONObject sortJSONObject = jsonArray.getJSONObject(i);
-                    if (sortJSONObject.has(JSON_FIELD) == true &&
-                        sortJSONObject.has(JSON_ASCENDING) == true)
+                    if (sortJSONObject.has(JSON_FIELD) &&
+                        sortJSONObject.has(JSON_ASCENDING))
                     {
                         sortOrder.add(new SortItem(
                                 QName.createQName(sortJSONObject.getString(JSON_FIELD), namespaceService),

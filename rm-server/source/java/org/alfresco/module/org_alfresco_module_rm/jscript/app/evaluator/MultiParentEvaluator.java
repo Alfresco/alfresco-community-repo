@@ -30,14 +30,14 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Determines whether a node has multiple parents within a file plan
- * 
+ *
  * @author Roy Wetherall
  */
 public class MultiParentEvaluator extends BaseEvaluator
 {
     @Override
     protected boolean evaluateImpl(final NodeRef nodeRef)
-    {           
+    {
         return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
         {
             @Override
@@ -47,13 +47,13 @@ public class MultiParentEvaluator extends BaseEvaluator
                 int count = 0;
                 for (ChildAssociationRef parent : parents)
                 {
-                    if (nodeService.hasAspect(parent.getParentRef(), ASPECT_FILE_PLAN_COMPONENT) == true)
+                    if (nodeService.hasAspect(parent.getParentRef(), ASPECT_FILE_PLAN_COMPONENT))
                     {
                         count++;
                     }
                 }
-                
-                return (count > 1);                
+
+                return (count > 1);
             }
         });
     }

@@ -336,19 +336,19 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         setupTestData();
 
         // Create multi hierarchy data
-        if (isMultiHierarchyTest() == true)
+        if (isMultiHierarchyTest())
         {
             setupMultiHierarchyTestData();
         }
 
         // Create collaboration data
-        if (isCollaborationSiteTest() == true)
+        if (isCollaborationSiteTest())
         {
             setupCollaborationSiteTestData();
         }
 
         // Create the users here
-        if (isUserTest() == true)
+        if (isUserTest())
         {
             setupTestUsers(filePlan);
         }
@@ -431,7 +431,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         filter.disableBehaviour();
         try
         {
-            if (filePlan != null && nodeService.exists(filePlan) == true)
+            if (filePlan != null && nodeService.exists(filePlan))
             {
                 List<NodeRef> holds = holdService.getHoldsInFilePlan(filePlan);
                 for (NodeRef hold : holds)
@@ -440,7 +440,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 }
             }
 
-            if (folder != null && nodeService.exists(folder) == true)
+            if (folder != null && nodeService.exists(folder))
             {
                 // Delete the folder
                 nodeService.deleteNode(folder);
@@ -453,7 +453,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             }
 
             // delete the collaboration site (if required)
-            if (isCollaborationSiteTest() == true && siteService.getSite(collabSiteId) != null)
+            if (isCollaborationSiteTest() && siteService.getSite(collabSiteId) != null)
             {
                 siteService.deleteSite(collabSiteId);
             }
@@ -484,7 +484,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             {
             	setupTestDataImpl();
 
-            	if (isRecordTest() == true && isRMSiteTest() == true)
+            	if (isRecordTest() && isRMSiteTest())
             	{
             	    setupTestRecords();
             	}
@@ -495,9 +495,9 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             @Override
             public void test(Void result) throws Exception
             {
-            	if (isRMSiteTest() == true)
+            	if (isRMSiteTest())
             	{
-	                if (isRecordTest() == true)
+	                if (isRecordTest())
 	                {
 	                    // declare a record
 	                    utils.declareRecord(recordDeclaredOne);
@@ -542,7 +542,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         permissionService.setPermission(folder, "rmadmin", PermissionService.WRITE, true);
         permissionService.setPermission(folder, "rmadmin", PermissionService.ADD_CHILDREN, true);
 
-        if (isRMSiteTest() == true)
+        if (isRMSiteTest())
         {
 	        siteId = GUID.generate();
 	        siteInfo = siteService.createSite(
@@ -633,7 +633,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 rmAdminName
         };
 
-        if (isFillingForAllUsers() == true)
+        if (isFillingForAllUsers())
         {
             // Give all the users file permission objects
             for (String user : testUsers)
@@ -653,7 +653,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected NodeRef createPerson(String userName, boolean createAuth)
     {
-        if (createAuth == true)
+        if (createAuth)
         {
             authenticationService.createAuthentication(userName, "password".toCharArray());
         }

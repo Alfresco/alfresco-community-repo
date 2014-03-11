@@ -94,7 +94,7 @@ public class RmEventPut extends RMEventBase
 
             // Check if the event can be edited or not
             RecordsManagementEvent event = null;
-            if (canEditEvent(eventDisplayLabel, eventName, eventType) == true)
+            if (canEditEvent(eventDisplayLabel, eventName, eventType))
             {
                 // Create event
                 event = rmEventService.addEvent(eventType, eventName, eventDisplayLabel);

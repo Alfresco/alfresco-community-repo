@@ -40,13 +40,13 @@ import org.springframework.beans.factory.BeanNameAware;
  * This patch creates a new "Records Management Behavior Scripts" folder and moves existing behavior scripts from the old "Records Management Scripts" folder to the new folder.
  * This is to compensate for any non-behavior RM scripts so that they can live in the old "Records Management Scripts" folder for its intended purpose and be picked up by the
  * execute script rule action.
- * 
+ *
  * @author Craig Tan
  * @since 2.1
  */
 @SuppressWarnings("deprecation")
 public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements BeanNameAware
-{   
+{
     /** rm config folder root lookup */
     protected static final NodeRef RM_CONFIG = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
 
@@ -55,7 +55,7 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
 
     /** new behavior scripts folder root lookup */
     protected static NodeRef newBehaviorScriptsFolder = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_behavior_scripts");
-    
+
     /** name of example script */
     protected static final String IS_CLOSED_JS = "rma_isClosed.js";
 
@@ -64,7 +64,7 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
 
     /** File Folder Service */
     private FileFolderService fileFolderService;
-    
+
     /**
      * @param nodeService   node service
      */
@@ -86,22 +86,22 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
      */
     @Override
     protected void executePatch() throws Throwable
-    {        
+    {
         // check that the rm config root has been correctly bootstrapped
         if (nodeService.exists(RM_CONFIG) == false)
         {
             // we don't need to do anything
             return;
         }
-    
+
         // check that the behavior scripts folder exists
         if (nodeService.exists(newBehaviorScriptsFolder) == false)
         {
-            if (logger.isDebugEnabled() == true)
+            if (logger.isDebugEnabled())
             {
                 logger.debug(" ... creating RM Behavior Scripts folder");
             }
-            
+
             String newBehaviorScriptsFolderName = "Records Management Behavior Scripts";
             String newBehaviorScriptsNodeUUID = "rm_behavior_scripts";
             String newBehaviorScriptsAssocQName = "records_management_behavior_scripts";
@@ -118,7 +118,7 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
         }
 
         // move to the new behavior scripts folder if the old behavior scripts folder exists and contains files
-        if (nodeService.exists(OLD_BEHAVIOR_SCRIPTS_FOLDER) == true)
+        if (nodeService.exists(OLD_BEHAVIOR_SCRIPTS_FOLDER))
         {
             // run the following code as System
             AuthenticationUtil.runAs(new RunAsWork<Object>()
@@ -137,7 +137,7 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
 
                             if (oldBehaviorScripts != null && oldBehaviorScripts.isEmpty() != true)
                             {
-                                if (logger.isDebugEnabled() == true)
+                                if (logger.isDebugEnabled())
                                 {
                                     logger.debug(" ... moving files from RM Scripts folder to RM Behavior Scripts folder");
                                 }
@@ -147,7 +147,7 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
                                     // move the old script to the new location
                                     fileFolderService.moveFrom(script.getNodeRef(), OLD_BEHAVIOR_SCRIPTS_FOLDER, RMv21BehaviorScriptsPatch.newBehaviorScriptsFolder, script.getName());
 
-                                    if (logger.isDebugEnabled() == true)
+                                    if (logger.isDebugEnabled())
                                     {
                                         logger.debug(" ...... moved " + script.getName());
                                     }

@@ -31,7 +31,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * dod:dod5015record behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -42,7 +42,7 @@ public class DOD5015RecordAspect extends    BaseBehaviourBean
 {
     /** file plan service */
     private FilePlanService filePlanService;
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -50,10 +50,10 @@ public class DOD5015RecordAspect extends    BaseBehaviourBean
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * Ensure that the DOD record aspect meta-data is applied.
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Behaviour
@@ -72,23 +72,23 @@ public class DOD5015RecordAspect extends    BaseBehaviourBean
             nodeService.addAspect(nodeRef, ASPECT_DOD_5015_RECORD, null);
         }
     }
-    
+
     /**
      * Helper method to indicate whether the records file plan is a DOD one or not.
-     * 
+     *
      * @param record    record node reference
      * @return boolean  true if in DOD file plan, false otherwise
      */
     private boolean isDODFilePlan(NodeRef record)
     {
         boolean result = false;
-        
+
         NodeRef filePlan = filePlanService.getFilePlan(record);
-        if (filePlan != null && nodeService.exists(filePlan) == true)
+        if (filePlan != null && nodeService.exists(filePlan))
         {
             result = TYPE_DOD_5015_FILE_PLAN.equals(nodeService.getType(filePlan));
         }
-        
+
         return result;
-    }   
+    }
 }

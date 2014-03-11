@@ -31,7 +31,7 @@ public class DeclaredCapabilityCondition extends AbstractCapabilityCondition
     public boolean evaluate(NodeRef nodeRef)
     {
         boolean result = false;
-        if (FilePlanComponentKind.RECORD.equals(filePlanService.getFilePlanComponentKind(nodeRef)) == true)
+        if (FilePlanComponentKind.RECORD.equals(filePlanService.getFilePlanComponentKind(nodeRef)))
         {
             result = recordService.isDeclared(nodeRef);
         }

@@ -24,9 +24,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Extension to action implementation hierarchy to insert parameter substitution processing.
- * 
+ *
  * NOTE:  this should eventually be pushed into the core.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -34,10 +34,10 @@ public abstract class PropertySubActionExecuterAbstractBase extends AuditableAct
 {
 	/** Parameter processor component */
     protected ParameterProcessorComponent parameterProcessorComponent;
-    
+
     /** Indicates whether parameter substitutions are allowed */
     protected boolean allowParameterSubstitutions = false;
-   
+
     /**
      * 	@param parameterProcessorComponent	parameter processor component
      */
@@ -45,7 +45,7 @@ public abstract class PropertySubActionExecuterAbstractBase extends AuditableAct
     {
         this.parameterProcessorComponent = parameterProcessorComponent;
     }
-    
+
     /**
      * @param allowParameterSubstitutions	true if property subs allowed, false otherwise
      */
@@ -53,7 +53,7 @@ public abstract class PropertySubActionExecuterAbstractBase extends AuditableAct
     {
         this.allowParameterSubstitutions = allowParameterSubstitutions;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#execute(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -61,11 +61,11 @@ public abstract class PropertySubActionExecuterAbstractBase extends AuditableAct
     public void execute(Action action, NodeRef actionedUponNodeRef)
     {
     	// do the property subs (if any exist)
-        if (allowParameterSubstitutions == true)
+        if (allowParameterSubstitutions)
         {
            parameterProcessorComponent.process(action, getActionDefinition(), actionedUponNodeRef);
         }
-        
+
         super.execute(action, actionedUponNodeRef);
     }
 }

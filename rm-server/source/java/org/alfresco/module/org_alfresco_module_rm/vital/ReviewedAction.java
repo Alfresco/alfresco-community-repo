@@ -44,13 +44,13 @@ public class ReviewedAction extends RMActionExecuterAbstractBase
 	protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
 	{
 	    VitalRecordDefinition vrDef = vitalRecordService.getVitalRecordDefinition(actionedUponNodeRef);
-        if (vrDef != null && vrDef.isEnabled() == true)
+        if (vrDef != null && vrDef.isEnabled())
         {
-    	    if (recordService.isRecord(actionedUponNodeRef) == true)
+    	    if (recordService.isRecord(actionedUponNodeRef))
     	    {
     	        reviewRecord(actionedUponNodeRef, vrDef);
 	        }
-    	    else if (recordFolderService.isRecordFolder(actionedUponNodeRef) == true)
+    	    else if (recordFolderService.isRecordFolder(actionedUponNodeRef))
     	    {
     	        for (NodeRef record : recordService.getRecords(actionedUponNodeRef))
                 {

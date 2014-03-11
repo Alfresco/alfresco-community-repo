@@ -38,7 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * rma:filePlan behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -53,16 +53,16 @@ public class FilePlanType extends    BaseBehaviourBean
 {
     /** file plan service */
     protected FilePlanService filePlanService;
-    
+
     /** record folder service */
     protected RecordFolderService recordFolderService;
-    
+
     /** identifier service */
     protected IdentifierService identifierService;
-    
+
     /** file plan role service */
     protected FilePlanRoleService filePlanRoleService;
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -70,7 +70,7 @@ public class FilePlanType extends    BaseBehaviourBean
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @param recordFolderService   record folder service
      */
@@ -78,7 +78,7 @@ public class FilePlanType extends    BaseBehaviourBean
     {
         this.recordFolderService = recordFolderService;
     }
-    
+
     /**
      * @param identifierService identifier service
      */
@@ -86,7 +86,7 @@ public class FilePlanType extends    BaseBehaviourBean
     {
         this.identifierService = identifierService;
     }
-    
+
     /**
      * @param filePlanRoleService   file plan role service
      */
@@ -94,7 +94,7 @@ public class FilePlanType extends    BaseBehaviourBean
     {
         this.filePlanRoleService = filePlanRoleService;
     }
-    
+
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
@@ -107,14 +107,14 @@ public class FilePlanType extends    BaseBehaviourBean
     {
         // ensure we are not trying to put content in the file plan root node
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true)
+        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
         {
             throw new AlfrescoRuntimeException("Operation failed, because you can't place content in the root of the file plan.");
         }
 
         // ensure we are not trying to put a record folder in the root of the file plan
         NodeRef parent = childAssocRef.getParentRef();
-        if (filePlanService.isFilePlan(parent) == true && recordFolderService.isRecordFolder(nodeRef) == true)
+        if (filePlanService.isFilePlan(parent) && recordFolderService.isRecordFolder(nodeRef))
         {
             throw new AlfrescoRuntimeException("Operation failed, because you can not place a record folder in the root of the file plan.");
         }
@@ -133,22 +133,22 @@ public class FilePlanType extends    BaseBehaviourBean
     public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
         final NodeRef filePlan = childAssocRef.getChildRef();
-        
+
         AuthenticationUtil.runAsSystem(new RunAsWork<Object>()
         {
-            public Object doWork() throws Exception 
-            {  
-                if (nodeService.hasAspect(filePlan, ASPECT_FILE_PLAN_COMPONENT) == true && 
+            public Object doWork() throws Exception
+            {
+                if (nodeService.hasAspect(filePlan, ASPECT_FILE_PLAN_COMPONENT) &&
                     nodeService.getProperty(filePlan, PROP_IDENTIFIER) == null)
                 {
-                    String id = identifierService.generateIdentifier(filePlan);                    
+                    String id = identifierService.generateIdentifier(filePlan);
                     nodeService.setProperty(filePlan, RecordsManagementModel.PROP_IDENTIFIER, id);
                 }
-                                
+
                 return null;
             }
         });
-        
+
         // setup the file plan roles
         filePlanRoleService.setupFilePlanRoles(filePlan);
     }

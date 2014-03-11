@@ -61,14 +61,14 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (eligibleForAction(actionedUponNodeRef) == true)
+        if (eligibleForAction(actionedUponNodeRef))
         {
             for (String type : getRecordTypes(action))
             {
                 recordService.addRecordType(actionedUponNodeRef, QName.createQName(type, namespaceService));
             }
         }
-        else if (logger.isWarnEnabled() == true)
+        else if (logger.isWarnEnabled())
         {
             logger.warn(I18NUtil.getMessage(MSG_ACTIONED_UPON_NOT_RECORD, this.getClass().getSimpleName(), actionedUponNodeRef.toString()));
         }
@@ -88,9 +88,9 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
     private boolean eligibleForAction(NodeRef actionedUponNodeRef)
     {
         boolean result = false;
-        if (nodeService.exists(actionedUponNodeRef) == true &&
+        if (nodeService.exists(actionedUponNodeRef) &&
                 freezeService.isFrozen(actionedUponNodeRef) == false &&
-                recordService.isRecord(actionedUponNodeRef) == true &&
+                recordService.isRecord(actionedUponNodeRef) &&
                 recordService.isDeclared(actionedUponNodeRef) == false)
         {
             result = true;

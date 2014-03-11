@@ -26,7 +26,7 @@ import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Abstract module patch implementation.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -34,31 +34,31 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
 {
     /** logger */
     protected static Log logger = LogFactory.getLog(ModulePatch.class);
-    
+
     /** module patch service */
     private ModulePatchExecuter modulePatchExecuter;
-    
+
     /** transaction service */
     protected TransactionService transactionService;
-    
+
     /** module patch id */
     private String id;
-    
+
     /** module patch description */
     private String description;
-    
+
     /** module id */
     private String moduleId;
-    
+
     /** module patch fixes from module schema number */
     private int fixesFromSchema;
-    
+
     /** module patch fixes to module schema number */
     private int fixesToSchema;
-    
+
     /** module patch target module schema number */
     private int targetSchema;
-    
+
     /**
      * Initiialisation method
      */
@@ -66,7 +66,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     {
         modulePatchExecuter.register(this);
     }
-    
+
     /**
      * @param modulePatchExecuter   module patch executer
      */
@@ -74,7 +74,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     {
         this.modulePatchExecuter = modulePatchExecuter;
     }
-    
+
     /**
      * @param transactionService    transaction service
      */
@@ -82,7 +82,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     {
         this.transactionService = transactionService;
     }
-    
+
     /**
      * @param id    module patch id
      */
@@ -90,7 +90,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     {
         this.id = id;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.ModulePatch#getId()
      */
@@ -99,7 +99,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     {
         return id;
     }
-    
+
     /**
      * Convenience method to set the module patch id to the bean name (if not already specified)
      */
@@ -109,7 +109,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
         if (id == null)
         {
             id = beanName;
-        }        
+        }
     }
 
     /**
@@ -119,7 +119,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     {
         this.description = description;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.ModulePatch#getDescription()
      */
@@ -136,7 +136,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     {
         this.moduleId = moduleId;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.ModulePatch#getModuleId()
      */
@@ -150,7 +150,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     {
         this.fixesFromSchema = fixesFromSchema;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.ModulePatch#getFixesFromSchema()
      */
@@ -164,7 +164,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     {
         this.fixesToSchema = fixesToSchema;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.ModulePatch#getFixesToSchema()
      */
@@ -178,7 +178,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     {
         this.targetSchema = targetSchema;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.ModulePatch#getTargetSchema()
      */
@@ -194,36 +194,36 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     @Override
     public void apply()
     {
-        if (logger.isInfoEnabled() == true)
+        if (logger.isInfoEnabled())
         {
             logger.info("Executing module patch \"" + description + "\"");
         }
-        if (logger.isDebugEnabled() == true)
+        if (logger.isDebugEnabled())
         {
-            logger.debug("   ... id=" + id + 
-                               ",moduleId=" + moduleId + 
-                               ",from=" + fixesFromSchema + 
-                               ",to=" + fixesToSchema + 
+            logger.debug("   ... id=" + id +
+                               ",moduleId=" + moduleId +
+                               ",from=" + fixesFromSchema +
+                               ",to=" + fixesToSchema +
                                ",target=" + targetSchema);
         }
-        
+
         transactionService.getRetryingTransactionHelper().doInTransaction(
-                new ApplyCallback(), 
-                true, 
-                false);  
-        
-        if (logger.isDebugEnabled() == true)
+                new ApplyCallback(),
+                true,
+                false);
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("   ... module patch applied");
         }
     }
-    
+
     /**
      * Apply patch internal method.  Implementations can assume a transaction has
      * been started.
      */
     public abstract void applyInternal();
-    
+
     /**
      * Apply callback worker class implementation
      */
@@ -237,9 +237,9 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
         {
             applyInternal();
             return null;
-        }        
+        }
     }
-    
+
     /**
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */

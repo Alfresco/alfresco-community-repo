@@ -31,77 +31,77 @@ import org.json.JSONObject;
  * @author Roy Wetherall
  */
 public class JSONConversionComponentTest extends BaseRMTestCase
-{   
+{
     private JSONConversionComponent converter;
-    
-    private NodeRef record;    
-    
+
+    private NodeRef record;
+
     @Override
     protected void initServices()
     {
         super.initServices();
         converter = (JSONConversionComponent)applicationContext.getBean("jsonConversionComponent");
     }
-    
+
     @Override
     protected void setupTestDataImpl()
     {
         super.setupTestDataImpl();
-        
+
         // Create records
         record = utils.createRecord(rmFolder, "testRecord.txt");
     }
-    
+
     public void testJSON() throws Exception
-    {       
+    {
         doTestInTransaction(new JSONTest
         (
            filePlan,
            new String[]{"isRmNode", "true", "boolean"},
            new String[]{"rmNode.kind", "FILE_PLAN"}
-        ){});   
-        
+        ){});
+
         doTestInTransaction(new JSONTest
         (
            rmContainer,
            new String[]{"isRmNode", "true", "boolean"},
            new String[]{"rmNode.kind", "RECORD_CATEGORY"}
         ){});
-        
+
         doTestInTransaction(new JSONTest
         (
            rmFolder,
            new String[]{"isRmNode", "true", "boolean"},
            new String[]{"rmNode.kind", "RECORD_FOLDER"}
-        ){});   
-        
+        ){});
+
         doTestInTransaction(new JSONTest
         (
            record,
            new String[]{"isRmNode", "true", "boolean"},
            new String[]{"rmNode.kind", "RECORD"}
-        ){});  
+        ){});
     }
-    
+
     class JSONTest extends Test<JSONObject>
     {
         private NodeRef nodeRef;
         private String[][] testValues;
-        
+
         public JSONTest(NodeRef nodeRef, String[] ... testValues)
         {
             this.nodeRef = nodeRef;
             this.testValues = testValues;
         }
-        
+
         @Override
         public JSONObject run() throws Exception
-        {            
+        {
             String json = converter.toJSON(nodeRef, true);
             System.out.println(json);
             return new JSONObject(json);
         }
-        
+
         @Override
         public void test(JSONObject result) throws Exception
         {
@@ -112,29 +112,29 @@ public class JSONConversionComponentTest extends BaseRMTestCase
                 if (testValue.length == 3)
                 {
                     type = testValue[2];
-                }                
+                }
                 Serializable value = convertValue(testValue[1], type);
                 Serializable actualValue = (Serializable)getValue(result, key);
-                
+
                 assertEquals("The key " + key + " did not have the expected value.", value, actualValue);
             }
         }
-        
+
         private Serializable convertValue(String stringValue, String type)
         {
             Serializable value = stringValue;
-            if (type.equals("boolean") == true)
+            if (type.equals("boolean"))
             {
                 value = new Boolean(stringValue);
-            }            
+            }
             return value;
         }
-        
+
         private Object getValue(JSONObject jsonObject, String key) throws JSONException
         {
             return getValue(jsonObject, key.split("\\."));
         }
-        
+
         private Object getValue(JSONObject jsonObject, String[] key) throws JSONException
         {
             if (key.length == 1)

@@ -38,7 +38,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:dispositionActionDefinition behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -51,7 +51,7 @@ public class DispositionActionDefinitionType extends    BaseBehaviourBean
 {
     /** I18N */
     private final static String MSG_UPDATE_DISP_ACT_DEF = "rm.service.update-disposition-action-def";
-    
+
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
@@ -63,10 +63,10 @@ public class DispositionActionDefinitionType extends    BaseBehaviourBean
     )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef))
         {
             // Determine the properties that have changed
-            Set<QName> changedProps = new HashSet<QName>(PropertyMap.getChangedProperties(before, after).keySet()); 
+            Set<QName> changedProps = new HashSet<QName>(PropertyMap.getChangedProperties(before, after).keySet());
             changedProps.addAll(PropertyMap.getAddedProperties(before, after).keySet());
 
             if (nodeService.hasAspect(nodeRef, ASPECT_UNPUBLISHED_UPDATE) == false)
@@ -82,7 +82,7 @@ public class DispositionActionDefinitionType extends    BaseBehaviourBean
                 Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
 
                 // Check that there isn't a update currently being published
-                if ((Boolean)props.get(PROP_PUBLISH_IN_PROGRESS).equals(Boolean.TRUE) == true)
+                if ((Boolean)props.get(PROP_PUBLISH_IN_PROGRESS).equals(Boolean.TRUE))
                 {
                     // Can not update the disposition schedule since there is an outstanding update being published
                     throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UPDATE_DISP_ACT_DEF));

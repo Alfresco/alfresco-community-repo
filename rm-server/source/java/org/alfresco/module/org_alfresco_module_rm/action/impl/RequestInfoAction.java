@@ -79,9 +79,9 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) == true &&
+        if (nodeService.exists(actionedUponNodeRef) &&
             nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) == false &&
-            recordService.isRecord(actionedUponNodeRef) == true && 
+            recordService.isRecord(actionedUponNodeRef) &&
             recordService.isDeclared(actionedUponNodeRef) == false)
         {
             String workflowDefinitionId = workflowService.getDefinitionByName(REQUEST_INFO_WORKFLOW_DEFINITION_NAME).getId();
@@ -96,7 +96,7 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
         }
         else
         {
-            logger.info("Can't start the request information workflow for node '" + actionedUponNodeRef.toString() + "'." );
+            logger.info("Can't start the request information workflow for node '" + actionedUponNodeRef.toString() + "'.");
         }
     }
 

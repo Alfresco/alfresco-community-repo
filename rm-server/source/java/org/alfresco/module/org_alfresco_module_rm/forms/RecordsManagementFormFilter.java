@@ -142,7 +142,7 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
 
                 form.addField(field);
 
-                if (logger.isDebugEnabled() == true)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Adding custom property .. " + prop.getName().toString() + " .. with value " + value + ".. to group .. " + setId);
                 }

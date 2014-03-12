@@ -203,10 +203,7 @@
        <property name="namespaceService" ref="namespaceService"/>
        <property name="nodeParameterProcessor" ref="nodeParameterProcessor"/>
        <property name="nodeParameterProcessorAspects">
-          <list>
-             <value>rma:record</value>
-             <value>cm:content</value>
-          </list>
+          <value>${rm.autocompletesuggestion.nodeParameterSuggester.aspectsAndTypes}</value>
        </property>
     </bean>
 

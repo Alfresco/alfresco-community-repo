@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.action.parameter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.service.namespace.NamespaceService;
@@ -38,8 +39,8 @@ public class NodeParameterSuggesterBootstrap
     /** namespace service */
     private NamespaceService namespaceService;
 
-    /** map of record metadata aspects against file plan type */
-    private List<String> nodeParameterProcessorAspectsNames;
+    /** configured node parameter processor aspect and type names, comma separated */
+    private String nodeParameterProcessorAspectsNames;
 
     /** node parameter processor */
     private NodeParameterProcessor nodeParameterProcessor;
@@ -47,7 +48,7 @@ public class NodeParameterSuggesterBootstrap
     /**
      * @param recordMetadataAspects map of record metadata aspects against file plan types
      */
-    public void setNodeParameterProcessorAspects(List<String> nodeParameterProcessorAspectsNames)
+    public void setNodeParameterProcessorAspects(String nodeParameterProcessorAspectsNames)
     {
         this.nodeParameterProcessorAspectsNames = nodeParameterProcessorAspectsNames;
     }
@@ -77,13 +78,17 @@ public class NodeParameterSuggesterBootstrap
 
         if (nodeParameterProcessorAspectsNames != null)
         {
-            for (String name : nodeParameterProcessorAspectsNames)
+            String[] aspectsNames = this.nodeParameterProcessorAspectsNames.split(",");
+            for (String name : aspectsNames)
             {
-                // convert to qname and save it
-                QName aspect = QName.createQName(name, namespaceService);
+                if((name != null) && !"".equals(name.trim()))
+                {
+                    // convert to qname and save it
+                    QName aspect = QName.createQName(name.trim(), namespaceService);
 
-                // register with node parameter processor
-                this.nodeParameterProcessor.addSuggestionDefinition(aspect);
+                    // register with node parameter processor
+                    this.nodeParameterProcessor.addSuggestionDefinition(aspect);
+                }
             }
         }
     }

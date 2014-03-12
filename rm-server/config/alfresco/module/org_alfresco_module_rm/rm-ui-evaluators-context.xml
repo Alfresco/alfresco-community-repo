@@ -235,6 +235,17 @@
       <property name="capability" value="CopyRecord"/>
    </bean>
 
+   <bean id="jsonConversionComponent.copyUnfiledRecordAction"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="copyUnfiledRecord"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD</value>
+         </set>
+      </property>
+      <property name="capability" value="CopyUnfiledRecord"/>
+   </bean>
+
    <bean id="jsonConversionComponent.copyRecordFolderAction"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="copyRecordFolder"/>
@@ -244,6 +255,18 @@
          </set>
       </property>
       <property name="capability" value="CopyRecordFolder"/>
+   </bean>
+
+   <bean id="jsonConversionComponent.copyUnfiledRecordFolderAction"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="copyUnfiledRecordFolder"/>
+      <property name="kinds">
+         <set>
+            <value>UNFILED_RECORD_CONTAINER</value>
+            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+         </set>
+      </property>
+      <property name="capability" value="CopyUnfiledRecordFolder"/>
    </bean>
 
    <bean id="jsonConversionComponent.copyRecordCategoryAction"
@@ -268,6 +291,17 @@
       <property name="capability" value="MoveRecords"/>
    </bean>
 
+   <bean id="jsonConversionComponent.moveUnfiledRecordAction"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="moveUnfiledRecord"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD</value>
+         </set>
+      </property>
+      <property name="capability" value="MoveUnfiledRecords"/>
+   </bean>
+
    <bean id="jsonConversionComponent.moveRecordFolderAction"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="moveRecordFolder"/>
@@ -277,6 +311,18 @@
          </set>
       </property>
       <property name="capability" value="MoveRecordFolder"/>
+   </bean>
+
+   <bean id="jsonConversionComponent.moveUnfiledRecordFolderAction"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="moveUnfiledRecordFolder"/>
+      <property name="kinds">
+         <set>
+            <value>UNFILED_RECORD_CONTAINER</value>
+            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+         </set>
+      </property>
+      <property name="capability" value="MoveUnfiledRecordsContainerFolder"/>
    </bean>
 
    <bean id="jsonConversionComponent.moveRecordCategoryAction"

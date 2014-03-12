@@ -10,7 +10,7 @@
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="30" />
    </bean>
-   
+
    <bean id="rmCreateRecordsCapability"
       parent="declarativeCapability">
       <property name="name" value="CreateRecords"/>
@@ -48,7 +48,7 @@
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="20" />
    </bean>
-   
+
      <bean id="rmDeclareRecordsInClosedFoldersCapability"
       	   parent="declarativeCapability">
       <property name="name" value="DeclareRecordsInClosedFolders"/>
@@ -109,7 +109,7 @@
       <property name="name" value="LinkToRecords"/>
       <property name="permission" value="LinkToRecords" />
       <property name="conditions">
-         <map>            
+         <map>
             <entry key="capabilityCondition.filling" value="true"/>
             <entry key="capabilityCondition.frozen" value="false"/>
             <entry key="capabilityCondition.recordFiled" value="true"/>	  <!--  Can only link a filed record -->
@@ -120,9 +120,9 @@
       <property name="index" value="45" />
    </bean>
 
-   <bean id="rmFileUnfiledRecordsCapability"                              
+   <bean id="rmFileUnfiledRecordsCapability"
       parent="declarativeCapability">
-      <property name="name" value="FileUnfiledRecords"/>						
+      <property name="name" value="FileUnfiledRecords"/>
       <property name="permission" value="FileUnfiledRecords"/>
       <property name="kind" value="RECORD" />
       <property name="conditions">
@@ -132,19 +132,19 @@
             <entry key="capabilityCondition.recordFiled" value="false"/>	<!--  Checks that the node hasn't been filed -->
          </map>
       </property>
-      <property name="targetCapability" ref="rmFilePermissionOnly" />   <!--  Checks that the user has the correct capability on the destination folder -->      
+      <property name="targetCapability" ref="rmFilePermissionOnly" />   <!--  Checks that the user has the correct capability on the destination folder -->
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="41" />
    </bean>
-   
-   <bean id="rmFilePermissionOnly"                                                             
+
+   <bean id="rmFilePermissionOnly"
          parent="declarativeCapability" >                                  <!--  Checks for filling permission only, useful for destination checks -->
-      <property name="name" value="FillingPermissionOnly"/>	       
-      <property name="private" value="true" />					
+      <property name="name" value="FillingPermissionOnly"/>
+      <property name="private" value="true" />
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>  		<!--  Checks if the user has the filling capability -->
-            <entry key="capabilityCondition.closed" value="false"/>            
+            <entry key="capabilityCondition.closed" value="false"/>
             <entry key="capabilityCondition.frozen" value="false"/>
             <entry key="capabilityCondition.cutoff" value="false"/>
          </map>
@@ -233,7 +233,7 @@
       <property name="index" value="20" />
    </bean>
 
-   <bean id="rmEditRecordMetadataCapability"      
+   <bean id="rmEditRecordMetadataCapability"
       parent="declarativeCapability">
       <property name="name" value="EditRecordMetadata"/>
       <property name="permission" value="EditRecordMetadata"/>
@@ -261,7 +261,7 @@
       <property name="undetermined" value="true" />
       <property name="kind" value="RECORD" />
       <property name="conditions">
-         <map>            
+         <map>
             <entry key="capabilityCondition.filling" value="true"/>
             <entry key="capabilityCondition.frozen" value="false"/>
             <entry key="capabilityCondition.recordFiled" value="true"/>		<!--  Can only move a filed record -->
@@ -271,6 +271,25 @@
       <property name="targetCapability" ref="rmFilePermissionOnly"/>
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="40" />
+   </bean>
+
+   <bean id="rmMoveUnfiledRecordsCapability"
+      parent="declarativeCapability" >
+      <property name="name" value="MoveUnfiledRecords" />
+      <property name="permission" value="MoveRecords"/>
+      <property name="undetermined" value="true" />
+      <property name="kind" value="RECORD" />
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.recordFiled" value="false"/>     <!--  Can only move a unfiled record -->
+            <entry key="capabilityCondition.cutoff" value="false"/>          <!-- Can not move a record once it is cutoff -->
+         </map>
+      </property>
+      <property name="targetCapability" ref="rmFilePermissionOnly"/>
+      <property name="group"><ref bean="recordsGroup"/></property>
+      <property name="index" value="45" />
    </bean>
 
    <bean id="rmRejectRecordsCapability"
@@ -291,10 +310,10 @@
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="42" />
    </bean>
-   
-   <bean id="rmHideRecordsCapability" 
+
+   <bean id="rmHideRecordsCapability"
       parent="declarativeCapability">
-      <property name="name" value="HideRecords"/>	  
+      <property name="name" value="HideRecords"/>
       <property name="private" value="true" />
       <property name="conditions">
          <map>
@@ -302,12 +321,12 @@
          </map>
       </property>
    </bean>
-   
+
    <!--  Request record information capability -->
    <!--  @since 2.1 -->
-   <bean id="rmRequestRecordInformationCapability" 
+   <bean id="rmRequestRecordInformationCapability"
          parent="declarativeCapability">
-      <property name="name" value="RequestRecordInformation"/>		        
+      <property name="name" value="RequestRecordInformation"/>
       <property name="permission" value="RequestRecordInformation"/>	<!--  Associated permission (this is assignable) -->
       <property name="kind" value="RECORD" />							<!--  Only applies to records -->
       <property name="conditions">
@@ -316,9 +335,9 @@
             <entry key="capabilityCondition.frozen" value="false"/>     <!--  Not for frozen records -->
             <entry key="capabilityCondition.declared" value="false"/>   <!--  Only for undeclared records -->
          </map>
-      </property>      
+      </property>
       <property name="group"><ref bean="recordsGroup"/></property>      <!--  Part of the records group of capabilities -->
       <property name="index" value="100" />
    </bean>
-   
+
 </beans>

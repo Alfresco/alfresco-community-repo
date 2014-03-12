@@ -107,6 +107,8 @@
             <ref bean="rmMoveRecordCategoryCapability"/>
             <ref bean="rmMoveRecordFolderCapability"/>
             <ref bean="rmMoveRecordsCapability"/>
+            <ref bean="rmMoveUnfiledRecordsCapability"/>
+            <ref bean="rmMoveUnfiledRecordsContainerFolderCapability"/>
             <ref bean="rmFileUnfiledRecordsCapability"/>
          </list>
       </property>
@@ -119,7 +121,9 @@
       <property name="capabilities">
          <list>
             <ref bean="rmCopyRecordCapability"/>
+            <ref bean="rmCopyUnfiledRecordCapability"/>
             <ref bean="rmCopyRecordFolderCapability"/>
+            <ref bean="rmCopyUnfiledRecordFolderCapability"/>
             <ref bean="rmCopyRecordCategoryCapability"/>
          </list>
       </property>
@@ -144,6 +148,23 @@
       <property name="targetCapability" ref="rmFileRecordsCapability"/>
    </bean>
 
+   <bean id="rmCopyUnfiledRecordCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CopyUnfiledRecord"/>
+      <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.recordFiled" value="false"/>
+         </map>
+      </property>
+   </bean>
+
    <bean id="rmCopyRecordFolderCapability"
       parent="declarativeCapability">
       <property name="name" value="CopyRecordFolder"/>
@@ -156,6 +177,24 @@
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.frozen" value="false"/>
+         </map>
+      </property>
+   </bean>
+
+   <bean id="rmCopyUnfiledRecordFolderCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CopyUnfiledRecordFolder"/>
+      <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>UNFILED_RECORD_CONTAINER</value>
+            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.filling" value="true"/>
          </map>
       </property>
    </bean>

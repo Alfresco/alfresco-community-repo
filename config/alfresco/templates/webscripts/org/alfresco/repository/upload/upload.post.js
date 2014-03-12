@@ -292,6 +292,7 @@ function main()
                // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
                existingFile.properties.content.guessMimetype(filename);
                existingFile.properties.content.guessEncoding();
+               existingFile.save();
 
                // Extract the metadata
                // (The overwrite policy controls which if any parts of
@@ -352,6 +353,7 @@ function main()
          // maintained - as upload may have been via Flash - which always sends binary mimetype and would overwrite it.
          // Also perform the encoding guess step in the write() method to save an additional Writer operation.
          newFile.properties.content.write(content, false, true);
+         newFile.save();
          
          // TODO (THOR-175) - review
          // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)

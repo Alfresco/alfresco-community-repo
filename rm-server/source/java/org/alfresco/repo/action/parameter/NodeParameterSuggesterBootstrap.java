@@ -18,9 +18,6 @@
  */
 package org.alfresco.repo.action.parameter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;

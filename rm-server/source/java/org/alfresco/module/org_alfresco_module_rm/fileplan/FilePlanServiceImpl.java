@@ -218,10 +218,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             {
                 result = FilePlanComponentKind.HOLD_CONTAINER;
             }
-            else if (instanceOf(nodeRef, TYPE_HOLD_CONTAINER_CHILD))
-            {
-                result = FilePlanComponentKind.HOLD_CONTAINER_CHILD;
-            }
             else if (getFreezeService().isHold(nodeRef))
             {
                 result = FilePlanComponentKind.HOLD;

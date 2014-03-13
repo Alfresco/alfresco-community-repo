@@ -238,7 +238,7 @@
       <property name="permission" value="CreateModifyDestroyFolders"/>
       <property name="kinds">
          <list>
-            <value>HOLD_CONTAINER_CHILD</value>
+            <value>HOLD</value>
          </list>
       </property>
       <property name="conditions">
@@ -257,7 +257,7 @@
       <property name="permission" value="CreateModifyDestroyFolders"/>
       <property name="kinds">
          <list>
-            <value>HOLD_CONTAINER_CHILD</value>
+            <value>HOLD</value>
          </list>
       </property>
       <property name="conditions">

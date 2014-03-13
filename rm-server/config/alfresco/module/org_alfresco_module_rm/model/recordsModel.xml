@@ -96,6 +96,7 @@
          <parent>rma:recordsManagementContainer</parent>
       </type>
 
+	  <-- TODO rename to unfiledRecordFolder -->
       <type name="rma:unfiledRecordContainerChild">
          <title>Unfiled Record Container Child</title>
          <parent>rma:recordsManagementContainer</parent>
@@ -103,15 +104,10 @@
 
       <type name="rma:holdContainer">
          <title>Hold Container</title>
-         <parent>rma:hold</parent>
+         <parent>rma:recordsManagementContainer</parent>
          <mandatory-aspects>
             <aspect>rma:countable</aspect>
          </mandatory-aspects>
-      </type>
-
-      <type name="rma:holdContainerChild">
-         <title>Hold Container Child</title>
-         <parent>rma:hold</parent>
       </type>
 
       <type name="rma:transferContainer">
@@ -511,7 +507,7 @@
 
       <type name="rma:hold">
          <title>Hold</title>
-         <parent>cm:folder</parent>
+         <parent>rma:recordsManagementContainer</parent>
          <archive>false</archive>
 
          <properties>
@@ -520,6 +516,12 @@
                <title>Hold Reason</title>
                <type>d:text</type>
                <mandatory>true</mandatory>
+            </property>
+
+            <property name="rma:deleteWhenEmpty">
+               <title>Delete When Empty</title>
+               <type>d:boolean</type>
+               <default>false</default>
             </property>
 
          </properties>
@@ -540,11 +542,6 @@
             </child-association>
 
          </associations>
-
-         <mandatory-aspects>
-            <aspect>cm:titled</aspect>
-            <aspect>rma:filePlanComponent</aspect>
-         </mandatory-aspects>
 
       </type>
 

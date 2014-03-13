@@ -218,7 +218,7 @@
             <value>RECORD_FOLDER</value>
             <value>RECORD</value>
             <value>UNFILED_RECORD_CONTAINER_CHILD</value>
-            <value>HOLD_CONTAINER_CHILD</value>
+            <value>HOLD</value>
          </set>
       </property>
       <property name="capability" value ="UpdateProperties"/>
@@ -380,7 +380,7 @@
             <value>RECORD_FOLDER</value>
             <value>RECORD</value>
             <value>UNFILED_RECORD_CONTAINER_CHILD</value>
-            <value>HOLD_CONTAINER_CHILD</value>
+            <value>HOLD</value>
          </set>
       </property>
       <property name="capability" value="Delete"/>
@@ -397,7 +397,7 @@
             <value>UNFILED_RECORD_CONTAINER</value>
             <value>UNFILED_RECORD_CONTAINER_CHILD</value>
             <value>HOLD_CONTAINER</value>
-            <value>HOLD_CONTAINER_CHILD</value>
+            <value>HOLD</value>
          </set>
       </property>
       <property name="capability" value ="ManageAccessRights"/>

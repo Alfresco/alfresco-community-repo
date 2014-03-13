@@ -108,8 +108,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
              */
             private List<QName> getAspectList()
             {
-                QName[] aspects = new QName[] 
-                { 
+                QName[] aspects = new QName[]
+                {
                     ASPECT_RECORD_META_DATA
                 };
 
@@ -795,7 +795,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
         }
 
         // assert fail not failure
-        if (failure == false)
+        if (!failure)
         {
             fail("Property should not have been editable.");
         }

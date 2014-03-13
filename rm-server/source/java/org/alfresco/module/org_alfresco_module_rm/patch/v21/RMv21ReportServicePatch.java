@@ -72,7 +72,7 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
     protected void executePatch() throws Throwable
     {
         // check whether report dir exists or not
-        if (nodeService.exists(RM_CONFIG_FOLDER) && nodeService.exists(TEMPLATE_ROOT) == false)
+        if (nodeService.exists(RM_CONFIG_FOLDER) && !nodeService.exists(TEMPLATE_ROOT))
         {
             if (logger.isDebugEnabled())
             {

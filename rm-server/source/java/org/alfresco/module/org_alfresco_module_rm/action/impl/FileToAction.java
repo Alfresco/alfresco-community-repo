@@ -75,8 +75,8 @@ public class FileToAction extends RMActionExecuterAbstractBase
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
         if (nodeService.exists(actionedUponNodeRef) &&
-            freezeService.isFrozen(actionedUponNodeRef) == false &&
-            recordService.isFiled(actionedUponNodeRef) == false)
+            !freezeService.isFrozen(actionedUponNodeRef) &&
+            !recordService.isFiled(actionedUponNodeRef))
         {
             // first look to see if the destination record folder has been specified
             NodeRef recordFolder = (NodeRef)action.getParameterValue(PARAM_DESTINATION_RECORD_FOLDER);
@@ -135,7 +135,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
         {
             throw new AlfrescoRuntimeException("Unable to execute fileTo action, because the path resolution context could not be found.");
         }
-        else if (nodeService.exists(context) == false)
+        else if (!nodeService.exists(context))
         {
             throw new AlfrescoRuntimeException("Unable to execute fileTo action, because the context for the relative path does not exist.");
         }
@@ -144,7 +144,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
         String path = (String)action.getParameterValue(PARAM_PATH);
         String[] pathValues = ArrayUtils.EMPTY_STRING_ARRAY;
 
-        if (path != null && path.isEmpty() == false)
+        if (path != null && !path.isEmpty())
         {
             pathValues = StringUtils.tokenizeToStringArray(path, "/", false, true);
         }
@@ -172,7 +172,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
                 }
 
                 // ensure we are trying to create a record folder in a record category
-                if (filePlanService.isRecordCategory(parent) == false)
+                if (!filePlanService.isRecordCategory(parent))
                 {
                     throw new AlfrescoRuntimeException("Unable to create nre record folder, beacuse the parent is not a record category.");
                 }

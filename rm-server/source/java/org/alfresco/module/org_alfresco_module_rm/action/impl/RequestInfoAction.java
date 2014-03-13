@@ -80,9 +80,9 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         if (nodeService.exists(actionedUponNodeRef) &&
-            nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) == false &&
+            !nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) &&
             recordService.isRecord(actionedUponNodeRef) &&
-            recordService.isDeclared(actionedUponNodeRef) == false)
+            !recordService.isDeclared(actionedUponNodeRef))
         {
             String workflowDefinitionId = workflowService.getDefinitionByName(REQUEST_INFO_WORKFLOW_DEFINITION_NAME).getId();
             Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();

@@ -76,7 +76,7 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD) == false)
+        if (!nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD))
         {
             // we cannot hide a document which is not a record
             if (logger.isDebugEnabled())

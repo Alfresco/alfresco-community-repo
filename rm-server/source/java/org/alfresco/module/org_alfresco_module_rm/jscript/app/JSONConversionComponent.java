@@ -167,7 +167,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     @SuppressWarnings("unchecked")
     private void setIndicators(JSONObject rmNodeValues, NodeRef nodeRef)
     {
-        if (indicators != null && indicators.isEmpty() == false)
+        if (indicators != null && !indicators.isEmpty())
         {
             JSONArray jsonIndicators = new JSONArray();
 
@@ -186,7 +186,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     @SuppressWarnings("unchecked")
     private void setActions(JSONObject rmNodeValues, NodeRef nodeRef)
     {
-        if (actions != null && actions.isEmpty() == false)
+        if (actions != null && !actions.isEmpty())
         {
             JSONArray jsonActions = new JSONArray();
 

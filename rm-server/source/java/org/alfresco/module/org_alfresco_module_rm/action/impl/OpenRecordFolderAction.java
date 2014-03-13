@@ -50,7 +50,7 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         if (nodeService.exists(actionedUponNodeRef) &&
-            freezeService.isFrozen(actionedUponNodeRef) == false)
+            !freezeService.isFrozen(actionedUponNodeRef))
         {
             // TODO move re-open logic into a service method
             // TODO check that the user in question has the correct permission to re-open a records folder

@@ -135,7 +135,7 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
                     {
                         // check group to see if the user is contained
                         Set<String> contained = getAuthorityService().getContainedAuthorities(AuthorityType.USER, authority, false);
-                        if (contained.isEmpty() == false &&
+                        if (!contained.isEmpty() &&
                             contained.contains(userName))
                         {
                             result = true;

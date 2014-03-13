@@ -66,7 +66,7 @@ public class ScriptRecordsManagmentNode extends ScriptNode
             if (map.containsKey(capability))
             {
                 AccessStatus accessStatus = map.get(capability);
-                if (accessStatus.equals(AccessStatus.DENIED) == false)
+                if (!accessStatus.equals(AccessStatus.DENIED))
                 {
                     result = true;
                 }

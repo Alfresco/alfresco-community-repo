@@ -27,20 +27,20 @@ public class TestAction extends RMActionExecuterAbstractBase
     public static final String NAME = "testAction";
     public static final String PARAM = "testActionParam";
     public static final String PARAM_VALUE = "value";
-    
+
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (action.getParameterValue(PARAM).equals(PARAM_VALUE) == false)
+        if (!action.getParameterValue(PARAM).equals(PARAM_VALUE))
         {
             throw new RuntimeException("Unexpected parameter value.  Expected " + PARAM_VALUE + " actual " + action.getParameterValue(PARAM));
         }
         this.nodeService.addAspect(actionedUponNodeRef, ASPECT_RECORD, null);
-    }      
-    
+    }
+
     @Override
     public boolean isDispositionAction()
     {
         return true;
-    }    
+    }
 }

@@ -161,7 +161,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
                         break;
                     }
                 }
-                if (exists == false)
+                if (!exists)
                 {
                     QName constraintRefQName = QName.createQName(constraintRef, namespaceService);
                     result = rmAdminService.setCustomPropertyDefinitionConstraint(propQName, constraintRefQName);
@@ -179,7 +179,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
             }
             catch (PropertyAlreadyExistsMetadataException ex)
             {
-                if (updated == false)
+                if (!updated)
                 {
                     String propIdAsString = rmAdminService.getQNameForClientId(label).toPrefixString(namespaceService);
                     throw new PropertyAlreadyExistsMetadataException(propIdAsString);

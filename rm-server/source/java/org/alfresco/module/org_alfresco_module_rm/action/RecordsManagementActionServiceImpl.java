@@ -104,7 +104,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
      */
     public void register(RecordsManagementAction rmAction)
     {
-        if (rmActions.containsKey(rmAction.getName()) == false)
+        if (!rmActions.containsKey(rmAction.getName()))
         {
             rmActions.put(rmAction.getName(), rmAction);
 
@@ -117,7 +117,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
 
     public void register(RecordsManagementActionCondition rmCondition)
     {
-        if (rmConditions.containsKey(rmCondition.getName()) == false)
+        if (!rmConditions.containsKey(rmCondition.getName()))
         {
             rmConditions.put(rmCondition.getName(), rmCondition);
         }

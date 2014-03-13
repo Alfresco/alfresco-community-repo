@@ -159,7 +159,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("recordCategory", recordCategory);
 
         // assert that we have a record category in our hands
-        if (instanceOf(recordCategory, TYPE_RECORD_CATEGORY) == false)
+        if (!instanceOf(recordCategory, TYPE_RECORD_CATEGORY))
         {
             throw new AlfrescoRuntimeException("Unable to setup record category permissions, because node is not a record category.");
         }
@@ -181,7 +181,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     Set<AccessPermission> perms = permissionService.getAllSetPermissions(parentNodeRef);
                     for (AccessPermission perm : perms)
                     {
-                        if (fillingOnly == false ||
+                        if (!fillingOnly ||
                             RMPermissionModel.FILING.equals(perm.getPermission()))
                         {
                             AccessStatus accessStatus = perm.getAccessStatus();
@@ -225,8 +225,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     Set<AccessPermission> perms = permissionService.getAllSetPermissions(catNodeRef);
                     for (AccessPermission perm : perms)
                     {
-                        if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false &&
-                            ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()) == false)
+                        if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
+                            !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
                         {
                             AccessStatus accessStatus = perm.getAccessStatus();
                             boolean allow = false;
@@ -293,8 +293,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
                     for (AccessPermission perm : perms)
                     {
-                        if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false &&
-                            ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()) == false)
+                        if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
+                            !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
                         {
                             AccessStatus accessStatus = perm.getAccessStatus();
                             boolean allow = false;
@@ -331,8 +331,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
         for (AccessPermission perm : perms)
         {
-            if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false &&
-                ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()) == false)
+            if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
+                !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
             {
                 AccessStatus accessStatus = perm.getAccessStatus();
                 boolean allow = false;
@@ -372,12 +372,12 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     Set<AccessPermission> origionalRecordPerms= permissionService.getAllSetPermissions(record);
                     for (AccessPermission perm : origionalRecordPerms)
                     {
-                        if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false &&
-                            ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()) == false)
+                        if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
+                            !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
                         {
                             if ((perm.getPermission().equals(RMPermissionModel.FILING) ||
                                  perm.getPermission().equals(RMPermissionModel.FILE_RECORDS)) &&
-                                origionalParentPerms.contains(perm) == false)
+                                !origionalParentPerms.contains(perm))
                             {
                                 // then we can assume this is a permission we want to preserve
                                 keepPerms.add(perm);
@@ -508,7 +508,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     private void setPermissionDown(NodeRef nodeRef, String authority, String permission)
     {
         // skip out node's that inherit (for example hold and transfer)
-        if (permissionService.getInheritParentPermissions(nodeRef) == false)
+        if (!permissionService.getInheritParentPermissions(nodeRef))
         {
             // set permissions
             setPermissionImpl(nodeRef, authority, permission);
@@ -561,7 +561,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             public Boolean doWork() throws Exception
             {
                 // can't delete permissions if inherited (eg hold and transfer containers)
-                if (permissionService.getInheritParentPermissions(nodeRef) == false)
+                if (!permissionService.getInheritParentPermissions(nodeRef))
                 {
                     // Delete permission on this node
                     permissionService.deletePermission(nodeRef, authority, permission);

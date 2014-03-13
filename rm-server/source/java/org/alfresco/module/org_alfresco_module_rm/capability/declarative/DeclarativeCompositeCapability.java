@@ -74,7 +74,7 @@ public class DeclarativeCompositeCapability extends DeclarativeCapability
             if (capabilityResult != AccessDecisionVoter.ACCESS_DENIED)
             {
                 result = AccessDecisionVoter.ACCESS_ABSTAIN;
-                if (isUndetermined() == false && capabilityResult == AccessDecisionVoter.ACCESS_GRANTED)
+                if (!isUndetermined() && capabilityResult == AccessDecisionVoter.ACCESS_GRANTED)
                 {
                     result = AccessDecisionVoter.ACCESS_GRANTED;
                 }

@@ -233,7 +233,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     public void recordsDueForReviewEmailNotification(final List<NodeRef> records)
     {
         ParameterCheck.mandatory("records", records);
-        if (records.isEmpty() == false)
+        if (!records.isEmpty())
         {
             NodeRef root = getRMRoot(records.get(0));
             String groupName = getGroupName(root);

@@ -97,9 +97,9 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
             String storeId = templateVars.get("store_id");
             String id = templateVars.get("id");
 
-            if (StringUtils.isEmpty(storeType) == false &&
-                StringUtils.isEmpty(storeId) == false &&
-                StringUtils.isEmpty(id) == false)
+            if (!StringUtils.isEmpty(storeType) &&
+                !StringUtils.isEmpty(storeId) &&
+                !StringUtils.isEmpty(id))
             {
                 StoreRef storeRef = new StoreRef(storeType, storeId);
                 NodeRef nodeRef = new NodeRef(storeRef, id);

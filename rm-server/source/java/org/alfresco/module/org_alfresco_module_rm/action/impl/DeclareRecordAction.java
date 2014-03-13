@@ -63,9 +63,9 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     {
         if (nodeService.exists(actionedUponNodeRef) &&
                 recordService.isRecord(actionedUponNodeRef) &&
-                freezeService.isFrozen(actionedUponNodeRef) == false)
+                !freezeService.isFrozen(actionedUponNodeRef))
         {
-            if (recordService.isDeclared(actionedUponNodeRef) == false)
+            if (!recordService.isDeclared(actionedUponNodeRef))
             {
                 List<String> missingProperties = new ArrayList<String>(5);
                 // Aspect not already defined - check mandatory properties then add

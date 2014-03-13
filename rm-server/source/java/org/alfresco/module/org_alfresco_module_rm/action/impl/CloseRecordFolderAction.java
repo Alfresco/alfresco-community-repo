@@ -58,7 +58,7 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
     {
         boolean result = false;
         if (nodeService.exists(actionedUponNodeRef) &&
-                freezeService.isFrozen(actionedUponNodeRef) == false)
+                !freezeService.isFrozen(actionedUponNodeRef))
         {
             result = true;
         }

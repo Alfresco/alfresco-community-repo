@@ -151,7 +151,7 @@ public class ParameterProcessorComponent implements ParameterSubstitutionSuggest
     {
         ParameterProcessor result = null;
 
-        if (value != null && value.isEmpty() == false)
+        if (value != null && !value.isEmpty())
         {
             String[] values = value.split("\\.", 2);
             if (values.length != 0)

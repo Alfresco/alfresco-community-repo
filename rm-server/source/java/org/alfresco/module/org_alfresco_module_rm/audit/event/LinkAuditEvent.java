@@ -26,7 +26,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 
 /**
  * Link audit event.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -45,7 +45,7 @@ public class LinkAuditEvent extends AuditEvent implements OnCreateChildAssociati
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
         // only care about linking child associations
-        if (childAssocRef.isPrimary() == false)
+        if (!childAssocRef.isPrimary())
         {
             // TODO
             // add some dummy properties to indicate the details of the link?

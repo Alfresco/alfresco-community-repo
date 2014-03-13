@@ -69,7 +69,7 @@ public class DispositionActionDefinitionType extends    BaseBehaviourBean
             Set<QName> changedProps = new HashSet<QName>(PropertyMap.getChangedProperties(before, after).keySet());
             changedProps.addAll(PropertyMap.getAddedProperties(before, after).keySet());
 
-            if (nodeService.hasAspect(nodeRef, ASPECT_UNPUBLISHED_UPDATE) == false)
+            if (!nodeService.hasAspect(nodeRef, ASPECT_UNPUBLISHED_UPDATE))
             {
                 // Apply the unpublished aspect
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>();

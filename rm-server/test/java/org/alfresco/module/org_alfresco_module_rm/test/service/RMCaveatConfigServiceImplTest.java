@@ -578,7 +578,7 @@ public class RMCaveatConfigServiceImplTest extends BaseSpringTest implements DOD
         if (parentGroupShortName != null)
         {
             String parentGroupFullName = authorityService.getName(AuthorityType.GROUP, parentGroupShortName);
-            if (authorityService.authorityExists(parentGroupFullName) == false)
+            if (!authorityService.authorityExists(parentGroupFullName))
             {
                 authorityService.createAuthority(AuthorityType.GROUP, groupShortName, groupShortName, null);
                 authorityService.addAuthority(parentGroupFullName, groupShortName);

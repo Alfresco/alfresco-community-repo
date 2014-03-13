@@ -50,7 +50,7 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
             DispositionAction da = dispositionService.getLastCompletedDispostionAction(actionedUponNodeRef);
 
             // Check that the last disposition action was a cutoff
-            if (da == null || da.getName().equals("cutoff") == false)
+            if (da == null || !da.getName().equals("cutoff"))
             {
                 // Can not undo cut off since cut off was not the last thing done
                 throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNDO_NOT_LAST));

@@ -217,7 +217,7 @@ public class RecordAspect extends    BaseBehaviourBean
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
         // check the records parent has actually changed
-        if (oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()) == false)
+        if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()))
         {
             final NodeRef newNodeRef = newChildAssocRef.getChildRef();
             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()

@@ -175,7 +175,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public void onFileRecord(NodeRef nodeRef)
     {
         // initialise disposition details
-        if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == false)
+        if (!nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE))
         {
             DispositionSchedule di = getDispositionSchedule(nodeRef);
             if (di != null && di.isRecordLevelDisposition())
@@ -198,7 +198,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (di != null)
         {
             List<DispositionActionDefinition> dispositionActionDefinitions = di.getDispositionActionDefinitions();
-            if (dispositionActionDefinitions.isEmpty() == false)
+            if (!dispositionActionDefinitions.isEmpty())
             {
                 // get the first disposition action definition
                 DispositionActionDefinition nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
@@ -335,7 +335,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         // Make sure we are dealing with an RM node
-        if (filePlanService.isFilePlanComponent(nodeRef) == false)
+        if (!filePlanService.isFilePlanComponent(nodeRef))
         {
             throw new AlfrescoRuntimeException("Can not find the associated disposition schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
         }
@@ -468,15 +468,15 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         // Check exists
-        if (nodeService.exists(nodeRef) == false)
+        if (!nodeService.exists(nodeRef))
         {
             throw new AlfrescoRuntimeException("Unable to create disposition schedule, because node does not exist. (nodeRef=" + nodeRef.toString() + ")");
         }
 
         // Check is sub-type of rm:recordCategory
         QName nodeRefType = nodeService.getType(nodeRef);
-        if (TYPE_RECORD_CATEGORY.equals(nodeRefType) == false &&
-            dictionaryService.isSubClass(nodeRefType, TYPE_RECORD_CATEGORY) == false)
+        if (!TYPE_RECORD_CATEGORY.equals(nodeRefType) &&
+            !dictionaryService.isSubClass(nodeRefType, TYPE_RECORD_CATEGORY))
         {
             throw new AlfrescoRuntimeException("Unable to create disposition schedule on a node that is not a records management container.");
         }
@@ -485,7 +485,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         try
         {
             // Add the schedules aspect if required
-            if (nodeService.hasAspect(nodeRef, ASPECT_SCHEDULED) == false)
+            if (!nodeService.hasAspect(nodeRef, ASPECT_SCHEDULED))
             {
                 nodeService.addAspect(nodeRef, ASPECT_SCHEDULED, null);
             }
@@ -714,7 +714,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 result = true;
             }
 
-            if (result == false)
+            if (!result)
             {
                 DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa);
                 DispositionActionDefinition dad = da.getDispositionActionDefinition();
@@ -744,7 +744,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                             else
                             {
                                 result = false;
-                                if (firstComplete == false)
+                                if (!firstComplete)
                                 {
                                     break;
                                 }
@@ -815,7 +815,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     {
        DispositionAction result = null;
        List<DispositionAction> list = getCompletedDispositionActions(nodeRef);
-       if (list.isEmpty() == false)
+       if (!list.isEmpty())
        {
            // Get the last disposition action in the list
            result = list.get(list.size()-1);
@@ -876,7 +876,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
                     if (currentDispositionAction == null)
                     {
-                        if (dispositionActionDefinitions.isEmpty() == false)
+                        if (!dispositionActionDefinitions.isEmpty())
                         {
                             // The next disposition action is the first action
                             nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
@@ -899,7 +899,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
                     if (nextDispositionActionDefinition != null)
                     {
-                        if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == false)
+                        if (!nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE))
                         {
                             // Add the disposition life cycle aspect
                             nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
@@ -918,7 +918,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                             // Get the period properties value
                             QName periodProperty = nextDispositionActionDefinition.getPeriodProperty();
                             if (periodProperty != null &&
-                                RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty) == false)
+                                !RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty))
                             {
                                 // doesn't matter if the period property isn't set ... the asOfDate will get updated later
                                 // when the value of the period property is set
@@ -983,7 +983,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (FilePlanComponentKind.RECORD_FOLDER.equals(filePlanService.getFilePlanComponentKind(nodeRef)) ||
             FilePlanComponentKind.RECORD.equals(filePlanService.getFilePlanComponentKind(nodeRef)))
         {
-            if (isDisposableItemCutoff(nodeRef) == false)
+            if (!isDisposableItemCutoff(nodeRef))
             {
                 if (recordFolderService.isRecordFolder(nodeRef))
                 {

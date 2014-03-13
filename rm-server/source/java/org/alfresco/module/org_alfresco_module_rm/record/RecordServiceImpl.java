@@ -446,9 +446,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 {
                     NodeRef nodeRef = childAssocRef.getChildRef();
                     if (nodeService.exists(nodeRef)   &&
-                        nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false &&
-                        nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) == false &&
-                        nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY) == false)
+                        !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) &&
+                        !nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) &&
+                        !nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY))
                     {
                         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
                         {
@@ -535,7 +535,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
     {
         if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
-            AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
+            !AuthenticationUtil.isRunAsUserTheSystemUser() &&
             nodeService.exists(nodeRef) &&
             isRecord(nodeRef))
         {
@@ -565,8 +565,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     propertyUnchanged = EqualsHelper.nullSafeEquals(beforeValue, afterValue);
                 }
 
-                if (propertyUnchanged == false &&
-                        isPropertyEditable(nodeRef, property) == false)
+                if (!propertyUnchanged &&
+                        !isPropertyEditable(nodeRef, property))
                 {
                     // the user can't edit the record property
                     throw new ModelAccessDeniedException(
@@ -745,7 +745,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == false)
+                if (!nodeService.hasAspect(nodeRef, ASPECT_RECORD))
                 {
                     // disable delete rules
                     ruleService.disableRuleType("outbound");
@@ -867,7 +867,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // In case of filing a report the created node will be made
         // a record within the "onCreateChildAssociation" method if
         // a destination for the report has been selected.
-        if (nodeService.hasAspect(record, ASPECT_RECORD) == false)
+        if (!nodeService.hasAspect(record, ASPECT_RECORD))
         {
             // make record
             makeRecord(record);
@@ -979,7 +979,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             beforeFileRecord.get(getTypeAndApsects(record)).beforeFileRecord(record);
 
             // check whether this item is already an item or not
-            if (isRecord(record) == false)
+            if (!isRecord(record))
             {
                 // make the item a record
                 makeRecord(record);
@@ -1016,7 +1016,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
                 for (ChildAssociationRef childAssociationRef : parentAssocs)
                 {
-                    if (childAssociationRef.isPrimary() == false && childAssociationRef.getParentRef().equals(originatingLocation))
+                    if (!childAssociationRef.isPrimary() && childAssociationRef.getParentRef().equals(originatingLocation))
                     {
                         nodeService.removeChildAssociation(childAssociationRef);
                         break;
@@ -1064,7 +1064,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
                     for (ChildAssociationRef childAssociationRef : parentAssocs)
                     {
-                        if (childAssociationRef.isPrimary() == false && childAssociationRef.getParentRef().equals(originatingLocation))
+                        if (!childAssociationRef.isPrimary() && childAssociationRef.getParentRef().equals(originatingLocation))
                         {
                             nodeService.removeChildAssociation(childAssociationRef);
                             break;
@@ -1136,7 +1136,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         ParameterCheck.mandatory("record", record);
         ParameterCheck.mandatory("property", property);
 
-        if (isRecord(record) == false)
+        if (!isRecord(record))
         {
             throw new AlfrescoRuntimeException("Can not check if the property " + property.toString() + " is editable, because node reference is not a record.");
         }
@@ -1241,10 +1241,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                 result = true;
             }
-            else if (allowNonRecordEdit && allowRecordEdit == false)
+            else if (allowNonRecordEdit && !allowRecordEdit)
             {
                 // can only edit non record properties
-                if (isRecordMetadata(property) == false)
+                if (!isRecordMetadata(property))
                 {
                     if (logger.isDebugEnabled())
                     {
@@ -1261,7 +1261,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     }
                 }
             }
-            else if (allowNonRecordEdit == false && allowRecordEdit)
+            else if (!allowNonRecordEdit && allowRecordEdit)
             {
                 // can only edit record properties
                 if (isRecordMetadata(property))
@@ -1296,7 +1296,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         boolean result = ArrayUtils.contains(RECORD_MODEL_URIS, property.getNamespaceURI());
 
-        if (result == false && ArrayUtils.contains(NON_RECORD_MODEL_URIS, property.getNamespaceURI()) == false)
+        if (!result && !ArrayUtils.contains(NON_RECORD_MODEL_URIS, property.getNamespaceURI()))
         {
             PropertyDefinition def = dictionaryService.getProperty(property);
             if (def != null)
@@ -1386,7 +1386,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("typeQName", typeQName);
 
-        if (nodeService.hasAspect(nodeRef, typeQName) == false)
+        if (!nodeService.hasAspect(nodeRef, typeQName))
         {
             nodeService.addAspect(nodeRef, typeQName, null);
         }

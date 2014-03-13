@@ -96,7 +96,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
             NodeRef nextChild = nextAssoc.getChildRef();
 
             if (filePlanService.isFilePlanComponent(nextChild) &&
-                freezeService.isFrozen(nextChild) == false)
+                !freezeService.isFrozen(nextChild))
             {
                 // If the child is a record, then the VitalRecord aspect needs to be applied or updated
                 if (recordService.isRecord(nextChild))
@@ -124,7 +124,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
                 }
 
                 // Recurse down the containment hierarchy to all containers
-                if (recordService.isRecord(nextChild) == false)
+                if (!recordService.isRecord(nextChild))
                 {
                     this.propagateChangeToChildrenOf(nextChild);
                 }

@@ -110,7 +110,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
             JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
 
             // Get the details of the saved search
-            if (json.has("name") == false)
+            if (!json.has("name"))
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                                              "Mandatory 'name' parameter was not provided in request body");
@@ -127,7 +127,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
                 isPublic = json.getBoolean("public");
             }
             // NOTE: we do not need to worry about the query
-            if (json.has("params") == false)
+            if (!json.has("params"))
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                                              "Mandatory 'params' parameter was not provided in request body");

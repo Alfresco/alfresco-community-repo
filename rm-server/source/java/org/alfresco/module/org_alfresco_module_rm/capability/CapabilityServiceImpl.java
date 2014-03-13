@@ -90,7 +90,7 @@ public class CapabilityServiceImpl implements CapabilityService
             result = new HashSet<Capability>(capabilities.size());
             for (Capability capability : capabilities.values())
             {
-                if (capability.isPrivate() == false)
+                if (!capability.isPrivate())
                 {
                     result.add(capability);
                 }

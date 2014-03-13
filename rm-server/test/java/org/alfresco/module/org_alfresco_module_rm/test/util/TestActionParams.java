@@ -27,14 +27,14 @@ public class TestActionParams extends RMActionExecuterAbstractBase
 {
     public static final String NAME = "testActionParams";
     public static final String PARAM_DATE = "paramDate";
-    
+
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         Object dateValue = action.getParameterValue(PARAM_DATE);
-        if ((dateValue instanceof java.util.Date) == false)
+        if (!(dateValue instanceof java.util.Date))
         {
             throw new AlfrescoRuntimeException("Param was not a Date as expected.");
         }
-    }  
+    }
 }

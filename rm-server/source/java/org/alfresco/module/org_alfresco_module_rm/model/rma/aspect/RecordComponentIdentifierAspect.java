@@ -118,7 +118,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                 if (newIdValue != null)
                 {
                     String oldIdValue = (String)before.get(PROP_IDENTIFIER);
-                    if (oldIdValue != null && oldIdValue.equals(newIdValue) == false)
+                    if (oldIdValue != null && !oldIdValue.equals(newIdValue))
                     {
                         throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_SET_ID, nodeRef.toString()));
                     }

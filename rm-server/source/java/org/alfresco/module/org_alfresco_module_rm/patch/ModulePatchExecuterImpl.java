@@ -80,7 +80,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     public void register(ModulePatch modulePatch)
     {
         // ensure that the module patch being registered relates to the module id
-        if (getModuleId().equals(modulePatch.getModuleId()) == false)
+        if (!getModuleId().equals(modulePatch.getModuleId()))
         {
             throw new AlfrescoRuntimeException("Unable to register module patch, becuase module id is invalid.");
         }

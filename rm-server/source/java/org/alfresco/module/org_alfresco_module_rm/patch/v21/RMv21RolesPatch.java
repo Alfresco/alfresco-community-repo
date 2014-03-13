@@ -83,7 +83,7 @@ public class RMv21RolesPatch extends RMv21PatchComponent implements BeanNameAwar
             for (Role role : roles)
             {
                 String roleGroupName = role.getRoleGroupName();
-                if (authorityService.getAuthorityZones(roleGroupName).contains(RMAuthority.ZONE_APP_RM) == false)
+                if (!authorityService.getAuthorityZones(roleGroupName).contains(RMAuthority.ZONE_APP_RM))
                 {
                     if (logger.isDebugEnabled())
                     {
@@ -91,7 +91,7 @@ public class RMv21RolesPatch extends RMv21PatchComponent implements BeanNameAwar
                     }
 
                     addAuthorityToZone(roleGroupName);
-                    if (parentAddedToZone == false)
+                    if (!parentAddedToZone)
                     {
                         String allRolesGroupName = filePlanRoleService.getAllRolesContainerGroup(filePlan);
                         addAuthorityToZone(allRolesGroupName);

@@ -501,7 +501,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 }
             }
 
-            if (auditNodeAlreadyExists == false)
+            if (!auditNodeAlreadyExists)
             {
                 // Create a new auditNode if it doesn't already exist
                 RMAuditNode auditedNode = new RMAuditNode();
@@ -543,7 +543,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         }
 
         // Filter out any properties to be audited if specified in the Spring configuration.
-        if (ignoredAuditProperties.isEmpty() == false)
+        if (!ignoredAuditProperties.isEmpty())
         {
             removeAuditProperties(ignoredAuditProperties, propertiesBefore, propertiesAfter);
         }
@@ -644,7 +644,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 NodeRef nodeRef = auditedNode.getNodeRef();
 
                 // If the node is gone, then do nothing
-                if (nodeRef != null && nodeService.exists(nodeRef) == false)
+                if (nodeRef != null && !nodeService.exists(nodeRef))
                 {
                     continue;
                 }

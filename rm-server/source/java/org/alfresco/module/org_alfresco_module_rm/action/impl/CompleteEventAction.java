@@ -64,7 +64,7 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         if (nodeService.exists(actionedUponNodeRef) &&
-            freezeService.isFrozen(actionedUponNodeRef) == false)
+            !freezeService.isFrozen(actionedUponNodeRef))
         {
             String eventName = (String)action.getParameterValue(PARAM_EVENT_NAME);
             String eventCompletedBy = (String)action.getParameterValue(PARAM_EVENT_COMPLETED_BY);

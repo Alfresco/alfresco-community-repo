@@ -37,7 +37,7 @@ private boolean checkChildren = false;
     public boolean evaluate(NodeRef nodeRef)
     {
         boolean result = freezeService.isFrozen(nodeRef);
-        if (result == false && checkChildren)
+        if (!result && checkChildren)
         {
             result = freezeService.hasFrozenChildren(nodeRef);
         }

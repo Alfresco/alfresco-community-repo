@@ -136,7 +136,7 @@ public class RmEventsPost extends RMEventBase
     {
         boolean canCreateEvent = true;
 
-        if (rmEventService.canCreateEvent(eventDisplayLabel, eventName) == false)
+        if (!rmEventService.canCreateEvent(eventDisplayLabel, eventName))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                     "Cannot create event. An event with the display label '"

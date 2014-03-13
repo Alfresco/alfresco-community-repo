@@ -149,7 +149,7 @@ public class CapabilitiesGet extends DeclarativeWebScript
             for (Map.Entry<Capability, AccessStatus> entry : map.entrySet())
             {
                 AccessStatus accessStatus = entry.getValue();
-                if (AccessStatus.DENIED.equals(accessStatus) == false)
+                if (!AccessStatus.DENIED.equals(accessStatus))
                 {
                     Capability capability = entry.getKey();
                     list.add(capability.getName());

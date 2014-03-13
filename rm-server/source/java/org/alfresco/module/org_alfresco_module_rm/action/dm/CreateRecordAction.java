@@ -126,7 +126,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
 
-        if (nodeService.exists(actionedUponNodeRef) == false)
+        if (!nodeService.exists(actionedUponNodeRef))
         {
             // do not create record if the actioned upon node does not exist!
             if (logger.isDebugEnabled())
@@ -134,7 +134,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                 logger.debug("Can not create record, because " + actionedUponNodeRef.toString() + " does not exist.");
             }
         }
-        else if (dictionaryService.isSubClass(nodeService.getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT) == false)
+        else if (!dictionaryService.isSubClass(nodeService.getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT))
         {
             // TODO eventually we should support other types .. either as record folders or as composite records
             if (logger.isDebugEnabled())
@@ -203,7 +203,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
             else
             {
                 // verify that the provided file plan is actually a file plan
-                if (filePlanService.isFilePlan(filePlan) == false)
+                if (!filePlanService.isFilePlan(filePlan))
                 {
                     if (logger.isDebugEnabled())
                     {

@@ -91,11 +91,11 @@ public class CreateCapability extends DeclarativeCapability
         }
         if (getFilePlanService().isFilePlanComponent(destination))
         {
-            if ((assocType == null) || assocType.equals(ContentModel.ASSOC_CONTAINS) == false)
+            if ((assocType == null) || !assocType.equals(ContentModel.ASSOC_CONTAINS))
             {
                 if (linkee == null)
                 {
-                    if (recordService.isRecord(destination) && recordService.isDeclared(destination) == false &&
+                    if (recordService.isRecord(destination) && !recordService.isDeclared(destination) &&
                             permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
                     {
                         return AccessDecisionVoter.ACCESS_GRANTED;
@@ -105,7 +105,7 @@ public class CreateCapability extends DeclarativeCapability
                 {
                     if (recordService.isRecord(linkee) &&
                             recordService.isRecord(destination) &&
-                            recordService.isDeclared(destination) == false &&
+                            !recordService.isDeclared(destination) &&
                             permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
                     {
                         return AccessDecisionVoter.ACCESS_GRANTED;

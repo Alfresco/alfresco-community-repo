@@ -124,7 +124,7 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
                 String[] split = ((String)key).split("\\.");
                 int index = split.length - 2;
                 String securityBeanName = split[index] + SECURITY_BEAN_POSTFIX;
-                if (securityBeanNameCache.contains(securityBeanName) == false && beanFactory.containsBean(securityBeanName))
+                if (!securityBeanNameCache.contains(securityBeanName) && beanFactory.containsBean(securityBeanName))
                 {
                     if (logger.isDebugEnabled())
                     {

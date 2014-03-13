@@ -94,7 +94,7 @@ public class TestActionPropertySubs extends RMActionExecuterAbstractBase
 
     private void assertEquals(String expected, String actual)
     {
-        if (expected.equals(actual) == false)
+        if (!expected.equals(actual))
         {
             throw new AlfrescoRuntimeException("Expected value " + expected + " does not match actual value " + actual);
         }

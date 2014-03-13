@@ -242,7 +242,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
             for (EventCompletionDetails event : events)
             {
                 RecordsManagementEvent rmEvent = recordsManagementEventService.getEvent(event.getEventName());
-                if (event.isEventComplete() == false &&
+                if (!event.isEventComplete() &&
                     rmEvent.getType().equals(getName()))
                 {
                     // Complete the event

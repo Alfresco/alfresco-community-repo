@@ -54,7 +54,7 @@ public class HasEventsCapabilityCondition extends AbstractCapabilityCondition
             DispositionAction da = dispositionService.getNextDispositionAction(nodeRef);
             if (da != null)
             {
-                result = (da.getEventCompletionDetails().isEmpty() == false);
+                result = (!da.getEventCompletionDetails().isEmpty());
             }
         }
 

@@ -160,7 +160,7 @@ public class RmActionPost extends DeclarativeWebScript
       boolean firstTime = true;
       for (NodeRef targetNodeRef : targetNodeRefs)
       {
-         if (nodeService.exists(targetNodeRef) == false)
+         if (!nodeService.exists(targetNodeRef))
          {
             throw new WebScriptException(Status.STATUS_NOT_FOUND,
                   "The targetNode does not exist (" + targetNodeRef.toString() + ")");

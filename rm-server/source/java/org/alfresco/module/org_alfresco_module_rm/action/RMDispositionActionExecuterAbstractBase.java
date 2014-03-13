@@ -116,7 +116,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
         if (di != null)
         {
             // Check the eligibility of the action
-            if (checkEligibility(actionedUponNodeRef) == false ||
+            if (!checkEligibility(actionedUponNodeRef) ||
                 dispositionService.isNextDispositionActionEligible(actionedUponNodeRef))
             {
                 if (di.isRecordLevelDisposition())
@@ -239,7 +239,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
         }
 
         // Check the node has the disposition schedule aspect applied
-        if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == false)
+        if (!nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE))
         {
             if (throwError)
             {
@@ -267,7 +267,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
                 }
             }
             String actionName = (String) nodeService.getProperty(nextDispositionAction, PROP_DISPOSITION_ACTION);
-            if (actionName == null || actionName.equals(getName()) == false)
+            if (actionName == null || !actionName.equals(getName()))
             {
                 if (throwError)
                 {

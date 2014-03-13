@@ -88,14 +88,14 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
     protected void executePatch() throws Throwable
     {
         // check that the rm config root has been correctly bootstrapped
-        if (nodeService.exists(RM_CONFIG) == false)
+        if (!nodeService.exists(RM_CONFIG))
         {
             // we don't need to do anything
             return;
         }
 
         // check that the behavior scripts folder exists
-        if (nodeService.exists(newBehaviorScriptsFolder) == false)
+        if (!nodeService.exists(newBehaviorScriptsFolder))
         {
             if (logger.isDebugEnabled())
             {

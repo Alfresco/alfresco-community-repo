@@ -115,12 +115,12 @@ public class UndoEventAction extends RMActionExecuterAbstractBase
         List<EventCompletionDetails> events = da.getEventCompletionDetails();
 
         boolean eligible = false;
-        if (da.getDispositionActionDefinition().eligibleOnFirstCompleteEvent() == false)
+        if (!da.getDispositionActionDefinition().eligibleOnFirstCompleteEvent())
         {
             eligible = true;
             for (EventCompletionDetails event : events)
             {
-                if (event.isEventComplete() == false)
+                if (!event.isEventComplete())
                 {
                     eligible = false;
                     break;

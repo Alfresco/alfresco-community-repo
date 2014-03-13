@@ -131,14 +131,14 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
 
         // assert that the policy and type have been set!!
         ParameterCheck.mandatory("policy", policy);
-        if (behaviour.isService() == false)
+        if (!behaviour.isService())
         {
             ParameterCheck.mandatory("type", type);
         }
 
         if (logger.isDebugEnabled())
         {
-            if (behaviour.isService() == false)
+            if (!behaviour.isService())
             {
                 logger.debug("   ... binding " + behaviour.kind() + " behaviour for " + beanName + "." + method.getName() +
                                    " for policy " + policy.toString() +
@@ -155,7 +155,7 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
         JavaBehaviour javaBehaviour = new JavaBehaviour(bean, method.getName(), behaviour.notificationFrequency());
 
         // determine whether we should register the behaviour
-        if (bean instanceof BehaviourRegistry && behaviour.name().isEmpty() == false)
+        if (bean instanceof BehaviourRegistry && !behaviour.name().isEmpty())
         {
             if (logger.isDebugEnabled())
             {
@@ -168,7 +168,7 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
         // deal with class behaviours
         if (BehaviourKind.CLASS.equals(behaviour.kind()))
         {
-            if (behaviour.isService() == false)
+            if (!behaviour.isService())
             {
                 // bind class behaviour for given type
                 policyComponent.bindClassBehaviour(policy, type, javaBehaviour);
@@ -182,7 +182,7 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
         // deal with association behaviours
         else if (BehaviourKind.ASSOCIATION.equals(behaviour.kind()))
         {
-            if (behaviour.isService() == false)
+            if (!behaviour.isService())
             {
                 // bind association behaviour for given type and assoc type
                 policyComponent.bindAssociationBehaviour(policy,
@@ -229,7 +229,7 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
     private QName resolveType(BehaviourBean behaviourBean, Behaviour behaviour)
     {
         QName type = null;
-        if (behaviour.isService() == false)
+        if (!behaviour.isService())
         {
             if (behaviour.type().isEmpty())
             {

@@ -106,7 +106,7 @@ public class RMv22CapabilityPatch extends AbstractModulePatch
                 Set<Capability> capabilities = role.getCapabilities();
 
                 // only update if the capability is missing
-                if (capabilities.contains(capability) == false)
+                if (!capabilities.contains(capability))
                 {
                     if (logger.isDebugEnabled())
                     {

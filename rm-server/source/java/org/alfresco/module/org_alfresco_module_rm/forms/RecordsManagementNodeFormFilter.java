@@ -295,7 +295,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
         List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         for (FieldDefinition fieldDef : fieldDefs)
         {
-            if (fieldDef.isProtectedField() == false)
+            if (!fieldDef.isProtectedField())
             {
                 String name = fieldDef.getName();
                 String prefixName = null;
@@ -314,7 +314,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                 }
 
                 QName qname = QName.createQName(prefixName, namespaceService);
-                if (recordService.isPropertyEditable(nodeRef, qname) == false)
+                if (!recordService.isPropertyEditable(nodeRef, qname))
                 {
                     if (logger.isDebugEnabled())
                     {

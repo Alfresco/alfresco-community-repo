@@ -254,7 +254,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     private boolean checkCapabilities(NodeRef nodeRef)
     {
         boolean result = true;
-        if (capabilities != null && capabilities.isEmpty() == false)
+        if (capabilities != null && !capabilities.isEmpty())
         {
             Map<Capability, AccessStatus> accessStatus = capabilityService.getCapabilitiesAccessState(nodeRef, capabilities);
             for (AccessStatus value : accessStatus.values())

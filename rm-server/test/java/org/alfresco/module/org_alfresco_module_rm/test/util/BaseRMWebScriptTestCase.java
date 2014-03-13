@@ -341,7 +341,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 
     protected void createUser(String userName)
     {
-        if (authenticationService.authenticationExists(userName) == false)
+        if (!authenticationService.authenticationExists(userName))
         {
             authenticationService.createAuthentication(userName, "PWD".toCharArray());
 
@@ -367,7 +367,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 
     protected void createGroup(String groupName)
     {
-        if (authorityService.authorityExists(groupName) == false)
+        if (!authorityService.authorityExists(groupName))
         {
             authorityService.createAuthority(AuthorityType.GROUP, groupName);
         }

@@ -63,7 +63,7 @@ public class RmEventGet extends DeclarativeWebScript
         }
 
         // Check the event exists
-        if (rmEventService.existsEvent(eventName) == false)
+        if (!rmEventService.existsEvent(eventName))
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "The event " + eventName + " does not exist.");
         }

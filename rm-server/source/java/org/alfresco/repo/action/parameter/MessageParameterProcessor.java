@@ -24,7 +24,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Message parameter processor.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -38,10 +38,10 @@ public class MessageParameterProcessor extends ParameterProcessor
     {
         // the default position is to return the value un-changed
         String result = value;
-        
+
         // strip the processor name from the value
-        value = stripName(value);             
-        if (value.isEmpty() == false)
+        value = stripName(value);
+        if (!value.isEmpty())
         {
             result = I18NUtil.getMessage(value);
             if (result == null)
@@ -49,7 +49,7 @@ public class MessageParameterProcessor extends ParameterProcessor
                 throw new AlfrescoRuntimeException("The message parameter processor could not resolve the message for the id " + value);
             }
         }
-        
+
         return result;
     }
 }

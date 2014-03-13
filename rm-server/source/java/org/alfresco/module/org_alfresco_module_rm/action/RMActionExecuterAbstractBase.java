@@ -506,12 +506,12 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
         List<EventCompletionDetails> events = nextAction.getEventCompletionDetails();
 
         boolean eligible = false;
-        if (nextAction.getDispositionActionDefinition().eligibleOnFirstCompleteEvent() == false)
+        if (!nextAction.getDispositionActionDefinition().eligibleOnFirstCompleteEvent())
         {
             eligible = true;
             for (EventCompletionDetails event : events)
             {
-                if (event.isEventComplete() == false)
+                if (!event.isEventComplete())
                 {
                     eligible = false;
                     break;

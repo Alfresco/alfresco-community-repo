@@ -26,31 +26,31 @@ import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * Custom implementation of module component importer
- * 
+ *
  * @author Roy Wetherall
  * @since 2.0
  */
 public class BootstrapImporterModuleComponent extends ImporterModuleComponent
 {
     private static final String CONFIG_NODEID = "rm_config_folder";
-    
+
     private NodeService nodeService;
-    
+
     private ModulePatchExecuter modulePatchExecuter;
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
-    public void setModulePatchExecuter(ModulePatchExecuter modulePatchExecuter) 
+
+    public void setModulePatchExecuter(ModulePatchExecuter modulePatchExecuter)
     {
 		this.modulePatchExecuter = modulePatchExecuter;
 	}
-    
+
     /**
      * Need to check whether this module has already been executed.
-     * 
+     *
      * @see org.alfresco.repo.module.ImporterModuleComponent#executeInternal()
      */
     @Override
@@ -58,11 +58,11 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
     {
         try
         {
-            NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID); 
-            if (nodeService.exists(nodeRef) == false)
+            NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
+            if (!nodeService.exists(nodeRef))
             {
                 super.executeInternal();
-                
+
                 // init module schema number
                 modulePatchExecuter.initSchemaVersion();
             }
@@ -72,5 +72,5 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
             exception.printStackTrace();
             throw exception;
         }
-    }    
+    }
 }

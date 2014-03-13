@@ -79,7 +79,7 @@ public class RMv22ReportTemplatePatch extends AbstractModulePatch
     {
         NodeRef transferReport = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TRANSFER_REPORT);
         NodeRef destructionReport = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DESTRUCTION_REPORT);
-        if (nodeService.exists(transferReport) == false && nodeService.exists(destructionReport))
+        if (!nodeService.exists(transferReport) && nodeService.exists(destructionReport))
         {
             NodeRef parent = nodeService.getPrimaryParent(destructionReport).getParentRef();
 

@@ -178,7 +178,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
         {
             properties = new HashMap<QName, Serializable>(1);
         }
-        if (properties.containsKey(ContentModel.PROP_NAME) == false)
+        if (!properties.containsKey(ContentModel.PROP_NAME))
         {
             properties.put(ContentModel.PROP_NAME, name);
         }

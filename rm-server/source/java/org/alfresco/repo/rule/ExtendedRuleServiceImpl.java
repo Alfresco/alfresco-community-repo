@@ -166,7 +166,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
             	isFilePlanComponentRule(rule))
             {
             	// ignore and
-                if (isIgnoredType(typeQName) == false)
+                if (!isIgnoredType(typeQName))
     	        {
     	        	if (runAsRmAdmin)
     	            {

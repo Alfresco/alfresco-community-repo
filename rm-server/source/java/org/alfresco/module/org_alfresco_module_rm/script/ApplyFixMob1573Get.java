@@ -98,7 +98,7 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
         ContentReader reader = this.contentService.getReader(RM_CUSTOM_MODEL_NODE_REF,
                                                              ContentModel.TYPE_CONTENT);
 
-        if (reader.exists() == false) {throw new AlfrescoRuntimeException("RM CustomModel has no content.");}
+        if (!reader.exists()) {throw new AlfrescoRuntimeException("RM CustomModel has no content.");}
 
         InputStream contentIn = null;
         M2Model deserializedModel = null;

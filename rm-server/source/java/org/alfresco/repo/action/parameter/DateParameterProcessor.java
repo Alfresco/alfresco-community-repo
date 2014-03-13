@@ -75,7 +75,7 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
         // strip the processor name from the value
         value = stripName(value);
 
-        if (value.isEmpty() == false)
+        if (!value.isEmpty())
         {
             String[] values = value.split("\\.", 2);
             String field = values[0].trim();

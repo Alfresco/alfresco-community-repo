@@ -371,7 +371,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
                 {
                     NodeRef nodeRef = childAssocRef.getChildRef();
                     QName type = nodeService.getType(nodeRef);
-                    while (type != null && ContentModel.TYPE_CMOBJECT.equals(type) == false)
+                    while (type != null && !ContentModel.TYPE_CMOBJECT.equals(type))
                     {
                         if (isCustomisable(type))
                         {
@@ -435,7 +435,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 
         // Check the nodes hierarchy for customisable types
         QName type = nodeService.getType(nodeRef);
-        while (type != null && ContentModel.TYPE_CMOBJECT.equals(type) == false)
+        while (type != null && !ContentModel.TYPE_CMOBJECT.equals(type))
         {
             // Add to the list if the type is customisable
             if (isCustomisable(type))
@@ -755,7 +755,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
                                              boolean isProtected,
                                              QName lovConstraint) throws CustomMetadataException
     {
-        if (isCustomisable(aspectName) == false)
+        if (!isCustomisable(aspectName))
         {
             throw new NotCustomisableMetadataException(aspectName.toPrefixString(namespaceService));
         }
@@ -851,7 +851,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         if (newPropQName != null)
         {
            PropertyDefinition newPropDefn = dictionaryService.getProperty(newPropQName);
-           if (newPropDefn != null && propDefn.equals(newPropDefn) == false)
+           if (newPropDefn != null && !propDefn.equals(newPropDefn))
            {
               // The requested QName is already in use
               String propIdAsString = newPropQName.toPrefixString(namespaceService);
@@ -1064,7 +1064,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             }
         }
 
-        if (found == false)
+        if (!found)
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PROP_EXIST, propQNameAsString));
         }
@@ -1474,8 +1474,8 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 
         String type = customConstraint.getType();
         if (type == null ||
-            (type.equals(CUSTOM_CONSTRAINT_TYPE) == false &&
-             type.equals(CAPATIBILITY_CUSTOM_CONTRAINT_TYPE) == false))
+            (!type.equals(CUSTOM_CONSTRAINT_TYPE) &&
+             !type.equals(CAPATIBILITY_CUSTOM_CONTRAINT_TYPE)))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNEXPECTED_TYPE_CONSTRAINT, type, constraintNameAsPrefixString, CUSTOM_CONSTRAINT_TYPE));
         }
@@ -1607,7 +1607,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         ContentReader reader = this.contentService.getReader(modelNodeRef,
                                                              ContentModel.TYPE_CONTENT);
 
-        if (reader.exists() == false) {throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CUSTOM_MODEL_NO_CONTENT, modelNodeRef.toString()));}
+        if (!reader.exists()) {throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CUSTOM_MODEL_NO_CONTENT, modelNodeRef.toString()));}
 
         InputStream contentIn = null;
         M2Model deserializedModel = null;

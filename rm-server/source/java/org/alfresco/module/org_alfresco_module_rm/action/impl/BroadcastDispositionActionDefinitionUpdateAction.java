@@ -69,7 +69,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION.equals(nodeService.getType(actionedUponNodeRef)) == false)
+        if (!RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION.equals(nodeService.getType(actionedUponNodeRef)))
         {
             return;
         }
@@ -279,7 +279,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             nextActionEvents.add(eventName);
 
             // if the event has been removed delete from next action
-            if (stepEvents != null && stepEvents.contains(event.getEventName()) == false)
+            if (stepEvents != null && !stepEvents.contains(event.getEventName()))
             {
                 // remove the child association representing the event
                 nodeService.removeChild(nextAction.getNodeRef(), event.getNodeRef());

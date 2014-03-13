@@ -89,9 +89,9 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
     {
         boolean result = false;
         if (nodeService.exists(actionedUponNodeRef) &&
-                freezeService.isFrozen(actionedUponNodeRef) == false &&
+                !freezeService.isFrozen(actionedUponNodeRef) &&
                 recordService.isRecord(actionedUponNodeRef) &&
-                recordService.isDeclared(actionedUponNodeRef) == false)
+                !recordService.isDeclared(actionedUponNodeRef))
         {
             result = true;
         }

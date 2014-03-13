@@ -88,7 +88,7 @@ public class RmRolePut extends RoleDeclarativeWebScript
             }
 
             // Check that the role exists
-            if (filePlanRoleService.existsRole(filePlan, roleParam) == false)
+            if (!filePlanRoleService.existsRole(filePlan, roleParam))
             {
                 throw new WebScriptException(Status.STATUS_NOT_FOUND,
                                              "The role " + roleParam + " does not exist on the records managment root " + filePlan);

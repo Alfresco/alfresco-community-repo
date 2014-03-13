@@ -133,7 +133,7 @@ public class SavedSearchDetails extends ReportDetails
     	    }
 
     	    // Get the name
-    	    if (search.has(NAME) == false)
+    	    if (!search.has(NAME))
     	    {
     	        throw new AlfrescoRuntimeException("Can not create saved search details from json, because required name is not present. " + jsonString);
     	    }
@@ -153,7 +153,7 @@ public class SavedSearchDetails extends ReportDetails
 
     	    // Get the query
     	    String query = null;
-    	    if (search.has(SEARCH) == false)
+    	    if (!search.has(SEARCH))
     	    {
     	        // We are probably dealing with a "old" style saved search
     	        if (search.has(PARAMS))

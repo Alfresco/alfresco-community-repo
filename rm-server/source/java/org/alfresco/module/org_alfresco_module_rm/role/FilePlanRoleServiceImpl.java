@@ -214,7 +214,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                     //In a multi tenant store we need to initialize the rm config if it has been done yet
                     NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
-                    if (nodeService.exists(nodeRef) == false)
+                    if (!nodeService.exists(nodeRef))
                     {
                         bootstrapImporterModule.execute();
                     }
@@ -385,7 +385,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                             String user = AuthenticationUtil.getFullyAuthenticatedUser();
                             authorityService.addAuthority(role.getRoleGroupName(), user);
 
-                            if (filePlanAuthenticationService.getRmAdminUserName().equals(user) == false)
+                            if (!filePlanAuthenticationService.getRmAdminUserName().equals(user))
                             {
                                 // Create the RM Admin User if it does not already exist
                                 createRMAdminUser();
@@ -485,7 +485,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 Set<String> roleAuthorities = authorityService.getAllAuthoritiesInZone(getZoneName(rmRootNode), AuthorityType.GROUP);
                 for (String roleAuthority : roleAuthorities)
                 {
-                    if (includeSystemRoles || isSystemRole(roleAuthority) == false)
+                    if (includeSystemRoles || !isSystemRole(roleAuthority))
                     {
                         String groupShortName = authorityService.getShortName(roleAuthority);
                         String name = getShortRoleName(groupShortName, rmRootNode);
@@ -531,7 +531,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 for (String roleAuthority : roleAuthorities)
                 {
                     Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, roleAuthority, false);
-                    if (users.contains(user) && (includeSystemRoles || isSystemRole(roleAuthority) == false))
+                    if (users.contains(user) && (includeSystemRoles || !isSystemRole(roleAuthority)))
                     {
                         String groupShortName = authorityService.getShortName(roleAuthority);
                         String name = getShortRoleName(groupShortName, rmRootNode);
@@ -745,7 +745,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         {
             public Role doWork() throws Exception
             {
-                if (existsRole(rmRootNode, role) == false)
+                if (!existsRole(rmRootNode, role))
                 {
                     throw new AlfrescoRuntimeException("Unable to update role " + role + ", because it does not exist.");
                 }
@@ -868,7 +868,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         {
             public Void doWork() throws Exception
             {
-                if (getAllAssignedToRole(filePlan, role).contains(authorityName) == false)
+                if (!getAllAssignedToRole(filePlan, role).contains(authorityName))
                 {
                     String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, filePlan));
                     authorityService.addAuthority(roleAuthority, authorityName);
@@ -918,7 +918,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         String firstName = I18NUtil.getMessage(MSG_FIRST_NAME);
         String lastName = I18NUtil.getMessage(MSG_LAST_NAME);
 
-        if (authenticationService.authenticationExists(user) == false)
+        if (!authenticationService.authenticationExists(user))
         {
             if (logger.isDebugEnabled())
             {

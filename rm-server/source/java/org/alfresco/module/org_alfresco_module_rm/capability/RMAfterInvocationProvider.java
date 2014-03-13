@@ -289,7 +289,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             {
                 throw new AccessDeniedException("Access Denied");
             }
-            else if (cad.parent == false && childResult == AccessDecisionVoter.ACCESS_DENIED)
+            else if (!cad.parent && childResult == AccessDecisionVoter.ACCESS_DENIED)
             {
                 throw new AccessDeniedException("Access Denied");
             }
@@ -525,7 +525,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             // All permission checks must pass
             inclusionMask.set(i, true);
 
-            if (nodeService.exists(returnedObject.getNodeRef(i)) == false)
+            if (!nodeService.exists(returnedObject.getNodeRef(i)))
             {
             	inclusionMask.set(i, false);
             }

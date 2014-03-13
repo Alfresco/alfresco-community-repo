@@ -402,7 +402,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     private NodeRef getFilePlanRootContainer(NodeRef filePlan, String containerName)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
-        if (isFilePlan(filePlan) == false)
+        if (!isFilePlan(filePlan))
         {
             throw new AlfrescoRuntimeException("Unable to get the container " + containerName  + ", because passed node is not a file plan.");
         }
@@ -460,7 +460,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     private NodeRef createFilePlanRootContainer(NodeRef filePlan, QName containerType, String containerName)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
-        if (isFilePlan(filePlan) == false)
+        if (!isFilePlan(filePlan))
         {
             throw new AlfrescoRuntimeException("Unable to create file plan root container, because passed node is not a file plan.");
         }
@@ -480,7 +480,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                         properties).getChildRef();
 
 
-   //     if (inheritPermissions == false)
+   //     if (!inheritPermissions)
    //     {
             // set inheritance to false
             getPermissionService().setInheritParentPermissions(container, false);
@@ -519,8 +519,8 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         }
 
         // Check that the passed type is a sub-type of rma:filePlan
-        if (TYPE_FILE_PLAN.equals(type) == false &&
-            dictionaryService.isSubClass(type, TYPE_FILE_PLAN) == false)
+        if (!TYPE_FILE_PLAN.equals(type) &&
+            !dictionaryService.isSubClass(type, TYPE_FILE_PLAN))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ROOT_TYPE, type.toString()));
         }
@@ -593,14 +593,14 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      */
     private void getNodeRefPathRecursive(NodeRef nodeRef, LinkedList<NodeRef> nodeRefPath)
     {
-        if (isFilePlanComponent(nodeRef) == false)
+        if (!isFilePlanComponent(nodeRef))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_INVALID_RM_NODE, ASPECT_FILE_PLAN_COMPONENT.toString()));
         }
         // Prepend it to the path
         nodeRefPath.addFirst(nodeRef);
         // Are we not at the root
-        if (isFilePlan(nodeRef) == false)
+        if (!isFilePlan(nodeRef))
         {
             ChildAssociationRef assocRef = nodeService.getPrimaryParent(nodeRef);
             if (assocRef == null)
@@ -642,15 +642,15 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 
         // Check that the parent is a container
         QName parentType = nodeService.getType(parent);
-        if (TYPE_RECORDS_MANAGEMENT_CONTAINER.equals(parentType) == false &&
-            dictionaryService.isSubClass(parentType, TYPE_RECORDS_MANAGEMENT_CONTAINER) == false)
+        if (!TYPE_RECORDS_MANAGEMENT_CONTAINER.equals(parentType) &&
+            !dictionaryService.isSubClass(parentType, TYPE_RECORDS_MANAGEMENT_CONTAINER))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CONTAINER_PARENT_TYPE, parentType.toString()));
         }
 
         // Check that the the provided type is a sub-type of rm:recordCategory
-        if (TYPE_RECORD_CATEGORY.equals(type) == false &&
-            dictionaryService.isSubClass(type, TYPE_RECORD_CATEGORY) == false)
+        if (!TYPE_RECORD_CATEGORY.equals(type) &&
+            !dictionaryService.isSubClass(type, TYPE_RECORD_CATEGORY))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CONTAINER_TYPE, type.toString()));
         }
@@ -726,7 +726,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("container", container);
 
         // Check we have a container in our hands
-        if (isRecordCategory(container) == false)
+        if (!isRecordCategory(container))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CONTAINER_EXPECTED));
         }

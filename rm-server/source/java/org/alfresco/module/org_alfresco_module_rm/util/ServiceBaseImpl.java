@@ -149,7 +149,7 @@ public class ServiceBaseImpl implements RecordsManagementModel
     protected int getNextCount(NodeRef nodeRef)
     {
         int counter = 0;
-        if (nodeService.hasAspect(nodeRef, ASPECT_COUNTABLE) == false)
+        if (!nodeService.hasAspect(nodeRef, ASPECT_COUNTABLE))
         {
             PropertyMap props = new PropertyMap(1);
             props.put(PROP_COUNT, 1);

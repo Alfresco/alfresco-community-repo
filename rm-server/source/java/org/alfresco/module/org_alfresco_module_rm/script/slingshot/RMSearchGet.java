@@ -331,7 +331,7 @@ public class RMSearchGet extends DeclarativeWebScript
             for (Map.Entry<QName, Serializable> entry : nodeProperties.entrySet())
             {
                 QName qName = entry.getKey().getPrefixedQName(namespaceService);
-                if (NamespaceService.SYSTEM_MODEL_1_0_URI.equals(qName.getNamespaceURI()) == false)
+                if (!NamespaceService.SYSTEM_MODEL_1_0_URI.equals(qName.getNamespaceURI()))
                 {
                     String prefixName = qName.getPrefixString().replace(":", "_");
                     Serializable value = entry.getValue();

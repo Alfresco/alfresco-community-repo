@@ -25,17 +25,17 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 
 /**
  * Records management job executer base class.
- * 
+ *
  * @author Roy Wetherall
  */
-public abstract class RecordsManagementJobExecuter implements RecordsManagementModel                       
+public abstract class RecordsManagementJobExecuter implements RecordsManagementModel
 {
     /** Retrying transaction helper */
     protected RetryingTransactionHelper retryingTransactionHelper;
-    
+
     /** Repository state helper */
     protected RepositoryState repositoryState;
-    
+
     /**
      * @param retryingTransactionHelper retrying transaction helper
      */
@@ -43,22 +43,22 @@ public abstract class RecordsManagementJobExecuter implements RecordsManagementM
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
-    
+
     /**
      * @param repositoryState   repository state helper component
      */
-    public void setRepositoryState(RepositoryState repositoryState) 
+    public void setRepositoryState(RepositoryState repositoryState)
     {
         this.repositoryState = repositoryState;
     }
-    
+
     /**
      * Executes the jobs work.
      */
     public void execute()
     {
         // jobs not allowed to execute unless bootstrap is complete
-        if (repositoryState.isBootstrapping() == false)
+        if (!repositoryState.isBootstrapping())
         {
             retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
             {
@@ -66,13 +66,13 @@ public abstract class RecordsManagementJobExecuter implements RecordsManagementM
                 public Void execute() throws Throwable
                 {
                     executeImpl();
-                    
+
                     return null;
                 }
             }, false, true);
         }
     }
-    
+
     /**
      * Jobs work implementation.
      */

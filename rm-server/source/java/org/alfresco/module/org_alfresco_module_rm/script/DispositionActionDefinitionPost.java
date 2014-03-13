@@ -40,7 +40,7 @@ import org.json.JSONTokener;
 
 /**
  * Implementation for Java backed webscript to create a new dispositon action definition.
- * 
+ *
  * @author Gavin Cornwell
  */
 public class DispositionActionDefinitionPost extends DispositionAbstractBase
@@ -55,14 +55,14 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
         DispositionSchedule schedule = parseRequestForSchedule(req);
 
         // retrieve the rest of the post body and create the action
-        //       definition 
+        //       definition
         JSONObject json = null;
         DispositionActionDefinition actionDef = null;
         try
         {
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
             actionDef = createActionDefinition(json, schedule);
-        } 
+        }
         catch (IOException iox)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
@@ -73,16 +73,16 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                         "Could not parse JSON from req.", je);
         }
-        
+
         // create model object with just the action data
         Map<String, Object> model = new HashMap<String, Object>(1);
         model.put("action", createActionDefModel(actionDef, req.getURL() + "/" + actionDef.getId()));
         return model;
     }
-    
+
     /**
      * Creates a dispositionActionDefinition node in the repo.
-     * 
+     *
      * @param json The JSON to use to create the action definition
      * @param schedule The DispositionSchedule the action is for
      * @return The DispositionActionDefinition representing the new action definition
@@ -91,45 +91,45 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
               DispositionSchedule schedule) throws JSONException
     {
         // extract the data from the JSON request
-        if (json.has("name") == false)
+        if (!json.has("name"))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                     "Mandatory 'name' parameter was not provided in request body");
         }
-        
+
         // create the properties for the action definition
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(8);
         String name = json.getString("name");
         props.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, name);
-        
+
         if (json.has("description"))
         {
             props.put(RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION, json.getString("description"));
         }
-        
+
         if (json.has("period"))
         {
             props.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD, json.getString("period"));
         }
-        
+
         if (json.has("periodProperty"))
         {
             QName periodProperty = QName.createQName(json.getString("periodProperty"), this.namespaceService);
             props.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY, periodProperty);
         }
-        
+
         if (json.has("eligibleOnFirstCompleteEvent"))
         {
-            props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION, 
+            props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION,
                         json.getBoolean("eligibleOnFirstCompleteEvent") ? "or" : "and");
         }
-        
+
         if (json.has("location"))
         {
-            props.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION, 
+            props.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,
                       json.getString("location"));
         }
-        
+
         if (json.has("events"))
         {
             JSONArray events = json.getJSONArray("events");
@@ -140,7 +140,7 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
             }
             props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable)eventsList);
         }
-        
+
         // add the action definition to the schedule
         return this.dispositionService.addDispositionActionDefinition(schedule, props);
     }

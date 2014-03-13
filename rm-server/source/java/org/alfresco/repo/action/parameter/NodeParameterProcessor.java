@@ -119,7 +119,7 @@ public class NodeParameterProcessor extends ParameterProcessor implements Parame
 
         // strip the processor name from the value
         value = stripName(value);
-        if (value.isEmpty() == false)
+        if (!value.isEmpty())
         {
             QName qname = QName.createQName(value, namespaceService);
 

@@ -66,7 +66,7 @@ public class DOD5015RecordAspect extends    BaseBehaviourBean
     public void onAddAspect(NodeRef nodeRef, QName aspect)
     {
         if (nodeService.exists(nodeRef) &&
-            nodeService.hasAspect(nodeRef, ASPECT_DOD_5015_RECORD) == false &&
+            !nodeService.hasAspect(nodeRef, ASPECT_DOD_5015_RECORD) &&
             isDODFilePlan(nodeRef))
         {
             nodeService.addAspect(nodeRef, ASPECT_DOD_5015_RECORD, null);

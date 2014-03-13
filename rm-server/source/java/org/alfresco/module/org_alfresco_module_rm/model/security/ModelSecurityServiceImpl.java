@@ -279,10 +279,10 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     {
         if (enabled &&
                 AuthenticationUtil.getFullyAuthenticatedUser() != null &&
-                AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
+                !AuthenticationUtil.isRunAsUserTheSystemUser() &&
                 isProtectedAspect(aspect) &&
                 nodeService.exists(nodeRef) &&
-                canEditProtectedAspect(nodeRef, aspect) == false)
+                !canEditProtectedAspect(nodeRef, aspect))
         {
             // the user can't edit the protected aspect
             throw new ModelAccessDeniedException(
@@ -306,10 +306,10 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     {
         if (enabled &&
                 AuthenticationUtil.getFullyAuthenticatedUser() != null &&
-                AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
+                !AuthenticationUtil.isRunAsUserTheSystemUser() &&
                 isProtectedAspect(aspect) &&
                 nodeService.exists(nodeRef) &&
-                canEditProtectedAspect(nodeRef, aspect) == false)
+                !canEditProtectedAspect(nodeRef, aspect))
         {
             // the user can't edit the protected aspect
             throw new ModelAccessDeniedException(
@@ -333,7 +333,7 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     {
         if (enabled &&
                 AuthenticationUtil.getFullyAuthenticatedUser() != null &&
-                AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
+                !AuthenticationUtil.isRunAsUserTheSystemUser() &&
                 nodeService.exists(nodeRef))
         {
             for (QName property : after.keySet())
@@ -346,8 +346,8 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
                         return;
                     }
 
-                    if (EqualsHelper.nullSafeEquals(before.get(property), after.get(property)) == false &&
-                            canEditProtectedProperty(nodeRef, property) == false)
+                    if (!EqualsHelper.nullSafeEquals(before.get(property), after.get(property)) &&
+                            !canEditProtectedProperty(nodeRef, property))
                     {
                         // the user can't edit the protected property
                         throw new ModelAccessDeniedException(

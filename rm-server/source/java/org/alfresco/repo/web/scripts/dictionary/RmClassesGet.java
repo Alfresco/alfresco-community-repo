@@ -110,7 +110,7 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
         }
 
         //validate classfilter
-        if (isValidClassFilter(classFilter) == false)
+        if (!isValidClassFilter(classFilter))
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classfilter - " + classFilter + " provided in the URL");
         }
@@ -128,7 +128,7 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
             if (name != null)
             {
                 className = namespacePrefix + "_" + name;
-                if (isValidClassname(className) == false)
+                if (!isValidClassname(className))
                 {
                     throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the name - " + name + "parameter in the URL");
                 }

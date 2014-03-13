@@ -199,7 +199,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     private NodeRef getReportTemplate(String mimetype)
     {
         // check that the template root has been correctly bootstraped
-        if (fileFolderService.exists(TEMPLATE_ROOT) == false)
+        if (!fileFolderService.exists(TEMPLATE_ROOT))
         {
             throw new AlfrescoRuntimeException("Unable to get report template, because the template root folder does not exist in the data dictionary.");
         }

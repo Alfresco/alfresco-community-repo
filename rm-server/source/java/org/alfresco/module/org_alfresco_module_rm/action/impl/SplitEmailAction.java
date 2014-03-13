@@ -114,7 +114,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
 
         if (recordService.isRecord(actionedUponNodeRef))
         {
-            if (recordService.isDeclared(actionedUponNodeRef) == false)
+            if (!recordService.isDeclared(actionedUponNodeRef))
             {
                 ChildAssociationRef parent = nodeService.getPrimaryParent(actionedUponNodeRef);
 

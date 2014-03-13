@@ -136,7 +136,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                  * Now do the work, one action in each transaction
                  */
 
-                if (nodeService.exists(currentNode) == false)
+                if (!nodeService.exists(currentNode))
                 {
                     retryingTransactionHelper.doInTransaction(processTranCB);
                 }

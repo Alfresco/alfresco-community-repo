@@ -79,7 +79,7 @@ public class RmEventPut extends RMEventBase
             String eventName = templateVars.get(PARAM_EVENTNAME);
             if (eventName == null ||
                 eventName.isEmpty() ||
-                rmEventService.existsEvent(eventName) == false)
+                !rmEventService.existsEvent(eventName))
             {
                 throw new WebScriptException(Status.STATUS_NOT_FOUND, "No event name was provided.");
             }

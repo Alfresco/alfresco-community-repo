@@ -121,7 +121,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     	           JSONObject report = jsonArray.getJSONObject(i);
 
     	           // Get the name
-    	           if (report.has(SavedSearchDetails.NAME) == false)
+    	           if (!report.has(SavedSearchDetails.NAME))
     	           {
     	               throw new AlfrescoRuntimeException("Unable to load report details because name has not been specified. \n" + reportsJSON);
     	           }
@@ -133,7 +133,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     	           }
 
     	           // Get the query
-    	           if (report.has(SavedSearchDetails.SEARCH) == false)
+    	           if (!report.has(SavedSearchDetails.SEARCH))
                    {
                        throw new AlfrescoRuntimeException("Unable to load report details because search has not been specified for report " + name + ". \n" + reportsJSON);
                    }
@@ -224,7 +224,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
        if (searchParameters.isIncludeRecords())
        {
            appendAspect(aspectQuery, "rma:record");
-           if (searchParameters.isIncludeUndeclaredRecords() == false)
+           if (!searchParameters.isIncludeUndeclaredRecords())
            {
                appendAspect(aspectQuery, "rma:declaredRecord");
            }
@@ -478,7 +478,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
         }
 
         // Get the private container for the current user
-        if (savedSearchDetails.isPublic() == false)
+        if (!savedSearchDetails.isPublic())
         {
             final String userName = AuthenticationUtil.getFullyAuthenticatedUser();
             NodeRef userContainer = fileFolderService.searchSimple(container, userName);

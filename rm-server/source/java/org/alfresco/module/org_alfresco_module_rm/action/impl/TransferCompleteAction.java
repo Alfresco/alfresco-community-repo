@@ -66,7 +66,7 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
     private void checkTransferSubClass(NodeRef actionedUponNodeRef)
     {
         QName type = nodeService.getType(actionedUponNodeRef);
-        if (dictionaryService.isSubClass(type, TYPE_TRANSFER) == false)
+        if (!dictionaryService.isSubClass(type, TYPE_TRANSFER))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NODE_NOT_TRANSFER));
         }

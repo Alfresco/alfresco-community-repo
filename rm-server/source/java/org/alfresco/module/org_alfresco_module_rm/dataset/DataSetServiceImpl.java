@@ -364,7 +364,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
                     String allRoleShortName = RMAuthority.ALL_ROLES_PREFIX + rmRoot.getId();
                     String allRoleGroupName = authorityService.getName(AuthorityType.GROUP, allRoleShortName);
 
-                    if (authorityService.authorityExists(allRoleGroupName) == false)
+                    if (!authorityService.authorityExists(allRoleGroupName))
                     {
                         logger.info("Creating all roles group for root node: " + rmRoot.toString());
 
@@ -428,7 +428,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
                             permissionService.setInheritParentPermissions(recordFolder, false);
                         }
 
-                        if (nodeService.hasAspect(recordFolder, ASPECT_DISPOSITION_LIFECYCLE) == false)
+                        if (!nodeService.hasAspect(recordFolder, ASPECT_DISPOSITION_LIFECYCLE))
                         {
                             // See if the folder has a disposition schedule that
                             // needs

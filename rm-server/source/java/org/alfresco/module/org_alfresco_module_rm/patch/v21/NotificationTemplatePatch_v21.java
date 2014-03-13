@@ -87,7 +87,7 @@ public class NotificationTemplatePatch_v21 extends RMv21PatchComponent
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
         // get the parent node
         NodeRef supersededTemplate = notificationHelper.getSupersededTemplate();
-        if (nodeService.exists(nodeRef) == false && nodeService.exists(supersededTemplate))
+        if (!nodeService.exists(nodeRef) && nodeService.exists(supersededTemplate))
         {
             NodeRef parent = nodeService.getPrimaryParent(supersededTemplate).getParentRef();
 

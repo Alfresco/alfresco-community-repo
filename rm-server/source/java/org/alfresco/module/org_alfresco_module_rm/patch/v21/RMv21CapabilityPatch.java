@@ -105,7 +105,7 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
                 Set<Capability> capabilities = role.getCapabilities();
 
                 // only update if the capability is missing
-                if (capabilities.contains(capability) == false)
+                if (!capabilities.contains(capability))
                 {
                     if (logger.isDebugEnabled())
                     {

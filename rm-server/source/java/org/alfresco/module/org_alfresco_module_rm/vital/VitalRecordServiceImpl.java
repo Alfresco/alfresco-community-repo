@@ -79,7 +79,7 @@ public class VitalRecordServiceImpl extends ServiceBaseImpl
               Map<QName, Serializable> reviewProps = new HashMap<QName, Serializable>(1);
               reviewProps.put(RecordsManagementModel.PROP_REVIEW_AS_OF, reviewAsOf);
 
-              if (nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD) == false)
+              if (!nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD))
               {
                   nodeService.addAspect(nodeRef, RecordsManagementModel.ASPECT_VITAL_RECORD, reviewProps);
               }

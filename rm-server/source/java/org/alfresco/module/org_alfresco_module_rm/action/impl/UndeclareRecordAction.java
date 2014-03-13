@@ -50,7 +50,7 @@ public class UndeclareRecordAction extends RMActionExecuterAbstractBase
 	        {
 	        	// repoen if already complete and not frozen
 	            if (recordService.isDeclared(actionedUponNodeRef) &&
-	                freezeService.isFrozen(actionedUponNodeRef) == false)
+	                !freezeService.isFrozen(actionedUponNodeRef))
 	            {
 	                // Remove the declared aspect
 	                this.nodeService.removeAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD);

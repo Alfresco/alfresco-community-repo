@@ -115,14 +115,14 @@ public class RmSiteType extends    BaseBehaviourBean
     	ParameterCheck.mandatory("filePlanType", filePlanType);
 
     	// check that the registered site type is a subtype of rma:rmsite
-    	if (dictionaryService.isSubClass(siteType, TYPE_RM_SITE) == false)
+    	if (!dictionaryService.isSubClass(siteType, TYPE_RM_SITE))
     	{
     		throw new AlfrescoRuntimeException(
     				"Can't register site type, because site type is not a sub type of rma:rmsite (siteType=" + siteType.toString() + ")");
     	}
 
     	// check that the registered file plan type is a sub type of rma:filePlan
-    	if (dictionaryService.isSubClass(filePlanType, TYPE_FILE_PLAN) == false)
+    	if (!dictionaryService.isSubClass(filePlanType, TYPE_FILE_PLAN))
     	{
     		throw new AlfrescoRuntimeException(
     				"Can't register file plan type, because site type is not a sub type of rma:filePlan (filePlanType=" + filePlanType.toString() + ")");
@@ -216,7 +216,7 @@ public class RmSiteType extends    BaseBehaviourBean
             Map<QName, Serializable> changed = PropertyMap.getChangedProperties(before, after);
             if (changed.containsKey(SiteModel.PROP_SITE_VISIBILITY) &&
                 changed.get(SiteModel.PROP_SITE_VISIBILITY) != null &&
-                SiteVisibility.PUBLIC.equals(changed.get(SiteModel.PROP_SITE_VISIBILITY)) == false)
+                !SiteVisibility.PUBLIC.equals(changed.get(SiteModel.PROP_SITE_VISIBILITY)))
             {
                 // we do not current support non-public RM sites
                 throw new AlfrescoRuntimeException("The records management site must have public visibility.  It can't be changed to " + changed.get(SiteModel.PROP_SITE_VISIBILITY));

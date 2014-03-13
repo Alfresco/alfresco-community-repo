@@ -114,7 +114,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                         {
                             // We need to automatically cast the created folder to RM type if it is a plain folder
                             // This occurs if the RM folder has been created via IMap, WebDav, etc
-                            if (nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT) == false)
+                            if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
                             {
                                 // check the type of the parent to determine what 'kind' of artifact to create
                                 NodeRef parent = childAssocRef.getParentRef();
@@ -146,11 +146,11 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                         boolean isUnfiledRecordContainerChild = parentType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER_CHILD);
                         if (isContentSubType && (isUnfiledRecordContainer|| isUnfiledRecordContainerChild))
                         {
-                            if (nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT) == false)
+                            if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
                             {
                                 nodeService.addAspect(child, ASPECT_FILE_PLAN_COMPONENT, null);
                             }
-                            if (nodeService.hasAspect(child, ASPECT_RECORD) == false)
+                            if (!nodeService.hasAspect(child, ASPECT_RECORD))
                             {
                                 recordService.makeRecord(child);
                             }

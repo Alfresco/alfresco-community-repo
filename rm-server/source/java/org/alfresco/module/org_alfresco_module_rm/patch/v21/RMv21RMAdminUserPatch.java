@@ -115,7 +115,7 @@ public class RMv21RMAdminUserPatch extends RMv21PatchComponent implements BeanNa
         String firstName = I18NUtil.getMessage(MSG_FIRST_NAME);
         String lastName = I18NUtil.getMessage(MSG_LAST_NAME);
 
-        if (authenticationService.authenticationExists(user) == false)
+        if (!authenticationService.authenticationExists(user))
         {
             if (logger.isDebugEnabled())
             {
@@ -124,7 +124,7 @@ public class RMv21RMAdminUserPatch extends RMv21PatchComponent implements BeanNa
 
             authenticationService.createAuthentication(user, password.toCharArray());
 
-            if (personService.personExists(user) == false)
+            if (!personService.personExists(user))
             {
                 if (logger.isDebugEnabled())
                 {

@@ -143,7 +143,7 @@ public class NotificationTemplatePatch extends ModulePatchComponent
      */
     private void updateTemplate(NodeRef template, String templateUpdate)
     {
-        if (template == null || nodeService.exists(template) == false)
+        if (template == null || !nodeService.exists(template))
         {
             if (logger.isDebugEnabled())
             {
@@ -154,7 +154,7 @@ public class NotificationTemplatePatch extends ModulePatchComponent
         {
             // Check to see if this template has already been updated
             String lastPatchUpdate = (String)nodeService.getProperty(template, PROP_LAST_PATCH_UPDATE);
-            if (lastPatchUpdate == null || name.equals(lastPatchUpdate) == false)
+            if (lastPatchUpdate == null || !name.equals(lastPatchUpdate))
             {
                 if (logger.isDebugEnabled())
                 {
@@ -162,7 +162,7 @@ public class NotificationTemplatePatch extends ModulePatchComponent
                 }
 
                 // Make sure the template is versionable
-                if (nodeService.hasAspect(template, ContentModel.ASPECT_VERSIONABLE) == false)
+                if (!nodeService.hasAspect(template, ContentModel.ASPECT_VERSIONABLE))
                 {
                     nodeService.addAspect(template, ContentModel.ASPECT_VERSIONABLE, null);
 

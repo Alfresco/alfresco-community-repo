@@ -153,11 +153,11 @@ public class DispositionProperty extends BaseBehaviourBean
         boolean result = false;
 
         if ((isRecordLevel && appliesToRecordLevel) ||
-            (isRecordLevel == false && appliesToFolderLevel))
+            (!isRecordLevel && appliesToFolderLevel))
         {
             if (excludedDispositionActions != null && excludedDispositionActions.size() != 0)
             {
-                if (excludedDispositionActions.contains(dispositionAction) == false)
+                if (!excludedDispositionActions.contains(dispositionAction))
                 {
                     result = true;
                 }
@@ -260,7 +260,7 @@ public class DispositionProperty extends BaseBehaviourBean
             result = true;
         }
         else if (beforeValue != null && afterValue != null &&
-                 beforeValue.equals(afterValue) == false)
+                 !beforeValue.equals(afterValue))
         {
             result = true;
         }

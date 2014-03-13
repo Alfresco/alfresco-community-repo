@@ -341,7 +341,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
      */
     private void saveConfig(Set<CustomMapping> customMappingsToSave)
     {
-        if (nodeService.exists(CONFIG_NODE_REF) == false)
+        if (!nodeService.exists(CONFIG_NODE_REF))
         {
             // create the config node
             Map<QName, Serializable> properties = new HashMap<QName, Serializable>(2);

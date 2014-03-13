@@ -155,7 +155,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("applyToParents", applyToParents);
 
         // add the aspect if missing
-        if (nodeService.hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY) == false)
+        if (!nodeService.hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY))
         {
             nodeService.addAspect(nodeRef, ASPECT_EXTENDED_SECURITY, null);
         }
@@ -238,8 +238,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
 
             for (String authority : authorities)
             {
-                if ((authority.equals(PermissionService.ALL_AUTHORITIES) == false && authority.equals(PermissionService.OWNER_AUTHORITY) == false) &&
-                    (referenceCountMap == null || referenceCountMap.containsKey(authority) == false))
+                if ((!authority.equals(PermissionService.ALL_AUTHORITIES) && !authority.equals(PermissionService.OWNER_AUTHORITY)) &&
+                    (referenceCountMap == null || !referenceCountMap.containsKey(authority)))
                 {
                     // add the authority to the role
                     filePlanRoleService.assignRoleToAuthority(filePlan, roleName, authority);
@@ -267,7 +267,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
 
         for (String key : keys)
         {
-            if (key.equals(PermissionService.ALL_AUTHORITIES) == false)
+            if (!key.equals(PermissionService.ALL_AUTHORITIES))
             {
                 if (map.containsKey(key))
                 {
@@ -369,7 +369,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             // remove the keys
             for (String key : keys)
             {
-                if (key.equals(PermissionService.ALL_AUTHORITIES) == false)
+                if (!key.equals(PermissionService.ALL_AUTHORITIES))
                 {
                     Integer count = map.get(key);
                     if (count != null)

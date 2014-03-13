@@ -180,7 +180,7 @@ public class DeclarativeCapability extends AbstractCapability
     protected boolean checkPermissions(NodeRef nodeRef)
     {
         boolean result = true;
-        if (permissions != null && permissions.isEmpty() == false)
+        if (permissions != null && !permissions.isEmpty())
         {
             result = checkPermissionsImpl(nodeRef, (String[])permissions.toArray(new String[permissions.size()]));
         }
@@ -252,7 +252,7 @@ public class DeclarativeCapability extends AbstractCapability
 
         if (actualKind != null)
         {
-            if (kinds != null && kinds.isEmpty() == false)
+            if (kinds != null && !kinds.isEmpty())
             {
                 // need to check the actual file plan kind is in the list specified
                 for (String kindString : kinds)

@@ -327,7 +327,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         onAddSearchAspect.disable();
         try
         {
-            if (nodeService.hasAspect(nodeRef, ASPECT_RM_SEARCH) == false)
+            if (!nodeService.hasAspect(nodeRef, ASPECT_RM_SEARCH))
             {
                 nodeService.addAspect(nodeRef, ASPECT_RM_SEARCH , null);
 
@@ -652,7 +652,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                     props.add(PROP_REVIEW_PERIOD);
                     Set<QName> changed = determineChangedProps(before, after);
                     changed.retainAll(props);
-                    if (changed.isEmpty() == false)
+                    if (!changed.isEmpty())
                     {
                         updateVitalRecordDefinitionValues(nodeRef);
                     }
@@ -842,7 +842,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         for (QName qn : oldProps.keySet())
         {
             if (newProps.get(qn) == null ||
-                newProps.get(qn).equals(oldProps.get(qn)) == false)
+                !newProps.get(qn).equals(oldProps.get(qn)))
             {
                 result.add(qn);
             }

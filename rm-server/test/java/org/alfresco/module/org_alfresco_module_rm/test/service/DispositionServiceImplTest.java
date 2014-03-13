@@ -181,7 +181,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             private void doCheckFolder(NodeRef container, String dispositionInstructions, boolean isRecordLevel)
             {
                 doCheck(container, dispositionInstructions, isRecordLevel);
-                if (isRecordLevel == false)
+                if (!isRecordLevel)
                 {
                     assertNotNull(dispositionService.getNextDispositionAction(container));
                 }

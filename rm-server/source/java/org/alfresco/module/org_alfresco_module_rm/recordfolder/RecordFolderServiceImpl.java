@@ -103,10 +103,10 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     public void setupRecordFolder(NodeRef nodeRef)
     {
         // initialise disposition details
-        if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == false)
+        if (!nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE))
         {
             DispositionSchedule di = dispositionService.getDispositionSchedule(nodeRef);
-            if (di != null && di.isRecordLevelDisposition() == false)
+            if (di != null && !di.isRecordLevelDisposition())
             {
                 nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
             }
@@ -132,7 +132,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         // Check we have a record folder
-        if (isRecordFolder(nodeRef) == false)
+        if (!isRecordFolder(nodeRef))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_EXPECTED));
         }
@@ -143,7 +143,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         List<NodeRef> records = recordService.getRecords(nodeRef);
         for (NodeRef record : records)
         {
-            if (recordService.isDeclared(record) == false)
+            if (!recordService.isDeclared(record))
             {
                 result = false;
                 break;
@@ -162,7 +162,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         // Check we have a record folder
-        if (isRecordFolder(nodeRef) == false)
+        if (!isRecordFolder(nodeRef))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_EXPECTED));
         }
@@ -201,15 +201,15 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
 
         // Check that the parent is a container
         QName parentType = nodeService.getType(rmContainer);
-        if (TYPE_RECORD_CATEGORY.equals(parentType) == false &&
-            dictionaryService.isSubClass(parentType, TYPE_RECORD_CATEGORY) == false)
+        if (!TYPE_RECORD_CATEGORY.equals(parentType) &&
+            !dictionaryService.isSubClass(parentType, TYPE_RECORD_CATEGORY))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PARENT_RECORD_FOLDER_TYPE, parentType.toString()));
         }
 
         // Check that the the provided type is a sub-type of rm:recordFolder
-        if (TYPE_RECORD_FOLDER.equals(type) == false &&
-            dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER) == false)
+        if (!TYPE_RECORD_FOLDER.equals(type) &&
+            !dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_TYPE, type.toString()));
         }
@@ -299,7 +299,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
 
         if (isRecordFolder(nodeRef))
         {
-            if (isRecordFolderClosed(nodeRef) == false)
+            if (!isRecordFolderClosed(nodeRef))
             {
                 nodeService.setProperty(nodeRef, PROP_IS_CLOSED, true);
             }

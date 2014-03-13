@@ -111,7 +111,7 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
      */
     protected void checkMandatoryJsonParam(JSONObject json, String paramName)
     {
-        if (json.has(paramName) == false)
+        if (!json.has(paramName))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                     "Mandatory '" + paramName + "' parameter was not provided in request body");

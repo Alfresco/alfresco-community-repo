@@ -91,7 +91,7 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
         {
             result = true;
         }
-        else if (recordFolderService.isRecordFolder(nodeRef) && isRecordLevelDisposition == false)
+        else if (recordFolderService.isRecordFolder(nodeRef) && !isRecordLevelDisposition)
 
         {
             result = true;

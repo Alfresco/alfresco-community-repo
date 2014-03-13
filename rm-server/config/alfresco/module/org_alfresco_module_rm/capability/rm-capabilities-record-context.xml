@@ -279,6 +279,7 @@
       <property name="permission" value="MoveRecords"/>
       <property name="undetermined" value="true" />
       <property name="kind" value="RECORD" />
+      <property name="private" value="true"/>
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>
@@ -288,8 +289,6 @@
          </map>
       </property>
       <property name="targetCapability" ref="rmFilePermissionOnly"/>
-      <property name="group"><ref bean="recordsGroup"/></property>
-      <property name="index" value="45" />
    </bean>
 
    <bean id="rmRejectRecordsCapability"

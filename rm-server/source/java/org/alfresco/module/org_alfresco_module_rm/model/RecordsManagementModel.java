@@ -65,8 +65,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
 
     // Hold container
     static final QName TYPE_HOLD_CONTAINER = QName.createQName(RM_URI, "holdContainer");
-    static final QName TYPE_HOLD_CONTAINER_CHILD = QName.createQName(RM_URI, "holdContainerChild");
-
+    
     // Transfer container
     static final QName TYPE_TRANSFER_CONTAINER = QName.createQName(RM_URI, "transferContainer");
 
@@ -104,12 +103,6 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     static final QName ASPECT_RECORD = QName.createQName(RM_URI, "record");
     static final QName PROP_DATE_FILED = QName.createQName(RM_URI, "dateFiled");
     static final QName PROP_ORIGIONAL_NAME = QName.createQName(RM_URI, "origionalName");
-    //static final QName PROP_ORIGINATOR = QName.createQName(RM_URI, "originator");
-    //static final QName PROP_ORIGINATING_ORGANIZATION = QName.createQName(RM_URI, "originatingOrganization");
-    //static final QName PROP_PUBLICATION_DATE = QName.createQName(RM_URI, "publicationDate");
-    //static final QName PROP_MEDIA_TYPE = QName.createQName(RM_URI, "mediaType");
-    //static final QName PROP_FORMAT = QName.createQName(RM_URI, "format");
-    //static final QName PROP_DATE_RECEIVED = QName.createQName(RM_URI, "dateReceived");
 
     // Common record details
     static final QName PROP_LOCATION = QName.createQName(RM_URI, "location");

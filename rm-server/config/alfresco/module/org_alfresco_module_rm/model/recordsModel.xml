@@ -96,7 +96,7 @@
          <parent>rma:recordsManagementContainer</parent>
       </type>
 
-	  <-- TODO rename to unfiledRecordFolder -->
+	  <!-- TODO rename to unfiledRecordFolder -->
       <type name="rma:unfiledRecordContainerChild">
          <title>Unfiled Record Container Child</title>
          <parent>rma:recordsManagementContainer</parent>

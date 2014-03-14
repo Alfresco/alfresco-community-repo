@@ -922,9 +922,6 @@
 		       </index>
             </property>
          </properties>
-         <mandatory-aspects>
-            <aspect>rma:filePlanComponent</aspect>
-         </mandatory-aspects>
       </aspect>
 
       <aspect name="rma:caveatConfigRoot">
@@ -943,11 +940,6 @@
                <duplicate>false</duplicate>
             </child-association>
          </associations>
-         <!--
-         <mandatory-aspects>
-            <aspect>rma:filePlanComponent</aspect>
-         </mandatory-aspects>
-         -->
       </aspect>
 
       <aspect name="rma:emailConfigRoot">

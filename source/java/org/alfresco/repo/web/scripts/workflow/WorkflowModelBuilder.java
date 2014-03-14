@@ -422,7 +422,8 @@ public class WorkflowModelBuilder
             keys = buildQNameKeys(propertyFilters);
         }
         
-        Map<String, Object> result = buildQNameProperties(properties, keys);
+        Map<String, Object> result = buildQNameProperties(properties, keys, task);
+        
         // ALF-18092: Special handling for the "hiddenTransitions" property, as it can be an empty string
         if (keys.contains(WorkflowModel.PROP_HIDDEN_TRANSITIONS))
         {
@@ -434,7 +435,7 @@ public class WorkflowModelBuilder
         }
         return result;
     }
-    
+
     private Map<String, String> buildPropertyLabels(WorkflowTask task, Map<String, Object> properties)
     {
         TypeDefinition taskType = task.getDefinition().getMetadata();
@@ -465,13 +466,20 @@ public class WorkflowModelBuilder
         });
     }
 
-    private Map<String, Object> buildQNameProperties(Map<QName, Serializable> properties, Collection<QName> keys)
+    private Map<String, Object> buildQNameProperties(Map<QName, Serializable> properties, Collection<QName> keys,
+            WorkflowTask task)
     {
+        Map<QName, PropertyDefinition> propDefs = task.getDefinition().getMetadata().getProperties();
         Map<String, Object> model = new HashMap<String, Object>();
         for (QName key : keys)
         {
             Object value = convertValue(properties.get(key));
             String strKey = qNameConverter.mapQNameToName(key);
+            PropertyDefinition propDef = propDefs.get(key);
+            if ((value == null) && (propDef != null))
+            {
+                value = propDef.getDefaultValue();
+            }
             model.put(strKey, value);
         }
         return model;

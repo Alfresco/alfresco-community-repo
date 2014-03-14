@@ -55,6 +55,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -109,6 +110,8 @@ public class CMISTest
     private Repository repositoryHelper;
     private VersionService versionService;
     private LockService lockService;
+    private TaggingService taggingService;
+    private NamespaceService namespaceService;
 
 	private AlfrescoCmisServiceFactory factory;
 
@@ -1512,6 +1515,80 @@ public class CMISTest
         finally
         {
             AuthenticationUtil.popAuthentication();
+        }
+    }
+    
+    @Test
+    public void mnt10548test() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        final Pair<FileInfo, FileInfo> folderAndDocument = transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<Pair<FileInfo, FileInfo>>()
+                {
+                    private final static String TEST_NAME = "mnt10548test-";
+                    
+                    @Override
+                    public Pair<FileInfo, FileInfo> execute() throws Throwable
+                    {
+                        NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+                        
+                        /* Create folder within companyHome */
+                        String folderName = TEST_NAME + GUID.generate();
+                        FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                        nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+                        assertNotNull(folderInfo);
+                        
+                        /* Create content */
+                        String docName = TEST_NAME + GUID.generate();
+                        FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+                        assertNotNull(document);
+                        nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, docName);
+                        
+                        /* Add some tags */
+                        NodeRef nodeRef = document.getNodeRef();
+                        taggingService.addTag(nodeRef, "tag1");
+                        taggingService.addTag(nodeRef, "tag2");
+                        taggingService.addTag(nodeRef, "tag3");
+
+                        return new Pair<FileInfo, FileInfo>(folderInfo, document);
+                    }
+                });
+        
+        ObjectData objData = withCmisService(
+                new CmisServiceCallback<ObjectData>() 
+                {
+                    private static final String FILE_FOLDER_SEPARATOR = "/";
+                    
+                    @Override
+                    public ObjectData execute(CmisService cmisService) 
+                    {
+                        List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                        assertTrue(repositories.size() > 0);
+                        RepositoryInfo repo = repositories.get(0);
+                        String repositoryId = repo.getId();
+                        
+                        String path = FILE_FOLDER_SEPARATOR + folderAndDocument.getFirst().getName() + FILE_FOLDER_SEPARATOR + folderAndDocument.getSecond().getName();
+                        /* get CMIS object of document */
+                        ObjectData objData = cmisService.getObjectByPath(repositoryId, path, null, false, null, null, false, false, null);
+                        return objData;
+                    }
+                }, CmisVersion.CMIS_1_1);
+        
+        Map<String, PropertyData<?>> cmisProps = objData.getProperties().getProperties();
+        
+        String taggable = ContentModel.ASPECT_TAGGABLE.getPrefixedQName(namespaceService).toPrefixString();
+        PropertyData<?> propData = cmisProps.get(taggable);
+        assertNotNull(propData);
+        
+        List<?> props = propData.getValues();
+        assertTrue(props.size() == 3);
+        
+        /* MNT-10548 fix : CMIS should return List of String, not List of NodeRef */
+        for(Object o : props)
+        {
+            assertTrue(o.getClass() + " found but String expected", o instanceof String);
         }
     }
 }

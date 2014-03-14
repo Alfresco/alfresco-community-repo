@@ -19,10 +19,12 @@
 package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -59,7 +61,24 @@ public class DirectProperty extends AbstractProperty
         
         if (nodeInfo.getNodeRef() != null)
         {
-            return getServiceRegistry().getNodeService().getProperty(nodeInfo.getNodeRef(), alfrescoName);
+            /* MNT-10548 fix */
+            Serializable result = getServiceRegistry().getNodeService().getProperty(nodeInfo.getNodeRef(), alfrescoName);
+            
+            if (result instanceof List)
+            {
+                @SuppressWarnings("unchecked")
+                List<Object> resultList = (List<Object>)result;
+                for (int index = 0; index < resultList.size(); index++)
+                {
+                    Object element = resultList.get(index);
+                    if (element instanceof NodeRef)
+                    {
+                        resultList.set(index, element.toString());
+                    }
+                }
+            }
+            
+            return result;
         }
         else if (nodeInfo.getAssociationRef() != null)
         {

@@ -43,6 +43,14 @@ public class NodeLockedException extends AlfrescoRuntimeException
     private static final String ERROR_MESSAGE_2 = I18NUtil.getMessage("lock_service.no_op2");
 
     /**
+     * Constructor for tests
+     */
+    public NodeLockedException()
+    {
+        super("TEST CONSTRUCTOR INVOKED FOR NodeLockedException");
+    }
+    
+    /**
      * @param message
      */
     public NodeLockedException(NodeRef nodeRef)

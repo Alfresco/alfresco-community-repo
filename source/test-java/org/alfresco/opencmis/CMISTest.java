@@ -78,6 +78,7 @@ import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.CmisExtensionElementImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertiesImpl;
@@ -246,19 +247,12 @@ public class CMISTest
             return Long.MAX_VALUE;
         }
 
-        /* (non-Javadoc)
-         * @see org.apache.chemistry.opencmis.commons.server.CallContext#encryptTempFiles()
-         */
         @Override
         public boolean encryptTempFiles()
         {
-            // TODO Auto-generated method stub
             return false;
         }
 
-        /* (non-Javadoc)
-         * @see org.apache.chemistry.opencmis.commons.server.CallContext#getCmisVersion()
-         */
         @Override
         public CmisVersion getCmisVersion()
         {
@@ -559,6 +553,7 @@ public class CMISTest
     private static class TestContext
     {
         private String repositoryId = null;
+        @SuppressWarnings("unused")
         private ObjectData objectData = null;
         private Holder<String> objectId = null;
         
@@ -575,11 +570,6 @@ public class CMISTest
         public void setRepositoryId(String repositoryId)
         {
             this.repositoryId = repositoryId;
-        }
-        
-        public ObjectData getObjectData()
-        {
-            return objectData;
         }
         
         public void setObjectData(ObjectData objectData)
@@ -824,11 +814,14 @@ public class CMISTest
     }
 
     /**
-     * Test MNT-8825: READ_ONLYLOCK prevent getAllVersions via new CMIS enpoint.
+     * Test
+     * <ul>
+     *   <li>MNT-8825: READ_ONLYLOCK prevent getAllVersions via new CMIS enpoint.</li>
+     *   <li>ACE-762: BM-0012: NodeLockedException not handled by CMIS</li>
+     * </ul>
      */
-
     @Test
-    public void testGetAllVersionsOnReadOnlyLockedNode()
+    public void testOperationsOnReadOnlyLockedNode()
     {
         final String folderName = "testfolder." + GUID.generate();
         final String docName = "testdoc.txt." + GUID.generate();
@@ -869,15 +862,37 @@ public class CMISTest
                     String repositoryId = repo.getId();
                     ObjectData objectData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + docName, null, true,
                             IncludeRelationships.NONE, null, false, true, null);
-    
+
+                    // Expect no failure
+                    cmisService.getAllVersions(repositoryId, objectData.getId(), fileInfo.getNodeRef().getId(), null, true, null);
+
+                    return null;
+                }
+            });
+
+            withCmisService(new CmisServiceCallback<Void>()
+            {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.get(0);
+                    String repositoryId = repo.getId();
+                    ObjectData objectData = cmisService.getObjectByPath(
+                            repositoryId, "/" + folderName + "/" + docName, null, true,
+                            IncludeRelationships.NONE, null, false, true, null);
+                    String objectId = objectData.getId();
+
+                    // Expect failure as the node is locked
                     try
                     {
-                        cmisService.getAllVersions(repositoryId, objectData.getId(), fileInfo.getNodeRef().getId(), null, true, null);
+                        cmisService.deleteObject(repositoryId, objectId, true, null);
+                        fail("Locked node should not be deletable.");
                     }
-                    catch (Throwable e)
+                    catch (CmisUpdateConflictException e)
                     {
-                        e.printStackTrace();
-                        fail();
+                        // Expected
                     }
 
                     return null;
@@ -891,7 +906,7 @@ public class CMISTest
         }
     }
 
-    /*
+    /**
      * ALF-18455
      */
     @Test
@@ -1358,6 +1373,7 @@ public class CMISTest
      * MNT-10223
      * Check the IsLatestMajorVersion for a doc with minor version.
      */
+    @SuppressWarnings("unused")
     @Test
     public void testIsLatestMajorVersion()
     {
@@ -1425,7 +1441,8 @@ public class CMISTest
             	TypeDefinition def = cmisService.getTypeDefinition(repositoryId, "cmis:item", null);
             	assertNotNull("the cmis:item type is not defined", def); 
                 
-            	TypeDefinition p = cmisService.getTypeDefinition(repositoryId, "I:cm:person", null);
+            	@SuppressWarnings("unused")
+                TypeDefinition p = cmisService.getTypeDefinition(repositoryId, "I:cm:person", null);
             	assertNotNull("the I:cm:person type is not defined", def); 
             	
             	ObjectList result = cmisService.query(repositoryId, "select * from cm:person", Boolean.FALSE, Boolean.TRUE, IncludeRelationships.NONE, "", BigInteger.TEN, BigInteger.ZERO, null);

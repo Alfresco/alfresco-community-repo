@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,10 +18,16 @@
  */
 package org.alfresco.opencmis;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
+import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -30,53 +36,98 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisContentAlreadyExistsException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisVersioningException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Interceptor to catch various exceptions and translate them into CMIS-related exceptions
  * <p/>
  * TODO: Externalize messages
- * TODO: Use ExceptionStackUtil to dig out exceptions of interest regardless of depth
  * 
  * @author Derek Hulley
  * @since 4.0
  */
 public class AlfrescoCmisExceptionInterceptor implements MethodInterceptor
 {
+    /**
+     * Exceptions that are specifically handled.
+     */
+    @SuppressWarnings({ "rawtypes" })
+    public static final Class[] EXCEPTIONS_OF_INTEREST;
+    static
+    {
+        Class<?>[] coreClasses = new Class[] {
+                AuthenticationException.class,
+                CheckOutCheckInServiceException.class,
+                FileExistsException.class,
+                IntegrityException.class,     // Similar to StaleObjectState
+                AccessDeniedException.class,
+                NodeLockedException.class
+                };
+     
+        List<Class<?>> retryExceptions = new ArrayList<Class<?>>();
+        // Add core classes to the list.
+        retryExceptions.addAll(Arrays.asList(coreClasses));
+        
+        EXCEPTIONS_OF_INTEREST = retryExceptions.toArray(new Class[] {});
+    }
+
+    private static Log logger = LogFactory.getLog(AlfrescoCmisExceptionInterceptor.class);
+    
     public Object invoke(MethodInvocation mi) throws Throwable
     {
         try
         {
             return mi.proceed();
         }
-        catch (AuthenticationException e)
-        {
-            throw new CmisPermissionDeniedException(e.getMessage(), e);
-        }
-        catch (CheckOutCheckInServiceException e)
-        {
-            throw new CmisVersioningException("Check out failed: " + e.getMessage(), e);
-        }
-        catch (FileExistsException fee)
-        {
-            throw new CmisContentAlreadyExistsException("An object with this name already exists!", fee);
-        }
-        catch (IntegrityException ie)
-        {
-            throw new CmisConstraintException("Constraint violation: " + ie.getMessage(), ie);
-        }
-        catch (AccessDeniedException ade)
-        {
-            throw new CmisPermissionDeniedException("Permission denied!", ade);
-        }
         catch (Exception e)
         {
-            if (e instanceof CmisBaseException)
+            // We dig into the exception to see if there is anything of interest to CMIS
+            Throwable cmisAffecting = ExceptionStackUtil.getCause(e, EXCEPTIONS_OF_INTEREST);
+            
+            if (cmisAffecting == null)
             {
-                throw (CmisBaseException) e;
+                // The exception is not something that CMIS needs to handle in any special way
+                if (e instanceof CmisBaseException)
+                {
+                    throw (CmisBaseException) e;
+                }
+                else
+                {
+                    throw new CmisRuntimeException(e.getMessage(), e);
+                }
+            }
+            // All other exceptions are carried through with full stacks but treated as the exception of interest
+            else if (cmisAffecting instanceof AuthenticationException)
+            {
+                throw new CmisPermissionDeniedException(cmisAffecting.getMessage(), e);
+            }
+            else if (cmisAffecting instanceof CheckOutCheckInServiceException)
+            {
+                throw new CmisVersioningException("Check out failed: " + cmisAffecting.getMessage(), e);
+            }
+            else if (cmisAffecting instanceof FileExistsException)
+            {
+                throw new CmisContentAlreadyExistsException("An object with this name already exists: " + cmisAffecting.getMessage(), e);
+            }
+            else if (cmisAffecting instanceof IntegrityException)
+            {
+                throw new CmisConstraintException("Constraint violation: " + cmisAffecting.getMessage(), e);
+            }
+            else if (cmisAffecting instanceof AccessDeniedException)
+            {
+                throw new CmisPermissionDeniedException("Permission denied: " + cmisAffecting.getMessage(), e);
+            }
+            else if (cmisAffecting instanceof NodeLockedException)
+            {
+                throw new CmisUpdateConflictException("Update conflict: " + cmisAffecting.getMessage(), e);
             }
             else
             {
+                // We should not get here, so log an error but rethrow to have CMIS handle the original cause
+                logger.error("Exception type not handled correctly: " + e.getClass().getName());
                 throw new CmisRuntimeException(e.getMessage(), e);
             }
         }

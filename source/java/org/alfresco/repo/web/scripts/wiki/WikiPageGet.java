@@ -46,7 +46,7 @@ public class WikiPageGet extends AbstractWikiWebScript
    private static final String MSG_NOT_FOUND= "page-not-found";
     
    // For matching links. Not the best pattern ever...
-   private static final Pattern LINK_PATTERN = Pattern.compile("\\[\\[([^\\|\\]]+)");
+   private static final Pattern LINK_PATTERN = Pattern.compile("\\[\\[([^\\|#\\]]+)");
    
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String pageTitle,

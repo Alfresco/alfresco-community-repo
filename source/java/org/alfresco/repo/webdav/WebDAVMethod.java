@@ -1140,6 +1140,12 @@ public abstract class WebDAVMethod
                 throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
             }
         }
+        
+        // MNT-10555
+        if (lockInfo.isExpired())
+        {
+            return;
+        }
                 
         throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
     }

@@ -1073,7 +1073,8 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 if (siteNames.size() < maxResults)
                 {
                     String siteName = resolveSite(authority);
-                    if (siteName == null)
+                    // MNT-10836 fix, after MNT-10109 we should also check site existence
+                    if (siteName == null || getSite(siteName) == null)
                     {
                         return false;
                     }

@@ -191,6 +191,12 @@
 
             </associations>
 
+            <overrides>
+                <property name="cm:name">
+                    <default>Task</default>
+                </property>
+            </overrides>
+
             <mandatory-aspects>
                 <aspect>cm:ownable</aspect>
             </mandatory-aspects>

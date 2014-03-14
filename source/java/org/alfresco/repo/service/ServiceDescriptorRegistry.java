@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -102,91 +102,75 @@ public class ServiceDescriptorRegistry
     private BeanFactory beanFactory = null;
 
 
-    /* (non-Javadoc)
-     * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
-     */
+    @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException
     {
         this.beanFactory = beanFactory;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.service.ServiceRegistry#getServices()
+    /**
+     * @throws UnsupportedOperationException always
      */
+    @Override
     public Collection<QName> getServices()
     {
         // TODO: Implement
         throw new UnsupportedOperationException();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.service.ServiceRegistry#isServiceProvided(org.alfresco.repo.ref.QName)
+    /**
+     * @throws UnsupportedOperationException always
      */
+    @Override
     public boolean isServiceProvided(QName service)
     {
         // TODO: Implement
         throw new UnsupportedOperationException();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.service.ServiceRegistry#getService(org.alfresco.repo.ref.QName)
-     */
+    @Override
     public Object getService(QName service)
     {
         return beanFactory.getBean(service.getLocalName());
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getDescriptorService()
-     */
+    @Override
     public DescriptorService getDescriptorService()
     {
         return (DescriptorService)getService(DESCRIPTOR_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.service.ServiceRegistry#getNodeService()
-     */
+    @Override
     public NodeService getNodeService()
     {
         return (NodeService)getService(NODE_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.service.ServiceRegistry#getNodeService()
-     */
+    @Override
     public MutableAuthenticationService getAuthenticationService()
     {
         return (MutableAuthenticationService)getService(AUTHENTICATION_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.service.ServiceRegistry#getContentService()
-     */
+    @Override
     public ContentService getContentService()
     {
         return (ContentService)getService(CONTENT_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getMimetypeService()
-     */
+    @Override
     public MimetypeService getMimetypeService()
     {
         return (MimetypeService)getService(MIMETYPE_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.service.ServiceRegistry#getVersionService()
-     */
+    @Override
     public VersionService getVersionService()
     {
         return (VersionService)getService(VERSION_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.service.ServiceRegistry#getLockService()
-     */
+    @Override
     public LockService getLockService()
     {
         return (LockService)getService(LOCK_SERVICE);
@@ -197,165 +181,122 @@ public class ServiceDescriptorRegistry
         return (JobLockService)getService(JOB_LOCK_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.service.ServiceRegistry#getDictionaryService()
-     */
+    @Override
     public DictionaryService getDictionaryService()
     {
         return (DictionaryService)getService(DICTIONARY_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getSearchService()
-     */
+    @Override
     public SearchService getSearchService()
     {
         return (SearchService)getService(SEARCH_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getTransactionService()
-     */
+    @Override
     public TransactionService getTransactionService()
     {
         return (TransactionService)getService(TRANSACTION_SERVICE);
     }
 
-    /**
-     * @deprecated Use {@link TransactionService#getRetryingTransactionHelper()}: ALF-18718
-     */
-    @Deprecated
+    @Override
     public RetryingTransactionHelper getRetryingTransactionHelper()
     {
         TransactionService txnService = (TransactionService) getService(TRANSACTION_SERVICE);
         return txnService.getRetryingTransactionHelper();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getCopyService()
-     */
+    @Override
     public CopyService getCopyService()
     {
         return (CopyService)getService(COPY_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getCheckOutCheckInService()
-     */
+    @Override
     public CheckOutCheckInService getCheckOutCheckInService()
     {
         return (CheckOutCheckInService)getService(COCI_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getCategoryService()
-     */
+    @Override
     public CategoryService getCategoryService()
     {
         return (CategoryService)getService(CATEGORY_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getNamespaceService()
-     */
+    @Override
     public NamespaceService getNamespaceService()
     {
         return (NamespaceService)getService(NAMESPACE_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getImporterService()
-     */
+    @Override
     public ImporterService getImporterService()
     {
         return (ImporterService)getService(IMPORTER_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getExporterService()
-     */
+    @Override
     public ExporterService getExporterService()
     {
         return (ExporterService)getService(EXPORTER_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getRuleService()
-     */
+    @Override
     public RuleService getRuleService()
     {
         return (RuleService)getService(RULE_SERVICE);
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getActionService()
-     */
+    @Override
     public ActionService getActionService()
     {
         return (ActionService)getService(ACTION_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getPermissionService()
-     */
+    @Override
     public PermissionService getPermissionService()
     {
         return (PermissionService)getService(PERMISSIONS_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getAuthorityService()
-     */
+    @Override
     public AuthorityService getAuthorityService()
     {
         return (AuthorityService)getService(AUTHORITY_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getTemplateService()
-     */
+    @Override
     public TemplateService getTemplateService()
     {
         return (TemplateService)getService(TEMPLATE_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getTemplateService()
-     */
+    @Override
     public FileFolderService getFileFolderService()
     {
         return (FileFolderService)getService(FILE_FOLDER_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getScriptService()
-     */
+    @Override
     public ScriptService getScriptService()
     {
         return (ScriptService)getService(SCRIPT_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getWorkflowService()
-     */
+    @Override
     public WorkflowService getWorkflowService()
     {
         return (WorkflowService)getService(WORKFLOW_SERVICE);
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getNotificationService()
-     */
+    @Override
     public NotificationService getNotificationService()
     {
         return (NotificationService)getService(NOTIFICATION_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getWorkflowService()
-     */
+    @Override
     public AuditService getAuditService()
     {
         return (AuditService)getService(AUDIT_SERVICE);
@@ -365,6 +306,7 @@ public class ServiceDescriptorRegistry
      * Get the AVMService.
      * @return The AVMService or null if there is none.
      */
+    @Override
     public AVMService getAVMService()
     {
         return (AVMService)getService(AVM_SERVICE);
@@ -374,6 +316,7 @@ public class ServiceDescriptorRegistry
      * Get the AVMService.
      * @return The AVMService or null if there is none.
      */
+    @Override
     public AVMService getAVMLockingAwareService()
     {
         return (AVMService)getService(AVM_LOCKING_AWARE_SERVICE);
@@ -383,246 +326,181 @@ public class ServiceDescriptorRegistry
      * Get the AVM Sync Service.
      * @return The AVM Sync Service.
      */
+    @Override
     public AVMSyncService getAVMSyncService()
     {
         return (AVMSyncService)getService(AVM_SYNC_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getOwnableService()
-     */
+    @Override
     public OwnableService getOwnableService()
     {
         return (OwnableService)getService(OWNABLE_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getPersonService()
-     */
+    @Override
     public PersonService getPersonService()
     {
         return (PersonService)getService(PERSON_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getSiteService()
-     */
+    @Override
     public SiteService getSiteService()
     {
         return (SiteService) getService(SITE_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getCrossRepositoryCopyService()
-     */
+    @Override
     public CrossRepositoryCopyService getCrossRepositoryCopyService()
     {
         return (CrossRepositoryCopyService)getService(CROSS_REPO_COPY_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getAttributeService()
-     */
+    @Override
     public AttributeService getAttributeService()
     {
         return (AttributeService)getService(ATTRIBUTE_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getContentFilterLanguagesService()
-     */
-     public ContentFilterLanguagesService getContentFilterLanguagesService()
-     {
-     return (ContentFilterLanguagesService) getService(CONTENT_FILTER_LANGUAGES_SERVICE);
-     }
+    @Override
+    public ContentFilterLanguagesService getContentFilterLanguagesService()
+    {
+        return (ContentFilterLanguagesService) getService(CONTENT_FILTER_LANGUAGES_SERVICE);
+    }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getAVMLockingService()
-     */
+    @Override
     public AVMLockingService getAVMLockingService()
     {
         return (AVMLockingService)getService(AVM_LOCKING_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getVirtServerRegistry()
-     */
+    @Override
     public VirtServerRegistry getVirtServerRegistry()
     {
         return (VirtServerRegistry)getService(VIRT_SERVER_REGISTRY);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getEditionService()
-     */
+    @Override
     public EditionService getEditionService()
     {
         return (EditionService) getService(EDITION_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getMultilingualContentService()
-     */
+    @Override
     public MultilingualContentService getMultilingualContentService()
     {
         return (MultilingualContentService) getService(MULTILINGUAL_CONTENT_SERVICE);
     }
     
-    /**
-     * @see org.alfresco.service.ServiceRegistry#getThumbnailService()
-     */
+    @Override
     public ThumbnailService getThumbnailService()
     {
         return (ThumbnailService)getService(THUMBNAIL_SERVICE);
     }
 
-    /**
-     * @see org.alfresco.service.ServiceRegistry#getTaggingService()
-     */
+    @Override
     public TaggingService getTaggingService()
     {
         return (TaggingService)getService(TAGGING_SERVICE);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getDeploymentService()
-     */
+    @Override
     public DeploymentService getDeploymentService() 
     {
         return (DeploymentService) getService(DEPLOYMENT_SERVICE);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getWebProjectService()
-     */
+    @Override
     public WebProjectService getWebProjectService()
     {
         return (WebProjectService)getService(WEBPROJECT_SERVICE);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getSandboxService()
-     */
+    @Override
     public SandboxService getSandboxService()
     {
         return (SandboxService)getService(SANDBOX_SERVICE);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getAssetService()
-     */
+    @Override
     public AssetService getAssetService()
     {
         return (AssetService)getService(ASSET_SERVICE);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getPreviewURIService()
-     */
+    @Override
     public PreviewURIService getPreviewURIService()
     {
         return (PreviewURIService)getService(PREVIEW_URI_SERVICE);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getFormService()
-     */
+    @Override
     public FormService getFormService() 
     {
         return (FormService)getService(FORM_SERVICE);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getRenditionService()
-     */
+    @Override
     public RenditionService getRenditionService() 
     {
         return (RenditionService)getService(RENDITION_SERVICE);
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getRatingService()
-     */
+    @Override
     public RatingService getRatingService() 
     {
         return (RatingService)getService(RATING_SERVICE);
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getNodeLocatorService()
-     */
+    @Override
     public NodeLocatorService getNodeLocatorService() 
     {
         return (NodeLocatorService)getService(NODE_LOCATOR_SERVICE);
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getBlogService()
-     */
+    @Override
     public BlogService getBlogService() 
     {
         return (BlogService)getService(BLOG_SERVICE);
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getCalendarService()
-     */
+    @Override
     public CalendarService getCalendarService() 
     {
         return (CalendarService)getService(CALENDAR_SERVICE);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getInvitationService()
-     */
+    @Override
     public InvitationService getInvitationService() 
     {
          return (InvitationService)getService(INVITATION_SERVICE);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getCMISService()
-     */
+    @Override
     public CMISServices getCMISService() 
     {
          return (CMISServices)getService(CMIS_SERVICE);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getCMISDictionaryService()
-     */
+    @Override
     public CMISDictionaryService getCMISDictionaryService() 
     {
          return (CMISDictionaryService)getService(CMIS_DICTIONARY_SERVICE);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getCMISQueryService()
-     */
+    @Override
     public CMISQueryService getCMISQueryService() 
     {
          return (CMISQueryService)getService(CMIS_QUERY_SERVICE);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getCMISQueryService()
-     */
+    @Override
     public ImapService getImapService() 
     {
         return (ImapService)getService(IMAP_SERVICE);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getPublicServiceAccessService()
-     */
+    @Override
     public PublicServiceAccessService getPublicServiceAccessService()
     {
         return (PublicServiceAccessService)getService(PUBLIC_SERVICE_ACCESS_SERVICE);

@@ -29,6 +29,7 @@ import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -258,8 +259,13 @@ public class TransactionServiceImplTest extends TestCase
             }
         };
         
+        // Ensure that we always get a new instance of the RetryingTransactionHelper
         assertFalse("Retriers must be new instances",
                 transactionService.getRetryingTransactionHelper() == transactionService.getRetryingTransactionHelper());
+        // The same must apply when using the ServiceRegistry (ALF-18718)
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        assertFalse("Retriers must be new instance when retrieved from ServiceRegistry",
+                serviceRegistry.getRetryingTransactionHelper() == serviceRegistry.getRetryingTransactionHelper());
         
         transactionService.setAllowWrite(true, vetoName);
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);

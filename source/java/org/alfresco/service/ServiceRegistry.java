@@ -210,7 +210,7 @@ public interface ServiceRegistry
     TransactionService getTransactionService();
 
     /**
-     * @deprecated Since 4.2. Use {@link TransactionService#getRetryingTransactionHelper()}: ALF-18718
+     * @return a new instance of the {@link RetryingTransactionHelper}
      */
     @NotAuditable
     RetryingTransactionHelper getRetryingTransactionHelper();

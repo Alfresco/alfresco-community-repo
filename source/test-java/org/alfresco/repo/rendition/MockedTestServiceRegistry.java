@@ -97,464 +97,462 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     private final MutableAuthenticationService authenticationService = mock(MutableAuthenticationService.class);
     private final NamespaceService namespaceService = mock(NamespaceService.class);
     
+    @Override
     public boolean isServiceProvided(QName service)
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return false;
     }
     
-    
+    @Override
     public WorkflowService getWorkflowService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
+    @Override
     public NotificationService getNotificationService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public WebProjectService getWebProjectService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public VirtServerRegistry getVirtServerRegistry()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public VersionService getVersionService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public TransactionService getTransactionService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public ThumbnailService getThumbnailService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public TemplateService getTemplateService()
     {
         return this.templateService;
     }
     
-    
+    @Override
     public TaggingService getTaggingService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public SiteService getSiteService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public Collection<QName> getServices()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public Object getService(QName service)
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public SearchService getSearchService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public ScriptService getScriptService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public SandboxService getSandboxService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public RuleService getRuleService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public RetryingTransactionHelper getRetryingTransactionHelper()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public PublicServiceAccessService getPublicServiceAccessService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public PreviewURIService getPreviewURIService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public PersonService getPersonService()
     {
         return personService;
     }
     
-    
+    @Override
     public PermissionService getPermissionService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public OwnableService getOwnableService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public NodeService getNodeService()
     {
         return nodeService;
     }
     
-    
+    @Override
     public NamespaceService getNamespaceService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return namespaceService;
     }
     
-    
+    @Override
     public MultilingualContentService getMultilingualContentService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public MimetypeService getMimetypeService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public LockService getLockService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public JobLockService getJobLockService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public InvitationService getInvitationService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public ImporterService getImporterService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public ImapService getImapService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public FormService getFormService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public RenditionService getRenditionService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public RatingService getRatingService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public NodeLocatorService getNodeLocatorService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public CalendarService getCalendarService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public FileFolderService getFileFolderService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public ExporterService getExporterService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public EditionService getEditionService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public DictionaryService getDictionaryService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public DescriptorService getDescriptorService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public DeploymentService getDeploymentService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public CrossRepositoryCopyService getCrossRepositoryCopyService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public CopyService getCopyService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public ContentService getContentService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return contentService;
     }
     
-    
+    @Override
     public ContentFilterLanguagesService getContentFilterLanguagesService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public CheckOutCheckInService getCheckOutCheckInService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public CategoryService getCategoryService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public CMISServices getCMISService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public CMISQueryService getCMISQueryService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public CMISDictionaryService getCMISDictionaryService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public AuthorityService getAuthorityService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public MutableAuthenticationService getAuthenticationService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return authenticationService;
     }
     
-    
+    @Override
     public AuditService getAuditService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public AttributeService getAttributeService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public AssetService getAssetService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public ActionService getActionService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return actionService;
     }
     
-    
+    @Override
     public AVMSyncService getAVMSyncService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public AVMService getAVMService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public AVMLockingService getAVMLockingService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
     
-    
+    @Override
     public AVMService getAVMLockingAwareService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
-
 
     @Override
     public RepoAdminService getRepoAdminService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
-
 
     @Override
     public SysAdminParams getSysAdminParams()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
-
 
     @Override
     public BlogService getBlogService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
-
 
     @Override
     public WebDavService getWebDavService()
     {
-        // TODO Auto-generated method stub
+        // A mock response
         return null;
     }
 }

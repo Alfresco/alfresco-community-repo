@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import junit.framework.TestCase;
@@ -42,6 +43,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -785,6 +787,43 @@ public class AuditComponentTest extends TestCase
         assertTrue("There should be exactly one audit entry for the API test", success);
     }
 
+    public void testAuditOverlimitProperties() throws Exception
+    {
+        final int OVERLIMIT_SIZE = 1500;
+        final RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < OVERLIMIT_SIZE; i++)
+                {
+                    sb.append("a");
+                }
+
+                MLText mlTextValue = new MLText();
+                mlTextValue.put(Locale.ENGLISH, sb.toString());
+
+                Map<String, Serializable> values = new HashMap<String, Serializable>(13);
+                values.put("/3.1/4.1", sb.toString());
+                values.put("/3.1/4.2", mlTextValue);
+
+                auditComponent.recordAuditValues("/test/one.one/two.one", values);
+
+                return null;
+            }
+        };
+        RunAsWork<Void> testRunAs = new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                return transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
+            }
+        };
+        AuthenticationUtil.runAs(testRunAs, "SomeOtherUser");
+    }
+    
+    
+    
     /**
      * Clearn the audit log as 'admin'
      */

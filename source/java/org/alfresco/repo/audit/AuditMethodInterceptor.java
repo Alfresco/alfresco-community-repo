@@ -24,7 +24,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -37,6 +39,7 @@ import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.Auditable;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.transaction.TransactionService;
@@ -372,6 +375,16 @@ public class AuditMethodInterceptor implements MethodInterceptor
             if (audit instanceof String)
             {
                 audit = SchemaBootstrap.trimStringForTextFields((String) audit);
+            }
+            // trim MLText
+            else if (audit instanceof MLText)
+            {
+                MLText mltext = (MLText) audit;
+                Set<Locale> locales = mltext.getLocales();
+                for (Locale locale : locales)
+                {
+                    mltext.put(locale, SchemaBootstrap.trimStringForTextFields(mltext.getValue(locale)));
+                }
             }
         }
         return audit;

@@ -19,6 +19,7 @@
 
             <!-- initialization not necessary for test -->
             <prop key="kerberos.authentication.authenticateCIFS">false</prop>
+            <prop key="kerberos.authentication.authenticateFTP">false</prop>
          </props>
       </property>
       <property name="searchSystemEnvironment">

@@ -276,6 +276,8 @@ public class CMISTest
     	this.nodeService = (NodeService)ctx.getBean("NodeService");
         this.versionService = (VersionService) ctx.getBean("versionService");
         this.lockService = (LockService) ctx.getBean("lockService");
+        this.taggingService = (TaggingService) ctx.getBean("TaggingService");
+        this.namespaceService = (NamespaceService) ctx.getBean("namespaceService");
         this.repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
     	this.factory = (AlfrescoCmisServiceFactory)ctx.getBean("CMISServiceFactory");
     	this.cmisConnector = (CMISConnector) ctx.getBean("CMISConnector");

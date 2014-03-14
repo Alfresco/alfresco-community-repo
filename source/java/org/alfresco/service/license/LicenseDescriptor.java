@@ -132,4 +132,14 @@ public interface LicenseDescriptor
      * @return <code>true</code> if the license allows clustering
      */
     public boolean isClusterEnabled();
+    
+    /**
+     * ATS Transformation Server Expiry Date
+     * @return the ATS Transformation Server Expiry Date or <code>null</code>
+     */
+    public String getTransformationServerExpiryDate();
+
+
+    
+    
 }

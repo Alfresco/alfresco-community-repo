@@ -2013,7 +2013,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             Map<String, Object> actualLocalVariables = activitiProcessEngine.getTaskService().getVariablesLocal(task.getId());
             Map<String, Object> actualGlobalVariables = activitiProcessEngine.getRuntimeService().getVariables(processInstance.getId());
             assertEquals(5, actualGlobalVariables.size());
-            assertEquals(7, actualLocalVariables.size());
+            assertEquals(8, actualLocalVariables.size());
             
             TasksClient tasksClient = publicApiClient.tasksClient();
             JSONObject variables = tasksClient.findTaskVariables(task.getId());
@@ -2026,8 +2026,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             // Check pagination object for size
             JSONObject pagination = (JSONObject) list.get("pagination");
             assertNotNull(pagination);
-            assertEquals(11L, pagination.get("count"));
-            assertEquals(11L, pagination.get("totalItems"));
+            assertEquals(12L, pagination.get("count"));
+            assertEquals(12L, pagination.get("totalItems"));
             assertEquals(0L, pagination.get("skipCount"));
             assertFalse((Boolean) pagination.get("hasMoreItems"));
             
@@ -2075,7 +2075,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             
             // Check correct count of globas vs. local
             assertEquals(4, globalResults.size());
-            assertEquals(7, localResults.size());
+            assertEquals(8, localResults.size());
             
             // Check if all variables are present
             assertEquals(0, expectedGlobalVars.size());
@@ -2126,7 +2126,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             Map<String, Object> actualLocalVariables = activitiProcessEngine.getTaskService().getVariablesLocal(task.getId());
             Map<String, Object> actualGlobalVariables = activitiProcessEngine.getRuntimeService().getVariables(processInstance.getId());
             assertEquals(5, actualGlobalVariables.size());
-            assertEquals(7, actualLocalVariables.size());
+            assertEquals(8, actualLocalVariables.size());
             
             // Update a global value that is present in the model with type given
             JSONObject variableBody = new JSONObject();
@@ -2183,7 +2183,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             Map<String, Object> actualLocalVariables = activitiProcessEngine.getTaskService().getVariablesLocal(task.getId());
             Map<String, Object> actualGlobalVariables = activitiProcessEngine.getRuntimeService().getVariables(processInstance.getId());
             assertEquals(5, actualGlobalVariables.size());
-            assertEquals(7, actualLocalVariables.size());
+            assertEquals(8, actualLocalVariables.size());
             
             // Set a new global value that is NOT present in the model with type given
             JSONObject variableBody = new JSONObject();
@@ -2223,7 +2223,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             Map<String, Object> actualLocalVariables = activitiProcessEngine.getTaskService().getVariablesLocal(task.getId());
             Map<String, Object> actualGlobalVariables = activitiProcessEngine.getRuntimeService().getVariables(processInstance.getId());
             assertEquals(5, actualGlobalVariables.size());
-            assertEquals(7, actualLocalVariables.size());
+            assertEquals(8, actualLocalVariables.size());
             
             // Raw number value
             JSONObject variableBody = new JSONObject();
@@ -2654,7 +2654,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             Map<String, Object> actualLocalVariables = activitiProcessEngine.getTaskService().getVariablesLocal(task.getId());
             Map<String, Object> actualGlobalVariables = activitiProcessEngine.getRuntimeService().getVariables(processInstance.getId());
             assertEquals(5, actualGlobalVariables.size());
-            assertEquals(7, actualLocalVariables.size());
+            assertEquals(8, actualLocalVariables.size());
             
             // Update a global value that is present in the model with type given
             JSONArray variablesArray = new JSONArray();
@@ -2826,7 +2826,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             Map<String, Object> actualLocalVariables = activitiProcessEngine.getTaskService().getVariablesLocal(task.getId());
             Map<String, Object> actualGlobalVariables = activitiProcessEngine.getRuntimeService().getVariables(processInstance.getId());
             assertEquals(5, actualGlobalVariables.size());
-            assertEquals(7, actualLocalVariables.size());
+            assertEquals(8, actualLocalVariables.size());
             
             TasksClient tasksClient = publicApiClient.tasksClient();
             
@@ -2840,8 +2840,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             // Check pagination object for size
             JSONObject pagination = (JSONObject) list.get("pagination");
             assertNotNull(pagination);
-            assertEquals(7L, pagination.get("count"));
-            assertEquals(7L, pagination.get("totalItems"));
+            assertEquals(8L, pagination.get("count"));
+            assertEquals(8L, pagination.get("totalItems"));
             assertEquals(0L, pagination.get("skipCount"));
             assertFalse((Boolean) pagination.get("hasMoreItems"));
             
@@ -2940,8 +2940,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             // Check pagination object for size
             JSONObject pagination = (JSONObject) list.get("pagination");
             assertNotNull(pagination);
-            assertEquals(40L, pagination.get("count"));
-            assertEquals(40L, pagination.get("totalItems"));
+            assertEquals(42L, pagination.get("count"));
+            assertEquals(42L, pagination.get("totalItems"));
             assertEquals(0L, pagination.get("skipCount"));
             assertFalse((Boolean) pagination.get("hasMoreItems"));
         }

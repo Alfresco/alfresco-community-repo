@@ -565,6 +565,13 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                 }
                 else
                 {
+                    if (ntlmDetails == null)
+                    {
+                        if (logger.isWarnEnabled())
+                            logger.warn("Authentication failed: NTLM details can not be retrieved from session. Client must support cookies.");
+                        restartLoginChallenge(context, req, res);
+                        return false;
+                    }
                     // Passthru mode, send the hashed password details to the passthru authentication server
                     NTLMPassthruToken authToken = (NTLMPassthruToken) ntlmDetails.getAuthenticationToken();
                     authToken.setUserAndPassword(type3Msg.getUserName(), type3Msg.getNTLMHash(), PasswordEncryptor.NTLM1);

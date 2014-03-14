@@ -122,6 +122,11 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         m_sessions = new Hashtable<String, PassthruDetails>();
     }        
 
+    public Hashtable<String, PassthruDetails> getSessions()
+    {
+        return m_sessions;
+    }
+
     public void setPassthruServers(PassthruServers servers)
     {
         m_passthruServers = servers;

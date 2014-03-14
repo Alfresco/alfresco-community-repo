@@ -399,7 +399,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
                         if (personName == null)
                         {
                             // Force creation of a person if possible
-                            getPersonService().getPerson(userName);
+                            authenticationComponent.setCurrentUser(userName);
                             personName = getPersonService().getUserIdentifier(userName);
                         }
                         

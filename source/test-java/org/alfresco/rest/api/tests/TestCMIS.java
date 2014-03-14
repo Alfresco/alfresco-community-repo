@@ -36,6 +36,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.tests.RepoService.SiteInformation;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
@@ -56,6 +57,8 @@ import org.alfresco.rest.api.tests.client.data.NodeRating.Aggregate;
 import org.alfresco.rest.api.tests.client.data.Person;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.client.data.Tag;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -81,6 +84,7 @@ import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
@@ -91,6 +95,7 @@ import org.springframework.context.ApplicationContext;
 public class TestCMIS extends EnterpriseTestApi
 {
 	private DictionaryDAO dictionaryDAO;
+	private LockService lockService;
 	private TenantService tenantService;
 	private CMISStrictDictionaryService cmisDictionary;
 	private QNameFilter cmisTypeExclusions;
@@ -100,6 +105,7 @@ public class TestCMIS extends EnterpriseTestApi
 	{
 		ApplicationContext ctx = getTestFixture().getApplicationContext();
 		this.dictionaryDAO = (DictionaryDAO)ctx.getBean("dictionaryDAO");
+		this.lockService = (LockService) ctx.getBean("lockService");
 		this.tenantService = (TenantService)ctx.getBean("tenantService");
 		this.cmisDictionary = (CMISStrictDictionaryService)ctx.getBean("OpenCMISDictionaryService");
 		this.cmisTypeExclusions = (QNameFilter)ctx.getBean("cmisTypeExclusions");
@@ -558,7 +564,8 @@ public class TestCMIS extends EnterpriseTestApi
 	/**
 	 * Tests CMIS and non-CMIS public api interactions
 	 */
-	@Test
+	@SuppressWarnings("deprecation")
+    @Test
 	public void testScenario1() throws Exception
 	{
 		final TestNetwork network1 = getTestFixture().getRandomNetwork();
@@ -600,8 +607,41 @@ public class TestCMIS extends EnterpriseTestApi
 		Comment c = commentsProxy.createNodeComment(doc.getId(), new Comment("comment title 1", "comment 1"));
 		
 		System.out.println("Comment = " + c);
+		
+		// Now lock the document
+		String nodeRefStr = (String) doc.getPropertyValue("alfcmis:nodeRef");
+		final NodeRef nodeRef = new NodeRef(nodeRefStr);
+		final TenantRunAsWork<Void> runAsWork = new TenantRunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                lockService.lock(nodeRef, LockType.WRITE_LOCK);
+                return null;
+            }
+        };
+        RetryingTransactionCallback<Void> txnWork = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                TenantUtil.runAsUserTenant(runAsWork, "bob", network1.getId());
+                return null;
+            }
+        };
+        transactionHelper.doInTransaction(txnWork);
+		
+		// Now attempt to update the document's metadata
+        try
+        {
+            doc.delete();
+        }
+        catch (CmisUpdateConflictException e)
+        {
+            // Expected: ACE-762 BM-0012: NodeLockedException not handled by CMIS 
+        }
 	}
-	
+
 	//@Test
 	public void testInvalidMethods() throws Exception
 	{
@@ -1289,7 +1329,8 @@ public class TestCMIS extends EnterpriseTestApi
 
 		doc1.setContentStream(fileContent, true);
 		AlfrescoDocument doc2 = (AlfrescoDocument)doc1.getObjectOfLatestVersion(false);
-		String versionLabel2 = doc2.getVersionLabel();
+		@SuppressWarnings("unused")
+        String versionLabel2 = doc2.getVersionLabel();
 
 		assertTrue(Double.parseDouble(versionLabel) < Double.parseDouble(versionLabel1));
 

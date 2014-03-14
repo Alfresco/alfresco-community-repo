@@ -466,7 +466,19 @@ public class HttpRangeProcessor
        long span = (r.end - r.start) + 1L;
        long bytesLeft = span;
        int read = 0;
-       byte[] buf = new byte[((int)bytesLeft) < CHUNKSIZE ? (int)bytesLeft : CHUNKSIZE];
+       
+       // Check that bytesLeft isn't greater than int can hold
+       int bufSize;
+       if (bytesLeft >= Integer.MAX_VALUE - 8)
+       {
+          bufSize = CHUNKSIZE;
+       }
+       else
+       {
+          bufSize = ((int)bytesLeft) < CHUNKSIZE ? (int)bytesLeft : CHUNKSIZE;
+       }
+       byte[] buf = new byte[bufSize];
+       
        while ((read = is.read(buf)) > 0 && bytesLeft != 0L)
        {
           os.write(buf, 0, read);
@@ -475,7 +487,15 @@ public class HttpRangeProcessor
           
           if (bytesLeft != 0L)
           {
-             int resize = ((int)bytesLeft) < CHUNKSIZE ? (int)bytesLeft : CHUNKSIZE;
+             int resize;
+             if (bytesLeft >= Integer.MAX_VALUE - 8)
+             {
+                resize = CHUNKSIZE;
+             }
+             else
+             {
+                resize = ((int)bytesLeft) < CHUNKSIZE ? (int)bytesLeft : CHUNKSIZE;
+             }
              if (resize != buf.length)
              {
                 buf = new byte[resize];

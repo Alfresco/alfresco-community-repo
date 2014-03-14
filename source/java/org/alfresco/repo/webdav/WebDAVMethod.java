@@ -534,6 +534,15 @@ public abstract class WebDAVMethod
             try
             {
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                factory.setFeature("http://xml.org/sax/features/validation", false);
+                factory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+                factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+                factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+                factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+                factory.setFeature("http://xml.org/sax/features/use-entity-resolver2", false);   
+                factory.setFeature("http://apache.org/xml/features/validation/unparsed-entity-checking", false);
+                factory.setFeature("http://apache.org/xml/features/validation/dynamic", false);
+                factory.setFeature("http://apache.org/xml/features/validation/schema/augment-psvi", false);
                 factory.setNamespaceAware(true);
 
                 DocumentBuilder builder = factory.newDocumentBuilder();

@@ -73,6 +73,24 @@ public class TenantWebScriptServlet extends WebScriptServlet
         	WebScriptServletRuntime runtime = getRuntime(req, res);
             runtime.executeScript();
         }
+        catch (IllegalStateException e) 
+        {
+           if(e.getMessage().contains("getOutputStream() has already been called for this response"))
+           {
+               if(logger.isDebugEnabled())
+               {
+                   logger.warn("Client has cut off communication", e);
+               }
+               else
+               {
+                   logger.warn("Client has cut off communication");
+               }
+           }
+           else
+           {
+               throw e;
+           }
+        }		
         finally
         {
             // clear threadlocal

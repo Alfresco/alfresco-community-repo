@@ -48,7 +48,20 @@ public class DescriptionProperty extends AbstractProperty
     @Override
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        return getServiceRegistry().getNodeService().getProperty(nodeInfo.getNodeRef(), ContentModel.PROP_DESCRIPTION);
+        if (nodeInfo.getNodeRef() != null)
+        {
+            return getServiceRegistry().getNodeService().getProperty(
+                    nodeInfo.getNodeRef(), 
+                    ContentModel.PROP_DESCRIPTION);
+        }
+        else if (nodeInfo.getAssociationRef() != null)
+        {
+            return getServiceRegistry().getNodeService().getProperty(
+                    nodeInfo.getAssociationRef().getSourceRef(),
+                    ContentModel.PROP_DESCRIPTION);
+        }
+        
+        return null;
     }
 
     @Override

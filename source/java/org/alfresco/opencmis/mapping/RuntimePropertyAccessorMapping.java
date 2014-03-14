@@ -143,7 +143,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         registerPropertyAccessor(new TargetIdProperty(serviceRegistry, cmisConnector));
         if(cmisMapping.getCmisVersion().equals(CmisVersion.CMIS_1_1))
         {
-        	registerPropertyAccessor(new SecondaryTypesProperty(serviceRegistry, cmisConnector, cmisMapping));
+            registerPropertyAccessor(new DescriptionProperty(serviceRegistry, cmisConnector));
+            registerPropertyAccessor(new SecondaryTypesProperty(serviceRegistry, cmisConnector, cmisMapping));
         }
 
         //

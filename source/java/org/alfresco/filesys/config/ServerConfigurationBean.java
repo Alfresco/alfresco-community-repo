@@ -250,16 +250,15 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 throw new AlfrescoRuntimeException("CIFS Host name not specified or invalid");
             }
             
+            // Get the local server name
+
+            String srvName = getLocalServerName(true);
+            
             // Check if the host name contains the local name token
 
             int pos = hostName.indexOf(TokenLocalName);
             if (pos != -1)
             {
-
-                // Get the local server name
-
-                String srvName = getLocalServerName(true);
-
                 // Rebuild the host name substituting the token with the local server name
 
                 StringBuilder hostStr = new StringBuilder();
@@ -274,14 +273,13 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 }
                 
                 hostName = hostStr.toString();
+            }
 
-                // Make sure the CIFS server name does not match the local server name
+            // Make sure the CIFS server name does not match the local server name
 
-                if (hostName.equals(srvName) && getPlatformType() == Platform.Type.WINDOWS)
-                {
-                    throw new AlfrescoRuntimeException("CIFS server name must be unique");
-            
-                }
+            if (hostName.toUpperCase().equals(srvName.toUpperCase()) && getPlatformType() == Platform.Type.WINDOWS)
+            {
+                throw new AlfrescoRuntimeException("CIFS server name must be unique");
             }
 
             // Check if the host name is longer than 15 characters. NetBIOS only allows a maximum of 16 characters in

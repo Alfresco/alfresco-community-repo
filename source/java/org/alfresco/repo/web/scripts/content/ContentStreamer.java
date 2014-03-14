@@ -634,8 +634,8 @@ public class ContentStreamer implements ResourceLoaderAware
                 else
                 {
                     String userAgent = req.getHeader(HEADER_USER_AGENT);
-                    boolean isMSIE8 = (null != userAgent) && userAgent.contains("MSIE 8");
-                    if (isMSIE8)
+                    boolean isLegacy = (null != userAgent) && (userAgent.contains("MSIE 8") || userAgent.contains("MSIE 7"));
+                    if (isLegacy)
                     {
                         headerValue += "; filename=\"" + WebDAVHelper.encodeURL(attachFileName);
                     }

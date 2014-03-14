@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,7 +32,6 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -115,14 +114,9 @@ public class AliasableAspectPatch extends AbstractPatch
             }
         };
 
-        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        // Configure the helper to run in read-only mode
-        // MNT-10764
-        txnHelper.setForceWritable(true);
-        
         BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<NodeRef>(
                 "AliasableAspectPatch", 
-                txnHelper,
+                transactionService.getRetryingTransactionHelper(), 
                 workProvider,
                 batchThreads, 
                 batchSize, 

@@ -74,6 +74,7 @@ import org.apache.chemistry.opencmis.client.api.Folder;
 import org.apache.chemistry.opencmis.client.api.ItemIterable;
 import org.apache.chemistry.opencmis.client.api.ObjectId;
 import org.apache.chemistry.opencmis.client.api.OperationContext;
+import org.apache.chemistry.opencmis.client.api.Property;
 import org.apache.chemistry.opencmis.client.api.Relationship;
 import org.apache.chemistry.opencmis.client.api.Repository;
 import org.apache.chemistry.opencmis.client.api.SecondaryType;
@@ -1640,5 +1641,50 @@ public class TestCMIS extends EnterpriseTestApi
                 assertEquals("My updated summary", summary);
             }
         }
+    }
+
+    /* MNT-10161 related test - mapping of cmis:description for CMIS 1.1 */
+    @Test
+    public void testMNT_10161() throws Exception
+    {
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+        String username = "user" + System.currentTimeMillis();
+        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+        TestPerson person1 = network1.createUser(personInfo);
+        String person1Id = person1.getId();
+
+        final String siteName = "site" + System.currentTimeMillis();
+        final String nodeDescription = "Test description";
+
+        final String nodeName = GUID.generate();
+
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
+                TestSite site = repoService.createSite(null, siteInfo);
+
+                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), nodeName);
+                /* create node with property description */
+                return repoService.createDocument(folderNodeRef, nodeName, "title", nodeDescription, "content");
+            }
+        }, person1Id, network1.getId());
+
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.1");
+        Document doc = 
+                (Document)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary/" + nodeName + "/" + nodeName);
+
+        /* ensure we got the node */
+        assertNotNull(doc);
+
+        /* get mapped cmis:description */
+        Property<?> descrProperty = doc.getProperty(PropertyIds.DESCRIPTION);
+
+        /* ensure that cmis:description is set properly */
+        assertTrue(nodeDescription.equals(descrProperty.getValue()));
     }
 }

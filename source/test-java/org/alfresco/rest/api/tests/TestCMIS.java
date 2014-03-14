@@ -1687,4 +1687,78 @@ public class TestCMIS extends EnterpriseTestApi
         /* ensure that cmis:description is set properly */
         assertTrue(nodeDescription.equals(descrProperty.getValue()));
     }
+    
+    /* MNT-10687 related test - appendContent to PWC CMIS 1.1 */
+    @Test
+    public void testMNT_10687() throws Exception
+    {
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+        String username = "user" + System.currentTimeMillis();
+        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+        TestPerson person1 = network1.createUser(personInfo);
+        String person1Id = person1.getId();
+
+        final String siteName = "site" + System.currentTimeMillis();
+
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
+                TestSite site = repoService.createSite(null, siteInfo);
+
+                String name = GUID.generate();
+                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+                return folderNodeRef;
+            }
+        }, person1Id, network1.getId());
+
+        // Create a document...
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.1");
+        Folder docLibrary = (Folder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
+        String name = "mydoc-" + GUID.generate() + ".txt";
+        Map<String, Object> properties = new HashMap<String, Object>();
+        {
+            properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+            properties.put(PropertyIds.NAME, name);
+        }
+        ContentStreamImpl fileContent = new ContentStreamImpl();
+        {
+            ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+            writer.putContent("Ipsum");
+            ContentReader reader = writer.getReader();
+            fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            fileContent.setStream(reader.getContentInputStream());
+        }
+
+        /* Create document */
+        Document doc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+        
+        /* Checkout document */
+        ObjectId pwcId = doc.checkOut();
+        Document pwc = (Document)cmisSession.getObject(pwcId.getId());
+        
+        /* append content to PWC */
+        fileContent = new ContentStreamImpl();
+        {
+            ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+            writer.putContent(" and so on");
+            ContentReader reader = writer.getReader();
+            fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            fileContent.setStream(reader.getContentInputStream());
+        }
+        pwc.appendContentStream(fileContent, true);
+        
+        pwc.checkIn(false, null, null, "Check In");
+
+        ContentStream contentStream = doc.getObjectOfLatestVersion(false).getContentStream();
+        InputStream in = contentStream.getStream();
+        StringWriter writer = new StringWriter();
+        IOUtils.copy(in, writer, "UTF-8");
+        String content = writer.toString();
+        assertEquals("Ipsum and so on", content);
+    }
 }

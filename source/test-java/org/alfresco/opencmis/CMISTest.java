@@ -276,7 +276,96 @@ public class CMISTest
     	this.factory = (AlfrescoCmisServiceFactory)ctx.getBean("CMISServiceFactory");
     	this.cmisConnector = (CMISConnector) ctx.getBean("CMISConnector");
     }
-    
+
+    /**
+     * Test for MNT-9203.
+     */
+    @Test
+    public void testCeheckIn()
+    {
+        String repositoryId = null;
+        ObjectData objectData = null;
+        Holder<String> objectId = null;
+        CallContext context = new SimpleCallContext("admin", "admin", CmisVersion.CMIS_1_0);
+
+        final String folderName = "testfolder." + GUID.generate();
+        final String docName = "testdoc.txt." + GUID.generate();
+        final String customModel = "my.new.model";
+
+        final QName testCustomTypeQName = QName.createQName(customModel, "sop");
+        final QName authorisedByQname = QName.createQName(customModel, "authorisedBy");
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        try
+        {
+            final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
+            {
+                @Override
+                public FileInfo execute() throws Throwable
+                {
+                    NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+
+                    FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                    nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+
+                    FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, testCustomTypeQName);
+                    Map<QName, Serializable> customProperties = new HashMap<QName, Serializable>();
+
+                    customProperties.put(authorisedByQname, "customPropertyString");
+                    customProperties.put(ContentModel.PROP_NAME, docName);
+                    nodeService.setProperties(fileInfo.getNodeRef(), customProperties);
+
+                    return fileInfo;
+                }
+            });
+
+            CmisService service = factory.getService(context);
+            try
+            {
+                List<RepositoryInfo> repositories = service.getRepositoryInfos(null);
+                assertTrue(repositories.size() > 0);
+                RepositoryInfo repo = repositories.get(0);
+                repositoryId = repo.getId();
+                objectData = service.getObjectByPath(repositoryId, "/" + folderName + "/" + docName, null, true, IncludeRelationships.NONE, null, false, true, null);
+
+                // checkout
+                objectId = new Holder<String>(objectData.getId());
+                service.checkOut(repositoryId, objectId, null, new Holder<Boolean>(true));
+            }
+            finally
+            {
+                service.close();
+            }
+
+            try
+            {
+                service = factory.getService(context);
+
+                PropertyStringImpl prop = new PropertyStringImpl();
+                prop.setId("my:" + authorisedByQname.toPrefixString());
+                prop.setValue(null);
+
+                Collection<PropertyData<?>> propsList = new ArrayList<PropertyData<?>>();
+                propsList.add(prop);
+
+                Properties properties = new PropertiesImpl(propsList);
+
+                // checkIn on pwc
+                service.checkIn(repositoryId, objectId, false, properties, null, null, null, null, null, null);
+            }
+            finally
+            {
+                service.close();
+            }
+            // check that value is null
+            assertTrue(nodeService.getProperty(fileInfo.getNodeRef(), authorisedByQname) == null);
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+
     private FileInfo createContent(final String folderName, final String docName, final boolean isRule)
     {
         final FileInfo folderInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()

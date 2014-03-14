@@ -3427,34 +3427,27 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         		}
         	}
         	else
-        	{
-        		if (value == null)
-        		{
-        			nodeService.removeProperty(nodeRef, propertyQName);
-        		}
-        		else
-        		{
-                	// overflow check
-                	if(propDef.getPropertyDefinition().getPropertyType() == PropertyType.INTEGER && value instanceof BigInteger) 
-                	{
-                		org.alfresco.service.cmr.dictionary.PropertyDefinition def = dictionaryService.getProperty(propertyQName);
-                		QName dataDef = def.getDataType().getName();
-                		BigInteger bigValue = (BigInteger)value;
-    
-                		if ((bigValue.compareTo(maxInt) > 0 || bigValue.compareTo(minInt) < 0 ) && dataDef.equals(DataTypeDefinition.INT))
-                		{
-                			throw new CmisConstraintException("Value is out of range for property " + propertyQName.getLocalName());
-                		}
-    
-                		if ((bigValue.compareTo(maxLong) > 0 || bigValue.compareTo(minLong) < 0 ) && dataDef.equals(DataTypeDefinition.LONG))
-                		{
-                			throw new CmisConstraintException("Value is out of range for property " + propertyQName.getLocalName());
-                		}
-                	}
-    
-                	nodeService.setProperty(nodeRef, propertyQName, value);
-        		}
-        	}
+            {
+                // overflow check
+                if (propDef.getPropertyDefinition().getPropertyType() == PropertyType.INTEGER && value instanceof BigInteger)
+                {
+                    org.alfresco.service.cmr.dictionary.PropertyDefinition def = dictionaryService.getProperty(propertyQName);
+                    QName dataDef = def.getDataType().getName();
+                    BigInteger bigValue = (BigInteger) value;
+
+                    if ((bigValue.compareTo(maxInt) > 0 || bigValue.compareTo(minInt) < 0) && dataDef.equals(DataTypeDefinition.INT))
+                    {
+                        throw new CmisConstraintException("Value is out of range for property " + propertyQName.getLocalName());
+                    }
+
+                    if ((bigValue.compareTo(maxLong) > 0 || bigValue.compareTo(minLong) < 0) && dataDef.equals(DataTypeDefinition.LONG))
+                    {
+                        throw new CmisConstraintException("Value is out of range for property " + propertyQName.getLocalName());
+                    }
+                }
+
+                nodeService.setProperty(nodeRef, propertyQName, value);
+            }
         }
     }
 

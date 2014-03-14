@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ScriptPagingDetails;
 import org.json.simple.JSONObject;
@@ -247,7 +248,7 @@ public class ForumTopicsFilteredGet extends AbstractDiscussionWebScript
    protected Pair<String, String> getSearchQuery(SiteInfo site, String author, int daysAgo)
    {
       String search = String.format(SEARCH_QUERY,
-            (site != null ? "cm:" + site.getShortName() : "*"),
+            (site != null ? "cm:" + ISO9075.encode(site.getShortName()) : "*"),
             getDateXDaysAgo(daysAgo)
       );
 

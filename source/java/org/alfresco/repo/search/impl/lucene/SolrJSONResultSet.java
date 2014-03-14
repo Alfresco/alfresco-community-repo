@@ -37,6 +37,8 @@ import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,6 +48,8 @@ import org.json.JSONObject;
  */
 public class SolrJSONResultSet implements ResultSet
 {
+    private static final Log logger = LogFactory.getLog(SolrJSONResultSet.class);
+    
     private NodeService nodeService;
     
     private ArrayList<Pair<Long, Float>> page;
@@ -91,12 +95,14 @@ public class SolrJSONResultSet implements ResultSet
             numberFound = response.getLong("numFound");
             start = response.getLong("start");
             maxScore = Float.valueOf(response.getString("maxScore"));
-            lastIndexedTxId = json.getLong("lastIndexedTx");
+            if (json.has("lastIndexedTx"))
+            {
+                lastIndexedTxId = json.getLong("lastIndexedTx");
+            }
             
             JSONArray docs = response.getJSONArray("docs");
             
             int numDocs = docs.length();
-           
             
             ArrayList<Long> rawDbids = new ArrayList<Long>(numDocs);
             ArrayList<Float> rawScores = new ArrayList<Float>(numDocs); 
@@ -161,7 +167,7 @@ public class SolrJSONResultSet implements ResultSet
         }
         catch (JSONException e)
         {
-           
+           logger.info(e.getMessage());
         }
         // We'll say we were unlimited if we got a number less than the limit
         this.resultSetMetaData = new SimpleResultSetMetaData(

@@ -108,7 +108,7 @@ public class ActivitiesImpl implements Activities
 	
 	private String getSiteId(String siteNetwork)
 	{
-		String siteId = null;
+		String siteId = siteNetwork;
 
         int idx = siteNetwork.lastIndexOf(TenantService.SEPARATOR);
         if(idx != -1)

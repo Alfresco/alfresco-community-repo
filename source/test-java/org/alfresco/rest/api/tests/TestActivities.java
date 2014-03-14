@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -35,20 +36,24 @@ public class TestActivities extends EnterpriseTestApi
 {
 	private TestNetwork network1;
 	private TestNetwork network2;
+	private TestNetwork defaultNetwork;
 
 	private TestPerson person1; // network1
 	private TestPerson person2; // network1
 	private TestPerson person3; // network2
+	private TestPerson person4; // defaultNetwork
 
 	private TestSite testSite; // network1
 	private TestSite testSite1; // network1
 	private TestSite testSite2; // network2
+	private TestSite testSite3; // defaultNetwork
 
 	@Before
 	public void setup() throws Exception
 	{
 		this.network1 = repoService.createNetworkWithAlias("activitiesNetwork1", true);
 		this.network2 = repoService.createNetworkWithAlias("activitiesNetwork2", true);
+		this.defaultNetwork = repoService.createNetwork(TenantService.DEFAULT_DOMAIN, true);
 
 		try
 		{
@@ -57,6 +62,7 @@ public class TestActivities extends EnterpriseTestApi
 
 			network1.create();
 			network2.create();
+			defaultNetwork.create();
 		}
 		finally
 		{
@@ -92,9 +98,22 @@ public class TestActivities extends EnterpriseTestApi
         	}
         }, network2.getId());
 
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                TestPerson person = defaultNetwork.createUser();
+                people.add(person);
+
+                return null;
+            }
+        }, defaultNetwork.getId());
+
 		this.person1 = people.get(0);
 		this.person2 = people.get(1);
 		this.person3 = people.get(2);
+		this.person4 = people.get(3);
 		
 		this.testSite = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<TestSite>()
         {
@@ -258,6 +277,41 @@ public class TestActivities extends EnterpriseTestApi
 			}
 		}, person3.getId(), network2.getId());
 		
+        this.testSite3 = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<TestSite>()
+        {
+            @SuppressWarnings("synthetic-access")
+            public TestSite execute() throws Throwable
+            {
+                return TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
+                {
+                    public TestSite doWork() throws Exception
+                    {
+                        SiteInformation siteInfo = new SiteInformation(GUID.generate(), "", "", SiteVisibility.PUBLIC);
+                        return defaultNetwork.createSite(siteInfo);
+                    }
+                }, person4.getId(), defaultNetwork.getId());
+            }
+        }, false, true);		
+        
+        
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+        {
+            @SuppressWarnings("unchecked")
+            @Override
+            public Void doWork() throws Exception
+            {
+                JSONObject activityData = new JSONObject();
+                activityData.put("role", "Consumer");
+                activityData.put("memberUserName", person4.getId());
+                activityData.put("memberFirstName", person4.getFirstName());
+                activityData.put("memberLastName", person4.getLastName());
+                activityData.put("title", (person4.getFirstName() + " " + person4.getLastName() + " (" + person4.getId() + ")").trim());
+                repoService.postActivity("org.alfresco.site.user-joined", testSite3.getSiteId(), activityData);
+
+                return null;
+            }
+        }, person4.getId(), defaultNetwork.getId());
+
 		repoService.generateFeed();	
 	}
 
@@ -266,6 +320,32 @@ public class TestActivities extends EnterpriseTestApi
 	{
 		People peopleProxy = publicApiClient.people();
 
+        //Test with default tenant domain. see ALF-20448
+        {
+            List<Activity> expectedActivities = TenantUtil.runAsUserTenant(new TenantRunAsWork<List<Activity>>()
+            {
+                @Override
+                public List<Activity> doWork() throws Exception
+                {
+                    List<Activity> activities = repoService.getActivities(person4.getId(), null, false, true);
+                    return activities;
+                }
+            }, person4.getId(), defaultNetwork.getId());
+
+            {
+                int skipCount = 0;
+                int maxItems = expectedActivities.size();
+                Paging paging = getPaging(skipCount, maxItems, expectedActivities.size(), null);
+
+                Map<String, String> params = createParams(paging, null);
+                params.put("who", String.valueOf(ActivityWho.me));
+                publicApiClient.setRequestContext(new RequestContext(defaultNetwork.getId(), person4.getId()));
+                ListResponse<Activity> response = peopleProxy.getActivities(person4.getId(), params);
+                checkList(expectedActivities.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), response);
+            }
+
+        }
+	      
 		// Test Case cloud-2204
 		// Test case cloud-1500
 		// Test Case cloud-2216

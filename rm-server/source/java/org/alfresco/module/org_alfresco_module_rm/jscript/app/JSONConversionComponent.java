@@ -257,7 +257,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                 }
                 case HOLD:
                 {
-                    result = "hold-container";
+                    result = "hold";
                     break;
                 }
                 case TRANSFER:

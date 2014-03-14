@@ -2,12 +2,16 @@
    <shortname>Gets the list of the hold(s)</shortname>
    <description><![CDATA[
    WebScript to get the list of the available holds in the holds container.
-   If an item node reference has been specified only those holds will be
-   retrieved which have the item node references, otherwise all hold node
-   references will be retrieved.
+   If an item node reference has not been specified all the hold node
+   references will be retrieved. If an item node reference has been specified
+   the list of the retrieved hold node references depends on the value of the
+   includeInHold parameter. If this is set to true a list of hold node 
+   references will be retrieved which have the item node reference in it
+   (this is the default) otherwise a list of hold node references will be
+   retrieved which do not include the given node reference.
    ]]>
    </description>
-   <url>/api/rma/{store_type}/{store_id}/{id}/holds?itemNodeRef={itemNodeRef?}</url>
+   <url>/api/rma/{store_type}/{store_id}/{id}/holds?itemNodeRef={itemNodeRef?}&amp;includedInHold={includedInHold?}</url>
    <url>/api/rma/holds?itemNodeRef={itemNodeRef?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>

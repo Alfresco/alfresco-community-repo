@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -105,10 +106,10 @@ public class HoldServiceImpl implements HoldService, RecordsManagementModel
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService#getHoldsInFilePlan(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService#getHolds(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public List<NodeRef> getHoldsInFilePlan(NodeRef filePlan)
+    public List<NodeRef> getHolds(NodeRef filePlan)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
 
@@ -124,21 +125,34 @@ public class HoldServiceImpl implements HoldService, RecordsManagementModel
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService#getHoldsForItem(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService#getHolds(org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
     @Override
-    public List<NodeRef> getHoldsForItem(NodeRef nodeRef)
+    public List<NodeRef> getHolds(NodeRef nodeRef, boolean includedInHold)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
+        List<NodeRef> result = new ArrayList<NodeRef>();
+
         List<ChildAssociationRef> holdsAssocs = nodeService.getParentAssocs(nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
-        List<NodeRef> holds = new ArrayList<NodeRef>(holdsAssocs.size());
+        List<NodeRef> holdsNotIncludingNodeRef = new ArrayList<NodeRef>(holdsAssocs.size());
         for (ChildAssociationRef holdAssoc : holdsAssocs)
         {
-            holds.add(holdAssoc.getParentRef());
+            holdsNotIncludingNodeRef.add(holdAssoc.getParentRef());
+        }
+        result.addAll(holdsNotIncludingNodeRef);
+
+        if (!includedInHold)
+        {
+            NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
+            List<NodeRef> allHolds = getHolds(filePlan);
+            @SuppressWarnings("unchecked")
+            List<NodeRef> holdsIncludingNodeRef = ListUtils.subtract(allHolds, holdsNotIncludingNodeRef);
+            result.clear();
+            result.addAll(holdsIncludingNodeRef);
         }
 
-        return holds;
+        return result;
     }
 
     /**
@@ -169,18 +183,23 @@ public class HoldServiceImpl implements HoldService, RecordsManagementModel
             // Link the record to the hold
             nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
 
-            // Apply the freeze aspect
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
+            // Apply the freeze aspect
             props.put(PROP_FROZEN_AT, new Date());
             props.put(PROP_FROZEN_BY, AuthenticationUtil.getFullyAuthenticatedUser());
-            nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
+            boolean hasFrozenAspect = nodeService.hasAspect(nodeRef, ASPECT_FROZEN);
 
-            // Log a message about applying the the frozen aspect
-            if (logger.isDebugEnabled())
+
+            if (!hasFrozenAspect)
             {
-                StringBuilder msg = new StringBuilder();
-                msg.append("Frozen aspect applied to '").append(nodeRef).append("'.");
-                logger.debug(msg.toString());
+                nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
+
+                if (logger.isDebugEnabled())
+                {
+                    StringBuilder msg = new StringBuilder();
+                    msg.append("Frozen aspect applied to '").append(nodeRef).append("'.");
+                    logger.debug(msg.toString());
+                }
             }
 
             // Mark all the folders contents as frozen
@@ -190,7 +209,7 @@ public class HoldServiceImpl implements HoldService, RecordsManagementModel
                 for (NodeRef record : records)
                 {
                     // no need to freeze if already frozen!
-                    if (nodeService.hasAspect(record, ASPECT_FROZEN) == false)
+                    if (!hasFrozenAspect)
                     {
                         nodeService.addAspect(record, ASPECT_FROZEN, props);
 
@@ -232,6 +251,12 @@ public class HoldServiceImpl implements HoldService, RecordsManagementModel
         for (NodeRef hold : holds)
         {
             nodeService.removeChild(hold, nodeRef);
+        }
+
+        List<NodeRef> holdList = getHolds(nodeRef, true);
+        if (holdList.size() == 0)
+        {
+            nodeService.removeAspect(nodeRef, ASPECT_FROZEN);
         }
     }
 }

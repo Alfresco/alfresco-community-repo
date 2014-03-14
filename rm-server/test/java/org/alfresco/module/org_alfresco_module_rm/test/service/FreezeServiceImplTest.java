@@ -65,7 +65,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertTrue(freezeService.hasFrozenChildren(rmFolder));
 
             // Check the hold exists
-            List<NodeRef> holdAssocs = holdService.getHoldsInFilePlan(filePlan);
+            List<NodeRef> holdAssocs = holdService.getHolds(filePlan);
             assertNotNull(holdAssocs);
             assertEquals(1, holdAssocs.size());
             NodeRef holdNodeRef = holdAssocs.iterator().next();
@@ -98,7 +98,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertTrue(freezeService.isHold(newHold));
 
             // Check the holds exist
-            holdAssocs = holdService.getHoldsInFilePlan(filePlan);
+            holdAssocs = holdService.getHolds(filePlan);
             assertNotNull(holdAssocs);
             assertEquals(2, holdAssocs.size());
             for (NodeRef hold : holdAssocs)
@@ -136,7 +136,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             freezeService.unFreeze(recordThree);
 
             // Check the holds
-            holdAssocs = holdService.getHoldsInFilePlan(filePlan);
+            holdAssocs = holdService.getHolds(filePlan);
             assertNotNull(holdAssocs);
             assertEquals(2, holdAssocs.size());
             for (NodeRef hold : holdAssocs)
@@ -175,7 +175,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             freezeService.relinquish(holdNodeRef);
 
             // Check the existing hold
-            holdAssocs = holdService.getHoldsInFilePlan(filePlan);
+            holdAssocs = holdService.getHolds(filePlan);
             assertNotNull(holdAssocs);
             assertEquals(1, holdAssocs.size());
 
@@ -184,7 +184,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             freezeService.unFreeze(freezeService.getFrozen(holdNodeRef));
 
             // All holds should be deleted
-            holdAssocs = holdService.getHoldsInFilePlan(filePlan);
+            holdAssocs = holdService.getHolds(filePlan);
             assertEquals(0, holdAssocs.size());
 
             // Check the nodes are unfrozen
@@ -204,7 +204,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertTrue(freezeService.hasFrozenChildren(rmFolder));
 
             // Check the hold
-            holdAssocs = holdService.getHoldsInFilePlan(filePlan);
+            holdAssocs = holdService.getHolds(filePlan);
             assertNotNull(holdAssocs);
             assertEquals(1, holdAssocs.size());
 

@@ -1669,8 +1669,7 @@
       <property name="objectDefinitionSource">
          <value>
             <![CDATA[
-               org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService.getHoldsInFilePlan=RM_ALLOW
-               org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService.getHoldsForItem=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService.getHolds=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService.addToHoldContainer=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService.addToHoldContainers=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService.removeFromHoldContainer=RM_ALLOW

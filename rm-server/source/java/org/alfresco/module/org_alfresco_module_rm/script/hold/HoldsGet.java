@@ -91,17 +91,18 @@ public class HoldsGet extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        NodeRef filePlan = getFilePlan(req);
         NodeRef itemNodeRef = getItemNodeRef(req);
         List<NodeRef> holds = new ArrayList<NodeRef>();
 
         if (itemNodeRef == null)
         {
-            holds.addAll(holdService.getHoldsInFilePlan(filePlan));
+            NodeRef filePlan = getFilePlan(req);
+            holds.addAll(holdService.getHolds(filePlan));
         }
         else
         {
-            holds.addAll(holdService.getHoldsForItem(itemNodeRef));
+            boolean includedInHold = getIncludedInHold(req);
+            holds.addAll(holdService.getHolds(itemNodeRef, includedInHold));
         }
 
         List<Hold> holdObjects = new ArrayList<Hold>(holds.size());
@@ -119,7 +120,7 @@ public class HoldsGet extends DeclarativeWebScript
     }
 
     /**
-     * Helper method to get the file plan
+     * Helper method to get the file plan from the request
      *
      * @param req The webscript request
      * @return The {@link NodeRef} of the file plan
@@ -150,7 +151,7 @@ public class HoldsGet extends DeclarativeWebScript
     }
 
     /**
-     * Helper method to get the item node reference
+     * Helper method to get the item node reference from the request
      *
      * @param req The webscript request
      * @return The {@link NodeRef} of the item (record / record folder) or null if the parameter has not been passed
@@ -164,6 +165,23 @@ public class HoldsGet extends DeclarativeWebScript
             itemNodeRef = new NodeRef(nodeRef);
         }
         return itemNodeRef;
+    }
+
+    /**
+     * Helper method to get the includeInHold parameter value from the request
+     *
+     * @param req The webscript request
+     * @return The value of the includeInHold parameter
+     */
+    private boolean getIncludedInHold(WebScriptRequest req)
+    {
+        boolean result = true;
+        String includedInHold = req.getParameter("includedInHold");
+        if (StringUtils.isNotBlank(includedInHold))
+        {
+            result = Boolean.valueOf(includedInHold).booleanValue();
+        }
+        return result;
     }
 
     /**

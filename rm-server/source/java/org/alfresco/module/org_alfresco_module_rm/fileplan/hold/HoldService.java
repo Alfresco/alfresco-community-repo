@@ -36,15 +36,17 @@ public interface HoldService
      * @param filePlan The {@link NodeRef} of the file plan
      * @return List of hold node references
      */
-    List<NodeRef> getHoldsInFilePlan(NodeRef filePlan);
+    List<NodeRef> getHolds(NodeRef filePlan);
 
     /**
      * Gets the list of all the holds within the holds container for the given node reference
      *
-     * @param nodeRef The {@link NodeRef} of the record / record folder which will be in the retrieved list of hold(s)
-     * @return List of hold node references which has the node reference of the given record / record folder in it
+     * @param nodeRef The {@link NodeRef} of the record / record folder
+     * @param includedInHold <code>true</code> to retrieve the list of hold node references which will include the node reference
+     * <code>false</code> to get a list of node references which will not have the given node reference
+     * @return List of hold node references
      */
-    List<NodeRef> getHoldsForItem(NodeRef nodeRef);
+    List<NodeRef> getHolds(NodeRef nodeRef, boolean includedInHold);
 
     /**
      * Adds the record to the given hold

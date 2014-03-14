@@ -54,7 +54,7 @@ public class AlfrescoCmisStreamInterceptor implements MethodInterceptor
         Object[] arguments = mi.getArguments();
         for (int i = 0; i < parameterTypes.length; i++)
         {
-            if (parameterTypes[i].isAssignableFrom(ContentStreamImpl.class))
+            if (arguments[i] instanceof ContentStreamImpl)
             {
             	ContentStreamImpl contentStream = (ContentStreamImpl) arguments[i];
                 if (contentStream != null)

@@ -78,9 +78,11 @@ import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.CmisExtensionElementImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.ExtensionDataImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertiesImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIdImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerDefinitionImpl;
@@ -637,6 +639,37 @@ public class CMISTest
             });
             assertEquals("Mimetype is not defined correctly.", MimetypeMap.MIMETYPE_HTML, contentType);
         }
+    }
+
+    /**
+     * ALF-20389 Test Alfresco cmis stream interceptor that checks content stream for mimetype. Only ContentStreamImpl extensions should take palace.
+     */
+    @Test
+    public void testGetRepositoryInfos()
+    {
+        boolean cmisEx = false;
+        List<RepositoryInfo> infoDataList = null;
+        try
+        {
+            infoDataList = withCmisService(new CmisServiceCallback<List<RepositoryInfo>>()
+            {
+                @Override
+                public List<RepositoryInfo> execute(CmisService cmisService)
+                {
+                    ExtensionDataImpl result = new ExtensionDataImpl();
+                    List<CmisExtensionElement> extensions = new ArrayList<CmisExtensionElement>();
+                    result.setExtensions(extensions);
+
+                    return cmisService.getRepositoryInfos(result);
+                }
+            });
+        }
+        catch (CmisRuntimeException e)
+        {
+            cmisEx = true;
+        }
+
+        assertNotNull(cmisEx ? "CmisRuntimeException was thrown. Please, take a look on ALF-20389" : "No CMIS repository information was retrieved", infoDataList);
     }
 
     private static class TestContext

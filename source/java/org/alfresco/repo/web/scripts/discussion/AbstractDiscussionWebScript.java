@@ -403,24 +403,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        List<Map<String,Object>> items = new ArrayList<Map<String,Object>>();
        for (TopicInfo topic : topics)
        {
-          // ACE-772 fix of incorrect display of topics into "My Discussions" dashlet.
-          // Into "My Discussions" dashlet forum topic will be displayed only if user is a member of that site.
-          if (site == null)
-          {
-             String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-             String siteShortName = topic.getShortSiteName();
-             boolean isSiteMember = siteService.isMember(siteShortName, currentUser);
-
-             if (isSiteMember)
-             {
-                items.add(renderTopic(topic, site));
-             }
-          }
-          // Display all topics on the forum of the site.
-          else
-          {
-             items.add(renderTopic(topic, site));
-          }
+          items.add(renderTopic(topic, site));
        }
        model.put("items", items);
        

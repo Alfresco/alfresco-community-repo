@@ -78,6 +78,7 @@ public class SiteServiceTest extends BaseWebScriptTest
     private static final String URL_SITES = "/api/sites";
     private static final String URL_SITES_QUERY = URL_SITES + "/query";
     private static final String URL_MEMBERSHIPS = "/memberships";
+    private static final String URL_SITES_ADMIN = "/api/admin-sites";
     
     private List<String> createdSites = new ArrayList<String>(5);
     
@@ -1345,33 +1346,64 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertEquals(SiteVisibility.PRIVATE.toString(), result.get("visibility"));
 
         this.authenticationComponent.setCurrentUser(USER_THREE);
-        Response response = sendRequest(new GetRequest(URL_SITES), 200);
-        JSONArray jsonArray = new JSONArray(response.getContentAsString());
-        // USER_THREE can see the public and moderated sites
-        assertTrue("result too small", jsonArray.length() >= 2);
-        assertFalse(USER_THREE + " doesn’t have permission to access private sites that he is not member of.",
-                    canSeePrivateSites(jsonArray));
+        // Note: we'll get 404 rather than 403
+        sendRequest(new GetRequest(URL_SITES_ADMIN), 404);
         
         this.authenticationComponent.setCurrentUser(USER_FOUR_AS_SITE_ADMIN);
-        // Even though user4 is a siteAdmin, if a request doesn’t specify
-        // the 'admin=true' query param, the result will be based on his access rights.
-        response = sendRequest(new GetRequest(URL_SITES), 200);
-        assertFalse(USER_FOUR_AS_SITE_ADMIN
-                    + " doesn’t have permission to access private sites that he is not member of.",
-                    canSeePrivateSites(jsonArray));
+        Response response = sendRequest(new GetRequest(URL_SITES_ADMIN), 200);
+        JSONObject jsonObject = new JSONObject(response.getContentAsString());
+        JSONArray jsonArray = jsonObject.getJSONObject("list").getJSONArray("entries");
         
-        response = sendRequest(new GetRequest(URL_SITES+"?admin=true"), 200);
-        jsonArray = new JSONArray(response.getContentAsString());
         int siteAdminGetSitesSize = jsonArray.length(); 
         // SiteAdmin can see the public, moderated and private sites
         assertTrue("result too small", siteAdminGetSitesSize >= 4);
         assertTrue("Site admin can access all the sites (PUBLIC | MODERATED | PRIVATE).", canSeePrivateSites(jsonArray));
         
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
-        response = sendRequest(new GetRequest(URL_SITES), 200);
-        jsonArray = new JSONArray(response.getContentAsString());
+        response = sendRequest(new GetRequest(URL_SITES_ADMIN), 200);
+        jsonObject = new JSONObject(response.getContentAsString());
+        jsonArray = jsonObject.getJSONObject("list").getJSONArray("entries");;
         assertEquals("SiteAdmin must have access to the same sites as the super Admin.", siteAdminGetSitesSize,
                     jsonArray.length());
+    }
+    
+    public void testGetAllSitesPagedAsSiteAdmin() throws Exception
+    {
+        // we use this as a name filter
+        long siteNamePrefix = System.currentTimeMillis();
+        String siteNameSuffix = GUID.generate();;
+        String user1PublicSiteName = siteNamePrefix + siteNameSuffix.substring(siteNameSuffix.lastIndexOf('-'));
+        
+        createSite("myPreset", user1PublicSiteName, "u1PublicSite", "myDescription",
+                    SiteVisibility.PUBLIC, 200);
+        // Create 5 more sites
+        for(int i =1; i < 6; i++)
+        {
+            createSite("myPreset", GUID.generate(), "u1PublicSite"+i, "myDescription"+i,
+                        SiteVisibility.PUBLIC, 200);
+        }
+        
+        this.authenticationComponent.setCurrentUser(USER_FOUR_AS_SITE_ADMIN);
+        
+        Response response = sendRequest(new GetRequest(URL_SITES_ADMIN+"?maxItems=5&skipCount=0"), 200);
+        JSONObject jsonObject = new JSONObject(response.getContentAsString());
+        JSONObject paging = jsonObject.getJSONObject("list").getJSONObject("pagination");
+        assertEquals("The skipCount must be 0", 0, paging.getInt("skipCount"));
+        assertEquals("The maxItems must be 5", 5, paging.getInt("maxItems"));
+        // There are only 7 sites in total (including the default alfresco site 'swsdp'),
+        // but in case there are hanging sites that haven't been cleaned, 
+        // or the default alfresco site has been deleted by previous tests, we check for what we have created in this test.
+        assertTrue("The totalItems must be 6", paging.getInt("totalItems") >= 6 );
+        assertTrue(paging.getBoolean("hasMoreItems"));
+        
+        response = sendRequest(new GetRequest(URL_SITES_ADMIN+"?nf="+siteNamePrefix+"&maxItems=5&skipCount=0"), 200);
+        jsonObject = new JSONObject(response.getContentAsString());
+        paging = jsonObject.getJSONObject("list").getJSONObject("pagination");
+        assertEquals("The count must be 1", 1, paging.getInt("count"));
+        assertEquals("The maxItems must be 5", 5, paging.getInt("maxItems"));
+        assertEquals("The totalItems must be 1", 1, paging.getInt("totalItems"));
+        assertFalse(paging.getBoolean("hasMoreItems"));
+
     }
 
     private boolean canSeePrivateSites(JSONArray jsonArray) throws Exception
@@ -1379,7 +1411,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         for (int i = 0; i < jsonArray.length(); i++)
         {
             JSONObject obj = jsonArray.getJSONObject(i);
-            String visibility = obj.getString("visibility");
+            String visibility = obj.getJSONObject("entry").getString("visibility");
             if (SiteVisibility.PRIVATE.equals(SiteVisibility.valueOf(visibility)))
             {
                 return true;

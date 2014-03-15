@@ -1343,10 +1343,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         }
         if (enforcePermissions)
         {
+            // Note: Here we use AuthenticationUtil.getRunAsUser() to check for siteAdmin,
+            // as some codes like LocalFeedTaskProcessor.canReadSite dependent on runAsUser.
             return siteNodeRef == null
-                        || !(this.permissionService.hasPermission(siteNodeRef,
-                                    PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED) || isSiteAdmin(AuthenticationUtil
-                                    .getFullyAuthenticatedUser())) ? null : siteNodeRef;
+                        || !(this.permissionService.hasPermission(siteNodeRef, PermissionService.READ_PROPERTIES)
+                                    .equals(AccessStatus.ALLOWED) || isSiteAdmin(AuthenticationUtil.getRunAsUser())) ? null : siteNodeRef;
         }
         else
         {

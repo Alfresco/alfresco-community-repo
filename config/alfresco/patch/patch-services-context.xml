@@ -3676,5 +3676,40 @@
             <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/restructure-idx_alf_nprop_s-MSSQL.sql</value>
         </property>
     </bean>
+    
+    <bean id="patch.siteAdministrators" class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch" parent="basePatch" >
+        <property name="id"><value>patch.siteAdministrators</value></property>
+        <property name="description"><value>patch.siteAdministrators.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>7002</value></property>
+        <property name="targetSchema"><value>7003</value></property>
+        <property name="dependsOn" >
+            <list>
+               <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="groupAuthorityDetails" >
+            <bean class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch$GroupAuthorityDetails">
+                <property name="groupName">
+                    <value>SITE_ADMINISTRATORS</value>
+                </property>
+                <property name="groupDisplayName">
+                    <value>SITE_ADMINISTRATORS</value>
+                </property>
+                <property name="adminUserName">
+                    <value>${alfresco_user_store.adminusername}</value>
+                </property>
+                <property name="authorityZones">
+                    <set>
+                        <value>APP.DEFAULT</value>
+                        <value>AUTH.ALF</value>
+                     </set>
+                </property>
+             </bean>
+        </property>
+    </bean>
  
 </beans>

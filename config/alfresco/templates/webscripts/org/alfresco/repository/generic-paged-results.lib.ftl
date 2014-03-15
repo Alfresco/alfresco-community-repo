@@ -48,3 +48,41 @@ Usage:
   </#if>
 </#escape>
 </#macro>
+
+<#--
+   Renders paged results information to conforms to the RESTful APIs standards.
+   The passed in data object should contain following attributes:
+   count: The actual number of elements returned
+   hasMoreItems: True if more items on next page
+   totalItems: The total result count
+   skipCount: The number of elements to skip before retrieving the page
+   maxItems: The number of elements requested to be returned 
+   
+Usage:
+   <#import "generic-paged-results.lib.ftl" as gen/>
+   {
+   <@gen.standardRestfulPagedResults data=data ; item>
+      output of the individual item, for example by calling another macro:
+      <@yourLib.itemJSON item=item />
+   </@gen.standardRestfulPagedResults>
+   }
+-->
+<#macro standardRestfulPagedResults data>
+	"list" : {
+		"pagination" : {
+			"count" : ${data.count?c},
+			"hasMoreItems" : ${data.hasMoreItems?c},
+			"totalItems" : ${data.totalItems?c},
+			"skipCount" :${data.skipCount?c},
+			"maxItems" : ${data.maxItems?c}
+		},
+	    "entries" : [{
+	<#list data.items as item>
+	            "entry" : {
+                    <#nested item>
+	            }    
+		    }<#if item_has_next>, {</#if>
+	</#list>
+        ]
+	}
+</#macro>

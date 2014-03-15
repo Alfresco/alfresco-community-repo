@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Get sites</shortname>
+  <description>Get a collection of the sites in the repository accessible to site administrators. The collection can be filtered by name.</description>
+  <url>/api/admin-sites?nf={namefilter?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;roles={roles?}&amp;</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

@@ -80,8 +80,9 @@ public class SiteAdminSitesGet extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         // check the current user access rights
-        if (!siteService.isSiteAdmin(AuthenticationUtil.getFullyAuthenticatedUser()))
+        if (!siteService.isSiteAdmin(currentUser))
         {
             // Note: security, no message to indicate why
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Resource no found.");
@@ -113,8 +114,8 @@ public class SiteAdminSitesGet extends DeclarativeWebScript
         for (SiteInfo info : result)
         {
             sites.add(SiteState.create(info,
-                        siteService.listMembers(info.getShortName(), null, SiteModel.SITE_MANAGER, 0), nodeService,
-                        personService));
+                        siteService.listMembers(info.getShortName(), null, SiteModel.SITE_MANAGER, 0), currentUser,
+                        nodeService, personService));
         }
 
         Map<String, Object> sitesData = new HashMap<String, Object>(6);

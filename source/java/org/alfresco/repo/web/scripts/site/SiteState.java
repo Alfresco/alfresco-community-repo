@@ -40,19 +40,21 @@ public class SiteState
 
     private SiteInfo siteInfo;
     private List<MemberState> members;
+    private boolean currentUserSiteManager;
 
     private SiteState()
     {
     }
 
-    public static SiteState create(SiteInfo siteInfo, Map<String, String> members, NodeService nodeService,
-                PersonService personService)
+    public static SiteState create(SiteInfo siteInfo, Map<String, String> members, String currentUser,
+                NodeService nodeService, PersonService personService)
     {
         SiteState result = new SiteState();
         result.members = new ArrayList<MemberState>(members.size());
 
         result.siteInfo = siteInfo;
 
+        boolean found = false;
         Set<String> siteMembers = members.keySet();
         for (String userName : siteMembers)
         {
@@ -62,6 +64,12 @@ public class SiteState
                 String firstName = (String) nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME);
                 String lastName = (String) nodeService.getProperty(person, ContentModel.PROP_LASTNAME);
                 result.members.add(new MemberState(userName, firstName, lastName));
+            }
+            
+            if (!found && userName.equals(currentUser))
+            {
+                found = true;
+                result.currentUserSiteManager = true;
             }
         }
 
@@ -76,6 +84,11 @@ public class SiteState
     public List<MemberState> getMembers()
     {
         return this.members;
+    }
+
+    public boolean isCurrentUserSiteManager()
+    {
+        return this.currentUserSiteManager;
     }
 
     public static class MemberState

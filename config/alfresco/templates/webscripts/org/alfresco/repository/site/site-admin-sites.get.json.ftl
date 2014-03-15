@@ -10,6 +10,7 @@
 	                "createdDate" : "${xmldate(item.siteInfo.createdDate)}",
 	                "lastModifiedDate" : "${xmldate(item.siteInfo.lastModifiedDate)}",
 	                "visibility" : "${item.siteInfo.visibility}",
+	                "userIsSiteManager" : "${item.currentUserSiteManager?c}",
 	                "siteManagers" : [{
 	                     <#list item.members as manager>
 	                        "entry" : {

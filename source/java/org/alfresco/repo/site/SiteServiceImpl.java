@@ -2299,11 +2299,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // -- the member does not already have permissions
         // ... then we can set the permissions as system user
         final String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-        return (isSiteAdmin(currentUserName)
-                    || (permissionService.hasPermission(siteNodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
-                    || (SiteVisibility.PUBLIC.equals(visibility)
-                    && role.equals(SiteModel.SITE_CONSUMER)
-                    && authorityName.equals(currentUserName) && currentRole == null));
+        return ((permissionService.hasPermission(siteNodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
+                    || isSiteAdmin(currentUserName) || (SiteVisibility.PUBLIC.equals(visibility)
+                    && role.equals(SiteModel.SITE_CONSUMER) && authorityName.equals(currentUserName) && currentRole == null));
     }
     
     /**

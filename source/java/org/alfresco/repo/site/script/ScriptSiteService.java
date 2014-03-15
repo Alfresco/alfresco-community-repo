@@ -227,7 +227,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
                 {
                     return getSites(filter, sitePresetFilter, size);
                 }
-            }, AuthenticationUtil.getSystemUserName());
+            }, AuthenticationUtil.getAdminUserName());
         }
         else
         {
@@ -362,7 +362,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
                 {
                     return siteService.getSite(shortName);
                 }
-            }, AuthenticationUtil.getSystemUserName());
+            }, AuthenticationUtil.getAdminUserName());
         }
         else
         {

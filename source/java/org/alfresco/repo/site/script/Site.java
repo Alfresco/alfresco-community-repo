@@ -311,7 +311,7 @@ public class Site implements Serializable
                         siteService.updateSite(siteInfo);
                         return null;
                     }
-                }, AuthenticationUtil.getSystemUserName());
+                }, AuthenticationUtil.getAdminUserName());
             }
             else
             {
@@ -338,7 +338,7 @@ public class Site implements Serializable
                     siteService.deleteSite(siteInfo.getShortName());
                     return null;
                 }
-            }, AuthenticationUtil.getSystemUserName());
+            }, AuthenticationUtil.getAdminUserName());
         }
         else
         {

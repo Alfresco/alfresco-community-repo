@@ -1,7 +1,6 @@
 function main() {
    
    // This query should find the Share Resources folder 
-   // NOTE: There might be a better way to get this node (this was written by a UI Developer!)
    var alfQuery = 'PATH:"/app:company_home/app:dictionary/cm:ShareResources/cm:ApplicationTypes"';
       
    var queryDef = {

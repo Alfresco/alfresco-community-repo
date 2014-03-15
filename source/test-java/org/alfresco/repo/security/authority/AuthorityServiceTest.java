@@ -431,7 +431,8 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(authorityService.hasAdminAuthority());
         assertTrue(pubAuthorityService.hasAdminAuthority());
         Set<String> authorities = authorityService.getAuthorities();
-        assertEquals("Unexpected result: " + authorities, 4 + (SITE_CNT*3), authorityService.getAuthorities().size());
+        // 5 => [GROUP_ALFRESCO_ADMINISTRATORS, GROUP_EMAIL_CONTRIBUTORS, GROUP_EVERYONE, GROUP_SITE_ADMINISTRATORS, ROLE_ADMINISTRATOR]
+        assertEquals("Unexpected result: " + authorities, 5 + (SITE_CNT*2), authorityService.getAuthorities().size());
     }
     
     public void testNoUser()

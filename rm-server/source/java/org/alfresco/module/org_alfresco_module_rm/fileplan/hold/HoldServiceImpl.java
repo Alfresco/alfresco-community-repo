@@ -187,10 +187,8 @@ public class HoldServiceImpl implements HoldService, RecordsManagementModel
             // Apply the freeze aspect
             props.put(PROP_FROZEN_AT, new Date());
             props.put(PROP_FROZEN_BY, AuthenticationUtil.getFullyAuthenticatedUser());
-            boolean hasFrozenAspect = nodeService.hasAspect(nodeRef, ASPECT_FROZEN);
 
-
-            if (!hasFrozenAspect)
+            if (!nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
             {
                 nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
 
@@ -209,7 +207,7 @@ public class HoldServiceImpl implements HoldService, RecordsManagementModel
                 for (NodeRef record : records)
                 {
                     // no need to freeze if already frozen!
-                    if (!hasFrozenAspect)
+                    if (!nodeService.hasAspect(record, ASPECT_FROZEN))
                     {
                         nodeService.addAspect(record, ASPECT_FROZEN, props);
 

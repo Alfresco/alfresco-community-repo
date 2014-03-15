@@ -73,6 +73,7 @@ public class SiteServiceTest extends BaseWebScriptTest
     private static final String USER_TWO = "SiteTestTwo";
     private static final String USER_THREE = "SiteTestThree";
     private static final String USER_NUMERIC = "1234567890";
+    private static final String USER_FOUR_AS_SITE_ADMIN = "SiteAdmin";
     
     private static final String URL_SITES = "/api/sites";
     private static final String URL_SITES_QUERY = URL_SITES + "/query";
@@ -100,6 +101,10 @@ public class SiteServiceTest extends BaseWebScriptTest
         createUser(USER_TWO);
         createUser(USER_THREE);
         createUser(USER_NUMERIC);
+        createUser(USER_FOUR_AS_SITE_ADMIN);
+        
+        // Add user four as a member of the site admins group
+        authorityService.addAuthority("GROUP_SITE_ADMINISTRATORS", USER_FOUR_AS_SITE_ADMIN);
         
         // Do tests as user one
         this.authenticationComponent.setCurrentUser(USER_ONE);
@@ -141,6 +146,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         deleteUser(USER_TWO);
         deleteUser(USER_THREE);
         deleteUser(USER_NUMERIC);
+        deleteUser(USER_FOUR_AS_SITE_ADMIN);
 
         // Tidy-up any site's create during the execution of the test
         for (String shortName : this.createdSites)
@@ -469,19 +475,19 @@ public class SiteServiceTest extends BaseWebScriptTest
     
     public void testGroupMembership() throws Exception
     {
-    	String testGroup = "SiteServiceTestGroupA";
-    	String testGroupName = "GROUP_" + testGroup;
-    	
+        String testGroup = "SiteServiceTestGroupA";
+        String testGroupName = "GROUP_" + testGroup;
+        
         if(!authorityService.authorityExists(testGroupName))
         {
             this.authenticationComponent.setSystemUserAsCurrentUser();
-        	 
-        	testGroupName = authorityService.createAuthority(AuthorityType.GROUP, testGroup, testGroup, authorityService.getDefaultZones());
-        }     	
+             
+            testGroupName = authorityService.createAuthority(AuthorityType.GROUP, testGroup, testGroup, authorityService.getDefaultZones());
+        }       
          
         this.authenticationComponent.setCurrentUser(USER_ONE);
 
-    	// CRUD a membership group for a web site
+        // CRUD a membership group for a web site
         // Create a site
         String shortName  = GUID.generate();
         createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
@@ -495,58 +501,58 @@ public class SiteServiceTest extends BaseWebScriptTest
         
         // Create a new group membership
         {
-        	Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
-        	JSONObject newMember = new JSONObject(response.getContentAsString());
+            Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
+            JSONObject newMember = new JSONObject(response.getContentAsString());
         
-        	// Validate the return value
-        	assertEquals("role not correct", SiteModel.SITE_CONSUMER, newMember.getString("role"));
-        	JSONObject newGroup = newMember.getJSONObject("authority");
-        	assertNotNull("newGroup");
-        	assertEquals("full name not correct", testGroupName, newGroup.getString("fullName"));
-         	assertEquals("authorityType not correct", "GROUP", newGroup.getString("authorityType"));
-        	
+            // Validate the return value
+            assertEquals("role not correct", SiteModel.SITE_CONSUMER, newMember.getString("role"));
+            JSONObject newGroup = newMember.getJSONObject("authority");
+            assertNotNull("newGroup");
+            assertEquals("full name not correct", testGroupName, newGroup.getString("fullName"));
+            assertEquals("authorityType not correct", "GROUP", newGroup.getString("authorityType"));
+            
 
-        	// Now send the returned value back with a new role (COLLABORATOR)
-        	newMember.put("role", SiteModel.SITE_COLLABORATOR);
-        	response = sendRequest(new PutRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, newMember.toString(), "application/json"), 200);
-        	JSONObject updateResult = new JSONObject(response.getContentAsString());
-        	assertEquals("role not correct", SiteModel.SITE_COLLABORATOR, updateResult.getString("role"));
-        	
+            // Now send the returned value back with a new role (COLLABORATOR)
+            newMember.put("role", SiteModel.SITE_COLLABORATOR);
+            response = sendRequest(new PutRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, newMember.toString(), "application/json"), 200);
+            JSONObject updateResult = new JSONObject(response.getContentAsString());
+            assertEquals("role not correct", SiteModel.SITE_COLLABORATOR, updateResult.getString("role"));
+            
         }
         
         // Now List membership to show the group from above.
         {
-        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS), 200);   
-        	JSONArray listResult = new JSONArray(response.getContentAsString());
-        	
-        	/**
-        	 * The result should have at least 2 elements, 1 for the user who created and 1 for the group added above
-        	 */
-        	assertTrue("result too small", listResult.length() >= 2);
-        	for(int i = 0; i < listResult.length(); i++)
-        	{
-        		JSONObject obj = listResult.getJSONObject(i);
-        		JSONObject authority = obj.getJSONObject("authority");
-        		if(authority.getString("authorityType").equals("GROUP"))
-        		{
-        			assertEquals("full name not correct", testGroupName, authority.getString("fullName"));
-        			
-        		}
-        		if(authority.getString("authorityType").equals("USER"))
-        		{
-        			assertEquals("full name not correct", USER_ONE, authority.getString("fullName"));
-        		}
-        	}
+            Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS), 200);   
+            JSONArray listResult = new JSONArray(response.getContentAsString());
+            
+            /**
+             * The result should have at least 2 elements, 1 for the user who created and 1 for the group added above
+             */
+            assertTrue("result too small", listResult.length() >= 2);
+            for(int i = 0; i < listResult.length(); i++)
+            {
+                JSONObject obj = listResult.getJSONObject(i);
+                JSONObject authority = obj.getJSONObject("authority");
+                if(authority.getString("authorityType").equals("GROUP"))
+                {
+                    assertEquals("full name not correct", testGroupName, authority.getString("fullName"));
+                    
+                }
+                if(authority.getString("authorityType").equals("USER"))
+                {
+                    assertEquals("full name not correct", USER_ONE, authority.getString("fullName"));
+                }
+            }
         }
         
         // Now get the group membership from above
         // Now List membership to show the group from above.
         {
-        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + '/' + testGroupName), 200);   
-        	JSONObject getResult = new JSONObject(response.getContentAsString());
-        	System.out.println(response.getContentAsString());
-        	JSONObject grp = getResult.getJSONObject("authority");
-        	assertEquals("full name not correct", testGroupName, grp.getString("fullName"));
+            Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + '/' + testGroupName), 200);   
+            JSONObject getResult = new JSONObject(response.getContentAsString());
+            System.out.println(response.getContentAsString());
+            JSONObject grp = getResult.getJSONObject("authority");
+            assertEquals("full name not correct", testGroupName, grp.getString("fullName"));
         }
         
         // cleanup
@@ -733,29 +739,29 @@ public class SiteServiceTest extends BaseWebScriptTest
         String acceptURL = "page/accept-invite";
         String rejectURL = "page/reject-invite";
         
-    	// Create a nominated invitation
+        // Create a nominated invitation
         String nominatedId = createNominatedInvitation(shortName, inviteeFirstName, inviteeLastName, inviteeEmail, inviteeUserName, roleName, serverPath, acceptURL, rejectURL);
         
-    	// Get the nominated invitation
-        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + nominatedId), 200);	
+        // Get the nominated invitation
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + nominatedId), 200);  
         
         //Create a new moderated invitation
         String moderatedId = createModeratedInvitation(shortName, inviteComments, userName, roleName);
-    	
-    	// Get the moderated invitation
+        
+        // Get the moderated invitation
         sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + moderatedId), 200);
-    	
-    	// search for the moderated invitation 
+        
+        // search for the moderated invitation 
         sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=" + userName), 200);
           
         // Search for all invitations on this site
         sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations"), 200);
-    	
-    	// cancel the nominated invitation
+        
+        // cancel the nominated invitation
         sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + "/invitations/" + nominatedId), 200);
-    	
-    	// cancel the moderated invitation
-        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + "/invitations/" + moderatedId), 200);	
+        
+        // cancel the moderated invitation
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + "/invitations/" + moderatedId), 200);   
     }
     
     /**
@@ -778,7 +784,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         /*
          * Negative test - site does not exist
          */
-       	sendRequest(new GetRequest(URL_SITES + "/rubbish/invitations/" + inviteId), 404);
+        sendRequest(new GetRequest(URL_SITES + "/rubbish/invitations/" + inviteId), 404);
         
         /*
          * Negative test - site does exist but invitation doesn't
@@ -799,7 +805,7 @@ public class SiteServiceTest extends BaseWebScriptTest
          * Positive test - get the invitation and validate that it is correct
          */
         {
-        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + inviteId), 200);
+            Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + inviteId), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             //System.out.println(response.getContentAsString());
             JSONObject data = top.getJSONObject("data");
@@ -842,7 +848,7 @@ public class SiteServiceTest extends BaseWebScriptTest
          * inviteId and inviteeUserName will be generated.
          */
         {
-        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + inviteId), 200);
+            Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + inviteId), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             //System.out.println(response.getContentAsString());
             JSONObject data = top.getJSONObject("data");
@@ -893,14 +899,14 @@ public class SiteServiceTest extends BaseWebScriptTest
         String acceptURL = "page/accept-invite";
         String rejectURL = "page/reject-invite";
         
-    	// Create a nominated invitation
+        // Create a nominated invitation
         String nominatedId = createNominatedInvitation(shortName, inviteeFirstName, inviteeLastName, inviteeEmail, inviteeUserName, roleName, serverPath, acceptURL, rejectURL);        
         
         /**
          * search by user - negative test wombat does not have an invitation 
          */
         {
-        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=wombat"), 200);
+            Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=wombat"), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             JSONArray data = top.getJSONArray("data");
             assertEquals("user wombat", data.length(), 0);
@@ -910,7 +916,7 @@ public class SiteServiceTest extends BaseWebScriptTest
          * search by user - find USER_TWO's two invitations 
          */
         {
-        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=" + USER_TWO), 200);
+            Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=" + USER_TWO), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             //System.out.println(response.getContentAsString());
             JSONArray data = top.getJSONArray("data");
@@ -927,7 +933,7 @@ public class SiteServiceTest extends BaseWebScriptTest
          */
 
         {
-        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?invitationType=MODERATED"), 200);
+            Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?invitationType=MODERATED"), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             //System.out.println(response.getContentAsString());
             JSONArray data = top.getJSONArray("data");
@@ -935,7 +941,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         }
         
         {
-        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?invitationType=NOMINATED"), 200);
+            Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?invitationType=NOMINATED"), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             //System.out.println(response.getContentAsString());
             JSONArray data = top.getJSONArray("data");
@@ -944,7 +950,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         
         // negative test - unknown invitationType
         {
-        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?invitationType=Crap"), 500);
+            Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?invitationType=Crap"), 500);
             JSONObject top = new JSONObject(response.getContentAsString());
         }
         
@@ -952,7 +958,7 @@ public class SiteServiceTest extends BaseWebScriptTest
          * search by user and type
          */
         {
-        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=" + USER_TWO + "&invitationType=MODERATED"), 200);
+            Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=" + USER_TWO + "&invitationType=MODERATED"), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             //System.out.println(response.getContentAsString());
             JSONArray data = top.getJSONArray("data");
@@ -989,10 +995,10 @@ public class SiteServiceTest extends BaseWebScriptTest
         {
             JSONObject newInvitation = new JSONObject();
             newInvitation.put("invitationType", "Grundge");
-        	newInvitation.put("inviteeRoleName", roleName);
-        	newInvitation.put("inviteeComments", inviteComments);
-        	newInvitation.put("inviteeUserName", userName);
-        	sendRequest(new PostRequest(URL_SITES + "/" + shortName + "/invitations",  newInvitation.toString(), "application/json"), Status.STATUS_BAD_REQUEST);   
+            newInvitation.put("inviteeRoleName", roleName);
+            newInvitation.put("inviteeComments", inviteComments);
+            newInvitation.put("inviteeUserName", userName);
+            sendRequest(new PostRequest(URL_SITES + "/" + shortName + "/invitations",  newInvitation.toString(), "application/json"), Status.STATUS_BAD_REQUEST);   
         }
         
         /*
@@ -1000,10 +1006,10 @@ public class SiteServiceTest extends BaseWebScriptTest
          */
         {
             JSONObject newInvitation = new JSONObject();
-        	newInvitation.put("inviteeRoleName", roleName);
-        	newInvitation.put("inviteeComments", inviteComments);
-        	newInvitation.put("inviteeUserName", userName);
-        	sendRequest(new PostRequest(URL_SITES + "/" + shortName + "/invitations",  newInvitation.toString(), "application/json"), Status.STATUS_BAD_REQUEST);   
+            newInvitation.put("inviteeRoleName", roleName);
+            newInvitation.put("inviteeComments", inviteComments);
+            newInvitation.put("inviteeUserName", userName);
+            sendRequest(new PostRequest(URL_SITES + "/" + shortName + "/invitations",  newInvitation.toString(), "application/json"), Status.STATUS_BAD_REQUEST);   
         }
         
         /*
@@ -1012,10 +1018,10 @@ public class SiteServiceTest extends BaseWebScriptTest
         {
             JSONObject newInvitation = new JSONObject();
             newInvitation.put("invitationType", "MODERATED");
-        	newInvitation.put("inviteeRoleName", "");
-        	newInvitation.put("inviteeComments", inviteComments);
-        	newInvitation.put("inviteeUserName", userName);
-        	sendRequest(new PostRequest(URL_SITES + "/" + shortName + "/invitations",  newInvitation.toString(), "application/json"), Status.STATUS_BAD_REQUEST);   
+            newInvitation.put("inviteeRoleName", "");
+            newInvitation.put("inviteeComments", inviteComments);
+            newInvitation.put("inviteeUserName", userName);
+            sendRequest(new PostRequest(URL_SITES + "/" + shortName + "/invitations",  newInvitation.toString(), "application/json"), Status.STATUS_BAD_REQUEST);   
         }
         
         /*
@@ -1024,18 +1030,18 @@ public class SiteServiceTest extends BaseWebScriptTest
         JSONObject newInvitation = new JSONObject();
         {
             newInvitation.put("invitationType", "MODERATED");
-        	newInvitation.put("inviteeRoleName", roleName);
-        	newInvitation.put("inviteeComments", inviteComments);
-        	newInvitation.put("inviteeUserName", userName);
-        	Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + "/invitations",  newInvitation.toString(), "application/json"), Status.STATUS_CREATED);   
-        	JSONObject top = new JSONObject(response.getContentAsString());
-        	JSONObject data = top.getJSONObject("data");
-        	inviteId = data.getString("inviteId");
+            newInvitation.put("inviteeRoleName", roleName);
+            newInvitation.put("inviteeComments", inviteComments);
+            newInvitation.put("inviteeUserName", userName);
+            Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + "/invitations",  newInvitation.toString(), "application/json"), Status.STATUS_CREATED);   
+            JSONObject top = new JSONObject(response.getContentAsString());
+            JSONObject data = top.getJSONObject("data");
+            inviteId = data.getString("inviteId");
             assertEquals("invitationType", "MODERATED", data.getString("invitationType"));
             assertEquals("inviteeUserName is not set", userName, data.getString("inviteeUserName"));
             assertEquals("resourceName is not correct", shortName, data.getString("resourceName"));
             assertEquals("resourceType is not correct", "WEB_SITE", data.getString("resourceType"));
-        	
+            
         }
         assertNotNull("inviteId is null", inviteId);
         assertTrue("inviteId is too small", inviteId.length() > 0);
@@ -1049,19 +1055,19 @@ public class SiteServiceTest extends BaseWebScriptTest
          */
         JSONObject newInvitation = new JSONObject();
         
-      	newInvitation.put("invitationType", "NOMINATED");
-    	newInvitation.put("inviteeRoleName", inviteeRoleName);
+        newInvitation.put("invitationType", "NOMINATED");
+        newInvitation.put("inviteeRoleName", inviteeRoleName);
         if(inviteeUserName != null)
         {
-        	// nominate an existing user
+            // nominate an existing user
             newInvitation.put("inviteeUserName", inviteeUserName);
         }
         else
         {
-        	// nominate someone else
-        	newInvitation.put("inviteeFirstName", inviteeFirstName);
-        	newInvitation.put("inviteeLastName", inviteeLastName);
-        	newInvitation.put("inviteeEmail", inviteeEmail);
+            // nominate someone else
+            newInvitation.put("inviteeFirstName", inviteeFirstName);
+            newInvitation.put("inviteeLastName", inviteeLastName);
+            newInvitation.put("inviteeEmail", inviteeEmail);
         }
         newInvitation.put("serverPath", serverPath);
         newInvitation.put("acceptURL", acceptURL);
@@ -1171,5 +1177,214 @@ public class SiteServiceTest extends BaseWebScriptTest
             this.authenticationComponent.setSystemUserAsCurrentUser();
             this.authorityService.deleteAuthority(testGroupName);
         }
+    }
+    
+    public void testChangeSiteVisibilityAsSiteAdmin() throws Exception
+    {
+        // Create a site
+        String shortName = GUID.generate();
+
+        // Create a new site
+        JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        assertEquals(SiteVisibility.PUBLIC.toString(), result.get("visibility"));
+
+        // try to change the site visibility as user2
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        JSONObject changeVisibility = new JSONObject();
+        changeVisibility.put("shortName", shortName);
+        changeVisibility.put("visibility", "PRIVATE");
+
+        // we should get AccessDeniedException
+        sendRequest(new PutRequest(URL_SITES + "/" + shortName, changeVisibility.toString(), "application/json"), 500);
+        SiteInfo siteInfo = siteService.getSite(shortName);
+        assertEquals("Site visibility should not have been changed.", SiteVisibility.PUBLIC, siteInfo.getVisibility());
+
+        // set the current user as site-admin
+        this.authenticationComponent.setCurrentUser(USER_FOUR_AS_SITE_ADMIN);
+        // Change the visibility to private
+        Response response = sendRequest(new PutRequest(URL_SITES + "/" + shortName, changeVisibility.toString(), "application/json"), 200);
+        JSONObject jsonObj = new JSONObject(response.getContentAsString());
+        assertEquals(SiteVisibility.PRIVATE.toString(), jsonObj.get("visibility"));
+
+        // Change the visibility to moderated. We want to test if we can find
+        // the private site before changing its visibility
+        changeVisibility.put("visibility", "MODERATED");
+        response = sendRequest(new PutRequest(URL_SITES + "/" + shortName, changeVisibility.toString(), "application/json"), 200);
+        jsonObj = new JSONObject(response.getContentAsString());
+        assertEquals(SiteVisibility.MODERATED.toString(), jsonObj.get("visibility"));
+
+        // Remove user4 from the site-admin group
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        authorityService.removeAuthority("GROUP_SITE_ADMINISTRATORS", USER_FOUR_AS_SITE_ADMIN);
+
+        // set the current user as site-admin
+        this.authenticationComponent.setCurrentUser(USER_FOUR_AS_SITE_ADMIN);
+        // Now that we have removed user4 from the group, try to test if he can still modify the site
+        changeVisibility.put("visibility", "PUBLIC");
+        sendRequest(new PutRequest(URL_SITES + "/" + shortName, changeVisibility.toString(), "application/json"), 500);
+        siteInfo = siteService.getSite(shortName);
+        assertEquals("Site visibility should not have been changed.", SiteVisibility.MODERATED, siteInfo.getVisibility());
+    }
+
+    public void testChangeMembershipRoleAsSiteAdmin() throws Exception
+    {
+        // Create a site
+        String shortName = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+
+        // Build the JSON membership object
+        JSONObject membership = new JSONObject();
+        membership.put("role", SiteModel.SITE_CONSUMER);
+        JSONObject person = new JSONObject();
+        person.put("userName", USER_TWO);
+        membership.put("person", person);
+
+        // Post the membership
+        Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
+        JSONObject jsonObj = new JSONObject(response.getContentAsString());
+        // Check the result
+        assertEquals(SiteModel.SITE_CONSUMER,  jsonObj.get("role"));
+        assertEquals(USER_TWO,  jsonObj.getJSONObject("authority").get("userName"));
+
+        // try to change the user role as user3
+        this.authenticationComponent.setCurrentUser(USER_THREE);
+        membership.put("role", SiteModel.SITE_COLLABORATOR);
+        sendRequest(new PutRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 500);
+        assertEquals("User's role should not have been changed.", SiteModel.SITE_CONSUMER.toString(), siteService.getMembersRole(shortName, USER_TWO));
+
+        // set the current user as site-admin
+        this.authenticationComponent.setCurrentUser(USER_FOUR_AS_SITE_ADMIN);
+        response = sendRequest(new PutRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
+        jsonObj = new JSONObject(response.getContentAsString());
+        // Check the result
+        assertEquals(SiteModel.SITE_COLLABORATOR,  jsonObj.get("role"));
+        assertEquals(USER_TWO,  jsonObj.getJSONObject("authority").get("userName"));
+    }
+    
+    public void testDeleteMembershipAsSiteAdmin() throws Exception
+    {
+        // Create a site
+        String shortName = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+
+        // Build the JSON membership object
+        JSONObject membership = new JSONObject();
+        membership.put("role", SiteModel.SITE_CONSUMER);
+        JSONObject person = new JSONObject();
+        person.put("userName", USER_TWO);
+        membership.put("person", person);
+
+        // Post the membership
+        Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
+        JSONObject jsonObj = new JSONObject(response.getContentAsString());
+        // Check the result
+        assertEquals(SiteModel.SITE_CONSUMER, jsonObj.get("role"));
+        assertEquals(USER_TWO, jsonObj.getJSONObject("authority").get("userName"));
+
+        // try to delete user2 from the site
+        this.authenticationComponent.setCurrentUser(USER_THREE);
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO), 500);
+        assertTrue(USER_THREE + " doesn’t have permission to delete users from the site", siteService.isMember(shortName, USER_TWO));
+
+        // set the current user as site-admin
+        this.authenticationComponent.setCurrentUser(USER_FOUR_AS_SITE_ADMIN);
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS + "/" + USER_TWO), 200);
+        assertFalse(siteService.isMember(shortName, USER_TWO));
+    }
+
+    public void testDeleteSiteAsSiteAdmin() throws Exception
+    {
+        // Create a site
+        String shortName = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        // Get the site
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
+
+        // try to delete the site
+        this.authenticationComponent.setCurrentUser(USER_THREE);
+        // Delete the site
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName), 500);
+        // Get the site
+        Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
+        JSONObject jsonObj = new JSONObject(response.getContentAsString());
+        assertEquals(shortName, jsonObj.get("shortName"));
+
+        // set the current user as site-admin
+        this.authenticationComponent.setCurrentUser(USER_FOUR_AS_SITE_ADMIN);
+        // Delete the site
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName), 200);
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName), 404);
+    }
+
+    public void testGetAllSitesAsSiteAdmin() throws Exception
+    {
+        String user1PublicSiteName = GUID.generate();
+        String user1ModeratedSiteName = GUID.generate();
+        String user1PrivateSiteName = GUID.generate();
+
+        String user2PrivateSiteName = GUID.generate();
+
+        // USER_ONE public site
+        JSONObject result = createSite("myPreset", user1PublicSiteName, "u1PublicSite", "myDescription",
+                    SiteVisibility.PUBLIC, 200);
+        assertEquals(SiteVisibility.PUBLIC.toString(), result.get("visibility"));
+
+        // USER_ONE moderated site
+        result = createSite("myPreset", user1ModeratedSiteName, "u1ModeratedSite", "myDescription",
+                    SiteVisibility.MODERATED, 200);
+        assertEquals(SiteVisibility.MODERATED.toString(), result.get("visibility"));
+
+        // USER_ONE private site
+        result = createSite("myPreset", user1PrivateSiteName, "u1PrivateSite", "myDescription", SiteVisibility.PRIVATE,
+                    200);
+        assertEquals(SiteVisibility.PRIVATE.toString(), result.get("visibility"));
+
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        // USER_TWO private site
+        result = createSite("myPreset", user2PrivateSiteName, "u2PrivateSite", "myDescription", SiteVisibility.PRIVATE, 200);
+        assertEquals(SiteVisibility.PRIVATE.toString(), result.get("visibility"));
+
+        this.authenticationComponent.setCurrentUser(USER_THREE);
+        Response response = sendRequest(new GetRequest(URL_SITES), 200);
+        JSONArray jsonArray = new JSONArray(response.getContentAsString());
+        // USER_THREE can see the public and moderated sites
+        assertTrue("result too small", jsonArray.length() >= 2);
+        assertFalse(USER_THREE + " doesn’t have permission to access private sites that he is not member of.",
+                    canSeePrivateSites(jsonArray));
+        
+        this.authenticationComponent.setCurrentUser(USER_FOUR_AS_SITE_ADMIN);
+        // Even though user4 is a siteAdmin, if a request doesn’t specify
+        // the 'admin=true' query param, the result will be based on his access rights.
+        response = sendRequest(new GetRequest(URL_SITES), 200);
+        assertFalse(USER_FOUR_AS_SITE_ADMIN
+                    + " doesn’t have permission to access private sites that he is not member of.",
+                    canSeePrivateSites(jsonArray));
+        
+        response = sendRequest(new GetRequest(URL_SITES+"?admin=true"), 200);
+        jsonArray = new JSONArray(response.getContentAsString());
+        int siteAdminGetSitesSize = jsonArray.length(); 
+        // SiteAdmin can see the public, moderated and private sites
+        assertTrue("result too small", siteAdminGetSitesSize >= 4);
+        assertTrue("Site admin can access all the sites (PUBLIC | MODERATED | PRIVATE).", canSeePrivateSites(jsonArray));
+        
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        response = sendRequest(new GetRequest(URL_SITES), 200);
+        jsonArray = new JSONArray(response.getContentAsString());
+        assertEquals("SiteAdmin must have access to the same sites as the super Admin.", siteAdminGetSitesSize,
+                    jsonArray.length());
+    }
+
+    private boolean canSeePrivateSites(JSONArray jsonArray) throws Exception
+    {
+        for (int i = 0; i < jsonArray.length(); i++)
+        {
+            JSONObject obj = jsonArray.getJSONObject(i);
+            String visibility = obj.getString("visibility");
+            if (SiteVisibility.PRIVATE.equals(SiteVisibility.valueOf(visibility)))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

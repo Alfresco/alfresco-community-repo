@@ -510,4 +510,15 @@ public interface SiteService
 
     @NotAuditable
     int countAuthoritiesWithRole(String shortName, String role);
+    
+    /**
+     * Indicates whether the specified user is a site administrator or not.
+     * <p>
+     * Note: The super/repo admin is considered to be a site administrator too.
+     * 
+     * @param userName The user name
+     * @return true if the specified user is a 'site administrator', false otherwise
+     */
+    @NotAuditable
+    boolean isSiteAdmin(String userName);
 }

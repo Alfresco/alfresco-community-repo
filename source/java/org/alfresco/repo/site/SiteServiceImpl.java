@@ -132,6 +132,12 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private static final int GROUP_PREFIX_LENGTH = PermissionService.GROUP_PREFIX.length();
     private static final int GROUP_SITE_PREFIX_LENGTH = GROUP_SITE_PREFIX.length();
     
+    /**
+     * The authority that needs to contain the users who are allowed to administer the site.
+     */
+    private static final String SITE_ADMINISTRATORS_AUTHORITY = "SITE_ADMINISTRATORS";
+    private static final String GROUP_SITE_ADMINISTRATORS_AUTHORITY = PermissionService.GROUP_PREFIX + SITE_ADMINISTRATORS_AUTHORITY;
+    
     // note: caches are tenant-aware (if using EhCacheAdapter shared cache)
     
     private SimpleCache<String, Object> singletonCache; // eg. for siteHomeNodeRef
@@ -1338,8 +1344,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         if (enforcePermissions)
         {
             return siteNodeRef == null
-                    || !this.permissionService.hasPermission(siteNodeRef, PermissionService.READ_PROPERTIES).equals(
-                            AccessStatus.ALLOWED) ? null : siteNodeRef;
+                        || !(this.permissionService.hasPermission(siteNodeRef,
+                                    PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED) || isSiteAdmin(AuthenticationUtil
+                                    .getFullyAuthenticatedUser())) ? null : siteNodeRef;
         }
         else
         {
@@ -2213,7 +2220,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             // -- the current user has change permissions rights on the site
             // or
             // -- the user is ourselves
-            if ((currentUserName.equals(authorityName) == true) ||
+            if ((currentUserName.equals(authorityName) == true) || isSiteAdmin(currentUserName) ||
                 (permissionService.hasPermission(siteNodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED))
             {
                 // Run as system user
@@ -2268,9 +2275,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         final NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-           throw new SiteDoesNotExistException(shortName);
+            throw new SiteDoesNotExistException(shortName);
         }
-        
+
         // Get the user's current role
         final String currentRole = getMembersRole(shortName, authorityName);
 
@@ -2286,11 +2293,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // -- the member does not already have permissions
         // ... then we can set the permissions as system user
         final String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-        return((permissionService.hasPermission(siteNodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED) || 
-            (SiteVisibility.PUBLIC.equals(visibility) &&
-             role.equals(SiteModel.SITE_CONSUMER) &&
-             authorityName.equals(currentUserName) &&
-             currentRole == null));
+        return (isSiteAdmin(currentUserName)
+                    || (permissionService.hasPermission(siteNodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
+                    || (SiteVisibility.PUBLIC.equals(visibility)
+                    && role.equals(SiteModel.SITE_CONSUMER)
+                    && authorityName.equals(currentUserName) && currentRole == null));
     }
     
     /**
@@ -2965,6 +2972,20 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         }  
         
         this.permissionService.setInheritParentPermissions(containerNodeRef, false);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isSiteAdmin(String userName)
+    {
+        if (userName == null)
+        {
+            return false;
+        }
+        return this.authorityService.isAdminAuthority(userName)
+                    || this.authorityService.getAuthoritiesForUser(userName).contains(
+                                GROUP_SITE_ADMINISTRATORS_AUTHORITY);
     }
 
 }

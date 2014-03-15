@@ -19,6 +19,7 @@
 package org.alfresco.service.cmr.site;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Map;
 
 import org.alfresco.api.AlfrescoPublicApi;
@@ -123,5 +124,33 @@ public interface SiteInfo extends PermissionCheckValue
      * @return Serializable     value of the property, null if not set or doesn't exist    
      */
     public abstract Serializable getCustomProperty(QName name);
+
+    /**
+     * Get the site created date
+     * 
+     * @return <code>Date</code> site created date
+     */
+    public abstract Date getCreatedDate();
+
+    /**
+     * Set the site created date
+     * 
+     * @param createdDate site created date
+     */
+    public abstract void setCreatedDate(Date createdDate);
+
+    /**
+     * Get the site last modified date
+     * 
+     * @return <code>Date</code> site last modified date
+     */
+    public abstract Date getLastModifiedDate();
+
+    /**
+     * Set the site last modified date
+     * 
+     * @param lastModifiedDate site last modified date
+     */
+    public abstract void setLastModifiedDate(Date lastModifiedDate);
 
 }

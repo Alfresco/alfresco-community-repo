@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -77,6 +78,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -198,10 +200,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     
     public void setPreferenceService(PreferenceService preferenceService)
     {
-		this.preferenceService = preferenceService;
-	}
+        this.preferenceService = preferenceService;
+    }
 
-	/**
+    /**
      * Set node service
      */
     public void setNodeService(NodeService nodeService)
@@ -340,7 +342,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     
     public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
-    	this.sysAdminParams = sysAdminParams;
+        this.sysAdminParams = sysAdminParams;
     }
     
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
@@ -450,36 +452,36 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                                final String description, 
                                final SiteVisibility visibility)
     {
-    	return createSite(sitePreset, passedShortName, title, description, visibility, SiteModel.TYPE_SITE);
+        return createSite(sitePreset, passedShortName, title, description, visibility, SiteModel.TYPE_SITE);
     }
     
     public SiteInfo createSite(final String sitePreset, 
-                			   String passedShortName, 
-                			   final String title, 
+                               String passedShortName, 
+                               final String title, 
                                final String description, 
                                final SiteVisibility visibility,
                                final QName siteType)
-    {	
-    	// Check that the provided site type is a subtype of TYPE_SITE
-    	if (SiteModel.TYPE_SITE.equals(siteType) == false &&
-    	    dictionaryService.isSubClass(siteType, TYPE_SITE) == false)
-    	{
-    		throw new SiteServiceException(MSG_INVALID_SITE_TYPE, new Object[]{siteType});
-    	}
-    	
+    {   
+        // Check that the provided site type is a subtype of TYPE_SITE
+        if (SiteModel.TYPE_SITE.equals(siteType) == false &&
+            dictionaryService.isSubClass(siteType, TYPE_SITE) == false)
+        {
+            throw new SiteServiceException(MSG_INVALID_SITE_TYPE, new Object[]{siteType});
+        }
+        
         // Remove spaces from shortName
         final String shortName = passedShortName.replaceAll(" ", "");
         
-    	// Check to see if we already have a site of this name
-    	NodeRef existingSite = getSiteNodeRef(shortName, false);
-    	if (existingSite != null || authorityService.authorityExists(getSiteGroup(shortName, true)))
-    	{
-    		// Throw an exception since we have a duplicate site name
-    		throw new SiteServiceException(MSG_UNABLE_TO_CREATE, new Object[]{shortName});
-    	}
-    	
-    	// Check that the site name isn't too long
-    	// Authorities are limited to 100 characters by the PermissionService
+        // Check to see if we already have a site of this name
+        NodeRef existingSite = getSiteNodeRef(shortName, false);
+        if (existingSite != null || authorityService.authorityExists(getSiteGroup(shortName, true)))
+        {
+            // Throw an exception since we have a duplicate site name
+            throw new SiteServiceException(MSG_UNABLE_TO_CREATE, new Object[]{shortName});
+        }
+        
+        // Check that the site name isn't too long
+        // Authorities are limited to 100 characters by the PermissionService
         int longestPermissionLength = 0;
         for (String permission : permissionService.getSettablePermissions(siteType))
         {
@@ -488,12 +490,12 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         }
         int maximumPermisionGroupLength = 99 - longestPermissionLength;
 
-    	if (getSiteGroup(shortName, true).length() > maximumPermisionGroupLength)
-    	{
-    	    throw new SiteServiceException(MSG_SITE_SHORT_NAME_TOO_LONG, new Object[] {
-    	         shortName, maximumPermisionGroupLength - getSiteGroup("", true).length()
-    	    });
-    	}
+        if (getSiteGroup(shortName, true).length() > maximumPermisionGroupLength)
+        {
+            throw new SiteServiceException(MSG_SITE_SHORT_NAME_TOO_LONG, new Object[] {
+                 shortName, maximumPermisionGroupLength - getSiteGroup("", true).length()
+            });
+        }
 
         // Get the site parent node reference
         final NodeRef siteParent = getSiteParent(shortName);
@@ -1133,7 +1135,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         
         // Create and return the site information
         Map<QName, Serializable> customProperties = getSiteCustomProperties(properties);
+        
         siteInfo = new SiteInfoImpl(sitePreset, shortName, title, description, visibility, customProperties, siteNodeRef);
+        siteInfo.setCreatedDate(DefaultTypeConverter.INSTANCE.convert(Date.class, properties.get(ContentModel.PROP_CREATED)));
+        siteInfo.setLastModifiedDate(DefaultTypeConverter.INSTANCE.convert(Date.class, properties.get(ContentModel.PROP_MODIFIED)));
         
         return siteInfo;
     }
@@ -1157,13 +1162,13 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         if (visibilityValue == null)
         {
             // Examine each permission to see if this is a public site or not
-        	Set<AccessPermission> permissions;
-        	try {
-        		 permissions = this.permissionService.getAllSetPermissions(siteNodeRef);
-        	} catch (AccessDeniedException ae){
-        		// We might not have permission to examine the permissions
-        		return visibility;
-        	}
+            Set<AccessPermission> permissions;
+            try {
+                 permissions = this.permissionService.getAllSetPermissions(siteNodeRef);
+            } catch (AccessDeniedException ae){
+                // We might not have permission to examine the permissions
+                return visibility;
+            }
             for (AccessPermission permission : permissions)
             {
                 if (permission.getAuthority().equals(PermissionService.ALL_AUTHORITIES) == true && 
@@ -1614,7 +1619,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                         }
                         if(callback.isDone())
                         {
-                        	break;
+                            break;
                         }
                         break;
                     case GROUP:
@@ -1647,12 +1652,12 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                             else
                             {
                                 // No name filter add this group
-                            	callback.siteMember(authority, permission);
+                                callback.siteMember(authority, permission);
                             }
                             
                             if(callback.isDone())
                             {
-                            	break;
+                                break;
                             }
                         }
                         break;
@@ -1678,21 +1683,21 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                     if (addUser)
                     {
                         // Add the collapsed user into the members list if they do not already appear in the list 
-                    	callback.siteMember(subUser, entry.getValue());
+                        callback.siteMember(subUser, entry.getValue());
                     }
                     
                     if(callback.isDone())
                     {
-                    	break;
+                        break;
                     }
                 }
             }         
         }
     }
 
-	public PagingResults<SiteMembership> listMembersPaged(String shortName, boolean collapseGroups, List<Pair<SiteService.SortFields, Boolean>> sortProps, PagingRequest pagingRequest)
+    public PagingResults<SiteMembership> listMembersPaged(String shortName, boolean collapseGroups, List<Pair<SiteService.SortFields, Boolean>> sortProps, PagingRequest pagingRequest)
     {
-		SiteMembershipCannedQueryFactory sitesCannedQueryFactory = (SiteMembershipCannedQueryFactory)cannedQueryRegistry.getNamedObject("sitesCannedQueryFactory");
+        SiteMembershipCannedQueryFactory sitesCannedQueryFactory = (SiteMembershipCannedQueryFactory)cannedQueryRegistry.getNamedObject("sitesCannedQueryFactory");
 
         CannedQueryPageDetails pageDetails = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems());
 
@@ -1712,11 +1717,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         SiteMembersCannedQueryParams parameterBean = new SiteMembersCannedQueryParams(shortName, collapseGroups);
         CannedQueryParameters params = new CannedQueryParameters(parameterBean, pageDetails, sortDetails, pagingRequest.getRequestTotalCountMax(), pagingRequest.getQueryExecutionId());
 
-		CannedQuery<SiteMembership> query = sitesCannedQueryFactory.getCannedQuery(params);
+        CannedQuery<SiteMembership> query = sitesCannedQueryFactory.getCannedQuery(params);
 
-	    CannedQueryResults<SiteMembership> results = query.execute();
+        CannedQueryResults<SiteMembership> results = query.execute();
 
-	    return getPagingResults(pagingRequest, results);
+        return getPagingResults(pagingRequest, results);
     }
 
     /**
@@ -2063,21 +2068,21 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         List<String> roles = getMembersRoles(shortName, authorityName);
         if (roles.size() != 0)
         {
-        	if (roles.size() > 1 && roleComparator != null)
-        	{
-        		// Need to sort the roles into the most important first.
-        		SortedSet<String> sortedRoles = new TreeSet<String>(roleComparator);
-        		for (String role : roles)
-        		{
-        			sortedRoles.add(role);
-        		}
-        		result = sortedRoles.first();
-        	}
-        	else
-        	{
-        		// don't search on precedence or only one result
-        		result = roles.get(0);
-        	}
+            if (roles.size() > 1 && roleComparator != null)
+            {
+                // Need to sort the roles into the most important first.
+                SortedSet<String> sortedRoles = new TreeSet<String>(roleComparator);
+                for (String role : roles)
+                {
+                    sortedRoles.add(role);
+                }
+                result = sortedRoles.first();
+            }
+            else
+            {
+                // don't search on precedence or only one result
+                result = roles.get(0);
+            }
         }
         return result;
     }
@@ -2323,8 +2328,8 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         {
             // TODO if this is the only site manager do not down grade their
             // permissions
-        	if(canAddMember(shortName, authorityName, role))
-        	{
+            if(canAddMember(shortName, authorityName, role))
+            {
                 // Check that we are not about to remove the last site manager
                 checkLastManagerRemoval(shortName, authorityName, currentRole);
                 
@@ -2529,20 +2534,20 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     }
 
     @SuppressWarnings("unchecked")
-	public PagingResults<FileInfo> listContainers(String shortName, PagingRequest pagingRequest)
+    public PagingResults<FileInfo> listContainers(String shortName, PagingRequest pagingRequest)
     {
-		SiteContainersCannedQueryFactory sitesContainersCannedQueryFactory = (SiteContainersCannedQueryFactory)cannedQueryRegistry.getNamedObject("siteContainersCannedQueryFactory");
+        SiteContainersCannedQueryFactory sitesContainersCannedQueryFactory = (SiteContainersCannedQueryFactory)cannedQueryRegistry.getNamedObject("siteContainersCannedQueryFactory");
 
         CannedQueryPageDetails pageDetails = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems());
-		CannedQuerySortDetails sortDetails = new CannedQuerySortDetails(new Pair<Object, SortOrder>(SiteContainersCannedQueryParams.SortFields.ContainerName, SortOrder.ASCENDING));
-		SiteContainersCannedQueryParams parameterBean = new SiteContainersCannedQueryParams(getSiteNodeRef(shortName));
+        CannedQuerySortDetails sortDetails = new CannedQuerySortDetails(new Pair<Object, SortOrder>(SiteContainersCannedQueryParams.SortFields.ContainerName, SortOrder.ASCENDING));
+        SiteContainersCannedQueryParams parameterBean = new SiteContainersCannedQueryParams(getSiteNodeRef(shortName));
         CannedQueryParameters params = new CannedQueryParameters(parameterBean, pageDetails, sortDetails, pagingRequest.getRequestTotalCountMax(), pagingRequest.getQueryExecutionId());
 
-		CannedQuery<FileInfo> query = sitesContainersCannedQueryFactory.getCannedQuery(params);
-		
-	    CannedQueryResults<FileInfo> results = query.execute();
+        CannedQuery<FileInfo> query = sitesContainersCannedQueryFactory.getCannedQuery(params);
+        
+        CannedQueryResults<FileInfo> results = query.execute();
 
-	    return getPagingResults(pagingRequest, results);    	
+        return getPagingResults(pagingRequest, results);        
     }
 
     /**
@@ -2832,11 +2837,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // Check that we are not about to remove the last site manager
         if (SiteModel.SITE_MANAGER.equals(role) == true)
         {
-        	int siteAuthorities = countAuthoritiesWithRole(shortName, SiteModel.SITE_MANAGER);
+            int siteAuthorities = countAuthoritiesWithRole(shortName, SiteModel.SITE_MANAGER);
             if (siteAuthorities <= 1)
             {
-            	throw new SiteServiceException(MSG_DO_NOT_CHANGE_MGR, new Object[] {authorityName});
-            }   	
+                throw new SiteServiceException(MSG_DO_NOT_CHANGE_MGR, new Object[] {authorityName});
+            }       
         }
     }
 
@@ -2860,9 +2865,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         return result;
     }
 
-	public PagingResults<SiteMembership> listSitesPaged(final String userName, List<Pair<SiteService.SortFields, Boolean>> sortProps, final PagingRequest pagingRequest)
-	{
-		SiteMembershipCannedQueryFactory sitesCannedQueryFactory = (SiteMembershipCannedQueryFactory)cannedQueryRegistry.getNamedObject("sitesCannedQueryFactory");
+    public PagingResults<SiteMembership> listSitesPaged(final String userName, List<Pair<SiteService.SortFields, Boolean>> sortProps, final PagingRequest pagingRequest)
+    {
+        SiteMembershipCannedQueryFactory sitesCannedQueryFactory = (SiteMembershipCannedQueryFactory)cannedQueryRegistry.getNamedObject("sitesCannedQueryFactory");
 
         CannedQueryPageDetails pageDetails = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems());
         
@@ -2882,69 +2887,69 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         SitesCannedQueryParams parameterBean = new SitesCannedQueryParams(userName);
         CannedQueryParameters params = new CannedQueryParameters(parameterBean, pageDetails, sortDetails, pagingRequest.getRequestTotalCountMax(), pagingRequest.getQueryExecutionId());
 
-		CannedQuery<SiteMembership> query = sitesCannedQueryFactory.getCannedQuery(params);
-		
-	    CannedQueryResults<SiteMembership> results = query.execute();
+        CannedQuery<SiteMembership> query = sitesCannedQueryFactory.getCannedQuery(params);
+        
+        CannedQueryResults<SiteMembership> results = query.execute();
 
-	    return getPagingResults(pagingRequest, results);
-	}
+        return getPagingResults(pagingRequest, results);
+    }
 
-	private <T extends Object> PagingResults<T> getPagingResults(PagingRequest pagingRequest, final CannedQueryResults<T> results)
-	{
-	    List<T> entities = null;
-	    if (results.getPageCount() > 0)
-	    {
-	        entities = results.getPages().get(0);
-	    }
-	    else
-	    {
-	        entities = Collections.emptyList();
-	    }
-	    
-	    // set total count
-	    final Pair<Integer, Integer> totalCount;
-	    if (pagingRequest.getRequestTotalCountMax() > 0)
-	    {
-	        totalCount = results.getTotalResultCount();
-	    }
-	    else
-	    {
-	        totalCount = null;
-	    }
-	    
-	    final List<T> members = new ArrayList<T>(entities.size());
-	    for (T entity : entities)
-	    {
-	    	members.add(entity);
-	    }
-	    
-	    return new PagingResults<T>()
-	    {
-	        @Override
-	        public String getQueryExecutionId()
-	        {
-	            return results.getQueryExecutionId();
-	        }
+    private <T extends Object> PagingResults<T> getPagingResults(PagingRequest pagingRequest, final CannedQueryResults<T> results)
+    {
+        List<T> entities = null;
+        if (results.getPageCount() > 0)
+        {
+            entities = results.getPages().get(0);
+        }
+        else
+        {
+            entities = Collections.emptyList();
+        }
+        
+        // set total count
+        final Pair<Integer, Integer> totalCount;
+        if (pagingRequest.getRequestTotalCountMax() > 0)
+        {
+            totalCount = results.getTotalResultCount();
+        }
+        else
+        {
+            totalCount = null;
+        }
+        
+        final List<T> members = new ArrayList<T>(entities.size());
+        for (T entity : entities)
+        {
+            members.add(entity);
+        }
+        
+        return new PagingResults<T>()
+        {
+            @Override
+            public String getQueryExecutionId()
+            {
+                return results.getQueryExecutionId();
+            }
 
-	        @Override
-	        public List<T> getPage()
-	        {
-	            return members;
-	        }
-	        
-	        @Override
-	        public boolean hasMoreItems()
-	        {
-	            return results.hasMoreItems();
-	        }
+            @Override
+            public List<T> getPage()
+            {
+                return members;
+            }
+            
+            @Override
+            public boolean hasMoreItems()
+            {
+                return results.hasMoreItems();
+            }
 
-	        @Override
-	        public Pair<Integer, Integer> getTotalResultCount()
-	        {
-	            return totalCount;
-	        }
-	    };
-	}
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return totalCount;
+            }
+        };
+    }
 
     /**
      * Private sites have separate ACLs on each component and don't inherit from the

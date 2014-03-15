@@ -19,6 +19,7 @@
 package org.alfresco.repo.site;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,6 +52,12 @@ public class SiteInfoImpl implements SiteInfo
     
     /** Site visibility */
     private SiteVisibility visibility;
+    
+    /** Site created date */
+    private Date createdDate;
+    
+    /** Site last modified date */
+    private Date lastModifiedDate;
     
     /** Set of custom properties that have been defined for site */
     private Map<QName, Serializable> customProperties = new HashMap<QName, Serializable>(1);
@@ -214,6 +221,38 @@ public class SiteInfoImpl implements SiteInfo
         }
         return result;
     }    
+    
+    /**
+     * @see org.alfresco.service.cmr.site.SiteInfo#getCreatedDate()
+     */
+    public Date getCreatedDate()
+    {
+        return this.createdDate;
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.site.SiteInfo#setCreatedDate(java.util.Date)
+     */
+    public void setCreatedDate(Date createdDate)
+    {
+        this.createdDate = createdDate;
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.site.SiteInfo#getLastModifiedDate()
+     */
+    public Date getLastModifiedDate()
+    {
+        return this.lastModifiedDate;
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.site.SiteInfo#setLastModifiedDate(java.util.Date)
+     */
+    public void setLastModifiedDate(Date lastModifiedDate)
+    {
+        this.lastModifiedDate = lastModifiedDate;
+    }
     
     /**
      * Override equals for this ref type

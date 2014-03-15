@@ -203,6 +203,39 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     }
     
     /**
+     * Retrieves the sites available in the repository based on the user's access right. For example, 
+     * Site Administrator can access all the sites (Public, MODERATED and PRIVATE). The returned list can optionally
+     * be filtered by name and site preset. If no filters are specified then all the available sites are returned. 
+     * 
+     * NOTE: If the filter starts with a * a Lucene based search will be performed, this may discover a wider range
+     * of results i.e. those sites that contain the search term as opposed to those that start with the search term,
+     * but newly created sites may not be found until the underlying search indexes are updated.
+     * 
+     * @param filter            inclusion filter for returned sites. Only sites whose cm:name OR cm:title
+     *                          OR cm:description start with the filter string will be returned.
+     * @param sitePresetFilter  site preset filter
+     * @param size              max results size crop if >0
+     * @return Site[]           a list of the site filtered as appropriate
+     */
+    public Site[] getSitesAsSiteAdmin(final String filter, final String sitePresetFilter, final int size)
+    {
+        if (siteService.isSiteAdmin(AuthenticationUtil.getFullyAuthenticatedUser()))
+        {
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Site[]>()
+            {
+                public Site[] doWork() throws Exception
+                {
+                    return getSites(filter, sitePresetFilter, size);
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        }
+        else
+        {
+            return getSites(filter, sitePresetFilter, size);
+        }
+    }
+    
+    /**
      * List the sites available in the repository.  The returned list can optionally be filtered by name and site
      * preset.
      * <p>
@@ -314,13 +347,28 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
      * <p>
      * Returns null if the site does not exist.
      * 
-     * @param shortName     short name of the site
-     * @return Site         the site, null if does not exist
+     * @param shortName short name of the site
+     * @return Site the site, null if does not exist
      */
-    public Site getSite(String shortName)
+    public Site getSite(final String shortName)
     {
+        SiteInfo siteInfo = null;
         Site site = null;
-        SiteInfo siteInfo = this.siteService.getSite(shortName);
+        if (siteService.isSiteAdmin(AuthenticationUtil.getFullyAuthenticatedUser()))
+        {
+            siteInfo = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<SiteInfo>()
+            {
+                public SiteInfo doWork() throws Exception
+                {
+                    return siteService.getSite(shortName);
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        }
+        else
+        {
+            siteInfo = this.siteService.getSite(shortName);
+        }
+
         if (siteInfo != null)
         {
             site = new Site(siteInfo, this.serviceRegistry, this.siteService, getScope());

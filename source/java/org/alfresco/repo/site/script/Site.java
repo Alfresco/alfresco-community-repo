@@ -19,6 +19,7 @@
 package org.alfresco.repo.site.script;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -272,7 +273,27 @@ public class Site implements Serializable
     }
     
     /**
-     * Saves any outstanding updates to the site details.  
+     * Get the site created date
+     * 
+     * @return <code>Date</code> site created date
+     */
+    public Date getCreatedDate()
+    {
+        return this.siteInfo.getCreatedDate();
+    }
+    
+    /**
+     * Get the site last modified date
+     * 
+     * @return <code>Date</code> site last modified date
+     */
+    public Date getLastModifiedDate()
+    {
+        return this.siteInfo.getLastModifiedDate();
+    }
+    
+    /**
+     * Saves any outstanding updates to the site details.
      * <p>
      * If properties of the site are changed and save is not called, those changes will be lost.
      */
@@ -280,9 +301,23 @@ public class Site implements Serializable
     {
         if (this.isDirty == true)
         {
-            // Update the site details
-            this.siteService.updateSite(this.siteInfo);
-            
+            if (siteService.isSiteAdmin(AuthenticationUtil.getFullyAuthenticatedUser()))
+            {
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        // Update the site details as a site-admin
+                        siteService.updateSite(siteInfo);
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+            }
+            else
+            {
+                // Update the site details
+                this.siteService.updateSite(this.siteInfo);
+            }
             // Reset the dirty flag
             this.isDirty = false;
         }
@@ -293,8 +328,23 @@ public class Site implements Serializable
      */
     public void deleteSite()
     {
-        // Delete the site
-        this.siteService.deleteSite(this.siteInfo.getShortName());
+        if (siteService.isSiteAdmin(AuthenticationUtil.getFullyAuthenticatedUser()))
+        {
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+            {
+                public Void doWork() throws Exception
+                {
+                    // Delete the site
+                    siteService.deleteSite(siteInfo.getShortName());
+                    return null;
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        }
+        else
+        {
+            // Delete the site
+            this.siteService.deleteSite(this.siteInfo.getShortName());
+        }
     }
     
     /**

@@ -76,12 +76,13 @@ Usage:
 			"skipCount" :${data.skipCount?c},
 			"maxItems" : ${data.maxItems?c}
 		},
-	    "entries" : [{
+	    "entries" : [
 	<#list data.items as item>
+	        {
 	            "entry" : {
                     <#nested item>
 	            }    
-		    }<#if item_has_next>, {</#if>
+		    }<#if item_has_next>,</#if>
 	</#list>
         ]
 	}

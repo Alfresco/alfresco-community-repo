@@ -11,14 +11,15 @@
 	                "lastModifiedDate" : "${xmldate(item.siteInfo.lastModifiedDate)}",
 	                "visibility" : "${item.siteInfo.visibility}",
 	                "userIsSiteManager" : "${item.currentUserSiteManager?c}",
-	                "siteManagers" : [{
+	                "siteManagers" : [
 	                     <#list item.members as manager>
+	                    {
 	                        "entry" : {
 	                            "userName" : "${manager.userName}",
 	                            "firstName" : "${manager.firstName}",
 	                            "lastName" : "${manager.lastName}"
 	                        }
-	                    }<#if manager_has_next>, {</#if>
+	                    }<#if manager_has_next>,</#if>
 	                     </#list>
 	                ]    
 </#escape>

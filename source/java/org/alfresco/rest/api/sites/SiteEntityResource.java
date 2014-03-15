@@ -16,15 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.rest.api.sites;
 
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.Site;
-import org.alfresco.rest.api.model.SiteImpl;
 import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.WebApiParam;
-import org.alfresco.rest.framework.core.ResourceParameter.KIND;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -34,22 +30,21 @@ import org.springframework.beans.factory.InitializingBean;
 
 /**
  * An implementation of an Entity Resource for a Site
- * 
+ *
  * @author Gethin James
  * @author steveglover
  */
-@EntityResource(name = "sites", title = "Sites")
-public class SiteEntityResource implements EntityResourceAction.Read<Site>, EntityResourceAction.ReadById<Site>,
-            EntityResourceAction.Delete, EntityResourceAction.Update<SiteImpl>, InitializingBean
+@EntityResource(name="sites", title = "Sites")
+public class SiteEntityResource implements EntityResourceAction.Read<Site>, EntityResourceAction.ReadById<Site>, InitializingBean
 {
     private Sites sites;
 
-    public void setSites(Sites sites)
-    {
-        this.sites = sites;
-    }
+	public void setSites(Sites sites)
+	{
+		this.sites = sites;
+	}
 
-    @Override
+	@Override
     public void afterPropertiesSet()
     {
         ParameterCheck.mandatory("sites", this.sites);
@@ -61,44 +56,21 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>, Enti
      * @see org.alfresco.rest.framework.resource.actions.interfaces.CollectionResourceAction.Get#get()
      */
     @Override
-    @WebApiDescription(title = "A paged list of visible sites in the network.", description = "A site is visible if it is public or if the person is a member")
-    @WebApiParam(name = "admin", title = "Admin", description = "An optional filter that when is set to true and the user has ‘site-admin’ permission, a paged list of all sites in the network will be returned.", kind = KIND.QUERY_STRING)
+    @WebApiDescription(title="A paged list of visible sites in the network.", description="A site is visible if it is public or if the person is a member")
     public CollectionWithPagingInfo<Site> readAll(Parameters parameters)
-    {
+    { 
         return sites.getSites(parameters);
     }
-
+    
     /**
      * Returns information regarding the site 'siteId'.
+     * 
      */
     @Override
-    @WebApiDescription(title = "Returns site information for site siteId.")
+    @WebApiDescription(title="Returns site information for site siteId.")
     public Site readById(String siteId, Parameters parameters)
     {
         return sites.getSite(siteId);
     }
 
-    /**
-     * PUT sites/{@literal <siteId>}
-     * <p>
-     * Updates the <i>visibility</i> of the site.
-     */
-    @Override
-    @WebApiDescription(title = "Updates the visibility of the site.")
-    public SiteImpl update(String siteId, SiteImpl entity, Parameters parameters)
-    {
-        return sites.updateSite(siteId, entity);
-    }
-
-    /**
-     * Delete sites/{@literal <siteId>}
-     * <p>
-     * Deletes the site.
-     */
-    @Override
-    @WebApiDescription(title = "Deletes the site.")
-    public void delete(String siteId, Parameters parameters)
-    {
-        sites.deleteSite(siteId);
-    }
 }

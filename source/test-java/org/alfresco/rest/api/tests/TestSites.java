@@ -131,8 +131,7 @@ public class TestSites extends EnterpriseTestApi
 		}
 		catch(PublicApiException e)
 		{
-		    // ACE-511: as we added Delete method, the status code needed to be changed from 405 (Method Not Allowed) to 404.
-			assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
+			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
 		}
 		
 		// invalid site

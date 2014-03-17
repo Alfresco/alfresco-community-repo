@@ -161,7 +161,7 @@
       <property name="kinds">
          <list>
             <value>UNFILED_RECORD_CONTAINER</value>
-            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+            <value>UNFILED_RECORD_FOLDER</value>
          </list>
       </property>
       <property name="conditions">
@@ -179,7 +179,7 @@
       <property name="kinds">
          <list>
             <value>UNFILED_RECORD_CONTAINER</value>
-            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+            <value>UNFILED_RECORD_FOLDER</value>
          </list>
       </property>
       <property name="conditions">
@@ -197,7 +197,7 @@
       <property name="kinds">
          <list>
             <value>UNFILED_RECORD_CONTAINER</value>
-            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+            <value>UNFILED_RECORD_FOLDER</value>
          </list>
       </property>
       <property name="conditions">
@@ -218,7 +218,7 @@
       <property name="kinds">
          <list>
             <value>UNFILED_RECORD_CONTAINER</value>
-            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+            <value>UNFILED_RECORD_FOLDER</value>
          </list>
       </property>
       <property name="conditions">

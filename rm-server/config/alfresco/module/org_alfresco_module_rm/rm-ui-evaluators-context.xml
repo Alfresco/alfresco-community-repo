@@ -217,7 +217,7 @@
             <value>RECORD_CATEGORY</value>
             <value>RECORD_FOLDER</value>
             <value>RECORD</value>
-            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+            <value>UNFILED_RECORD_FOLDER</value>
             <value>HOLD</value>
          </set>
       </property>
@@ -263,7 +263,7 @@
       <property name="kinds">
          <set>
             <value>UNFILED_RECORD_CONTAINER</value>
-            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+            <value>UNFILED_RECORD_FOLDER</value>
          </set>
       </property>
       <property name="capability" value="CopyUnfiledRecordFolder"/>
@@ -319,7 +319,7 @@
       <property name="kinds">
          <set>
             <value>UNFILED_RECORD_CONTAINER</value>
-            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+            <value>UNFILED_RECORD_FOLDER</value>
          </set>
       </property>
       <property name="capability" value="MoveUnfiledRecordsContainerFolder"/>
@@ -379,7 +379,7 @@
             <value>RECORD_CATEGORY</value>
             <value>RECORD_FOLDER</value>
             <value>RECORD</value>
-            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+            <value>UNFILED_RECORD_FOLDER</value>
             <value>HOLD</value>
          </set>
       </property>
@@ -395,7 +395,7 @@
             <value>RECORD_CATEGORY</value>
             <value>RECORD_FOLDER</value>
             <value>UNFILED_RECORD_CONTAINER</value>
-            <value>UNFILED_RECORD_CONTAINER_CHILD</value>
+            <value>UNFILED_RECORD_FOLDER</value>
             <value>HOLD_CONTAINER</value>
             <value>HOLD</value>
          </set>

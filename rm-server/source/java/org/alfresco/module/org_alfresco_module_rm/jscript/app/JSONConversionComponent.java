@@ -265,9 +265,9 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                     result = "transfer-container";
                     break;
                 }
-                case UNFILED_RECORD_CONTAINER_CHILD:
+                case UNFILED_RECORD_FOLDER:
                 {
-                    result = "unfiled-record-container-child";
+                    result = "unfiled-record-folder";
                     break;
                 }
                 default:

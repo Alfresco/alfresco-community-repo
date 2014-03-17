@@ -737,7 +737,8 @@
    </bean>
 
    <bean id="jsonConversionComponent.addRecordMetadata"
-         parent="jsonConversionComponent.baseAction">
+         parent="jsonConversionComponent.baseAction"
+         class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.EditRecordMetadataActionEvaluator">
       <property name="name" value="addRecordMetadata"/>
       <property name="kinds">
          <set>

@@ -135,7 +135,7 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
                             // Move files from RM Scripts folder to RM Behavior Scripts folder.
                             List<FileInfo> oldBehaviorScripts = fileFolderService.listFiles(OLD_BEHAVIOR_SCRIPTS_FOLDER);
 
-                            if (oldBehaviorScripts != null && oldBehaviorScripts.isEmpty() != true)
+                            if (oldBehaviorScripts != null && !oldBehaviorScripts.isEmpty())
                             {
                                 if (logger.isDebugEnabled())
                                 {

@@ -150,7 +150,7 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
             }
         }
 
-        if (result != false)
+        if (result)
         {
             Set<QName> aspects = this.nodeService.getAspects(nodeRef);
             for (QName aspect : aspects)

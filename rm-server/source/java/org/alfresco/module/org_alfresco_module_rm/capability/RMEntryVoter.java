@@ -36,6 +36,7 @@ import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -90,22 +91,21 @@ public class RMEntryVoter extends RMSecurityCommon
      * @see net.sf.acegisecurity.vote.AccessDecisionVoter#supports(net.sf.acegisecurity.ConfigAttribute)
      */
     @Override
-    public boolean supports(ConfigAttribute attribute)
+    public boolean supports(ConfigAttribute configAttribute)
     {
-        if ((attribute.getAttribute() != null) &&
-            (attribute.getAttribute().equals(ConfigAttributeDefinition.RM_ABSTAIN) ||
-             attribute.getAttribute().equals(ConfigAttributeDefinition.RM_QUERY) ||
-             attribute.getAttribute().equals(ConfigAttributeDefinition.RM_ALLOW) ||
-             attribute.getAttribute().equals(ConfigAttributeDefinition.RM_DENY) ||
-             attribute.getAttribute().startsWith(ConfigAttributeDefinition.RM_CAP) ||
-             attribute.getAttribute().startsWith(ConfigAttributeDefinition.RM)))
+        boolean supports = false;
+        String attribute = configAttribute.getAttribute();
+        if (StringUtils.isNotBlank(attribute) &&
+            (attribute.equals(ConfigAttributeDefinition.RM_ABSTAIN) ||
+             attribute.equals(ConfigAttributeDefinition.RM_QUERY) ||
+             attribute.equals(ConfigAttributeDefinition.RM_ALLOW) ||
+             attribute.equals(ConfigAttributeDefinition.RM_DENY) ||
+             attribute.startsWith(ConfigAttributeDefinition.RM_CAP) ||
+             attribute.startsWith(ConfigAttributeDefinition.RM)))
         {
-            return true;
+            supports = true;
         }
-        else
-        {
-            return false;
-        }
+        return supports;
     }
 
     /**

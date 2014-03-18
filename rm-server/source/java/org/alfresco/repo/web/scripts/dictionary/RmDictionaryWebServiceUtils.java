@@ -29,7 +29,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RmDictionaryWebServiceUtils
+public final class RmDictionaryWebServiceUtils
 {
     private static final String SITE_ID = "siteId";
     private static final String SITE_PRESET = "rm-site-dashboard";

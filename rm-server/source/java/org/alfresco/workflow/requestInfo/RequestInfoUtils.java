@@ -40,7 +40,7 @@ import org.apache.commons.lang.StringUtils;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RequestInfoUtils
+public final class RequestInfoUtils
 {
     private RequestInfoUtils()
     {

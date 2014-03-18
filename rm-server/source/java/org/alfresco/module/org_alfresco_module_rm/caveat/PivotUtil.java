@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/* package scope */ class PivotUtil
+/* package scope */ final class PivotUtil
 {
     private PivotUtil()
     {

@@ -33,7 +33,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Roy Wetherall
  */
-public class PoliciesUtil
+public final class PoliciesUtil
 {
     private PoliciesUtil()
     {

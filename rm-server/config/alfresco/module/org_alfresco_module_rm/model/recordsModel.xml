@@ -516,13 +516,6 @@
                <type>d:text</type>
                <mandatory>true</mandatory>
             </property>
-            <!--
-            <property name="rma:deleteWhenEmpty">
-               <title>Delete When Empty</title>
-               <type>d:boolean</type>
-               <default>false</default>
-            </property>
-            -->
          </properties>
 
          <associations>

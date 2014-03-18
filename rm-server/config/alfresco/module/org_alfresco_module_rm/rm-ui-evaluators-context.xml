@@ -843,4 +843,28 @@
       </property>
       <property name="capability" value="CreateHold"/>
    </bean>
+
+   <bean id="jsonConversionComponent.addToHold"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="addToHold"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD</value>
+            <value>RECORD_FOLDER</value>
+         </set>
+      </property>
+      <property name="capability" value ="AddToHold"/>
+   </bean>
+
+   <bean id="jsonConversionComponent.removeFromHold"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="removeFromHold"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD</value>
+            <value>RECORD_FOLDER</value>
+         </set>
+      </property>
+      <property name="capability" value ="RemoveFromHold"/>
+   </bean>
 </beans>

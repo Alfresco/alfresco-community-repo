@@ -139,7 +139,9 @@
           "RejectRecords",
           "LinkToRecords",
           "FileTransferReport",
-          "CreateHold"
+          "CreateHold",
+          "AddToHold",
+          "RemoveFromHold"
       ]
    },
    {
@@ -207,7 +209,9 @@
           "RejectRecords",
           "LinkToRecords",
           "FileTransferReport",
-          "CreateHold"
+          "CreateHold",
+          "AddToHold",
+          "RemoveFromHold"
       ]
    }
 ]

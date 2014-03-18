@@ -71,4 +71,42 @@
       <property name="index" value="40" />
    </bean>
 
+   <bean id="rmAddToHoldCapability"
+         parent="declarativeCapability">
+      <property name="name" value="AddToHold" />
+      <property name="permission" value="AddToHold" />
+      <property name="kinds">
+         <list>
+            <value>RECORD_FOLDER</value>
+            <value>RECORD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
+      <property name="group"><ref bean="holdControlsGroup"/></property>
+      <property name="index" value="50" />
+   </bean>
+
+   <bean id="rmRemoveFromHoldCapability"
+         parent="declarativeCapability">
+      <property name="name" value="RemoveFromHold" />
+      <property name="permission" value="RemoveFromHold" />
+      <property name="kinds">
+         <list>
+            <value>RECORD_FOLDER</value>
+            <value>RECORD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.frozen" value="true"/>
+         </map>
+      </property>
+      <property name="group"><ref bean="holdControlsGroup"/></property>
+      <property name="index" value="60" />
+   </bean>
 </beans>

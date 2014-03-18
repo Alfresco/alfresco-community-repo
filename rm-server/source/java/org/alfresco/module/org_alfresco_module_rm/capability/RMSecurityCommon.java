@@ -51,7 +51,7 @@ import org.springframework.context.ApplicationContextAware;
 public class RMSecurityCommon implements ApplicationContextAware
 {
     /** No set value */
-    protected int NOSET_VALUE = -100;
+    protected static final int NOSET_VALUE = -100;
 
     /** Logger */
     private static Log logger = LogFactory.getLog(RMSecurityCommon.class);

@@ -1196,31 +1196,28 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 		invokeOnRemoveReference(fromNode, toNode, assocId);
 	}
 
-	/**
-	 * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#getCustomReferencesFrom(org.alfresco.service.cmr.repository.NodeRef)
-	 */
-	public List<AssociationRef> getCustomReferencesFrom(NodeRef node)
-	{
-    	List<AssociationRef> retrievedAssocs = nodeService.getTargetAssocs(node, RegexQNamePattern.MATCH_ALL);
-    	return retrievedAssocs;
-	}
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#getCustomReferencesFrom(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public List<AssociationRef> getCustomReferencesFrom(NodeRef node)
+    {
+        return nodeService.getTargetAssocs(node, RegexQNamePattern.MATCH_ALL);
+    }
 
-	/**
-	 * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#getCustomChildReferences(org.alfresco.service.cmr.repository.NodeRef)
-	 */
-	public List<ChildAssociationRef> getCustomChildReferences(NodeRef node)
-	{
-    	List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(node);
-    	return childAssocs;
-	}
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#getCustomChildReferences(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public List<ChildAssociationRef> getCustomChildReferences(NodeRef node)
+    {
+        return nodeService.getChildAssocs(node);
+    }
 
-	/**
-	 * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#getCustomReferencesTo(org.alfresco.service.cmr.repository.NodeRef)
-	 */
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#getCustomReferencesTo(org.alfresco.service.cmr.repository.NodeRef)
+     */
     public List<AssociationRef> getCustomReferencesTo(NodeRef node)
     {
-        List<AssociationRef> retrievedAssocs = nodeService.getSourceAssocs(node, RegexQNamePattern.MATCH_ALL);
-        return retrievedAssocs;
+        return nodeService.getSourceAssocs(node, RegexQNamePattern.MATCH_ALL);
     }
 
     /**
@@ -1228,8 +1225,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
      */
     public List<ChildAssociationRef> getCustomParentReferences(NodeRef node)
     {
-        List<ChildAssociationRef> result = nodeService.getParentAssocs(node);
-        return result;
+        return nodeService.getParentAssocs(node);
     }
 
     // note: currently RMC custom assocs only

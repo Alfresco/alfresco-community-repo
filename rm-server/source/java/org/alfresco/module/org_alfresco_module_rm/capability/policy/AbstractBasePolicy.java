@@ -108,8 +108,7 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
         {
             if (invocation.getArguments()[position] != null)
             {
-                QName qname = (QName) invocation.getArguments()[position];
-                return qname;
+                return (QName) invocation.getArguments()[position];
             }
         }
         else if (NodeRef.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
@@ -133,8 +132,7 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     {
         if (QName.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
         {
-            QName qname = (QName) invocation.getArguments()[position];
-            return qname;
+            return (QName) invocation.getArguments()[position];
         }
         throw new ACLEntryVoterException("Unknown type");
     }
@@ -155,8 +153,7 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
         }
         if (Serializable.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
         {
-            Serializable property = (Serializable) invocation.getArguments()[position];
-            return property;
+            return (Serializable) invocation.getArguments()[position];
         }
         throw new ACLEntryVoterException("Unknown type");
     }
@@ -177,8 +174,7 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
         }
         if (Map.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
         {
-            Map<QName, Serializable> properties = (Map<QName, Serializable>) invocation.getArguments()[position];
-            return properties;
+            return (Map<QName, Serializable>) invocation.getArguments()[position];
         }
         throw new ACLEntryVoterException("Unknown type");
     }

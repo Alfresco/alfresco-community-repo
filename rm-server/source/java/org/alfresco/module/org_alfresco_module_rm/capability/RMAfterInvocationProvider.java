@@ -421,8 +421,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
     {
         ResultSet raw = returnedObject.getWrapped();
         ResultSet filteredForPermissions = decide(authentication, object, config, raw);
-        PagingLuceneResultSet newPaging = new PagingLuceneResultSet(filteredForPermissions, returnedObject.getResultSetMetaData().getSearchParameters(), nodeService);
-        return newPaging;
+        return new PagingLuceneResultSet(filteredForPermissions, returnedObject.getResultSetMetaData().getSearchParameters(), nodeService);
     }
 
     private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, ResultSet returnedObject) throws AccessDeniedException

@@ -67,8 +67,7 @@ public class ScriptConstraint implements Serializable
 
     public String getName()
     {
-        String xxx = info.getName().replace(":", "_");
-        return xxx;
+        return info.getName().replace(":", "_");
     }
 
     public boolean isCaseSensitive()
@@ -257,9 +256,7 @@ public class ScriptConstraint implements Serializable
             }
         }
 
-
-        ScriptConstraintValue[] retVal = constraints.toArray(new ScriptConstraintValue[constraints.size()]);
-        return retVal;
+        return constraints.toArray(new ScriptConstraintValue[constraints.size()]);
     }
 
 }

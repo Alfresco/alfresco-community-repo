@@ -44,7 +44,7 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
     {
         return caveatConfigService;
     }
-    
+
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
@@ -54,36 +54,36 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
     {
         return authorityService;
     }
-    
+
     public ScriptConstraint getConstraint(String listName)
     {
         //TODO Temporary conversion
         String xxx = listName.replace("_", ":");
-        
+
         RMConstraintInfo info = caveatConfigService.getRMConstraint(xxx);
-        
+
         if(info != null)
         {
             return new ScriptConstraint(info, caveatConfigService, getAuthorityService());
         }
-        
+
         return null;
     }
-    
+
     public ScriptConstraint[] getAllConstraints()
     {
     	return getConstraints(true);
     }
-        
+
     public ScriptConstraint[] getConstraintsWithoutEmptyList()
     {
     	return getConstraints(false);
     }
-        
+
     private ScriptConstraint[] getConstraints(boolean includeEmptyList)
     {
         Set<RMConstraintInfo> values = caveatConfigService.getAllRMConstraints();
-        
+
         List<ScriptConstraint> vals = new ArrayList<ScriptConstraint>(values.size());
         for(RMConstraintInfo value : values)
         {
@@ -100,10 +100,10 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
             	}
             }
         }
-        
+
         return vals.toArray(new ScriptConstraint[vals.size()]);
     }
-   
+
     /**
      * Delete list
      * @param listName
@@ -115,18 +115,18 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
         String xxx = listName.replace("_", ":");
         caveatConfigService.deleteRMConstraint(xxx);
     }
-    
 
-    
+
+
     /**
      * Update value
      */
     public void updateConstraintValues(String listName, String authorityName, String[]values)
-    {        
+    {
         List<String> vals = new ArrayList<String>();
         caveatConfigService.updateRMConstraintListAuthority(listName, authorityName, vals);
     }
-    
+
     /**
      * Delete the constraint values.   i.e remove an authority from a constraint list
      */
@@ -134,10 +134,10 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
     {
         //TODO Temporary conversion
         String xxx = listName.replace("_", ":");
-        
+
         caveatConfigService.removeRMConstraintListAuthority(xxx, authorityName);
     }
-    
+
     /**
      * Delete the constraint values.   i.e remove a value from a constraint list
      */
@@ -145,22 +145,21 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
     {
         //TODO Temporary conversion
         String xxx = listName.replace("_", ":");
-        
+
         caveatConfigService.removeRMConstraintListValue(xxx, valueName);
 
     }
-    
+
     public ScriptConstraint createConstraint(String listName, String title, String[] allowedValues)
-    {     
+    {
         //TODO Temporary conversion
         if(listName != null)
         {
             listName = listName.replace("_", ":");
         }
-        
+
         RMConstraintInfo info = caveatConfigService.addRMConstraint(listName, title, allowedValues);
-        ScriptConstraint c = new ScriptConstraint(info, caveatConfigService, getAuthorityService());
-        return c;  
+        return new ScriptConstraint(info, caveatConfigService, getAuthorityService());
     }
 
 }

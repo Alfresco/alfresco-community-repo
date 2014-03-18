@@ -27,7 +27,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Basic identifier generator implementation.
- * 
+ *
  * @author Roy Wetherall
  */
 public class BasicIdentifierGenerator extends IdentifierGeneratorBase
@@ -48,10 +48,9 @@ public class BasicIdentifierGenerator extends IdentifierGeneratorBase
         {
             dbId = System.currentTimeMillis();
         }
-        
+
         Calendar fileCalendar = Calendar.getInstance();
         String year = Integer.toString(fileCalendar.get(Calendar.YEAR));
-        String identifier = year + "-" + padString(dbId.toString(), 10);
-        return identifier;        
+        return year + "-" + padString(dbId.toString(), 10);
     }
 }

@@ -90,6 +90,8 @@
             <!-- Since V2.2 -->
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="FileTransferReport"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateHold"/>
+            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="AddToHold"/>
+            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="RemoveFromHold"/>
         </permissionGroup>
 
         <permissionGroup name="Filing" allowFullControl="false" expose="true">
@@ -173,6 +175,8 @@
         <!--  Added since V2.2 -->
         <permissionGroup name="FileTransferReport" expose="false" allowFullControl="false"/>
         <permissionGroup name="CreateHold" expose="false" allowFullControl="false"/>
+        <permissionGroup name="AddToHold" expose="false" allowFullControl="false"/>
+        <permissionGroup name="RemoveFromHold" expose="false" allowFullControl="false"/>
 
         <!--  End -->
 
@@ -456,6 +460,13 @@
             <grantedToGroup permissionGroup="CreateHold"/>
         </permission>
 
+        <permission name="_AddToHold" expose="false">
+            <grantedToGroup permissionGroup="AddToHold"/>
+        </permission>
+
+        <permission name="_RemoveFromHold" expose="false">
+            <grantedToGroup permissionGroup="RemoveFromHold"/>
+        </permission>
     </permissionSet>
 
 </permissions>

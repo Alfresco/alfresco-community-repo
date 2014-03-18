@@ -149,6 +149,14 @@ public class RMv22CapabilityPatch extends AbstractModulePatch
                           "CreateHold",
                           FilePlanRoleService.ROLE_ADMIN,
                           FilePlanRoleService.ROLE_RECORDS_MANAGER);
+            addCapability(filePlan,
+                          "AddToHold",
+                          FilePlanRoleService.ROLE_ADMIN,
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER);
+            addCapability(filePlan,
+                          "RemoveFromHold",
+                          FilePlanRoleService.ROLE_ADMIN,
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER);
         }
     }
 }

@@ -29,7 +29,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class Hold
 {
     /** Hold name */
-    private String Name;
+    private String name;
 
     /** Hold node reference */
     private NodeRef nodeRef;
@@ -42,7 +42,7 @@ public class Hold
      */
     public Hold(String name, NodeRef nodeRef)
     {
-        this.Name = name;
+        this.name = name;
         this.nodeRef = nodeRef;
     }
 
@@ -53,7 +53,7 @@ public class Hold
      */
     public String getName()
     {
-        return this.Name;
+        return this.name;
     }
 
     /**

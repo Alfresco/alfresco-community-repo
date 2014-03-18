@@ -57,6 +57,7 @@ import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -76,16 +77,15 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     private long maxPermissionCheckTimeMillis;
 
-    public boolean supports(ConfigAttribute attribute)
+    public boolean supports(ConfigAttribute configAttribute)
     {
-        if ((attribute.getAttribute() != null) && (attribute.getAttribute().startsWith(AFTER_RM)))
+        boolean supports = false;
+        String attribute = configAttribute.getAttribute();
+        if (StringUtils.isNotBlank(attribute) && attribute.startsWith(AFTER_RM))
         {
-            return true;
+            supports = true;
         }
-        else
-        {
-            return false;
-        }
+        return supports;
     }
 
     @SuppressWarnings("rawtypes")

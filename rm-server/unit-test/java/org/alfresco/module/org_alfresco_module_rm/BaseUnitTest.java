@@ -18,8 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm;
 
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -46,24 +48,24 @@ public class BaseUnitTest implements RecordsManagementModel
     protected NodeRef filePlan;
     
     /** core service mocks */
-    @Mock(name="nodeService")       protected NodeService mockedNodeService; 
-    @Mock(name="dictionaryService") protected DictionaryService mockedDictionaryService;
-    @Mock(name="namespaceService")  protected NamespaceService mockedNamespaceService; 
-    @Mock(name="identifierService") protected IdentifierService mockedIdentifierService;
+    @Mock(name="nodeService")           protected NodeService mockedNodeService; 
+    @Mock(name="dictionaryService")     protected DictionaryService mockedDictionaryService;
+    @Mock(name="namespaceService")      protected NamespaceService mockedNamespaceService; 
+    @Mock(name="identifierService")     protected IdentifierService mockedIdentifierService;
     
-    /** rm service mocks */
-    @Mock(name="filePlanService")   protected FilePlanService mockedFilePlanService;
+    @Mock(name="filePlanService")       protected FilePlanService mockedFilePlanService;
     
+    /**
+     * Test method setup
+     */
     @Before
     public void before()
     {
         MockitoAnnotations.initMocks(this);
-        
-        filePlanComponent = generateNodeRef();
+
         filePlan = generateNodeRef(TYPE_FILE_PLAN);
-        
-        // set-up node service 
-        when(mockedNodeService.getProperty(filePlanComponent, PROP_ROOT_NODEREF)).thenReturn(filePlan);
+        filePlanComponent = generateNodeRef();
+        setupAsFilePlanComponent(filePlanComponent);
         
         // set-up namespace service
         when(mockedNamespaceService.getNamespaceURI(RM_PREFIX)).thenReturn(RM_URI);
@@ -71,11 +73,39 @@ public class BaseUnitTest implements RecordsManagementModel
         
     }
     
+    /**
+     * Helper method to generate a qname.
+     * 
+     * @return  QName   qualified name
+     */
     protected static QName generateQName()
     {
         return QName.createQName(RM_URI, GUID.generate());
     }
     
+    protected NodeRef generateRecordFolder()
+    {
+        NodeRef recordFolder = generateNodeRef(TYPE_RECORD_FOLDER);
+        setupAsFilePlanComponent(recordFolder);       
+        return recordFolder;
+        
+    }
+    
+    protected NodeRef generateRecord()
+    {
+        NodeRef record = generateNodeRef(ContentModel.TYPE_CONTENT);
+        setupAsFilePlanComponent(record);
+        doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_RECORD);        
+        return record;
+    }
+    
+    protected void setupAsFilePlanComponent(NodeRef nodeRef)
+    {
+        doReturn(true).when(mockedNodeService).hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT);
+        doReturn(filePlan).when(mockedFilePlanService).getFilePlan(nodeRef);
+        doReturn(filePlan).when(mockedNodeService).getProperty(nodeRef, PROP_ROOT_NODEREF);
+    }
+        
     protected NodeRef generateNodeRef()
     {
         return generateNodeRef(null);

@@ -545,7 +545,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         // Filter out any properties to be audited if specified in the Spring configuration.
         if (!ignoredAuditProperties.isEmpty())
         {
-            removeAuditProperties(ignoredAuditProperties, propertiesBefore, propertiesAfter);
+            removeAuditProperties(propertiesBefore, propertiesAfter);
         }
 
         // Property changes
@@ -581,7 +581,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      *
      * @param properties
      */
-    private void removeAuditProperties(List<String> ignoredAuditProperties, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    private void removeAuditProperties(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         if (before != null)
         {

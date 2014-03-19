@@ -79,15 +79,6 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
                 logger.debug(" ... adding template root folder");
             }
 
-            // create report dir
-            NodeRef templateRoot = createNode(ContentModel.TYPE_FOLDER,
-                                              RM_CONFIG_FOLDER,
-                                              "rm_report_templates",
-                                              "Records Management Report Templates",
-                                              "rm_report_templates",
-                                              "Records Management Report Templates",
-                                              "Records management report templates.");
-
             if (logger.isDebugEnabled())
             {
                 logger.debug(" ... adding destruction report template");
@@ -96,7 +87,6 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
             // create report templates
             NodeRef destructionTemplate = createNode(
                     ContentModel.TYPE_CONTENT,
-                    templateRoot,
                     "rmr_destructionReport",
                     "report_rmr_destructionReport.html.ftl",
                     "report_rmr_destructionReport.html.ftl",
@@ -114,7 +104,7 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
         }
     }
 
-    private NodeRef createNode(QName type, NodeRef parent, String id, String name, String assocName,  String title, String description)
+    private NodeRef createNode(QName type, String id, String name, String assocName,  String title, String description)
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(4);
         props.put(ContentModel.PROP_DESCRIPTION, description);

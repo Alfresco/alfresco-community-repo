@@ -129,13 +129,10 @@ public class RmActionPost extends DeclarativeWebScript
                Object nextValue = paramsObj.get(nextKeyString);
 
                // Check for date values
-               if (nextValue instanceof JSONObject)
+               if ((nextValue instanceof JSONObject) && ((JSONObject)nextValue).has("iso8601"))
                {
-                  if (((JSONObject)nextValue).has("iso8601"))
-                  {
-                     String dateStringValue = ((JSONObject)nextValue).getString("iso8601");
-                     nextValue = ISO8601DateFormat.parse(dateStringValue);
-                  }
+                   String dateStringValue = ((JSONObject)nextValue).getString("iso8601");
+                   nextValue = ISO8601DateFormat.parse(dateStringValue);
                }
 
                actionParams.put(nextKeyString, (Serializable)nextValue);

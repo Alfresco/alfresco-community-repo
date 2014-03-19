@@ -29,9 +29,9 @@ import org.alfresco.service.namespace.QName;
 public interface IdentifierService
 {
     /** Context value names */
-    static final String CONTEXT_NODEREF = "noderef";
-    static final String CONTEXT_PARENT_NODEREF = "parentndoeref";
-    static final String CONTEXT_ORIG_TYPE = "origionaltype";
+    String CONTEXT_NODEREF = "noderef";
+    String CONTEXT_PARENT_NODEREF = "parentndoeref";
+    String CONTEXT_ORIG_TYPE = "origionaltype";
 
     /**
      * Register an identifier generator implementation with the service.

@@ -34,16 +34,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface FilePlanRoleService
 {
     /** Default role names */
-    static final String ROLE_USER                = "User";
-    static final String ROLE_POWER_USER          = "PowerUser";
-    static final String ROLE_SECURITY_OFFICER    = "SecurityOfficer";
-    static final String ROLE_RECORDS_MANAGER     = "RecordsManager";
-    static final String ROLE_ADMIN               = "Administrator";
-    static final String ROLE_EXTENDED_READERS    = "ExtendedReaders";
-    static final String ROLE_EXTENDED_WRITERS    = "ExtendedWriters";
+    String ROLE_USER                = "User";
+    String ROLE_POWER_USER          = "PowerUser";
+    String ROLE_SECURITY_OFFICER    = "SecurityOfficer";
+    String ROLE_RECORDS_MANAGER     = "RecordsManager";
+    String ROLE_ADMIN               = "Administrator";
+    String ROLE_EXTENDED_READERS    = "ExtendedReaders";
+    String ROLE_EXTENDED_WRITERS    = "ExtendedWriters";
 
     /** System roles */
-    static final List<String> SYSTEM_ROLES = Arrays.asList(
+    List<String> SYSTEM_ROLES = Arrays.asList(
         ROLE_EXTENDED_READERS,
         ROLE_EXTENDED_WRITERS
     );

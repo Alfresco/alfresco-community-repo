@@ -41,7 +41,7 @@ public interface FilePlanService
      * Default RM site id.
      * Can be used with {@link FilePlanService#getFilePlanBySiteId(String)} to get the file plan node.
      * */
-    static final String DEFAULT_RM_SITE_ID = "rm";
+    String DEFAULT_RM_SITE_ID = "rm";
 
     /**
      * Indicates whether the given node is a file plan component or not.

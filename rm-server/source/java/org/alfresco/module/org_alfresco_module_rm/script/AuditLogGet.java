@@ -38,7 +38,7 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
     /** Logger */
     private static Log logger = LogFactory.getLog(AuditLogGet.class);
 
-    protected final static String PARAM_EXPORT = "export";
+    private static final String PARAM_EXPORT = "export";
 
     /** Content Streamer */
     protected ContentStreamer contentStreamer;

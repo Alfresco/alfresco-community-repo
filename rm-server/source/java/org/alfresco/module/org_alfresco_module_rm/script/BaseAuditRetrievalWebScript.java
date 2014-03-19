@@ -50,13 +50,13 @@ public class BaseAuditRetrievalWebScript extends StreamContent
     /** Logger */
     private static Log logger = LogFactory.getLog(BaseAuditRetrievalWebScript.class);
 
-    protected final static String PARAM_USER = "user";
-    protected final static String PARAM_SIZE = "size";
-    protected final static String PARAM_EVENT = "event";
-    protected final static String PARAM_FROM = "from";
-    protected final static String PARAM_TO = "to";
-    protected final static String PARAM_PROPERTY = "property";
-    protected final static String DATE_PATTERN = "yyyy-MM-dd";
+    private static final String PARAM_USER = "user";
+    private static final String PARAM_SIZE = "size";
+    private static final String PARAM_EVENT = "event";
+    private static final String PARAM_FROM = "from";
+    private static final String PARAM_TO = "to";
+    private static final String PARAM_PROPERTY = "property";
+    private static final String DATE_PATTERN = "yyyy-MM-dd";
 
     protected RecordsManagementAuditService rmAuditService;
     protected NamespaceService namespaceService;

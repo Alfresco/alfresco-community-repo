@@ -37,7 +37,7 @@ public class RMAuthorityDAOImpl extends AuthorityDAOImpl
 {
     protected void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type)
     {
-        if (isAuthorityNameMatching(authorities, authorityName, type))
+        if (isAuthorityNameMatching(authorityName, type))
         {
             authorities.add(authorityName);
         }
@@ -45,7 +45,7 @@ public class RMAuthorityDAOImpl extends AuthorityDAOImpl
 
     protected void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type, Pattern pattern)
     {
-        if (isAuthorityNameMatching(authorities, authorityName, type))
+        if (isAuthorityNameMatching(authorityName, type))
         {
             if (pattern == null)
             {
@@ -69,7 +69,7 @@ public class RMAuthorityDAOImpl extends AuthorityDAOImpl
         }
     }
 
-    private boolean isAuthorityNameMatching(Set<String> authorities, String authorityName, AuthorityType type)
+    private boolean isAuthorityNameMatching(String authorityName, AuthorityType type)
     {
         boolean isMatching = false;
         if (type == null || AuthorityType.getAuthorityType(authorityName).equals(type) && !getAuthorityZones(authorityName).contains("APP.RM"))

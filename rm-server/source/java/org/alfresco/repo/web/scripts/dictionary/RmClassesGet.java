@@ -75,19 +75,17 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        return executeImpl(req, status, cache, RmDictionaryWebServiceUtils.isRmSite(req, siteService));
+        return executeImpl(req, RmDictionaryWebServiceUtils.isRmSite(req, siteService));
     }
 
     /**
      * Execute custom Java logic
      *
      * @param req  Web Script request
-     * @param status  Web Script status
-     * @param cache  Web Script cache
      * @param isRM  indicates whether the request comes from an RM site or not
      * @return custom service model
      */
-    private Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache, boolean isRM)
+    private Map<String, Object> executeImpl(WebScriptRequest req, boolean isRM)
     {
         String classFilter = getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_CLASS_FILTER));
         String namespacePrefix = getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX));

@@ -118,19 +118,18 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
 
             if (isFilePlanComponent)
             {
-                rootJSONObject.put("rmNode", setRmNodeValues(nodeRef, rootJSONObject, useShortQNames));
+                rootJSONObject.put("rmNode", setRmNodeValues(nodeRef, useShortQNames));
             }
         }
     }
 
     /**
      * @param nodeRef
-     * @param rootJSONObject
      * @param useShortQName
      * @return
      */
     @SuppressWarnings("unchecked")
-    private JSONObject setRmNodeValues(NodeRef nodeRef, JSONObject rootJSONObject, boolean useShortQName)
+    private JSONObject setRmNodeValues(NodeRef nodeRef, boolean useShortQName)
     {
         JSONObject rmNodeValues = new JSONObject();
 

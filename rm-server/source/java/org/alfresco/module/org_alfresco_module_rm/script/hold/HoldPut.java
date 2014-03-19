@@ -36,6 +36,6 @@ public class HoldPut extends BaseHold
     @Override
     void doAction(List<NodeRef> holds, NodeRef nodeRef)
     {
-        getHoldService().removeFromHoldContainers(holds, nodeRef);
+        getHoldService().removeFromHolds(holds, nodeRef);
     }
 }

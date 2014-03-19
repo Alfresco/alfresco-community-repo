@@ -34,8 +34,8 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedul
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType;
@@ -436,7 +436,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 List<NodeRef> holds = holdService.getHolds(filePlan);
                 for (NodeRef hold : holds)
                 {
-                    freezeService.relinquish(hold);
+                    holdService.deleteHold(hold);
                 }
             }
 

@@ -51,7 +51,8 @@ public class RM1030Test extends BaseRMTestCase
                 assertEquals(0, holds.size());
 
                 // freeze record contained within the record folder
-                NodeRef hold = freezeService.freeze("in true life for serious", recordOne);
+                NodeRef hold = holdService.createHold(filePlan, "my hold 2", "in true life for serious", "my decription");
+                holdService.addToHold(hold, recordOne);
                 assertNotNull(hold);
 
                 return hold;
@@ -77,7 +78,8 @@ public class RM1030Test extends BaseRMTestCase
             public NodeRef run()
             {
                 // freeze the record folder that contains the frozen record
-                NodeRef folderHold = freezeService.freeze("innit but", rmFolder);
+                NodeRef folderHold = holdService.createHold(filePlan, "my hold 3", "innit but", "my decription");
+                holdService.addToHold(folderHold, rmFolder);
                 assertNotNull(folderHold);
 
                 return folderHold;
@@ -103,7 +105,7 @@ public class RM1030Test extends BaseRMTestCase
             public Void run()
             {
                 // relinquish the record folder hold
-                freezeService.relinquish(recordFolderHold);
+                holdService.deleteHold(recordFolderHold);
                 return null;
             }
 
@@ -125,7 +127,7 @@ public class RM1030Test extends BaseRMTestCase
             public Void run()
             {
                 // relinquish the record hold
-                freezeService.relinquish(recordHold);
+                holdService.deleteHold(recordHold);
                 return null;
             }
 

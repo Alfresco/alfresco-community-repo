@@ -161,6 +161,10 @@ public class CreateCapability extends DeclarativeCapability
         {
             return AccessDecisionVoter.ACCESS_GRANTED;
         }
+        if (capabilityService.getCapability(RMPermissionModel.ADD_TO_HOLD).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED)
+        {
+            return AccessDecisionVoter.ACCESS_GRANTED;
+        }
         if (((ChangeOrDeleteReferencesCapability)capabilityService.getCapability(RMPermissionModel.CHANGE_OR_DELETE_REFERENCES)).evaluate(destination, linkee) == AccessDecisionVoter.ACCESS_GRANTED)
         {
             return AccessDecisionVoter.ACCESS_GRANTED;

@@ -50,8 +50,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class RecordFolderServiceImpl extends    ServiceBaseImpl
                                      implements RecordFolderService,
-                                                RecordsManagementModel//,
-                                                //NodeServicePolicies.OnCreateChildAssociationPolicy
+                                                RecordsManagementModel
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordFolderServiceImpl.class);
@@ -111,16 +110,6 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
                 nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
             }
         }
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#isRecordFolder(NodeRef)
-     */
-    @Override
-    public boolean isRecordFolder(NodeRef nodeRef)
-    {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-        return instanceOf(nodeRef, TYPE_RECORD_FOLDER);
     }
 
     /**

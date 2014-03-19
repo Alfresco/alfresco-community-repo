@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -60,6 +61,20 @@ public class ServiceBaseImpl implements RecordsManagementModel
     {
         this.dictionaryService = dictionaryService;
     }
+    
+    /**
+     * Indicates whether the given node is a record folder or not.
+     * <p>
+     * Exposed in the RecordFolder service.
+     * 
+     * @param   nodeRef node reference
+     * @return  boolean true if record folder, false otherwise
+     */
+    public boolean isRecordFolder(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        return instanceOf(nodeRef, TYPE_RECORD_FOLDER);
+    }
 
     /**
      * Indicates whether the given node reference is a record or not.
@@ -72,6 +87,28 @@ public class ServiceBaseImpl implements RecordsManagementModel
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         return nodeService.hasAspect(nodeRef, ASPECT_RECORD);
+    }
+    
+    /**
+     * Indicates whether the given node reference is a hold or not.
+     * <p>
+     * Exposed publically in the {@link HoldService}
+     * 
+     * @param nodeRef   node reference
+     * @return boolean  true if rma:hold or sub-type, false otherwise
+     */
+    public boolean isHold(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+
+        if (nodeService.exists(nodeRef) && instanceOf(nodeRef, TYPE_HOLD))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     /**
@@ -184,5 +221,31 @@ public class ServiceBaseImpl implements RecordsManagementModel
         Set<QName> result = nodeService.getAspects(nodeRef);
         result.add(nodeService.getType(nodeRef));
         return result;
+    }
+    
+    /**
+     * Helper method that executed work as system user.
+     * <p>
+     * Useful when testing using mocks.
+     * 
+     * @param runAsWork work to execute as system user
+     * @return 
+     */
+    public <R> R runAsSystem(RunAsWork<R> runAsWork)
+    {
+        return AuthenticationUtil.runAsSystem(runAsWork);
+    }
+    
+    /**
+     * Helper method that executed work as given user.
+     * <p>
+     * Useful when testing using mocks.
+     * 
+     * @param runAsWork work to execute as given user
+     * @return
+     */
+    public <R> R runAs(RunAsWork<R> runAsWork, String uid)
+    {
+        return AuthenticationUtil.runAs(runAsWork, uid);
     }
 }

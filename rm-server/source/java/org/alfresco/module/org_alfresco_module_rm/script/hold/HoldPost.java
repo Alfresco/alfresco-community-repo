@@ -36,6 +36,6 @@ public class HoldPost extends BaseHold
     @Override
     void doAction(List<NodeRef> holds, NodeRef nodeRef)
     {
-        getHoldService().addToHoldContainers(holds, nodeRef);
+        getHoldService().addToHolds(holds, nodeRef);
     }
 }

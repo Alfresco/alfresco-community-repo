@@ -136,29 +136,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     List<NodeRef> frozenNodes = getHeld(hold);
                     for (NodeRef frozenNode : frozenNodes)
                     {
-                        List<NodeRef> otherHolds = heldBy(frozenNode, true);
-                        if (otherHolds.size() == 1)
-                        {   
-                            // remove the freeze aspect from the node
-                            nodeService.removeAspect(frozenNode, ASPECT_FROZEN);
-                            
-                            if (isRecordFolder(frozenNode))
-                            {
-                                List<NodeRef> records = recordService.getRecords(frozenNode);
-                                for (NodeRef record : records)
-                                {
-                                    if (nodeService.hasAspect(record, ASPECT_FROZEN))
-                                    {
-                                        List<NodeRef> recordsOtherHolds = heldBy(record, true);
-                                        if (recordsOtherHolds.size() == 1)
-                                        {
-                                            // remove the freeze aspect from the node
-                                            nodeService.removeAspect(record, ASPECT_FROZEN);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        removeFreezeAspect(frozenNode, 1);
                     }
                     
                     return null;
@@ -168,6 +146,43 @@ public class HoldServiceImpl extends ServiceBaseImpl
             // run as system user
             runAsSystem(work);
         }
+    }
+    
+    /**
+     * Helper method removes the freeze aspect from the record and record folder if it is no longer
+     * in a hold.
+     * 
+     * @param nodeRef
+     */
+    private void removeFreezeAspect(NodeRef nodeRef, int index)
+    {
+        List<NodeRef> otherHolds = heldBy(nodeRef, true);
+        if (otherHolds.size() == index)
+        {   
+            if (nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
+            {
+                // remove the freeze aspect from the node
+                nodeService.removeAspect(nodeRef, ASPECT_FROZEN);
+            }
+            
+            if (isRecordFolder(nodeRef))
+            {
+                List<NodeRef> records = recordService.getRecords(nodeRef);
+                for (NodeRef record : records)
+                {
+                    if (nodeService.hasAspect(record, ASPECT_FROZEN))
+                    {
+                        List<NodeRef> recordsOtherHolds = heldBy(record, true);
+                        if (recordsOtherHolds.size() == index)
+                        {
+                            // remove the freeze aspect from the node
+                            nodeService.removeAspect(record, ASPECT_FROZEN);
+                        }
+                    }
+                }
+            }
+        }
+        
     }
 
     /**
@@ -285,15 +300,17 @@ public class HoldServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("hold", hold);
         List<NodeRef> children = new ArrayList<NodeRef>();
         
-        if (nodeService.exists(hold) && isHold(hold))
-        {            
-            List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(hold, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
-            if (childAssocs != null && !childAssocs.isEmpty())
+        if (!isHold(hold))
+        {     
+            throw new AlfrescoRuntimeException("Can't get the node's held, because passed node reference isn't a hold. (hold=" + hold.toString() + ")");
+        }
+         
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(hold, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
+        if (childAssocs != null && !childAssocs.isEmpty())
+        {
+            for (ChildAssociationRef childAssociationRef : childAssocs)
             {
-                for (ChildAssociationRef childAssociationRef : childAssocs)
-                {
-                    children.add(childAssociationRef.getChildRef());
-                }
+                children.add(childAssociationRef.getChildRef());
             }
         }
         
@@ -373,11 +390,13 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("hold", hold);
         
-        if (nodeService.exists(hold) && isHold(hold))
+        if (!isHold(hold))
         {
-            // delete the hold node
-            nodeService.deleteNode(hold);
-        }        
+            throw new AlfrescoRuntimeException("Can't delete hold, becuase passed node is not a hold. (hold=" + hold.toString() + ")");
+        }
+        
+        // delete the hold node
+        nodeService.deleteNode(hold);        
     }
 
     /**
@@ -417,46 +436,60 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatoryCollection("holds", holds);
         ParameterCheck.mandatory("nodeRef", nodeRef);
+        
+        if (!isRecord(nodeRef) && !isRecordFolder(nodeRef))
+        {
+            throw new AlfrescoRuntimeException("Can only add records or record folders to a hold.");
+        }
 
         for (NodeRef hold : holds)
         {
-            // Link the record to the hold
-            nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
-            
-            // gather freeze properties
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
-            props.put(PROP_FROZEN_AT, new Date());
-            props.put(PROP_FROZEN_BY, AuthenticationUtil.getFullyAuthenticatedUser());
-
-            if (!nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
+            if (!isHold(hold))
             {
-                // add freeze aspect
-                nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
-
-                if (logger.isDebugEnabled())
-                {
-                    StringBuilder msg = new StringBuilder();
-                    msg.append("Frozen aspect applied to '").append(nodeRef).append("'.");
-                    logger.debug(msg.toString());
-                }
+                throw new AlfrescoRuntimeException("Can't add to hold, because it isn't a hold. (hold=" + hold.toString() + ")");
             }
-
-            // Mark all the folders contents as frozen
-            if (isRecordFolder(nodeRef))
+            
+            // check that the node isn't already in the hold
+            if (getHeld(hold).contains(nodeRef) == false)
             {
-                List<NodeRef> records = recordService.getRecords(nodeRef);
-                for (NodeRef record : records)
+                // Link the record to the hold
+                nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+                
+                // gather freeze properties
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
+                props.put(PROP_FROZEN_AT, new Date());
+                props.put(PROP_FROZEN_BY, AuthenticationUtil.getFullyAuthenticatedUser());
+    
+                if (!nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
                 {
-                    // no need to freeze if already frozen!
-                    if (!nodeService.hasAspect(record, ASPECT_FROZEN))
+                    // add freeze aspect
+                    nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
+    
+                    if (logger.isDebugEnabled())
                     {
-                        nodeService.addAspect(record, ASPECT_FROZEN, props);
-
-                        if (logger.isDebugEnabled())
+                        StringBuilder msg = new StringBuilder();
+                        msg.append("Frozen aspect applied to '").append(nodeRef).append("'.");
+                        logger.debug(msg.toString());
+                    }
+                }
+    
+                // Mark all the folders contents as frozen
+                if (isRecordFolder(nodeRef))
+                {
+                    List<NodeRef> records = recordService.getRecords(nodeRef);
+                    for (NodeRef record : records)
+                    {
+                        // no need to freeze if already frozen!
+                        if (!nodeService.hasAspect(record, ASPECT_FROZEN))
                         {
-                            StringBuilder msg = new StringBuilder();
-                            msg.append("Frozen aspect applied to '").append(record).append("'.");
-                            logger.debug(msg.toString());
+                            nodeService.addAspect(record, ASPECT_FROZEN, props);
+    
+                            if (logger.isDebugEnabled())
+                            {
+                                StringBuilder msg = new StringBuilder();
+                                msg.append("Frozen aspect applied to '").append(record).append("'.");
+                                logger.debug(msg.toString());
+                            }
                         }
                     }
                 }
@@ -501,24 +534,30 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("holds", holds);
         ParameterCheck.mandatory("nodeRef", nodeRef);
-
-        for (NodeRef hold : holds)
+               
+        if (holds != null && !holds.isEmpty())
         {
-            nodeService.removeChild(hold, nodeRef);
-        }
-
-        // check to see if this node can be unfrozen
-        List<NodeRef> holdList = heldBy(nodeRef, true);
-        if (holdList.size() == 0)
-        {
+            for (NodeRef hold : holds)
+            {
+                if (!instanceOf(hold, TYPE_HOLD))
+                {
+                    throw new AlfrescoRuntimeException("Can't remove from hold, because it isn't a hold. (hold=" + hold + ")");
+                }
+                
+                if (getHeld(hold).contains(nodeRef) == true)
+                {
+                    // remove from hold
+                    nodeService.removeChild(hold, nodeRef);                
+                }
+            }
+    
             // run as system as we can't be sure if have remove aspect rights on node
             runAsSystem(new RunAsWork<Void>()
             {
                 @Override
                 public Void doWork()
                 {
-                    // remove frozen aspect
-                    nodeService.removeAspect(nodeRef, ASPECT_FROZEN);
+                    removeFreezeAspect(nodeRef, 0);                   
                     return null;
                 }
              });            

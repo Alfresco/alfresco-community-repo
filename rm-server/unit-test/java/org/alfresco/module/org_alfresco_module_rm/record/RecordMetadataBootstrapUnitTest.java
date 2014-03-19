@@ -36,7 +36,7 @@ import org.mockito.Mock;
  */
 public class RecordMetadataBootstrapUnitTest extends BaseUnitTest
 {
-    @Mock(name="recordService") private RecordService mockedRecordService;   
+    @Mock(name="recordService")         protected RecordService mockedRecordService;
     
     @InjectMocks private RecordMetadataBootstrap bootstrap;
     

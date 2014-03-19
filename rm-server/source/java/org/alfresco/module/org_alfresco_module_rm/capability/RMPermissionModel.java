@@ -159,8 +159,8 @@ public interface RMPermissionModel
     String MAP_CLASSIFICATION_GUIDE_METADATA = "MapClassificationGuideMetadata";
 
     String MANAGE_ACCESS_CONTROLS = "ManageAccessControls";
-    
-    final String CREATE_HOLD = "CreateHold";
-    final String ADD_TO_HOLD = "AddToHold";
-    final String REMOVE_FROM_HOLD = "RemoveFromHold";
+
+    String CREATE_HOLD = "CreateHold";
+    String ADD_TO_HOLD = "AddToHold";
+    String REMOVE_FROM_HOLD = "RemoveFromHold";
 }

@@ -61,12 +61,12 @@ public class ServiceBaseImpl implements RecordsManagementModel
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Indicates whether the given node is a record folder or not.
      * <p>
      * Exposed in the RecordFolder service.
-     * 
+     *
      * @param   nodeRef node reference
      * @return  boolean true if record folder, false otherwise
      */
@@ -88,12 +88,12 @@ public class ServiceBaseImpl implements RecordsManagementModel
 
         return nodeService.hasAspect(nodeRef, ASPECT_RECORD);
     }
-    
+
     /**
      * Indicates whether the given node reference is a hold or not.
      * <p>
-     * Exposed publically in the {@link HoldService}
-     * 
+     * Exposed publicly in the {@link HoldService}
+     *
      * @param nodeRef   node reference
      * @return boolean  true if rma:hold or sub-type, false otherwise
      */
@@ -222,25 +222,25 @@ public class ServiceBaseImpl implements RecordsManagementModel
         result.add(nodeService.getType(nodeRef));
         return result;
     }
-    
+
     /**
      * Helper method that executed work as system user.
      * <p>
      * Useful when testing using mocks.
-     * 
+     *
      * @param runAsWork work to execute as system user
-     * @return 
+     * @return
      */
     public <R> R runAsSystem(RunAsWork<R> runAsWork)
     {
         return AuthenticationUtil.runAsSystem(runAsWork);
     }
-    
+
     /**
      * Helper method that executed work as given user.
      * <p>
      * Useful when testing using mocks.
-     * 
+     *
      * @param runAsWork work to execute as given user
      * @return
      */

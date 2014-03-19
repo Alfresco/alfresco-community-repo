@@ -61,7 +61,7 @@ import org.apache.commons.logging.LogFactory;
  */
 @BehaviourBean
 public class HoldServiceImpl extends ServiceBaseImpl
-                             implements HoldService, 
+                             implements HoldService,
                                         NodeServicePolicies.BeforeDeleteNodePolicy,
                                         RecordsManagementModel
 {
@@ -73,7 +73,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
     /** Record Service */
     private RecordService recordService;
-    
+
     /** Record folder service */
     private RecordFolderService recordFolderService;
 
@@ -106,20 +106,20 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         this.recordService = recordService;
     }
-    
+
     /**
      * Set the record folder service
-     * 
+     *
      * @param recordFolderService   the record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
     }
-    
+
     /**
      * Behaviour unfreezes node's that will no longer he held after delete.
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Behaviour(kind=BehaviourKind.CLASS, type="rma:hold", notificationFrequency=NotificationFrequency.EVERY_EVENT)
@@ -138,7 +138,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     {
                         removeFreezeAspect(frozenNode, 1);
                     }
-                    
+
                     return null;
                 }
             };
@@ -147,24 +147,24 @@ public class HoldServiceImpl extends ServiceBaseImpl
             runAsSystem(work);
         }
     }
-    
+
     /**
      * Helper method removes the freeze aspect from the record and record folder if it is no longer
      * in a hold.
-     * 
+     *
      * @param nodeRef
      */
     private void removeFreezeAspect(NodeRef nodeRef, int index)
     {
         List<NodeRef> otherHolds = heldBy(nodeRef, true);
         if (otherHolds.size() == index)
-        {   
+        {
             if (nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
             {
                 // remove the freeze aspect from the node
                 nodeService.removeAspect(nodeRef, ASPECT_FROZEN);
             }
-            
+
             if (isRecordFolder(nodeRef))
             {
                 List<NodeRef> records = recordService.getRecords(nodeRef);
@@ -182,7 +182,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 }
             }
         }
-        
+
     }
 
     /**
@@ -195,7 +195,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
         // get the root hold container
         NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
-        
+
         // get the children of the root hold container
         List<ChildAssociationRef> holdsAssocs = nodeService.getChildAssocs(holdContainer, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
         List<NodeRef> holds = new ArrayList<NodeRef>(holdsAssocs.size());
@@ -220,12 +220,12 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public List<NodeRef> heldBy(NodeRef nodeRef, boolean includedInHold)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         List<NodeRef> result = null;
 
         // get all the immediate parent holds
         Set<NodeRef> holdsNotIncludingNodeRef = getParentHolds(nodeRef);
-        
+
         // check whether the record is held by vitue of it's record folder
         if (isRecord(nodeRef))
         {
@@ -250,10 +250,10 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
         return result;
     }
-    
+
     /**
      * Helper method to get holds that are direct parents of the given node.
-     * 
+     *
      * @param nodeRef   node reference
      * @return Set<{@link NodeRef}> set of parent holds
      */
@@ -265,10 +265,10 @@ public class HoldServiceImpl extends ServiceBaseImpl
         {
             holds.add(holdAssoc.getParentRef());
         }
-        
+
         return holds;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#getHold(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
@@ -277,20 +277,20 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("filePlan", filePlan);
         ParameterCheck.mandatory("name", name);
-        
+
         // get the root hold container
         NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
-        
+
         // get the hold by name
         NodeRef hold = nodeService.getChildByName(holdContainer, ContentModel.ASSOC_CONTAINS, name);
         if (hold != null && !isHold(hold))
         {
             throw new AlfrescoRuntimeException("Can not get hold, because the named node reference isn't a hold.");
         }
-        
+
         return hold;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#getHeld(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -299,12 +299,12 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("hold", hold);
         List<NodeRef> children = new ArrayList<NodeRef>();
-        
+
         if (!isHold(hold))
-        {     
+        {
             throw new AlfrescoRuntimeException("Can't get the node's held, because passed node reference isn't a hold. (hold=" + hold.toString() + ")");
         }
-         
+
         List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(hold, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
         if (childAssocs != null && !childAssocs.isEmpty())
         {
@@ -313,10 +313,10 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 children.add(childAssociationRef.getChildRef());
             }
         }
-        
+
         return children;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#createHold(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, java.lang.String)
      */
@@ -326,11 +326,11 @@ public class HoldServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("filePlan", filePlan);
         ParameterCheck.mandatory("name", name);
         ParameterCheck.mandatory("reason", reason);
-        
+
         // get the root hold container
         NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
 
-        // create map of properties       
+        // create map of properties
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(3);
         properties.put(ContentModel.PROP_NAME, name);
         properties.put(PROP_HOLD_REASON, reason);
@@ -338,16 +338,16 @@ public class HoldServiceImpl extends ServiceBaseImpl
         {
             properties.put(ContentModel.PROP_DESCRIPTION, description);
         }
-        
+
         // create assoc name
         QName assocName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name);
-        
+
         // create hold
         ChildAssociationRef childAssocRef = nodeService.createNode(holdContainer, ContentModel.ASSOC_CONTAINS, assocName, TYPE_HOLD, properties);
-        
+
         return childAssocRef.getChildRef();
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#getHoldReason(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -355,18 +355,18 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public String getHoldReason(NodeRef hold)
     {
         ParameterCheck.mandatory("hold", hold);
-        
+
         String reason = null;
-        
+
         if (nodeService.exists(hold) && isHold(hold))
         {
-            // get the reason 
+            // get the reason
             reason = (String)nodeService.getProperty(hold, PROP_HOLD_REASON);
         }
-        
+
         return reason;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#setHoldReason(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
@@ -375,13 +375,13 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("hold", hold);
         ParameterCheck.mandatory("reason", reason);
-        
+
         if (nodeService.exists(hold) && isHold(hold))
         {
             nodeService.setProperty(hold, PROP_HOLD_REASON, reason);
         }
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#deleteHold(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -389,14 +389,14 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public void deleteHold(NodeRef hold)
     {
         ParameterCheck.mandatory("hold", hold);
-        
+
         if (!isHold(hold))
         {
             throw new AlfrescoRuntimeException("Can't delete hold, becuase passed node is not a hold. (hold=" + hold.toString() + ")");
         }
-        
+
         // delete the hold node
-        nodeService.deleteNode(hold);        
+        nodeService.deleteNode(hold);
     }
 
     /**
@@ -412,7 +412,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         holds.add(hold);
         addToHolds(Collections.unmodifiableList(holds), nodeRef);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#addToHold(org.alfresco.service.cmr.repository.NodeRef, java.util.List)
      */
@@ -421,7 +421,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("hold", hold);
         ParameterCheck.mandatory("nodeRefs", nodeRefs);
-        
+
         for (NodeRef nodeRef : nodeRefs)
         {
             addToHold(hold, nodeRef);
@@ -436,7 +436,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatoryCollection("holds", holds);
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         if (!isRecord(nodeRef) && !isRecordFolder(nodeRef))
         {
             throw new AlfrescoRuntimeException("Can only add records or record folders to a hold.");
@@ -448,23 +448,23 @@ public class HoldServiceImpl extends ServiceBaseImpl
             {
                 throw new AlfrescoRuntimeException("Can't add to hold, because it isn't a hold. (hold=" + hold.toString() + ")");
             }
-            
+
             // check that the node isn't already in the hold
-            if (getHeld(hold).contains(nodeRef) == false)
+            if (!getHeld(hold).contains(nodeRef))
             {
                 // Link the record to the hold
                 nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
-                
+
                 // gather freeze properties
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
                 props.put(PROP_FROZEN_AT, new Date());
                 props.put(PROP_FROZEN_BY, AuthenticationUtil.getFullyAuthenticatedUser());
-    
+
                 if (!nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
                 {
                     // add freeze aspect
                     nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
-    
+
                     if (logger.isDebugEnabled())
                     {
                         StringBuilder msg = new StringBuilder();
@@ -472,7 +472,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         logger.debug(msg.toString());
                     }
                 }
-    
+
                 // Mark all the folders contents as frozen
                 if (isRecordFolder(nodeRef))
                 {
@@ -483,7 +483,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         if (!nodeService.hasAspect(record, ASPECT_FROZEN))
                         {
                             nodeService.addAspect(record, ASPECT_FROZEN, props);
-    
+
                             if (logger.isDebugEnabled())
                             {
                                 StringBuilder msg = new StringBuilder();
@@ -510,7 +510,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         holds.add(hold);
         removeFromHolds(Collections.unmodifiableList(holds), nodeRef);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#removeFromHold(org.alfresco.service.cmr.repository.NodeRef, java.util.List)
      */
@@ -534,7 +534,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("holds", holds);
         ParameterCheck.mandatory("nodeRef", nodeRef);
-               
+
         if (holds != null && !holds.isEmpty())
         {
             for (NodeRef hold : holds)
@@ -543,27 +543,27 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 {
                     throw new AlfrescoRuntimeException("Can't remove from hold, because it isn't a hold. (hold=" + hold + ")");
                 }
-                
-                if (getHeld(hold).contains(nodeRef) == true)
+
+                if (getHeld(hold).contains(nodeRef))
                 {
                     // remove from hold
-                    nodeService.removeChild(hold, nodeRef);                
+                    nodeService.removeChild(hold, nodeRef);
                 }
             }
-    
+
             // run as system as we can't be sure if have remove aspect rights on node
             runAsSystem(new RunAsWork<Void>()
             {
                 @Override
                 public Void doWork()
                 {
-                    removeFreezeAspect(nodeRef, 0);                   
+                    removeFreezeAspect(nodeRef, 0);
                     return null;
                 }
-             });            
+             });
         }
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#removeFromAllHolds(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -571,7 +571,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public void removeFromAllHolds(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         // remove the node from all the holds it's held by
         List<NodeRef> holds = heldBy(nodeRef, true);
         for (NodeRef hold : holds)
@@ -580,7 +580,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             removeFromHold(hold, nodeRef);
         }
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#removeFromAllHolds(java.util.List)
      */
@@ -588,10 +588,10 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public void removeFromAllHolds(List<NodeRef> nodeRefs)
     {
         ParameterCheck.mandatory("nodeRefs", nodeRefs);
-        
+
         for (NodeRef nodeRef : nodeRefs)
         {
             removeFromAllHolds(nodeRef);
-        }        
-    } 
+        }
+    }
 }

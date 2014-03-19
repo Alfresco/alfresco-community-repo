@@ -29,17 +29,17 @@ import org.alfresco.service.namespace.QName;
 public interface RMWorkflowModel
 {
     // Namespace URI
-    static String RM_WORKFLOW_URI = "http://www.alfresco.org/model/rmworkflow/1.0";
+    String RM_WORKFLOW_URI = "http://www.alfresco.org/model/rmworkflow/1.0";
 
     // Namespace prefix
-    static String RM_WORKFLOW_PREFIX = "rmwf";
+    String RM_WORKFLOW_PREFIX = "rmwf";
 
     // Mixed Assignees
-    static QName RM_MIXED_ASSIGNEES = QName.createQName(RM_WORKFLOW_URI, "mixedAssignees");
+    QName RM_MIXED_ASSIGNEES = QName.createQName(RM_WORKFLOW_URI, "mixedAssignees");
 
     // Requested Information
-    static QName RM_REQUESTED_INFORMATION = QName.createQName(RM_WORKFLOW_URI, "requestedInformation");
+    QName RM_REQUESTED_INFORMATION = QName.createQName(RM_WORKFLOW_URI, "requestedInformation");
 
     // Rule creator
-    static QName RM_RULE_CREATOR = QName.createQName(RM_WORKFLOW_URI, "ruleCreator");
+    QName RM_RULE_CREATOR = QName.createQName(RM_WORKFLOW_URI, "ruleCreator");
 }

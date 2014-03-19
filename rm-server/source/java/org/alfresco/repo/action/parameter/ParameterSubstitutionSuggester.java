@@ -22,7 +22,7 @@ import java.util.List;
 
 public interface ParameterSubstitutionSuggester
 {
-    static int DEFAULT_MAXIMUM_NUMBER_SUGGESTIONS = 10;
+    int DEFAULT_MAXIMUM_NUMBER_SUGGESTIONS = 10;
 
     List<String> getSubstitutionSuggestions(final String substitutionFragment);
 }

@@ -29,15 +29,15 @@ public interface RMAuthority
     /**
      * The default rm zone.
      */
-    static String ZONE_APP_RM = "APP.RM";
+    String ZONE_APP_RM = "APP.RM";
 
     /**
      * The constant for all roles display name
      */
-    static String ALL_ROLES_DISPLAY_NAME = "All Roles";
+    String ALL_ROLES_DISPLAY_NAME = "All Roles";
 
     /**
      * The constant for all roles prefix
      */
-    static String ALL_ROLES_PREFIX = "AllRoles";
+    String ALL_ROLES_PREFIX = "AllRoles";
 }

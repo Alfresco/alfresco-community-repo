@@ -34,12 +34,12 @@ import org.alfresco.service.namespace.QName;
 public interface RecordsManagementPolicies
 {
     /** Policy names */
-    static final QName BEFORE_RM_ACTION_EXECUTION = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRMActionExecution");
-    static final QName ON_RM_ACTION_EXECUTION = QName.createQName(NamespaceService.ALFRESCO_URI, "onRMActionExecution");
-    static final QName BEFORE_CREATE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateReference");
-    static final QName ON_CREATE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateReference");
-    static final QName BEFORE_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRemoveReference");
-    static final QName ON_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveReference");
+    QName BEFORE_RM_ACTION_EXECUTION = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRMActionExecution");
+    QName ON_RM_ACTION_EXECUTION = QName.createQName(NamespaceService.ALFRESCO_URI, "onRMActionExecution");
+    QName BEFORE_CREATE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateReference");
+    QName ON_CREATE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateReference");
+    QName BEFORE_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRemoveReference");
+    QName ON_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveReference");
 
     /** Before records management action execution */
     public interface BeforeRMActionExecution extends ClassPolicy
@@ -94,7 +94,7 @@ public interface RecordsManagementPolicies
     public interface BeforeFileRecord extends ClassPolicy
     {
         /** policy name */
-        static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRecordFile");
+        QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRecordFile");
 
         /**
          * @param nodeRef   node reference
@@ -110,7 +110,7 @@ public interface RecordsManagementPolicies
     public interface OnFileRecord extends ClassPolicy
     {
         /** policy name */
-        static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordFile");
+        QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordFile");
 
         /**
          * @param nodeRef   node reference

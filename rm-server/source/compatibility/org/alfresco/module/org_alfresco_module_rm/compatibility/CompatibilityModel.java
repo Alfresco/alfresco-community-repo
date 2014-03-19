@@ -29,11 +29,11 @@ import org.alfresco.service.namespace.QName;
 public interface CompatibilityModel extends DOD5015Model
 {
     // Record series DOD type
-    static final QName TYPE_RECORD_SERIES = QName.createQName(DOD_URI, "recordSeries");
+    QName TYPE_RECORD_SERIES = QName.createQName(DOD_URI, "recordSeries");
 
     // V1.0 custom property aspect names
-    static final String NAME_CUSTOM_RECORD_PROPERTIES = "customRecordProperties";
-    static final String NAME_CUSTOM_RECORD_FOLDER_PROPERTIES = "customRecordFolderProperties";
-    static final String NAME_CUSTOM_RECORD_CATEGORY_PROPERTIES = "customRecordCategoryProperties";
-    static final String NAME_CUSTOM_RECORD_SERIES_PROPERTIES = "customRecordSeriesProperties";
+    String NAME_CUSTOM_RECORD_PROPERTIES = "customRecordProperties";
+    String NAME_CUSTOM_RECORD_FOLDER_PROPERTIES = "customRecordFolderProperties";
+    String NAME_CUSTOM_RECORD_CATEGORY_PROPERTIES = "customRecordCategoryProperties";
+    String NAME_CUSTOM_RECORD_SERIES_PROPERTIES = "customRecordSeriesProperties";
 }

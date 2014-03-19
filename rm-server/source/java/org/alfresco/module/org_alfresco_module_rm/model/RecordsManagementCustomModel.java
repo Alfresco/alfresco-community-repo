@@ -28,25 +28,25 @@ import org.alfresco.service.namespace.QName;
 public interface RecordsManagementCustomModel
 {
     // Namespace details
-    static String RM_CUSTOM_URI = "http://www.alfresco.org/model/rmcustom/1.0";
-    static String RM_CUSTOM_PREFIX = "rmc";
+    String RM_CUSTOM_URI = "http://www.alfresco.org/model/rmcustom/1.0";
+    String RM_CUSTOM_PREFIX = "rmc";
 
     // Model
-    static QName RM_CUSTOM_MODEL = QName.createQName(RM_CUSTOM_URI, "rmcustom");
+    QName RM_CUSTOM_MODEL = QName.createQName(RM_CUSTOM_URI, "rmcustom");
 
     // Custom constraint for Supplemental Marking List
-    static QName CONSTRAINT_CUSTOM_SMLIST = QName.createQName(RM_CUSTOM_URI, "smList");
+    QName CONSTRAINT_CUSTOM_SMLIST = QName.createQName(RM_CUSTOM_URI, "smList");
 
     // Custom property for for Supplemental Marking List
-    static QName PROP_SUPPLEMENTAL_MARKING_LIST = QName.createQName(RM_CUSTOM_URI, "supplementalMarkingList");
+    QName PROP_SUPPLEMENTAL_MARKING_LIST = QName.createQName(RM_CUSTOM_URI, "supplementalMarkingList");
 
     // Supplemental Marking List aspect
-    static QName ASPECT_SUPPLEMENTAL_MARKING_LIST = QName.createQName(RM_CUSTOM_URI, "customSupplementalMarkingList");
+    QName ASPECT_SUPPLEMENTAL_MARKING_LIST = QName.createQName(RM_CUSTOM_URI, "customSupplementalMarkingList");
 
     // Custom associations aspect
-    static QName ASPECT_CUSTOM_ASSOCIATIONS = QName.createQName(RM_CUSTOM_URI, "customAssocs");
+    QName ASPECT_CUSTOM_ASSOCIATIONS = QName.createQName(RM_CUSTOM_URI, "customAssocs");
 
     // Some Custom references which are present on system startup.
-    static QName CUSTOM_REF_VERSIONS = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions");
-    static QName CUSTOM_REF_SUPERSEDES = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "supersedes");
+    QName CUSTOM_REF_VERSIONS = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions");
+    QName CUSTOM_REF_SUPERSEDES = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "supersedes");
 }

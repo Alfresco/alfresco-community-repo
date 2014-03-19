@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.repository.Period;
 public interface VitalRecordService
 {
     /** Period 'none' */
-    final Period PERIOD_NONE = new Period("none|0");
+    Period PERIOD_NONE = new Period("none|0");
 
     /**
      * Setup the vital record definition for the given node.

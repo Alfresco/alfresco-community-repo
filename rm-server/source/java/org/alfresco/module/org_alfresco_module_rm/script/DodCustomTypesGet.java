@@ -41,7 +41,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class DodCustomTypesGet extends DeclarativeWebScript
 {
     // TODO Investigate a way of not hard-coding the 4 custom types here.
-    private final static List<QName> CUSTOM_TYPE_ASPECTS = Arrays.asList(new QName[]{DOD5015Model.ASPECT_SCANNED_RECORD,
+    private static final List<QName> CUSTOM_TYPE_ASPECTS = Arrays.asList(new QName[]{DOD5015Model.ASPECT_SCANNED_RECORD,
             DOD5015Model.ASPECT_PDF_RECORD, DOD5015Model.ASPECT_DIGITAL_PHOTOGRAPH_RECORD, DOD5015Model.ASPECT_WEB_RECORD});
 
     private DictionaryService dictionaryService;

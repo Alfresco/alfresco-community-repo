@@ -27,6 +27,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.service.FilePlanPermissio
 import org.alfresco.module.org_alfresco_module_rm.test.service.FilePlanRoleServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.FilePlanServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.FreezeServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.HoldServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.ModelSecurityServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementActionServiceImplTest;
@@ -70,7 +71,8 @@ import org.junit.runners.Suite.SuiteClasses;
     FilePlanServiceImplTest.class,
     FilePlanPermissionServiceImplTest.class,
     ReportServiceImplTest.class,
-    RecordsManagementQueryDAOImplTest.class
+    RecordsManagementQueryDAOImplTest.class,
+    HoldServiceImplTest.class
 })
 public class ServicesTestSuite 
 {

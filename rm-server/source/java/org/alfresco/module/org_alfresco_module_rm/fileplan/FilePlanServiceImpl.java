@@ -30,7 +30,6 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -158,14 +157,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @return	freeze service
-     */
-    protected FreezeService getFreezeService()
-    {
-    	return (FreezeService)applicationContext.getBean("FreezeService");
-    }
-
-    /**
      * @return	transfer service
      */
     protected TransferService getTransferService()
@@ -218,7 +209,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             {
                 result = FilePlanComponentKind.HOLD_CONTAINER;
             }
-            else if (getFreezeService().isHold(nodeRef))
+            else if (isHold(nodeRef))
             {
                 result = FilePlanComponentKind.HOLD;
             }

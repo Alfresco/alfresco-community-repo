@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm;
 
 import static org.mockito.Mockito.when;
 
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -41,22 +42,28 @@ import org.mockito.MockitoAnnotations;
  */
 public class BaseUnitTest implements RecordsManagementModel
 {
-    protected static NodeRef FILE_PLAN_COMPONENT    = generateNodeRef();
-    protected static NodeRef FILE_PLAN              = generateNodeRef();
+    protected NodeRef filePlanComponent;
+    protected NodeRef filePlan;
     
+    /** core service mocks */
     @Mock(name="nodeService")       protected NodeService mockedNodeService; 
     @Mock(name="dictionaryService") protected DictionaryService mockedDictionaryService;
     @Mock(name="namespaceService")  protected NamespaceService mockedNamespaceService; 
     @Mock(name="identifierService") protected IdentifierService mockedIdentifierService;
+    
+    /** rm service mocks */
+    @Mock(name="filePlanService")   protected FilePlanService mockedFilePlanService;
     
     @Before
     public void before()
     {
         MockitoAnnotations.initMocks(this);
         
+        filePlanComponent = generateNodeRef();
+        filePlan = generateNodeRef(TYPE_FILE_PLAN);
+        
         // set-up node service 
-        when(mockedNodeService.getProperty(FILE_PLAN_COMPONENT, PROP_ROOT_NODEREF)).thenReturn(FILE_PLAN);
-        when(mockedNodeService.getType(FILE_PLAN)).thenReturn(TYPE_FILE_PLAN);
+        when(mockedNodeService.getProperty(filePlanComponent, PROP_ROOT_NODEREF)).thenReturn(filePlan);
         
         // set-up namespace service
         when(mockedNamespaceService.getNamespaceURI(RM_PREFIX)).thenReturn(RM_URI);
@@ -69,8 +76,19 @@ public class BaseUnitTest implements RecordsManagementModel
         return QName.createQName(RM_URI, GUID.generate());
     }
     
-    protected static NodeRef generateNodeRef()
+    protected NodeRef generateNodeRef()
     {
-        return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
+        return generateNodeRef(null);
+    }
+    
+    protected NodeRef generateNodeRef(QName type)
+    {
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
+        when(mockedNodeService.exists(nodeRef)).thenReturn(true);
+        if (type != null)
+        {
+            when(mockedNodeService.getType(nodeRef)).thenReturn(type);
+        }
+        return nodeRef;
     }
 }

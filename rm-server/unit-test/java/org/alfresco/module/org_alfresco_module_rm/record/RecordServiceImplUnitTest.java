@@ -41,8 +41,8 @@ import org.mockito.InjectMocks;
  */
 public class RecordServiceImplUnitTest extends BaseUnitTest
 {   
-    private static NodeRef NON_STANDARD_FILE_PLAN_COMPONENT = generateNodeRef();
-    private static NodeRef NON_STANDARD_FILE_PLAN           = generateNodeRef();
+    private NodeRef nonStandardFilePlanComponent;
+    private NodeRef nonStandardFilePlan;
     
     private static QName TYPE_MY_FILE_PLAN                  = generateQName();
     private static QName ASPECT_FOR_FILE_PLAN               = generateQName();
@@ -58,9 +58,11 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     {
         super.before();
         
+        nonStandardFilePlanComponent = generateNodeRef();
+        nonStandardFilePlan = generateNodeRef(TYPE_MY_FILE_PLAN);
+        
         // set-up node service 
-        when(mockedNodeService.getProperty(NON_STANDARD_FILE_PLAN_COMPONENT, PROP_ROOT_NODEREF)).thenReturn(NON_STANDARD_FILE_PLAN);
-        when(mockedNodeService.getType(NON_STANDARD_FILE_PLAN)).thenReturn(TYPE_MY_FILE_PLAN);
+        when(mockedNodeService.getProperty(nonStandardFilePlanComponent, PROP_ROOT_NODEREF)).thenReturn(nonStandardFilePlan);
         
         // set-up dictionary service
         when(mockedDictionaryService.getAllAspects()).thenReturn(CollectionUtils.EMPTY_COLLECTION);
@@ -90,13 +92,13 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         recordService.registerRecordMetadataAspect(ASPECT_FOR_BOTH, TYPE_FILE_PLAN);
         recordService.registerRecordMetadataAspect(ASPECT_FOR_BOTH, TYPE_MY_FILE_PLAN);
         
-        Set<QName> set = recordService.getRecordMetadataAspects(FILE_PLAN_COMPONENT);
+        Set<QName> set = recordService.getRecordMetadataAspects(filePlanComponent);
         assertNotNull(set);
         assertEquals(2, set.size());
         assertTrue(set.contains(ASPECT_FOR_FILE_PLAN));
         assertTrue(set.contains(ASPECT_FOR_BOTH));
         
-        set = recordService.getRecordMetadataAspects(NON_STANDARD_FILE_PLAN_COMPONENT);
+        set = recordService.getRecordMetadataAspects(nonStandardFilePlanComponent);
         assertNotNull(set);
         assertEquals(2, set.size());
         assertTrue(set.contains(ASPECT_FOR_MY_FILE_PLAN));

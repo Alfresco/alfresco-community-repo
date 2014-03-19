@@ -37,6 +37,7 @@ public class RelinquishHoldAction extends RMActionExecuterAbstractBase
    /**
     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
     */
+   @SuppressWarnings("deprecation")
    @Override
    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
    {

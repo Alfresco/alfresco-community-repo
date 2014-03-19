@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.hold.HoldService;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -102,7 +102,7 @@ public class HoldsGet extends DeclarativeWebScript
         else
         {
             boolean includedInHold = getIncludedInHold(req);
-            holds.addAll(holdService.getHolds(itemNodeRef, includedInHold));
+            holds.addAll(holdService.heldBy(itemNodeRef, includedInHold));
         }
 
         List<Hold> holdObjects = new ArrayList<Hold>(holds.size());

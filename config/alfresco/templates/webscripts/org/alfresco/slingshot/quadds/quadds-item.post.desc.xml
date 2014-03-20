@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Get all QuADDs</shortname>
+  <description>Returns all the created QuADDS (Quick And Dirty Data Structures)</description>
+  <family>QuADDS</family>
+  <url>/aikau/quadds/{name}</url>
+  <format default="json"></format>
+  <authentication>admin</authentication>
+  <lifecycle>internal</lifecycle>
+</webscript>

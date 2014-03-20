@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Get QuADDS items</shortname>
+  <description>Gets an the items or a specific item from a QuADDS (Quick And Dirty Data Structure)</description>
+  <family>QuADDS</family>
+  <url>/aikau/quadds/{name}/item/{item_name}</url>
+  <url>/aikau/quadds/{name}</url>
+  <url>/aikau/quadds</url>
+  <format default="json"></format>
+  <authentication>admin</authentication>
+  <lifecycle>internal</lifecycle>
+</webscript>

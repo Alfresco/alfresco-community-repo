@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Deletes a QuADDS Item</shortname>
+  <description>Deletes an item from a QuADDS(Quick And Dirty Data Structure)</description>
+  <family>QuADDS</family>
+  <url>/aikau/quadds/{name}/item/{item_name}</url>
+  <format default="json"></format>
+  <authentication>admin</authentication>
+  <lifecycle>internal</lifecycle>
+</webscript>

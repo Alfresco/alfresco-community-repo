@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Update an item in a QuADDS</shortname>
+  <description>Updates the data for a specific item in QuADDS (Quick And Dirty Data Structure)</description>
+  <family>QuADDS</family>
+  <url>/aikau/quadds/{name}/item/{item_name}</url>
+  <format default="json"></format>
+  <authentication>admin</authentication>
+  <lifecycle>internal</lifecycle>
+</webscript>

@@ -349,11 +349,11 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             {
                 if (prefixName.equals("cm:title") ||
                     prefixName.equals("cm:author") ||
-                    prefixName.equals("rma:originator") ||
-                    prefixName.equals("rma:publicationDate") ||
-                    prefixName.equals("rma:dateReceived") ||
-                    prefixName.equals("rma:address") ||
-                    prefixName.equals("rma:otherAddress"))
+                    prefixName.equals("dod:originator") ||
+                    prefixName.equals("dod:publicationDate") ||
+                    prefixName.equals("dod:dateReceived") ||
+                    prefixName.equals("dod:address") ||
+                    prefixName.equals("dod:otherAddress"))
                 {
                     fieldDef.setProtectedField(true);
                 }

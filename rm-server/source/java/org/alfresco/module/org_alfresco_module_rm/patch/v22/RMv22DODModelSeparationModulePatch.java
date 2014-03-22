@@ -40,7 +40,7 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
                                            implements RecordsManagementModel
 {
     /** query batch size */
-    private static long BATCH_SIZE = 100000L;
+    private static final long BATCH_SIZE = 100000L;
 
     /** QName DAO */
     private QNameDAO qnameDAO;

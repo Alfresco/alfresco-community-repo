@@ -30,31 +30,31 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 /**
- * Base records management job implementation.  
+ * Base records management job implementation.
  * <p>
  * Delegates job execution and ensures locking
  * is enforced.
- * 
+ *
  * @author Roy Wetherall
  */
 public class RecordsManagementJob implements Job
 {
-    private static long DEFAULT_TIME = 30000L;
-    
+    private static final long DEFAULT_TIME = 30000L;
+
     private JobLockService jobLockService;
-    
+
     private RecordsManagementJobExecuter jobExecuter;
-    
+
     private String jobName;
-    
+
     private QName getLockQName()
     {
         return QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, jobName);
     }
-    
+
     /**
      * Attempts to get the lock.  If the lock couldn't be taken, then <tt>null</tt> is returned.
-     * 
+     *
      * @return          Returns the lock token or <tt>null</tt>
      */
     private String getLock()
@@ -68,7 +68,7 @@ public class RecordsManagementJob implements Job
             return null;
         }
     }
-    
+
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException
     {
@@ -78,29 +78,29 @@ public class RecordsManagementJob implements Job
         {
             throw new AlfrescoRuntimeException("Job lock service has not been specified.");
         }
-        
+
         // get the job executer
         jobExecuter = (RecordsManagementJobExecuter)context.getJobDetail().getJobDataMap().get("jobExecuter");
         if (jobExecuter == null)
         {
             throw new AlfrescoRuntimeException("Job executer has not been specified.");
         }
-        
+
         // get the job name
         jobName = (String)context.getJobDetail().getJobDataMap().get("jobName");
         if (jobName == null)
         {
             throw new AlfrescoRuntimeException("Job name has not been specified.");
         }
-        
+
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             public Void doWork() throws Exception
-            {        
+            {
                 // try and get the lock
                 String lockToken = getLock();
                 if (lockToken != null)
-                {                               
+                {
                     try
                     {
                         // do work
@@ -111,8 +111,8 @@ public class RecordsManagementJob implements Job
                         jobLockService.releaseLock(lockToken, getLockQName());
                     }
                 }
-            
-                // return 
+
+                // return
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());

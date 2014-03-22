@@ -41,7 +41,7 @@ import org.springframework.beans.factory.BeanNameAware;
 public class RMv2ModelPatch extends ModulePatchComponent
                             implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
-    private static long BATCH_SIZE = 100000L;
+    private static final long BATCH_SIZE = 100000L;
 
     private PatchDAO patchDAO;
     private NodeDAO nodeDAO;

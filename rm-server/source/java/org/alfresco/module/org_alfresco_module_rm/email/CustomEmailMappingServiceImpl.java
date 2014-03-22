@@ -161,14 +161,14 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
 
                 // load the contents of the extractors property file
                 Map<String, Set<QName>> currentMapping = extracter.getCurrentMapping();
-                for(String key : currentMapping.keySet())
+                for (Map.Entry<String, Set<QName>> entry : currentMapping.entrySet())
                 {
-                    Set<QName> set = currentMapping.get(key);
+                    Set<QName> set = entry.getValue();
 
-                    for(QName qname : set)
+                    for (QName qname : set)
                     {
                         CustomMapping value = new CustomMapping();
-                        value.setFrom(key);
+                        value.setFrom(entry.getKey());
                         QName resolvedQname = qname.getPrefixedQName(nspr);
                         value.setTo(resolvedQname.toPrefixString());
                         customMappings.add(value);

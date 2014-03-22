@@ -575,9 +575,9 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         Map<Set<String>, ResultSet> map = returnedObject.getResults();
         Map<Set<String>, ResultSet> answer = new HashMap<Set<String>, ResultSet>(map.size(), 1.0f);
 
-        for (Set<String> group : map.keySet())
+        for (Map.Entry<Set<String>, ResultSet> entry : map.entrySet())
         {
-            ResultSet raw = map.get(group);
+            ResultSet raw = entry.getValue();
             ResultSet permed;
             if (PagingLuceneResultSet.class.isAssignableFrom(raw.getClass()))
             {
@@ -587,8 +587,9 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             {
                 permed = decide(authentication, object, config, raw);
             }
-            answer.put(group, permed);
+            answer.put(entry.getKey(), permed);
         }
+
         return new QueryEngineResults(answer);
     }
 

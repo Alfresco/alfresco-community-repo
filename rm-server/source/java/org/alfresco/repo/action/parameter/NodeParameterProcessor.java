@@ -265,15 +265,15 @@ public class NodeParameterProcessor extends ParameterProcessor implements Parame
     private boolean processPropertyDefinitions(Map<QName, PropertyDefinition> properties, String substitutionFragment, Set<String> suggestions)
     {
         boolean gotMaximumSuggestions = false;
-        if(properties != null)
+        if (properties != null)
         {
-            for(QName key : properties.keySet())
+            for (Map.Entry<QName, PropertyDefinition> entry : properties.entrySet())
             {
-                PropertyDefinition propertyDefinition = properties.get(key);
+                PropertyDefinition propertyDefinition = entry.getValue();
                 QName type = propertyDefinition.getDataType().getName();
                 if(ArrayUtils.contains(supportedDataTypes, type))
                 {
-                    String suggestion = getName() + "." + key.getPrefixString();
+                    String suggestion = getName() + "." + entry.getKey().getPrefixString();
                     if(suggestion.toLowerCase().contains(substitutionFragment))
                     {
                         if(suggestions.size() < this.maximumNumberSuggestions)

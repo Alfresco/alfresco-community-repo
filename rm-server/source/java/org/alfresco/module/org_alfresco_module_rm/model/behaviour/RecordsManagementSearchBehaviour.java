@@ -839,10 +839,10 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     private Set<QName> determineChangedProps(Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
     {
         Set<QName> result = new HashSet<QName>();
-        for (QName qn : oldProps.keySet())
+        for (Map.Entry<QName, Serializable> entry : oldProps.entrySet())
         {
-            if (newProps.get(qn) == null ||
-                !newProps.get(qn).equals(oldProps.get(qn)))
+            QName qn = entry.getKey();
+            if (newProps.get(qn) == null || !newProps.get(qn).equals(entry.getValue()))
             {
                 result.add(qn);
             }

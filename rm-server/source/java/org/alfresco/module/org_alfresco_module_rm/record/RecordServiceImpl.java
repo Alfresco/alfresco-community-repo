@@ -539,20 +539,16 @@ public class RecordServiceImpl extends BaseBehaviourBean
             nodeService.exists(nodeRef) &&
             isRecord(nodeRef))
         {
-            for (QName property : after.keySet())
+            for (Map.Entry<QName, Serializable> entry : after.entrySet())
             {
                 Serializable beforeValue = null;
+                QName property = entry.getKey();
                 if (before != null)
                 {
                     beforeValue = before.get(property);
                 }
 
-                Serializable afterValue = null;
-                if (after != null)
-                {
-                    afterValue = after.get(property);
-                }
-
+                Serializable afterValue = entry.getValue();
                 boolean propertyUnchanged = false;
                 if (beforeValue instanceof Date && afterValue instanceof Date)
                 {

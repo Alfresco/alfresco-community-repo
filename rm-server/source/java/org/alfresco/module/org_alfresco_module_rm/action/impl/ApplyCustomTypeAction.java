@@ -107,10 +107,10 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
         Map<String, Serializable> paramValues = action.getParameterValues();
 
         Map<QName, Serializable> result = new HashMap<QName, Serializable>(paramValues.size());
-        for (String paramName : paramValues.keySet())
+        for (Map.Entry<String, Serializable> entry : paramValues.entrySet())
         {
-            QName propQName = QName.createQName(paramName, this.namespaceService);
-            result.put(propQName, paramValues.get(paramName));
+            QName propQName = QName.createQName(entry.getKey(), this.namespaceService);
+            result.put(propQName, entry.getValue());
         }
 
         return result;
@@ -132,11 +132,12 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
 
             this.parameterDefinitions = new ArrayList<ParameterDefinition>(props.size());
 
-            for (QName qn : props.keySet())
+            for (Map.Entry<QName, PropertyDefinition> entry : props.entrySet())
             {
-                String paramName = qn.toPrefixString(namespaceService);
-                QName paramType = props.get(qn).getDataType().getName();
-                boolean paramIsMandatory = props.get(qn).isMandatory();
+                String paramName = entry.getKey().toPrefixString(namespaceService);
+                PropertyDefinition value = entry.getValue();
+                QName paramType = value.getDataType().getName();
+                boolean paramIsMandatory = value.isMandatory();
                 parameterDefinitions.add(new ParameterDefinitionImpl(paramName, paramType, paramIsMandatory, null));
             }
         }

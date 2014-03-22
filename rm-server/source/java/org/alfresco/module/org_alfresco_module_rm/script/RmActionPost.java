@@ -201,13 +201,13 @@ public class RmActionPost extends DeclarativeWebScript
       {
          Map<NodeRef, RecordsManagementActionResult> resultMap = this.rmActionService.executeRecordsManagementAction(targetNodeRefs, actionName, actionParams);
          Map<String, String> results = new HashMap<String, String>(resultMap.size());
-         for (NodeRef nodeRef : resultMap.keySet())
+         for (Map.Entry<NodeRef, RecordsManagementActionResult> entry : resultMap.entrySet())
          {
-            Object value = resultMap.get(nodeRef).getValue();
-            if (value != null)
-            {
-               results.put(nodeRef.toString(), resultMap.get(nodeRef).getValue().toString());
-            }
+             Object value = entry.getValue().getValue();
+             if (value != null)
+             {
+                 results.put(entry.getKey().toString(), value.toString());
+             }
          }
          model.put("results", results);
       }

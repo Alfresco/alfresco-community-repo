@@ -35,16 +35,17 @@ import java.util.Map;
 
         Map<String, List<String>> pivot = new HashMap<String, List<String>>();
 
-        for(String authority : source.keySet())
+        for (Map.Entry<String, List<String>> entry : source.entrySet())
         {
-            List<String>values = source.get(authority);
-            for(String value : values)
+            List<String>values = entry.getValue();
+            for (String value : values)
             {
-                if(pivot.containsKey(value))
+                String authority = entry.getKey();
+                if (pivot.containsKey(value))
                 {
                     // already exists
                     List<String> list = pivot.get(value);
-                    list.add(authority);
+                    list.add(authority );
                 }
                 else
                 {
@@ -55,6 +56,7 @@ import java.util.Map;
                 }
             }
         }
+
         return pivot;
     }
 }

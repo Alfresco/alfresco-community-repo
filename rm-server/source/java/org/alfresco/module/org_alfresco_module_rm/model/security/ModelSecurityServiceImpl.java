@@ -336,8 +336,9 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
                 !AuthenticationUtil.isRunAsUserTheSystemUser() &&
                 nodeService.exists(nodeRef))
         {
-            for (QName property : after.keySet())
+            for (Map.Entry<QName, Serializable> entry : after.entrySet())
             {
+                QName property = entry.getKey();
                 if (isProtectedProperty(property))
                 {
                     // always allow if this is the first time we are setting the protected property
@@ -346,7 +347,7 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
                         return;
                     }
 
-                    if (!EqualsHelper.nullSafeEquals(before.get(property), after.get(property)) &&
+                    if (!EqualsHelper.nullSafeEquals(before.get(property), entry.getValue()) &&
                             !canEditProtectedProperty(nodeRef, property))
                     {
                         // the user can't edit the protected property

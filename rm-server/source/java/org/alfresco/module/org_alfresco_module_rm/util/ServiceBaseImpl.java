@@ -101,14 +101,12 @@ public class ServiceBaseImpl implements RecordsManagementModel
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
+        boolean isHold = false;
         if (nodeService.exists(nodeRef) && instanceOf(nodeRef, TYPE_HOLD))
         {
-            return true;
+            isHold = true;
         }
-        else
-        {
-            return false;
-        }
+        return isHold;
     }
 
     /**

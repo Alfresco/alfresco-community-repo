@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -421,7 +422,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         * there's no more data to read. Each line will appended to a StringBuilder
         * and returned as String.
         */
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
         StringBuilder sb = new StringBuilder();
 
         String line = null;

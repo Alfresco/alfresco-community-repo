@@ -42,19 +42,15 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.BaseUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -74,12 +70,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
     protected NodeRef holdContainer;
     protected NodeRef hold;
-    protected NodeRef hold2;
-    protected NodeRef recordFolder;
-    protected NodeRef record;
-
-    @Mock(name="recordFolderService")   protected RecordFolderService mockedRecordFolderService;
-    @Mock(name="recordService")         protected RecordService mockedRecordService;
+    protected NodeRef hold2;    
 
     @Spy @InjectMocks HoldServiceImpl holdService;
 
@@ -93,19 +84,11 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER);
         hold = generateNodeRef(TYPE_HOLD);
         hold2 = generateNodeRef(TYPE_HOLD);
-        recordFolder = generateRecordFolder();
-        record = generateRecord();
 
         // setup interactions
         doReturn(holdContainer).when(mockedFilePlanService).getHoldContainer(filePlan);
 
-        // set record as child of record folder
-        List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>(1);
-        result.add(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, recordFolder, generateQName(), record, true, 1));
-        doReturn(result).when(mockedNodeService).getChildAssocs(eq(recordFolder), eq(ContentModel.ASSOC_CONTAINS), any(QNamePattern.class));
-        doReturn(result).when(mockedNodeService).getParentAssocs(record);
-        doReturn(Collections.singletonList(recordFolder)).when(mockedRecordFolderService).getRecordFolders(record);
-        doReturn(Collections.singletonList(record)).when(mockedRecordService).getRecords(recordFolder);
+        
     }
 
     @Test

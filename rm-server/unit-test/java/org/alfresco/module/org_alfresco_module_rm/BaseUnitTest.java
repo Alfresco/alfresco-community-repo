@@ -18,19 +18,29 @@
  */
 package org.alfresco.module.org_alfresco_module_rm;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.util.GUID;
 import org.alfresco.util.collections.CollectionUtils;
 import org.junit.Before;
@@ -46,6 +56,9 @@ public class BaseUnitTest implements RecordsManagementModel
 {
     protected NodeRef filePlanComponent;
     protected NodeRef filePlan;
+
+    protected NodeRef recordFolder;
+    protected NodeRef record;
     
     /** core service mocks */
     @Mock(name="nodeService")           protected NodeService mockedNodeService; 
@@ -54,6 +67,8 @@ public class BaseUnitTest implements RecordsManagementModel
     @Mock(name="identifierService")     protected IdentifierService mockedIdentifierService;
     
     @Mock(name="filePlanService")       protected FilePlanService mockedFilePlanService;
+    @Mock(name="recordFolderService")   protected RecordFolderService mockedRecordFolderService;
+    @Mock(name="recordService")         protected RecordService mockedRecordService;
     
     /**
      * Test method setup
@@ -70,6 +85,20 @@ public class BaseUnitTest implements RecordsManagementModel
         // set-up namespace service
         when(mockedNamespaceService.getNamespaceURI(RM_PREFIX)).thenReturn(RM_URI);
         when(mockedNamespaceService.getPrefixes(RM_URI)).thenReturn(CollectionUtils.unmodifiableSet(RM_PREFIX));
+        
+        // setup record folder and record
+        recordFolder = generateRecordFolder();
+        doReturn(true).when(mockedRecordFolderService).isRecordFolder(recordFolder);
+        record = generateRecord();
+        doReturn(true).when(mockedRecordService).isRecord(record);
+        
+        // set record as child of record folder
+        List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>(1);
+        result.add(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, recordFolder, generateQName(), record, true, 1));
+        doReturn(result).when(mockedNodeService).getChildAssocs(eq(recordFolder), eq(ContentModel.ASSOC_CONTAINS), any(QNamePattern.class));
+        doReturn(result).when(mockedNodeService).getParentAssocs(record);
+        doReturn(Collections.singletonList(recordFolder)).when(mockedRecordFolderService).getRecordFolders(record);
+        doReturn(Collections.singletonList(record)).when(mockedRecordService).getRecords(recordFolder);
         
     }
     

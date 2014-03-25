@@ -27,7 +27,6 @@ import org.alfresco.module.org_alfresco_module_rm.BaseUnitTest;
 import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 
 /**
  * Unit test for RecordMetadataBootstrap
@@ -36,8 +35,6 @@ import org.mockito.Mock;
  */
 public class RecordMetadataBootstrapUnitTest extends BaseUnitTest
 {
-    @Mock(name="recordService")         protected RecordService mockedRecordService;
-    
     @InjectMocks private RecordMetadataBootstrap bootstrap;
     
     /**

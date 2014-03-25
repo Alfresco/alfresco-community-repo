@@ -185,7 +185,15 @@ public class TransferServiceImpl extends ServiceBaseImpl implements TransferServ
         setPDFIndicationFlag(transferNodeRef, nodeRef);
 
         // Set the transferring indicator aspect
-        nodeService.addAspect(nodeRef, ASPECT_TRANSFERRING, null);
+        nodeService.addAspect(nodeRef, ASPECT_TRANSFERRING, null);        
+        if (isRecordFolder(nodeRef) == true)
+        {
+            // add the transferring indicator aspect to all the child records
+            for (NodeRef record : recordService.getRecords(nodeRef))
+            {
+                nodeService.addAspect(record, ASPECT_TRANSFERRING, null);
+            }            
+        }
 
         return transferNodeRef;
     }

@@ -51,11 +51,14 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
 {
     private final static String FRAGMENT_PARAMETER = "fragment";
     private final static String PATH_PARAMETER = "path";
+    private final static String UNFILED_PARAMETER = "unfiled";
+    private final static String UNFILED = "true";
 
     private final static String SUBSTITUTIONS_MODEL_KEY = "substitutions";
 
     private final static String RECORD_FOLDER_TYPE = "recordFolder";
     private final static String RECORD_CATEGORY_TYPE = "recordCategory";
+    private final static String UNFILED_RECORD_FOLDER_TYPE = "unfiledRecordContainerChild";
 
     private final static String CREATE_CAPABILITY = "Create";
     private final static String VIEW_CAPABILITY = "ViewRecords";
@@ -139,12 +142,14 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
     {
         String fragment = req.getParameter(FRAGMENT_PARAMETER);
         String path = req.getParameter(PATH_PARAMETER);
+        String unfiledString = req.getParameter(UNFILED_PARAMETER);
+        boolean unfiled = (unfiledString != null) && UNFILED.equals(unfiledString);
 
         List<String> substitutionSuggestions = new ArrayList<String>();
 
         if((fragment != null) && (fragment.length() >= this.substitutionMinimumFragmentSize))
         {
-            substitutionSuggestions.addAll(getSubPathSuggestions(req, path, fragment));
+            substitutionSuggestions.addAll(getSubPathSuggestions(req, path, fragment, unfiled));
             substitutionSuggestions.addAll(this.parameterProcessorComponent.getSubstitutionSuggestions(fragment));
         }
 
@@ -161,13 +166,13 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
      * @param fragment
      * @return
      */
-    private List<String> getSubPathSuggestions(WebScriptRequest req, final String path, final String fragment) {
+    private List<String> getSubPathSuggestions(WebScriptRequest req, final String path, final String fragment, boolean unfiled) {
         List<String> pathSuggestions = new ArrayList<String>();
         if((path != null) && path.startsWith("/") && (fragment != null))
         {
             String[] pathFragments = path.split("/");
 
-            NodeRef currentNode = getFilePlan(req);
+            NodeRef currentNode = getFilePlan(req, unfiled);
             for(String pathFragment : pathFragments)
             {
                 // ignore empty elements of the path produced by split
@@ -178,7 +183,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
                     for (ChildAssociationRef childAssoc : children) {
                         NodeRef childNodeRef = childAssoc.getChildRef();
                         String fileName = (String) nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
-                        if(fileName.equals(pathFragment) && isNodeRefAppropriateForPathSuggestion(childNodeRef))
+                        if(fileName.equals(pathFragment) && isNodeRefAppropriateForPathSuggestion(childNodeRef, unfiled))
                         {
                             foundThisPathFragment = true;
                             currentNode = childNodeRef;
@@ -200,7 +205,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
                 for (ChildAssociationRef childAssoc : children) {
                     NodeRef childNodeRef = childAssoc.getChildRef();
                     String fileName = (String) nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
-                    if((fragment.isEmpty() || fileName.toLowerCase().startsWith(lowerCaseFragment)) && isNodeRefAppropriateForPathSuggestion(childNodeRef))
+                    if((fragment.isEmpty() || fileName.toLowerCase().startsWith(lowerCaseFragment)) && isNodeRefAppropriateForPathSuggestion(childNodeRef, unfiled))
                     {
                         pathSuggestions.add("/" + fileName);
                         if(pathSuggestions.size() >= pathSubstitutionMaximumNumberSuggestions)
@@ -220,7 +225,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
      * @param req
      * @return
      */
-    protected NodeRef getFilePlan(WebScriptRequest req)
+    protected NodeRef getFilePlan(WebScriptRequest req, boolean unfiled)
     {
         NodeRef filePlan = null;
 
@@ -256,7 +261,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
             filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
         }
 
-        return filePlan;
+        return unfiled ? filePlanService.getUnfiledContainer(filePlan) : filePlan;
     }
 
     /**
@@ -265,12 +270,14 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
      * @param nodeRef  Instance of NodeRef to be tested
      * @return True if the passed NodeRef instance is a record category or record folder
      */
-    private boolean isNodeRefAppropriateForPathSuggestion(NodeRef nodeRef)
+    private boolean isNodeRefAppropriateForPathSuggestion(NodeRef nodeRef, boolean unfiled)
     {
         // check node type
         QName type = nodeService.getType(nodeRef);
         String typeLocalName = type.getLocalName();
-        boolean isCorrectType = (RECORD_FOLDER_TYPE.equals(typeLocalName) || RECORD_CATEGORY_TYPE.equals(typeLocalName));
+        boolean isCorrectType =
+                (!unfiled && (RECORD_FOLDER_TYPE.equals(typeLocalName) || RECORD_CATEGORY_TYPE.equals(typeLocalName)) ||
+                (unfiled && UNFILED_RECORD_FOLDER_TYPE.equals(typeLocalName)));
 
         // check permissions
         boolean canView = false;

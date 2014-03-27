@@ -42,13 +42,13 @@ import org.springframework.util.StringUtils;
  */
 public class FileToActionTest extends BaseRMTestCase
 {
-    private static final String PATH = "rmcontainer/rmfolder";
-    private static final String PATH2 = "/rmcontainer/rmfolder";
-    private static final String PATH_BAD = "monkey/rmfolder";
-    private static final String PATH_CREATE = "rmcontainer/newrmfolder";
-    private static final String LONG_PATH_CREATE = "/rmcontainer/one/two/three/four/newrmfolder";
+    private static final String PATH = "rmContainer/rmFolder";
+    private static final String PATH2 = "/rmContainer/rmFolder";
+    private static final String PATH_BAD = "monkey/rmFolder";
+    private static final String PATH_CREATE = "rmContainer/newRmFolder";
+    private static final String LONG_PATH_CREATE = "/rmContainer/one/two/three/four/newRmFolder";
 
-    private static final String PATH_SUB1 = "rmcontainer/${node.cm:title}";
+    private static final String PATH_SUB1 = "rmContainer/${node.cm:title}";
 
     @Override
     protected boolean isCollaborationSiteTest()
@@ -181,19 +181,19 @@ public class FileToActionTest extends BaseRMTestCase
     public void testCreate() throws Exception
     {
         initRecord();
-        createRecord(PATH_CREATE, "newrmfolder");
+        createRecord(PATH_CREATE, "newRmFolder");
     }
 
     public void testCreateSub() throws Exception
     {
         initRecord();
-        createRecord(PATH_SUB1, "mytestvalue", "rmcontainer/mytestvalue");
+        createRecord(PATH_SUB1, "mytestvalue", "rmContainer/mytestvalue");
     }
 
     public void testCreatePath() throws Exception
     {
         initRecord();
-        createRecord(LONG_PATH_CREATE, "newrmfolder", "rmcontainer/one/two/three/four/newrmfolder");
+        createRecord(LONG_PATH_CREATE, "newRmFolder", "rmContainer/one/two/three/four/newRmFolder");
     }
 
     private void createRecord(String path, String name)

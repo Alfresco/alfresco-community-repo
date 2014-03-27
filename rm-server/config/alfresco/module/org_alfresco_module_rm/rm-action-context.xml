@@ -855,6 +855,62 @@
       <property name="allowParameterSubstitutions" value="true"/>
    </bean>
 
+   <!--  Copy To -->
+
+   <bean id="copyTo_proxy" parent="rmProxyAction">
+      <property name="target" ref="copyTo"/>
+        <property name="interceptorNames">
+            <list>
+               <idref bean="copyTo_security"/>
+            </list>
+         </property>
+   </bean>
+
+   <bean id="copyTo_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.CreateModifyDestroyEvents
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
+   </bean>
+
+   <bean id="copyTo" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CopyToAction" parent="rmAction">
+      <property name="fileFolderService" ref="FileFolderService"/>
+      <property name="filePlanService" ref="FilePlanService" />
+      <property name="publicAction" value="true"/>
+      <property name="allowParameterSubstitutions" value="true"/>
+   </bean>
+
+   <!--  Move To -->
+
+   <bean id="moveTo_proxy" parent="rmProxyAction">
+      <property name="target" ref="moveTo"/>
+        <property name="interceptorNames">
+            <list>
+               <idref bean="moveTo_security"/>
+            </list>
+         </property>
+   </bean>
+
+   <bean id="moveTo_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.CreateModifyDestroyEvents
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
+   </bean>
+
+   <bean id="moveTo" class="org.alfresco.module.org_alfresco_module_rm.action.impl.MoveToAction" parent="rmAction">
+      <property name="fileFolderService" ref="FileFolderService"/>
+      <property name="filePlanService" ref="FilePlanService" />
+      <property name="publicAction" value="true"/>
+      <property name="allowParameterSubstitutions" value="true"/>
+   </bean>
+
     <!-- RequestInfo action -->
 
    <bean id="requestInfo_proxy" parent="rmProxyAction">

@@ -60,6 +60,11 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
 {
     private static final Log logger = LogFactory.getLog(ExtensibilityContainer.class);
     
+    public boolean isExtensibilitySuppressed()
+    {
+      return false;
+    }
+    
     /**
      * <p>Opens a new {@link ExtensibilityModel}, defers execution to the extended {@link RepositoryContainer} and
      * then closes the {@link ExtensibilityModel}.</p>

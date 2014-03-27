@@ -4,18 +4,18 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 /**
  * File To action implementation.
  *
- * @author Roy Wetherall
- * @since 2.1
+ * @author Mark Hibbins
+ * @since 2.2
  */
-public class FileToAction extends CopyMoveFileToBaseAction
+public class CopyToAction extends CopyMoveFileToBaseAction
 {
     /** action name */
-    public static final String NAME = "fileTo";
+    public static final String NAME = "copyTo";
 
     @Override
     public void init()
     {
         super.init();
-        this.mode = CopyMoveFileToActionMode.MOVE;
+        this.mode = CopyMoveFileToActionMode.COPY;
     }
 }

@@ -41,7 +41,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.BaseUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -60,6 +60,7 @@ import org.mockito.stubbing.Answer;
  * Hold service implementation unit test
  *
  * @author Roy Wetherall
+ * @since 2.2
  */
 public class HoldServiceImplUnitTest extends BaseUnitTest
 {

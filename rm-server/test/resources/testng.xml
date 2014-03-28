@@ -3,7 +3,7 @@
 <suite name="JUnit AllTestSuite" verbose="1" >
    <test name="AllTests" junit="true">
       <classes>
-         <class name="org.alfresco.module.org_alfresco_module_rm.AllUnitTestSuite" />
+         <class name="org.alfresco.module.org_alfresco_module_rm.test.AllUnitTestSuite" />
          <class name="org.alfresco.module.org_alfresco_module_rm.test.AllTestSuite" />
       </classes>
    </test>

@@ -23,7 +23,7 @@ import static org.mockito.Mockito.verify;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.BaseUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -32,6 +32,7 @@ import org.mockito.InjectMocks;
  * Unit test for RecordMetadataBootstrap
  * 
  * @author Roy Wetherall
+ * @since 2.2
  */
 public class RecordMetadataBootstrapUnitTest extends BaseUnitTest
 {

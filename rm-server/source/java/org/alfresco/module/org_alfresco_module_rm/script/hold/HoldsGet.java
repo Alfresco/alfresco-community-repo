@@ -137,6 +137,12 @@ public class HoldsGet extends DeclarativeWebScript
         if (StringUtils.isNotBlank(storeType) && StringUtils.isNotBlank(storeId) && StringUtils.isNotBlank(id))
         {
             filePlan = new NodeRef(new StoreRef(storeType, storeId), id);
+            
+            // check that this node is actually a file plan
+            if (!nodeService.exists(filePlan) || !filePlanService.isFilePlan(filePlan))
+            {
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "The file plan provided could not be found.");
+            }
         }
         else
         {

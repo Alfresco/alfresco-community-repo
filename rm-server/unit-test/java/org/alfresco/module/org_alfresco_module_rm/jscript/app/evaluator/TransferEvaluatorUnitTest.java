@@ -29,8 +29,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.BaseUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -42,6 +42,7 @@ import org.mockito.Spy;
  * Transfer evaluator unit test.
  * 
  * @author Roy Wetherall
+ * @since 2.2
  */
 public class TransferEvaluatorUnitTest extends BaseUnitTest
 {

@@ -25,7 +25,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,6 +49,15 @@ public abstract class BaseHold extends DeclarativeWebScript
 {
     /** Hold Service */
     private HoldService holdService;
+    
+    /** record service */
+    private RecordService recordService;
+    
+    /** record folder service */
+    private RecordFolderService recordFolderService;
+    
+    /** node service */
+    private NodeService nodeService;
 
     /**
      * Set the hold service
@@ -55,6 +67,30 @@ public abstract class BaseHold extends DeclarativeWebScript
     public void setHoldService(HoldService holdService)
     {
         this.holdService = holdService;
+    }
+    
+    /**
+     * @param recordFolderService   record folder service
+     */
+    public void setRecordFolderService(RecordFolderService recordFolderService)
+    {
+        this.recordFolderService = recordFolderService;
+    }
+    
+    /**
+     * @param recordService record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
+    
+    /**
+     * @param nodeService   node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 
     /**
@@ -125,17 +161,33 @@ public abstract class BaseHold extends DeclarativeWebScript
      */
     protected NodeRef getItemNodeRef(JSONObject json)
     {
-        String nodeRef = null;
+        String nodeRefString = null;
         try
         {
-            nodeRef = json.getString("nodeRef");
+            nodeRefString = json.getString("nodeRef");
         }
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                     "Could not get the nodeRef from the json object.", je);
         }
-        return new NodeRef(nodeRef);
+        
+        NodeRef nodeRef = new NodeRef(nodeRefString);
+
+        // ensure that the node exists
+        if (!nodeService.exists(nodeRef))
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Item being added to hold does not exist.");
+        }
+        
+        // ensure that the node we are adding to the hold is a record or
+        // record folder
+        if (!recordService.isRecord(nodeRef) && !recordFolderService.isRecordFolder(nodeRef))
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Items added to a hold must be either a record or record folder.");
+        }
+        
+        return nodeRef;
     }
 
     /**
@@ -152,8 +204,21 @@ public abstract class BaseHold extends DeclarativeWebScript
             JSONArray holdsArray = json.getJSONArray("holds");
             for (int i = 0; i < holdsArray.length(); i++)
             {
-                String nodeRef = holdsArray.getString(i);
-                holds.add(new NodeRef(nodeRef));
+                NodeRef nodeRef = new NodeRef(holdsArray.getString(i));
+                
+                // check the hold exists
+                if (!nodeService.exists(nodeRef))
+                {
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The hold does not exist."); 
+                }
+                
+                // check the noderef is actually a hold
+                if (!holdService.isHold(nodeRef))
+                {
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Items are being added to a node that isn't a hold.");                     
+                }
+                
+                holds.add(nodeRef);
             }
         }
         catch (JSONException je)

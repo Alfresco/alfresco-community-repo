@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.BaseUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.collections.CollectionUtils;
@@ -38,6 +38,7 @@ import org.mockito.InjectMocks;
  * Unit test for RecordServiceImpl
  * 
  * @author Roy Wetherall
+ * @since 2.2
  */
 public class RecordServiceImplUnitTest extends BaseUnitTest
 {   

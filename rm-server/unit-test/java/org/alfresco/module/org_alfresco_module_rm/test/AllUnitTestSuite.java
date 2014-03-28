@@ -16,13 +16,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm;
+package org.alfresco.module.org_alfresco_module_rm.test;
 
 import org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementTypeFormFilterUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServiceImplUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.TransferEvaluatorUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrapUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPostUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPutUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldsGetUnitTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -40,7 +43,10 @@ import org.junit.runners.Suite.SuiteClasses;
     RecordServiceImplUnitTest.class,
     RecordsManagementTypeFormFilterUnitTest.class,
     HoldServiceImplUnitTest.class,
-    TransferEvaluatorUnitTest.class
+    TransferEvaluatorUnitTest.class,
+    HoldsGetUnitTest.class,
+    HoldPostUnitTest.class,
+    HoldPutUnitTest.class
 })
 public class AllUnitTestSuite
 {

@@ -49,13 +49,13 @@ public abstract class BaseHold extends DeclarativeWebScript
 {
     /** Hold Service */
     private HoldService holdService;
-    
+
     /** record service */
     private RecordService recordService;
-    
+
     /** record folder service */
     private RecordFolderService recordFolderService;
-    
+
     /** node service */
     private NodeService nodeService;
 
@@ -68,7 +68,7 @@ public abstract class BaseHold extends DeclarativeWebScript
     {
         this.holdService = holdService;
     }
-    
+
     /**
      * @param recordFolderService   record folder service
      */
@@ -76,7 +76,7 @@ public abstract class BaseHold extends DeclarativeWebScript
     {
         this.recordFolderService = recordFolderService;
     }
-    
+
     /**
      * @param recordService record service
      */
@@ -84,7 +84,7 @@ public abstract class BaseHold extends DeclarativeWebScript
     {
         this.recordService = recordService;
     }
-    
+
     /**
      * @param nodeService   node service
      */
@@ -111,19 +111,19 @@ public abstract class BaseHold extends DeclarativeWebScript
     {
         JSONObject json = getJSONFromContent(req);
         List<NodeRef> holds = getHolds(json);
-        NodeRef nodeRef = getItemNodeRef(json);
-        doAction(holds, nodeRef);
+        List<NodeRef> nodeRefs = getItemNodeRefs(json);
+        doAction(holds, nodeRefs);
         return new HashMap<String, Object>();
     }
 
     /**
      * Abstract method which will be implemented in the subclasses.
-     * It will either add the item to the hold(s) or remove it from the hold(s)
+     * It will either add the item(s) to the hold(s) or remove it/them from the hold(s)
      *
      * @param holds List of hold {@link NodeRef}(s)
-     * @param nodeRef {@link NodeRef} of an item (record / record folder) which will be either added to the hold(s) or removed from the hol(s)
+     * @param nodeRefs List of item {@link NodeRef}(s) (record(s) / record folder(s)) which will be either added to the hold(s) or removed from the hold(s)
      */
-    abstract void doAction(List<NodeRef> holds, NodeRef nodeRef);
+    abstract void doAction(List<NodeRef> holds, List<NodeRef> nodeRefs);
 
     /**
      * Helper method the get the json object from the request
@@ -154,40 +154,51 @@ public abstract class BaseHold extends DeclarativeWebScript
     }
 
     /**
-     * Helper method to get the {@link NodeRef} for the item (record / record folder) which will be added to the hold(s)
+     * Helper method to get the {@link NodeRef}s for the items(s) (record(s) / record folder(s)) which will be added to the hold(s)
      *
      * @param json The request content as JSON object
-     * @return The {@link NodeRef} of the item which will be added to the hold(s)
+     * @return List of item {@link NodeRef}s which will be added to the hold(s)
      */
-    protected NodeRef getItemNodeRef(JSONObject json)
+    protected List<NodeRef> getItemNodeRefs(JSONObject json)
     {
-        String nodeRefString = null;
+        List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
         try
         {
-            nodeRefString = json.getString("nodeRef");
+            JSONArray nodeRefsArray = json.getJSONArray("nodeRefs");
+            for (int i = 0; i < nodeRefsArray.length(); i++)
+            {
+                NodeRef nodeReference = new NodeRef(nodeRefsArray.getString(i));
+                checkItemNodeRef(nodeReference);
+                nodeRefs.add(nodeReference);
+            }
         }
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not get the nodeRef from the json object.", je);
+                    "Could not get information from the json array.", je);
         }
-        
-        NodeRef nodeRef = new NodeRef(nodeRefString);
 
+        return nodeRefs;
+    }
+
+    /**
+     * Helper method for checking the node reference for an item
+     *
+     * @param nodeRef The {@link NodeRef} of an item (record / record folder)
+     */
+    private void checkItemNodeRef(NodeRef nodeRef)
+    {
         // ensure that the node exists
         if (!nodeService.exists(nodeRef))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Item being added to hold does not exist.");
         }
-        
-        // ensure that the node we are adding to the hold is a record or
-        // record folder
+
+        // ensure that the node we are adding to the hold is a record or record folder
         if (!recordService.isRecord(nodeRef) && !recordFolderService.isRecordFolder(nodeRef))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Items added to a hold must be either a record or record folder.");
         }
-        
-        return nodeRef;
     }
 
     /**
@@ -205,27 +216,36 @@ public abstract class BaseHold extends DeclarativeWebScript
             for (int i = 0; i < holdsArray.length(); i++)
             {
                 NodeRef nodeRef = new NodeRef(holdsArray.getString(i));
-                
-                // check the hold exists
-                if (!nodeService.exists(nodeRef))
-                {
-                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The hold does not exist."); 
-                }
-                
-                // check the noderef is actually a hold
-                if (!holdService.isHold(nodeRef))
-                {
-                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Items are being added to a node that isn't a hold.");                     
-                }
-                
+                checkHoldNodeRef(nodeRef);
                 holds.add(nodeRef);
             }
         }
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not get information from json array.", je);
+                    "Could not get information from the json array.", je);
         }
+
         return holds;
+    }
+
+    /**
+     * Helper method for checking the node reference for a hold
+     *
+     * @param nodeRef The {@link NodeRef} of a hold
+     */
+    private void checkHoldNodeRef(NodeRef nodeRef)
+    {
+        // check the hold exists
+        if (!nodeService.exists(nodeRef))
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The hold does not exist.");
+        }
+
+        // check the noderef is actually a hold
+        if (!holdService.isHold(nodeRef))
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Items are being added to a node that isn't a hold.");
+        }
     }
 }

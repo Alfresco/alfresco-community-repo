@@ -31,11 +31,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class HoldPut extends BaseHold
 {
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.script.hold.BaseHold#doAction(java.util.List, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.script.hold.BaseHold#doAction(java.util.List, java.util.List)
      */
     @Override
-    void doAction(List<NodeRef> holds, NodeRef nodeRef)
+    void doAction(List<NodeRef> holds, List<NodeRef> nodeRefs)
     {
-        getHoldService().removeFromHolds(holds, nodeRef);
+        getHoldService().removeFromHolds(holds, nodeRefs);
     }
 }

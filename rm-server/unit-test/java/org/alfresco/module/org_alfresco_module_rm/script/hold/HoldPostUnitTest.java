@@ -32,7 +32,7 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 
 /**
  * Hold ReST API POST implementation unit test.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -40,10 +40,10 @@ public class HoldPostUnitTest extends BaseHoldWebScriptWithContentUnitTest
 {
     /** classpath location of ftl template for web script */
     private static final String WEBSCRIPT_TEMPLATE = WEBSCRIPT_ROOT_RM + "hold.post.json.ftl";
-       
+
     /** HoldPost webscript instance */
-    protected @Spy @InjectMocks HoldPost webScript;    
-    
+    protected @Spy @InjectMocks HoldPost webScript;
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest#getWebScript()
      */
@@ -52,7 +52,7 @@ public class HoldPostUnitTest extends BaseHoldWebScriptWithContentUnitTest
     {
         return webScript;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest#getWebScriptTemplate()
      */
@@ -61,7 +61,7 @@ public class HoldPostUnitTest extends BaseHoldWebScriptWithContentUnitTest
     {
         return WEBSCRIPT_TEMPLATE;
     }
-    
+
     /**
      * Test that a record can be added to holds.
      */
@@ -70,16 +70,16 @@ public class HoldPostUnitTest extends BaseHoldWebScriptWithContentUnitTest
     public void addRecordToHolds() throws Exception
     {
         // build json to send to server
-        String content = buildContent(record, holds);        
-        
+        String content = buildContent(records, holds);
+
         // execute web script
-        JSONObject json = executeJSONWebScript(Collections.EMPTY_MAP, content);        
+        JSONObject json = executeJSONWebScript(Collections.EMPTY_MAP, content);
         assertNotNull(json);
-        
+
         // verify that the record was added to the holds
-        verify(mockedHoldService, times(1)).addToHolds(holds, record);
+        verify(mockedHoldService, times(1)).addToHolds(holds, records);
     }
-    
+
     /**
      * Test that a record folder can be added to holds.
      */
@@ -88,13 +88,13 @@ public class HoldPostUnitTest extends BaseHoldWebScriptWithContentUnitTest
     public void addRecordFolderToHolds() throws Exception
     {
         // build json to send to server
-        String content = buildContent(recordFolder, holds);        
-        
+        String content = buildContent(recordFolders, holds);
+
         // execute web script
-        JSONObject json = executeJSONWebScript(Collections.EMPTY_MAP, content);        
+        JSONObject json = executeJSONWebScript(Collections.EMPTY_MAP, content);
         assertNotNull(json);
-        
+
         // verify that the record was added to the holds
-        verify(mockedHoldService, times(1)).addToHolds(holds, recordFolder);        
+        verify(mockedHoldService, times(1)).addToHolds(holds, recordFolders);
     }
 }

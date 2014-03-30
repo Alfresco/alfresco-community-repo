@@ -13,34 +13,51 @@ import org.springframework.extensions.webscripts.WebScriptException;
 
 /**
  * Base hold web script with content unit test.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
 public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebScriptUnitTest
-{   
+{
     /**
      * Helper method to build JSON content to send to hold webscripts.
      */
-    protected String buildContent(NodeRef nodeRef, List<NodeRef> holds)
+    protected String buildContent(List<NodeRef> nodeRefs, List<NodeRef> holds)
     {
         StringBuilder builder = new StringBuilder(255);
         builder.append("{");
-       
-        if (nodeRef != null)
+
+        if (nodeRefs != null)
         {
-            builder.append("'nodeRef':'").append(nodeRef.toString()).append("'");
+            builder.append("'nodeRefs':[");
+
+            boolean bFirst = true;
+            for (NodeRef nodeRef : nodeRefs)
+            {
+                if (bFirst == false)
+                {
+                    builder.append(",");
+                }
+                else
+                {
+                    bFirst = false;
+                }
+
+                builder.append("'" + nodeRef.toString() + "'");
+            }
+
+            builder.append("]");
         }
-        
-        if (nodeRef != null && holds != null)
+
+        if (nodeRefs != null && holds != null)
         {
             builder.append(",");
         }
-        
+
         if (holds != null)
         {
             builder.append("'holds':[");
-            
+
             boolean bFirst = true;
             for (NodeRef hold : holds)
             {
@@ -52,18 +69,18 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
                 {
                     bFirst = false;
                 }
-                
+
                 builder.append("'" + hold.toString() + "'");
             }
-            
+
             builder.append("]");
         }
-        
+
         builder.append("}");
-        
+
         return builder.toString();
     }
-    
+
     /**
      * Test for expected exception when invalid JSON sent
      */
@@ -72,16 +89,16 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
     public void sendInvalidJSON() throws Exception
     {
         // invalid JSON
-        String content = "invalid JSON";       
-        
+        String content = "invalid JSON";
+
         // expected exception
         exception.expect(WebScriptException.class);
         exception.expect(badRequest());
-        
+
         // execute web script
-        executeWebScript(Collections.EMPTY_MAP, content);   
+        executeWebScript(Collections.EMPTY_MAP, content);
     }
-    
+
     /**
      * Test for expected exception when one of the holds doesn't exist.
      */
@@ -91,40 +108,40 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
     {
         // setup interactions
         when(mockedNodeService.exists(eq(hold1NodeRef))).thenReturn(false);
-        
-        // build content   
-        String content = buildContent(record, holds);
-        
+
+        // build content
+        String content = buildContent(records, holds);
+
         // expected exception
         exception.expect(WebScriptException.class);
         exception.expect(badRequest());
-        
+
         // execute web script
-        executeWebScript(Collections.EMPTY_MAP, content);         
+        executeWebScript(Collections.EMPTY_MAP, content);
     }
-    
+
     /**
      * Test for expected excpetion when the item being added to the hold
      * does not exist.
      */
     @SuppressWarnings("unchecked")
-    @Test    
+    @Test
     public void nodeRefDoesNotExist() throws Exception
     {
         // setup interactions
         when(mockedNodeService.exists(eq(record))).thenReturn(false);
-        
-        // build content   
-        String content = buildContent(record, holds);
-        
+
+        // build content
+        String content = buildContent(records, holds);
+
         // expected exception
         exception.expect(WebScriptException.class);
         exception.expect(badRequest());
-        
+
         // execute web script
-        executeWebScript(Collections.EMPTY_MAP, content);          
+        executeWebScript(Collections.EMPTY_MAP, content);
     }
-    
+
     /**
      * Test for expected exception when hold information is missing from
      * sent JSON.
@@ -134,16 +151,16 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
     public void holdMissingFromContent() throws Exception
     {
         // build content
-        String content = buildContent(record, null);
-        
+        String content = buildContent(records, null);
+
         // expected exception
         exception.expect(WebScriptException.class);
         exception.expect(badRequest());
-        
+
         // execute web script
-        executeWebScript(Collections.EMPTY_MAP, content); 
+        executeWebScript(Collections.EMPTY_MAP, content);
     }
-    
+
     /**
      * Test for expected exception when noderef information is missing
      * from send JSON.
@@ -154,15 +171,15 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
     {
         // build content
         String content = buildContent(null, holds);
-        
+
         // expected exception
         exception.expect(WebScriptException.class);
         exception.expect(badRequest());
-        
+
         // execute web script
-        executeWebScript(Collections.EMPTY_MAP, content);  
+        executeWebScript(Collections.EMPTY_MAP, content);
     }
-    
+
     /**
      * Test for expected exception when adding an item to something
      * that isn't a hold.
@@ -173,16 +190,16 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
     {
         // build json content to send to server
         List<NodeRef> notAHold = Collections.singletonList(recordFolder);
-        String content = buildContent(record, notAHold);    
-        
+        String content = buildContent(records, notAHold);
+
         // expected exception
         exception.expect(WebScriptException.class);
-        exception.expect(badRequest());    
-        
+        exception.expect(badRequest());
+
         // execute web script
-        executeWebScript(Collections.EMPTY_MAP, content);            
+        executeWebScript(Collections.EMPTY_MAP, content);
     }
-    
+
     /**
      * Test for expected exception when adding an item to a hold
      * that isn't a record or record folder.
@@ -193,13 +210,13 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
     {
         // build json content to send to server
         List<NodeRef> notAHold = Collections.singletonList(recordFolder);
-        String content = buildContent(filePlanComponent, notAHold);    
-        
+        String content = buildContent(filePlanComponents, notAHold);
+
         // expected exception
         exception.expect(WebScriptException.class);
-        exception.expect(badRequest());    
-        
+        exception.expect(badRequest());
+
         // execute web script
-        executeWebScript(Collections.EMPTY_MAP, content);         
+        executeWebScript(Collections.EMPTY_MAP, content);
     }
 }

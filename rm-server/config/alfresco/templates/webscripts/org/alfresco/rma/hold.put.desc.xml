@@ -1,11 +1,11 @@
 <webscript>
-   <shortname>Removes an item from the hold(s)</shortname>
+   <shortname>Removes item(s) from the hold(s)</shortname>
    <description><![CDATA[
-   WebScript to remove an item (record / record folder) from the hold(s) in the holds container.<br/>
+   WebScript to remove item(s) (record(s) / record folder(s)) from the hold(s) in the holds container.<br/>
    The body of the put should be in the form<br/>
    {<br/>
-   &nbsp;&nbsp;&nbsp;"nodeRef" : nodeRef of the item (record / record folder),<br/>
-   &nbsp;&nbsp;&nbsp;"holds" : array of nodeRef for the hold(s)<br/>
+   &nbsp;&nbsp;&nbsp;"nodeRefs" : array of nodeRefs for the item(s) (record(s) / record folder(s)),<br/>
+   &nbsp;&nbsp;&nbsp;"holds" : array of nodeRefs for the hold(s)<br/>
    }<br/>
    ]]>
    </description>

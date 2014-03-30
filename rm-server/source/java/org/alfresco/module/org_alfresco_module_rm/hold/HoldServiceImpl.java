@@ -498,6 +498,21 @@ public class HoldServiceImpl extends ServiceBaseImpl
     }
 
     /**
+     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#addToHolds(java.util.List, java.util.List)
+     */
+    @Override
+    public void addToHolds(List<NodeRef> holds, List<NodeRef> nodeRefs)
+    {
+        ParameterCheck.mandatoryCollection("holds", holds);
+        ParameterCheck.mandatoryCollection("nodeRefs", nodeRefs);
+
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            addToHolds(holds, nodeRef);
+        }
+    }
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#removeFromHold(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
@@ -561,6 +576,21 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     return null;
                 }
              });
+        }
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#removeFromHolds(java.util.List, java.util.List)
+     */
+    @Override
+    public void removeFromHolds(List<NodeRef> holds, List<NodeRef> nodeRefs)
+    {
+        ParameterCheck.mandatoryCollection("holds", holds);
+        ParameterCheck.mandatoryCollection("nodeRefs", nodeRefs);
+
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            removeFromHolds(holds, nodeRef);
         }
     }
 

@@ -1369,7 +1369,10 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
             {
-                nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                props.put(ContentModel.PROP_INITIAL_VERSION, false);
+                props.put(ContentModel.PROP_AUTO_VERSION, false);
+                nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
             }
 
             Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(5);
@@ -1382,7 +1385,10 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
             {
-                nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                props.put(ContentModel.PROP_INITIAL_VERSION, false);
+                props.put(ContentModel.PROP_AUTO_VERSION, false);
+                nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
             }
 
             Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(5);

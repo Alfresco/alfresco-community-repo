@@ -247,7 +247,7 @@ public abstract class CopyMoveFileToBaseAction extends RMActionExecuterAbstractB
         NodeRef child = null;
         if(targetisUnfiledRecords)
         {
-            child = this.fileFolderService.create(parent, childName, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER).getNodeRef();
+            child = this.fileFolderService.create(parent, childName, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
         }
         else if(lastAsFolder)
         {

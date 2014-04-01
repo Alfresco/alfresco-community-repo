@@ -18,7 +18,7 @@
          <arg value="-DskipTests" />
       </exec>
    </target>
-
+   
    <target name="fetchWarFile">
       <xmlproperty file="../pom.xml" keepRoot="false"/>
       <exec executable="${mvn.exec}" failonerror="true">
@@ -39,7 +39,7 @@
       <delete dir="${app.folder}" failonerror="true" />
    </target>
 
-   <target name="alfresco:amp" depends="cleanTarget, install">
+   <target name="alfresco:amp" depends="cleanTarget, unitTest">
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="alfresco:amp" />
       </exec>

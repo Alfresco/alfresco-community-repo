@@ -31,6 +31,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * Helper base class for service implementations.
@@ -38,13 +41,25 @@ import org.alfresco.util.PropertyMap;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class ServiceBaseImpl implements RecordsManagementModel
+public class ServiceBaseImpl implements RecordsManagementModel, ApplicationContextAware
 {
     /** Node service */
     protected NodeService nodeService;
 
     /** Dictionary service */
     protected DictionaryService dictionaryService;
+    
+    /** Application context */
+    protected ApplicationContext applicationContext;
+
+    /**
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
+    }
 
     /**
      * @param nodeService   node service
@@ -60,6 +75,60 @@ public class ServiceBaseImpl implements RecordsManagementModel
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    /**
+     * Indicates whether the given node is a file plan component or not.
+     * <p>
+     * Exposed in the FilePlan service.
+     * 
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlanComponent(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public boolean isFilePlanComponent(NodeRef nodeRef)
+    {
+        boolean result = false;
+     
+        // use the internal node service to prevent redirection of security checking.
+        NodeService myNodeService = (NodeService)applicationContext.getBean("nodeService");
+        
+        if (myNodeService.exists(nodeRef) &&
+            myNodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT))
+        {
+            result = true;
+        }
+        return result;
+    }
+    
+    /**
+     * Indicates whether the given node is a file plan or not.
+     * <p>
+     * Exposed in the FilePlan service.
+     * 
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlan(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public boolean isFilePlan(NodeRef nodeRef)
+    {
+        return instanceOf(nodeRef, TYPE_FILE_PLAN);
+    }
+    
+    /**
+     * Indicates whether the given node is a file plan container or not.
+     * 
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlanContainer(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public boolean isFilePlanContainer(NodeRef nodeRef)
+    {
+        return instanceOf(nodeRef, TYPE_RECORDS_MANAGEMENT_CONTAINER);
+    }
+
+    /**
+     * Indicates whether the given node is a record category or not.
+     * 
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isRecordCategory(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public boolean isRecordCategory(NodeRef nodeRef)
+    {
+        return instanceOf(nodeRef, TYPE_RECORD_CATEGORY);
     }
 
     /**

@@ -489,9 +489,6 @@
           init-method="init">
         <property name="permissionService" ref="PermissionService"/>
         <property name="policyComponent" ref="policyComponent"/>
-        <property name="filePlanService" ref="FilePlanService" />
-        <property name="recordService" ref="RecordService" />
-        <property name="recordFolderService" ref="RecordFolderService" />
     </bean>
 
     <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">

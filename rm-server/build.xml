@@ -25,4 +25,12 @@
    </target>
 
    <target name="prepareEnv" depends="copyDBDriver, copyDevContextFile" description="" />
+	   
+   <target name="unitTest" depends="install">
+      <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="test" />
+         <arg value="-Dtest=AllUnitTestSuite" />
+      </exec>
+   </target>
+	
 </project>

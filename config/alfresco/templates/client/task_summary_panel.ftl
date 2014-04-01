@@ -6,7 +6,7 @@
 	      <td colspan='2' class='mainSubTitle'>
 	         <table cellspacing='0' cellpadding='0' width='100%' style='cursor:move' id='dragable'>
 	            <tr>
-	               <td class='mainSubTitle'>${task.description?html}</td>
+	               <td class='mainSubTitle'>${(task.description!'')?html}</td>
 	               <td width=14 align=right><img src='${url.context}/images/icons/close_panel.gif' onclick="TaskInfoMgr.close('${task.id}');" style='cursor:pointer' width=14 height=14 border=0 title='${msg("task_summary_panel.close")}' alt='${msg("task_summary_panel.close")}'></td>
 	            </tr>
 	         </table>

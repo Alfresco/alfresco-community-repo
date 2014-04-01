@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -74,6 +75,9 @@ public class RmSiteType extends    BaseBehaviourBean
     /** Capability service */
     protected CapabilityService capabilityService;
 
+    /** Authority service */
+    private AuthorityService authorityService;
+
     /** Map of file plan type's key'ed by corresponding site types */
     protected Map<QName, QName> mapFilePlanType = new HashMap<QName, QName>(3);
 
@@ -100,6 +104,14 @@ public class RmSiteType extends    BaseBehaviourBean
     public void setCapabilityService(CapabilityService capabilityService)
     {
         this.capabilityService = capabilityService;
+    }
+
+    /**
+     * @param authorityService authority service
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
     }
 
     /**
@@ -256,6 +268,10 @@ public class RmSiteType extends    BaseBehaviourBean
                 {
                     throw new AlfrescoRuntimeException("The records management site can not be deleted, because the user doesn't have sufficient privillages to delete the file plan.");
                 }
+
+                // delete the authority
+                String siteGroup = siteService.getSiteGroup(siteInfo.getShortName());
+                authorityService.deleteAuthority(siteGroup, true);
             }
         }
     }

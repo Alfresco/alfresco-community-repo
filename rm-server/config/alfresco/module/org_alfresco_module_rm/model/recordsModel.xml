@@ -33,6 +33,7 @@
       <type name="rma:rmsite">
          <title>RM Site</title>
          <parent>st:site</parent>
+         <archive>false</archive>
       </type>
 
       <!-- Caveat config - allowed values for users/groups for supplemental markings and/or user-defined fields -->

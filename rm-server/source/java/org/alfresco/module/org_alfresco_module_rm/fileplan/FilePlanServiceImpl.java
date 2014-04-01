@@ -30,8 +30,6 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
@@ -41,7 +39,6 @@ import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -51,9 +48,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -63,9 +57,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @since 2.1
  */
 public class FilePlanServiceImpl extends ServiceBaseImpl
-                                 implements FilePlanService,
-                                            RecordsManagementModel,
-                                            ApplicationContextAware
+                                 implements FilePlanService
 {
 	/** I18N */
     private final static String MSG_DUP_ROOT = "rm.service.dup-root";
@@ -84,18 +76,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 
     /** RM site file plan container */
     private static final String FILE_PLAN_CONTAINER = "documentLibrary";
-
-    /** Application context */
-    private ApplicationContext applicationContext;
-
-    /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
 
     /**
      * NOTE:  for some reason spring couldn't cope with the circular references between these two
@@ -125,27 +105,11 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @return	internal node service
-     */
-    protected NodeService getInternalNodeService()
-    {
-        return (NodeService)applicationContext.getBean("nodeService");
-    }
-
-    /**
      * @return	site service
      */
     protected SiteService getSiteService()
     {
         return (SiteService)applicationContext.getBean("SiteService");
-    }
-
-    /**
-     * @return	record service
-     */
-    protected RecordService getRecordService()
-    {
-    	return (RecordService)applicationContext.getBean("RecordService");
     }
 
     /**
@@ -162,20 +126,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     protected TransferService getTransferService()
     {
     	return (TransferService)applicationContext.getBean("RmTransferService");
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlanComponent(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public boolean isFilePlanComponent(NodeRef nodeRef)
-    {
-        boolean result = false;
-        if (getInternalNodeService().exists(nodeRef) &&
-            getInternalNodeService().hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT))
-        {
-            result = true;
-        }
-        return result;
     }
 
     /**
@@ -201,7 +151,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             {
                 result = FilePlanComponentKind.RECORD_FOLDER;
             }
-            else if (getRecordService().isRecord(nodeRef))
+            else if (isRecord(nodeRef))
             {
                 result = FilePlanComponentKind.RECORD;
             }
@@ -277,15 +227,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         }
 
         return result;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlan(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public boolean isFilePlan(NodeRef nodeRef)
-    {
-        return instanceOf(nodeRef, TYPE_FILE_PLAN);
-    }
+    }    
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlans()
@@ -470,25 +412,18 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                         containerType,
                         properties).getChildRef();
 
-
-   //     if (!inheritPermissions)
-   //     {
-            // set inheritance to false
-            getPermissionService().setInheritParentPermissions(container, false);
-            getPermissionService().setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
-            getPermissionService().setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-            getPermissionService().setPermission(container, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
-            getPermissionService().setPermission(container, "Administrator", RMPermissionModel.FILING, true);
-
-            // TODO set the admin users to have filing permissions on the unfiled container!!!
-            // TODO we will need to be able to get a list of the admin roles from the service
-  //      }
-   //     else
-   //     {
-            // just inherit eveything
-            // TODO will change this when we are able to set permissions on holds and transfers!
-   //         getPermissionService().setInheritParentPermissions(container, true);
-   //     }
+        // set inheritance to false
+        getPermissionService().setInheritParentPermissions(container, false);
+        
+        // give all roles read permissions on the container by default
+        getPermissionService().setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
+        
+        // setup the extended reader permissions
+        getPermissionService().setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+        getPermissionService().setPermission(container, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+        
+        // setup the administrator permissions
+        getPermissionService().setPermission(container, "Administrator", RMPermissionModel.FILING, true);
 
         return container;
     }
@@ -603,23 +538,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             nodeRef = assocRef.getParentRef();
             getNodeRefPathRecursive(nodeRef, nodeRefPath);
         }
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlanContainer(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public boolean isFilePlanContainer(NodeRef nodeRef)
-    {
-        return instanceOf(nodeRef, TYPE_RECORDS_MANAGEMENT_CONTAINER);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isRecordCategory(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public boolean isRecordCategory(NodeRef nodeRef)
-    {
-        return instanceOf(nodeRef, TYPE_RECORD_CATEGORY);
     }
 
     /**

@@ -139,6 +139,8 @@ public interface FilePlanService
     NodeRef createUnfiledContainer(NodeRef filePlan);
 
     /**
+     * Gets the hold container for a given file plan.  Returns
+     * null if none.
      *
      * @param filePlan
      * @return

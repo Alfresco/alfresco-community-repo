@@ -19,7 +19,9 @@
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -34,14 +36,18 @@ import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.alfresco.util.collections.CollectionUtils;
 import org.junit.Before;
@@ -49,6 +55,9 @@ import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Base unit test.
@@ -72,11 +81,16 @@ public class BaseUnitTest implements RecordsManagementModel
     @Mock(name="dictionaryService")     protected DictionaryService mockedDictionaryService;
     @Mock(name="namespaceService")      protected NamespaceService mockedNamespaceService; 
     @Mock(name="identifierService")     protected IdentifierService mockedIdentifierService;
+    @Mock(name="permissionService")     protected PermissionService mockedPermissionService;
     
+    /** rm service mocks */
     @Mock(name="filePlanService")       protected FilePlanService mockedFilePlanService;
     @Mock(name="recordFolderService")   protected RecordFolderService mockedRecordFolderService;
     @Mock(name="recordService")         protected RecordService mockedRecordService;
     @Mock(name="holdService")           protected HoldService mockedHoldService;
+    
+    /** application context mock */
+    @Mock(name="applicationContext")    protected ApplicationContext mockedApplicationContext;
     
     /** expected exception rule */
     @Rule
@@ -89,9 +103,13 @@ public class BaseUnitTest implements RecordsManagementModel
     public void before()
     {
         MockitoAnnotations.initMocks(this);
+        
+        // setup application context
+        doReturn(mockedNodeService).when(mockedApplicationContext).getBean("nodeService");
 
         // setup file plan 
         filePlan = generateNodeRef(TYPE_FILE_PLAN);
+        setupAsFilePlanComponent(filePlan);
         doReturn(true).when(mockedFilePlanService).isFilePlan(filePlan);
         
         // setup basic file plan component
@@ -112,8 +130,7 @@ public class BaseUnitTest implements RecordsManagementModel
         doReturn(result).when(mockedNodeService).getChildAssocs(eq(recordFolder), eq(ContentModel.ASSOC_CONTAINS), any(QNamePattern.class));
         doReturn(result).when(mockedNodeService).getParentAssocs(record);
         doReturn(Collections.singletonList(recordFolder)).when(mockedRecordFolderService).getRecordFolders(record);
-        doReturn(Collections.singletonList(record)).when(mockedRecordService).getRecords(recordFolder);
-        
+        doReturn(Collections.singletonList(record)).when(mockedRecordService).getRecords(recordFolder);        
     }
     
     /**
@@ -179,7 +196,7 @@ public class BaseUnitTest implements RecordsManagementModel
         doReturn(filePlan).when(mockedFilePlanService).getFilePlan(nodeRef);
         doReturn(filePlan).when(mockedNodeService).getProperty(nodeRef, PROP_ROOT_NODEREF);
     }
-     
+
     /**
      * Helper method to generate a node reference.
      *  
@@ -206,5 +223,73 @@ public class BaseUnitTest implements RecordsManagementModel
             when(mockedNodeService.getType(eq(nodeRef))).thenReturn(type);
         }
         return nodeRef;
+    }
+    
+    /**
+     * Helper method to make one node the primary parent of the other.
+     * <p>
+     * Assumes the cm:contains assoc type.
+     * 
+     * @param child
+     * @param parent
+     */
+    protected void makePrimaryParentOf(NodeRef child, NodeRef parent)
+    {
+        doReturn(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parent, generateQName(), child))
+            .when(mockedNodeService)
+            .getPrimaryParent(child);
+    }
+    
+    /**
+     * Helper method to make a number of nodes children of another.
+     * <p>
+     * Assumes the cm:contains assoc type.
+     * 
+     * @param parent
+     * @param children
+     */
+    protected void makeChildrenOf(NodeRef parent, NodeRef ... children)
+    {
+        List<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>(children.length);
+        for (NodeRef child : children)
+        {
+            assocs.add(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parent, generateQName(), child));
+        }
+        
+        doReturn(assocs).when(mockedNodeService).getChildAssocs(parent, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+    }
+    
+    /**
+     * Helper method to mock up calls to 'run as' methods
+     * on base service implementation.
+     * 
+     * @param service
+     */
+    @SuppressWarnings("unchecked")
+    protected void mockRunAsMethods(ServiceBaseImpl service)
+    {
+        doAnswer(new Answer<Object>()
+        {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                RunAsWork work = (RunAsWork)invocation.getArguments()[0];
+                return work.doWork();
+            }
+            
+        }).when(service).runAsSystem(any(RunAsWork.class));
+        
+        doAnswer(new Answer<Object>()
+        {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                RunAsWork work = (RunAsWork)invocation.getArguments()[0];
+                return work.doWork();
+            }
+            
+        }).when(service).runAs(any(RunAsWork.class), anyString());
     }
 }

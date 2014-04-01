@@ -26,6 +26,7 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTe
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPostUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPutUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldsGetUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionServiceImplUnitTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -46,7 +47,8 @@ import org.junit.runners.Suite.SuiteClasses;
     TransferEvaluatorUnitTest.class,
     HoldsGetUnitTest.class,
     HoldPostUnitTest.class,
-    HoldPutUnitTest.class
+    HoldPutUnitTest.class,
+    FilePlanPermissionServiceImplUnitTest.class
 })
 public class AllUnitTestSuite
 {

@@ -25,10 +25,6 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -37,7 +33,6 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -54,23 +49,13 @@ import org.apache.commons.logging.LogFactory;
  * @since 2.1
  */
 public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
-                                           implements FilePlanPermissionService,
-                                                      RecordsManagementModel
+                                           implements FilePlanPermissionService
 {
     /** Permission service */
     protected PermissionService permissionService;
 
     /** Policy component */
     protected PolicyComponent policyComponent;
-
-    /** File plan service */
-    protected FilePlanService filePlanService;
-
-    /** Record service */
-    protected RecordService recordService;
-
-    /** Record folder service */
-    protected RecordFolderService recordFolderService;
 
     /** Logger */
     protected static Log logger = LogFactory.getLog(FilePlanPermissionServiceImpl.class);
@@ -111,43 +96,11 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    /**
      * @param policyComponent   policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
-    }
-
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
-
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
-    }
-
-    /**
-     * @param recordFolderService record folder service
-     */
-    public void setRecordFolderService(RecordFolderService recordFolderService)
-    {
-        this.recordFolderService = recordFolderService;
     }
 
     /**
@@ -175,7 +128,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             {
                 public Object doWork()
                 {
-                    boolean fillingOnly = filePlanService.isFilePlan(parentNodeRef);
+                    boolean fillingOnly = isFilePlan(parentNodeRef);
 
                     // since this is not a root category, inherit from parent
                     Set<AccessPermission> perms = permissionService.getAllSetPermissions(parentNodeRef);
@@ -258,7 +211,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      */
     public void onAddRecord(final NodeRef record, final QName aspectTypeQName)
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Object doWork()
             {
@@ -412,7 +365,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         if (nodeService.exists(nodeRef))
         {
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
                 public Object doWork()
                 {
@@ -438,17 +391,18 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("authority", authority);
         ParameterCheck.mandatory("permission", permission);
 
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Boolean doWork() throws Exception
             {
-                if (filePlanService.isFilePlan(nodeRef))
+                if (isFilePlan(nodeRef))
                 {
                    setPermissionDown(nodeRef, authority, permission);
                 }
-                else if (filePlanService.isFilePlanContainer(nodeRef) ||
-                         recordFolderService.isRecordFolder(nodeRef) ||
-                         recordService.isRecord(nodeRef))
+                else if (isFilePlanContainer(nodeRef) ||
+                         isRecordFolder(nodeRef) ||
+                         isRecord(nodeRef) ||
+                         isHold(nodeRef))
                 {
                     setReadPermissionUp(nodeRef, authority);
                     setPermissionDown(nodeRef, authority, permission);
@@ -463,7 +417,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName());
+        });
     }
 
     /**
@@ -475,7 +429,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     private void setReadPermissionUp(NodeRef nodeRef, String authority)
     {
         NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-        if (parent != null && filePlanService.isFilePlanComponent(parent))
+        if (parent != null && isFilePlanComponent(parent))
         {
             setReadPermissionUpImpl(parent, authority);
         }
@@ -492,7 +446,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         setPermissionImpl(nodeRef, authority, RMPermissionModel.READ_RECORDS);
 
         NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-        if (parent != null && filePlanService.isFilePlanComponent(parent))
+        if (parent != null && isFilePlanComponent(parent))
         {
             setReadPermissionUpImpl(parent, authority);
         }
@@ -513,17 +467,17 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             // set permissions
             setPermissionImpl(nodeRef, authority, permission);
 
-            if (filePlanService.isFilePlanContainer(nodeRef) ||
-                recordFolderService.isRecordFolder(nodeRef))
+            if (isFilePlanContainer(nodeRef) ||
+                isRecordFolder(nodeRef))
             {
                 List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                 for (ChildAssociationRef assoc : assocs)
                 {
                     NodeRef child = assoc.getChildRef();
-                    if (filePlanService.isFilePlanContainer(child) ||
-                        recordFolderService.isRecordFolder(child) ||
-                        recordService.isRecord(child) ||
-                        instanceOf(child, TYPE_HOLD) ||
+                    if (isFilePlanContainer(child) ||
+                        isRecordFolder(child) ||
+                        isRecord(child) ||
+                        isHold(child) ||
                         instanceOf(child, TYPE_TRANSFER))
                     {
                         setPermissionDown(child, authority, permission);
@@ -556,7 +510,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      */
     public void deletePermission(final NodeRef nodeRef, final String authority, final String permission)
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Boolean doWork() throws Exception
             {
@@ -566,17 +520,17 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     // Delete permission on this node
                     permissionService.deletePermission(nodeRef, authority, permission);
 
-                    if (filePlanService.isFilePlanContainer(nodeRef) ||
-                        recordFolderService.isRecordFolder(nodeRef))
+                    if (isFilePlanContainer(nodeRef) ||
+                        isRecordFolder(nodeRef))
                     {
                         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                         for (ChildAssociationRef assoc : assocs)
                         {
                             NodeRef child = assoc.getChildRef();
-                            if (filePlanService.isFilePlanContainer(child) ||
-                                recordFolderService.isRecordFolder(child) ||
-                                recordService.isRecord(child)||
-                                instanceOf(child, TYPE_HOLD) ||
+                            if (isFilePlanContainer(child) ||
+                                isRecordFolder(child) ||
+                                isRecord(child)||
+                                isHold(child) ||
                                 instanceOf(child, TYPE_TRANSFER))
                             {
                                 deletePermission(child, authority, permission);
@@ -587,6 +541,6 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName());
+        });
     }
 }

@@ -88,6 +88,7 @@
       <property name="siteService" ref="SiteService"/>
       <property name="recordsManagementSearchService" ref="RecordsManagementSearchService" />
       <property name="capabilityService" ref="CapabilityService" />
+      <property name="authorityService" ref="AuthorityService" />
    </bean>
 
    <!-- rma model aspects -->

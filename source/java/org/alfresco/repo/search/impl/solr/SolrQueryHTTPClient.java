@@ -463,6 +463,16 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
                 Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream(), post.getResponseCharSet()));
                 // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
                 JSONObject json = new JSONObject(new JSONTokener(reader));
+
+                if (json.has("status"))
+                {
+                    JSONObject status = json.getJSONObject("status");
+                    if (status.getInt("code") != HttpServletResponse.SC_OK)
+                    {
+                        throw new LuceneQueryParserException("SOLR side error: " + status.getString("message"));
+                    }
+                }
+
                 SolrJSONResultSet results = new SolrJSONResultSet(json, searchParameters, nodeService, nodeDAO, limitBy, maxResults);
                 if (s_logger.isDebugEnabled())
                 {

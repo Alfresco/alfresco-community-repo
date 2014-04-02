@@ -922,7 +922,7 @@ public class PropFindMethod extends WebDAVMethod
     {
         // Output the lock status response
         LockInfo lockInfo = getNodeLockInfo(nodeInfo);
-        if (lockInfo.isLocked())
+        if (lockInfo.isLocked() && !lockInfo.isExpired())
         {
             generateLockDiscoveryXML(xml, nodeInfo, lockInfo);
         }

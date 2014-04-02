@@ -459,6 +459,7 @@ public class LockMethod extends WebDAVMethod
         {
             // Update the expiry for the lock
             lockInfo.setTimeoutSeconds(getLockTimeout());
+            getDAVLockService().lock(lockNode.getNodeRef(), lockInfo);
         }
     }
 

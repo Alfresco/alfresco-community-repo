@@ -18,12 +18,6 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                	<artifactId>commons-logging</artifactId>
-                	<groupId>commons-logging</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -51,12 +45,6 @@
             <groupId>axis</groupId>
             <artifactId>axis</artifactId>
             <version>1.4</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>commons-logging</artifactId>
-					<groupId>commons-logging</groupId>
-				</exclusion>
-			</exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -78,14 +66,6 @@
                     <groupId>xml-apis</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>commons-collections</artifactId>
-                    <groupId>commons-collections</groupId>
-                </exclusion>
-                <exclusion>
-                	<artifactId>commons-logging</artifactId>
-                	<groupId>commons-logging</groupId>
-                </exclusion>
-                <exclusion>
                   <groupId>org.freemarker</groupId>
                   <artifactId>freemarker</artifactId>
                 </exclusion>            
@@ -96,10 +76,6 @@
             <artifactId>spring-cmis-framework</artifactId>
             <version>${dependency.surf.version}</version>
             <exclusions>
-            	<exclusion>
-            		<artifactId>commons-logging</artifactId>
-            		<groupId>commons-logging</groupId>
-            	</exclusion>
             	<exclusion>
             	    <artifactId>chemistry-opencmis-client-impl</artifactId>
             	    <groupId>org.apache.chemistry.opencmis</groupId>
@@ -139,10 +115,6 @@
                 <exclusion>
                     <groupId>xml-apis</groupId>
                     <artifactId>xml-apis</artifactId>
-                </exclusion>
-                <exclusion>
-                	<groupId>commons-logging</groupId>
-                	<artifactId>commons-logging</artifactId>
                 </exclusion>
                 <exclusion>
                 	<groupId>org.apache.geronimo.specs</groupId>
@@ -217,10 +189,6 @@
             <classifier>tests</classifier>
             <scope>test</scope>
             <exclusions>
-                <exclusion>
-                    <artifactId>commons-collections</artifactId>
-                    <groupId>commons-collections</groupId>
-                </exclusion>
                 <exclusion>
                   <groupId>org.freemarker</groupId>
                   <artifactId>freemarker</artifactId>

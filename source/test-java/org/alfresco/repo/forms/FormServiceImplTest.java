@@ -20,6 +20,7 @@ package org.alfresco.repo.forms;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -1743,6 +1744,45 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         Map<QName, Serializable> updatedProps = this.nodeService.getProperties(node);
         String updatedName = (String)updatedProps.get(ContentModel.PROP_NAME);
         assertEquals(newName, updatedName);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void testMNT_10969() throws Exception
+    {
+        // create a node (cm:content)
+        Map<QName, Serializable> nodeProps = new HashMap<QName, Serializable>(1);
+        String nodeName = "testNode" + GUID.generate();
+        nodeProps.put(ContentModel.PROP_NAME, nodeName);
+        NodeRef node = this.nodeService.createNode(
+                this.folder, 
+                ContentModel.ASSOC_CONTAINS, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeName), 
+                ContentModel.TYPE_CONTENT,
+                nodeProps).getChildRef();
+        
+        this.nodeService.addAspect(node, ContentModel.ASPECT_WEBDAV_OBJECT, null);
+        
+        List<String> fields = new ArrayList<String>(8);
+        fields.add(ContentModel.PROP_DEAD_PROPERTIES.toPrefixString(this.namespaceService));
+        
+        Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, node.toString()), fields);
+        
+        // check a form got returned
+        assertNotNull("Expecting form to be present", form);
+        
+        // check fields were returned
+        List<String> fieldNames = form.getFieldDefinitionNames();
+        assertEquals(1, fieldNames.size());
+        
+        // set the multivalue property with empty values
+        FormData data = new FormData();
+        String value = ",titi,toto,";
+        data.addFieldData("prop_webdav_deadproperties", value);
+        this.formService.saveForm(new Item(NODE_FORM_ITEM_KIND, node.toString()), data);
+        
+        Map<QName, Serializable> updatedProps = this.nodeService.getProperties(node);
+        List<String> savedValue = (List<String>)updatedProps.get(ContentModel.PROP_DEAD_PROPERTIES);
+        assertEquals(Arrays.asList("", "titi", "toto", ""), savedValue);
     }
     
     public void testJavascriptAPI() throws Exception

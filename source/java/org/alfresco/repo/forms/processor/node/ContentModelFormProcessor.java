@@ -29,11 +29,11 @@ import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DAT
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -360,12 +360,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                             {
                                 // if value is a String convert to List of
                                 // String
-                                StringTokenizer tokenizer = new StringTokenizer((String) value, ",");
-                                List<String> list = new ArrayList<String>(8);
-                                while (tokenizer.hasMoreTokens())
-                                {
-                                    list.add(tokenizer.nextToken());
-                                }
+                                List<String> list = Arrays.asList(((String)value).split(",", -1));
 
                                 // persist the List
                                 value = list;

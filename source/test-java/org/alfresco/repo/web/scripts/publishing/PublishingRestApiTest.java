@@ -703,7 +703,13 @@ public class PublishingRestApiTest extends BaseWebScriptTest
 
     private void check(String key, JSONObject json, Object exp)
     {
-        assertEquals("Comparing "+key, exp, json.opt(key));
+        Object actual = json.opt(key);
+        if (exp instanceof String && actual instanceof String)
+        {
+            exp = exp.toString().toLowerCase();
+            actual = actual.toString().toLowerCase();
+        }
+        assertEquals("Comparing "+key, exp, actual);
     }
     
     private void checkStrings(JSONArray json, Collection<String> strings) throws Exception

@@ -954,7 +954,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                             "   Cache:      " + sharedCache + "\n" +
                             "   Key:        " + key + "\n" +
                             "   New Value:  " + bucket.getValue() + "\n" +
-                            "   Cash Value: " + sharedCache.get(key),
+                            "   Cache Value:" + sharedCache.get(key),
                             e);
                 }
             }

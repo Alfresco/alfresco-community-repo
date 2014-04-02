@@ -18,12 +18,15 @@
  */
 package org.alfresco.repo.domain.node;
 
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.NodeDAO.NodeRefQueryCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -34,6 +37,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
+import org.junit.Assert;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -53,7 +57,9 @@ public class NodeDAOTest extends TestCase
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
     private NodeDAO nodeDAO;
+    private SimpleCache<Serializable, Node> rootNodesCache;
     
+    @SuppressWarnings("unchecked")
     @Override
     public void setUp()
     {
@@ -65,6 +71,7 @@ public class NodeDAOTest extends TestCase
         txnHelper.setMaxRetryWaitMs(50);
         
         nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
+        rootNodesCache = (SimpleCache<Serializable, Node>) ctx.getBean("node.rootNodesSharedCache");
     }
     
     public void testTransaction() throws Throwable
@@ -139,6 +146,37 @@ public class NodeDAOTest extends TestCase
             // Check
             Pair<Long, StoreRef> checkStorePair = nodeDAO.getStore(storeRef);
             assertEquals("Store pair did not match. ", storePair, checkStorePair);
+        }
+    }
+    
+    /**
+     * Ensure that the {@link NodeEntity} values cached as root nodes are valid instances.
+     * <p/>
+     * ACE-987: NPE in NodeEntity during post-commit write through to shared cache
+     */
+    public void testRootNodeCacheEntries() throws Throwable
+    {
+        // Get the stores
+        List<Pair<Long, StoreRef>> storeRefPairs = nodeDAO.getStores();
+        assertTrue("No stores in the system.", storeRefPairs.size() > 0);
+        // Drop all cache entries and reload them one by one
+        for (Pair<Long, StoreRef> storeRefPair : storeRefPairs)
+        {
+            StoreRef storeRef = storeRefPair.getSecond();
+            nodeDAO.getRootNode(storeRef);
+        }
+        // The cache should be populated again
+        Collection<Serializable> keys = rootNodesCache.getKeys();
+        assertTrue("Cache entries were not populated. ", keys.size() > 0);
+        // Check each root node
+        for (Serializable key : keys)
+        {
+            NodeEntity node = (NodeEntity) rootNodesCache.get(key);
+            // Create a good value
+            NodeEntity clonedNode = (NodeEntity) node.clone();
+            // Run equals and hashcode
+            node.hashCode();
+            Assert.assertEquals(node, clonedNode);          // Does NPE check implicitly
         }
     }
 }

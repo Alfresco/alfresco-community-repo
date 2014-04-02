@@ -26,13 +26,6 @@
         <result property="protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
-    <resultMap id="result_StoreRootNode" type="Node">
-        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="store.id" column="storeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="store.protocol" column="storeProtocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="store.identifier" column="storeIdentifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    </resultMap>
     <resultMap id="result_AuditProps" type="AuditProps">
         <result property="auditCreator" column="audit_creator" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="auditCreated" column="audit_created" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -647,16 +640,12 @@
             store.identifier = #{identifier}
     </select>
     
-    <select id="select_StoreRootNodeByRef" parameterType="Store" resultMap="result_StoreRootNode">
-        select
-            node.id             as id,
-            store.id            as storeId,
-            store.protocol      as storeProtocol,
-            store.identifier    as storeIdentifier,
-            node.uuid           as uuid
+    <select id="select_StoreRootNodeByRef" parameterType="Store" resultMap="result_Node">
+        <include refid="alfresco.node.select_Node_Results"/>
         from
             alf_store store
             join alf_node node on (store.root_node_id = node.id)
+            join alf_transaction txn on (txn.id = node.transaction_id)
         where
             store.protocol = #{protocol} and
             store.identifier = #{identifier}

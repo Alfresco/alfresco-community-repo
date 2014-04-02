@@ -34,7 +34,7 @@ import org.alfresco.util.Pair;
  * @author Derek Hulley
  * @since 3.4
  */
-public class NodeEntity implements Node, PermissionCheckValue, Serializable
+public class NodeEntity implements Node, PermissionCheckValue, Serializable, Cloneable
 {
     private static final long serialVersionUID = 1L;
     private boolean locked;
@@ -84,7 +84,13 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable
         this.transaction = node.getTransaction();
         this.auditableProperties = node.getAuditableProperties();
     }
-        
+      
+    @Override
+    public Object clone() throws CloneNotSupportedException
+    {
+        return super.clone();
+    }
+
     @Override
     public int hashCode()
     {

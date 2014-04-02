@@ -172,7 +172,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 Context cx = Context.enter();
                 try
                 {
-                    script = cx.compileString(source, path, 1, null);
+                    script = cx.compileString(source, location.toString(), 1, null);
                     
                     // We do not worry about more than one user thread compiling the same script.
                     // If more than one request thread compiles the same script and adds it to the

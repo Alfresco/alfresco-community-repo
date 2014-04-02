@@ -64,7 +64,7 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
         return unfiltered;
     }
 
-    /* package */void setIncluded(int i, boolean excluded)
+    public void setIncluded(int i, boolean excluded)
     {
         inclusionMask.set(i, excluded);
     }

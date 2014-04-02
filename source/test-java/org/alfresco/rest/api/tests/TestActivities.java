@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
@@ -25,6 +26,7 @@ import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
@@ -34,6 +36,8 @@ import org.junit.Test;
 
 public class TestActivities extends EnterpriseTestApi
 {
+    private SiteService siteService;
+    
 	private TestNetwork network1;
 	private TestNetwork network2;
 	private TestNetwork defaultNetwork;
@@ -42,6 +46,7 @@ public class TestActivities extends EnterpriseTestApi
 	private TestPerson person2; // network1
 	private TestPerson person3; // network2
 	private TestPerson person4; // defaultNetwork
+	private TestPerson person5; // defaultNetwork
 
 	private TestSite testSite; // network1
 	private TestSite testSite1; // network1
@@ -54,6 +59,7 @@ public class TestActivities extends EnterpriseTestApi
 		this.network1 = repoService.createNetworkWithAlias("activitiesNetwork1", true);
 		this.network2 = repoService.createNetworkWithAlias("activitiesNetwork2", true);
 		this.defaultNetwork = repoService.createNetwork(TenantService.DEFAULT_DOMAIN, true);
+		siteService = (SiteService) applicationContext.getBean("SiteService");
 
 		try
 		{
@@ -105,6 +111,8 @@ public class TestActivities extends EnterpriseTestApi
             {
                 TestPerson person = defaultNetwork.createUser();
                 people.add(person);
+                person = defaultNetwork.createUser();
+                people.add(person);
 
                 return null;
             }
@@ -114,6 +122,7 @@ public class TestActivities extends EnterpriseTestApi
 		this.person2 = people.get(1);
 		this.person3 = people.get(2);
 		this.person4 = people.get(3);
+		this.person5 = people.get(4);
 		
 		this.testSite = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<TestSite>()
         {
@@ -300,13 +309,7 @@ public class TestActivities extends EnterpriseTestApi
             @Override
             public Void doWork() throws Exception
             {
-                JSONObject activityData = new JSONObject();
-                activityData.put("role", "Consumer");
-                activityData.put("memberUserName", person4.getId());
-                activityData.put("memberFirstName", person4.getFirstName());
-                activityData.put("memberLastName", person4.getLastName());
-                activityData.put("title", (person4.getFirstName() + " " + person4.getLastName() + " (" + person4.getId() + ")").trim());
-                repoService.postActivity("org.alfresco.site.user-joined", testSite3.getSiteId(), activityData);
+                siteService.setMembership(testSite3.getSiteId(), person5.getId(), SiteModel.SITE_CONSUMER);
 
                 return null;
             }
@@ -327,10 +330,18 @@ public class TestActivities extends EnterpriseTestApi
                 @Override
                 public List<Activity> doWork() throws Exception
                 {
-                    List<Activity> activities = repoService.getActivities(person4.getId(), null, false, true);
+                    List<Activity> activities = repoService.getActivities(person5.getId(), null, false, true);
                     return activities;
                 }
-            }, person4.getId(), defaultNetwork.getId());
+            }, person5.getId(), defaultNetwork.getId());
+
+            for(Activity activity: expectedActivities)
+            {
+                if(activity.getSiteId() == null)
+                {
+                    fail("SiteId should present in user-joined activity.");
+                }
+            }
 
             {
                 int skipCount = 0;
@@ -339,8 +350,8 @@ public class TestActivities extends EnterpriseTestApi
 
                 Map<String, String> params = createParams(paging, null);
                 params.put("who", String.valueOf(ActivityWho.me));
-                publicApiClient.setRequestContext(new RequestContext(defaultNetwork.getId(), person4.getId()));
-                ListResponse<Activity> response = peopleProxy.getActivities(person4.getId(), params);
+                publicApiClient.setRequestContext(new RequestContext(defaultNetwork.getId(), person5.getId()));
+                ListResponse<Activity> response = peopleProxy.getActivities(person5.getId(), params);
                 checkList(expectedActivities.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), response);
             }
 

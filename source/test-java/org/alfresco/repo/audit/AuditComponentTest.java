@@ -35,6 +35,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
+import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -44,6 +47,8 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -82,7 +87,7 @@ public class AuditComponentTest extends TestCase
     
     private static final Log logger = LogFactory.getLog(AuditComponentTest.class);
     
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:alfresco/testaudit/alfresco-audit-test-mnt-10767-context.xml"});
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private AuditModelRegistryImpl auditModelRegistry;
     private AuditComponent auditComponent;
@@ -90,6 +95,7 @@ public class AuditComponentTest extends TestCase
     private ServiceRegistry serviceRegistry;
     private TransactionService transactionService;
     private NodeService nodeService;
+    private FileFolderService fileFolderService;
     
     private NodeRef nodeRef;
     private String user;
@@ -103,6 +109,7 @@ public class AuditComponentTest extends TestCase
         auditService = serviceRegistry.getAuditService();
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
+        fileFolderService = serviceRegistry.getFileFolderService();
         
         // Register the test model
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test.xml");
@@ -838,13 +845,17 @@ public class AuditComponentTest extends TestCase
         queryAuditLog(auditQueryCallback, params, -1);
         assertTrue("There should be no audit entries for the API test after a clear", results.isEmpty());
 
-        TestCreateFileFolderService testCreateFileFolderService = (TestCreateFileFolderService) ctx.getBean("TestCreateFileFolderService");
+        PolicyComponent policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
+        policyComponent.bindClassBehaviour(
+                OnCreateNodePolicy.QNAME,
+                ContentModel.TYPE_FOLDER,
+                new JavaBehaviour(this, "onCreateFolderMNT10767"));
+        
         NodeRef workingRootNodeRef = null;
         try
         {
             workingRootNodeRef = nodeService.createNode(nodeRef, ContentModel.ASSOC_CHILDREN,
                     QName.createQName(NamespaceService.ALFRESCO_URI, "working_root" + System.currentTimeMillis()), ContentModel.TYPE_FOLDER).getChildRef();
-            testCreateFileFolderService.create(workingRootNodeRef, "TestFolder-" + System.currentTimeMillis(), ContentModel.TYPE_FOLDER);
 
             // Try this for a while until we get a result
             boolean success = false;
@@ -879,6 +890,13 @@ public class AuditComponentTest extends TestCase
         }
     }	
 	
+    public void onCreateFolderMNT10767(ChildAssociationRef childAssocRef)
+    {
+        NodeRef newFolderRef = childAssocRef.getChildRef();
+        fileFolderService.create(newFolderRef, "testcontent-" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT);
+    }
+
+    
     public void testAuditOverlimitProperties() throws Exception
     {
         final int OVERLIMIT_SIZE = 1500;

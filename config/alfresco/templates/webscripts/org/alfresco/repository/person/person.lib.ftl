@@ -1,7 +1,7 @@
 <#macro personJSONinner person>
 <#local p=person.properties>
 <#escape x as jsonUtils.encodeJSONString(x)>
-	"url": "${url.serviceContext + "/api/person/" + p.userName}",
+	"url": "${url.serviceContext + "/api/people/" + p.userName}",
 	"userName": "${p.userName}",
 	"enabled": ${people.isAccountEnabled(person)?string("true","false")},
 	<#if person.assocs["cm:avatar"]??>
@@ -78,7 +78,7 @@
 <#macro personSummaryJSON person>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-	"url": "${url.serviceContext + "/api/person/" + person.properties.userName}",
+	"url": "${url.serviceContext + "/api/people/" + person.properties.userName}",
 	"userName": "${person.properties.userName}",
 	"firstName": "${person.properties.firstName!""}",
 	"lastName": "${person.properties.lastName!""}"

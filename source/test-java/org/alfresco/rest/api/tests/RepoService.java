@@ -1028,6 +1028,14 @@ public class RepoService
 		return nodeRef;
     }
     
+    public NodeRef createCmObject(final NodeRef parentNodeRef, final String name)
+    {
+        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(name));
+        NodeRef nodeRef = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_CMOBJECT).getChildRef();
+
+        return nodeRef;
+    }
+    
     public Visibility getVisibility(Client client, NodeRef nodeRef)
     {
     	return hiddenAspect.getVisibility(client, nodeRef);

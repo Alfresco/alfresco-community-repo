@@ -38,6 +38,8 @@ package org.alfresco.rest.api.impl;
 
 import java.io.Serializable;
 import java.util.AbstractList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -215,6 +217,14 @@ public class CommentsImpl implements Comments
     public CollectionWithPagingInfo<Comment> getComments(String nodeId, Paging paging)
     {
 		final NodeRef nodeRef = nodes.validateNode(nodeId);
+        
+        /* MNT-10536 : fix */
+        final Set<QName> contentAndFolders = 
+                new HashSet<QName>(Arrays.asList(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT));
+        if (!nodes.nodeMatches(nodeRef, contentAndFolders, null))
+        {
+            throw new InvalidArgumentException("NodeId of folder or content is expected");
+        }
 
     	PagingRequest pagingRequest = Util.getPagingRequest(paging);
         final PagingResults<NodeRef> pagingResults = commentService.listComments(nodeRef, pagingRequest);

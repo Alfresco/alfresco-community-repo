@@ -56,6 +56,7 @@ public class TestNodeComments extends EnterpriseTestApi
 	private NodeRef nodeRef2;
 	private NodeRef nodeRef3;
 	private NodeRef nodeRef4;
+	private NodeRef cmObjectNodeRef;
 	
 	@Before
 	public void setup() throws Exception
@@ -129,6 +130,8 @@ public class TestNodeComments extends EnterpriseTestApi
 				nodes.add(nodeRef);
 				nodeRef = repoService.createDocument(site1.getContainerNodeRef("documentLibrary"), "Test Doc 3", "Test Content 3");
 				nodes.add(nodeRef);
+				nodeRef = repoService.createCmObject(site1.getContainerNodeRef("documentLibrary"), "CM Object");
+				nodes.add(nodeRef);
 
 				return null;
 			}
@@ -139,6 +142,7 @@ public class TestNodeComments extends EnterpriseTestApi
 		this.nodeRef2 = nodes.get(2);
 		this.nodeRef3 = nodes.get(3);
 		this.nodeRef4 = nodes.get(4);
+		this.cmObjectNodeRef = nodes.get(5);
 	}
 
 	@Test
@@ -195,7 +199,21 @@ public class TestNodeComments extends EnterpriseTestApi
 				Comment ret = commentsProxy.createNodeComment(nodeRef2.getId(), comment);
 				createdComments.put(ret.getId(), ret);
 			}
-
+			
+			// get comments of the non-folder/non-document nodeRef
+			try
+			{
+				int skipCount = 0;
+				int maxItems = 2;
+				Paging paging = getPaging(skipCount, maxItems);
+				commentsProxy.getNodeComments(cmObjectNodeRef.getId(), createParams(paging, null));
+				fail();
+			}
+			catch(PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+			}
+			
 			int skipCount = 0;
 			int maxItems = 2;
 			Paging paging = getPaging(skipCount, maxItems);

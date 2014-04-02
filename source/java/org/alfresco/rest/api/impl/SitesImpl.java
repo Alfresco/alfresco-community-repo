@@ -406,6 +406,12 @@ public class SitesImpl implements Sites
     		throw new InvalidArgumentException("Must provide a role");
     	}
 
+    	/* MNT-10551 : fix */
+    	if (!siteService.isMember(siteId, siteMember.getPersonId()))
+    	{
+    		throw new InvalidArgumentException("User is not a member of the site");
+    	}
+
     	siteService.setMembership(siteId, siteMember.getPersonId(), siteRole.toString());
     	return siteMember;
 	}

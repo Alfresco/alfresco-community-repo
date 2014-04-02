@@ -500,6 +500,18 @@ public class TestSiteMembers extends EnterpriseTestApi
 				{
 					assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
 				}
+				
+				// user is not a member of the site - 400
+				try
+				{
+					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2.getId()));
+					sitesProxy.updateSiteMember(site.getSiteId(), new SiteMember(person1.getId(), SiteRole.SiteContributor.toString()));
+					fail();
+				}
+				catch(PublicApiException e)
+				{
+					assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+				}
 		
 				// successful update
 				{

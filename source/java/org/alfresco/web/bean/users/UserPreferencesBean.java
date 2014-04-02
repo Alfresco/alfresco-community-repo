@@ -26,7 +26,6 @@ import java.util.ResourceBundle;
 
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
@@ -114,22 +113,7 @@ public class UserPreferencesBean implements Serializable
    {
       if (this.contentFilterLanguage == null)
       {
-         Locale locale = null;
-         UserTransaction tx = null;
-         try
-         {
-            FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context, true);
-            tx.begin();
-            
-            locale = (Locale) PreferencesService.getPreferences().getValue(PREF_CONTENTFILTERLANGUAGE);
-            
-            tx.commit();
-         }
-         catch (Throwable err)
-         {
-            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-         }
+         Locale locale = (Locale) PreferencesService.getPreferences().getValue(PREF_CONTENTFILTERLANGUAGE);
          
          // Null means All Languages
          if (locale == null)
@@ -277,22 +261,8 @@ public class UserPreferencesBean implements Serializable
     */
    public String getStartLocation()
    {
-      String location = null;
-      UserTransaction tx = null;
-      try
-      {
-         FacesContext context = FacesContext.getCurrentInstance();
-         tx = Repository.getUserTransaction(context, true);
-         tx.begin();
+      String location = (String)PreferencesService.getPreferences().getValue(PREF_STARTLOCATION);
          
-         location = (String)PreferencesService.getPreferences().getValue(PREF_STARTLOCATION);
-         
-         tx.commit();
-      }
-      catch (Throwable err)
-      {
-          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
-      }
       if (location == null)
       {
          // default to value from client config

@@ -64,7 +64,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
+import org.alfresco.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
@@ -957,7 +957,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(adhocInstance.getDefinition().getTitle(), result.getString("title"));
         assertEquals(adhocInstance.getDefinition().getDescription(), result.getString("description"));
         assertEquals(adhocInstance.isActive(), result.getBoolean("isActive"));
-        assertEquals(ISO8601DateFormat.format(adhocInstance.getStartDate()), result.getString("startDate"));
+        assertEquals(org.springframework.extensions.surf.util.ISO8601DateFormat.format(adhocInstance.getStartDate()), result.getString("startDate"));
         assertNotNull(result.getString("dueDate"));
         assertNotNull(result.getString("endDate"));
         assertEquals(1, result.getInt("priority"));

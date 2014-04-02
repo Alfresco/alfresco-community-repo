@@ -34,12 +34,6 @@
             <groupId>org.apache.ws.security</groupId>
             <artifactId>wss4j</artifactId>
             <version>1.5.12</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>xml-apis</artifactId>
-                    <groupId>xml-apis</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>axis</groupId>
@@ -61,10 +55,6 @@
             <artifactId>spring-webscripts</artifactId>
             <version>${dependency.surf.version}</version>
             <exclusions>
-                <exclusion>
-                    <artifactId>xml-apis</artifactId>
-                    <groupId>xml-apis</groupId>
-                </exclusion>
                 <exclusion>
                   <groupId>org.freemarker</groupId>
                   <artifactId>freemarker</artifactId>
@@ -112,10 +102,6 @@
             <artifactId>neethi</artifactId>
             <version>2.0.4</version>
             <exclusions>
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
                 <exclusion>
                 	<groupId>org.apache.geronimo.specs</groupId>
                 	<artifactId>geronimo-javamail_1.4_spec</artifactId>

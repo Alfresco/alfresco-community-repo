@@ -165,6 +165,7 @@ public class PublishingTestHelper
         {
             reset(channelType);
             when(channelType.getId()).thenReturn(channelTypeId);
+            when(channelType.getTitle()).thenReturn(channelTypeId);
         }
         else
         {

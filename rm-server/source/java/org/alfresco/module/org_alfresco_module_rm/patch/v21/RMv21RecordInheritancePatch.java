@@ -128,7 +128,7 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
                     NodeRef parent = assoc.getParentRef();
                     if (parent != null)
                     {
-                        filePlanPermissionServiceImpl.initialiseRecordPermissions(recordNodeRef, parent);
+                        filePlanPermissionServiceImpl.setupPermissions(parent, recordNodeRef);
                     }
                 }
             }

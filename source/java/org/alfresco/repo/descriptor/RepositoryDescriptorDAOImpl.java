@@ -202,6 +202,10 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
                 props.put(ContentModel.PROP_SYS_VERSION_BUILD, serverDescriptor.getVersionBuild());
                 props.put(ContentModel.PROP_SYS_VERSION_SCHEMA, serverDescriptor.getSchema());
                 props.put(ContentModel.PROP_SYS_LICENSE_MODE, licenseMode);
+                
+                // Aspect index control - stop the search system getting involved with licenses.
+                props.put(ContentModel.PROP_IS_CONTENT_INDEXED, false);
+                props.put(ContentModel.PROP_IS_INDEXED, false);
             
                 this.nodeService.addProperties(currentDescriptorNodeRef, props);
 

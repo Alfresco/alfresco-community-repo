@@ -20,10 +20,12 @@ package org.alfresco.repo.lock.mem;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -38,9 +40,7 @@ import org.aopalliance.intercept.MethodInvocation;
  * they are reported to have the cm:lockable aspect on them. As ephemeral locks are only held in memory
  * the nodes have not been marked with this aspect, so the aspect must be spoofed.
  * <p>
- * There is no need for this interceptor to worry about setProperty, removeProperty, setProperties,
- * addProperties since if a service other than the lock service attempts to set cm:lockable properties when it
- * is already locked, the beforeUpdateNode node service policy will disallow the update anyway.
+ * This interceptor checks for EPHEMERAL lock directly - MNT-10477 fix.
  *  
  * @author Matt Ward
  */
@@ -49,6 +49,10 @@ public class LockableAspectInterceptor implements MethodInterceptor
     private LockStore lockStore;
     private AuthenticationService authenticationService;
     private NodeService nodeService;
+    private LockService lockService;
+    
+    private Set<String> methodsToCheck = new HashSet<String>();
+    
     private final ThreadLocal<Boolean> threadEnabled;
 
     /**
@@ -65,6 +69,18 @@ public class LockableAspectInterceptor implements MethodInterceptor
                 return Boolean.TRUE;
             }
         };
+    }
+    
+    public void init()
+    {
+        /* check for lock before following methods proceed - MNT-10477 */
+        methodsToCheck.add("addAspect");
+        methodsToCheck.add("addProperties");
+        methodsToCheck.add("removeAspect");
+        methodsToCheck.add("removeProperty");
+        methodsToCheck.add("setProperties");
+        methodsToCheck.add("setProperty");
+        methodsToCheck.add("setType");
     }
 
     @SuppressWarnings("unchecked")
@@ -174,6 +190,8 @@ public class LockableAspectInterceptor implements MethodInterceptor
             // TODO: This is potentially creating an ephemeral lock here, put it in the lockstore?
             NodeRef nodeRef = (NodeRef) args[0];
             Map<QName, Serializable> newProperties = (Map<QName, Serializable>) args[1];
+            /* MNT-10477 fix */
+            checkForLockIfEphemeral(nodeRef);
 
             if (newProperties.get(ContentModel.PROP_LOCK_LIFETIME) == Lifetime.EPHEMERAL)
             {
@@ -193,6 +211,14 @@ public class LockableAspectInterceptor implements MethodInterceptor
             {
                 return invocation.proceed();
             }
+        }
+        else if (methodsToCheck.contains(methodName))
+        {
+            NodeRef nodeRef = (NodeRef) args[0];
+            /* MNT-10477 fix */
+            checkForLockIfEphemeral(nodeRef);
+            
+            return invocation.proceed();
         }
         else
         {
@@ -260,6 +286,15 @@ public class LockableAspectInterceptor implements MethodInterceptor
                             lockState.getLifetime() == Lifetime.EPHEMERAL;
         return ephemeral;
     }
+    
+    private void checkForLockIfEphemeral(NodeRef nodeRef)
+    {
+        LockState lockState = lockStore.get(nodeRef);
+        if (isEphemeralLock(lockState))
+        {
+            lockService.checkForLock(nodeRef);
+        }
+    }
 
     public void setLockStore(LockStore lockStore)
     {
@@ -274,5 +309,9 @@ public class LockableAspectInterceptor implements MethodInterceptor
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    public void setLockService(LockService lockService) {
+        this.lockService = lockService;
     }
 }

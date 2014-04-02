@@ -367,6 +367,124 @@ public class LockServiceImplTest extends BaseSpringTest
         assertFalse(rs.getNodeRefs().contains(noAspectNode));
     }
     
+    /* MNT-10477 related test */
+    @Test
+    public void testEphemeralLockModifyNode()
+    {
+        TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+        
+        // Check that the node is not currently locked
+        assertEquals(LockStatus.NO_LOCK, lockService.getLockStatus(noAspectNode));
+        
+        // Check that there really is no lockable aspect
+        assertEquals(false, nodeService.hasAspect(noAspectNode, ContentModel.ASPECT_LOCKABLE));
+        
+        // Lock the node 
+        lockService.lock(noAspectNode, LockType.WRITE_LOCK, 86400, Lifetime.EPHEMERAL, "some extra data");
+        
+        // get bad user
+        TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+        
+        assertEquals(LockStatus.LOCKED, lockService.getLockStatus(noAspectNode));
+        
+        NodeService fullNodeService = (NodeService) applicationContext.getBean("nodeService");
+        
+        /* addProperties test */
+        try
+        {
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+            props.put(ContentModel.PROP_DESCRIPTION, "descr" + System.currentTimeMillis());
+            props.put(ContentModel.PROP_TITLE, "title" + System.currentTimeMillis());
+            fullNodeService.addProperties(noAspectNode, props);
+            
+            fail();
+        }
+        catch(NodeLockedException e)
+        {
+            // it's ok - node supposed to be locked
+        }
+        
+        /* setProperty test */
+        try
+        {
+            fullNodeService.setProperty(noAspectNode, ContentModel.PROP_DESCRIPTION, "descr" + System.currentTimeMillis());
+            
+            fail();
+        }
+        catch(NodeLockedException e)
+        {
+            // it's ok - node supposed to be locked
+        }
+        
+        /* setProperties test */
+        try
+        {
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+            props.put(ContentModel.PROP_DESCRIPTION, "descr" + System.currentTimeMillis());
+            props.put(ContentModel.PROP_TITLE, "title" + System.currentTimeMillis());
+            fullNodeService.setProperties(noAspectNode, props);
+            
+            fail();
+        }
+        catch(NodeLockedException e)
+        {
+            // it's ok - node supposed to be locked
+        }
+        
+        /* removeProperty test */
+        try
+        {
+            fullNodeService.removeProperty(noAspectNode, ContentModel.PROP_DESCRIPTION);
+            
+            fail();
+        }
+        catch(NodeLockedException e)
+        {
+            // it's ok - node supposed to be locked
+        }
+        
+        /* addAspect test */
+        try
+        {
+            fullNodeService.addAspect(noAspectNode, ContentModel.ASPECT_AUTHOR , null);
+            
+            fail();
+        }
+        catch(NodeLockedException e)
+        {
+            // it's ok - node supposed to be locked
+        }
+        
+        /* removeAspect test */
+        try
+        {
+            fullNodeService.removeAspect(noAspectNode, ContentModel.ASPECT_AUTHOR);
+            
+            fail();
+        }
+        catch(NodeLockedException e)
+        {
+            // it's ok - node supposed to be locked
+        }
+        
+        /* setType test */
+        try
+        {
+            fullNodeService.setType(noAspectNode, ContentModel.TYPE_CMOBJECT);
+            
+            fail();
+        }
+        catch(NodeLockedException e)
+        {
+            // it's ok - node supposed to be locked
+        }
+        
+        TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+        
+        lockService.unlock(noAspectNode);        
+        assertEquals(LockStatus.NO_LOCK, lockService.getLockStatus(noAspectNode));
+    }
+    
     public void testLockRevertedOnRollback() throws NotSupportedException, SystemException
     {
         // Preconditions of test

@@ -38,9 +38,12 @@ import java.util.Map;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.search.CMISQueryOptions;
+import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -125,7 +128,9 @@ public class CMISTest
 	private RuleService ruleService;
 	
     private CMISConnector cmisConnector;
-	
+    
+    private NodeDAO nodeDAO;
+    
     /**
      * Test class to provide the service factory
      * 
@@ -281,6 +286,7 @@ public class CMISTest
         this.repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
     	this.factory = (AlfrescoCmisServiceFactory)ctx.getBean("CMISServiceFactory");
     	this.cmisConnector = (CMISConnector) ctx.getBean("CMISConnector");
+        this.nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
     }
     
     /**
@@ -1841,4 +1847,78 @@ public class CMISTest
             assertTrue(o.getClass() + " found but String expected", o instanceof String);
         }
     }
+    
+    /**
+     * MNT-8804 related test :
+     * Check CMISConnector.query for search nodes in environment with corrupted indexes
+     */
+    @Test
+    public void testQueryNodesWithCorruptedIndexes()
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        final String TEST_NAME = "mnt8804test-";
+        final String docName = TEST_NAME + GUID.generate();
+        
+        /* Create node */
+        final FileInfo document = transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<FileInfo>()
+                {
+                    @Override
+                    public FileInfo execute() throws Throwable
+                    {
+                        NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+                        
+                        /* Create folder within companyHome */
+                        String folderName = TEST_NAME + GUID.generate();
+                        FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                        nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+                        assertNotNull(folderInfo);
+                        
+                        /* Create document to query */
+                        FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+                        assertNotNull(document);
+                        nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, docName);
+                        
+                        return document;
+                    }
+                });
+        
+        final Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(document.getNodeRef());
+        
+        /* delete node's metadata directly */
+        transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<Void>()
+                {
+                    @Override
+                    public Void execute() throws Throwable
+                    {
+                        Pair<Long, ChildAssociationRef> childAssocPair = nodeDAO.getPrimaryParentAssoc(nodePair.getFirst());
+                        nodeDAO.deleteChildAssoc(childAssocPair.getFirst());
+                        nodeDAO.deleteNode(nodePair.getFirst());
+                        return null;
+                    }
+                });
+        
+        /* ensure the node does not exist */
+        assertTrue(!nodeService.exists(nodePair.getSecond()));
+        
+        String queryString = "SELECT * FROM cmis:document WHERE cmis:name='" + docName + "'";
+        
+        ObjectList resultList = cmisConnector.query(queryString, Boolean.FALSE, IncludeRelationships.NONE, "cmis:none", BigInteger.ONE, BigInteger.ZERO);
+        assertEquals(resultList.getNumItems(), BigInteger.ZERO);
+        
+        // prepare cmis query
+        CMISQueryOptions options = new CMISQueryOptions(queryString, cmisConnector.getRootStoreRef());
+        CmisVersion cmisVersion = cmisConnector.getRequestCmisVersion();
+        options.setCmisVersion(cmisVersion);
+        options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        options.setSkipCount(0);
+        options.setMaxItems(100);
+        
+        /* make query bypassing CMISConnector */
+        org.alfresco.opencmis.search.CMISResultSet rs = cmisConnector.getOpenCMISQueryService().query(options);
+        assertEquals(rs.getNumberFound(), 0);
+   }
 }

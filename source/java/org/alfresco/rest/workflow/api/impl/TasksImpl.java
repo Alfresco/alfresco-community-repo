@@ -557,8 +557,9 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
             }
             
-            // Add involvment filtering if user is not admin
-            if(processInstanceId == null && !authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) 
+            // Add involvement filtering if user is not admin
+            if(processInstanceId == null && !authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()) &&
+                    candidateUser == null && candidateGroup == null)
             {
                 query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
             }

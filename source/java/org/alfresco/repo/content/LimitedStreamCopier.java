@@ -98,7 +98,7 @@ public final class LimitedStreamCopier
             catch (IOException e)
             {
                 error = e;
-                logger.error("Failed to close output stream: " + this, e);
+                logger.error("Failed to close input stream: " + this, e);
             }
             try
             {

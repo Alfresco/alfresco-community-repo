@@ -41,7 +41,6 @@ import org.alfresco.web.ui.common.Utils;
 import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * JSF component that displays historic information about a workflow.
@@ -54,7 +53,6 @@ public class UIWorkflowHistory extends SelfRenderingComponent
    
    private static final Log logger = LogFactory.getLog(UIWorkflowHistory.class);
 
-   private static final String DEFAULT_TRANSITION_TITLE = "bpm_businessprocessmodel.transition.title";
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_TASK = "task_type";
    private static final String MSG_ID = "id";
@@ -201,11 +199,6 @@ public class UIWorkflowHistory extends SelfRenderingComponent
                   // it's possible in Activiti to have tasks without an outcome set,
                   // in this case default to the transition, if there is one.
                	  outcome = transition;
-               }
-               //ACE-1154
-               if (outcome.equals(""))
-               {
-                   outcome = I18NUtil.getMessage(DEFAULT_TRANSITION_TITLE);
                }
                
                out.write("<tr><td>");

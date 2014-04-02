@@ -628,8 +628,10 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
                             {
                                 // ALF-11116: the current node (in the main store) and the frozen node (in the version store) are both represented as CMISNodeInfos
                                 // but are indistinguishable apart from their storeRef (their objectVariant can be the same).
-                                isLatestMajorVersion = (nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID) || nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID)) ?
-                                        currentVersion.getFrozenStateNodeRef().equals(nodeRef) : currentVersion.getVersionedNodeRef().equals(nodeRef);
+                                if (nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID) || nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+                                {
+                                    isLatestMajorVersion = currentVersion.getFrozenStateNodeRef().equals(nodeRef);
+                                }
                                 break;
                             }
                             currentVersion = versionHistory.getPredecessor(currentVersion);

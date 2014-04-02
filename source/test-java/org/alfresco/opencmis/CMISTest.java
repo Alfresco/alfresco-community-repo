@@ -50,6 +50,8 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
@@ -110,6 +112,7 @@ public class CMISTest
     private FileFolderService fileFolderService;
     private TransactionService transactionService;
     private NodeService nodeService;
+    private ContentService contentService;
     private Repository repositoryHelper;
     private VersionService versionService;
     private LockService lockService;
@@ -270,6 +273,7 @@ public class CMISTest
     	this.fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
     	this.transactionService = (TransactionService)ctx.getBean("transactionService");
     	this.nodeService = (NodeService)ctx.getBean("NodeService");
+    	this.contentService = (ContentService)ctx.getBean("ContentService");
         this.versionService = (VersionService) ctx.getBean("versionService");
         this.lockService = (LockService) ctx.getBean("lockService");
         this.taggingService = (TaggingService) ctx.getBean("TaggingService");
@@ -277,6 +281,109 @@ public class CMISTest
         this.repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
     	this.factory = (AlfrescoCmisServiceFactory)ctx.getBean("CMISServiceFactory");
     	this.cmisConnector = (CMISConnector) ctx.getBean("CMISConnector");
+    }
+    
+    /**
+     * MNT-10868 CMIS: Incorrect value of Latest Major version on Versions and Properties tabs.
+     */
+    @Test
+    public void testIsLatestMajorVersionMNT10868()
+    {
+    	 String repositoryId = null;
+    	 
+    	 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+         CmisService cmisService = factory.getService(context);
+         try
+         {
+             // get repository id
+             List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+             assertTrue(repositories.size() > 0);
+             RepositoryInfo repo = repositories.get(0);
+             repositoryId = repo.getId();
+             final String folderName = "testfolder" + GUID.generate();
+             final String docName = "testdoc.txt" + GUID.generate();
+             final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
+             {
+                 @Override
+                 public FileInfo execute() throws Throwable
+                 {
+                     NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+
+                     FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                     nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+                    
+                     FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+                     nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
+                     nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_VERSIONABLE, null);
+
+                     return fileInfo;
+                 }
+             });
+             
+             ObjectData objectData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + docName, null, true, IncludeRelationships.NONE, null, false, true, null);
+             
+             PropertyData<?> pd = getPropIsLatestMajorVersion(objectData);
+             
+             if (pd != null)
+             {
+                 assertTrue("The CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION should be true as major version was created", (Boolean) pd.getValues().get(0));
+             }
+                
+             nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_TITLE, docName);
+             
+             // Create minor version   
+             transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+             {
+                   public Object execute() throws Throwable
+                   {
+                       // get an updating writer
+                       ContentWriter writer = contentService.getWriter(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                      
+                       writer.setMimetype("text/plain");
+                      
+                       writer.putContent("New Version");
+                       return null;
+                   }
+            });
+                
+            objectData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + docName, null, true, IncludeRelationships.NONE, null, false, true, null);
+            
+            pd = getPropIsLatestMajorVersion(objectData);
+            
+            if (pd != null)
+            {
+                assertFalse("The CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION should be false as minor version was created", (Boolean) pd.getValues().get(0));
+            }
+        }
+        finally
+        {
+            cmisService.close();
+        }
+    }
+    
+    private PropertyData<?> getPropIsLatestMajorVersion(ObjectData objectData)
+    {
+        List<PropertyData<?>> properties = objectData.getProperties().getPropertyList();
+        boolean found = false;
+        PropertyData<?> propIsLatestMajorVersion = null;
+        for (PropertyData<?> property : properties)
+        {
+            if (property.getId().equals(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION))
+            {
+                found = true;
+                propIsLatestMajorVersion = property;
+                break;
+            }
+        }
+        //properties..contains(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION);
+        assertTrue("The CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION property was not found", found);
+        if (found)
+        {
+            return propIsLatestMajorVersion;
+        }
+        
+        return null;
     }
 
     /**

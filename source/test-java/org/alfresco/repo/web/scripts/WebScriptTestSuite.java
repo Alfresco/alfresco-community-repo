@@ -90,8 +90,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( WorkflowModelBuilderTest.class );
         suite.addTestSuite( ActivitiWorkflowRestApiTest.class );
         suite.addTestSuite( JBPMWorkflowRestApiTest.class );
-        // Still failing - see MNT-10059
-        // suite.addTestSuite( PublishingRestApiTest.class );
+        suite.addTestSuite( PublishingRestApiTest.class );
         
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,

@@ -30,6 +30,9 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourBean;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -48,6 +51,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  * @since 2.1
  */
+@BehaviourBean
 public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                                            implements FilePlanPermissionService
 {
@@ -66,25 +70,13 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     public void init()
     {
         policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnCreateNodePolicy.QNAME,
-                TYPE_RECORD_FOLDER,
-                new JavaBehaviour(this, "onCreateRecordFolder", NotificationFrequency.TRANSACTION_COMMIT));
-        policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnAddAspectPolicy.QNAME,
                 ASPECT_RECORD,
                 new JavaBehaviour(this, "onAddRecord", NotificationFrequency.TRANSACTION_COMMIT));
-        policyComponent.bindClassBehaviour(
+       policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnMoveNodePolicy.QNAME,
                 ASPECT_RECORD,
                 new JavaBehaviour(this, "onMoveRecord", NotificationFrequency.TRANSACTION_COMMIT));
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnCreateNodePolicy.QNAME,
-                TYPE_HOLD,
-                new JavaBehaviour(this, "onCreateHoldTransfer", NotificationFrequency.TRANSACTION_COMMIT));
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnCreateNodePolicy.QNAME,
-                TYPE_TRANSFER,
-                new JavaBehaviour(this, "onCreateHoldTransfer", NotificationFrequency.TRANSACTION_COMMIT));
     }
 
     /**
@@ -156,48 +148,119 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             });
         }
     }
+    
+    /**
+     * Setup permissions on new unfiled record folder
+     * 
+     * @param childAssocRef child association reference
+     */
+    @Behaviour
+    (
+            type = "rma:unfiledRecordFolder",
+            kind = BehaviourKind.CLASS,
+            policy = "alf:onCreateNode",
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onCreateUnfiledRecordFolder(ChildAssociationRef childAssocRef)
+    {
+        setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+    }
 
     /**
-     * @param childAssocRef
+     * Setup permissions on new record folder
+     * 
+     * @param childAssocRef child association reference
      */
+    @Behaviour
+    (
+            type = "rma:recordFolder",
+            kind = BehaviourKind.CLASS,
+            policy = "alf:onCreateNode",
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
     public void onCreateRecordFolder(ChildAssociationRef childAssocRef)
     {
-        final NodeRef folderNodeRef = childAssocRef.getChildRef();
-
-        // initialise the permissions
-        initPermissions(folderNodeRef);
-
-        // Pull any permissions found on the parent (ie the record category)
-        final NodeRef catNodeRef = childAssocRef.getParentRef();
-        if (nodeService.exists(catNodeRef))
+        setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+    }
+    
+    /**
+     * Setup permissions on newly created hold.
+     * 
+     * @param childAssocRef child association reference
+     */
+    @Behaviour
+    (
+            type = "rma:hold",
+            kind = BehaviourKind.CLASS,
+            policy = "alf:onCreateNode",
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onCreateHold(final ChildAssociationRef childAssocRef)
+    {
+        setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+    }
+    
+    /**
+     * Setup permissions on newly created transfer.
+     * 
+     * @param childAssocRef child association reference
+     */
+    @Behaviour
+    (
+            type = "rma:transfer",
+            kind = BehaviourKind.CLASS,
+            policy = "alf:onCreateNode",
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onCreateTransfer(final ChildAssociationRef childAssocRef)
+    {
+        setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+    }
+    
+    /**
+     * Helper method to setup permissions.
+     * 
+     * @param parent        parent node reference
+     * @param nodeRef       child node reference
+     */
+    public void setupPermissions(final NodeRef parent, final NodeRef nodeRef)
+    {
+        if (nodeService.exists(nodeRef))
         {
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            // initialise permissions
+            initPermissions(nodeRef);
+            
+            if (nodeService.exists(parent))
             {
-                public Object doWork()
+                AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
                 {
-                    Set<AccessPermission> perms = permissionService.getAllSetPermissions(catNodeRef);
-                    for (AccessPermission perm : perms)
+                    public Object doWork()
                     {
-                        if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
-                            !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
+                        // setup inherited permissions
+                        Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
+                        for (AccessPermission perm : perms)
                         {
-                            AccessStatus accessStatus = perm.getAccessStatus();
-                            boolean allow = false;
-                            if (AccessStatus.ALLOWED.equals(accessStatus))
+                            if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
+                                !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
                             {
-                                allow = true;
+                                AccessStatus accessStatus = perm.getAccessStatus();
+                                boolean allow = false;
+                                if (AccessStatus.ALLOWED.equals(accessStatus))
+                                {
+                                    allow = true;
+                                }
+                                permissionService.setPermission(
+                                        nodeRef,
+                                        perm.getAuthority(),
+                                        perm.getPermission(),
+                                        allow);
                             }
-                            permissionService.setPermission(
-                                    folderNodeRef,
-                                    perm.getAuthority(),
-                                    perm.getPermission(),
-                                    allow);
                         }
+                        
+                        return null;
                     }
-
-                    return null;
-                }
-            }, AuthenticationUtil.getSystemUserName());
+                });
+            }
         }
     }
 
@@ -218,89 +281,12 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 if (nodeService.exists(record) && nodeService.hasAspect(record, aspectTypeQName))
                 {
                     NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();
-                    initialiseRecordPermissions(record, recordFolder);
+                    setupPermissions(recordFolder, record);
                 }
 
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-    }
-
-    /**
-     * Sets up permissions for transfer and hold objects
-     *
-     * @param childAssocRef
-     */
-    public void onCreateHoldTransfer(final ChildAssociationRef childAssocRef)
-    {
-        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
-        {
-            public Void doWork()
-            {
-                NodeRef nodeRef = childAssocRef.getChildRef();
-                if (nodeService.exists(nodeRef))
-                {
-                    initPermissions(nodeRef);
-
-                    NodeRef parent = childAssocRef.getParentRef();
-                    Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
-                    for (AccessPermission perm : perms)
-                    {
-                        if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
-                            !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
-                        {
-                            AccessStatus accessStatus = perm.getAccessStatus();
-                            boolean allow = false;
-                            if (AccessStatus.ALLOWED.equals(accessStatus))
-                            {
-                                allow = true;
-                            }
-                            permissionService.setPermission(
-                                    nodeRef,
-                                    perm.getAuthority(),
-                                    perm.getPermission(),
-                                    allow);
-                        }
-                    }
-                }
-
-                return null;
-            }
-        });
-    }
-
-    /**
-     * Initialise the record permissions for the given parent.
-     *
-     * NOTE: method is public so it can be accessed via the associated patch bean.
-     *
-     * @param record        record
-     * @param parent        records permission parent
-     */
-    public void initialiseRecordPermissions(NodeRef record, NodeRef parent)
-    {
-        initPermissions(record);
-
-        Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
-        for (AccessPermission perm : perms)
-        {
-            if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
-                !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
-            {
-                AccessStatus accessStatus = perm.getAccessStatus();
-                boolean allow = false;
-                if (AccessStatus.ALLOWED.equals(accessStatus))
-                {
-                    allow = true;
-                }
-                permissionService.setPermission(
-                        record,
-                        perm.getAuthority(),
-                        perm.getPermission(),
-                        allow);
-            }
-        }
-
     }
 
     /**
@@ -342,7 +328,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     permissionService.deletePermissions(record);
 
                     // re-setup the records permissions
-                    initialiseRecordPermissions(record, destinationAssocRef.getParentRef());
+                    setupPermissions(destinationAssocRef.getParentRef(), record);
 
                     // re-add keep'er permissions
                     for (AccessPermission keeper : keepPerms)

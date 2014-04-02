@@ -430,16 +430,34 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         }
     }
 
-    private String applyImpl() throws Exception
+    private String applyWithTxns() throws Exception
     {
-        // downgrade integrity checking
-        IntegrityChecker.setWarnInTransaction();
-
         if(logger.isDebugEnabled())
         {
             logger.debug("call applyInternal for main context id:" + id);
         }
-        String report = applyInternal();
+        RetryingTransactionCallback<String> patchWork = new RetryingTransactionCallback<String>()
+        {
+            public String execute() throws Exception
+            {
+                // downgrade integrity checking
+                IntegrityChecker.setWarnInTransaction();
+
+                return applyInternal();
+            }
+        };
+        StringBuilder sb = new StringBuilder(128);
+        if (requiresTransaction())
+        {
+            // execute in a transaction
+            String temp = transactionService.getRetryingTransactionHelper().doInTransaction(patchWork, false, true);
+            sb.append(temp);
+        }
+        else
+        {
+            String temp = applyInternal();
+            sb.append(temp);
+        }
         
         if ((tenantAdminService != null) && tenantAdminService.isEnabled() && applyToTenants)
         {
@@ -483,7 +501,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                     logger,
                     1000);
             
-            BatchProcessWorker worker = new BatchProcessWorker<Tenant>()
+            BatchProcessWorker<Tenant> worker = new BatchProcessWorker<Tenant>()
             {
                 @Override
                 public String getIdentifier(Tenant entry)
@@ -501,6 +519,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                 public void process(Tenant entry) throws Throwable
                 {
                     String tenantDomain = entry.getTenantDomain();
+                    @SuppressWarnings("unused")
                     String tenantReport = AuthenticationUtil.runAs(new RunAsWork<String>()
                     {
                         public String doWork() throws Exception
@@ -518,6 +537,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
             };
             
             // Now do the work
+            @SuppressWarnings("unused")
             int numberOfInvocations = batchProcessor.process(worker, true);
             
             if (logger.isDebugEnabled())
@@ -527,16 +547,16 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
             
             if (batchProcessor.getTotalErrors() > 0)
             {
-                report = report + "\n" + " and failure during update of tennants total success: " + batchProcessor.getSuccessfullyProcessedEntries() + " number of errors: " +batchProcessor.getTotalErrors() + " lastError" + batchProcessor.getLastError();
+                sb.append("\n" + " and failure during update of tennants total success: " + batchProcessor.getSuccessfullyProcessedEntries() + " number of errors: " +batchProcessor.getTotalErrors() + " lastError" + batchProcessor.getLastError());
             }
             else
             {
-                report = report + "\n" + " and successful batch update of " + batchProcessor.getTotalResults() + "tennants";
+                sb.append("\n" + " and successful batch update of " + batchProcessor.getTotalResults() + "tennants");
             }
         }
 
-        // done?
-        return report;
+        // Done
+        return sb.toString();
     }
     
     /**
@@ -592,22 +612,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
             {
                 public String doWork() throws Exception
                 {
-                    if(requiresTransaction())
-                    {
-                        // execute in a transaction
-                        RetryingTransactionCallback<String> patchWork = new RetryingTransactionCallback<String>()
-                        {
-                            public String execute() throws Exception
-                            {
-                                return applyImpl();
-                            }
-                        };
-                        return transactionService.getRetryingTransactionHelper().doInTransaction(patchWork, false, true);
-                    }
-                    else
-                    {
-                        return applyImpl();
-                    }
+                    return applyWithTxns();
                 }
             };
             startTime = System.currentTimeMillis();

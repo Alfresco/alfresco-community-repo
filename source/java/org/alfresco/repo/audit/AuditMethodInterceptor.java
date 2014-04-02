@@ -187,7 +187,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
         try
         {
             // If we are already in a nested audit call, there is nothing to do
-            if (wasInAudit != null)
+            if (Boolean.TRUE.equals(wasInAudit))
             {
                 return mi.proceed();
             }
@@ -211,8 +211,6 @@ public class AuditMethodInterceptor implements MethodInterceptor
             }
             String methodName = mi.getMethod().getName();
             
-            // Record that we have entered an audit method
-            inAudit.set(Boolean.TRUE);
             return proceedWithAudit(mi, auditableDef, serviceName, methodName, namedArguments);
         }
         finally
@@ -228,7 +226,10 @@ public class AuditMethodInterceptor implements MethodInterceptor
             String methodName,
             Map<String, Serializable> namedArguments) throws Throwable
     {
+        Boolean wasInAudit = inAudit.get();
         Map<String, Serializable> preAuditedData = null;
+        // Record that we have entered an audit method
+        inAudit.set(Boolean.TRUE);
         try
         {
             preAuditedData = auditInvocationBefore(serviceName, methodName, namedArguments);
@@ -241,7 +242,10 @@ public class AuditMethodInterceptor implements MethodInterceptor
                     "   Invocation: " + mi,
                     e);
         }
-        
+        finally
+        {
+            inAudit.set(wasInAudit);
+        }        
         // Execute the call
         Object ret = null;
         Throwable thrown = null;
@@ -256,6 +260,8 @@ public class AuditMethodInterceptor implements MethodInterceptor
         
         // We don't ALWAYS want to record the return value
         Object auditRet = auditableDef.recordReturnedObject() ? ret : null;
+        // Record that we have entered an audit method
+        inAudit.set(Boolean.TRUE);
         try
         {
             auditInvocationAfter(serviceName, methodName, namedArguments, auditRet, thrown, preAuditedData);
@@ -268,7 +274,10 @@ public class AuditMethodInterceptor implements MethodInterceptor
                     "   Invocation: " + mi,
                     e);
         }
-        
+        finally
+        {
+            inAudit.set(wasInAudit);
+        }        
         // Done
         if (thrown != null)
         {

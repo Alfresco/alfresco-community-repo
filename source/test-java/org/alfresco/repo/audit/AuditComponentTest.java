@@ -31,6 +31,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
@@ -48,6 +49,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
@@ -75,10 +78,11 @@ public class AuditComponentTest extends TestCase
     private static final String APPLICATION_ACTIONS_TEST = "Actions Test";
     private static final String APPLICATION_API_TEST = "Test AuthenticationService";
     private static final String APPLICATION_ALF12638_TEST = "Test ALF-12638";
+    private static final String APPLICATION_MNT10767_TEST = "Test MNT-10767";
     
     private static final Log logger = LogFactory.getLog(AuditComponentTest.class);
     
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:alfresco/testaudit/alfresco-audit-test-mnt-10767-context.xml"});
     
     private AuditModelRegistryImpl auditModelRegistry;
     private AuditComponent auditComponent;
@@ -787,6 +791,94 @@ public class AuditComponentTest extends TestCase
         assertTrue("There should be exactly one audit entry for the API test", success);
     }
 
+   /**
+     * See <a href="https://issues.alfresco.com/jira/browse/MNT-10767">MNT-10767</a>
+     */
+    public void testAuditSubordinateCall() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+
+        AuditQueryParameters params = new AuditQueryParameters();
+        params.setForward(true);
+        params.setApplicationName(APPLICATION_MNT10767_TEST);
+
+        // Load in the config for this specific test: alfresco-audit-test-mnt-10767
+        URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-mnt-10767.xml");
+        auditModelRegistry.registerModel(testModelUrl);
+        auditModelRegistry.loadAuditModels();
+
+        // There should be a log entry for the application
+        final List<Long> results = new ArrayList<Long>(5);
+        final StringBuilder sb = new StringBuilder();
+        AuditQueryCallback auditQueryCallback = new AuditQueryCallback()
+        {
+            public boolean valuesRequired()
+            {
+                return true;
+            }
+
+            public boolean handleAuditEntry(Long entryId, String applicationName, String user, long time, Map<String, Serializable> values)
+            {
+                results.add(entryId);
+                sb.append("Row: ").append(entryId).append(" | ").append(applicationName).append(" | ").append(user).append(" | ").append(new Date(time)).append(" | ").append(
+                        values).append(" | ").append("\n");
+                ;
+                return true;
+            }
+
+            public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+            {
+                throw new AlfrescoRuntimeException(errorMsg, error);
+            }
+        };
+
+        clearAuditLog(APPLICATION_MNT10767_TEST);
+        results.clear();
+        sb.delete(0, sb.length());
+        queryAuditLog(auditQueryCallback, params, -1);
+        assertTrue("There should be no audit entries for the API test after a clear", results.isEmpty());
+
+        TestCreateFileFolderService testCreateFileFolderService = (TestCreateFileFolderService) ctx.getBean("TestCreateFileFolderService");
+        NodeRef workingRootNodeRef = null;
+        try
+        {
+            workingRootNodeRef = nodeService.createNode(nodeRef, ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "working_root" + System.currentTimeMillis()), ContentModel.TYPE_FOLDER).getChildRef();
+            testCreateFileFolderService.create(workingRootNodeRef, "TestFolder-" + System.currentTimeMillis(), ContentModel.TYPE_FOLDER);
+
+            // Try this for a while until we get a result
+            boolean success = false;
+            for (int i = 0; i < 30; i++)
+            {
+                queryAuditLog(auditQueryCallback, params, -1);
+                if (results.size() > 1)
+                {
+                    logger.debug(sb.toString());
+                    success = true;
+                    break;
+                }
+                synchronized (this)
+                {
+                    try
+                    {
+                        this.wait(1000L);
+                    }
+                    catch (InterruptedException e)
+                    {
+                    }
+                }
+            }
+            assertTrue("There should be audit entry for the API test", success);
+        }
+        finally
+        {
+            if (workingRootNodeRef != null)
+            {
+                nodeService.deleteNode(workingRootNodeRef);
+            }
+        }
+    }	
+	
     public void testAuditOverlimitProperties() throws Exception
     {
         final int OVERLIMIT_SIZE = 1500;

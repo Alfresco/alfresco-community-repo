@@ -116,11 +116,6 @@ public class Repository01TestSuite extends TestSuite
         suite.addTest(org.alfresco.repo.audit.AuditTestSuite.suite());
     }
     
-    static void tests12(TestSuite suite)
-    {
-        suite.addTest(org.alfresco.repo.avm.AVMTestSuite.suite());
-    }
-    
     static void tests13(TestSuite suite)
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.blog.BlogServiceImplTest.class));
@@ -154,16 +149,6 @@ public class Repository01TestSuite extends TestSuite
     static void tests18(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.copy.CopyServiceImplTest.class);
-    }
-    
-    static void tests19(TestSuite suite) // fails if not on own - tests="3" time="5.6"
-    {
-        suite.addTestSuite(org.alfresco.repo.deploy.ASRDeploymentTest.class);
-    }
-    
-    static void tests20(TestSuite suite) // fails if not on own - tests="9" time="170.012"
-    {
-        suite.addTestSuite(org.alfresco.repo.deploy.DeploymentServiceImplFSTest.class);
     }
     
     static void tests21(TestSuite suite)
@@ -264,7 +249,6 @@ public class Repository01TestSuite extends TestSuite
     static void tests36(TestSuite suite) // Fails with previous tests
     {
         suite.addTestSuite(org.alfresco.repo.node.getchildren.GetChildrenCannedQueryTest.class);
-        suite.addTestSuite(org.alfresco.repo.node.index.AVMRemoteSnapshotTrackerTest.class);
         suite.addTestSuite(org.alfresco.repo.node.index.FullIndexRecoveryComponentTest.class);
         suite.addTestSuite(org.alfresco.repo.node.index.IndexTransactionTrackerTest.class);
     }
@@ -370,11 +354,6 @@ public class Repository01TestSuite extends TestSuite
     static void tests53(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.tagging.TaggingServiceImplTest.class);
-    }
-    
-    static void tests54(TestSuite suite)
-    {
-        suite.addTestSuite(org.alfresco.repo.template.AVMTemplateNodeTest.class);
     }
     
     static void tests55(TestSuite suite)

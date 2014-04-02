@@ -22,6 +22,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class WorkflowTaskNode extends TransientMapNode {
 
 	private static final long serialVersionUID = 1L;
+    private static final String DEFAULT_TRANSITION_TITLE = "bpm_businessprocessmodel.transition.title";
 	private Map<String, Object> propertyWrapper;
 	
 	private WorkflowTask workflowTask;
@@ -57,11 +58,13 @@ public class WorkflowTaskNode extends TransientMapNode {
 	          {
 	          	outcome = transition;
 	          }
-	          if (outcome != null)
-	          {
-	        	  propertyWrapper.put("outcome", outcome);
-	          }
 	       }
+	       //ACE-1154
+	       if (outcome == null)
+	       {
+	          outcome = I18NUtil.getMessage(DEFAULT_TRANSITION_TITLE);
+	       }
+           propertyWrapper.put("outcome", outcome);
 	         
 	       // add the workflow instance id and name this taks belongs to
 	       propertyWrapper.put("workflowInstanceId", workflowTask.getPath().getInstance().getId());

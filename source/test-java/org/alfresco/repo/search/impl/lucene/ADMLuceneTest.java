@@ -7772,6 +7772,62 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     }
 
+    public void test_MNT_10796() throws Exception
+    {
+        String contentName = "testContent7.txt";
+        String quary = "cm:name:\"" + contentName + "\"";
+        this.authenticationComponent.setCurrentUser("admin");
+
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery(quary);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        ResultSet results;
+        ResultSetMetaData md;
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(0, results.length());
+        results.close();
+
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+
+        properties.put(ContentModel.PROP_NAME, "folder");
+        NodeRef folder = nodeService.createNode(rootNodeRef, ASSOC_TYPE_QNAME, QName.createQName("{namespace}MNT-10796"), ContentModel.TYPE_FOLDER, properties).getChildRef();
+        //System.out.println("folder=" + folder.toString());
+        
+        properties.put(ContentModel.PROP_NAME, "folder2");
+        NodeRef folder2 = nodeService.createNode(folder, ASSOC_TYPE_QNAME, QName.createQName("{namespace}MNT-10796"), ContentModel.TYPE_FOLDER, properties).getChildRef();
+        //System.out.println("folder2=" + folder2.toString());
+        
+        properties.put(ContentModel.PROP_NAME, contentName);
+        NodeRef testContent = nodeService.createNode(folder2, ASSOC_TYPE_QNAME, QName.createQName("{namespace}MNT-10796"), ContentModel.TYPE_CONTENT, properties).getChildRef();
+        //System.out.println("testContent=" + testContent.toString());
+        
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery(quary);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(1, results.length());
+        results.close();
+        
+        nodeService.deleteNode(folder);
+
+        sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery(quary);
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.excludeDataInTheCurrentTransaction(false);
+
+        results = serviceRegistry.getSearchService().query(sp);
+        assertEquals(0, results.length());
+        results.close();
+    }
+
     private void runPerformanceTest(double time, boolean clear)
     {
         ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis() + "_" + (new Random().nextInt()),

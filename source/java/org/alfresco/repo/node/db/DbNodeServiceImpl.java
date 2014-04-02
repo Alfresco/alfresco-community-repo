@@ -1268,7 +1268,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             invokeOnDeleteNode(
                     nodeToDelete.primaryParentAssocPair.getSecond(),
                     childNodeTypeQName, childAspectQnames, archive);
-            nodeIndexer.indexDeleteNode(childAssocRef);
+            nodeIndexer.indexDeleteNode(nodeToDelete.primaryParentAssocPair.getSecond());
         }
         
         // Clear out the list of nodes pending delete

@@ -1937,9 +1937,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         nodeUpdateEntity.setAclId(aclId);
         nodeUpdateEntity.setUpdateAclId(true);
         updateNodeImpl(oldNode, nodeUpdateEntity, null);
-        // Node must be indexed.
-        // Calls to this method are usually made directly
-        nodeIndexer.indexUpdateNode(oldNode.getNodeRef());          // Fix MNT-8485 and refix MNT-3337
     }
     
     public void setPrimaryChildrenSharedAclId(

@@ -5,7 +5,7 @@ function main()
     var sitePreset = args["spf"];
     var sizeString = args["size"];
     
-    if (nameFilter[0] !== '*') nameFilter = "*" + nameFilter;
+    if (nameFilter !== null && nameFilter[0] !== '*') nameFilter = "*" + nameFilter;
     // Get the list of sites
     var sites = siteService.getSites(nameFilter, sitePreset, sizeString != null ? parseInt(sizeString) : -1);
     model.sites = sites;

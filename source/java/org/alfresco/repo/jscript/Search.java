@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchParameters.Operator;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -499,6 +500,7 @@ public class Search extends BaseScopableProcessorExtension
      *    page: object,           optional, paging information object (see below) - if supported by the language
      *    namespace: string,      optional, the default namespace for properties
      *    defaultField: string,   optional, the default field for query elements when not explicit in the query
+     *    defaultOperator: string,optional, the default operator for query elements when they are not explicit in the query AND or OR
      *    onerror: string         optional, result on error - one of: exception, no-results - defaults to 'exception'
      * }
      * 
@@ -557,6 +559,7 @@ public class Search extends BaseScopableProcessorExtension
                 String namespace = (String)def.get("namespace");
                 String onerror = (String)def.get("onerror");
                 String defaultField = (String)def.get("defaultField");
+                String defaultOperator = (String)def.get("defaultOperator");
                 
                 // extract supplied values
                 
@@ -641,6 +644,10 @@ public class Search extends BaseScopableProcessorExtension
                 if (defaultField != null)
                 {
                     sp.setDefaultFieldName(defaultField);
+                }
+                if (defaultOperator != null)
+                {
+                    sp.setDefaultOperator(Operator.valueOf(defaultOperator.toUpperCase()));
                 }
                 if (namespace != null)
                 {
@@ -799,8 +806,12 @@ public class Search extends BaseScopableProcessorExtension
     {   
         Collection<ScriptNode> set = null;
         
+        long time = 0L;
         if (logger.isDebugEnabled())
+        {
            logger.debug("query=" + sp.getQuery() + " limit=" + (sp.getLimitBy() != LimitBy.UNLIMITED ? sp.getLimit() : "none"));
+           time = System.currentTimeMillis();
+        }
         
         // perform the search against the repo
         ResultSet results = null;
@@ -839,6 +850,8 @@ public class Search extends BaseScopableProcessorExtension
             {
                 results.close();
             }
+            if (logger.isDebugEnabled())
+                logger.debug("query time: " + (System.currentTimeMillis()-time) + "ms");
         }
         
         return set != null ? set.toArray(new Object[(set.size())]) : new Object[0];

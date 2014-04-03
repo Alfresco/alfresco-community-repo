@@ -81,7 +81,9 @@
 	"url": "${url.serviceContext + "/api/people/" + person.properties.userName}",
 	"userName": "${person.properties.userName}",
 	"firstName": "${person.properties.firstName!""}",
-	"lastName": "${person.properties.lastName!""}"
+	"lastName": "${person.properties.lastName!""}",
+	"jobtitle": "${person.properties.jobtitle!""}",
+	"location": "${person.properties.location!""}"
 }
 </#escape>
 </#macro>

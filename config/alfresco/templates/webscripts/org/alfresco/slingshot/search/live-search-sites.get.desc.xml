@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Share Live Search - Sites</shortname>
+   <description>Share Live Search Component Data Webscript</description>
+   <url>/slingshot/live-search-sites?t={term}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

@@ -996,7 +996,7 @@ function getSearchResults(params)
       // ensure a TYPE is specified - if no add one to remove system objects from result sets
       if (ftsQuery.indexOf("TYPE:\"") === -1 && ftsQuery.indexOf("TYPE:'") === -1)
       {
-         ftsQuery += ' AND (+TYPE:"cm:content" +TYPE:"cm:folder")';
+         ftsQuery += ' AND (+TYPE:"cm:content" OR +TYPE:"cm:folder")';
       }
       
       // we processed the search terms, so suffix the PATH query
@@ -1076,12 +1076,14 @@ function getSearchResults(params)
          logger.log("Query:\r\n" + ftsQuery + "\r\nSortby: " + (sort != null ? sort : ""));
       
       // perform fts-alfresco language query
+      var qt = getQueryTemplate();
       var queryDef = {
          query: ftsQuery,
          language: "fts-alfresco",
          page: {maxItems: params.maxResults * 2},    // allow for space for filtering out results
-         templates: getQueryTemplate(),
+         templates: qt.template,
          defaultField: "keywords",
+         defaultOperator: qt.operator,
          onerror: "no-results",
          sort: sortColumns 
       };
@@ -1108,10 +1110,26 @@ function getQueryTemplate()
          field: "keywords",
          template: "%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT TAG)"
       }],
-      qt = new XML(config.script)["default-query-template"];
+      xml = new XML(config.script),
+      qt = xml["default-query-template"];
    if (qt != null && qt.length() != 0)
    {
       t[0].template = qt.toString();
    }
-   return t;
+   
+   // get default fts operator from the config
+   //
+   // TODO: common search lib - for both live and standard e.g. to get values like this...
+   //
+   var operator = "AND",
+       cf = xml["default-operator"];
+   if (cf != null && cf.length != 0)
+   {
+      operator = cf.toString();
+   }
+   
+   return {
+      template: t,
+      operator: operator
+   };
 }

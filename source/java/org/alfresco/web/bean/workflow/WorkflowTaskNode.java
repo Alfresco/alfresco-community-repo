@@ -22,6 +22,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class WorkflowTaskNode extends TransientMapNode {
 
 	private static final long serialVersionUID = 1L;
+	private static final String DEFAULT_TRANSITION_TITLE = "bpm_businessprocessmodel.transition.title";
 	private Map<String, Object> propertyWrapper;
 	
 	private WorkflowTask workflowTask;
@@ -35,7 +36,7 @@ public class WorkflowTaskNode extends TransientMapNode {
 		propertyWrapper.put(ContentModel.PROP_NAME.toString(), workflowTask.getTitle());
 		propertyWrapper.put("type", type.toString());
 		propertyWrapper.put("id", workflowTask.getId());
-		
+
 		// add extra properties for completed tasks
 	    if (workflowTask.getState().equals(WorkflowTaskState.COMPLETED))
 	    {
@@ -52,20 +53,22 @@ public class WorkflowTaskNode extends TransientMapNode {
 	                break;
 	             }
 	          }
-	          
+
 	          if(outcome == null)
 	          {
 	          	outcome = transition;
 	          }
-	          if (outcome != null)
-	          {
-	        	  propertyWrapper.put("outcome", outcome);
-	          }
 	       }
-	         
+
+	       if (outcome == null)
+	       {
+	           outcome = I18NUtil.getMessage(DEFAULT_TRANSITION_TITLE);
+	       }
+	       propertyWrapper.put("outcome", outcome);
+
 	       // add the workflow instance id and name this taks belongs to
 	       propertyWrapper.put("workflowInstanceId", workflowTask.getPath().getInstance().getId());
-	       
+
 	       // add the task itself as a property
 	       propertyWrapper.put("workflowTask", workflowTask);
 	    }

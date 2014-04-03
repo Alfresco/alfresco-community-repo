@@ -215,6 +215,19 @@
         <property name="failureHandlingOptions" ref="standardFailureOptions"/>
     </bean>
     
+    <!-- PDF Preview -->
+    <bean id="thumbnailDefinitionPDFpreview" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="pdf" />
+        <property name="mimetype" value="application/pdf" />
+        <property name="transformationOptions">
+            <!-- The thumbnail definition have transformationOptions mandatory -->
+            <!-- But there are none for pdf, so use SWFTransformationsOptions as a dummy -->
+            <bean class="org.alfresco.repo.content.transform.swf.SWFTransformationOptions">
+                <property name="flashVersion" value="9" />
+            </bean>
+        </property>
+    </bean>
+    
     <!-- Thumbnail Register -->
     <bean id="thumbnailRegistry" parent="baseThumbnailRegistry" class="org.alfresco.repo.thumbnail.ThumbnailRegistry" />
     
@@ -231,6 +244,7 @@
                 <ref bean="thumbnailDefinitionImgpreview" />
                 <ref bean="thumbnailDefinitionAvatar" />
                 <ref bean="thumbnailDefinitionAvatar32" />
+                <ref bean="thumbnailDefinitionPDFpreview" />
                 <ref bean="thumbnailDefinitionWebpreview" />
             </list>
         </property>

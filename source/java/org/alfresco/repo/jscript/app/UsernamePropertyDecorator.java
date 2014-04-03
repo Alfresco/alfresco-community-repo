@@ -57,9 +57,9 @@ public class UsernamePropertyDecorator extends BasePropertyDecorator
         JSONObject map = new JSONObject();
         map.put("userName", username);
         
-        if (this.personService.personExists(username))
+        NodeRef personRef = this.personService.getPersonOrNull(username);
+        if (personRef != null)
         {
-            NodeRef personRef = this.personService.getPerson(username, false);
             firstName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
             lastName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
         }

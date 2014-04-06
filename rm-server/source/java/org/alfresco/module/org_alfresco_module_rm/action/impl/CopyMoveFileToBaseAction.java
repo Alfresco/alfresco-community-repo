@@ -18,6 +18,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.springframework.util.StringUtils;
 
 /**
@@ -84,12 +85,18 @@ public abstract class CopyMoveFileToBaseAction extends RMActionExecuterAbstractB
             (!ACTION_FILETO.equals(action.getActionDefinitionName()) || !recordService.isFiled(actionedUponNodeRef)) &&
             (!(ACTION_FILETO.equals(action.getActionDefinitionName()) && RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER.equals(nodeService.getType(actionedUponNodeRef)))))
         {
-            boolean targetIsUnfiledRecord =
-                    !ACTION_FILETO.equals(action.getActionDefinitionName()) && (
-                                ((ContentModel.TYPE_CONTENT.equals(nodeService.getType(actionedUponNodeRef)) || RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(actionedUponNodeRef))) &&
-                                        !recordService.isFiled(actionedUponNodeRef)) ||
-                                RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER.equals(nodeService.getType(actionedUponNodeRef))
-                            );
+            boolean targetIsUnfiledRecord;
+            if (ACTION_FILETO.equals(action.getActionDefinitionName()))
+            {
+                targetIsUnfiledRecord = false;
+            }
+            else
+            {
+                QName actionedUponType = nodeService.getType(actionedUponNodeRef);
+                targetIsUnfiledRecord = (dictionaryService.isSubClass(actionedUponType, ContentModel.TYPE_CONTENT) && !recordService
+                        .isFiled(actionedUponNodeRef))
+                        || RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER.equals(actionedUponType);
+            }
 
             // first look to see if the destination record folder has been specified
             NodeRef recordFolder = (NodeRef)action.getParameterValue(PARAM_DESTINATION_RECORD_FOLDER);

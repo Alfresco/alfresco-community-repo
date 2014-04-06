@@ -140,6 +140,11 @@ public class DispositionAbstractBase extends AbstractRmWebScript
             model.put("location", actionDef.getLocation());
         }
 
+        if (actionDef.getGhostOnDestroy() != null)
+        {
+            model.put("ghostOnDestroy", actionDef.getGhostOnDestroy());
+        }
+
         List<RecordsManagementEvent> events = actionDef.getEvents();
         if (events != null && events.size() > 0)
         {

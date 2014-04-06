@@ -29,14 +29,14 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionD
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Implementation for Java backed webscript to create a new dispositon action definition.
@@ -139,6 +139,18 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
                 eventsList.add(events.getString(x));
             }
             props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable)eventsList);
+        }
+
+        if (json.has("name") && "destroy".equals(json.getString("name")))
+        {
+            if (json.has("ghostOnDestroy"))
+            {
+                props.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "ghost");
+            }
+            else
+            {
+                props.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "delete");
+            }
         }
 
         // add the action definition to the schedule

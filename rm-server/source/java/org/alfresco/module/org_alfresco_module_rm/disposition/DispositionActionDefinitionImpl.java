@@ -63,6 +63,9 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /** Action index */
     private int index;
 
+    /** Ghost on detroy */
+    private String ghostOnDestroy;
+
     /**
      * Constructor
      *
@@ -83,6 +86,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getNodeRef()
      */
+    @Override
     public NodeRef getNodeRef()
     {
         return this.dispositionActionNodeRef;
@@ -91,6 +95,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getIndex()
      */
+    @Override
     public int getIndex()
     {
         return this.index;
@@ -99,6 +104,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      *  @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getId()
      */
+    @Override
     public String getId()
     {
         return this.dispositionActionNodeRef.getId();
@@ -107,6 +113,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getDescription()
      */
+    @Override
     public String getDescription()
     {
         if (description == null)
@@ -119,6 +126,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getName()
      */
+    @Override
     public String getName()
     {
         if (name == null)
@@ -131,6 +139,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getLabel()
      */
+    @Override
     public String getLabel()
     {
         if (label == null)
@@ -152,6 +161,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getPeriod()
      */
+    @Override
     public Period getPeriod()
     {
         return (Period)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_PERIOD);
@@ -160,6 +170,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getPeriodProperty()
      */
+    @Override
     public QName getPeriodProperty()
     {
         QName result = null;
@@ -174,6 +185,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getEvents()
      */
+    @Override
     @SuppressWarnings("unchecked")
     public List<RecordsManagementEvent> getEvents()
     {
@@ -198,6 +210,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#eligibleOnFirstCompleteEvent()
      */
+    @Override
     public boolean eligibleOnFirstCompleteEvent()
     {
         boolean result = true;
@@ -212,8 +225,23 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getLocation()
      */
+    @Override
     public String getLocation()
     {
         return (String)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_LOCATION);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getGhostOnDestroy()
+     */
+    @Override
+    public String getGhostOnDestroy()
+    {
+        if (ghostOnDestroy == null)
+        {
+            ghostOnDestroy = (String) nodeService.getProperty(this.dispositionActionNodeRef,
+                    PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY);
+        }
+        return ghostOnDestroy;
     }
 }

@@ -27,6 +27,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -35,6 +37,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Destroy action.
@@ -123,8 +126,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
         {
             executeRecordLevelDisposition(action, record);
         }
-
-        if (ghostingEnabled)
+        if (isGhostOnDestroySetForAction(action, recordFolder))
         {
             nodeService.addAspect(recordFolder, ASPECT_GHOSTED, Collections.<QName, Serializable> emptyMap());
         }
@@ -140,31 +142,21 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     @Override
     protected void executeRecordLevelDisposition(Action action, NodeRef record)
     {
-        doDestroy(record);
-    }
-
-    /**
-     * Do the content destroy
-     *
-     * @param nodeRef
-     */
-    private void doDestroy(NodeRef nodeRef)
-    {
         // Clear the content
-        clearAllContent(nodeRef);
+        clearAllContent(record);
 
         // Clear thumbnail content
-        clearThumbnails(nodeRef);
+        clearThumbnails(record);
 
-        if (ghostingEnabled)
+        if (isGhostOnDestroySetForAction(action, record))
         {
             // Add the ghosted aspect
-            nodeService.addAspect(nodeRef, ASPECT_GHOSTED, null);
+            nodeService.addAspect(record, ASPECT_GHOSTED, null);
         }
         else
         {
             // If ghosting is not enabled, delete the node
-            nodeService.deleteNode(nodeRef);
+            nodeService.deleteNode(record);
         }
     }
 
@@ -236,5 +228,37 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
         {
             eagerContentStoreCleaner.registerOrphanedContentUrl(contentData.getContentUrl(), true);
         }
+    }
+
+    /**
+     * Return true if the ghost on destroy property is set against the
+     * definition for the passed action on the specified node
+     * 
+     * @param action
+     * @param nodeRef
+     * @return
+     */
+    private boolean isGhostOnDestroySetForAction(Action action, NodeRef nodeRef)
+    {
+        boolean ghostOnDestroy = this.ghostingEnabled;
+        String actionDefinitionName = action.getActionDefinitionName();
+        if (!StringUtils.isEmpty(actionDefinitionName))
+        {
+            DispositionSchedule dispositionSchedule = this.dispositionService.getDispositionSchedule(nodeRef);
+            if (dispositionSchedule != null)
+            {
+                DispositionActionDefinition actionDefinition = dispositionSchedule
+                        .getDispositionActionDefinitionByName(actionDefinitionName);
+                if (actionDefinition != null)
+                {
+                    String ghostOnDestroyProperty = actionDefinition.getGhostOnDestroy();
+                    if (ghostOnDestroyProperty != null)
+                    {
+                        ghostOnDestroy = "ghost".equals(actionDefinition.getGhostOnDestroy());
+                    }
+                }
+            }
+        }
+        return ghostOnDestroy;
     }
 }

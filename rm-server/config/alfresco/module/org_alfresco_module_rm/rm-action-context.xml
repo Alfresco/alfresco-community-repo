@@ -869,7 +869,7 @@
    <bean id="copyTo_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.CreateModifyDestroyEvents
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.rmCopy
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
             org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
          </value>
@@ -897,7 +897,7 @@
    <bean id="moveTo_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.CreateModifyDestroyEvents
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.rmMove
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
             org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
          </value>

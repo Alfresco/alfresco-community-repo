@@ -27,6 +27,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.action.parameter.ParameterProcessorComponent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -55,10 +56,6 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
     private final static String UNFILED = "true";
 
     private final static String SUBSTITUTIONS_MODEL_KEY = "substitutions";
-
-    private final static String RECORD_FOLDER_TYPE = "recordFolder";
-    private final static String RECORD_CATEGORY_TYPE = "recordCategory";
-    private final static String UNFILED_RECORD_FOLDER_TYPE = "unfiledRecordContainerChild";
 
     private final static String CREATE_CAPABILITY = "Create";
     private final static String VIEW_CAPABILITY = "ViewRecords";
@@ -274,10 +271,9 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
     {
         // check node type
         QName type = nodeService.getType(nodeRef);
-        String typeLocalName = type.getLocalName();
-        boolean isCorrectType =
-                (!unfiled && (RECORD_FOLDER_TYPE.equals(typeLocalName) || RECORD_CATEGORY_TYPE.equals(typeLocalName)) ||
-                (unfiled && UNFILED_RECORD_FOLDER_TYPE.equals(typeLocalName)));
+        boolean isCorrectType = (!unfiled
+                && (RecordsManagementModel.TYPE_RECORD_FOLDER.equals(type) || RecordsManagementModel.TYPE_RECORD_CATEGORY
+                        .equals(type)) || (unfiled && RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER.equals(type)));
 
         // check permissions
         boolean canView = false;

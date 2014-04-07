@@ -209,6 +209,16 @@ public abstract class CopyMoveFileToBaseAction extends RMActionExecuterAbstractB
                 throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path could not be determined.");
             }
         }
+        else
+        {
+            QName nodeType = nodeService.getType(nodeRef);
+            if(nodeType.equals(RecordsManagementModel.TYPE_HOLD_CONTAINER) ||
+                    nodeType.equals(RecordsManagementModel.TYPE_TRANSFER_CONTAINER) ||
+                    nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER))
+            {
+                throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path in invalid.");
+            }
+        }
         if(pathElements.size() > 1)
         {
             nodeRef = createOrResolvePath(action, nodeRef, actionedUponNodeRef, pathElements.subList(1, pathElements.size()), targetisUnfiledRecords, create, creating);

@@ -85,6 +85,7 @@
    <bean id="jsonConversionComponent.frozenIndicator"
          parent="jsonConversionComponent.baseIndicator"
          class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.FrozenEvaluator">
+      <property name="holdService" ref="HoldService"/>
       <property name="name" value="frozen"/>
       <property name="kinds">
          <set>

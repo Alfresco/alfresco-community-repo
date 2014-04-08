@@ -153,7 +153,7 @@ public class TransferEvaluatorUnitTest extends BaseUnitTest
     @Test
     public void accendingRecord()
     {
-     // setup interactions
+        // setup interactions
         doReturn(Boolean.TRUE).when(mockedNodeService).getProperty(transfer, RecordsManagementModel.PROP_TRANSFER_ACCESSION_INDICATOR);
         doReturn(getParentAssocs(record)).when(mockedNodeService).getParentAssocs(record, RecordsManagementModel.ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
         transferEvaluator.setTransferAccessionIndicator(true);

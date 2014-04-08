@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.test;
 
 import org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementTypeFormFilterUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServiceImplUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.FrozenEvaluatorUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.TransferEvaluatorUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrapUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTest;
@@ -44,11 +45,16 @@ import org.junit.runners.Suite.SuiteClasses;
     RecordServiceImplUnitTest.class,
     RecordsManagementTypeFormFilterUnitTest.class,
     HoldServiceImplUnitTest.class,
+    FilePlanPermissionServiceImplUnitTest.class,
+    
+    // evaluators
     TransferEvaluatorUnitTest.class,
+    FrozenEvaluatorUnitTest.class,
+    
+    // web scripts
     HoldsGetUnitTest.class,
     HoldPostUnitTest.class,
-    HoldPutUnitTest.class,
-    FilePlanPermissionServiceImplUnitTest.class
+    HoldPutUnitTest.class
 })
 public class AllUnitTestSuite
 {

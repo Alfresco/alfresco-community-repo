@@ -25,6 +25,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -38,6 +39,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -57,6 +59,9 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 {
     /** Permission service */
     protected PermissionService permissionService;
+    
+    /** Ownable service */
+    protected OwnableService ownableService;
 
     /** Policy component */
     protected PolicyComponent policyComponent;
@@ -94,6 +99,14 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         this.policyComponent = policyComponent;
     }
+    
+    /**
+     * @param ownableService    ownable service
+     */
+    public void setOwnableService(OwnableService ownableService)
+    {
+        this.ownableService = ownableService;
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService#setupRecordCategoryPermissions(org.alfresco.service.cmr.repository.NodeRef)
@@ -109,44 +122,9 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             throw new AlfrescoRuntimeException("Unable to setup record category permissions, because node is not a record category.");
         }
 
-        // init permissions
-        initPermissions(recordCategory);
-
-        // Pull any permissions found on the parent (ie the record category)
-        final NodeRef parentNodeRef = nodeService.getPrimaryParent(recordCategory).getParentRef();
-        if (parentNodeRef != null && nodeService.exists(parentNodeRef))
-        {
-            AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
-            {
-                public Object doWork()
-                {
-                    boolean fillingOnly = isFilePlan(parentNodeRef);
-
-                    // since this is not a root category, inherit from parent
-                    Set<AccessPermission> perms = permissionService.getAllSetPermissions(parentNodeRef);
-                    for (AccessPermission perm : perms)
-                    {
-                        if (!fillingOnly ||
-                            RMPermissionModel.FILING.equals(perm.getPermission()))
-                        {
-                            AccessStatus accessStatus = perm.getAccessStatus();
-                            boolean allow = false;
-                            if (AccessStatus.ALLOWED.equals(accessStatus))
-                            {
-                                allow = true;
-                            }
-                            permissionService.setPermission(
-                                    recordCategory,
-                                    perm.getAuthority(),
-                                    perm.getPermission(),
-                                    allow);
-                        }
-                    }
-
-                    return null;
-                }
-            });
-        }
+        // setup category permissions
+        NodeRef parentNodeRef = nodeService.getPrimaryParent(recordCategory).getParentRef();
+        setupPermissions(parentNodeRef, recordCategory);        
     }
     
     /**
@@ -225,6 +203,9 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      */
     public void setupPermissions(final NodeRef parent, final NodeRef nodeRef)
     {
+        ParameterCheck.mandatory("parent", parent);
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
         if (nodeService.exists(nodeRef))
         {
             // initialise permissions
@@ -232,7 +213,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             
             if (nodeService.exists(parent))
             {
-                AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
+                runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
                 {
                     public Object doWork()
                     {
@@ -240,20 +221,29 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                         Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
                         for (AccessPermission perm : perms)
                         {
-                            if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
-                                !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
+                            // only copy filling permissions if the parent is the file plan
+                            if (!inheritFillingOnly(parent, nodeRef) ||
+                                RMPermissionModel.FILING.equals(perm.getPermission()))
                             {
-                                AccessStatus accessStatus = perm.getAccessStatus();
-                                boolean allow = false;
-                                if (AccessStatus.ALLOWED.equals(accessStatus))
+                                // don't copy the extended reader or writer permissions as they have already been set
+                                if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
+                                    !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
                                 {
-                                    allow = true;
+                                    // get the access status details
+                                    AccessStatus accessStatus = perm.getAccessStatus();
+                                    boolean allow = false;
+                                    if (AccessStatus.ALLOWED.equals(accessStatus))
+                                    {
+                                        allow = true;
+                                    }
+                                    
+                                    // set the permission on the target node
+                                    permissionService.setPermission(
+                                            nodeRef,
+                                            perm.getAuthority(),
+                                            perm.getPermission(),
+                                            allow);
                                 }
-                                permissionService.setPermission(
-                                        nodeRef,
-                                        perm.getAuthority(),
-                                        perm.getPermission(),
-                                        allow);
                             }
                         }
                         
@@ -262,6 +252,30 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 });
             }
         }
+    }
+ 
+    /**
+     * Helper method to determine whether all or just filling permissions should be inherited.
+     * 
+     * @param parent    parent node
+     * @param child     child node
+     * @return boolean  true if inherit filling only, false otherwise
+     */
+    private boolean inheritFillingOnly(NodeRef parent, NodeRef child)
+    {
+        boolean result = false;
+        
+        // if root category or
+        // if in root of unfiled container or
+        // if in root of hold container
+        if ((isFilePlan(parent) && isRecordCategory(child)) ||
+            FilePlanComponentKind.UNFILED_RECORD_CONTAINER.equals(getFilePlanComponentKind(parent)) ||
+            FilePlanComponentKind.HOLD_CONTAINER.equals(getFilePlanComponentKind(parent)))
+        {
+            result = true;
+        }
+        
+        return result;        
     }
 
     /**
@@ -274,7 +288,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      */
     public void onAddRecord(final NodeRef record, final QName aspectTypeQName)
     {
-        runAs(new AuthenticationUtil.RunAsWork<Object>()
+        runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Object doWork()
             {
@@ -286,7 +300,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName());
+        });
     }
 
     /**
@@ -343,7 +357,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * Initiliase the permissions for the given node.
+     * Init the permissions for the given node.
      *
      * @param nodeRef   node reference
      */
@@ -351,20 +365,26 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         if (nodeService.exists(nodeRef))
         {
-            runAs(new AuthenticationUtil.RunAsWork<Object>()
+            runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
             {
                 public Object doWork()
                 {
                     // break inheritance
                     permissionService.setInheritParentPermissions(nodeRef, false);
+                    
+                    // clear all existing permissions
+                    permissionService.clearPermission(nodeRef, null);
 
                     // set extended reader permissions
                     permissionService.setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
                     permissionService.setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+                    
+                    // remove owner
+                    ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);
 
                     return null;
                 }
-            }, AuthenticationUtil.getSystemUserName());
+            });
         }
     }
 
@@ -383,6 +403,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             {
                 if (isFilePlan(nodeRef))
                 {
+                    // set the permission down the file plan hierarchy
                    setPermissionDown(nodeRef, authority, permission);
                 }
                 else if (isFilePlanContainer(nodeRef) ||
@@ -390,7 +411,10 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                          isRecord(nodeRef) ||
                          isHold(nodeRef))
                 {
+                    // set read permission to the parents of the node
                     setReadPermissionUp(nodeRef, authority);
+                    
+                    // set the permission on the node and it's children
                     setPermissionDown(nodeRef, authority, permission);
                 }
                 else

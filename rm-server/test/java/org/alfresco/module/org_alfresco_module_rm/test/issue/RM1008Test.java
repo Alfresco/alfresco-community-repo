@@ -155,7 +155,7 @@ public class RM1008Test extends BaseRMTestCase
                 Capability viewRecords = capabilityService.getCapability("ViewRecords");
                 assertNotNull(viewRecords);
 
-                assertEquals(AccessStatus.ALLOWED, viewRecords.hasPermission(hold));
+                assertEquals(AccessStatus.DENIED, viewRecords.hasPermission(hold));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(hold, RMPermissionModel.FILING));
 
                 return null;
@@ -173,8 +173,6 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, rmAdminName);
 
-        // FIXME: After fixing RM:1315 this should be fixed
-        /*
         doTestInTransaction(new Test<Void>()
         {
             @Override
@@ -189,7 +187,6 @@ public class RM1008Test extends BaseRMTestCase
                 return null;
             }
         }, myUser);
-        */
 
         doTestInTransaction(new Test<Void>()
         {
@@ -210,7 +207,7 @@ public class RM1008Test extends BaseRMTestCase
                 Capability viewRecords = capabilityService.getCapability("ViewRecords");
                 assertNotNull(viewRecords);
 
-                assertEquals(AccessStatus.ALLOWED, viewRecords.hasPermission(hold));
+                assertEquals(AccessStatus.DENIED, viewRecords.hasPermission(hold));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(hold, RMPermissionModel.FILING));
 
                 return null;

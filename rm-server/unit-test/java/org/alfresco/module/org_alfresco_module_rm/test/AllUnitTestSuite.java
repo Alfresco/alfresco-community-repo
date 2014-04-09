@@ -42,8 +42,10 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses(
 {
     RecordMetadataBootstrapUnitTest.class,
-    RecordServiceImplUnitTest.class,
     RecordsManagementTypeFormFilterUnitTest.class,
+    
+    // services
+    RecordServiceImplUnitTest.class,
     HoldServiceImplUnitTest.class,
     FilePlanPermissionServiceImplUnitTest.class,
     

@@ -24,15 +24,24 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
+import org.mockito.verification.VerificationMode;
 
 /**
  * File plan permission service implementation unit test.
@@ -47,6 +56,13 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
 {
     /** test authority */
     protected static final String AUTHORITY = "anAuthority";
+    protected static final String AUTHORITY2 = "anOtherAuthority";
+    
+    /** fileplan nodes */
+    protected NodeRef rootRecordCategory;
+    protected NodeRef recordCategory;
+    protected NodeRef newRecordFolder;
+    protected NodeRef newRecord;
     
     /** unfiled nodes */
     protected NodeRef unfiledRecordContainer;
@@ -81,20 +97,36 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         holdContainer = generateContainerNodeRef(TYPE_HOLD_CONTAINER);
         hold = generateHoldNodeRef("my test hold");
         heldRecord = generateRecord();
+        rootRecordCategory = generateContainerNodeRef(TYPE_RECORD_CATEGORY);
+        recordCategory = generateContainerNodeRef(TYPE_RECORD_CATEGORY);
+        newRecordFolder = generateRecordFolder();
+        newRecord = generateRecord();
         
         // setup parent hierarchy
-        makePrimaryParentOf(filePlan, generateNodeRef(ContentModel.TYPE_FOLDER));
+        makePrimaryParentOf(filePlan, generateNodeRef(ContentModel.TYPE_FOLDER));  
+        
+        makePrimaryParentOf(rootRecordCategory, filePlan);
+        makePrimaryParentOf(recordCategory, rootRecordCategory);
+        makePrimaryParentOf(newRecordFolder, recordCategory);
+        makePrimaryParentOf(newRecord, newRecordFolder);
         
         makePrimaryParentOf(unfiledRecordFolder, unfiledRecordContainer);
-        makePrimaryParentOf(unfiledRecordContainer, filePlan);
+        makePrimaryParentOf(unfiledRecordContainer, filePlan);        
         
         makePrimaryParentOf(hold, holdContainer);
         makePrimaryParentOf(holdContainer, filePlan);
         
-        // setup child hierarchy
-        makeChildrenOf(unfiledRecordFolder, unfiledRecordFolderChild);
-        makeChildrenOf(unfiledRecordFolderChild, unfiledRecord);
         
+        // setup child hierarchy
+        makeChildrenOf(filePlan, rootRecordCategory);
+        makeChildrenOf(rootRecordCategory, recordCategory);
+        makeChildrenOf(recordCategory, newRecordFolder);
+        makeChildrenOf(newRecordFolder, newRecord);
+        
+        makeChildrenOf(unfiledRecordFolder, unfiledRecordFolderChild);
+        makeChildrenOf(unfiledRecordFolderChild, unfiledRecord);        
+        
+        makeChildrenOf(holdContainer, hold);
         makeChildrenOf(hold, heldRecord);
     }
     
@@ -179,6 +211,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
     /**
      * Set read permission on hold container
      */
+    @Test
     public void setReadPermissionOnHoldContainer()
     {
         // set read permission on hold
@@ -201,6 +234,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
     /**
      * Set filing permission on hold container
      */
+    @Test
     public void setFilingPermissionOnHoldContainer()
     {
         // set read permission on hold
@@ -259,5 +293,207 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         // verify permission not set on child of hold
         verify(mockedPermissionService, never()).setPermission(eq(heldRecord), eq(AUTHORITY), anyString(), eq(true));          
     }
+    
+    /**
+     * Helper method to setup permissions on mock objects
+     */
+    private void setupPermissions(NodeRef nodeRef)
+    {
+        Set<AccessPermission> perms = new HashSet<AccessPermission>(4);
+        
+        // setup basic file and read for authorities
+        perms.add(new AccessPermissionImpl(RMPermissionModel.READ_RECORDS, AccessStatus.ALLOWED, AUTHORITY, 0));
+        perms.add(new AccessPermissionImpl(RMPermissionModel.FILING, AccessStatus.ALLOWED, AUTHORITY2, 1));
+        
+        // setup in-place readers and writers
+        perms.add(new AccessPermissionImpl(RMPermissionModel.READ_RECORDS, AccessStatus.ALLOWED, ExtendedReaderDynamicAuthority.EXTENDED_READER, 2));
+        perms.add(new AccessPermissionImpl(RMPermissionModel.FILING, AccessStatus.ALLOWED, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, 3));
 
+        doReturn(perms).when(mockedPermissionService).getAllSetPermissions(nodeRef);
+    }
+    
+    /**
+     * Helper to verify the core permissions have been initialized correctly
+     */
+    private void verifyInitPermissions(NodeRef nodeRef)
+    {
+        verify(mockedPermissionService, times(1)).setInheritParentPermissions(nodeRef, false);
+        verify(mockedPermissionService, times(1)).clearPermission(nodeRef, null);
+        verify(mockedPermissionService, times(1)).setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+        verify(mockedPermissionService, times(1)).setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+        verify(mockedOwnableService, times(1)).setOwner(nodeRef, OwnableService.NO_OWNER);
+    }
+    
+    /**
+     * Helper to verify that permissions have been set correctly on the child
+     * 
+     * @param parent        parent node 
+     * @param child         child node
+     * @param read          verification mode relating to setting read on the child
+     * @param filling       verification mode relating to setting filling on the child
+     */
+    private void verifyInitPermissions(NodeRef parent, NodeRef child, VerificationMode read, VerificationMode filling)
+    {
+        // verify the core permissions are set-up correctly
+        verifyInitPermissions(child);
+        
+        // verify the permissions came from the correct parent
+        verify(mockedPermissionService).getAllSetPermissions(parent);
+        
+        // verify all the inherited permissions are set correctly (note read are not inherited from fileplan)
+        verify(mockedPermissionService, filling).setPermission(child, AUTHORITY2, RMPermissionModel.FILING, true);
+        verify(mockedPermissionService, read).setPermission(child, AUTHORITY, RMPermissionModel.READ_RECORDS, true);  
+        
+        // verify that there are no unaccounted for interactions with the permission service
+        verifyNoMoreInteractions(mockedPermissionService);
+        
+    }
+    
+    /**
+     * Test the initialisation of permissions for a new root category
+     */
+    @Test
+    public void initPermissionsForNewRootRecordCategory()
+    {
+        // setup permissions for file plan
+        setupPermissions(filePlan);
+        
+        // setup permissions 
+        filePlanPermissionService.setupRecordCategoryPermissions(rootRecordCategory);
+        
+        // verify permission init
+        verifyInitPermissions(filePlan, rootRecordCategory, never(), times(1));
+    }
+    
+    /**
+     * Test the initialisation of permissions for a new category
+     */
+    @Test
+    public void initPermissionsForNewRecordCategory()
+    {
+        // setup permissions for parent
+        setupPermissions(rootRecordCategory);
+        
+        // setup permissions
+        filePlanPermissionService.setupRecordCategoryPermissions(recordCategory);
+                
+        // verify permission init
+        verifyInitPermissions(rootRecordCategory, recordCategory, times(1), times(1));
+    }
+    
+    /**
+     * Test initialisation new record folder permissions
+     */
+    @Test
+    public void initPermissionsForNewRecordFolder()
+    {
+        // setup permissions for parent 
+        setupPermissions(recordCategory);
+        
+        // setup permissions 
+        filePlanPermissionService.setupPermissions(recordCategory, newRecordFolder);
+        
+        // verify permission init
+        verifyInitPermissions(recordCategory, newRecordFolder, times(1), times(1));
+        
+    }
+    
+    /**
+     * Test setup of new record permissions
+     */
+    @Test
+    public void initPermissionsForNewRecord()
+    {
+        // setup permissions for parent 
+        setupPermissions(newRecordFolder);
+        
+        // setup permissions for record
+        filePlanPermissionService.setupPermissions(newRecordFolder, newRecord);
+        
+        // verify permission init
+        verifyInitPermissions(newRecordFolder, newRecord, times(1), times(1));        
+    }
+    
+    /**
+     * Test setup of permissions for new hold container
+     */
+    @Test
+    public void initPermnissionsForNewHoldContainer()
+    {
+        // setup permissions for parent 
+        setupPermissions(filePlan);
+        
+        // setup permissions for record
+        filePlanPermissionService.setupPermissions(filePlan, holdContainer);
+        
+        // verify permissions are set-up correctly
+        verifyInitPermissions(filePlan, holdContainer, times(1), times(1));        
+    }
+    
+    /**
+     * Test setup of permissions for new hold
+     */
+    @Test
+    public void initPermissionsForNewHold()
+    {
+        // setup permissions for parent 
+        setupPermissions(holdContainer);
+        
+        // setup permissions for record
+        filePlanPermissionService.setupPermissions(holdContainer, hold);
+        
+        // verify permissions are set-up correctly
+        verifyInitPermissions(holdContainer, hold, never(), times(1));    
+        
+    }
+    
+    /**
+     * Test setup of permissions for new unfiled container
+     */
+    @Test
+    public void initPermissionsForNewUnfiledContainer()
+    {
+        // setup permissions for parent 
+        setupPermissions(filePlan);
+        
+        // setup permissions for record
+        filePlanPermissionService.setupPermissions(filePlan, unfiledRecordContainer);
+        
+        // verify permissions are set-up correctly
+        verifyInitPermissions(filePlan, unfiledRecordContainer, times(1), times(1));          
+    }
+    
+    /**
+     * Test setup of permissions for new unfiled record folder
+     */
+    @Test
+    public void initPermissionsForNewUnfiledRecordFolder()
+    {
+        // setup permissions for parent 
+        setupPermissions(unfiledRecordContainer);
+        
+        // setup permissions for record
+        filePlanPermissionService.setupPermissions(unfiledRecordContainer, unfiledRecordFolder);
+        
+        // verify permissions are set-up correctly
+        verifyInitPermissions(unfiledRecordContainer, unfiledRecordFolder, never(), times(1));  
+        
+    }
+    
+    /**
+     * Test setup of permissions for new unfiled record
+     */
+    @Test
+    public void initPermissionsForNewUnfiledRecord()
+    {
+        // setup permissions for parent 
+        setupPermissions(unfiledRecordFolder);
+        
+        // setup permissions for record
+        filePlanPermissionService.setupPermissions(unfiledRecordFolder, unfiledRecord);
+        
+        // verify permission init
+        verifyInitPermissions(unfiledRecordFolder, unfiledRecord, times(1), times(1));  
+        
+    }
 }

@@ -53,7 +53,8 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @author Tuna Aksoy
  * @since 2.2
  */
-public class TransferServiceImpl extends ServiceBaseImpl implements TransferService, RecordsManagementModel
+public class TransferServiceImpl extends ServiceBaseImpl 
+                                 implements TransferService, RecordsManagementModel
 {
     /** Transfer node reference key */
     public static final String KEY_TRANSFER_NODEREF = "transferNodeRef";
@@ -103,16 +104,6 @@ public class TransferServiceImpl extends ServiceBaseImpl implements TransferServ
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.transfer.TransferService#isTransfer(NodeRef)
-     */
-    @Override
-    public boolean isTransfer(NodeRef nodeRef)
-    {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-        return instanceOf(nodeRef, TYPE_TRANSFER);
     }
 
     /**

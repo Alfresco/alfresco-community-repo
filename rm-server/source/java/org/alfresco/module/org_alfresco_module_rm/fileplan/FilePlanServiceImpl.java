@@ -29,18 +29,12 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
-import org.alfresco.module.org_alfresco_module_rm.transfer.TransferService;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -77,157 +71,35 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     /** RM site file plan container */
     private static final String FILE_PLAN_CONTAINER = "documentLibrary";
 
+    /** node DAO */
+    private NodeDAO nodeDAO;
+    
+    /** file plan permission service */
+    private FilePlanPermissionService filePlanPermissionService;
+    
     /**
-     * NOTE:  for some reason spring couldn't cope with the circular references between these two
-     *        beans so we need to grab this one manually.
-     *
-     * @return  file plan role service
+     * @param nodeDAO   node DAO
      */
-    protected FilePlanRoleService getFilePlanRoleService()
+    public void setNodeDAO(NodeDAO nodeDAO)
     {
-        return (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");
+        this.nodeDAO = nodeDAO;
     }
-
+    
     /**
-     * @return	permission service
-     */
-    protected PermissionService getPermissionService()
-    {
-        return (PermissionService)applicationContext.getBean("permissionService");
-    }
-
-    /**
-     * @return	node DAO
-     */
-    protected NodeDAO getNodeDAO()
-    {
-        return (NodeDAO)applicationContext.getBean("nodeDAO");
-    }
-
-    /**
-     * @return	site service
+     * @return  site service
      */
     protected SiteService getSiteService()
     {
-        return (SiteService)applicationContext.getBean("SiteService");
+        return (SiteService)applicationContext.getBean("siteService");
     }
-
+    
     /**
-     * @return	record folder service
+     * @param filePlanPermissionService file plan permission service
      */
-    protected RecordFolderService getRecordFolderService()
+    public void setFilePlanPermissionService(FilePlanPermissionService filePlanPermissionService)
     {
-    	return (RecordFolderService)applicationContext.getBean("RecordFolderService");
-    }
-
-    /**
-     * @return	transfer service
-     */
-    protected TransferService getTransferService()
-    {
-    	return (TransferService)applicationContext.getBean("RmTransferService");
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlanComponentKind(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public FilePlanComponentKind getFilePlanComponentKind(NodeRef nodeRef)
-    {
-        FilePlanComponentKind result = null;
-
-        if (isFilePlanComponent(nodeRef))
-        {
-            result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
-
-            if (isFilePlan(nodeRef))
-            {
-                result = FilePlanComponentKind.FILE_PLAN;
-            }
-            else if (isRecordCategory(nodeRef))
-            {
-                result = FilePlanComponentKind.RECORD_CATEGORY;
-            }
-            else if (getRecordFolderService().isRecordFolder(nodeRef))
-            {
-                result = FilePlanComponentKind.RECORD_FOLDER;
-            }
-            else if (isRecord(nodeRef))
-            {
-                result = FilePlanComponentKind.RECORD;
-            }
-            else if (instanceOf(nodeRef, TYPE_HOLD_CONTAINER))
-            {
-                result = FilePlanComponentKind.HOLD_CONTAINER;
-            }
-            else if (isHold(nodeRef))
-            {
-                result = FilePlanComponentKind.HOLD;
-            }
-            else if (getTransferService().isTransfer(nodeRef))
-            {
-                result = FilePlanComponentKind.TRANSFER;
-            }
-            else if (instanceOf(nodeRef, TYPE_DISPOSITION_SCHEDULE) || instanceOf(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION))
-            {
-                result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
-            }
-            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER))
-            {
-                result = FilePlanComponentKind.UNFILED_RECORD_CONTAINER;
-            }
-            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_FOLDER))
-            {
-                result = FilePlanComponentKind.UNFILED_RECORD_FOLDER;
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * @see FilePlanService#getFilePlanComponentKindFromType(QName)
-     */
-    @Override
-    public FilePlanComponentKind getFilePlanComponentKindFromType(QName type)
-    {
-        FilePlanComponentKind result = null;
-
-        if (ASPECT_FILE_PLAN_COMPONENT.equals(type))
-        {
-            result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
-        }
-        else if (dictionaryService.isSubClass(type, ASPECT_RECORD))
-        {
-            result = FilePlanComponentKind.RECORD;
-        }
-        else if (dictionaryService.isSubClass(type, TYPE_FILE_PLAN))
-        {
-            result = FilePlanComponentKind.FILE_PLAN;
-        }
-        else if (dictionaryService.isSubClass(type, TYPE_RECORD_CATEGORY))
-        {
-            result = FilePlanComponentKind.RECORD_CATEGORY;
-        }
-        else if (dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER))
-        {
-            result = FilePlanComponentKind.RECORD_FOLDER;
-        }
-        else if (dictionaryService.isSubClass(type, TYPE_HOLD))
-        {
-            result = FilePlanComponentKind.HOLD;
-        }
-        else if (dictionaryService.isSubClass(type, TYPE_TRANSFER))
-        {
-            result = FilePlanComponentKind.TRANSFER;
-        }
-        else if (dictionaryService.isSubClass(type, TYPE_DISPOSITION_SCHEDULE) ||
-                 dictionaryService.isSubClass(type, TYPE_DISPOSITION_ACTION_DEFINITION))
-        {
-            result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
-        }
-
-        return result;
-    }    
+        this.filePlanPermissionService = filePlanPermissionService;
+    }   
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlans()
@@ -249,7 +121,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         final Set<NodeRef> results = new HashSet<NodeRef>();
         Set<QName> aspects = new HashSet<QName>(1);
         aspects.add(ASPECT_RECORDS_MANAGEMENT_ROOT);
-        getNodeDAO().getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback()
+        nodeDAO.getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback()
         {
             @Override
             public boolean handle(Pair<Long, NodeRef> nodePair)
@@ -273,13 +145,14 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     public NodeRef getFilePlanBySiteId(String siteId)
     {
         NodeRef filePlan = null;
-
-        SiteInfo siteInfo = getSiteService().getSite(siteId);
+        SiteService siteService = getSiteService();
+        
+        SiteInfo siteInfo = siteService.getSite(siteId);
         if (siteInfo != null)
         {
-            if (getSiteService().hasContainer(siteId, FILE_PLAN_CONTAINER))
+            if (siteService.hasContainer(siteId, FILE_PLAN_CONTAINER))
             {
-                NodeRef nodeRef = getSiteService().getContainer(siteId, FILE_PLAN_CONTAINER);
+                NodeRef nodeRef = siteService.getContainer(siteId, FILE_PLAN_CONTAINER);
                 if (instanceOf(nodeRef, TYPE_FILE_PLAN))
                 {
                     filePlan = nodeRef;
@@ -398,8 +271,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             throw new AlfrescoRuntimeException("Unable to create file plan root container, because passed node is not a file plan.");
         }
 
-        String allRoles = getFilePlanRoleService().getAllRolesContainerGroup(filePlan);
-
         // create the properties map
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
         properties.put(ContentModel.PROP_NAME, containerName);
@@ -411,19 +282,9 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                         QName.createQName(RM_URI, containerName),
                         containerType,
                         properties).getChildRef();
-
-        // set inheritance to false
-        getPermissionService().setInheritParentPermissions(container, false);
         
-        // give all roles read permissions on the container by default
-        getPermissionService().setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
-        
-        // setup the extended reader permissions
-        getPermissionService().setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-        getPermissionService().setPermission(container, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
-        
-        // setup the administrator permissions
-        getPermissionService().setPermission(container, "Administrator", RMPermissionModel.FILING, true);
+        // setup the permissions
+        filePlanPermissionService.setupPermissions(filePlan, container);
 
         return container;
     }

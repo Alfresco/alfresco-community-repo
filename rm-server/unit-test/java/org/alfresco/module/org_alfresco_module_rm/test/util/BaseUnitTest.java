@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -82,6 +83,7 @@ public class BaseUnitTest implements RecordsManagementModel
     @Mock(name="namespaceService")      protected NamespaceService mockedNamespaceService; 
     @Mock(name="identifierService")     protected IdentifierService mockedIdentifierService;
     @Mock(name="permissionService")     protected PermissionService mockedPermissionService;
+    @Mock(name="ownableService")        protected OwnableService mockedOwnableService;
     
     /** rm service mocks */
     @Mock(name="filePlanService")       protected FilePlanService mockedFilePlanService;

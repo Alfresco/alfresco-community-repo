@@ -20,6 +20,8 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -76,6 +78,110 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         this.dictionaryService = dictionaryService;
     }
+    
+    /**
+     * Gets the file plan component kind from the given node reference
+     * 
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlanComponentKind(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public FilePlanComponentKind getFilePlanComponentKind(NodeRef nodeRef)
+    {
+        FilePlanComponentKind result = null;
+
+        if (isFilePlanComponent(nodeRef))
+        {
+            result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
+
+            if (isFilePlan(nodeRef))
+            {
+                result = FilePlanComponentKind.FILE_PLAN;
+            }
+            else if (isRecordCategory(nodeRef))
+            {
+                result = FilePlanComponentKind.RECORD_CATEGORY;
+            }
+            else if (isRecordFolder(nodeRef))
+            {
+                result = FilePlanComponentKind.RECORD_FOLDER;
+            }
+            else if (isRecord(nodeRef))
+            {
+                result = FilePlanComponentKind.RECORD;
+            }
+            else if (instanceOf(nodeRef, TYPE_HOLD_CONTAINER))
+            {
+                result = FilePlanComponentKind.HOLD_CONTAINER;
+            }
+            else if (isHold(nodeRef))
+            {
+                result = FilePlanComponentKind.HOLD;
+            }
+            else if (isTransfer(nodeRef))
+            {
+                result = FilePlanComponentKind.TRANSFER;
+            }
+            else if (instanceOf(nodeRef, TYPE_DISPOSITION_SCHEDULE) || instanceOf(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION))
+            {
+                result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
+            }
+            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER))
+            {
+                result = FilePlanComponentKind.UNFILED_RECORD_CONTAINER;
+            }
+            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_FOLDER))
+            {
+                result = FilePlanComponentKind.UNFILED_RECORD_FOLDER;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Gets the file plan component kind from the given type.
+     * 
+     * @see FilePlanService#getFilePlanComponentKindFromType(QName)
+     */
+    public FilePlanComponentKind getFilePlanComponentKindFromType(QName type)
+    {
+        FilePlanComponentKind result = null;
+
+        if (ASPECT_FILE_PLAN_COMPONENT.equals(type))
+        {
+            result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
+        }
+        else if (instanceOf(type, ASPECT_RECORD))
+        {
+            result = FilePlanComponentKind.RECORD;
+        }
+        else if (instanceOf(type, TYPE_FILE_PLAN))
+        {
+            result = FilePlanComponentKind.FILE_PLAN;
+        }
+        else if (instanceOf(type, TYPE_RECORD_CATEGORY))
+        {
+            result = FilePlanComponentKind.RECORD_CATEGORY;
+        }
+        else if (instanceOf(type, TYPE_RECORD_FOLDER))
+        {
+            result = FilePlanComponentKind.RECORD_FOLDER;
+        }
+        else if (instanceOf(type, TYPE_HOLD))
+        {
+            result = FilePlanComponentKind.HOLD;
+        }
+        else if (instanceOf(type, TYPE_TRANSFER))
+        {
+            result = FilePlanComponentKind.TRANSFER;
+        }
+        else if (instanceOf(type, TYPE_DISPOSITION_SCHEDULE) ||
+                 instanceOf(type, TYPE_DISPOSITION_ACTION_DEFINITION))
+        {
+            result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
+        }
+
+        return result;
+    } 
     
     /**
      * Indicates whether the given node is a file plan component or not.
@@ -177,6 +283,18 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         }
         return isHold;
     }
+    
+    /**
+     * Indicates whether the given node reference is a transfer or not.
+     * 
+     * @see org.alfresco.module.org_alfresco_module_rm.transfer.TransferService#isTransfer(NodeRef)
+     */
+    public boolean isTransfer(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
+        return instanceOf(nodeRef, TYPE_TRANSFER);
+    }
 
     /**
      * Gets the file plan that a given file plan component resides within.
@@ -236,6 +354,26 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         if (nodeService.exists(nodeRef) &&
             (ofClassName.equals(nodeService.getType(nodeRef)) ||
              dictionaryService.isSubClass(nodeService.getType(nodeRef), ofClassName)))
+        {
+            result = true;
+        }
+        return result;
+    }
+    
+    /**
+     * Utility method to quickly determine whether one class is equal to or sub of another.
+     * 
+     * @param className     class name
+     * @param ofClassName   class name to check against
+     * @return boolean      true if equal to or sub, false otherwise
+     */
+    protected boolean instanceOf(QName className, QName ofClassName)
+    {
+        ParameterCheck.mandatory("className", className);
+        ParameterCheck.mandatory("ofClassName", ofClassName);
+        boolean result = false;
+        if (ofClassName.equals(className) ||
+            dictionaryService.isSubClass(className, ofClassName))
         {
             result = true;
         }

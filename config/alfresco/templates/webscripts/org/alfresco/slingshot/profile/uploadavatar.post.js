@@ -73,6 +73,17 @@ function main()
       var image = user.createNode(filename, "cm:content", "cm:preferenceImage");
       image.properties.content.write(content);
       image.properties.content.guessMimetype(filename);
+
+      // we allow to upload only images
+      var mimetype = image.properties.content.mimetype;
+      if (mimetype.substring(0, mimetype.lastIndexOf("/")) != 'image')
+      {
+         status.code = 400;
+         status.message = "Mimetype is not supported";
+         status.redirect = true;
+         return;
+      }
+
       image.properties.content.encoding = "UTF-8";
       image.save();
 

@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -348,6 +349,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#isAuditLogEnabled(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @Override
     public boolean isAuditLogEnabled(NodeRef filePlan)
     {
     	ParameterCheck.mandatory("filePlan", filePlan);
@@ -361,6 +363,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#startAuditLog(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @Override
     public void startAuditLog(NodeRef filePlan)
     {
     	ParameterCheck.mandatory("filePlan", filePlan);
@@ -381,6 +384,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#stopAuditLog(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @Override
     public void stopAuditLog(NodeRef filePlan)
     {
     	ParameterCheck.mandatory("filePlan", filePlan);
@@ -432,6 +436,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService#getDateAuditLogLastStopped(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @Override
     public Date getDateAuditLogLastStopped(NodeRef filePlan)
     {
     	ParameterCheck.mandatory("filePlan", filePlan);
@@ -621,6 +626,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             // Start a *new* read-write transaction to audit in
             RetryingTransactionCallback<Void> auditCallback = new RetryingTransactionCallback<Void>()
             {
+                @Override
                 public Void execute() throws Throwable
                 {
                     auditInTxn(auditedNodes);
@@ -690,6 +696,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * {@inheritDoc}
      */
+    @Override
     public File getAuditTrailFile(RecordsManagementAuditQueryParameters params, ReportFormat format)
     {
         ParameterCheck.mandatory("params", params);
@@ -722,6 +729,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * {@inheritDoc}
      */
+    @Override
     public List<RecordsManagementAuditEntry> getAuditTrail(RecordsManagementAuditQueryParameters params)
     {
         ParameterCheck.mandatory("params", params);
@@ -766,6 +774,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             private boolean firstEntry = true;
 
 
+            @Override
             public boolean valuesRequired()
             {
                 return true;
@@ -774,12 +783,14 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             /**
              * Just log the error, but continue
              */
+            @Override
             public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
             {
                 logger.warn(errorMsg, error);
                 return true;
             }
 
+            @Override
             @SuppressWarnings("unchecked")
             public boolean handleAuditEntry(
                     Long entryId,
@@ -1107,6 +1118,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * {@inheritDoc}
      */
+    @Override
     public NodeRef fileAuditTrailAsRecord(RecordsManagementAuditQueryParameters params,
                 NodeRef destination, ReportFormat format)
     {
@@ -1162,6 +1174,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * {@inheritDoc}
      */
+    @Override
     public List<AuditEvent> getAuditEvents()
     {
         List<AuditEvent> listAuditEvents = new ArrayList<AuditEvent>(this.auditEvents.size());
@@ -1346,11 +1359,24 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     writer.write("<tr><td>");
                     writer.write(getPropertyLabel(valueName));
                     writer.write("</td><td>");
-                    Serializable oldValue = values.getFirst();
-                    writer.write(oldValue == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(oldValue.toString()));
-                    writer.write("</td><td>");
-                    Serializable newValue = values.getSecond();
-                    writer.write(newValue == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(newValue.toString()));
+
+                    if(ContentModel.PROP_TITLE.equals(valueName) || ContentModel.PROP_DESCRIPTION.equals(valueName))
+                    {
+                        Serializable oldValue = values.getFirst();
+                        writer.write(oldValue == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(getFirstValueFromI18NMLTextValue(oldValue)));
+                        writer.write("</td><td>");
+                        Serializable newValue = values.getSecond();
+                        writer.write(newValue == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(getFirstValueFromI18NMLTextValue(newValue)));
+                    }
+                    else
+                    {
+                        Serializable oldValue = values.getFirst();
+                        writer.write(oldValue == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(oldValue.toString()));
+                        writer.write("</td><td>");
+                        Serializable newValue = values.getSecond();
+                        writer.write(newValue == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(newValue.toString()));
+                    }
+
                     writer.write("</td></tr>");
                 }
 
@@ -1398,8 +1424,17 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
                         JSONObject changedValue = new JSONObject();
                         changedValue.put("name", getPropertyLabel(valueName));
-                        changedValue.put("previous", values.getFirst() == null ? "" : values.getFirst().toString());
-                        changedValue.put("new", values.getSecond() == null ? "" : values.getSecond().toString());
+
+                        if(ContentModel.PROP_TITLE.equals(valueName) || ContentModel.PROP_DESCRIPTION.equals(valueName))
+                        {
+                            changedValue.put("previous", getFirstValueFromI18NMLTextValue(values.getFirst()));
+                            changedValue.put("new", getFirstValueFromI18NMLTextValue(values.getSecond()));
+                        }
+                        else
+                        {
+                            changedValue.put("previous", values.getFirst() == null ? "" : values.getFirst().toString());
+                            changedValue.put("new", values.getSecond() == null ? "" : values.getSecond().toString());
+                        }
 
                         changedValues.put(changedValue);
                     }
@@ -1414,6 +1449,21 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 writer.write("{}");
             }
         }
+    }
+
+    private String getFirstValueFromI18NMLTextValue(Serializable object)
+    {
+        String value = "";
+        if((object != null) && (object instanceof HashMap))
+        {
+            HashMap<Locale, String> hashmap = (HashMap<Locale, String>)object;
+            if(hashmap.size() > 0)
+            {
+                Locale locale = hashmap.keySet().iterator().next();
+                value = hashmap.get(locale);
+            }
+        }
+        return value;
     }
 
     /**
@@ -1591,6 +1641,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * {@inheritDoc}
      */
+    @Override
     @Deprecated
     public void stop()
     {
@@ -1600,6 +1651,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * {@inheritDoc}
      */
+    @Override
     @Deprecated
     public Date getDateLastStarted()
     {
@@ -1609,6 +1661,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * {@inheritDoc}
      */
+    @Override
     @Deprecated
     public Date getDateLastStopped()
     {
@@ -1618,6 +1671,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * {@inheritDoc}
      */
+    @Override
     @Deprecated
     public void clear()
     {
@@ -1629,6 +1683,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      * @since 3.2
      * @deprecated since 2.1
      */
+    @Override
     @Deprecated
     public void auditRMAction(
             RecordsManagementAction action,

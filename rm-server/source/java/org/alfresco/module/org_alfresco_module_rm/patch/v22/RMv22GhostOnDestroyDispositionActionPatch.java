@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -35,6 +36,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Sets the ghost on destroy property for existing destroy disposition actions
@@ -128,16 +130,19 @@ public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePat
      */
     private void getDispositionSchedules(NodeRef nodeRef, Set<DispositionSchedule> dispositionSchedules)
     {
-        DispositionSchedule dispositionSchedule = this.dispositionService.getDispositionSchedule(nodeRef);
-        if (dispositionSchedule != null)
+        if (filePlanService.isRecordCategory(nodeRef) == true)
         {
-            dispositionSchedules.add(dispositionSchedule);
-        }
-
-        List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef);
-        for (ChildAssociationRef childAssoc : children)
-        {
-            getDispositionSchedules(childAssoc.getChildRef(), dispositionSchedules);
+            DispositionSchedule dispositionSchedule = this.dispositionService.getDispositionSchedule(nodeRef);
+            if (dispositionSchedule != null)
+            {
+                dispositionSchedules.add(dispositionSchedule);
+            }
+    
+            List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef childAssoc : children)
+            {
+                getDispositionSchedules(childAssoc.getChildRef(), dispositionSchedules);
+            }
         }
     }
 

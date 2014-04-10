@@ -28,10 +28,10 @@ function doclist_getAllNodes(parsedArgs, filterParams, query, totalItemCount)
       requestTotalCountMax = 0,
       paged = false,
       allNodes = [];
-   if ((filter || "path") == "path" || 
+   if ((filter || "path") == "path" ||
        query == "" &&
-       ((filter || "unfiledRecords") == "unfiledRecords" || 
-        (filter || "holds") == "holds" || 
+       ((filter || "unfiledRecords") == "unfiledRecords" ||
+        (filter || "holds") == "holds" ||
         (filter || "transfers") == "transfers"))
    {
       // TODO also add DB filter by "node" (in addition to "path")
@@ -124,10 +124,10 @@ function rm_doclist_main()
       }),
       query = filterParams.query,
       allSites = (parsedArgs.nodeRef == "alfresco://sites/home");
-   
+
    if (logger.isLoggingEnabled())
       logger.log("rm-doclist.lib.js - NodeRef: " + parsedArgs.nodeRef + " Query: " + query);
-   
+
    var totalItemCount = filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : -1;
    // For all sites documentLibrary query we pull in all available results and post filter
    if (totalItemCount === 0) totalItemCount = -1;
@@ -155,11 +155,11 @@ function rm_doclist_main()
       if (logger.isLoggingEnabled())
          logger.log("rm-doclist.lib.js - will match results using regex: " + pathMatch);
    }
-   
+
    // Ensure folders and folderlinks appear at the top of the list
    var folderNodes = [],
       documentNodes = [];
-   
+
    for each (node in allNodes)
    {
       if (totalItemCount !== 0)
@@ -185,12 +185,12 @@ function rm_doclist_main()
          }
       } else break;
    }
-   
+
    // Node type counts
    var folderNodesCount = folderNodes.length,
       documentNodesCount = documentNodes.length,
       nodes;
-   
+
    if (parsedArgs.type === "documents")
    {
       nodes = documentNodes;
@@ -201,34 +201,34 @@ function rm_doclist_main()
       // TODO: Sorting with folders at end -- swap order of concat()
       nodes = folderNodes.concat(documentNodes);
    }
-   
+
    if (logger.isLoggingEnabled())
       logger.log("rm-doclist.lib.js - totalRecords: " + totalRecords);
-   
+
    // Pagination
    var pageSize = args.size || nodes.length,
       pagePos = args.pos || "1",
       startIndex = (pagePos - 1) * pageSize;
-   
+
    if (!paged)
    {
        // Trim the nodes array down to the page size
        nodes = nodes.slice(startIndex, pagePos * pageSize);
    }
-   
+
    // Common or variable parent container?
    var parent = null;
-   
-   if (!filterParams.variablePath)
+
+   if (!filterParams.variablePath || filterParams.filter === "containerFilter")
    {
       // Parent node permissions (and Site role if applicable)
       parent = Evaluator.run(parsedArgs.pathNode, true);
    }
-   
+
    var thumbnail = null,
        locationNode,
        item;
-   
+
    // Loop through and evaluate each node in this result set
    for each (node in nodes)
    {
@@ -265,10 +265,10 @@ function rm_doclist_main()
                file: node.name
             };
          }
-         
+
          // Resolved location
          item.location = location;
-         
+
          items.push(item);
       }
       else
@@ -284,7 +284,7 @@ function rm_doclist_main()
      array.length = from < 0 ? array.length + from : from;
      return array.push.apply(array, rest);
    };
-   
+
    /**
     * De-duplicate orignals for any existing working copies.
     * This can't be done in evaluator.lib.js as it has no knowledge of the current filter or UI operation.
@@ -306,18 +306,18 @@ function rm_doclist_main()
          }
       }
    }
-   
+
    var paging =
    {
       totalRecords: totalRecords,
       startIndex: startIndex
    };
-   
+
    if (paged && (totalRecords == requestTotalCountMax))
    {
       paging.totalRecordsUpper = requestTotalCountMax;
    }
-   
+
    return (
    {
       luceneQuery: query,

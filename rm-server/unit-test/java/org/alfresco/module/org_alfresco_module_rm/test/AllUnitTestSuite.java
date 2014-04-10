@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
+import org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HoldCapabilityConditionUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementTypeFormFilterUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServiceImplUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.FrozenEvaluatorUnitTest;
@@ -56,7 +57,10 @@ import org.junit.runners.Suite.SuiteClasses;
     // web scripts
     HoldsGetUnitTest.class,
     HoldPostUnitTest.class,
-    HoldPutUnitTest.class
+    HoldPutUnitTest.class,
+    
+    // capability conditions
+    HoldCapabilityConditionUnitTest.class
 })
 public class AllUnitTestSuite
 {

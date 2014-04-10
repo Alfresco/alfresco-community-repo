@@ -85,6 +85,7 @@
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.hasFillingOnHolds" value="true"/>
          </map>
       </property>
       <property name="group"><ref bean="holdControlsGroup"/></property>
@@ -106,6 +107,7 @@
          <map>
             <entry key="capabilityCondition.filling" value="true"/>
             <entry key="capabilityCondition.frozen" value="true"/>
+            <entry key="capabilityCondition.hasFillingOnHeld" value="true"/>
          </map>
       </property>
       <property name="group"><ref bean="holdControlsGroup"/></property>

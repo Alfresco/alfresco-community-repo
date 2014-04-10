@@ -53,11 +53,13 @@ import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -1277,6 +1279,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      * @param reportFormat The format to write the header in
      * @throws IOException
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void writeAuditTrailEntry(Writer writer, RecordsManagementAuditEntry entry,
                 ReportFormat reportFormat) throws IOException
     {
@@ -1360,13 +1363,19 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     writer.write(getPropertyLabel(valueName));
                     writer.write("</td><td>");
 
-                    if(ContentModel.PROP_TITLE.equals(valueName) || ContentModel.PROP_DESCRIPTION.equals(valueName))
+                    // inspect the property to determine it's data type
+                    QName propDataType = DataTypeDefinition.TEXT;
+                    PropertyDefinition propDef = dictionaryService.getProperty(valueName);
+                    if (propDef != null)
                     {
-                        Serializable oldValue = values.getFirst();
-                        writer.write(oldValue == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(getFirstValueFromI18NMLTextValue(oldValue)));
+                        propDataType = propDef.getDataType().getName();
+                    }
+                    
+                    if(DataTypeDefinition.MLTEXT.equals(propDataType))
+                    {
+                        writer.write(values.getFirst() == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(convertToMlText((Map)values.getFirst()).getDefaultValue()));
                         writer.write("</td><td>");
-                        Serializable newValue = values.getSecond();
-                        writer.write(newValue == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(getFirstValueFromI18NMLTextValue(newValue)));
+                        writer.write(values.getSecond() == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(convertToMlText((Map)values.getSecond()).getDefaultValue()));
                     }
                     else
                     {
@@ -1425,10 +1434,19 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                         JSONObject changedValue = new JSONObject();
                         changedValue.put("name", getPropertyLabel(valueName));
 
-                        if(ContentModel.PROP_TITLE.equals(valueName) || ContentModel.PROP_DESCRIPTION.equals(valueName))
+                        // inspect the property to determine it's data type
+                        QName propDataType = DataTypeDefinition.TEXT;
+                        PropertyDefinition propDef = dictionaryService.getProperty(valueName);
+                        if (propDef != null)
                         {
-                            changedValue.put("previous", getFirstValueFromI18NMLTextValue(values.getFirst()));
-                            changedValue.put("new", getFirstValueFromI18NMLTextValue(values.getSecond()));
+                            propDataType = propDef.getDataType().getName();
+                        }
+                        
+                        // handle output of mltext properties
+                        if(DataTypeDefinition.MLTEXT.equals(propDataType))
+                        {                        
+                            changedValue.put("previous", values.getFirst() == null ? "" : convertToMlText((Map)values.getFirst()).getDefaultValue());
+                            changedValue.put("new", values.getSecond() == null ? "" : convertToMlText((Map)values.getSecond()).getDefaultValue());
                         }
                         else
                         {
@@ -1450,20 +1468,18 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             }
         }
     }
-
-    private String getFirstValueFromI18NMLTextValue(Serializable object)
+    
+    /**
+     * Helper method to convert value to MLText
+     * 
+     * @param map   map of locale's and values
+     * @return {@link MLText}   multilingual text value
+     */
+    private MLText convertToMlText(Map<Locale, String> map)
     {
-        String value = "";
-        if((object != null) && (object instanceof HashMap))
-        {
-            HashMap<Locale, String> hashmap = (HashMap<Locale, String>)object;
-            if(hashmap.size() > 0)
-            {
-                Locale locale = hashmap.keySet().iterator().next();
-                value = hashmap.get(locale);
-            }
-        }
-        return value;
+        MLText mlText = new MLText();
+        mlText.putAll(map);
+        return mlText;
     }
 
     /**

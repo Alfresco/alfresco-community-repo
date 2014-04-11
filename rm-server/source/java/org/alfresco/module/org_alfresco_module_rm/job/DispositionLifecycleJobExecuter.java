@@ -40,37 +40,109 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * The Disposition Lifecycle Job Finds all disposition action nodes which are
- * for "retain" or "cutOff" actions Where asOf > now OR
+ * for disposition actions specified Where asOf > now OR
  * dispositionEventsEligible = true;
  *
  * Runs the cut off or retain action for
- * elligible records.
+ * eligible records.
  *
  * @author mrogers
+ * @author Roy Wetherall
  */
 public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecuter
 {
+    /** logger */
     private static Log logger = LogFactory.getLog(DispositionLifecycleJobExecuter.class);
+    
+    /** list of disposition actions to automatically execute */
+    private List<String> dispositionActions;
+    
+    /** query string */
+    private String query;
 
+    /** records management action service */
     private RecordsManagementActionService recordsManagementActionService;
 
+    /** node service */
     private NodeService nodeService;
 
+    /** search service */
     private SearchService searchService;
 
+    /**
+     * List of disposition actions to automatically execute when eligible.
+     * 
+     * @param dispositionActions    disposition actions
+     */
+    public void setDispositionActions(List<String> dispositionActions)
+    {
+        this.dispositionActions = dispositionActions;
+    }
+    
+    /**
+     * @param recordsManagementActionService    records management action service
+     */
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
         this.recordsManagementActionService = recordsManagementActionService;
     }
 
+    /**
+     * @param nodeService   node service
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
+    /**
+     * @param searchService search service
+     */
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
+    }
+    
+    /**
+     * Get the search query string.
+     * 
+     * @return  job query string
+     */
+    private String getQuery()
+    {
+        if (query == null)
+        {        
+            StringBuilder sb = new StringBuilder();
+            
+            sb.append("+TYPE:\"rma:dispositionAction\" ");
+            sb.append("+(@rma\\:dispositionAction:(");
+            
+            boolean bFirst = true;
+            for (String dispositionAction : dispositionActions)
+            {
+                if (bFirst)
+                {
+                    bFirst = false;
+                }
+                else
+                {
+                    sb.append(" OR ");
+                }
+                   
+                sb.append("\"").append(dispositionAction).append("\"");
+            }            
+            
+            sb.append("))");
+            sb.append("+ISNULL:\"rma:dispositionActionCompletedAt\" ");
+            sb.append("+( ");
+            sb.append("@rma\\:dispositionEventsEligible:true ");
+            sb.append("OR @rma\\:dispositionAsOf:[MIN TO NOW] ");
+            sb.append(") ");
+            
+            query = sb.toString();
+        }
+        
+        return query;
     }
 
     /**
@@ -81,64 +153,58 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         try
         {
             logger.debug("Job Starting");
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("+TYPE:\"rma:dispositionAction\" ");
-            sb.append("+(@rma\\:dispositionAction:(\"cutoff\" OR \"retain\"))");
-            sb.append("+ISNULL:\"rma:dispositionActionCompletedAt\" ");
-            sb.append("+( ");
-            sb.append("@rma\\:dispositionEventsEligible:true ");
-            sb.append("OR @rma\\:dispositionAsOf:[MIN TO NOW] ");
-            sb.append(") ");
-
-            String query = sb.toString();
-
-            ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                        SearchService.LANGUAGE_LUCENE, query);
-            List<NodeRef> resultNodes = results.getNodeRefs();
-            results.close();
-
-
-            for (NodeRef node : resultNodes)
+            
+            if (dispositionActions != null && !dispositionActions.isEmpty())
             {
-                final NodeRef currentNode = node;
-
-                RetryingTransactionCallback<Boolean> processTranCB = new RetryingTransactionCallback<Boolean>()
+                // execute search
+                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, getQuery());
+                List<NodeRef> resultNodes = results.getNodeRefs();
+                results.close();
+                
+                if (logger.isDebugEnabled())
                 {
-                    public Boolean execute() throws Throwable
+                    logger.debug("Processing " + resultNodes.size() + " nodes");
+                }
+    
+                // process search results
+                for (NodeRef node : resultNodes)
+                {
+                    final NodeRef currentNode = node;
+    
+                    RetryingTransactionCallback<Boolean> processTranCB = new RetryingTransactionCallback<Boolean>()
                     {
-                        final String dispAction = (String) nodeService.getProperty(currentNode,
-                                    RecordsManagementModel.PROP_DISPOSITION_ACTION);
-
-                        // Run "retain" and "cutoff" actions.
-
-                        if (dispAction != null && (dispAction.equalsIgnoreCase("cutoff") ||
-                                dispAction.equalsIgnoreCase("retain")))
+                        public Boolean execute() throws Throwable
                         {
-                            ChildAssociationRef parent = nodeService.getPrimaryParent(currentNode);
-                            if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
+                            final String dispAction = (String) nodeService.getProperty(currentNode, RecordsManagementModel.PROP_DISPOSITION_ACTION);
+    
+                            // Run disposition action
+                            if (dispAction != null && dispositionActions.contains(dispAction))
                             {
-                                Map<String, Serializable> props = new HashMap<String, Serializable>(1);
-                                props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK, Boolean.FALSE);
-                                recordsManagementActionService.executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
-                                if (logger.isDebugEnabled())
+                                ChildAssociationRef parent = nodeService.getPrimaryParent(currentNode);
+                                if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
                                 {
-                                    logger.debug("Processed action: " + dispAction + "on" + parent);
+                                    Map<String, Serializable> props = new HashMap<String, Serializable>(1);
+                                    props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK, Boolean.FALSE);
+                                    
+                                    // execute disposition action
+                                    recordsManagementActionService.executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
+                                    
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        logger.debug("Processed action: " + dispAction + "on" + parent);
+                                    }
                                 }
                             }
-                            return null;
+                                
+                            return Boolean.TRUE;
                         }
-                        return Boolean.TRUE;
+                    };
+    
+                    // if exists
+                    if (nodeService.exists(currentNode))
+                    {
+                        retryingTransactionHelper.doInTransaction(processTranCB);
                     }
-                };
-
-                /**
-                 * Now do the work, one action in each transaction
-                 */
-
-                if (!nodeService.exists(currentNode))
-                {
-                    retryingTransactionHelper.doInTransaction(processTranCB);
                 }
             }
 

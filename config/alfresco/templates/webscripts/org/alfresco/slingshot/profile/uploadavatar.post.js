@@ -72,6 +72,14 @@ function main()
       // create the new image node
       var image = user.createNode(filename, "cm:content", "cm:preferenceImage");
       image.properties.content.write(content);
+      if (image.properties.content.getMimetype().indexOf("image/") != 0)
+      {
+         user.removeNode(image);
+         status.code = 500;
+         status.message = " Only image files are allowed for user avatar.";
+         status.redirect = true;
+         return;
+      }
       image.properties.content.guessMimetype(filename);
       image.properties.content.encoding = "UTF-8";
       image.save();

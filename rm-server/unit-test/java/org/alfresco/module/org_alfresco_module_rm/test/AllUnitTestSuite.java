@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.test;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HoldCapabilityConditionUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementTypeFormFilterUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServiceImplUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.job.DispositionLifecycleJobExecuterUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.FrozenEvaluatorUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.TransferEvaluatorUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrapUnitTest;
@@ -44,6 +45,7 @@ import org.junit.runners.Suite.SuiteClasses;
 {
     RecordMetadataBootstrapUnitTest.class,
     RecordsManagementTypeFormFilterUnitTest.class,
+    DispositionLifecycleJobExecuterUnitTest.class,
     
     // services
     RecordServiceImplUnitTest.class,

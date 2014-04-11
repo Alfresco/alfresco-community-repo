@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
@@ -38,11 +39,14 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -78,18 +82,21 @@ public class BaseUnitTest implements RecordsManagementModel
     protected NodeRef record;
     
     /** core service mocks */
-    @Mock(name="nodeService")           protected NodeService mockedNodeService; 
-    @Mock(name="dictionaryService")     protected DictionaryService mockedDictionaryService;
-    @Mock(name="namespaceService")      protected NamespaceService mockedNamespaceService; 
-    @Mock(name="identifierService")     protected IdentifierService mockedIdentifierService;
-    @Mock(name="permissionService")     protected PermissionService mockedPermissionService;
-    @Mock(name="ownableService")        protected OwnableService mockedOwnableService;
+    @Mock(name="nodeService")                   protected NodeService mockedNodeService; 
+    @Mock(name="dictionaryService")             protected DictionaryService mockedDictionaryService;
+    @Mock(name="namespaceService")              protected NamespaceService mockedNamespaceService; 
+    @Mock(name="identifierService")             protected IdentifierService mockedIdentifierService;
+    @Mock(name="permissionService")             protected PermissionService mockedPermissionService;
+    @Mock(name="ownableService")                protected OwnableService mockedOwnableService;
+    @Mock(name="searchService")                 protected SearchService mockedSearchService;
+    @Mock(name="retryingTransactionHelper")     protected RetryingTransactionHelper mockedRetryingTransactionHelper;
     
     /** rm service mocks */
-    @Mock(name="filePlanService")       protected FilePlanService mockedFilePlanService;
-    @Mock(name="recordFolderService")   protected RecordFolderService mockedRecordFolderService;
-    @Mock(name="recordService")         protected RecordService mockedRecordService;
-    @Mock(name="holdService")           protected HoldService mockedHoldService;
+    @Mock(name="filePlanService")               protected FilePlanService mockedFilePlanService;
+    @Mock(name="recordFolderService")           protected RecordFolderService mockedRecordFolderService;
+    @Mock(name="recordService")                 protected RecordService mockedRecordService;
+    @Mock(name="holdService")                   protected HoldService mockedHoldService;
+    @Mock(name="recordsManagementActionService") protected RecordsManagementActionService mockedRecordsManagementActionService;
     
     /** application context mock */
     @Mock(name="applicationContext")    protected ApplicationContext mockedApplicationContext;
@@ -101,6 +108,7 @@ public class BaseUnitTest implements RecordsManagementModel
     /**
      * Test method setup
      */
+    @SuppressWarnings("unchecked")
     @Before
     public void before()
     {
@@ -108,6 +116,19 @@ public class BaseUnitTest implements RecordsManagementModel
         
         // setup application context
         doReturn(mockedNodeService).when(mockedApplicationContext).getBean("nodeService");
+        
+        // setup retrying transaction helper
+        Answer<Object> doInTransactionAnswer = new Answer<Object>()
+        {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                RetryingTransactionCallback callback = (RetryingTransactionCallback)invocation.getArguments()[0];
+                return callback.execute();
+            }
+        };
+        doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).doInTransaction(any(RetryingTransactionCallback.class));
 
         // setup file plan 
         filePlan = generateNodeRef(TYPE_FILE_PLAN);
@@ -218,8 +239,21 @@ public class BaseUnitTest implements RecordsManagementModel
      */
     protected NodeRef generateNodeRef(QName type)
     {
+        return generateNodeRef(type, true);
+    }
+    
+    /**
+     * Helper method to generate a node reference of a particular type with a given existence characteristic.
+     * 
+     * @param type  content type qualified name
+     * @param exists indicates whether this node should behave like a node that exists or not
+     * @return {@link NodeRef}  node reference that behaves like a node that exists (or not) in the spaces store with
+     *                          the content type provided
+     */
+    protected NodeRef generateNodeRef(QName type, boolean exists)
+    {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
-        when(mockedNodeService.exists(eq(nodeRef))).thenReturn(true);
+        when(mockedNodeService.exists(eq(nodeRef))).thenReturn(exists);
         if (type != null)
         {
             when(mockedNodeService.getType(eq(nodeRef))).thenReturn(type);
@@ -293,5 +327,16 @@ public class BaseUnitTest implements RecordsManagementModel
             }
             
         }).when(service).runAs(any(RunAsWork.class), anyString());
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected <T> List<T> buildList(T ... values)
+    {
+        List<T> result = new ArrayList<T>(values.length);
+        for (T value : values)
+        {
+            result.add(value);
+        }
+        return result;
     }
 }

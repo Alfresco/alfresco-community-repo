@@ -1,0 +1,422 @@
+<alfresco-config>
+
+   <!-- Global config section -->
+   <config replace="true">
+      <flags>
+         <!--
+            Developer debugging setting to turn on DEBUG mode for client scripts in the browser
+         -->
+         <client-debug>false</client-debug>
+
+         <!--
+            LOGGING can always be toggled at runtime when in DEBUG mode (Ctrl, Ctrl, Shift, Shift).
+            This flag automatically activates logging on page load.
+         -->
+         <client-debug-autologging>false</client-debug-autologging>
+      </flags>
+   </config>
+   
+   <config evaluator="string-compare" condition="WebFramework">
+      <web-framework>
+         <!-- SpringSurf Autowire Runtime Settings -->
+         <!-- 
+              Developers can set mode to 'development' to disable; SpringSurf caches,
+              FreeMarker template caching and Rhino JavaScript compilation.
+         -->
+         <autowire>
+            <!-- Pick the mode: "production" or "development" -->
+            <mode>production</mode>
+         </autowire>
+
+         <!-- Allows extension modules with <auto-deploy> set to true to be automatically deployed -->
+         <module-deployment>
+            <mode>manual</mode>
+            <enable-auto-deploy-modules>true</enable-auto-deploy-modules>
+         </module-deployment>
+      </web-framework>
+   </config>
+
+   <!-- Disable the CSRF Token Filter -->
+   <!--
+   <config evaluator="string-compare" condition="CSRFPolicy" replace="true">
+      <filter/>
+   </config>
+   -->
+
+   <!--
+      To run the CSRF Token Filter behind 1 or more proxies that do not rewrite the Origin or Referere headers:
+
+      1. Copy the "CSRFPolicy" default config in share-security-config.xml and paste it into this file.
+      2. Replace the old config by setting the <config> element's "replace" attribute to "true" like below:
+         <config evaluator="string-compare" condition="CSRFPolicy" replace="true">
+      3. To every <action name="assertReferer"> element add the following child element
+         <param name="referer">http://www.proxy1.com/.*|http://www.proxy2.com/.*</param>
+      4. To every <action name="assertOrigin"> element add the following child element
+         <param name="origin">http://www.proxy1.com|http://www.proxy2.com</param>
+   -->
+
+   <!--
+      Remove the default wildcard setting and use instead a strict whitelist of the only domains that shall be allowed
+      to be used inside iframes (i.e. in the WebView dashlet on the dashboards)
+   -->
+   <!--
+   <config evaluator="string-compare" condition="IFramePolicy" replace="true">
+      <cross-domain>
+         <url>http://www.trusted-domain-1.com/</url>
+         <url>http://www.trusted-domain-2.com/</url>
+      </cross-domain>
+   </config>
+   -->
+
+   <!-- Turn off header that stops Share from being displayed in iframes on pages from other domains -->
+   <!--
+   <config evaluator="string-compare" condition="SecurityHeadersPolicy">
+      <headers>
+         <header>
+            <name>X-Frame-Options</name>
+            <enabled>false</enabled>
+         </header>
+      </headers>
+   </config>
+   -->
+
+   <!-- Prevent browser communication over HTTP (for HTTPS servers) -->
+   <!--
+   <config evaluator="string-compare" condition="SecurityHeadersPolicy">
+      <headers>
+         <header>
+            <name>Strict-Transport-Security</name>
+            <value>max-age=31536000</value>
+         </header>
+      </headers>
+   </config>
+   -->
+
+   <config evaluator="string-compare" condition="Replication">
+      <share-urls>
+         <!--
+            To discover a Repository Id, browse to the remote server's CMIS landing page at:
+              http://{server}:{port}/alfresco/service/cmis/index.html
+            The Repository Id field is found under the "CMIS Repository Information" expandable panel.
+
+            Example config entry:
+              <share-url repositoryId="622f9533-2a1e-48fe-af4e-ee9e41667ea4">http://new-york-office:8080/share/</share-url>
+         -->
+      </share-urls>
+   </config>
+
+   <!-- Document Library config section -->
+   <config evaluator="string-compare" condition="DocumentLibrary" replace="true">
+
+      <tree>
+         <!--
+            Whether the folder Tree component should enumerate child folders or not.
+            This is a relatively expensive operation, so should be set to "false" for Repositories with broad folder structures.
+         -->
+         <evaluate-child-folders>false</evaluate-child-folders>
+         
+         <!--
+            Optionally limit the number of folders shown in treeview throughout Share.
+         -->
+         <maximum-folder-count>1000</maximum-folder-count>
+         
+         <!--  
+            Default timeout in milliseconds for folder Tree component to recieve response from Repository
+         -->
+         <timeout>7000</timeout>
+      </tree>
+
+      <!--
+         Used by the "Manage Aspects" action
+
+         For custom aspects, remember to also add the relevant i18n string(s)
+            cm_myaspect=My Aspect
+      -->
+      <aspects>
+         <!-- Aspects that a user can see -->
+         <visible>
+            <aspect name="cm:generalclassifiable" />
+            <aspect name="cm:complianceable" />
+            <aspect name="cm:dublincore" />
+            <aspect name="cm:effectivity" />
+            <aspect name="cm:summarizable" />
+            <aspect name="cm:versionable" />
+            <aspect name="cm:templatable" />
+            <aspect name="cm:emailed" />
+            <aspect name="emailserver:aliasable" />
+            <aspect name="cm:taggable" />
+            <aspect name="app:inlineeditable" />
+            <aspect name="gd:googleEditable" />
+            <aspect name="cm:geographic" />
+            <aspect name="exif:exif" />
+            <aspect name="audio:audio" />
+            <aspect name="cm:indexControl" />
+            <aspect name="dp:restrictable" />
+         </visible>
+
+         <!-- Aspects that a user can add. Same as "visible" if left empty -->
+         <addable>
+         </addable>
+
+         <!-- Aspects that a user can remove. Same as "visible" if left empty -->
+         <removeable>
+         </removeable>
+      </aspects>
+
+      <!--
+         Used by the "Change Type" action
+
+         Define valid subtypes using the following example:
+            <type name="cm:content">
+               <subtype name="cm:mysubtype" />
+            </type>
+
+         Remember to also add the relevant i18n string(s):
+            cm_mysubtype=My SubType
+      -->
+      <types>
+         <type name="cm:content">
+         </type>
+
+         <type name="cm:folder">
+         </type>
+ 
+         <type name="trx:transferTarget">
+            <subtype name="trx:fileTransferTarget" />
+         </type>
+      </types>
+
+      <!--
+         If set, will present a WebDAV link for the current item on the Document and Folder details pages.
+         Also used to generate the "View in Alfresco Explorer" action for folders.
+      -->
+      <repository-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco</repository-url>
+
+      <!--
+         Google Docs™ integration
+      -->
+      <google-docs>
+         <!--
+            Enable/disable the Google Docs UI integration (Extra types on Create Content menu, Google Docs actions).
+         -->
+         <enabled>false</enabled>
+
+         <!--
+            The mimetypes of documents Google Docs allows you to create via the Share interface.
+            The I18N label is created from the "type" attribute, e.g. google-docs.doc=Google Docs&trade; Document
+         -->
+         <creatable-types>
+            <creatable type="doc">application/msword</creatable>
+            <creatable type="xls">application/vnd.ms-excel</creatable>
+            <creatable type="ppt">application/vnd.ms-powerpoint</creatable>
+         </creatable-types>
+      </google-docs>
+
+      <!--
+         File upload configuration
+      -->
+      <file-upload>
+         <!--
+            Adobe Flash™
+            In certain environments, an HTTP request originating from Flash cannot be authenticated using an existing session.
+            See: http://bugs.adobe.com/jira/browse/FP-4830
+            For these cases, it is useful to disable the Flash-based uploader for Share Document Libraries.
+         -->
+         <adobe-flash-enabled>true</adobe-flash-enabled>
+      </file-upload>
+   </config>
+
+
+   <!-- Custom DocLibActions config section -->
+   <config evaluator="string-compare" condition="DocLibActions">
+      <actionGroups>
+         <actionGroup id="document-browse">
+
+            <!-- Simple Repo Actions -->
+            <!--
+            <action index="340" id="document-extract-metadata" />
+            <action index="350" id="document-increment-counter" />
+            -->
+
+            <!-- Dialog Repo Actions -->
+            <!--
+            <action index="360" id="document-transform" />
+            <action index="370" id="document-transform-image" />
+            <action index="380" id="document-execute-script" />
+            -->
+
+         </actionGroup>
+      </actionGroups>
+   </config>
+
+   <!-- Global folder picker config section -->
+   <config evaluator="string-compare" condition="GlobalFolder">
+      <siteTree>
+         <container type="cm:folder">
+            <!-- Use a specific label for this container type in the tree -->
+            <rootLabel>location.path.documents</rootLabel>
+            <!-- Use a specific uri to retreive the child nodes for this container type in the tree -->
+            <uri>slingshot/doclib/treenode/site/{site}/{container}{path}?children={evaluateChildFoldersSite}&amp;max={maximumFolderCountSite}</uri>
+         </container>
+      </siteTree>
+   </config>
+
+   <!-- Repository Library config section -->
+   <config evaluator="string-compare" condition="RepositoryLibrary" replace="true">
+      <!--
+         Root nodeRef or xpath expression for top-level folder.
+         e.g. alfresco://user/home, /app:company_home/st:sites/cm:site1
+         If using an xpath expression, ensure it is properly ISO9075 encoded here.
+      -->
+      <root-node>alfresco://company/home</root-node>
+
+      <tree>
+         <!--
+            Whether the folder Tree component should enumerate child folders or not.
+            This is a relatively expensive operation, so should be set to "false" for Repositories with broad folder structures.
+         -->
+         <evaluate-child-folders>false</evaluate-child-folders>
+         
+         <!--
+            Optionally limit the number of folders shown in treeview throughout Share.
+         -->
+         <maximum-folder-count>500</maximum-folder-count>
+      </tree>
+
+      <!--
+         Whether the link to the Repository Library appears in the header component or not.
+      -->
+      <visible>true</visible>
+   </config>
+   
+   <!-- Kerberos settings -->
+   <!-- To enable kerberos rename this condition to "Kerberos" -->
+   <config evaluator="string-compare" condition="KerberosDisabled" replace="true">
+      <kerberos>
+         <!--
+            Password for HTTP service account.
+            The account name *must* be built from the HTTP server name, in the format :
+               HTTP/<server_name>@<realm>
+            (NB this is because the web browser requests an ST for the
+            HTTP/<server_name> principal in the current realm, so if we're to decode
+            that ST, it has to match.)
+         -->
+         <password>secret</password>
+         <!--
+            Kerberos realm and KDC address.
+         -->
+         <realm>ALFRESCO.ORG</realm>
+         <!--
+            Service Principal Name to use on the repository tier.
+            This must be like: HTTP/host.name@REALM
+         -->
+         <endpoint-spn>HTTP/repository.server.com@ALFRESCO.ORG</endpoint-spn>
+         <!--
+            JAAS login configuration entry name.
+         -->
+         <config-entry>ShareHTTP</config-entry>
+      </kerberos>
+   </config>
+
+   <!-- Uncomment and modify the URL to Activiti Admin Console if required. -->
+   <!--
+   <config evaluator="string-compare" condition="ActivitiAdmin" replace="true">
+      <activiti-admin-url>http://localhost:8080/alfresco/activiti-admin</activiti-admin-url>
+   </config>
+   -->
+
+   <config evaluator="string-compare" condition="Remote">
+      <remote>
+         <endpoint>
+            <id>alfresco-noauth</id>
+            <name>Alfresco - unauthenticated access</name>
+            <description>Access to Alfresco Repository WebScripts that do not require authentication</description>
+            <connector-id>alfresco</connector-id>
+            <endpoint-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco/s</endpoint-url>
+            <identity>none</identity>
+         </endpoint>
+
+         <endpoint>
+            <id>alfresco</id>
+            <name>Alfresco - user access</name>
+            <description>Access to Alfresco Repository WebScripts that require user authentication</description>
+            <connector-id>alfresco</connector-id>
+            <endpoint-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco/s</endpoint-url>
+            <identity>user</identity>
+         </endpoint>
+
+         <endpoint>
+            <id>alfresco-feed</id>
+            <name>Alfresco Feed</name>
+            <description>Alfresco Feed - supports basic HTTP authentication via the EndPointProxyServlet</description>
+            <connector-id>http</connector-id>
+            <endpoint-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco/s</endpoint-url>
+            <basic-auth>true</basic-auth>
+            <identity>user</identity>
+         </endpoint>
+         
+         <endpoint>
+            <id>activiti-admin</id>
+            <name>Activiti Admin UI - user access</name>
+            <description>Access to Activiti Admin UI, that requires user authentication</description>
+            <connector-id>activiti-admin-connector</connector-id>
+            <endpoint-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco/activiti-admin</endpoint-url>
+            <identity>user</identity>
+         </endpoint>
+      </remote>
+   </config>
+
+   <!-- 
+        Overriding endpoints to reference an Alfresco server with external SSO enabled
+        NOTE: If utilising a load balancer between web-tier and repository cluster, the "sticky
+              sessions" feature of your load balancer must be used.
+        NOTE: If alfresco server location is not localhost:8080 then also combine changes from the
+              "example port config" section below.
+        *Optional* keystore contains SSL client certificate + trusted CAs.
+        Used to authenticate share to an external SSO system such as CAS
+        Remove the keystore section if not required i.e. for NTLM.
+        
+        NOTE: For Kerberos SSO rename the "KerberosDisabled" condition above to "Kerberos"
+        
+        NOTE: For external SSO, switch the endpoint connector to "AlfrescoHeader" and set
+              the userHeader to the name of the HTTP header that the external SSO
+              uses to provide the authenticated user name.
+   -->
+   <!--
+   <config evaluator="string-compare" condition="Remote">
+      <remote>
+         <keystore>
+             <path>alfresco/web-extension/alfresco-system.p12</path>
+             <type>pkcs12</type>
+             <password>alfresco-system</password>
+         </keystore>
+         
+         <connector>
+            <id>alfrescoCookie</id>
+            <name>Alfresco Connector</name>
+            <description>Connects to an Alfresco instance using cookie-based authentication</description>
+            <class>org.alfresco.web.site.servlet.SlingshotAlfrescoConnector</class>
+         </connector>
+         
+         <connector>
+            <id>alfrescoHeader</id>
+            <name>Alfresco Connector</name>
+            <description>Connects to an Alfresco instance using header and cookie-based authentication</description>
+            <class>org.alfresco.web.site.servlet.SlingshotAlfrescoConnector</class>
+            <userHeader>SsoUserHeader</userHeader>
+         </connector>
+
+         <endpoint>
+            <id>alfresco</id>
+            <name>Alfresco - user access</name>
+            <description>Access to Alfresco Repository WebScripts that require user authentication</description>
+            <connector-id>alfrescoCookie</connector-id>
+            <endpoint-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco/wcs</endpoint-url>
+            <identity>user</identity>
+            <external-auth>true</external-auth>
+         </endpoint>
+      </remote>
+   </config>
+   -->
+   
+</alfresco-config>

@@ -1,0 +1,79 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>warinstallation</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+
+    <fileSets>
+        <!-- Local resources: README, etc. -->
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <outputDirectory></outputDirectory>
+            <filtered>true</filtered>
+        </fileSet>
+        <!-- Licenses -->
+        <fileSet>
+            <directory>../../installer/bitrock/licenses</directory>
+            <outputDirectory>licenses</outputDirectory>
+        </fileSet>
+        <!-- Win32NetBIOS*.dll, Win32Utils*.dll -->
+        <fileSet>
+            <directory>../../projects/alfresco-jlan/jni</directory>
+            <outputDirectory>bin</outputDirectory>
+        </fileSet>
+    </fileSets>
+
+    <dependencySets>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>bin</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:alfresco-mmt</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>web-server/webapps</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:*:war</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>web-server/endorsed</outputDirectory>
+            <includes>
+                <include>xalan:*</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>web-server/lib</outputDirectory>
+            <includes>
+                <include>org.postgresql:*</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>web-server/shared/classes</outputDirectory>
+            <includes>
+                <include>org.alfresco:*:jar</include>
+            </includes>
+            <unpack>true</unpack>
+            <unpackOptions>
+                <includes>
+                    <include>alfresco/extension/**</include>
+                    <include>alfresco-global.properties.sample</include>
+                </includes>
+            </unpackOptions>
+        </dependencySet>
+    </dependencySets>
+
+</assembly>

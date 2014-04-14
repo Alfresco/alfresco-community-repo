@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                http://www.hazelcast.com/schema/spring
+                http://www.hazelcast.com/schema/spring/hazelcast-spring-2.4.xsd">
+   
+   <!--
+        Hazelcast distributed messaging configuration - Share web-tier cluster config (3.4.8 and 4.0.1)
+        - see http://www.hazelcast.com/docs.jsp
+        - and specifically http://www.hazelcast.com/docs/1.9.4/manual/single_html/#SpringIntegration
+   -->
+   <!-- Configure cluster to use either Multicast or direct TCP-IP messaging - multicast is default -->
+   <!-- Optionally specify network interfaces - server machines likely to have more than one interface -->
+   <!-- The messaging topic - the "name" is also used by the persister config below -->
+   <!--
+   <hz:topic id="topic" instance-ref="webframework.cluster.slingshot" name="slingshot-topic"/>
+   <hz:hazelcast id="webframework.cluster.slingshot">
+      <hz:config>
+         <hz:group name="slingshot" password="alfresco"/>
+         <hz:network port="5801" port-auto-increment="true">
+            <hz:join>
+               <hz:multicast enabled="true"
+                     multicast-group="224.2.2.5"
+                     multicast-port="54327"/>
+               <hz:tcp-ip enabled="false">
+                  <hz:members></hz:members>
+               </hz:tcp-ip>
+            </hz:join>
+            <hz:interfaces enabled="false">
+               <hz:interface>192.168.1.*</hz:interface>
+            </hz:interfaces>
+         </hz:network>
+      </hz:config>
+   </hz:hazelcast>
+   
+   <bean id="webframework.slingshot.persister.remote" class="org.alfresco.web.site.ClusterAwarePathStoreObjectPersister" parent="webframework.sitedata.persister.abstract">
+      <property name="store" ref="webframework.webapp.store.remote" />
+      <property name="pathPrefix"><value>alfresco/site-data/${objectTypeIds}</value></property>
+      <property name="hazelcastInstance" ref="webframework.cluster.slingshot" />
+      <property name="hazelcastTopicName"><value>slingshot-topic</value></property>
+   </bean>
+   
+   <bean id="webframework.factory.requestcontext.servlet" class="org.alfresco.web.site.ClusterAwareRequestContextFactory" parent="webframework.factory.base">
+      <property name="linkBuilderFactory" ref="webframework.factory.linkbuilder.servlet" />
+      <property name="extensibilityModuleHandler" ref="webscripts.extensibility.handler" />
+      <property name="dependencyHandler" ref="dependency.handler" />
+      <property name="clusterObjectPersister" ref="webframework.slingshot.persister.remote" />
+   </bean>
+   -->
+   
+   
+   <!-- Legacy Share web-tier cluster config (3.4.7 and 4.0.0) -->
+   <!--
+   <bean id="webframework.slingshot.persister.remote" class="org.springframework.extensions.surf.persister.PathStoreObjectPersister" parent="webframework.sitedata.persister.abstract">
+      <property name="store" ref="webframework.webapp.store.remote" />
+      <property name="pathPrefix"><value>alfresco/site-data/${objectTypeIds}</value></property>
+      <property name="noncachableObjectTypes">
+         <set>
+            <value>page</value>
+            <value>component</value>
+            <value>configuration</value>
+         </set>
+      </property>
+   </bean>
+   -->
+   
+   
+   <!-- Override WebScripts searchpath - to include remote store -->
+   <!-- This enables remote component load via a central Alfresco server -->
+   <!--
+   <bean id="webframework.webscripts.store.alfresco.remote" parent="webframework.store.remote.abstract">
+      <property name="path"><value>alfresco/site-webscripts</value></property>
+   </bean>
+   <bean id="webframework.webscripts.searchpath" class="org.springframework.extensions.webscripts.SearchPath">
+      <property name="searchPath">
+         <list>
+            <ref bean="webframework.webscripts.store.alfresco.remote" />
+            <ref bean="webframework.webscripts.store.alfresco.custom" />
+            <ref bean="webframework.webscripts.store.alfresco.classpath" />
+            <ref bean="webframework.webscripts.store.classpath" />
+            <ref bean="webscripts.store.alfresco" />
+            <ref bean="webscripts.store" />
+         </list>
+      </property>
+   </bean>
+   -->
+   
+   <!-- Override Templates and Scripts searchpath - to include remote store -->
+   <!-- This enables remote component load via a central Alfresco server -->
+   <!--
+   <bean id="webframework.templates.store.alfresco.remote" parent="webframework.store.remote.abstract">
+      <property name="path"><value>alfresco/templates</value></property>
+   </bean>
+   <bean id="webframework.templates.searchpath" class="org.springframework.extensions.webscripts.SearchPath">
+      <property name="searchPath">
+         <list>
+            <ref bean="webframework.templates.store.alfresco.remote" />
+            <ref bean="webframework.templates.store.alfresco.custom" />
+            <ref bean="webframework.webscripts.store.alfresco.custom" />
+            <ref bean="webframework.templates.store.alfresco.classpath" />
+            <ref bean="webframework.webscripts.store.alfresco.classpath" />
+            <ref bean="webframework.templates.store.classpath" />
+            <ref bean="webframework.webscripts.store.classpath" />
+         </list>
+      </property>
+   </bean>
+   -->
+
+</beans>

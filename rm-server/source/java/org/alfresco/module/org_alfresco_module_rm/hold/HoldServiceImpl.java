@@ -432,7 +432,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#addToHolds(java.util.List, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public void addToHolds(List<NodeRef> holds, NodeRef nodeRef)
+    public void addToHolds(final List<NodeRef> holds, final NodeRef nodeRef)
     {
         ParameterCheck.mandatoryCollection("holds", holds);
         ParameterCheck.mandatory("nodeRef", nodeRef);
@@ -442,7 +442,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             throw new AlfrescoRuntimeException("Can only add records or record folders to a hold.");
         }
 
-        for (NodeRef hold : holds)
+        for (final NodeRef hold : holds)
         {
             if (!isHold(hold))
             {
@@ -452,47 +452,57 @@ public class HoldServiceImpl extends ServiceBaseImpl
             // check that the node isn't already in the hold
             if (!getHeld(hold).contains(nodeRef))
             {
-                // Link the record to the hold
-                nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
-
-                // gather freeze properties
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
-                props.put(PROP_FROZEN_AT, new Date());
-                props.put(PROP_FROZEN_BY, AuthenticationUtil.getFullyAuthenticatedUser());
-
-                if (!nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
+                // run as system to ensure we have all the appropriate premissions to perform the manipulations we require
+                runAsSystem(new RunAsWork<Void>() 
                 {
-                    // add freeze aspect
-                    nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
-
-                    if (logger.isDebugEnabled())
+                    @Override
+                    public Void doWork() throws Exception
                     {
-                        StringBuilder msg = new StringBuilder();
-                        msg.append("Frozen aspect applied to '").append(nodeRef).append("'.");
-                        logger.debug(msg.toString());
-                    }
-                }
+                        // Link the record to the hold
+                        nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
 
-                // Mark all the folders contents as frozen
-                if (isRecordFolder(nodeRef))
-                {
-                    List<NodeRef> records = recordService.getRecords(nodeRef);
-                    for (NodeRef record : records)
-                    {
-                        // no need to freeze if already frozen!
-                        if (!nodeService.hasAspect(record, ASPECT_FROZEN))
+                        // gather freeze properties
+                        Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
+                        props.put(PROP_FROZEN_AT, new Date());
+                        props.put(PROP_FROZEN_BY, AuthenticationUtil.getFullyAuthenticatedUser());
+
+                        if (!nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
                         {
-                            nodeService.addAspect(record, ASPECT_FROZEN, props);
+                            // add freeze aspect
+                            nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
 
                             if (logger.isDebugEnabled())
                             {
                                 StringBuilder msg = new StringBuilder();
-                                msg.append("Frozen aspect applied to '").append(record).append("'.");
+                                msg.append("Frozen aspect applied to '").append(nodeRef).append("'.");
                                 logger.debug(msg.toString());
                             }
                         }
+
+                        // Mark all the folders contents as frozen
+                        if (isRecordFolder(nodeRef))
+                        {
+                            List<NodeRef> records = recordService.getRecords(nodeRef);
+                            for (NodeRef record : records)
+                            {
+                                // no need to freeze if already frozen!
+                                if (!nodeService.hasAspect(record, ASPECT_FROZEN))
+                                {
+                                    nodeService.addAspect(record, ASPECT_FROZEN, props);
+
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        StringBuilder msg = new StringBuilder();
+                                        msg.append("Frozen aspect applied to '").append(record).append("'.");
+                                        logger.debug(msg.toString());
+                                    }
+                                }
+                            }
+                        }
+                        
+                        return null;
                     }
-                }
+                });
             }
         }
     }

@@ -1,0 +1,114 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-packaging</artifactId>
+        <version>4.3.0-BF-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>alfresco-installer</artifactId>
+    <packaging>pom</packaging>
+    <name>Alfresco Installer packaging</name>
+
+    <properties>
+        <binaries.folder>${user.home}/binaries</binaries.folder>
+        <bitrock.folder>${binaries.folder}/bitrock/bitrock-8.5.1-20121129</bitrock.folder>
+        <bitrock.builder>${bitrock.folder}/linux/bin/builder</bitrock.builder>
+    </properties>
+
+    <dependencies>
+        <!-- WAR files -->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-distribution</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>get-distribution</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-distribution</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>get-googledocs</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco.integrations</groupId>
+                                    <artifactId>alfresco-googledocs-repo</artifactId>
+                                    <version>${alfresco.googledocs.version}</version>
+                                    <type>amp</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco.integrations</groupId>
+                                    <artifactId>alfresco-googledocs-share</artifactId>
+                                    <version>${alfresco.googledocs.version}</version>
+                                    <type>amp</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>get-distribution</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>${bitrock.builder}</executable>
+                    <workingDirectory>${basedir}/../../installer/bitrock</workingDirectory>
+                    <arguments>
+                        <argument>build</argument>
+                        <argument>project.xml</argument>
+                        <argument>linux-x64</argument>
+                        <argument>--license</argument>
+                        <argument>${binaries.folder}/build-classpath/license.xml</argument>
+                        <argument>--setvars</argument>
+                        <argument>project.outputDirectory=${project.build.directory}</argument>
+                        <argument>project.version=${project.version}</argument>
+                        <argument>project.fullName=Alfresco Community</argument>
+                        <argument>alfresco_svn_rootdir=${basedir}/../..</argument>
+                        <argument>alfresco_edition=community</argument>
+                        <argument>project.installerFilename=alfresco-community-${project.version}-linux-x64.bin</argument>
+                        <argument>binaries_folder=${binaries.folder}/bitrock/binaries-linux-x64</argument>
+                        <argument>alfresco_googledocs_source_file=${project.build.directory}/dependency/alfresco-googledocs-repo-${alfresco.googledocs.version}.amp</argument>
+                        <argument>alfresco_googledocs_share_source_file=${project.build.directory}/dependency/alfresco-googledocs-share-${alfresco.googledocs.version}.amp</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

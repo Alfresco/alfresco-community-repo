@@ -32,5 +32,73 @@
          <arg value="-Dtest=AllUnitTestSuite" />
       </exec>
    </target>
+	   
+   <target name="fetchSOLR">
+      <xmlproperty file="../pom.xml" keepRoot="false"/>
+      <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="dependency:get" />
+         <arg value="-DgroupId=${groupId}" />
+         <arg value="-DartifactId=${solr.artifactId}" />
+         <arg value="-Dversion=${properties.alfresco.base.version}" />
+         <arg value="-Dpackaging=${solr.packaging}" />
+         <arg value="-Ddest=${solr.directory}/${solr.package}" />
+      </exec>
+   	  <unzip src="${solr.directory}/${solr.package}" dest="${solr.directory}"/>
+   </target>
+	
+   <target name="configure-solr" depends="fetchSOLR" 
+	       description="Configures Tomcat and the Alfresco repository to use SOLR">
+   	
+   	  <dirname property="temp.dir" file="${ant.file}"/>
+   	  <pathconvert property="base.dir" targetos="unix">
+   	     <path location="${temp.dir}"/>
+   	  </pathconvert>	
+   	
+   	  <property name="data.root" value="${base.dir}/../../data" />
+   	  <property name="solr.root" value="${base.dir}/${solr.directory}" />
+   	
+   	  <mkdir dir="${data.root}/solr-index"/>
+   	
+   	   <!-- copy SOLR config files -->
+	  <copy file="${solr.directory}/context.xml"
+	        tofile="${app.tomcat.folder}/conf/Catalina/localhost/solr.xml" />
+	  <replace file="${app.tomcat.folder}/conf/Catalina/localhost/solr.xml" summary="yes">
+	     <replacefilter token="@@ALFRESCO_SOLR_DIR@@" value="${solr.root}" />
+      </replace>    
+   	
+   	  <replace file="${solr.directory}/archive-SpacesStore/conf/solrcore.properties" summary="yes">
+   	     <replacefilter token="@@ALFRESCO_SOLR_DIR@@" value="${data.root}/solr-index" />
+   	  </replace>
+   	
+   	  <replace file="${solr.directory}/workspace-SpacesStore/conf/solrcore.properties" summary="yes">
+   		 <replacefilter token="@@ALFRESCO_SOLR_DIR@@" value="${data.root}/solr-index" />
+   	  </replace>
+   	
+   	  <!-- copy keystore files -->
+   	  <copy todir="${data.root}/keystore">
+   	     <fileset dir="${solr.directory}/alf_data/keystore" />
+      </copy>
+   	
+   	  <!-- setup Tomcat SSL connector -->
+   	  <!-- NOTE: indentation of the replacevalue below is intentional, it matches formatting in destination file -->
+   	  <replace file="${app.tomcat.folder}/conf/server.xml" summary="yes">
+   	     <replacetoken><![CDATA[<!-- Alfresco SSL Connector placeholder -->]]></replacetoken>
+   		 <replacevalue><![CDATA[
+   		    <Connector port="8443" protocol="org.apache.coyote.http11.Http11Protocol" SSLEnabled="true"
+   		               maxThreads="150" scheme="https" keystoreFile="../../data/keystore/ssl.keystore" 
+   		               keystorePass="kT9X6oe68t" keystoreType="JCEKS"
+   		               secure="true" connectionTimeout="240000" 
+   		               truststoreFile="../../data/keystore/ssl.truststore" 
+   		               truststorePass="kT9X6oe68t" truststoreType="JCEKS"
+   		               clientAuth="want" sslProtocol="TLS" allowUnsafeLegacyRenegotiation="true" maxHttpHeaderSize="32768" />]]></replacevalue>
+       </replace>
+   	
+   	  <!-- update project repository.properties file with SOLR properties -->
+   	  <propertyfile file="${data.root}/repository.properties">
+   	     <entry key="dir.keystore" value="${data.root}/keystore" />
+   		 <entry key="index.subsystem.name"  value="solr" />
+   	  </propertyfile>
+	      
+   </target>
 	
 </project>

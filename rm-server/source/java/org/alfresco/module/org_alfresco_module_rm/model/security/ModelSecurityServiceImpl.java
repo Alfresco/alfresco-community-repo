@@ -288,7 +288,7 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
             throw new ModelAccessDeniedException(
                     "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
                     " does not have the permission to add the protected aspect " + aspect.toPrefixString(namespaceService) +
-                    " from the node " + nodeRef.toString());
+                    " to the node " + nodeRef.toString());
         }
     }
 

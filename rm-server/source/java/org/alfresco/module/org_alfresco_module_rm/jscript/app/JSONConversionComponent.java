@@ -21,15 +21,19 @@ package org.alfresco.module.org_alfresco_module_rm.jscript.app;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PathUtil;
+import org.apache.commons.lang.ArrayUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -119,6 +123,46 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
             if (isFilePlanComponent)
             {
                 rootJSONObject.put("rmNode", setRmNodeValues(nodeRef, useShortQNames));
+
+                // FIXME: Is this the right place to add the information?
+                addInfo(nodeInfo, rootJSONObject);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addInfo(FileInfo nodeInfo, JSONObject rootJSONObject)
+    {
+        String itemType = (String) rootJSONObject.get("type");
+        String typeContent = ContentModel.TYPE_CONTENT.toPrefixString(namespaceService);
+        if (itemType.equals(typeContent))
+        {
+            NodeRef nodeRef = nodeInfo.getNodeRef();
+            List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
+
+            NodeRef originatingLocation = null;
+            for (ChildAssociationRef parent : parentAssocs)
+            {
+                // FIXME: What if there is more than a secondary parent?
+                if (!parent.isPrimary())
+                {
+                    originatingLocation = parent.getParentRef();
+                    break;
+                }
+            }
+
+            if (originatingLocation != null)
+            {
+                String pathSeparator = "/";
+                String displayPath = PathUtil.getDisplayPath(nodeService.getPath(originatingLocation), true);
+                String[] displayPathElements = displayPath.split(pathSeparator);
+                Object[] subPath = ArrayUtils.subarray(displayPathElements, 5, displayPathElements.length);
+                StringBuffer originatingLocationPath = new StringBuffer();
+                for (int i = 0; i < subPath.length; i++)
+                {
+                    originatingLocationPath.append(pathSeparator).append(subPath[i]);
+                }
+                rootJSONObject.put("originatingLocationPath", originatingLocationPath.toString());
             }
         }
     }

@@ -29,7 +29,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class EventCompletionDetails
 {
+    /** node reference */
     private NodeRef nodeRef;
+    
+    /** event name */
     private String eventName;
     private String eventLabel;
     private boolean eventExecutionAutomatic;
@@ -39,13 +42,15 @@ public class EventCompletionDetails
 
 
     /**
-     * @param nodeRef
-     * @param eventName
-     * @param eventLabel
-     * @param eventExecutionAutomatic
-     * @param eventComplete
-     * @param eventCompletedAt
-     * @param eventCompletedBy
+     * Constructor
+     * 
+     * @param nodeRef                   node reference
+     * @param eventName                 event name
+     * @param eventLabel                event label
+     * @param eventExecutionAutomatic   indicates whether the event is executed automatically or not
+     * @param eventComplete             indicates whether the event is complete or not
+     * @param eventCompletedAt          when the event was completed
+     * @param eventCompletedBy          who completed the event
      */
     public EventCompletionDetails(  NodeRef nodeRef,
                                     String eventName,

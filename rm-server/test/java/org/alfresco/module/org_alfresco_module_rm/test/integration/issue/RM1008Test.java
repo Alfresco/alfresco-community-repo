@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test.issue;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -38,7 +38,7 @@ import org.alfresco.util.GUID;
 
 
 /**
- * System test for RM-1008
+ * Test for RM-1008
  *
  * @author Roy Wetherall
  * @since 2.1

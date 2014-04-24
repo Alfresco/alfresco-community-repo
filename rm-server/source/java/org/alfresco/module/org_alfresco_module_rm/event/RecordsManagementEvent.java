@@ -18,15 +18,18 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.event;
 
+import org.alfresco.util.ParameterCheck;
+
 /**
  * Records management event 
  * 
  * @author Roy Wetherall
+ * @since 1.0
  */
 public class RecordsManagementEvent
 { 
     /** Records management event type */
-    private String type;
+    private RecordsManagementEventType type;
     
     /** Records management event name */
     private String name;
@@ -41,21 +44,37 @@ public class RecordsManagementEvent
      * @param name          event name
      * @param displayLabel  event display label
      */
-    public RecordsManagementEvent(String type, String name, String displayLabel)
+    public RecordsManagementEvent(RecordsManagementEventType type, String name, String displayLabel)
     {
+        ParameterCheck.mandatory("type", type);
+        ParameterCheck.mandatory("name", name);
+        ParameterCheck.mandatory("displayLabel", displayLabel);
+        
         this.type =  type;
         this.name = name;
         this.displayLabel = displayLabel;
     }
     
     /**
-     * Get records management type
+     * Get records management type name
      * 
-     * @return  String records management type
+     * @return  String records management event type name
      */
     public String getType()
     {
-        return this.type;
+        return type.getName();
+    }
+    
+    /**
+     * Get the records management event type.
+     * 
+     * @return {@link RecordsManagementEventType}   records management event type 
+     * 
+     * @since 2.2
+     */
+    public RecordsManagementEventType getRecordsManagementEventType()
+    {
+        return type;
     }
     
     /**

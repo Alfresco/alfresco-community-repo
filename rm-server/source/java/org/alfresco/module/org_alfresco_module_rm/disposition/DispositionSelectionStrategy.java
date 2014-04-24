@@ -98,10 +98,7 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
         	else
         	{
 	            SortedSet<NodeRef> sortedFolders = new TreeSet<NodeRef>(new DispositionableNodeRefComparator());
-	            for (NodeRef f : recordFolders)
-	            {
-	                sortedFolders.add(f);
-	            }
+	            sortedFolders.addAll(recordFolders);
 	            recordFolder = sortedFolders.first();
         	}
 
@@ -137,16 +134,39 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
             {
                 public Integer doWork() throws Exception
                 {
-                    return Integer.valueOf(compareImpl(f1, f2));
+                    return compareImpl(f1, f2);
                 }
 
-            }).intValue();
+            });
         }
 
         private int compareImpl(NodeRef f1, NodeRef f2)
         {
-            //TODO Check the nodeRefs have the correct aspect
+            // quick check to see if the node references are the same
+            if (f1.equals(f2))
+            {
+                return 0;
+            }
+            
+            // get the disposition schedules for the folders
+            DispositionSchedule ds1 = dispositionService.getDispositionSchedule(f1);
+            DispositionSchedule ds2 = dispositionService.getDispositionSchedule(f2);
+            
+            // make sure each folder has a disposition schedule
+            if (ds1 == null && ds2 != null)
+            {
+                return 1;
+            }
+            else if (ds1 != null && ds2 == null)
+            {
+                return -1;
+            }
+            else if (ds1 == null && ds2 == null)
+            {
+                return 0;
+            }
 
+            // TODO this won't work correctly if we are trying to compare schedules that are record based!!
             DispositionAction da1 = dispositionService.getNextDispositionAction(f1);
             DispositionAction da2 = dispositionService.getNextDispositionAction(f2);
 

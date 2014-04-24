@@ -229,13 +229,13 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
         }
 
         // Create event and add to map
-        RecordsManagementEvent event = new RecordsManagementEvent(eventType, eventName, eventDisplayLabel);
+        RecordsManagementEvent event = new RecordsManagementEvent(eventTypes.get(eventType), eventName, eventDisplayLabel);
         getEventMap().put(event.getName(), event);
 
         // Persist the changes to the event list
         saveEvents();
 
-        return new RecordsManagementEvent(eventType, eventName, eventDisplayLabel);
+        return new RecordsManagementEvent(eventTypes.get(eventType), eventName, eventDisplayLabel);
     }
 
     /**
@@ -318,7 +318,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
                     }
 
                     // Create event and add to map
-                    RecordsManagementEvent event = new RecordsManagementEvent(eventType, eventName, eventDisplayLabel);
+                    RecordsManagementEvent event = new RecordsManagementEvent(eventTypes.get(eventType), eventName, eventDisplayLabel);
                     events.put(event.getName(), event);
                 }
                 return null;

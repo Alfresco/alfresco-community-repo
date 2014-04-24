@@ -808,7 +808,51 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         {
             // empty implementation
         }
-
-
+    }
+    
+    protected void doBehaviourDrivenTest(BehaviourDrivenTest test)
+    {
+        test.run();
+    }
+    
+    protected abstract class BehaviourDrivenTest
+    {
+        public abstract void given();
+        
+        public abstract void when();
+        
+        public abstract void then();
+        
+        public void run()
+        {
+            doTestInTransaction(new VoidTest()
+            {                
+                @Override
+                public void runImpl() throws Exception
+                {
+                   given(); 
+                }
+            });
+            
+            doTestInTransaction(new VoidTest()
+            {
+                
+                @Override
+                public void runImpl() throws Exception
+                {
+                    when();
+                }
+            });
+            
+            doTestInTransaction(new VoidTest()
+            {
+                
+                @Override
+                public void runImpl() throws Exception
+                {
+                    then();
+                }
+            });           
+        }        
     }
 }

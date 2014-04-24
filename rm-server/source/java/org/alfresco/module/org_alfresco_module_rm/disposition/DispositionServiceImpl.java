@@ -31,7 +31,6 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
-import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -654,42 +653,16 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 ASSOC_NEXT_DISPOSITION_ACTION,
                 TYPE_DISPOSITION_ACTION,
                 props).getChildRef();
+        DispositionAction da = new DispositionActionImpl(serviceRegistry, dispositionActionNodeRef);
 
         // Create the events
         List<RecordsManagementEvent> events = dispositionActionDefinition.getEvents();
         for (RecordsManagementEvent event : events)
         {
             // For every event create an entry on the action
-            createEvent(event, dispositionActionNodeRef);
+            da.addEventCompletionDetails(event);
+           // createEvent(event, dispositionActionNodeRef);
         }
-    }
-
-    /**
-     * Creates the given records management event for the given 'next action'.
-     *
-     * @param event The event to create
-     * @param nextActionNodeRef The next action node
-     * @return The created event NodeRef
-     */
-    private NodeRef createEvent(RecordsManagementEvent event, NodeRef nextActionNodeRef)
-    {
-        NodeRef eventNodeRef = null;
-
-        Map<QName, Serializable> eventProps = new HashMap<QName, Serializable>(7);
-        eventProps.put(PROP_EVENT_EXECUTION_NAME, event.getName());
-        // TODO display label
-        RecordsManagementEventType eventType = serviceRegistry.getRecordsManagementEventService().getEventType(event.getType());
-        eventProps.put(PROP_EVENT_EXECUTION_AUTOMATIC, eventType.isAutomaticEvent());
-        eventProps.put(PROP_EVENT_EXECUTION_COMPLETE, false);
-
-        // Create the event execution object
-        this.nodeService.createNode(nextActionNodeRef,
-                                    ASSOC_EVENT_EXECUTIONS,
-                                    ASSOC_EVENT_EXECUTIONS,
-                                    TYPE_EVENT_EXECUTION,
-                                    eventProps);
-
-        return eventNodeRef;
     }
 
     /**
@@ -953,13 +926,14 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                                 ASSOC_NEXT_DISPOSITION_ACTION,
                                 TYPE_DISPOSITION_ACTION,
                                 props).getChildRef();
+                        DispositionAction da = new DispositionActionImpl(serviceRegistry, dispositionActionNodeRef);
 
                         // Create the events
                         List<RecordsManagementEvent> events = nextDispositionActionDefinition.getEvents();
                         for (RecordsManagementEvent event : events)
                         {
                             // For every event create an entry on the action
-                            createEvent(event, dispositionActionNodeRef);
+                            da.addEventCompletionDetails(event);
                         }
                     }
                 }

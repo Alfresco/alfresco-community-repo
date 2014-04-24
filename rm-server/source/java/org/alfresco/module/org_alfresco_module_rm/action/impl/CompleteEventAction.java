@@ -18,30 +18,29 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
-import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Complete event action
  *
  * @author Roy Wetherall
+ * @since 1.0
  */
 public class CompleteEventAction extends RMActionExecuterAbstractBase
 {
+    /** action name */
     public static final String NAME = "completeEvent";
+    
+    /** action parameter names */
 	public static final String PARAM_EVENT_NAME = "eventName";
     public static final String PARAM_EVENT_COMPLETED_BY = "eventCompletedBy";
     public static final String PARAM_EVENT_COMPLETED_AT = "eventCompletedAt";
@@ -52,8 +51,12 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        paramList.add(new ParameterDefinitionImpl(PARAM_EVENT_NAME, DataTypeDefinition.TEXT, true,
-                getParamDisplayLabel(PARAM_EVENT_NAME), false, "rm-ac-manual-events"));
+        paramList.add(new ParameterDefinitionImpl(PARAM_EVENT_NAME, 
+                                                  DataTypeDefinition.TEXT, 
+                                                  true,
+                                                  getParamDisplayLabel(PARAM_EVENT_NAME), 
+                                                  false, 
+                                                  "rm-ac-manual-events"));
     }
 
     /**
@@ -66,6 +69,7 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
         if (nodeService.exists(actionedUponNodeRef) &&
             !freezeService.isFrozen(actionedUponNodeRef))
         {
+            /** get parameter values */
             String eventName = (String)action.getParameterValue(PARAM_EVENT_NAME);
             String eventCompletedBy = (String)action.getParameterValue(PARAM_EVENT_COMPLETED_BY);
             Date eventCompletedAt = (Date)action.getParameterValue(PARAM_EVENT_COMPLETED_AT);
@@ -76,61 +80,10 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
                 DispositionAction da = this.dispositionService.getNextDispositionAction(actionedUponNodeRef);
                 if (da != null)
                 {
-                    // Get the disposition event
-                    EventCompletionDetails event = getEvent(da, eventName);
-                    if (event != null)
-                    {
-                        if (eventCompletedAt == null)
-                        {
-                            eventCompletedAt = new Date();
-                        }
-
-                        if (eventCompletedBy == null)
-                        {
-                            eventCompletedBy = AuthenticationUtil.getRunAsUser();
-                        }
-
-                        // Update the event so that it is complete
-                        NodeRef eventNodeRef = event.getNodeRef();
-                        Map<QName, Serializable> props = this.nodeService.getProperties(eventNodeRef);
-                        props.put(PROP_EVENT_EXECUTION_COMPLETE, true);
-                        props.put(PROP_EVENT_EXECUTION_COMPLETED_AT, eventCompletedAt);
-                        props.put(PROP_EVENT_EXECUTION_COMPLETED_BY, eventCompletedBy);
-                        this.nodeService.setProperties(eventNodeRef, props);
-
-                        // Check to see if the events eligible property needs to be updated
-                        updateEventEligible(da);
-
-                    }
-                    // else
-                    // {
-                        // RM-695: Commenting error handling out. If the current disposition stage does not define the event being completed nothing should happen.
-                        // throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EVENT_NO_DISP_LC, eventName));
-                    // }
+                    // complete event
+                    da.completeEvent(eventName, eventCompletedAt, eventCompletedBy);
                 }
             }
         }
-    }
-
-    /**
-     * Get the event from the dispostion action
-     *
-     * @param da
-     * @param eventName
-     * @return
-     */
-    private EventCompletionDetails getEvent(DispositionAction da, String eventName)
-    {
-        EventCompletionDetails result = null;
-        List<EventCompletionDetails> events = da.getEventCompletionDetails();
-        for (EventCompletionDetails event : events)
-        {
-            if (eventName.equals(event.getEventName()))
-            {
-                result = event;
-                break;
-            }
-        }
-        return result;
     }
 }

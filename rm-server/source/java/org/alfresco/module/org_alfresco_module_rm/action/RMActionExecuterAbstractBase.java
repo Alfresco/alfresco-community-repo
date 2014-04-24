@@ -19,7 +19,6 @@
 package org.alfresco.module.org_alfresco_module_rm.action;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,12 +26,8 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
-import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
-import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
-import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -51,7 +46,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.BeanNameAware;
@@ -468,73 +462,4 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     {
         return null;
     }
-
-    /**
-     * Creates the given records management event for the given 'next action'.
-     *
-     * @param event The event to create
-     * @param nextActionNodeRef The next action node
-     * @return The created event NodeRef
-     */
-    protected NodeRef createEvent(RecordsManagementEvent event, NodeRef nextActionNodeRef)
-    {
-        NodeRef eventNodeRef = null;
-
-        Map<QName, Serializable> eventProps = new HashMap<QName, Serializable>(7);
-        eventProps.put(PROP_EVENT_EXECUTION_NAME, event.getName());
-        // TODO display label
-        RecordsManagementEventType eventType = recordsManagementEventService.getEventType(event.getType());
-        eventProps.put(PROP_EVENT_EXECUTION_AUTOMATIC, eventType.isAutomaticEvent());
-        eventProps.put(PROP_EVENT_EXECUTION_COMPLETE, false);
-
-        // Create the event execution object
-        this.nodeService.createNode(nextActionNodeRef, ASSOC_EVENT_EXECUTIONS,
-                ASSOC_EVENT_EXECUTIONS, TYPE_EVENT_EXECUTION, eventProps);
-
-        return eventNodeRef;
-    }
-
-    /**
-     * Calculates and updates the <code>rma:dispositionEventsEligible</code>
-     * property for the given next disposition action.
-     *
-     * @param nextAction The next disposition action
-     * @return The result of calculation
-     */
-    protected boolean updateEventEligible(DispositionAction nextAction)
-    {
-        List<EventCompletionDetails> events = nextAction.getEventCompletionDetails();
-
-        boolean eligible = false;
-        if (!nextAction.getDispositionActionDefinition().eligibleOnFirstCompleteEvent())
-        {
-            eligible = true;
-            for (EventCompletionDetails event : events)
-            {
-                if (!event.isEventComplete())
-                {
-                    eligible = false;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            for (EventCompletionDetails event : events)
-            {
-                if (event.isEventComplete())
-                {
-                    eligible = true;
-                    break;
-                }
-            }
-        }
-
-        // Update the property with the eligible value
-        this.nodeService.setProperty(nextAction.getNodeRef(), PROP_DISPOSITION_EVENTS_ELIGIBLE, eligible);
-
-        return eligible;
-    }
-
-
 }

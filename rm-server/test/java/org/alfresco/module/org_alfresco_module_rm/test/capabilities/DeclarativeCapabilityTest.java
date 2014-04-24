@@ -38,6 +38,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Declarative capability unit test
@@ -59,6 +60,8 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
 
     private NodeRef moveToFolder;
     private NodeRef moveToCategory;
+    
+    private NodeRef hold;
 
     @Override
     protected boolean isUserTest()
@@ -106,9 +109,12 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 utils.declareRecord(declaredRecord);
                 utils.declareRecord(frozenRecord);
                 utils.declareRecord(frozenRecord2);
-                utils.freeze(frozenRecord);
-                utils.freeze(frozenRecordFolder);
-                utils.freeze(frozenRecord2);
+                
+                hold = holdService.createHold(filePlan, GUID.generate(), "reason", "description");
+                
+                holdService.addToHold(hold, frozenRecord);
+                holdService.addToHold(hold, frozenRecordFolder);
+                holdService.addToHold(hold, frozenRecord2);
 
                 return null;
             }
@@ -119,9 +125,9 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
     protected void tearDownImpl()
     {
         // Unfreeze stuff so it can be deleted
-    	utils.unfreeze(frozenRecord);
-    	utils.unfreeze(frozenRecordFolder);
-    	utils.unfreeze(frozenRecord2);
+        holdService.removeFromHold(hold, frozenRecord);
+        holdService.removeFromHold(hold, frozenRecordFolder);
+        holdService.removeFromHold(hold, frozenRecord2);
 
         super.tearDownImpl();
     }

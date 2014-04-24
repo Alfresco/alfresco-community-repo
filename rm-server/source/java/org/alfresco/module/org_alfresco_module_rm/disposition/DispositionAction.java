@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,12 +22,14 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
+import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Disposition action interface.
  * 
  * @author Roy Wetherall
+ * @since 1.0
  */
 public interface DispositionAction
 {    
@@ -91,4 +93,52 @@ public interface DispositionAction
      * @return List of events that need to be completed for the action
      */
     List<EventCompletionDetails> getEventCompletionDetails();
+    
+    /**
+     * Get the event completion details for a named event.
+     * 
+     * @param eventName event name
+     * @return {@link EventCompletionDetails}   event completion details
+     * @since 2.2
+     */
+    EventCompletionDetails getEventCompletionDetails(String eventName);
+    
+    /**
+     * Add new completion details to the disposition action based on the provided 
+     * event.
+     * 
+     * @param event records management event
+     * @since 2.2
+     */
+    void addEventCompletionDetails(RecordsManagementEvent event);
+    
+    /**
+     * Complete an event.
+     * <p>
+     * If null is provided, the complete at date will be take as 'now' and the completed by user
+     * as the fully authenticated user.
+     * 
+     * @param eventName     event name
+     * @param completedAt   completed at 'date', now if null
+     * @param completedBy   completed by user, authenticated user if null
+     * @since 2.2
+     */
+    void completeEvent(String eventName, Date completedAt, String completedBy);
+    
+    /**
+     * Undo the completion of an event.
+     * 
+     * @param eventName event name
+     * @since 2.2
+     */
+    void undoEvent(String eventName);
+    
+    /**
+     * Refresh events against current disposition action definition.
+     * <p>
+     * Called when disposition action definition has changed.
+     * 
+     * @since 2.2
+     */
+    void refreshEvents();
 }

@@ -16,14 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test.dod;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.dod;
+
+import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 
 
@@ -33,7 +34,7 @@ import org.alfresco.util.GUID;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class RM1147DODRMSiteTest extends BaseRMTestCase implements DOD5015Model
+public class RM1194ExcludeDoDRecordTypesTest extends BaseRMTestCase implements DOD5015Model
 {
 	/**
 	 * Don't create a RM test site in setup
@@ -45,73 +46,7 @@ public class RM1147DODRMSiteTest extends BaseRMTestCase implements DOD5015Model
 	}
 	
 	/**
-	 * Test the creation of a DOD file plan via the file plan service
-	 */
-	public void testCreateDODFilePlan()
-	{
-		doTestInTransaction(new Test<NodeRef>()
-	    {
-			@Override
-	        public NodeRef run() throws Exception
-	        {
-				return filePlanService.createFilePlan(folder, "myDODfileplan", TYPE_DOD_5015_FILE_PLAN);
-	        }
-			
-			@Override
-			public void test(NodeRef filePlan) throws Exception 
-			{
-				assertNotNull(filePlan);
-				assertEquals(TYPE_DOD_5015_FILE_PLAN, nodeService.getType(filePlan));				
-				assertTrue(filePlanService.isFilePlanComponent(filePlan));
-				assertTrue(filePlanService.isFilePlan(filePlan));			
-				assertEquals(FilePlanComponentKind.FILE_PLAN, filePlanService.getFilePlanComponentKind(filePlan));				
-				assertNotNull(filePlanService.getUnfiledContainer(filePlan));				
-				assertNotNull(filePlanService.getHoldContainer(filePlan));
-				assertNotNull(filePlanService.getTransferContainer(filePlan));				
-				assertTrue(filePlanService.getFilePlans().contains(filePlan));								
-				assertFalse(filePlanRoleService.getRoles(filePlan).isEmpty());	
-			}
-	    });		
-	}
-	
-	/**
-	 * Test the creation of a DOD site via the site service
-	 */
-	public void testCreateDODRMSite()
-	{
-		doTestInTransaction(new Test<SiteInfo>()
-	    {
-			String siteId = GUID.generate();
-			
-			@Override
-	        public SiteInfo run() throws Exception
-	        {
-				return siteService.createSite("dodrmsite", siteId, "title", "description", SiteVisibility.PUBLIC, TYPE_DOD_5015_SITE);
-	        }
-			
-			@Override
-			public void test(SiteInfo siteInfo) throws Exception 
-			{
-				assertNotNull(siteInfo);
-				assertEquals(TYPE_DOD_5015_SITE, nodeService.getType(siteInfo.getNodeRef()));
-				
-				NodeRef filePlan = siteService.getContainer(siteId, "documentLibrary");
-				assertNotNull(filePlan);
-				assertEquals(TYPE_DOD_5015_FILE_PLAN, nodeService.getType(filePlan));				
-				assertTrue(filePlanService.isFilePlanComponent(filePlan));
-				assertTrue(filePlanService.isFilePlan(filePlan));			
-				assertEquals(FilePlanComponentKind.FILE_PLAN, filePlanService.getFilePlanComponentKind(filePlan));				
-				assertNotNull(filePlanService.getUnfiledContainer(filePlan));				
-				assertNotNull(filePlanService.getHoldContainer(filePlan));
-				assertNotNull(filePlanService.getTransferContainer(filePlan));				
-				assertTrue(filePlanService.getFilePlans().contains(filePlan));								
-				assertFalse(filePlanRoleService.getRoles(filePlan).isEmpty());				
-			}
-	    });	
-	}
-	
-	/**
-	 * Test to ensure that a record created in the a DOD site does have the DOD meta-data attached
+	 * Ensure that the correct record metadata aspects are available for a DoD record.
 	 */
 	public void testDODRecord()
 	{
@@ -136,14 +71,16 @@ public class RM1147DODRMSiteTest extends BaseRMTestCase implements DOD5015Model
             @Override
             public void test(NodeRef record) throws Exception 
             {
-                assertNotNull(record);
-                assertTrue(nodeService.hasAspect(record, ASPECT_DOD_5015_RECORD));
+                assertNotNull(record);                
+                Set<QName> aspects = recordService.getRecordMetadataAspects(record);
+                assertNotNull(aspects);
+                assertEquals(5, aspects.size());                
             }
         }); 
 	}
 	
 	/**
-	 * Test to ensure a record created in a vanilla site does not have the DOD meta-data attached
+	 * Ensure that the correct record metadata aspects are available for a vanilla record.
 	 */
 	public void testVanillaRecord()
 	{
@@ -168,8 +105,10 @@ public class RM1147DODRMSiteTest extends BaseRMTestCase implements DOD5015Model
             @Override
             public void test(NodeRef record) throws Exception 
             {
-                assertNotNull(record);
-                assertFalse(nodeService.hasAspect(record, ASPECT_DOD_5015_RECORD));
+                assertNotNull(record);           
+                Set<QName> aspects = recordService.getRecordMetadataAspects(record);
+                assertNotNull(aspects);
+                assertEquals(1, aspects.size());
             }
         }); 
 	}

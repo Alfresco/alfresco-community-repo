@@ -1,5 +1,20 @@
-/**
+/*
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
@@ -17,13 +32,11 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
-import org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
-import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -41,6 +54,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationContext;
 
 /**
+ * Common RM test utility methods.
+ * 
  * @author Roy Wetherall
  */
 public class CommonRMTestUtils implements RecordsManagementModel
@@ -73,9 +88,10 @@ public class CommonRMTestUtils implements RecordsManagementModel
     }
 
     /**
-     *
-     * @param container
-     * @return
+     * Create a disposition schedule
+     * 
+     * @param container record category
+     * @return {@link DispositionSchedule}  created disposition schedule node reference
      */
     public DispositionSchedule createBasicDispositionSchedule(NodeRef container)
     {
@@ -207,15 +223,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
                 modelSecurityService.setEnabled(false);
                 try
                 {
-                    // Declare record
-                    nodeService.setProperty(record, DOD5015Model.PROP_PUBLICATION_DATE, new Date());
-                    nodeService.setProperty(record, DOD5015Model.PROP_MEDIA_TYPE, "mediaTypeValue");
-                    nodeService.setProperty(record, DOD5015Model.PROP_FORMAT, "formatValue");
-                    nodeService.setProperty(record, DOD5015Model.PROP_DATE_RECEIVED, new Date());
-                    nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_FILED, new Date());
-                    nodeService.setProperty(record, DOD5015Model.PROP_ORIGINATOR, "origValue");
-                    nodeService.setProperty(record, DOD5015Model.PROP_ORIGINATING_ORGANIZATION, "origOrgValue");
-                    nodeService.setProperty(record, ContentModel.PROP_TITLE, "titleValue");
+                    nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_FILED, new Date());                    
+                    nodeService.setProperty(record, ContentModel.PROP_TITLE, "titleValue");                    
                     actionService.executeRecordsManagementAction(record, "declareRecord");
                 }
                 finally
@@ -249,37 +258,6 @@ public class CommonRMTestUtils implements RecordsManagementModel
                 return null;
             }
         }, AuthenticationUtil.getAdminUserName());
-    }
-
-    public void freeze(final NodeRef nodeRef)
-    {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
-                params.put(FreezeAction.PARAM_REASON, "Freeze reason.");
-                actionService.executeRecordsManagementAction(nodeRef, "freeze", params);
-
-                return null;
-            }
-
-        }, AuthenticationUtil.getSystemUserName());
-    }
-
-    public void unfreeze(final NodeRef nodeRef)
-    {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                actionService.executeRecordsManagementAction(nodeRef, "unfreeze");
-                return null;
-            }
-
-        }, AuthenticationUtil.getSystemUserName());
     }
 
     public Role createRole(NodeRef filePlan, String roleName, String ... capabilityNames)

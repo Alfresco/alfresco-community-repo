@@ -30,6 +30,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *
  * @author Gavin Cornwell
  * @author Roy Wetherall
+ * @since 1.0
  */
 public class AuditEvent implements RecordsManagementModel, Comparator<AuditEvent>
 {
@@ -42,9 +43,6 @@ public class AuditEvent implements RecordsManagementModel, Comparator<AuditEvent
     /** Records management audit service */
     protected RecordsManagementAuditService recordsManagementAuditService;    
     
-    /** Policy component */
-    //protected PolicyComponent policyComponent;
-    
     /**
      * @param recordsManagementAuditService     records management audit service
      */
@@ -52,14 +50,6 @@ public class AuditEvent implements RecordsManagementModel, Comparator<AuditEvent
     {
         this.recordsManagementAuditService = recordsManagementAuditService;
     }
-    
-    /**
-     * @param policyComponent   policy component
-     */
-   // public void setPolicyComponent(PolicyComponent policyComponent)
-  //  {
-  //      this.policyComponent = policyComponent;
-   // }
  
     /**
      * Init method

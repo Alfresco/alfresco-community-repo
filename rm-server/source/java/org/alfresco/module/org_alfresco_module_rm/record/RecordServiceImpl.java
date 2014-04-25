@@ -635,7 +635,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         if (getRecordMetadataAspectsMap().containsKey(recordMetadataAspect))
         {
             // get the current set of file plan types for this aspect
-            filePlanTypes = (Set<QName>)getRecordMetadataAspectsMap().get(recordMetadataAspect);
+            filePlanTypes = getRecordMetadataAspectsMap().get(recordMetadataAspect);
         }
         else
         {
@@ -717,6 +717,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
+    @Override
     public void createRecord(final NodeRef filePlan, final NodeRef nodeRef, final boolean isLinked)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
@@ -773,7 +774,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                         // save the information about the originating details
                         Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
-                        aspectProperties.put(PROP_RECORD_ORIGINATING_LOCATION, (Serializable) parentAssoc.getParentRef());
+                        aspectProperties.put(PROP_RECORD_ORIGINATING_LOCATION, parentAssoc.getParentRef());
                         aspectProperties.put(PROP_RECORD_ORIGINATING_USER_ID, userId);
                         aspectProperties.put(PROP_RECORD_ORIGINATING_CREATION_DATE, new Date());
                         nodeService.addAspect(nodeRef, ASPECT_RECORD_ORIGINATING_DETAILS, aspectProperties);
@@ -1389,6 +1390,21 @@ public class RecordServiceImpl extends BaseBehaviourBean
         else
         {
             logger.info(I18NUtil.getMessage(MSG_NODE_HAS_ASPECT, nodeRef.toString(), typeQName.toString()));
+        }
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#link(NodeRef, NodeRef)
+     */
+    @Override
+    public void link(NodeRef nodeRef, NodeRef folder)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("folder", folder);
+
+        if(isRecord(nodeRef) && isRecordFolder(folder))
+        {
+            nodeService.addChild(folder, nodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME).toString()));
         }
     }
 }

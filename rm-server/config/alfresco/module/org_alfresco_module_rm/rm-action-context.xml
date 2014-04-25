@@ -911,6 +911,34 @@
       <property name="allowParameterSubstitutions" value="true"/>
    </bean>
 
+   <!--  Link To -->
+
+   <bean id="linkTo_proxy" parent="rmProxyAction">
+      <property name="target" ref="linkTo"/>
+        <property name="interceptorNames">
+            <list>
+               <idref bean="linkTo_security"/>
+            </list>
+         </property>
+   </bean>
+
+   <bean id="linkTo_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.LinkToRecords
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
+   </bean>
+
+   <bean id="linkTo" class="org.alfresco.module.org_alfresco_module_rm.action.impl.LinkToAction" parent="rmAction">
+      <property name="fileFolderService" ref="FileFolderService"/>
+      <property name="filePlanService" ref="FilePlanService" />
+      <property name="publicAction" value="true"/>
+      <property name="allowParameterSubstitutions" value="true"/>
+   </bean>
+
     <!-- RequestInfo action -->
 
    <bean id="requestInfo_proxy" parent="rmProxyAction">

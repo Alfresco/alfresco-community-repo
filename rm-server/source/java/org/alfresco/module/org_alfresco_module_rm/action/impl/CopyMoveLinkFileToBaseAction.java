@@ -19,6 +19,8 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.util.StringUtils;
 
 /**
@@ -27,13 +29,16 @@ import org.springframework.util.StringUtils;
  * @author Mark Hibbins
  * @since 2.2
  */
-public abstract class CopyMoveFileToBaseAction extends RMActionExecuterAbstractBase
+public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstractBase
 {
+    private static Log logger = LogFactory.getLog(CopyMoveLinkFileToBaseAction.class);
+
     /** action parameters */
     public static final String PARAM_DESTINATION_RECORD_FOLDER = "destinationRecordFolder";
     public static final String PARAM_PATH = "path";
     public static final String PARAM_CREATE_RECORD_PATH = "createRecordPath";
     public static final String ACTION_FILETO = "fileTo";
+    public static final String ACTION_LINKTO = "linkTo";
 
     /** file folder service */
     private FileFolderService fileFolderService;
@@ -42,11 +47,11 @@ public abstract class CopyMoveFileToBaseAction extends RMActionExecuterAbstractB
     private FilePlanService filePlanService;
 
     /** action modes */
-    public enum CopyMoveFileToActionMode
+    public enum CopyMoveLinkFileToActionMode
     {
-        COPY, MOVE
+        COPY, MOVE, LINK
     };
-    protected CopyMoveFileToActionMode mode;
+    protected CopyMoveLinkFileToActionMode mode;
 
     /**
      * @param fileFolderService file folder service
@@ -80,22 +85,20 @@ public abstract class CopyMoveFileToBaseAction extends RMActionExecuterAbstractB
     @Override
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) &&
-            (freezeService.isFrozen(actionedUponNodeRef) == false) &&
-            (!ACTION_FILETO.equals(action.getActionDefinitionName()) || !recordService.isFiled(actionedUponNodeRef)) &&
-            (!(ACTION_FILETO.equals(action.getActionDefinitionName()) && RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER.equals(nodeService.getType(actionedUponNodeRef)))))
+        String actionName = action.getActionDefinitionName();
+        if (isOkToProceedWithAction(actionedUponNodeRef, actionName))
         {
-            boolean targetIsUnfiledRecord;
+            QName actionedUponType = nodeService.getType(actionedUponNodeRef);;
+
+            boolean targetIsUnfiledRecords;
             if (ACTION_FILETO.equals(action.getActionDefinitionName()))
             {
-                targetIsUnfiledRecord = false;
+                targetIsUnfiledRecords = false;
             }
             else
             {
-                QName actionedUponType = nodeService.getType(actionedUponNodeRef);
-                targetIsUnfiledRecord = (dictionaryService.isSubClass(actionedUponType, ContentModel.TYPE_CONTENT) && !recordService
-                        .isFiled(actionedUponNodeRef))
-                        || RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER.equals(actionedUponType);
+                targetIsUnfiledRecords = (dictionaryService.isSubClass(actionedUponType, ContentModel.TYPE_CONTENT) && !recordService.isFiled(actionedUponNodeRef))
+                        || TYPE_UNFILED_RECORD_FOLDER.equals(actionedUponType);
             }
 
             // first look to see if the destination record folder has been specified
@@ -103,13 +106,11 @@ public abstract class CopyMoveFileToBaseAction extends RMActionExecuterAbstractB
             if (recordFolder == null)
             {
                 // get the reference to the record folder based on the relative path
-                recordFolder = createOrResolvePath(action, actionedUponNodeRef, targetIsUnfiledRecord);
+                recordFolder = createOrResolvePath(action, actionedUponNodeRef, targetIsUnfiledRecords);
             }
 
-            if (recordFolder == null)
-            {
-                throw new AlfrescoRuntimeException("Unable to execute file to action, because the destination record folder could not be determined.");
-            }
+            // now we have the reference to the target folder we can do some final checks to see if the action is valid
+            validateActionPostPathResolution(actionedUponNodeRef, recordFolder, actionName, targetIsUnfiledRecords);
 
             final NodeRef finalRecordFolder = recordFolder;
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
@@ -119,19 +120,23 @@ public abstract class CopyMoveFileToBaseAction extends RMActionExecuterAbstractB
                 {
                     try
                     {
-                        if(mode == CopyMoveFileToActionMode.MOVE)
+                        if(mode == CopyMoveLinkFileToActionMode.MOVE)
                         {
                             fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
                         }
-                        else
+                        else if(mode == CopyMoveLinkFileToActionMode.COPY)
                         {
                             fileFolderService.copy(actionedUponNodeRef, finalRecordFolder, null);
+                        }
+                        else if(mode == CopyMoveLinkFileToActionMode.LINK)
+                        {
+                            recordService.link(actionedUponNodeRef, finalRecordFolder);
                         }
                     }
                     catch (FileNotFoundException fileNotFound)
                     {
                         throw new AlfrescoRuntimeException(
-                                "Unable to execute file to action, because the " + (mode == CopyMoveFileToActionMode.MOVE ? "move" : "copy") + " operation failed.",
+                                "Unable to execute file to action, because the " + (mode == CopyMoveLinkFileToActionMode.MOVE ? "move" : "copy") + " operation failed.",
                                 fileNotFound
                                 );
                     }
@@ -139,6 +144,83 @@ public abstract class CopyMoveFileToBaseAction extends RMActionExecuterAbstractB
                     return null;
                 }
             });
+        }
+    }
+
+    /**
+     * Return true if the passed parameters to the action are valid for the given action
+     *
+     * @param actionedUponNodeRef
+     * @param actionName
+     * @return
+     */
+    private boolean isOkToProceedWithAction(NodeRef actionedUponNodeRef, String actionName)
+    {
+        // Check that the incoming parameters are valid prior to performing any action
+        boolean okToProceed = false;
+        if(nodeService.exists(actionedUponNodeRef) && !freezeService.isFrozen(actionedUponNodeRef))
+        {
+            QName actionedUponType = nodeService.getType(actionedUponNodeRef);
+            if(ACTION_FILETO.equals(actionName))
+            {
+                // file to action can only be performed on unfiled records
+                okToProceed = !recordService.isFiled(actionedUponNodeRef) && dictionaryService.isSubClass(actionedUponType, ContentModel.TYPE_CONTENT);
+                if(!okToProceed && logger.isDebugEnabled())
+                {
+                    logger.debug("Unable to run " + actionName + " action on a node that isn't unfiled and a sub-class of content type");
+                }
+            }
+            else if(ACTION_LINKTO.equals(actionName))
+            {
+                // link to action can only be performed on filed records
+                okToProceed = recordService.isFiled(actionedUponNodeRef) && dictionaryService.isSubClass(actionedUponType, ContentModel.TYPE_CONTENT);
+                if(!okToProceed && logger.isDebugEnabled())
+                {
+                    logger.debug("Unable to run " + actionName + " action on a node that isn't filed and a sub-class of content type");
+                }
+            }
+            else
+            {
+                okToProceed = true;
+            }
+        }
+        return okToProceed;
+    }
+
+    /**
+     * Do a final validation for the parameters and the resolve target path
+     *
+     * @param actionedUponNodeRef
+     * @param target
+     * @param actionName
+     * @param targetIsUnfiledRecords
+     */
+    private void validateActionPostPathResolution(NodeRef actionedUponNodeRef, NodeRef target, String actionName, boolean targetIsUnfiledRecords)
+    {
+        QName actionedUponType = nodeService.getType(actionedUponNodeRef);
+        // now we have the reference to the target folder we can do some final checks to see if the action is valid
+        if (target == null)
+        {
+            throw new AlfrescoRuntimeException("Unable to run " + actionName + " action, because the destination record folder could not be determined.");
+        }
+        if(targetIsUnfiledRecords)
+        {
+            QName targetFolderType = nodeService.getType(target);
+            if(!TYPE_UNFILED_RECORD_CONTAINER.equals(targetFolderType) && !TYPE_UNFILED_RECORD_FOLDER.equals(targetFolderType))
+            {
+                throw new AlfrescoRuntimeException("Unable to run " + actionName + " action, because the destination record folder is an inappropriate type.");
+            }
+        }
+        else
+        {
+            if(recordFolderService.isRecordFolder(target) && !dictionaryService.isSubClass(actionedUponType, ContentModel.TYPE_CONTENT) && (recordFolderService.isRecordFolder(actionedUponNodeRef) || filePlanService.isRecordCategory(actionedUponNodeRef)))
+            {
+                throw new AlfrescoRuntimeException("Unable to run " + actionName + " action, because the destination record folder is an inappropriate type. A record folder cannot contain another folder or a category");
+            }
+            else if(filePlanService.isRecordCategory(target) && dictionaryService.isSubClass(actionedUponType, ContentModel.TYPE_CONTENT))
+            {
+                throw new AlfrescoRuntimeException("Unable to run " + actionName + " action, because the destination record folder is an inappropriate type. A record category cannot contain a record");
+            }
         }
     }
 
@@ -197,12 +279,8 @@ public abstract class CopyMoveFileToBaseAction extends RMActionExecuterAbstractB
             if(create)
             {
                 creating = true;
-                nodeRef = createChild(
-                        action,
-                        parent,
-                        childName,
-                        targetisUnfiledRecords,
-                        lastPathElement && (ContentModel.TYPE_CONTENT.equals(nodeService.getType(actionedUponNodeRef)) || RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(actionedUponNodeRef))));
+                boolean lastAsFolder = lastPathElement && (ContentModel.TYPE_CONTENT.equals(nodeService.getType(actionedUponNodeRef)) || RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(actionedUponNodeRef)));
+                nodeRef = createChild(action, parent, childName, targetisUnfiledRecords, lastAsFolder);
             }
             else
             {

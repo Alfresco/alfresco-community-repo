@@ -39,19 +39,19 @@ public interface RecordService
     /**
      * Register a record metadata aspect.
      * <p>
-     * The file plan type indicates which file plan type the aspect applied to.  Null indicates that 
+     * The file plan type indicates which file plan type the aspect applied to.  Null indicates that
      * the aspect applies to rma:filePlan.
      * <p>
-     * A record metadata aspect can be registered more than once if it applies to more than one 
+     * A record metadata aspect can be registered more than once if it applies to more than one
      * file plan type.
-     * 
+     *
      * @param recordMetadataAspect  record metadata aspect qualified name
      * @param filePlanType          file plan type
-     * 
+     *
      * @since 2.2
      */
     void registerRecordMetadataAspect(QName recordMetadataAspect, QName filePlanType);
-    
+
     /**
      * Disables the property editable check.
      */
@@ -66,35 +66,35 @@ public interface RecordService
     * Gets a list of all the record meta-data aspects
     *
     * @return {@link Set}<{@link QName}>   list of record meta-data aspects
-    * 
+    *
     * @deprecated since 2.2, file plan component required to provide context
     */
    @Deprecated
    Set<QName> getRecordMetaDataAspects();
-   
+
    /**
     * Gets a list of all the record metadata aspects relevant to the file plan type of the
     * file plan component provided.
     * <p>
-    * If a null context is provided all record meta-data aspects are returned, but this is not 
+    * If a null context is provided all record meta-data aspects are returned, but this is not
     * recommended.
     *
     * @param  nodeRef                      node reference to file plan component providing context
     * @return {@link Set}<{@link QName}>   list of record meta-data aspects
-    * 
+    *
     * @since 2.2
     */
    Set<QName> getRecordMetadataAspects(NodeRef nodeRef);
-   
+
    /**
     * Gets a list of all the record metadata aspect that relate to the provided file plan type.
     * <p>
-    * If null is provided for the file plan type then record metadata aspects for the default 
+    * If null is provided for the file plan type then record metadata aspects for the default
     * file plan type (rma:filePlan) are returned.
-    * 
+    *
     * @param filePlanType                   file plan type
     * @return{@link Set}<{@link QName}>     list of record meta-data aspects
-    * 
+    *
     * @since 2.2
     */
    Set<QName> getRecordMetadataAspects(QName filePlanType);
@@ -214,4 +214,12 @@ public interface RecordService
     * @param nodeRef    The document node reference from which a record will be created
     */
    void makeRecord(NodeRef nodeRef);
+
+   /**
+    * Creates a link for the specified document in target
+    *
+    * @param nodeRef    The document node reference for which a link will be created
+    * @param folder     The folder in which the link will be created
+    */
+   void link(NodeRef nodeRef, NodeRef folder);
 }

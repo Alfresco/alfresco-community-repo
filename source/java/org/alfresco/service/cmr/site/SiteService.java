@@ -146,6 +146,23 @@ public interface SiteService
     List<SiteInfo> findSites(String filter, String sitePresetFilter, int size);
     
     /**
+     * This method will find all {@link SiteInfo sites} available to the currently authenticated user based on
+     * the specified site filter and result set size.
+     * The filter parameter will match any sites whose {@link ContentModel#PROP_NAME cm:name}, {@link ContentModel#PROP_TITLE cm:title}
+     * or {@link ContentModel#PROP_DESCRIPTION cm:description} <i>contain</i> the specified string (ignoring case).
+     * <p/>
+     * Note that this method uses <a href="http://wiki.alfresco.com/wiki/Search">Alfresco Full Text Search</a> to retrieve results
+     * and depending on server Lucene, SOLR configuration may only offer eventually consistent results.
+     * 
+     * @param filter Any supplied filter will be wrapped in asterisks (e.g. 'foo*') and used to match the sites' cm:name, cm:title or cm:description.
+     * @param size this parameter specifies a maximum result set size.
+     * @return Site objects for all matching sites up to the maximum result size.
+     * 
+     * @since 5.0
+     */
+    @NotAuditable
+    List<SiteInfo> findSites(String filter, int size); 
+    /**
      * List the available sites.  This list can optionally be filtered by site name/title/description and/or site preset.
      * <p/>
      * Note: Starting with Alfresco 4.0, the filter parameter will only match sites whose {@link ContentModel#PROP_NAME cm:name} or

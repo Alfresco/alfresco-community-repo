@@ -69,7 +69,6 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
@@ -700,6 +699,135 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         sites = this.siteService.findSites("as?erix", null, 0);
         assertNotNull(sites);
         assertEquals("Matched wrong number of sites using '?'", 2, sites.size());
+    }
+    
+    /**
+     * This test method ensures that searches with wildcards work as they should
+     */
+    public void testfindSitesForLiveSearchWithWildcardTitles() throws Exception
+    {
+        // How many sites are there already in the repo?
+        List<SiteInfo> preexistingSites = this.siteService.findSites(null, 0);
+        final int preexistingSitesCount = preexistingSites.size();
+
+        // Create some test sites
+        //
+        // Note that the shortName can't contain an asterisk but the title can.
+        this.siteService.createSite(TEST_SITE_PRESET, "siteLiveA", "getafix", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        this.siteService.createSite(TEST_SITE_PRESET, "siteLiveB", "getafix1vitalstatistix", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        this.siteService.createSite(TEST_SITE_PRESET, "siteLiveC", "Armorican Gaul France", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        
+        //ACE-1428
+        this.siteService.createSite(TEST_SITE_PRESET, "siteLiveD", "n3w s1t3 creat3ed 88", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        this.siteService.createSite(TEST_SITE_PRESET, "siteLiveE", "n3w s1t3 creat3ed 99", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+
+        //More scenarios
+        this.siteService.createSite(TEST_SITE_PRESET, "siteLiveF", "super exciting product", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        this.siteService.createSite(TEST_SITE_PRESET, "siteLiveG", "super exciting launch", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        this.siteService.createSite(TEST_SITE_PRESET, "siteLiveH", "amazing sales 54", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        this.siteService.createSite(TEST_SITE_PRESET, "siteLiveI", "wonderfulsupport32", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        this.siteService.createSite(TEST_SITE_PRESET, "siteLiveJ", "great89service", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        this.siteService.createSite(TEST_SITE_PRESET, "siteLiveK", "my top draw", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+          
+        // Get sites by matching title
+        List<SiteInfo> sites = this.siteService.findSites("getafix", 0);
+        assertNotNull(sites);
+        // As the name & description do not contain "asterix", this will become a search for sites whose titles match "asterix"
+        assertEquals("Matched wrong number of sites with title equal to 'getafix'", 2, sites.size());
+        
+        // This means 'find all'
+        sites = this.siteService.findSites("*", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites using '*'", preexistingSitesCount + 11, sites.size());
+        
+        sites = this.siteService.findSites("ge?afix", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites using '?'", 2, sites.size());
+        
+        sites = this.siteService.findSites("Armorican", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());
+        
+        sites = this.siteService.findSites("Gaul", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());
+        
+        sites = this.siteService.findSites("France", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());
+        
+        sites = this.siteService.findSites("Armorican Gaul", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());
+        
+        sites = this.siteService.findSites("Armori", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());
+        
+        sites = this.siteService.findSites("Fran", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());
+        
+//        sites = this.siteService.findSites("n3w s1t3 88", 0);
+//        assertNotNull(sites);
+//        assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());   
+//        
+//
+//        sites = this.siteService.findSites("n3w s1t3 99", 0);
+//        assertNotNull(sites);
+//        assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());   
+        
+        sites = this.siteService.findSites("n3w s1t3", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for tokenized search", 2, sites.size());
+        
+        sites = this.siteService.findSites("s1t3", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for tokenized search", 2, sites.size());   
+        
+        sites = this.siteService.findSites("super", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for super", 2, sites.size());
+        
+        sites = this.siteService.findSites("exciting", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for exciting", 2, sites.size());
+        
+        sites = this.siteService.findSites("product", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for product", 1, sites.size());
+        
+//        sites = this.siteService.findSites("super product", 0);
+//        assertNotNull(sites);
+//        assertEquals("Matched wrong number of sites for super product", 1, sites.size());
+//        
+//        sites = this.siteService.findSites("super launch", 0);
+//        assertNotNull(sites);
+//        assertEquals("Matched wrong number of sites for super launch", 1, sites.size());
+        
+//        sites = this.siteService.findSites("exciting launch", 0);
+//        assertNotNull(sites);
+//        assertEquals("Matched wrong number of sites for super launch", 1, sites.size());
+        
+        sites = this.siteService.findSites("super exciting", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for super exciting", 2, sites.size());
+        
+        sites = this.siteService.findSites("amazing sales 54", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for amazing sales 54", 1, sites.size());
+        
+        sites = this.siteService.findSites("wonderfulsupport32", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for wonderfulsupport32", 1, sites.size());
+        
+        sites = this.siteService.findSites("great89service", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for great89service", 1, sites.size());
+        
+        sites = this.siteService.findSites("top draw", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for top draw", 1, sites.size());
     }
     
     public void testGetSite()

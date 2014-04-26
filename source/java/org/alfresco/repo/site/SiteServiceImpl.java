@@ -58,7 +58,6 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -112,6 +111,7 @@ import org.json.JSONObject;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.ParameterCheck;
+import org.springframework.util.StringUtils;
 
 /**
  * Site Service Implementation. Also bootstraps the site AVM and DM stores.
@@ -810,6 +810,81 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         return siteHomeRef;
     }
     
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.site.SiteService#findSites(java.lang.String, int)
+     */
+    @Override
+    public List<SiteInfo> findSites(String filter, int size)
+    {
+        List<SiteInfo> result;
+        
+        NodeRef siteRoot = getSiteRoot();
+        if (siteRoot == null)
+        {
+            result = Collections.emptyList();
+        }
+        else
+        {
+            // get the sites that match the specified names
+            StringBuilder query = new StringBuilder(128);
+            query.append("+TYPE:\"").append(SiteModel.TYPE_SITE).append('"');
+            
+            final boolean filterIsPresent = filter != null && filter.length() > 0;
+
+            if (filterIsPresent)
+            {
+                query.append(" AND (");
+                String escNameFilter = SearchLanguageConversion.escapeLuceneQuery(filter.replace('"', ' '));
+                String[] tokenizedFilter = SearchLanguageConversion.tokenizeString(escNameFilter);
+                query.append(" cm:name:\"" + StringUtils.trimAllWhitespace(escNameFilter) + "*\"")
+                     .append(" OR ")
+                     .append(" cm:title: (");
+                for (String token: tokenizedFilter)
+                {
+                    query.append("\""+token+"*\" ");
+                }
+//                for( int i = 0; i < tokenizedFilter.length; i++)
+//                {
+//                    if (i!=0) //Not first element 
+//                    {
+//                        query.append(" AND |");
+//                    }
+//                    query.append(tokenizedFilter[i]+"*");
+//                }
+                query.append(")");
+
+                query.append(" OR cm:description:\"" + escNameFilter + "\"");            
+                query.append(")");
+            }
+            
+            SearchParameters sp = new SearchParameters();
+            sp.addStore(siteRoot.getStoreRef());
+            sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+            sp.setQuery(query.toString());
+            if (size > 0)
+            {
+                sp.setLimit(size);
+                sp.setLimitBy(LimitBy.FINAL_SIZE);
+            }
+
+            ResultSet results = this.searchService.query(sp);
+            try
+            {
+                result = new ArrayList<SiteInfo>(results.length());
+                for (NodeRef site : results.getNodeRefs())
+                {
+                  result.add(createSiteInfo(site));
+                }
+            }
+            finally
+            {
+                results.close();
+            }
+        }
+        
+        return result;
+    }
     /*
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.site.SiteService#findSites(java.lang.String, java.lang.String, int)

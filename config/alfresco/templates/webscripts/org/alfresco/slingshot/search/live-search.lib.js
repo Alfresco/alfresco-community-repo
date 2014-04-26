@@ -259,8 +259,7 @@ function getSiteResults(params)
 {
    // Get the list of sites - ensure we use the faster fts based search code path
    var t = params.term;
-   if (t[0] !== '*') t = "*" + t;
-   var sites = siteService.getSites(t, null, params.maxResults);
+   var sites = siteService.findSites(t, params.maxResults);
    return buildResults(sites, params);
 }
 

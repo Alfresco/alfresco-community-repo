@@ -768,14 +768,13 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(sites);
         assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());
         
-//        sites = this.siteService.findSites("n3w s1t3 88", 0);
-//        assertNotNull(sites);
-//        assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());   
-//        
-//
-//        sites = this.siteService.findSites("n3w s1t3 99", 0);
-//        assertNotNull(sites);
-//        assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());   
+        sites = this.siteService.findSites("n3w s1t3 88", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());
+
+        sites = this.siteService.findSites("n3w s1t3 99", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for tokenized search", 1, sites.size());   
         
         sites = this.siteService.findSites("n3w s1t3", 0);
         assertNotNull(sites);
@@ -797,17 +796,17 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(sites);
         assertEquals("Matched wrong number of sites for product", 1, sites.size());
         
-//        sites = this.siteService.findSites("super product", 0);
-//        assertNotNull(sites);
-//        assertEquals("Matched wrong number of sites for super product", 1, sites.size());
-//        
-//        sites = this.siteService.findSites("super launch", 0);
-//        assertNotNull(sites);
-//        assertEquals("Matched wrong number of sites for super launch", 1, sites.size());
+        sites = this.siteService.findSites("super product", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for super product", 1, sites.size());
         
-//        sites = this.siteService.findSites("exciting launch", 0);
-//        assertNotNull(sites);
-//        assertEquals("Matched wrong number of sites for super launch", 1, sites.size());
+        sites = this.siteService.findSites("super launch", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for super launch", 1, sites.size());
+        
+        sites = this.siteService.findSites("exciting launch", 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites for super launch", 1, sites.size());
         
         sites = this.siteService.findSites("super exciting", 0);
         assertNotNull(sites);

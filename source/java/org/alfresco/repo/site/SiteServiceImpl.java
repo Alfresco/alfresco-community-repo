@@ -853,9 +853,13 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 //cm:title
                 query.append(" OR ")
                      .append(" cm:title: (");
-                for (String token: tokenizedFilter)
+                for( int i = 0; i < tokenizedFilter.length; i++)
                 {
-                    query.append("\""+token+"*\" ");
+                  if (i!=0) //Not first element 
+                  {
+                      query.append(" AND ");
+                  }
+                  query.append("\""+tokenizedFilter[i]+"*\" ");
                 }
                 query.append(")");
 

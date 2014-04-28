@@ -837,21 +837,26 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 query.append(" AND (");
                 String escNameFilter = SearchLanguageConversion.escapeLuceneQuery(filter.replace('"', ' '));
                 String[] tokenizedFilter = SearchLanguageConversion.tokenizeString(escNameFilter);
-                query.append(" cm:name:\"" + StringUtils.trimAllWhitespace(escNameFilter) + "*\"")
-                     .append(" OR ")
+                
+                //cm:name
+                query.append(" cm:name:\" ");
+                for( int i = 0; i < tokenizedFilter.length; i++)
+                {
+                  if (i!=0) //Not first element 
+                  {
+                      query.append("?");
+                  }
+                  query.append(tokenizedFilter[i].toLowerCase());
+                }
+                query.append("*\"");
+                
+                //cm:title
+                query.append(" OR ")
                      .append(" cm:title: (");
                 for (String token: tokenizedFilter)
                 {
                     query.append("\""+token+"*\" ");
                 }
-//                for( int i = 0; i < tokenizedFilter.length; i++)
-//                {
-//                    if (i!=0) //Not first element 
-//                    {
-//                        query.append(" AND |");
-//                    }
-//                    query.append(tokenizedFilter[i]+"*");
-//                }
                 query.append(")");
 
                 query.append(" OR cm:description:\"" + escNameFilter + "\"");            
@@ -867,7 +872,12 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 sp.setLimit(size);
                 sp.setLimitBy(LimitBy.FINAL_SIZE);
             }
-
+            
+            if(logger.isDebugEnabled())
+            {
+               logger.debug("Search parameters are: " + sp);
+            }
+            
             ResultSet results = this.searchService.query(sp);
             try
             {

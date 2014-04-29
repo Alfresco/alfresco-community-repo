@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.UrlUtil;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -54,14 +55,14 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
 {
     /** message lookups */
     protected static final String MSG_REPORT = "report.default";
-    
+
     /** template lookup root */
     protected static final NodeRef TEMPLATE_ROOT = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_report_templates");
 
     /** model keys */
     protected static final String KEY_NODE = "node";
     protected static final String KEY_CHILDREN = "children";
-    
+
     /** applicable reported upon types */
     protected Set<QName> applicableTypes;
 
@@ -82,10 +83,10 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
 
     /** node service */
     protected NodeService nodeService;
-    
+
     /** dictionary service */
     protected DictionaryService dictionaryService;
-    
+
     /** sys admin params */
     protected SysAdminParams sysAdminParams;
 
@@ -96,7 +97,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     {
         this.applicableTypes = applicableTypes;
     }
-    
+
     /**
      * @param mimetypeService   mimetype service
      */
@@ -136,7 +137,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param dictionaryService dictionary service
      */
@@ -160,7 +161,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     {
         this.sysAdminParams = sysAdminParams;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.report.generator.BaseReportGenerator#generateReportName(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -169,37 +170,37 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     {
         // get the file extension based on the mimetype
         String extension = mimetypeService.getExtension(mimetype);
-        
+
         // get the name of the reported updon node ref
         String name = (String)nodeService.getProperty(reportedUponNodeRef, ContentModel.PROP_NAME);
-        
+
         // build default report name
         StringBuilder builder = new StringBuilder();
         builder.append(getReportDisplayLabel());
-        if (name != null & !name.isEmpty())
+        if (StringUtils.isNotBlank(name))
         {
             builder.append(" - ").append(name);
         }
         builder.append(".").append(extension);
-        
+
         return builder.toString();
     }
-    
+
     /**
      * Helper method to get the report types display label
-     * 
+     *
      * @return  {@link String}  report type display label
      */
     private String getReportDisplayLabel()
     {
         String result = I18NUtil.getMessage(MSG_REPORT);
-        
+
         TypeDefinition typeDef = dictionaryService.getType(reportType);
         if (typeDef != null)
         {
             result = typeDef.getTitle(new StaticMessageLookup());
         }
-        
+
         return result;
     }
 
@@ -230,7 +231,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
 
     /**
      * Create template model.
-     * 
+     *
      * @param templateNodeRef
      * @param reportedUponNodeRef
      * @param properties
@@ -318,7 +319,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
         {
             boolean isTypeApplicable = false;
             QName type = nodeService.getType(reportedUponNodeRef);
-            
+
             for (QName applicableType : applicableTypes)
             {
                 if (dictionaryService.isSubClass(type, applicableType))
@@ -327,11 +328,11 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
                     break;
                 }
             }
-            
+
             if (!isTypeApplicable)
             {
                 // throw an exception
-                throw new AlfrescoRuntimeException("Can't generate report, because the provided reported upon node reference is type " + type.toString() + 
+                throw new AlfrescoRuntimeException("Can't generate report, because the provided reported upon node reference is type " + type.toString() +
                                                    " which is not an applicable type for a " + reportType.toString() + " report.");
             }
         }

@@ -59,5 +59,26 @@
          <value>${rm.ghosting.enabled}</value>
       </property>
    </bean>
+   
+   <bean id="rm.holdReportPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22HoldReportPatch">
+      <property name="description" value="Patches the hold report template."/>
+      <property name="fixesToSchema" value="1005"/>
+      <property name="targetSchema" value="1006"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="contentService" ref="ContentService"/>
+   </bean>
+   
+	<bean id="rm.fileHoldReportCapabilityPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22FileHoldReportCapabilityPatch">
+      <property name="description" value="Add FileHoldReport capability."/>
+      <property name="fixesToSchema" value="1006"/>
+      <property name="targetSchema" value="1007"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+      <property name="capabilityService" ref="CapabilityService"/>
+   </bean>
 
 </beans>

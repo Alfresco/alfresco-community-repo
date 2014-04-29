@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,30 +16,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.report;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.report;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * Report generator interface.
- * 
+ * Report integration test suite
+ *
  * @author Roy Wetherall
- * @since 2.1
+ * @since 2.2
  */
-public interface ReportGenerator
+@RunWith(Suite.class)
+@SuiteClasses(
 {
-    /**
-     * @return {@link QName} report type
-     */
-    QName getReportType();
-
-    /**
-     * Generate report.
-     * 
-     * @param reportedUponNodeRef
-     * @param mimetype
-     * @return
-     */
-    Report generateReport(NodeRef reportedUponNodeRef, String mimetype);
+    HoldReportTest.class
+})
+public class ReportTestSuite
+{
 }

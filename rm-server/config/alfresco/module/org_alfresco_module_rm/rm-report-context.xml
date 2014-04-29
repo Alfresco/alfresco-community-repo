@@ -74,72 +74,32 @@
       <property name="mimetypeService" ref="MimetypeService"/>
       <property name="fileFolderService" ref="FileFolderService"/>
       <property name="templateService" ref="TemplateService"/>
-      <property name="parameterProcessorComponent" ref="parameterProcessorComponent"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="dictionaryService" ref="DictionaryService"/>
       <property name="repository" ref="repositoryHelper" />
       <property name="sysAdminParams" ref="sysAdminParams" />
    </bean>
 
    <bean id="destructionReportGenerator" parent="declarativeReportGenerator">
-      <property name="reportTypeName" value="rmr:destructionReport" />
+      <property name="reportType" value="rmr:destructionReport" />
    </bean>
 
-   <bean id="transferReportGenerator" parent="declarativeReportGenerator">
-      <property name="reportTypeName" value="rmr:transferReport" />
-   </bean>
-
-   <!--  Report Actions -->
-
-   <bean id="baseReportAction" abstract="true" parent="rmAction">
-      <property name="reportService" ref="reportService" />
-   </bean>
-
-   <bean id="transferReport"
-         class="org.alfresco.module.org_alfresco_module_rm.report.action.TransferReportAction"
-         parent="baseReportAction" />
-
-   <bean id="transferReport_proxy" parent="rmProxyAction" >
-      <property name="target">
-         <ref bean="transferReport"/>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref bean="transferReport_security"/>
-         </list>
+   <bean id="transferReportGenerator" parent="declarativeReportGenerator" class="org.alfresco.module.org_alfresco_module_rm.report.generator.transfer.TransferReportGenerator">      
+      <property name="dispositionService" ref="DispositionService"/>
+      <property name="reportType" value="rmr:transferReport" />
+      <property name="applicableTypes">
+         <set>
+         	<value>rma:transfer</value>
+         </set>
       </property>
    </bean>
 
-   <bean id="transferReport_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.FileTransferReport
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
-            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
-         </value>
-      </property>
-   </bean>
-
-   <bean id="destructionReport"
-         class="org.alfresco.module.org_alfresco_module_rm.report.action.DestructionReportAction"
-         parent="baseReportAction" />
-
-   <bean id="destructionReport_proxy" parent="rmProxyAction" >
-      <property name="target">
-         <ref bean="destructionReport"/>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref bean="destructionReport_security"/>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="destructionReport_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.FileDestructionReport
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
-            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
-         </value>
+   <bean id="holdReportGenerator" parent="declarativeReportGenerator">
+      <property name="reportType" value="rmr:holdReport" />
+      <property name="applicableTypes">
+         <set>
+         	<value>rma:hold</value>
+         </set>
       </property>
    </bean>
 

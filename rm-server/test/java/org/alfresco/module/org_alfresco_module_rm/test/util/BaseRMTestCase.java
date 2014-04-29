@@ -810,49 +810,99 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         }
     }
     
+    /**
+     * Execute behaviour driven test.
+     * 
+     * @param test
+     */
     protected void doBehaviourDrivenTest(BehaviourDrivenTest test)
     {
         test.run();
     }
     
+    /**
+     * Behaviour driven test.
+     * 
+     * @author Roy Wetherall
+     * @since 2.2
+     */
     protected abstract class BehaviourDrivenTest
     {
-        public abstract void given();
+        protected Class<?> expectedException;
         
-        public abstract void when();
+        public BehaviourDrivenTest()
+        {
+        }
         
-        public abstract void then();
+        public BehaviourDrivenTest(Class<?> expectedException)
+        {
+            this.expectedException = expectedException;
+        }
+        
+        public void given() { /** empty implementation */ }
+        
+        public void when() { /** empty implementation */ }
+        
+        public void then() { /** empty implementation */ }
+        
+        public void after() { /** empty implementation */ }
         
         public void run()
         {
-            doTestInTransaction(new VoidTest()
-            {                
-                @Override
-                public void runImpl() throws Exception
-                {
-                   given(); 
-                }
-            });
-            
-            doTestInTransaction(new VoidTest()
+            try
             {
+                doTestInTransaction(new VoidTest()
+                {                
+                    @Override
+                    public void runImpl() throws Exception
+                    {
+                       given(); 
+                    }
+                });
                 
-                @Override
-                public void runImpl() throws Exception
+                if (expectedException == null)
                 {
-                    when();
+                    doTestInTransaction(new VoidTest()
+                    {                
+                        @Override
+                        public void runImpl() throws Exception
+                        {
+                            when();
+                        }
+                    });
+                    
+                    doTestInTransaction(new VoidTest()
+                    {                
+                        @Override
+                        public void runImpl() throws Exception
+                        {
+                            then();
+                        }
+                    });
                 }
-            });
-            
-            doTestInTransaction(new VoidTest()
-            {
-                
-                @Override
-                public void runImpl() throws Exception
+                else
                 {
-                    then();
+                    doTestInTransaction(new FailureTest(expectedException)
+                    {                    
+                        @Override
+                        public void run() throws Exception
+                        {
+                            when();
+                        }
+                    });                
                 }
-            });           
+            }
+            finally
+            {            
+                doTestInTransaction(new VoidTest()
+                {                
+                    @Override
+                    public void runImpl() throws Exception
+                    {
+                       after(); 
+                    }
+                });
+            }
         }        
     }
 }

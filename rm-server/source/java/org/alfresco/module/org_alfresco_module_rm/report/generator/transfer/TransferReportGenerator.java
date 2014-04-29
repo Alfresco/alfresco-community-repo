@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.report.action;
+package org.alfresco.module.org_alfresco_module_rm.report.generator.transfer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,7 +27,9 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.report.generator.DeclarativeReportGenerator;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -35,21 +37,33 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Transfer report action
- *
+ * Transfer report generator.
+ * 
  * @author Tuna Aksoy
+ * @author Roy Wetherall
  * @since 2.2
  */
-public class TransferReportAction extends BaseReportAction
+public class TransferReportGenerator extends DeclarativeReportGenerator
 {
-    /** Action name */
-    public static final String NAME = "transferReport";
-
+    /** dispotion service */
+    protected DispositionService dispositionService;
+    
+    /**
+     * @param dispositionService    disposition service
+     */
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.report.generator.DeclarativeReportGeneratorUnitTest#generateReportTemplateContext(org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
-    protected Map<String, Serializable> addProperties(NodeRef nodeRef)
+    protected Map<String, Serializable> generateReportTemplateContext(NodeRef reportedUponNodeRef)
     {
         // Get all 'transferred' nodes
-        List<TransferNode> transferNodes = getTransferNodes(nodeRef);
+        List<TransferNode> transferNodes = getTransferNodes(reportedUponNodeRef);
 
         // Get the disposition authority
         String dispositionAuthority = getDispositionAuthority(transferNodes);
@@ -215,4 +229,5 @@ public class TransferReportAction extends BaseReportAction
         }
         return dispositionAuthority == null ? StringUtils.EMPTY : dispositionAuthority;
     }
+
 }

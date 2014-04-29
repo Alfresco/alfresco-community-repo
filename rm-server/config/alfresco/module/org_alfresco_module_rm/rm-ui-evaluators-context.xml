@@ -868,4 +868,15 @@
       </property>
       <property name="capability" value ="RemoveFromHold"/>
    </bean>
+   
+   <bean id="jsonConversionComponent.fileHoldReport"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="fileHoldReport"/>
+      <property name="kinds">
+         <set>
+            <value>HOLD</value>
+         </set>
+      </property>
+      <property name="capability" value ="FileHoldReport"/>
+   </bean>
 </beans>

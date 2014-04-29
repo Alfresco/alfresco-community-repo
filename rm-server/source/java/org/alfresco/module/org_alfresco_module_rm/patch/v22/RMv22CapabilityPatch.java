@@ -18,15 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch.v22;
 
-import java.util.Set;
-
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
-import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
+import org.alfresco.module.org_alfresco_module_rm.patch.common.CapabilityPatch;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -35,128 +28,29 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.2
  */
-public class RMv22CapabilityPatch extends AbstractModulePatch
+public class RMv22CapabilityPatch extends CapabilityPatch
 {
-
-    /** File plan service */
-    private FilePlanService filePlanService;
-
-    /** File plan role service */
-    private FilePlanRoleService filePlanRoleService;
-
-    /** Capability service */
-    private CapabilityService capabilityService;
-
     /**
-     * @param filePlanRoleService   file plan role service
+     * @see org.alfresco.module.org_alfresco_module_rm.patch.common.CapabilityPatch#applyCapabilityPatch(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
+    protected void applyCapabilityPatch(NodeRef filePlan) 
     {
-        this.filePlanRoleService = filePlanRoleService;
-    }
-
-    /**
-     * @param capabilityService capability service
-     */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
-        this.capabilityService = capabilityService;
-    }
-
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
-
-    /**
-     * Helper method to get the file plans
-     *
-     * @return Set of file plan node references
-     */
-    protected Set<NodeRef> getFilePlans()
-    {
-        return filePlanService.getFilePlans();
-    }
-
-    /**
-     * Adds a new capability to the specified roles.
-     *
-     * @param filePlan          file plan
-     * @param capabilityName    capability name
-     * @param roles             roles
-     */
-    protected void addCapability(NodeRef filePlan, String capabilityName, String ... roles)
-    {
-        Capability capability = capabilityService.getCapability(capabilityName);
-        if (capability == null)
-        {
-            throw new AlfrescoRuntimeException("Unable to bootstrap RMv21 capabilities, because capability " + capabilityName + " does not exist.");
-        }
-
-        for (String roleName : roles)
-        {
-            Role role = filePlanRoleService.getRole(filePlan, roleName);
-
-            if (role != null)
-            {
-                // get the roles current capabilities
-                Set<Capability> capabilities = role.getCapabilities();
-
-                // only update if the capability is missing
-                if (!capabilities.contains(capability))
-                {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("  ... adding capability " + capabilityName + " to role " + role.getName());
-                    }
-
-                    capabilities.add(capability);
-                    filePlanRoleService.updateRole(filePlan, role.getName(), role.getDisplayLabel(), capabilities);
-                }
-            }
-        }
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
-     */
-    @Override
-    public void applyInternal()
-    {
-        Set<NodeRef> filePlans = getFilePlans();
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("  ... updating " + filePlans.size() + " file plans");
-        }
-
-        for (NodeRef filePlan : filePlans)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("  ... updating file plan " + filePlan.toString());
-            }
-
-            // add new capability
-            addCapability(filePlan,
-                          "FileDestructionReport",
-                          FilePlanRoleService.ROLE_ADMIN,
-                          FilePlanRoleService.ROLE_RECORDS_MANAGER);
-            addCapability(filePlan,
-                          "CreateHold",
-                          FilePlanRoleService.ROLE_ADMIN,
-                          FilePlanRoleService.ROLE_RECORDS_MANAGER);
-            addCapability(filePlan,
-                          "AddToHold",
-                          FilePlanRoleService.ROLE_ADMIN,
-                          FilePlanRoleService.ROLE_RECORDS_MANAGER);
-            addCapability(filePlan,
-                          "RemoveFromHold",
-                          FilePlanRoleService.ROLE_ADMIN,
-                          FilePlanRoleService.ROLE_RECORDS_MANAGER);
-        }
+        // add new capability
+        addCapability(filePlan,
+                      "FileDestructionReport",
+                      FilePlanRoleService.ROLE_ADMIN,
+                      FilePlanRoleService.ROLE_RECORDS_MANAGER);
+        addCapability(filePlan,
+                      "CreateHold",
+                      FilePlanRoleService.ROLE_ADMIN,
+                      FilePlanRoleService.ROLE_RECORDS_MANAGER);
+        addCapability(filePlan,
+                      "AddToHold",
+                      FilePlanRoleService.ROLE_ADMIN,
+                      FilePlanRoleService.ROLE_RECORDS_MANAGER);
+        addCapability(filePlan,
+                      "RemoveFromHold",
+                      FilePlanRoleService.ROLE_ADMIN,
+                      FilePlanRoleService.ROLE_RECORDS_MANAGER);
     }
 }

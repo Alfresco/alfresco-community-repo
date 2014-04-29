@@ -96,7 +96,17 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
 
         if (auditable)
         {
-            getAuditService().registerAuditEvent(this.getActionDefinition().getName(), this.getActionDefinition().getTitle());
+            // get the details of the action
+            String name = getActionDefinition().getName();
+            String title = getActionDefinition().getTitle();
+            if (title == null || title.isEmpty())
+            {
+                // default to name if no title available
+                title = name;
+            }
+            
+            // register audit event
+            getAuditService().registerAuditEvent(title, name);
         }
     }
 

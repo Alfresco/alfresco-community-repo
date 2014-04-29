@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,40 +16,39 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.report;
+package org.alfresco.module.org_alfresco_module_rm.util;
 
-import java.io.Serializable;
-import java.util.Map;
+import java.beans.PropertyEditorSupport;
 
-import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Report interface.
+ * QName type editor.
  * 
  * @author Roy Wetherall
- * @since 2.1
+ * @since 2.2
  */
-public interface Report
+public class QNameTypeEditor extends PropertyEditorSupport
 {
-    /**
-     * @return  {@link QName} report type
-     */
-    QName getReportType();
+    /** namespace service */
+    private NamespaceService namespaceService;
     
     /**
-     * @return  {@link String}  report name
+     * @param namespaceService  namespace service
      */
-    String getReportName();
+    public QNameTypeEditor(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
     
     /**
-     * @return  {@link Map}<{@link QName},{@link Serializable}>  report properties
+     * @see java.beans.PropertyEditorSupport#setAsText(java.lang.String)
      */
-    Map<QName, Serializable> getReportProperties();
-    
-    /**
-     * @return {@link ContentReader}  content reader to report content
-     */
-    ContentReader getReportContent();
-
+    @Override
+    public void setAsText(String text) throws IllegalArgumentException
+    {
+        // convert prefix string to QName
+        setValue(QName.createQName(text, namespaceService));
+    }
 }

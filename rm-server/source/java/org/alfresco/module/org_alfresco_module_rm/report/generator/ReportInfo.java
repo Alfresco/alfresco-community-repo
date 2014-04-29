@@ -45,6 +45,14 @@ import org.springframework.extensions.surf.util.ParameterCheck;
     /** content reader */
     private ContentReader reportContent;
     
+    /**
+     * Default constructor.
+     * 
+     * @param reportType        report type
+     * @param reportName        report name
+     * @param reportProperties  report properties
+     * @param reportContent     report content reader
+     */
     public ReportInfo(QName reportType, String reportName, Map<QName, Serializable> reportProperties, ContentReader reportContent)
     {
         ParameterCheck.mandatory("reportType", reportType);
@@ -57,22 +65,35 @@ import org.springframework.extensions.surf.util.ParameterCheck;
         this.reportContent = reportContent;
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.report.Report#getReportType()
+     */
     public QName getReportType()
     {
         return reportType;
     }
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.report.Report#getReportName()
+     */
     @Override
     public String getReportName()
     {
         return reportName;
     }
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.report.Report#getReportProperties()
+     */
+    @Override
     public Map<QName, Serializable> getReportProperties()
     {
         return reportProperties;
     }
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.report.Report#getReportContent()
+     */
     @Override
     public ContentReader getReportContent()
     {

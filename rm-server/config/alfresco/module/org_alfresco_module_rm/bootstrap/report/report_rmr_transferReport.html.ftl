@@ -58,6 +58,7 @@
       </div>
    </body>
 </html>
+
 <#macro generateTransferFolderHTML transferNode>
    <span class="nodeName">
       ${transferNode.properties["name"]?html}
@@ -69,6 +70,7 @@
       </#list>
    </div>
 </#macro>
+
 <#macro generateTransferRecordHTML transferNode>
    <div class="record">
       <span class="nodeName">

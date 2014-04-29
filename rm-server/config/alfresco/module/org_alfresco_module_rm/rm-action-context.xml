@@ -1054,5 +1054,35 @@
    <bean id="addRecordTypes" class="org.alfresco.module.org_alfresco_module_rm.action.impl.AddRecordTypeAction" parent="rmAction">
       <property name="publicAction" value="true"/>
    </bean>
+   
+   <!--  file report action -->
+   
+   <bean id="fileReport"
+         class="org.alfresco.module.org_alfresco_module_rm.action.impl.FileReportAction"
+         parent="rmAction">      
+      <property name="reportService" ref="ReportService" />
+      <property name="publicAction" value="false"/>
+   </bean>
+
+   <bean id="fileReport_proxy" parent="rmProxyAction" >
+      <property name="target">
+         <ref bean="fileReport"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="fileReport_security"/>
+         </list>
+      </property>
+   </bean>
+ 
+   <bean id="fileReport_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
+   </bean>
 
 </beans>

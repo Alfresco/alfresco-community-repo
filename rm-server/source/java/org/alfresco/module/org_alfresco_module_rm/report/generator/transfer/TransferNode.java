@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,28 +16,50 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.report.action;
+package org.alfresco.module.org_alfresco_module_rm.report.generator.transfer;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Destruction report action
+ * Transfer node class
  *
  * @author Tuna Aksoy
  * @since 2.2
  */
-public class DestructionReportAction extends BaseReportAction
+public class TransferNode
 {
-    /** Action name */
-    public static final String NAME = "destructionReport";
+    /** Transfer node reference */
+    private NodeRef nodeRef;
 
-    @Override
-    protected Map<String, Serializable> addProperties(NodeRef nodeRef)
+    /** Transfer node properties */
+    private Map<String, Serializable> properties;
+
+    /**
+     * @param nodeRef
+     * @param properties
+     */
+    public TransferNode(NodeRef nodeRef, Map<String, Serializable> properties)
     {
-        return new HashMap<String, Serializable>(1);
+        this.nodeRef = nodeRef;
+        this.properties = properties;
+    }
+
+    /**
+     * @return transfer node reference
+     */
+    public NodeRef getNodeRef()
+    {
+        return this.nodeRef;
+    }
+
+    /**
+     * @return transfer node properties
+     */
+    public Map<String, Serializable> getProperties()
+    {
+        return this.properties;
     }
 }

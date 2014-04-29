@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,21 +19,28 @@
 package org.alfresco.module.org_alfresco_module_rm.report.generator;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.action.parameter.ParameterProcessorComponent;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.UrlUtil;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -45,12 +52,18 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class DeclarativeReportGenerator extends BaseReportGenerator
 {
+    /** message lookups */
+    protected static final String MSG_REPORT = "report.default";
+    
     /** template lookup root */
     protected static final NodeRef TEMPLATE_ROOT = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_report_templates");
 
     /** model keys */
     protected static final String KEY_NODE = "node";
     protected static final String KEY_CHILDREN = "children";
+    
+    /** applicable reported upon types */
+    protected Set<QName> applicableTypes;
 
     /** content service */
     protected ContentService contentService;
@@ -67,12 +80,23 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     /** repository helper */
     protected Repository repository;
 
-    /** parameter processor component */
-    protected ParameterProcessorComponent parameterProcessorComponent;
-
+    /** node service */
+    protected NodeService nodeService;
+    
+    /** dictionary service */
+    protected DictionaryService dictionaryService;
+    
     /** sys admin params */
     protected SysAdminParams sysAdminParams;
 
+    /**
+     * @param applicableTypes   applicable types
+     */
+    public void setApplicableTypes(Set<QName> applicableTypes)
+    {
+        this.applicableTypes = applicableTypes;
+    }
+    
     /**
      * @param mimetypeService   mimetype service
      */
@@ -106,11 +130,19 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     }
 
     /**
-     * @param parameterProcessorComponent   parameter processor component
+     * @param nodeService   node service
      */
-    public void setParameterProcessorComponent(ParameterProcessorComponent parameterProcessorComponent)
+    public void setNodeService(NodeService nodeService)
     {
-        this.parameterProcessorComponent = parameterProcessorComponent;
+        this.nodeService = nodeService;
+    }
+    
+    /**
+     * @param dictionaryService dictionary service
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
 
     /**
@@ -128,16 +160,47 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     {
         this.sysAdminParams = sysAdminParams;
     }
-
+    
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.report.generator.BaseReportGenerator#generateReportName(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected String generateReportName(NodeRef reportedUponNodeRef)
+    protected String generateReportName(NodeRef reportedUponNodeRef, String mimetype)
     {
-        String reportTypeName = reportType.getPrefixedQName(namespaceService).getPrefixString().replace(":", "_");
-        String value = I18NUtil.getMessage("report." + reportTypeName + ".name");
-        return parameterProcessorComponent.process(value, reportedUponNodeRef);
+        // get the file extension based on the mimetype
+        String extension = mimetypeService.getExtension(mimetype);
+        
+        // get the name of the reported updon node ref
+        String name = (String)nodeService.getProperty(reportedUponNodeRef, ContentModel.PROP_NAME);
+        
+        // build default report name
+        StringBuilder builder = new StringBuilder();
+        builder.append(getReportDisplayLabel());
+        if (name != null & !name.isEmpty())
+        {
+            builder.append(" - ").append(name);
+        }
+        builder.append(".").append(extension);
+        
+        return builder.toString();
+    }
+    
+    /**
+     * Helper method to get the report types display label
+     * 
+     * @return  {@link String}  report type display label
+     */
+    private String getReportDisplayLabel()
+    {
+        String result = I18NUtil.getMessage(MSG_REPORT);
+        
+        TypeDefinition typeDef = dictionaryService.getType(reportType);
+        if (typeDef != null)
+        {
+            result = typeDef.getTitle(new StaticMessageLookup());
+        }
+        
+        return result;
     }
 
     /**
@@ -165,6 +228,14 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
         return contentWriter.getReader();
     }
 
+    /**
+     * Create template model.
+     * 
+     * @param templateNodeRef
+     * @param reportedUponNodeRef
+     * @param properties
+     * @return
+     */
     protected Map<String, Serializable> createTemplateModel(NodeRef templateNodeRef, NodeRef reportedUponNodeRef, Map<String, Serializable> properties)
     {
         Map<String, Serializable> model = new HashMap<String, Serializable>();
@@ -214,8 +285,6 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
 
         // get localise template
         return fileFolderService.getLocalizedSibling(reportTemplateNodeRef);
-
-
     }
 
     /**
@@ -239,4 +308,52 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
         return sb.toString();
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.report.generator.BaseReportGenerator#checkReportApplicability(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    protected void checkReportApplicability(NodeRef reportedUponNodeRef) throws AlfrescoRuntimeException
+    {
+        if (applicableTypes != null && applicableTypes.size() != 0)
+        {
+            boolean isTypeApplicable = false;
+            QName type = nodeService.getType(reportedUponNodeRef);
+            
+            for (QName applicableType : applicableTypes)
+            {
+                if (dictionaryService.isSubClass(type, applicableType))
+                {
+                    isTypeApplicable = true;
+                    break;
+                }
+            }
+            
+            if (!isTypeApplicable)
+            {
+                // throw an exception
+                throw new AlfrescoRuntimeException("Can't generate report, because the provided reported upon node reference is type " + type.toString() + 
+                                                   " which is not an applicable type for a " + reportType.toString() + " report.");
+            }
+        }
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.report.generator.BaseReportGenerator#generateReportTemplateContext(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    protected Map<String, Serializable> generateReportTemplateContext(NodeRef reportedUponNodeRef)
+    {
+        return Collections.EMPTY_MAP;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.report.generator.BaseReportGenerator#generateReportMetadata(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    protected Map<QName, Serializable> generateReportMetadata(NodeRef reportedUponNodeRef)
+    {
+        return Collections.EMPTY_MAP;
+    }
 }

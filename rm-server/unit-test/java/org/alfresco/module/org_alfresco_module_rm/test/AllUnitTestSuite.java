@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
+import org.alfresco.module.org_alfresco_module_rm.action.impl.FileReportActionUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HoldCapabilityConditionUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementTypeFormFilterUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServiceImplUnitTest;
@@ -62,7 +63,10 @@ import org.junit.runners.Suite.SuiteClasses;
     HoldPutUnitTest.class,
     
     // capability conditions
-    HoldCapabilityConditionUnitTest.class
+    HoldCapabilityConditionUnitTest.class,
+    
+    // action implementations
+    FileReportActionUnitTest.class
 })
 public class AllUnitTestSuite
 {

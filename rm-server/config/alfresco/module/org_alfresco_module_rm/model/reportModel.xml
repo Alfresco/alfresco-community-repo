@@ -35,11 +35,15 @@
          <parent>cm:content</parent>
       </type>
       <type name="rmr:destructionReport">
-         <title>Report</title>
+         <title>Destruction Report</title>
          <parent>rmr:report</parent>
       </type>
       <type name="rmr:transferReport">
-         <title>Transfer</title>
+         <title>Transfer Report</title>
+         <parent>rmr:report</parent>
+      </type>
+      <type name="rmr:holdReport">
+         <title>Hold Report</title>
          <parent>rmr:report</parent>
       </type>
    </types>

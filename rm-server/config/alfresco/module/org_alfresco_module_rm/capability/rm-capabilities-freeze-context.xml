@@ -113,4 +113,23 @@
       <property name="group"><ref bean="holdControlsGroup"/></property>
       <property name="index" value="60" />
    </bean>
+   
+   <!--  file hold report capability -->
+   <bean id="rmFileHoldReportCapability"
+         parent="declarativeCapability">
+      <property name="name" value="FileHoldReport" />
+      <property name="permission" value="FileHoldReport" />     <!--  Associated permission -->
+      <property name="kinds">
+         <list>
+            <value>HOLD</value>                                 <!--  Only applies to holds -->            
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>     <!--  Must have read and file permissions -->
+         </map>
+      </property>
+      <property name="group"><ref bean="holdControlsGroup"/></property>      <!--  Part of the hold group of capabilities -->
+      <property name="index" value="80" />
+   </bean>
 </beans>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,10 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.report.action;
-
-import java.io.Serializable;
-import java.util.Map;
+package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -36,16 +33,20 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Base class for the report action classes
+ * File report generic action.
  *
  * @author Tuna Aksoy
  * @since 2.2
  */
-public abstract class BaseReportAction extends RMActionExecuterAbstractBase implements ReportModel
+public class FileReportAction extends RMActionExecuterAbstractBase implements ReportModel
 {
+    /** action name */
+    public static final String NAME = "fileReport";
+    
     /** Constants for the parameters passed from the UI */
     public static final String REPORT_TYPE = "reportType";
     public static final String DESTINATION = "destination";
+    public static final String MIMETYPE= "mimetype";
 
     /** I18N */
     private static final String MSG_PARAM_NOT_SUPPLIED = "rm.action.parameter-not-supplied";
@@ -67,27 +68,29 @@ public abstract class BaseReportAction extends RMActionExecuterAbstractBase impl
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        // TODO check that the actionedUponNodeRef is in a state to generate a destruction report
-        //      ie: is it eligable for destruction .. use fileDestructionReport capability!
-
-        // TODO allow the mimetype of the report to be specified as a parameter
-
+        // get the mimetype of the report
+        String mimetype = (String)action.getParameterValue(MIMETYPE);
+        if (mimetype == null || mimetype.isEmpty())
+        {
+            mimetype = MimetypeMap.MIMETYPE_HTML;
+        }
+        
+        // get the report type
         QName reportType = getReportType(action);
-        Report report = reportService.generateReport(reportType, actionedUponNodeRef, MimetypeMap.MIMETYPE_HTML, addProperties(actionedUponNodeRef));
-
+        
+        // get the destination
         NodeRef destination = getDestination(action);
+        
+        // generate the report
+        Report report = reportService.generateReport(reportType, actionedUponNodeRef, mimetype);
+        
+        // file the report
         NodeRef filedReport = reportService.fileReport(destination, report);
 
+        // return the report name
         String filedReportName = (String) nodeService.getProperty(filedReport, ContentModel.PROP_NAME);
         action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, filedReportName);
     }
-
-    /**
-     * Gives other action classes to pass additional properties for the template model
-     *
-     * @return Properties which are passed to the template model
-     */
-    protected abstract Map<String, Serializable> addProperties(NodeRef nodeRef);
 
     /**
      * Retrieves the value of the given parameter. If the parameter has not been passed from the UI an error will be thrown

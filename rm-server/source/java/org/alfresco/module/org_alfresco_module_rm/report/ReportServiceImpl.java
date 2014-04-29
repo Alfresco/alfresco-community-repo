@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,7 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.report;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -95,20 +94,6 @@ public class ReportServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("reportedUponNodeRef", reportedUponNodeRef);
         ParameterCheck.mandatoryString("mimetype", mimetype);
 
-        return generateReport(reportType, reportedUponNodeRef, mimetype, new HashMap<String, Serializable>(1));
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.report.ReportService#generateReport(QName, NodeRef, String, Map)
-     */
-    @Override
-    public Report generateReport(QName reportType, NodeRef reportedUponNodeRef, String mimetype, Map<String, Serializable> properties)
-    {
-        ParameterCheck.mandatory("reportType", reportType);
-        ParameterCheck.mandatory("reportedUponNodeRef", reportedUponNodeRef);
-        ParameterCheck.mandatoryString("mimetype", mimetype);
-        ParameterCheck.mandatory("properties", properties);
-
         // get the generator
         ReportGenerator generator = registry.get(reportType);
 
@@ -119,7 +104,7 @@ public class ReportServiceImpl extends ServiceBaseImpl
         }
 
         // generate the report
-        return generator.generateReport(reportedUponNodeRef, mimetype, properties);
+        return generator.generateReport(reportedUponNodeRef, mimetype);
     }
 
     /**

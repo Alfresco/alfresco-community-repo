@@ -19,7 +19,6 @@
 package org.alfresco.module.org_alfresco_module_rm.test.service;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -28,12 +27,10 @@ import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.FileReportAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
 import org.alfresco.module.org_alfresco_module_rm.report.Report;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
-import org.alfresco.module.org_alfresco_module_rm.report.action.DestructionReportAction;
-import org.alfresco.module.org_alfresco_module_rm.report.action.TransferNode;
-import org.alfresco.module.org_alfresco_module_rm.report.action.TransferReportAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.repo.content.MimetypeMap;
@@ -84,7 +81,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
                 System.out.println(destructionReport.getReportContent().getContentString());
 
                 // Transfer Report
-                Report transferReport = generateTransfertReport();
+                Report transferReport = reportService.generateReport(TYPE_TRANSFER_REPORT, getTransferObject(), MimetypeMap.MIMETYPE_HTML);
                 System.out.println(transferReport.getReportName());
                 System.out.println(transferReport.getReportContent().getContentString());
 
@@ -128,22 +125,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
     {
         return reportService.generateReport(TYPE_DESTRUCTION_REPORT, rmFolder);
     }
-
-    /**
-     * Helper method to generate a transfer report
-     *
-     * @return Transfer report
-     */
-    private Report generateTransfertReport()
-    {
-        Map<String, Serializable> properties = new HashMap<String, Serializable>(2);
-        ArrayList<TransferNode> transferNodes = new ArrayList<TransferNode>(1);
-        String dispositionAuthority = StringUtils.EMPTY;
-        properties.put("transferNodes", transferNodes);
-        properties.put("dispositionAuthority", dispositionAuthority);
-        return reportService.generateReport(TYPE_TRANSFER_REPORT, getTransferObject(), MimetypeMap.MIMETYPE_HTML, properties);
-    }
-
+    
     /**
      * Helper method to file a destruction report
      *
@@ -162,7 +144,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
      */
     private NodeRef fileTransferReport()
     {
-        Report transferReport = generateTransfertReport();
+        Report transferReport = reportService.generateReport(TYPE_TRANSFER_REPORT, getTransferObject(), MimetypeMap.MIMETYPE_HTML);
         return reportService.fileReport(filePlan, transferReport);
     }
 
@@ -181,9 +163,9 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
                 rmActionService.executeRecordsManagementAction(rmFolder, DestroyAction.NAME);
                 
                 Map<String, Serializable> fileReportParams = new HashMap<String, Serializable>(2);
-                fileReportParams.put(DestructionReportAction.REPORT_TYPE, "rmr:destructionReport");
-                fileReportParams.put(DestructionReportAction.DESTINATION, filePlan.toString());
-                rmActionService.executeRecordsManagementAction(rmFolder, DestructionReportAction.NAME, fileReportParams);
+                fileReportParams.put(FileReportAction.REPORT_TYPE, "rmr:destructionReport");
+                fileReportParams.put(FileReportAction.DESTINATION, filePlan.toString());
+                rmActionService.executeRecordsManagementAction(rmFolder, FileReportAction.NAME, fileReportParams);
                 return null;
             }
         });
@@ -198,9 +180,9 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
             {
                 // Create transfer report for the transfer object
                 Map<String, Serializable> params = new HashMap<String, Serializable>(2);
-                params.put(TransferReportAction.REPORT_TYPE, "rmr:transferReport");
-                params.put(TransferReportAction.DESTINATION, filePlan.toString());
-                RecordsManagementActionResult transferReportAction = rmActionService.executeRecordsManagementAction(getTransferObject(), TransferReportAction.NAME, params);
+                params.put(FileReportAction.REPORT_TYPE, "rmr:transferReport");
+                params.put(FileReportAction.DESTINATION, filePlan.toString());
+                RecordsManagementActionResult transferReportAction = rmActionService.executeRecordsManagementAction(getTransferObject(), FileReportAction.NAME, params);
                 // Check transfer report result
                 String transferReportName = (String) transferReportAction.getValue();
                 assertFalse(StringUtils.isBlank(transferReportName));

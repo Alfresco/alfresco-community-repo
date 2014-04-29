@@ -141,7 +141,8 @@
           "FileTransferReport",
           "CreateHold",
           "AddToHold",
-          "RemoveFromHold"
+          "RemoveFromHold",
+          "FileHoldReport"
       ]
    },
    {
@@ -211,7 +212,8 @@
           "FileTransferReport",
           "CreateHold",
           "AddToHold",
-          "RemoveFromHold"
+          "RemoveFromHold",
+          "FileHoldReport"
       ]
    }
 ]

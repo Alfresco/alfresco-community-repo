@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.dod.DoD5015TestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.event.EventTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.issue.IssueTestSuite;
+import org.alfresco.module.org_alfresco_module_rm.test.integration.report.ReportTestSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -37,7 +38,8 @@ import org.junit.runners.Suite.SuiteClasses;
 {
     DoD5015TestSuite.class,
     IssueTestSuite.class,
-    EventTestSuite.class
+    EventTestSuite.class,
+    ReportTestSuite.class
 })
 public class IntegrationTestSuite
 {

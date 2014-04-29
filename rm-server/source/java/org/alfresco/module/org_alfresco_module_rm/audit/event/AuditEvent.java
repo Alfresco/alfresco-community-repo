@@ -18,10 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
-import java.util.Comparator;
-
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.util.ParameterCheck;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 
@@ -32,7 +31,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 1.0
  */
-public class AuditEvent implements RecordsManagementModel, Comparator<AuditEvent>
+public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent>
 {
 	/** Name */
     protected String name;
@@ -55,15 +54,19 @@ public class AuditEvent implements RecordsManagementModel, Comparator<AuditEvent
      * Init method
      */
     public void init()
-    {
+    {        
+        ParameterCheck.mandatory("name", name);
+        ParameterCheck.mandatory("label", label);
+        
         recordsManagementAuditService.registerAuditEvent(this);
     }
-
+    
     /**
-     * Default constructor
+     * Default constructor.
      */
     public AuditEvent()
-    {     
+    {
+        // do nothing
     }
     
     /**
@@ -74,6 +77,9 @@ public class AuditEvent implements RecordsManagementModel, Comparator<AuditEvent
      */
     public AuditEvent(String name, String label)
     {
+        ParameterCheck.mandatory("name", name);
+        ParameterCheck.mandatory("label", label);
+        
         this.name = name;
         this.label = label;
     }
@@ -116,11 +122,14 @@ public class AuditEvent implements RecordsManagementModel, Comparator<AuditEvent
 	}
 
     /**
-     * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+     * Compare by label.
+     * 
+     * @param compare   compare to audit event
+     * @return int      
      */
     @Override
-    public int compare(AuditEvent first, AuditEvent second)
+    public int compareTo(AuditEvent compare)
     {
-        return first.getLabel().compareTo(second.getLabel());
+        return getLabel().compareTo(compare.getLabel());
     }
 }

@@ -227,6 +227,23 @@
                         </view:properties>
                      </cm:content>
                   </cm:contains>
+                  <cm:contains>
+                     <cm:content view:childName="cm:report_rmr_holdReport.html.ftl">
+                        <view:aspects>
+                           <cm:titled></cm:titled>
+                           <cm:author></cm:author>
+                        </view:aspects>
+                        <view:properties>
+                           <sys:store-protocol>workspace</sys:store-protocol>
+                           <sys:store-identifier>SpacesStore</sys:store-identifier>
+                           <sys:node-uuid>rmr_holdReport</sys:node-uuid>
+                           <cm:description>Hold report template.</cm:description>
+                           <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/report/report_rmr_holdReport.html.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
+                           <cm:title>Hold Report Template</cm:title>
+                           <cm:name>report_rmr_holdReport.html.ftl</cm:name>
+                        </view:properties>
+                     </cm:content>
+                  </cm:contains>
                </view:associations>
             </cm:folder>
          </cm:contains>

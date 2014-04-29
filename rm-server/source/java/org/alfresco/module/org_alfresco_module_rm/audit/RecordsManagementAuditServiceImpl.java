@@ -1181,7 +1181,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         List<AuditEvent> listAuditEvents = new ArrayList<AuditEvent>(this.auditEvents.size());
         listAuditEvents.addAll(this.auditEvents.values());
-        Collections.sort(listAuditEvents, new AuditEvent());
+        Collections.sort(listAuditEvents);
         return listAuditEvents;
     }
 

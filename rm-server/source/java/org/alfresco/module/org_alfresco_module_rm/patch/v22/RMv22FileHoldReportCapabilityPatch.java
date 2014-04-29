@@ -16,50 +16,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.report.action;
+package org.alfresco.module.org_alfresco_module_rm.patch.v22;
 
-import java.io.Serializable;
-import java.util.Map;
-
+import org.alfresco.module.org_alfresco_module_rm.patch.common.CapabilityPatch;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Transfer node class
+ * RM v2.2 patch to add FileHoldReport capability.
  *
- * @author Tuna Aksoy
+ * @author Roy Wetherall
  * @since 2.2
  */
-public class TransferNode
+public class RMv22FileHoldReportCapabilityPatch extends CapabilityPatch
 {
-    /** Transfer node reference */
-    private NodeRef nodeRef;
-
-    /** Transfer node properties */
-    private Map<String, Serializable> properties;
-
     /**
-     * @param nodeRef
-     * @param properties
+     * @see org.alfresco.module.org_alfresco_module_rm.patch.common.CapabilityPatch#applyCapabilityPatch(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public TransferNode(NodeRef nodeRef, Map<String, Serializable> properties)
+    protected void applyCapabilityPatch(NodeRef filePlan) 
     {
-        this.nodeRef = nodeRef;
-        this.properties = properties;
-    }
-
-    /**
-     * @return transfer node reference
-     */
-    public NodeRef getNodeRef()
-    {
-        return this.nodeRef;
-    }
-
-    /**
-     * @return transfer node properties
-     */
-    public Map<String, Serializable> getProperties()
-    {
-        return this.properties;
+        // add new capability
+        addCapability(filePlan,
+                      "FileHoldReport",
+                      FilePlanRoleService.ROLE_ADMIN,
+                      FilePlanRoleService.ROLE_RECORDS_MANAGER);
     }
 }

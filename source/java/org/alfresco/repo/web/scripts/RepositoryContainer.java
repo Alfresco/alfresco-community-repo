@@ -20,6 +20,7 @@ package org.alfresco.repo.web.scripts;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -371,145 +373,167 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     protected void transactionedExecute(final WebScript script, final WebScriptRequest scriptReq, final WebScriptResponse scriptRes)
         throws IOException
     {
-        final Description description = script.getDescription();
-        if (description.getRequiredTransaction() == RequiredTransaction.none)
+        try
         {
-            script.execute(scriptReq, scriptRes);
-        }
-        else
-        {
-            final BufferedRequest bufferedReq;
-            final BufferedResponse bufferedRes;
-            RequiredTransactionParameters trxParams = description.getRequiredTransactionParameters();
-            if (trxParams.getCapability() == TransactionCapability.readwrite)
+            final Description description = script.getDescription();
+            if (description.getRequiredTransaction() == RequiredTransaction.none)
             {
-                if (trxParams.getBufferSize() > 0)
+                script.execute(scriptReq, scriptRes);
+            }
+            else
+            {
+                final BufferedRequest bufferedReq;
+                final BufferedResponse bufferedRes;
+                RequiredTransactionParameters trxParams = description.getRequiredTransactionParameters();
+                if (trxParams.getCapability() == TransactionCapability.readwrite)
                 {
-                    if (logger.isDebugEnabled())
-                        logger.debug("Creating Transactional Response for ReadWrite transaction; buffersize=" + trxParams.getBufferSize());
+                    if (trxParams.getBufferSize() > 0)
+                    {
+                        if (logger.isDebugEnabled())
+                            logger.debug("Creating Transactional Response for ReadWrite transaction; buffersize=" + trxParams.getBufferSize());
 
-                    // create buffered request and response that allow transaction retrying
-                    bufferedReq = new BufferedRequest(scriptReq, streamFactory);
-                    bufferedRes = new BufferedResponse(scriptRes, trxParams.getBufferSize());
+                        // create buffered request and response that allow transaction retrying
+                        bufferedReq = new BufferedRequest(scriptReq, streamFactory);
+                        bufferedRes = new BufferedResponse(scriptRes, trxParams.getBufferSize());
+                    }
+                    else
+                    {
+                        if (logger.isDebugEnabled())
+                            logger.debug("Transactional Response bypassed for ReadWrite - buffersize=0");
+                        bufferedReq = null;
+                        bufferedRes = null;
+                    }
                 }
                 else
                 {
-                    if (logger.isDebugEnabled())
-                        logger.debug("Transactional Response bypassed for ReadWrite - buffersize=0");
                     bufferedReq = null;
                     bufferedRes = null;
+                }
+            
+                // encapsulate script within transaction
+                RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute() throws Exception
+                    {
+                        try
+                        {
+                            if (logger.isDebugEnabled())
+                                logger.debug("Begin retry transaction block: " + description.getRequiredTransaction() + "," 
+                                        + description.getRequiredTransactionParameters().getCapability());
+
+                            if (bufferedRes == null)
+                            {
+                                script.execute(scriptReq, scriptRes);                            
+                            }
+                            else
+                            {
+                                // Reset the request and response in case of a transaction retry
+                                bufferedReq.reset();
+                                bufferedRes.reset();
+                                script.execute(bufferedReq, bufferedRes);
+                            }
+                        }
+                        catch(Exception e)
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Transaction exception: " + description.getRequiredTransaction() + ": " + e.getMessage());
+                                // Note: user transaction shouldn't be null, but just in case inside this exception handler
+                                UserTransaction userTrx = RetryingTransactionHelper.getActiveUserTransaction();
+                                if (userTrx != null)
+                                {
+                                    logger.debug("Transaction status: " + userTrx.getStatus());
+                                }
+                            }
+                           
+                            UserTransaction userTrx = RetryingTransactionHelper.getActiveUserTransaction();
+                            if (userTrx != null)
+                            {
+                                if (userTrx.getStatus() != Status.STATUS_MARKED_ROLLBACK)
+                                {
+                                    if (logger.isDebugEnabled())
+                                        logger.debug("Marking web script transaction for rollback");
+                                    try
+                                    {
+                                        userTrx.setRollbackOnly();
+                                    }
+                                    catch(Throwable re)
+                                    {
+                                        if (logger.isDebugEnabled())
+                                            logger.debug("Caught and ignoring exception during marking for rollback: " + re.getMessage());
+                                    }
+                                }
+                            }
+                        
+                            // re-throw original exception for retry
+                            throw e;
+                        }
+                        finally
+                        {
+                           if (logger.isDebugEnabled())
+                                logger.debug("End retry transaction block: " + description.getRequiredTransaction() + "," 
+                                        + description.getRequiredTransactionParameters().getCapability());
+                        }
+                    
+                        return null;
+                    }        
+                };
+        
+                boolean readonly = description.getRequiredTransactionParameters().getCapability() == TransactionCapability.readonly;
+                boolean requiresNew = description.getRequiredTransaction() == RequiredTransaction.requiresnew;
+            
+                // log a warning if we detect a GET webscript being run in a readwrite transaction, GET calls should
+                // NOT have any side effects so this scenario as a warning sign something maybe amiss, see ALF-10179.
+                if (logger.isDebugEnabled() && !readonly && "GET".equalsIgnoreCase(description.getMethod()))
+                {
+                    logger.debug("Webscript with URL '" + scriptReq.getURL() + 
+                               "' is a GET request but it's descriptor has declared a readwrite transaction is required");
+                }
+            
+                try
+                {
+                    transactionService.getRetryingTransactionHelper().doInTransaction(work, readonly, requiresNew);
+                }
+                catch (TooBusyException e)
+                {
+                    // Map TooBusyException to a 503 status code
+                    throw new WebScriptException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, e.getMessage(), e);
+                }
+                finally
+                {
+                    // Get rid of any temporary files
+                    if (bufferedReq != null)
+                    {
+                        bufferedReq.close();
+                    }
+                }
+
+                // Ensure a response is always flushed after successful execution
+                if (bufferedRes != null)
+                {
+                    bufferedRes.writeResponse();
+                }
+            
+            }
+        }
+        catch (IOException ioe)
+        {
+            Throwable socketException = ExceptionStackUtil.getCause(ioe, SocketException.class);
+            if (socketException != null && socketException.getMessage().contains("Broken pipe"))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.warn("Client has cut off communication", ioe);
+                }
+                else
+                {
+                    logger.info("Client has cut off communication");
                 }
             }
             else
             {
-                bufferedReq = null;
-                bufferedRes = null;
+                throw ioe;
             }
-            
-            // encapsulate script within transaction
-            RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
-            {
-                public Object execute() throws Exception
-                {
-                    try
-                    {
-                        if (logger.isDebugEnabled())
-                            logger.debug("Begin retry transaction block: " + description.getRequiredTransaction() + "," 
-                                    + description.getRequiredTransactionParameters().getCapability());
-
-                        if (bufferedRes == null)
-                        {
-                            script.execute(scriptReq, scriptRes);                            
-                        }
-                        else
-                        {
-                            // Reset the request and response in case of a transaction retry
-                            bufferedReq.reset();
-                            bufferedRes.reset();
-                            script.execute(bufferedReq, bufferedRes);
-                        }
-                    }
-                    catch(Exception e)
-                    {
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Transaction exception: " + description.getRequiredTransaction() + ": " + e.getMessage());
-                            // Note: user transaction shouldn't be null, but just in case inside this exception handler
-                            UserTransaction userTrx = RetryingTransactionHelper.getActiveUserTransaction();
-                            if (userTrx != null)
-                            {
-                                logger.debug("Transaction status: " + userTrx.getStatus());
-                            }
-                        }
-                        
-                        UserTransaction userTrx = RetryingTransactionHelper.getActiveUserTransaction();
-                        if (userTrx != null)
-                        {
-                            if (userTrx.getStatus() != Status.STATUS_MARKED_ROLLBACK)
-                            {
-                                if (logger.isDebugEnabled())
-                                    logger.debug("Marking web script transaction for rollback");
-                                try
-                                {
-                                    userTrx.setRollbackOnly();
-                                }
-                                catch(Throwable re)
-                                {
-                                    if (logger.isDebugEnabled())
-                                        logger.debug("Caught and ignoring exception during marking for rollback: " + re.getMessage());
-                                }
-                            }
-                        }
-                        
-                        // re-throw original exception for retry
-                        throw e;
-                    }
-                    finally
-                    {
-                        if (logger.isDebugEnabled())
-                            logger.debug("End retry transaction block: " + description.getRequiredTransaction() + "," 
-                                    + description.getRequiredTransactionParameters().getCapability());
-                    }
-                    
-                    return null;
-                }        
-            };
-        
-            boolean readonly = description.getRequiredTransactionParameters().getCapability() == TransactionCapability.readonly;
-            boolean requiresNew = description.getRequiredTransaction() == RequiredTransaction.requiresnew;
-            
-            // log a warning if we detect a GET webscript being run in a readwrite transaction, GET calls should
-            // NOT have any side effects so this scenario as a warning sign something maybe amiss, see ALF-10179.
-            if (logger.isDebugEnabled() && !readonly && "GET".equalsIgnoreCase(description.getMethod()))
-            {
-                logger.debug("Webscript with URL '" + scriptReq.getURL() + 
-                            "' is a GET request but it's descriptor has declared a readwrite transaction is required");
-            }
-            
-            try
-            {
-                transactionService.getRetryingTransactionHelper().doInTransaction(work, readonly, requiresNew);
-            }
-            catch (TooBusyException e)
-            {
-                // Map TooBusyException to a 503 status code
-                throw new WebScriptException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, e.getMessage(), e);
-            }
-            finally
-            {
-                // Get rid of any temporary files
-                if (bufferedReq != null)
-                {
-                    bufferedReq.close();
-                }
-            }
-
-            // Ensure a response is always flushed after successful execution
-            if (bufferedRes != null)
-            {
-                bufferedRes.writeResponse();
-            }
-            
         }
     }
     

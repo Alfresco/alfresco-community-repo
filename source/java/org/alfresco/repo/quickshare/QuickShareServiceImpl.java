@@ -262,7 +262,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
     @Override
     public Map<String, Object> getMetaData(NodeRef nodeRef)
     {
-        checkEnabled();
+    	// TODO This functionality MUST be available when quickshare is also disabled, therefor refactor it out from the quickshare package to a more common package.
         
         Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
         ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
@@ -379,6 +379,8 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
     @Override
     public Map<String, Object> getMetaData(String sharedId)
     {
+    	checkEnabled();
+    	
         Pair<String, NodeRef> pair = getTenantNodeRefFromSharedId(sharedId);
         final String tenantDomain = pair.getFirst();
         final NodeRef nodeRef = pair.getSecond();

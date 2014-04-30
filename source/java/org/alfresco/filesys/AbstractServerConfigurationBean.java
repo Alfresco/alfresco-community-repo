@@ -130,7 +130,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
 	
   // Maximum session timeout
   
-  protected static final int MaxSessionTimeout    = 60 * 60;  // 1 hour
+  public static final int MaxSessionTimeout    = 60 * 60;  // 1 hour
     
   // Disk interface to use for shared filesystems
   

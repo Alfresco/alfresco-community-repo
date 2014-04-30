@@ -1123,8 +1123,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
 
                 // Validate the session timeout value
 
-                if (tmo < 0 || tmo > MaxSessionTimeout)
-                    throw new AlfrescoRuntimeException("Session timeout out of range (0 - " + MaxSessionTimeout + ")");
+                cifsConfigBean.validateSessionTimeout(tmo);
 
                 // Convert the session timeout to milliseconds
 

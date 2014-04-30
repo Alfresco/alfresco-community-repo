@@ -18,8 +18,11 @@
  */
 package org.alfresco.filesys.config;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.jlan.server.auth.ICifsAuthenticator;
 import org.alfresco.jlan.smb.server.VirtualCircuitList;
+
+import static org.alfresco.filesys.AbstractServerConfigurationBean.MaxSessionTimeout;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -520,7 +523,20 @@ public class CIFSConfigBean
      */
     public void setSessionTimeout(Integer sessionTimeout)
     {
+        validateSessionTimeout(sessionTimeout);
         this.sessionTimeout = sessionTimeout;
+    }
+
+    /**
+     * Validates the session timeout.
+     * 
+     * @param sessionTimeout
+     *            the session timeout to validate
+     */
+    public void validateSessionTimeout(Integer sessionTimeout)
+    {
+        if (sessionTimeout < 0 || sessionTimeout > MaxSessionTimeout)
+            throw new AlfrescoRuntimeException("Session timeout out of range (0 - " + MaxSessionTimeout + ")");
     }
 
     /**

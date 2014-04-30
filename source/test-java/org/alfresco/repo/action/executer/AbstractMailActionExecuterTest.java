@@ -33,6 +33,7 @@ import javax.mail.internet.MimeMessage;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
@@ -336,8 +337,8 @@ public abstract class AbstractMailActionExecuterTest
     	{
             final String USER1 = "test_user1";
             final String USER2 = "test_user2";
-            createUser(USER1);
-            NodeRef userNode = createUser(USER2);
+            createUser(USER1, null);
+            NodeRef userNode = createUser(USER2, null);
             groupName = AUTHORITY_SERVICE.createAuthority(AuthorityType.GROUP, "testgroup1");
             AUTHORITY_SERVICE.addAuthority(groupName, USER1);
             AUTHORITY_SERVICE.addAuthority(groupName, USER2);
@@ -373,15 +374,59 @@ public abstract class AbstractMailActionExecuterTest
     	}
     }
 
-    private NodeRef createUser(String userName)
+    /**
+     * Creates a test user with the specified username and optionally custom email.
+     * 
+     * @param userName
+     * @param email Optional, if not specified assigned to <code>userName + "@email.com"</code>
+     * @return
+     */
+    private NodeRef createUser(String userName, String email)
     {
         PropertyMap personProps = new PropertyMap();
         personProps.put(ContentModel.PROP_USERNAME, userName);
         personProps.put(ContentModel.PROP_FIRSTNAME, userName);
         personProps.put(ContentModel.PROP_LASTNAME, userName);
-        personProps.put(ContentModel.PROP_EMAIL, userName + "@email.com");
+        if (email != null)
+        {
+            personProps.put(ContentModel.PROP_EMAIL, email);
+        }
+        else
+        {
+            personProps.put(ContentModel.PROP_EMAIL, userName + "@email.com");
+        }
 
         return PERSON_SERVICE.createPerson(personProps);
     }
 
+    /**
+     * Test for MNT-10874
+     * @throws Exception 
+     */
+    @Test
+    public void testUserWithNonExistingTenant() throws Exception
+    {
+        final String USER_WITH_NON_EXISTING_TENANT = "test_user_non_tenant@non_existing_tenant.com";
+        
+        createUser(USER_WITH_NON_EXISTING_TENANT, USER_WITH_NON_EXISTING_TENANT);
+        
+        final Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TO, USER_WITH_NON_EXISTING_TENANT);
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, "This is a test message.");
+
+        // run as non admin and non system
+        AuthenticationUtil.setFullyAuthenticatedUser(BRITISH_USER.getUsername());
+        TRANSACTION_SERVICE.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                ACTION_EXECUTER.executeImpl(mailAction, null);
+                return null;
+            }
+        });
+        
+        AuthenticationUtil.clearCurrentSecurityContext();
+    }
 }

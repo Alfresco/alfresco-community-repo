@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1336,7 +1336,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             // If the domain is null, then the beahviour here varies depending on whether it's a single tenant or multi-tenant cloud.
             if (personExists(user))
             {
-                localeString = (String) preferenceService.getPreference(user, "locale");
+                localeString = AuthenticationUtil.runAsSystem(new RunAsWork<String>()
+                {
+                    public String doWork() throws Exception 
+                    {
+                        return (String) preferenceService.getPreference(user, "locale");
+                    };
+                }); 
             }
             // else leave it as null - there's no tenant, no user for that username, so we can't get a preferred locale.
         }

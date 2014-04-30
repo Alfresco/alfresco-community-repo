@@ -251,8 +251,6 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         try
         {
             userTransaction.begin();
-
-            boolean destroyDictionary = false;
         
             // bootstrap the workflow models and static labels (from classpath)
             if (models != null && resourceBundles != null && ((models.size() > 0) || (resourceBundles.size() > 0)))
@@ -263,7 +261,6 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                 dictionaryBootstrap.setModels(models);
                 dictionaryBootstrap.setLabels(resourceBundles);
                 dictionaryBootstrap.bootstrap(); // also registers with dictionary
-                destroyDictionary = true;
             }
             
             // bootstrap the workflow definitions (from classpath)
@@ -303,7 +300,6 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                             WorkflowDeployment deployment = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), 
                                         mimetype, workflowResource.getFilename());
                             logDeployment(location, deployment);
-                            destroyDictionary = true;
                         }
                     }
                     else
@@ -328,32 +324,8 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                         deploy(nodeRef, false);
                     }
                 }
-
-                destroyDictionary = true;
             }
-
-            if(destroyDictionary)
-            {
-                RetryingTransactionCallback<Void> work = new RetryingTransactionCallback<Void>()
-                {
-                    public Void execute() throws Throwable
-                    {
-                        AuthenticationUtil.runAs(new RunAsWork<Object>()
-                        {
-                            public Object doWork()
-                            {
-                                dictionaryDAO.destroy();
-                                return null;
-                            }
-                        }, authenticationContext.getSystemUserName());
-
-                        return null;
-                    }
-                };
-
-                transactionService.getRetryingTransactionHelper().doInTransaction(work, true, true);
-            }
-
+                
             userTransaction.commit();
         }
         catch(Throwable e)

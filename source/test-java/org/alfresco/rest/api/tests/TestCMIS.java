@@ -1779,7 +1779,7 @@ public class TestCMIS extends EnterpriseTestApi
         CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.browser, "1.1",
         		"org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl");
 
-		ObjectType objectType = cmisSession.getTypeDefinition("D:my:maDoc");
+		ObjectType objectType = cmisSession.getTypeDefinition("D:testcmis:maDoc");
 
 		// try and get the mandatory aspects
 		List<String> mandatoryAspects = ((AlfrescoType)objectType).getMandatoryAspects();

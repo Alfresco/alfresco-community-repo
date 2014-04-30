@@ -1538,33 +1538,4 @@
         </property>
     </bean>
 
-    <bean id="MessageService" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <list>
-                <value>org.alfresco.repo.i18n.MessageService</value>
-            </list>
-        </property>
-        <property name="target">
-            <ref bean="messageService"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref local="MessageService_transaction"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="MessageService_transaction" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
-        <property name="transactionService">
-            <ref bean="TransactionService"/>
-        </property>
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="getMessage">${server.transaction.mode.readOnly}</prop>
-            </props>
-        </property>
-    </bean>
 </beans>

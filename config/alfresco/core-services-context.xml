@@ -744,7 +744,7 @@
                 <property name="targetSource">
                     <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
                         <property name="targetBeanName">
-                            <idref bean="MessageService" />
+                            <idref bean="messageService" />
                         </property>
                     </bean>
                 </property> 

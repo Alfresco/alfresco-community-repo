@@ -21,8 +21,10 @@ package org.alfresco.repo.rule;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -54,6 +56,9 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     /** node service */
     protected NodeService nodeService;
 
+    /** Record service */
+    protected RecordService recordService;
+
     /**
      * @param runAsRmAdmin	true if run rules as rmadmin, false otherwise
      */
@@ -79,12 +84,20 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     }
 
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService   file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
+
+    /**
+     * @param recordService   record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
 
     /**
      * Init method
@@ -157,10 +170,10 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     @Override
     public void executeRule(final Rule rule, final NodeRef nodeRef, final Set<ExecutedRuleData> executedRules)
     {
-        if (nodeService.exists(nodeRef))
-        {
-            QName typeQName = nodeService.getType(nodeRef);
+        QName typeQName = nodeService.getType(nodeRef);
 
+        if (nodeService.exists(nodeRef) && shouldRuleBeAppliedToNode(rule, nodeRef, typeQName))
+        {
             // check if this is a rm rule on a rm artifact
             if (filePlanService.isFilePlanComponent(nodeRef) &&
             	isFilePlanComponentRule(rule))
@@ -215,5 +228,34 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     private boolean isIgnoredType(QName typeQName)
     {
         return ignoredTypes.contains(typeQName);
+    }
+
+    /**
+     * Check if the rule is associated with the file plan component that the node it is being
+     * applied to isn't a hold container, a hold, a transfer container, a transfer, an unfiled
+     * record container, an unfiled record folder or unfiled content
+     *
+     * @param rule
+     * @param nodeRef
+     * @param typeQName
+     * @return
+     */
+    private boolean shouldRuleBeAppliedToNode(Rule rule, NodeRef nodeRef, QName typeQName)
+    {
+        boolean result = true;
+        NodeRef ruleNodeRef = getOwningNodeRef(rule);
+        if(filePlanService.isFilePlan(ruleNodeRef))
+        {
+            // if this rule is defined at the root of the file plan then we do not want to apply
+            // it to holds/transfers/unfiled content...
+            result = !(RecordsManagementModel.TYPE_HOLD.equals(typeQName) ||
+                       RecordsManagementModel.TYPE_HOLD_CONTAINER.equals(typeQName) ||
+                       RecordsManagementModel.TYPE_TRANSFER.equals(typeQName) ||
+                       RecordsManagementModel.TYPE_TRANSFER_CONTAINER.equals(typeQName) ||
+                       RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER.equals(typeQName) ||
+                       RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER.equals(typeQName) ||
+                       (ContentModel.TYPE_CONTENT.equals(typeQName) && !recordService.isFiled(nodeRef)));
+        }
+        return result;
     }
 }

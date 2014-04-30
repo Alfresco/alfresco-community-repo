@@ -1507,6 +1507,43 @@ public class FileFolderServiceImplTest extends TestCase
         checkPages(nodeRef1, pageSize, totalItems, true, 4);
     }
     
+    public void testListNotIgnoreSpaces()
+    {
+        String [] foldersToTest = new String[] { 
+            "A B", 
+            "AA", 
+            "AC" 
+        };
+        
+        NodeRef testFolder = fileFolderService.create(workingRootNodeRef, "" + System.currentTimeMillis(), ContentModel.TYPE_FOLDER).getNodeRef();
+        
+        // create provided nodes
+        for (String folder : foldersToTest)
+        {
+            fileFolderService.create(testFolder, folder, ContentModel.TYPE_FOLDER).getNodeRef();
+        }
+        
+        PagingRequest pagingRequest = new PagingRequest(100, null);
+        // ensure sort by property name
+        List<Pair<QName, Boolean>> sortProps = new ArrayList<Pair<QName, Boolean>>(1);
+        sortProps.add(new Pair<QName, Boolean>(ContentModel.PROP_NAME, true));
+        // list nodes
+        PagingResults<FileInfo> pagingResults = fileFolderService.list(testFolder, true, true, null, null, sortProps, pagingRequest);
+        List<FileInfo> files = pagingResults.getPage();
+         
+        assertEquals(files.size(), foldersToTest.length);
+        
+        for (int index = 0; index < files.size(); index++)
+        {
+            // ensure node order is expected
+            String folderName = files.get(index).getName();
+            String excpectedFolderName = foldersToTest[index];
+            assertEquals(folderName, excpectedFolderName);
+        }
+        
+        System.out.println(files);
+    }
+    
     private void checkPages(NodeRef parentRef, int pageSize, int totalItems, boolean hideCheckedOut, int checkedOutChildIdx)
     {
         Set<QName> ignoreQNameTypes = null;

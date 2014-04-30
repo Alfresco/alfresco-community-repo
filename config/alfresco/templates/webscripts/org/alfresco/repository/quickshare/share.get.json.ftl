@@ -3,6 +3,6 @@
    "sharedId" : "${sharedId}",
    "nodeRef" : "${nodeRef}",
    "tenantDomain" : "${tenantDomain}",
-   "siteId" : "${siteId}"
+   "siteId" : "${siteId!""}"
 }
 </#escape>

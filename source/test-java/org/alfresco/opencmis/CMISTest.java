@@ -35,6 +35,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.model.ContentModel;
@@ -1922,4 +1923,96 @@ public class CMISTest
         org.alfresco.opencmis.search.CMISResultSet rs = cmisConnector.getOpenCMISQueryService().query(options);
         assertEquals(rs.getNumberFound(), 0);
    }
+
+    /**
+     * CMIS 1.0 aspect properties should provide the following CMIS attributes:
+     * propertyDefinitionId, displayName, localName, queryName
+     */
+    @Test
+    public void testMNT10021() throws Exception
+    {
+        final String folderName = "testfolder." + GUID.generate();
+        final String docName = "testdoc.txt." + GUID.generate();
+        
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+
+                    FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                    nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+                    assertNotNull(folderInfo);
+
+                    FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+                    assertNotNull(document);
+                    nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, docName);
+
+                    // lock adds aspects to the document with properties: lockIsDeep, lockOwner, lockType, expiryDate, lockLifetime
+                    lockService.lock(document.getNodeRef(), LockType.READ_ONLY_LOCK, 0, true);
+
+                    return null;
+                }
+            });
+
+            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>()
+            {
+                @Override
+                public ObjectData execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.get(0);
+                    String repositoryId = repo.getId();
+                    ObjectData objectData = cmisService.getObjectByPath(repositoryId, "/" + folderName + "/" + docName, null, true,
+                            IncludeRelationships.NONE, null, false, true, null);
+                    return objectData;
+                }
+            }, CmisVersion.CMIS_1_0);
+
+            List<CmisExtensionElement> propertyExtensionList = objectData.getProperties().getExtensions();
+            assertEquals("propertyExtensionList should be singletonList", propertyExtensionList.size(), 1);
+            List<CmisExtensionElement> extensions = propertyExtensionList.iterator().next().getChildren();
+            for (CmisExtensionElement extension : extensions)
+            {
+                if ("properties".equals(extension.getName()))
+                {
+                    // check properties extension
+                    List<CmisExtensionElement> propExtensions = extension.getChildren();
+                    assertTrue("cmisObject should contain aspect properties", propExtensions.size() > 0);
+                    for (CmisExtensionElement prop : propExtensions)
+                    {
+                        Map<String, String> cmisAspectProperty = prop.getAttributes();
+                        Set<String> cmisAspectPropertyNames = cmisAspectProperty.keySet();
+                        assertTrue("propertyDefinitionId attribute should be present", cmisAspectPropertyNames.contains("propertyDefinitionId"));
+                        assertTrue("queryName attribute should be present", cmisAspectPropertyNames.contains("queryName"));
+                        // optional values that are present for test document
+                        assertTrue("displayName attribute should be present for property of test node", cmisAspectPropertyNames.contains("displayName"));
+                        assertTrue("localName attribute should be present for property of test node", cmisAspectPropertyNames.contains("localName"));
+                        assertEquals(cmisAspectPropertyNames.size(), 4);
+                        // check values
+                        for (String aspectPropertyName : cmisAspectPropertyNames)
+                        {
+                            String value = cmisAspectProperty.get(aspectPropertyName);
+                            assertTrue("value for " + aspectPropertyName + " should be present", value != null && value.length() > 0);
+                        }
+                    }
+                }
+            }
+        }
+        catch (CmisConstraintException e)
+        {
+            fail(e.toString());
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+    }
 }

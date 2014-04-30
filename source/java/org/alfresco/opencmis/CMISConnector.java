@@ -1946,10 +1946,10 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      * Creates a property extension element.
      */
     @SuppressWarnings("rawtypes")
-    private CmisExtensionElement createAspectPropertyExtension(PropertyDefinition<?> propertyDefintion, Object value)
+    private CmisExtensionElement createAspectPropertyExtension(PropertyDefinition<?> propertyDefinition, Object value)
     {
         String name;
-        switch (propertyDefintion.getPropertyType())
+        switch (propertyDefinition.getPropertyType())
         {
         case BOOLEAN:
             name = "propertyBoolean";
@@ -1971,7 +1971,19 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
 
         Map<String, String> attributes = new HashMap<String, String>();
-        attributes.put("propertyDefinitionId", propertyDefintion.getId());
+        attributes.put("propertyDefinitionId", propertyDefinition.getId());
+        attributes.put("queryName", propertyDefinition.getQueryName());
+        // optional value
+        if (propertyDefinition.getDisplayName() !=null && propertyDefinition.getDisplayName().trim().length() > 0)
+        {
+            attributes.put("displayName", propertyDefinition.getDisplayName());
+        }
+        // optional value
+        if (propertyDefinition.getLocalName() !=null && propertyDefinition.getLocalName().trim().length() > 0)
+        {
+            attributes.put("localName", propertyDefinition.getLocalName());
+        }
+        
 
         List<CmisExtensionElement> propertyValues = new ArrayList<CmisExtensionElement>();
         if (value != null)
@@ -1987,7 +1999,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 	}
                 	else
                 	{
-                		logger.warn("Unexpected null entry in list value for property " + propertyDefintion.getDisplayName()
+                		logger.warn("Unexpected null entry in list value for property " + propertyDefinition.getDisplayName()
                 				+ ", value = " + value);
                 	}
                 }

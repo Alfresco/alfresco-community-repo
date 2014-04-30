@@ -217,6 +217,10 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
             {
                 return "Unavailable: " + e.getMessage();
             }
+            catch (IllegalArgumentException iae)
+            {
+                return "Unavailable: " + iae.getMessage();
+            }
         }
         else
         {

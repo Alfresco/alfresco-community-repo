@@ -27,6 +27,7 @@
                     "name": "${field.name}",
                     "label": "${field.label!""}",
                     <#if field.description??>"description": "${field.description}",</#if>
+                    <#if field.indexTokenisationMode??>"indexTokenisationMode": "${field.indexTokenisationMode}",</#if>
                     "protectedField": ${field.protectedField?string},
                     <#if field.defaultValue??>"defaultValue": "${field.defaultValue}",</#if>
                     <#if field.group??>"group": "${field.group.id}",</#if>

@@ -242,6 +242,8 @@
     		<value>${rm.rule.runasrmadmin}</value>
     	</property>
 
+        <property name="recordService" ref="RecordService" />
+
    </bean>
 
     <bean id="FormService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">

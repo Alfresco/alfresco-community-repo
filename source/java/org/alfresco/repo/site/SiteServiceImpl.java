@@ -58,6 +58,7 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -111,7 +112,6 @@ import org.json.JSONObject;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.ParameterCheck;
-import org.springframework.util.StringUtils;
 
 /**
  * Site Service Implementation. Also bootstraps the site AVM and DM stores.
@@ -882,18 +882,25 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                logger.debug("Search parameters are: " + sp);
             }
             
-            ResultSet results = this.searchService.query(sp);
+            ResultSet results = null;
             try
             {
+                results = this.searchService.query(sp);
                 result = new ArrayList<SiteInfo>(results.length());
                 for (NodeRef site : results.getNodeRefs())
                 {
                   result.add(createSiteInfo(site));
                 }
             }
+            catch (LuceneQueryParserException lqpe)
+            {
+               //Log the error but suppress is from the user
+               logger.error("LuceneQueryParserException with findSites()", lqpe);
+               result = Collections.emptyList();
+            }
             finally
             {
-                results.close();
+                if (results != null) results.close();
             }
         }
         

@@ -424,13 +424,18 @@ public class MLPropertyInterceptor implements MethodInterceptor
 
         // If the content locale is too specific, try relaxing it to just language
         Locale contentLocaleLang = I18NUtil.getContentLocaleLang();
-        if (!contentLocaleLang.equals(locale))
+        // We do not expect contentLocaleLang to be null
+        if (contentLocaleLang != null)
         {
             locale = I18NUtil.getNearestLocale(contentLocaleLang, locales);
             if (locale != null)
             {
                 return mlText.getValue(locale);
             }
+        }
+        else
+        {
+            logger.warn("contentLocaleLang is null in getClosestValue. This is not expected.");
         }
         
         // Just return the default translation

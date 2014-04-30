@@ -22,6 +22,7 @@ import java.util.Set;
 import org.alfresco.cmis.client.AlfrescoDocument;
 import org.alfresco.cmis.client.AlfrescoFolder;
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
+import org.alfresco.cmis.client.type.AlfrescoType;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
@@ -73,6 +74,7 @@ import org.apache.chemistry.opencmis.client.api.FileableCmisObject;
 import org.apache.chemistry.opencmis.client.api.Folder;
 import org.apache.chemistry.opencmis.client.api.ItemIterable;
 import org.apache.chemistry.opencmis.client.api.ObjectId;
+import org.apache.chemistry.opencmis.client.api.ObjectType;
 import org.apache.chemistry.opencmis.client.api.OperationContext;
 import org.apache.chemistry.opencmis.client.api.Property;
 import org.apache.chemistry.opencmis.client.api.Relationship;
@@ -1760,5 +1762,33 @@ public class TestCMIS extends EnterpriseTestApi
         IOUtils.copy(in, writer, "UTF-8");
         String content = writer.toString();
         assertEquals("Ipsum and so on", content);
+    }
+    
+    @Test
+    public void testMNT10430() throws Exception
+    {
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+        String username = "user" + System.currentTimeMillis();
+        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null,
+        		null, null, null, null, null);
+        TestPerson person1 = network1.createUser(personInfo);
+        String person1Id = person1.getId();
+
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.browser, "1.1",
+        		"org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl");
+
+		ObjectType objectType = cmisSession.getTypeDefinition("D:my:maDoc");
+
+		// try and get the mandatory aspects
+		List<String> mandatoryAspects = ((AlfrescoType)objectType).getMandatoryAspects();
+		System.out.println("Mandatory Aspects");
+		for(String mandatoryAspect : mandatoryAspects)
+		{ 
+			System.out.println(mandatoryAspect); 
+		}
+		assertEquals(1, mandatoryAspects.size());
+		assertEquals("P:cm:generalclassifiable", mandatoryAspects.get(0));
     }
 }

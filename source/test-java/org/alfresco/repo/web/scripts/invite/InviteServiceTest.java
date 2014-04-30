@@ -1009,7 +1009,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                 {
                     public Object doWork() throws Exception
                     {
-                        createPerson(userName, userName, userName, " ");
+                        createPerson(userName, userName, userName, "");
                         return null;
                     }
 

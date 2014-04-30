@@ -45,6 +45,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     
     private ContentTransformerRegistry registry;
     private boolean registerTransformer;
+    private boolean retryTransformOnDifferentMimeType;
 
     private static ThreadLocal<Integer> depth = new ThreadLocal<Integer>()
     {
@@ -262,15 +263,51 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
                 }
                 else
                 {
-               transformerDebug.debug("          Failed: Mime type was '"+differentType+"'", e);
-                   throw new ContentIOException("Content conversion failed: \n" +
-                         "   reader: " + reader + "\n" +
-                         "   writer: " + writer + "\n" +
-                         "   options: " + options.toString(false) + "\n" +
-                         "   limits: " + getLimits(reader, writer, options) + "\n" +
-                         "   claimed mime type: " + reader.getMimetype() + "\n" +
-                         "   detected mime type: " + differentType,
-                         e);
+                    transformerDebug.debug("          Failed: Mime type was '"+differentType+"'", e);
+
+                    if (this.retryTransformOnDifferentMimeType)
+                    {
+                        // MNT-11015 fix.
+                        // Set a new reader to refresh the input stream.
+                        reader = reader.getReader();
+                        // set the actual file MIME type detected by Tika for content reader
+                        reader.setMimetype(differentType);
+
+                        // Get correct transformer according actual file MIME type and try to transform file with
+                        // actual transformer
+                        ContentTransformer transformer = this.registry.getTransformer(differentType, reader.getSize(),
+                                                                                     targetMimetype, options);
+                        if (null != transformer)
+                        {
+                            transformer.transform(reader, writer, options);
+                        }
+                        else
+                        {
+                            transformerDebug.debug("          Failed", e);
+                            throw new ContentIOException("Content conversion failed: \n" +
+                                    "   reader: " + reader + "\n" +
+                                    "   writer: " + writer + "\n" +
+                                    "   options: " + options.toString(false) + "\n" +
+                                    "   limits: " + getLimits(reader, writer, options) + "\n" +
+                                    "   claimed mime type: " + reader.getMimetype() + "\n" +
+                                    "   detected mime type: " + differentType + "\n" +
+                                    "   transformer not found" + "\n",
+                                    e
+                            );
+                        }
+                    }
+                    else
+                    {
+                        throw new ContentIOException("Content conversion failed: \n" +
+                                "   reader: " + reader + "\n" +
+                                "   writer: " + writer + "\n" +
+                                "   options: " + options.toString(false) + "\n" +
+                                "   limits: " + getLimits(reader, writer, options) + "\n" +
+                                "   claimed mime type: " + reader.getMimetype() + "\n" +
+                                "   detected mime type: " + differentType,
+                                e
+                        );
+                    }
                 }
             }
             finally
@@ -378,5 +415,10 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
         {
             transformerConfig.getStatistics(null, sourceMimetype, targetMimetype, true).recordError(transformationTime);
         }
+    }
+
+    public void setRetryTransformOnDifferentMimeType(boolean retryTransformOnDifferentMimeType)
+    {
+        this.retryTransformOnDifferentMimeType = retryTransformOnDifferentMimeType;
     }
 }

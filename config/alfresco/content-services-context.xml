@@ -401,6 +401,7 @@
       <property name="registerTransformer">
          <value>true</value>
       </property>
+       <property name="retryTransformOnDifferentMimeType" value="${content.transformer.retryOn.different.mimetype}"/>
    </bean>
    
    <!-- Abstract bean definition defining base definition for all transformer that are not registered.

@@ -420,4 +420,9 @@ public class Repository01TestSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.filesys.auth.cifs.CifsAuthenticatorKerberosTest.class));		
         suite.addTest(new JUnit4TestAdapter(org.alfresco.filesys.auth.cifs.CifsAuthenticatorPassthruTest.class));
     }
+
+    static void tests65(TestSuite suite)
+    {
+        suite.addTestSuite(org.alfresco.repo.content.transform.DifferrentMimeTypeTest.class);
+    }
 }

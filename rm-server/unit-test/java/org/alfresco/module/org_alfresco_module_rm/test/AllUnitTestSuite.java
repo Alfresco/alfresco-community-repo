@@ -25,12 +25,14 @@ import org.alfresco.module.org_alfresco_module_rm.hold.HoldServiceImplUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.job.DispositionLifecycleJobExecuterUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.FrozenEvaluatorUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.TransferEvaluatorUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.model.compatibility.DictionaryBootstrapPostProcessorUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrapUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPostUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPutUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldsGetUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionServiceImplUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.util.BeanExtenderUnitTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -47,6 +49,8 @@ import org.junit.runners.Suite.SuiteClasses;
     RecordMetadataBootstrapUnitTest.class,
     RecordsManagementTypeFormFilterUnitTest.class,
     DispositionLifecycleJobExecuterUnitTest.class,
+    DictionaryBootstrapPostProcessorUnitTest.class,
+    BeanExtenderUnitTest.class,
     
     // services
     RecordServiceImplUnitTest.class,

@@ -3,14 +3,20 @@
 
 <beans>
 
-   <bean id="jsonConversionComponent"
-         class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent"
+   <!-- extending bean definition -->
+   <bean id="rm.jsonConversionComponent" class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent"
          parent="baseJsonConversionComponent">
-         <property name="recordService" ref="RecordService"/>
-         <property name="filePlanService" ref="FilePlanService"/>
-        <property name="capabilityService" ref="CapabilityService"/>
+      <property name="recordService" ref="RecordService"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="capabilityService" ref="CapabilityService"/> 
    </bean>
-
+ 
+   <!--  extends core bean with RM extensions -->
+   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
+      <property name="beanName" value="jsonConversionComponent" />
+      <property name="extendingBeanName" value="rm.jsonConversionComponent" />
+   </bean> 	
+ 
    <bean id="jsonConversionComponent.baseEvaluator"
          abstract="true">
       <property name="jsonConversionComponent" ref="jsonConversionComponent"/>

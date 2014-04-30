@@ -100,7 +100,7 @@ public class FileReportActionUnitTest extends BaseUnitTest
         // == when ==
         
         // execute action
-        fileReportAction.execute(mockedAction, actionedUponNodeRef);
+        fileReportAction.executeImpl(mockedAction, actionedUponNodeRef);
         
         // == then ==
         verifyZeroInteractions(mockedReportService, mockedNodeService);        
@@ -124,7 +124,7 @@ public class FileReportActionUnitTest extends BaseUnitTest
         // == when ==
         
         // execute action
-        fileReportAction.execute(mockedAction, actionedUponNodeRef);
+        fileReportAction.executeImpl(mockedAction, actionedUponNodeRef);
         
         // == then ==
         verifyZeroInteractions(mockedReportService, mockedNodeService); 
@@ -159,7 +159,7 @@ public class FileReportActionUnitTest extends BaseUnitTest
         // == when ==
         
         // execute action
-        fileReportAction.execute(mockedAction, actionedUponNodeRef);
+        fileReportAction.executeImpl(mockedAction, actionedUponNodeRef);
         
         // == then ==
         
@@ -198,7 +198,7 @@ public class FileReportActionUnitTest extends BaseUnitTest
         // == when ==
         
         // execute action
-        fileReportAction.execute(mockedAction, actionedUponNodeRef);
+        fileReportAction.executeImpl(mockedAction, actionedUponNodeRef);
         
         // == then ==
         

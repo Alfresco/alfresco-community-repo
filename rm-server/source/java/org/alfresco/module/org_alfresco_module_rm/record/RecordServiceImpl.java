@@ -825,7 +825,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         ParameterCheck.mandatory("name", name);
 
         NodeRef destination = nodeRef;
-        if (filePlanService.isFilePlan(nodeRef))
+        if (isFilePlan(nodeRef))
         {
             // get the unfiled record container for the file plan
             destination = filePlanService.getUnfiledContainer(nodeRef);
@@ -1144,7 +1144,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         }
 
         // DEBUG ...
-        NodeRef filePlan = filePlanService.getFilePlan(record);
+        NodeRef filePlan = getFilePlan(record);
         Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, AuthenticationUtil.getRunAsUser());
 
         if (logger.isDebugEnabled())

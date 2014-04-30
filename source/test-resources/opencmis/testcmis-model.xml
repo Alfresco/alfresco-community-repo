@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="testcmis:testModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <!-- Meta-data about the model -->
+    <description>TestCMIS custom model</description>
+    <author>sglover</author>
+    <version>1.0</version>
+
+    <!--
+        Imports are required to allow references to definitions in other
+        models
+    -->
+    <imports>
+        <!-- Import Alfresco Dictionary Definitions -->
+        <import uri="http://www.alfresco.org/model/dictionary/1.0"
+            prefix="d" />
+        <!-- Import Alfresco Content Domain Model Definitions -->
+        <import uri="http://www.alfresco.org/model/content/1.0"
+            prefix="cm" />
+    </imports>
+
+    <!-- Sites Namespace -->
+    <namespaces>
+        <namespace uri="testcmis.model" prefix="testcmis"/>
+    </namespaces>
+	
+	<types>
+        <type name="testcmis:maDoc">
+            <title>Content with Mandatory Aspect</title>
+            <parent>cm:content</parent>
+            <mandatory-aspects>
+            <aspect>cm:generalclassifiable</aspect>
+            </mandatory-aspects>
+        </type>
+	</types>
+</model>

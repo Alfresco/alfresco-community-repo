@@ -1,0 +1,229 @@
+<component>
+    <name>baseparamdir</name>
+    <description>//Base Installdir Parameter</description>
+    <canBeEdited>0</canBeEdited>
+    <selected>1</selected>
+    <show>0</show>
+    <initializationActionList>
+        <setInstallerVariable>
+<!--            <name>component(baseparamdir).parameter(installdir)</name>-->
+<name>installdir</name>
+            <value>${platform_install_prefix}/${product_shortname}-${product_version}</value>
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable>
+            <name>installdir</name>
+
+<!--            <name>component(baseparamdir).parameter(installdir)</name>-->
+<value>${platform_install_prefix}/${product_fullname}</value>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </setInstallerVariable>
+
+        <setInstallerVariableFromRegEx>
+            <text>${installdir}</text>
+            <name>installdir</name>
+            <substitution></substitution>
+            <pattern> \(x86\)</pattern>
+            <ruleList>
+                <platformTest type="windows-x64"/>
+            </ruleList>
+        </setInstallerVariableFromRegEx>
+    </initializationActionList>
+
+    <preInstallationActionList>
+	<actionGroup>
+	    <actionList>
+		<setInstallerVariable name="base_umask" value="0022" />
+		<setInstallerVariableFromScriptOutput>
+		    <abortOnError>0</abortOnError>
+		    <showMessageOnError>0</showMessageOnError>
+		    <name>base_umask</name>
+		    <exec>umask</exec>
+		</setInstallerVariableFromScriptOutput>
+		<throwError>
+		    <text>The installation has detected that the current umask is set to permissions of ${base_umask}, the installation is now exiting. You should modify your umask to at least 0022 before launching the installer. After the installation has completed, reset the umask permissions to your original values.</text>
+		    <ruleList>
+			<compareValues value1="${base_umask}" logic="greater" value2="0022" />
+		    </ruleList>
+		</throwError>
+	    </actionList>
+	    <ruleList>
+		<platformTest type="unix"/>
+		<compareText text="${installer_root_install}" logic="equals" value="1"/>
+	    </ruleList>
+	</actionGroup>
+    </preInstallationActionList>
+
+    <parameterList>
+        <stringParameter>
+            <name>base_needed_space</name>
+            <value>0</value>
+            <default>0</default>
+            <ask>0</ask>
+        </stringParameter>
+        <stringParameter>
+            <name>base_allow_spaces</name>
+            <value>1</value>
+            <default>1</default>
+            <ask>0</ask>
+        </stringParameter>
+        <stringParameter>
+            <name>base_installdir_should_be_empty</name>
+            <value>1</value>
+            <default>1</default>
+            <ask>0</ask>
+        </stringParameter>
+        <booleanParameter name="base_installdir_allow_symlink_on_windows_dir" value="1" ask="0" />
+        <stringParameter ask="0" name="base_installdir_max_characters" value="200" />
+        <directoryParameter>
+            <name>installdir</name>
+            <title>Installation folder</title>
+            <description>Select a folder</description>
+            <explanation>Please choose a folder to install ${product_fullname}</explanation>
+            <default/>
+            <mustBeWritable>1</mustBeWritable>
+            <mustExist>0</mustExist>
+            <allowEmptyValue>0</allowEmptyValue>
+            <cliOptionName>prefix</cliOptionName>
+            <insertAfter>components</insertAfter>
+            <width>32</width>
+            <preShowPageActionList>
+                <cd path="${installer_directory}" />
+            </preShowPageActionList>
+            <validationActionList>
+                <throwError>
+<!-- Require installdir to be empty. #2489 -->
+<text>The selected folder is not empty. Please select a different folder</text>
+                    <ruleList>
+                        <compareText text="${base_installdir_should_be_empty}" value="1"/>
+                        <fileTest path="${installdir}" condition="is_not_empty"/>
+                    </ruleList>
+                </throwError>
+                <throwError>
+<!-- As a temporary solution to #1975, spaces in installdir are not allowed on unix systems -->
+<text>Installation folder cannot contain spaces.</text>
+                    <ruleList>
+                        <compareText text="${installdir}" logic="contains" value=" "/>
+                        <platformTest type="unix"/>
+                    </ruleList>
+                </throwError>
+                <throwError>
+                    <text>Installation folder cannot contain spaces.</text>
+                    <ruleList>
+                        <compareText text="${installdir}" logic="contains" value=" "/>
+                        <platformTest type="windows"/>
+                        <compareText text="${base_allow_spaces}" value="0"/>
+                    </ruleList>
+                </throwError>
+                <throwError>
+                    <text>The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'.</text>
+                    <ruleList>
+			<platformTest type="windows" />
+			<regExMatch text="${installdir}" logic="does_not_match" pattern="^([a-zA-Z]:)\\([0-9a-zA-Z_\\\s\.\-\(\)]*)$" />
+                    </ruleList>
+                </throwError>
+                <throwError>
+                    <text>Installation directory path is too long. The maximum number of characters allowed is ${base_installdir_max_characters}.</text>
+                    <ruleList>
+                        <platformTest type="windows" />
+                        <compareTextLength text="${installdir}" logic="greater" length="${base_installdir_max_characters}" />
+                    </ruleList>            
+                </throwError>
+                <getFreeDiskSpace>
+                    <abortOnError>0</abortOnError>
+                    <customErrorMessage>Unable to get free disk space.</customErrorMessage>
+                    <onErrorActionList>
+                        <setInstallerVariable name="freeSpace" value="10000" />
+                    </onErrorActionList>
+                    <path>${installdir}</path>
+                    <variable>freeSpace</variable>
+                    <units>MB</units>
+                </getFreeDiskSpace>
+                <throwError>
+                    <text>There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}</text>
+                    <ruleList>
+                        <compareValues value1="${base_needed_space}" logic="greater" value2="${freeSpace}"/>
+			<compareValues value1="${freeSpace}" logic="does_not_equal" value2="-1" />
+                    </ruleList>
+                </throwError>
+		<showWarning>
+		    <text>The installer could not get the current free space on ${installdir}. Please check that there is free space enough to install ${product_fullname}</text>
+		    <ruleList>
+			<compareValues value1="${freeSpace}" logic="equals" value2="-1" />
+		    </ruleList>
+		</showWarning>
+		<actionGroup>
+		    <actionList>
+			<checkDirectoryTraversableRecursively directory="${installdir}" variable="is_not_traversable" />
+			<throwError text="The current installation directory could not be accessed by non-root users. Please select a different installation directory or change the permissions to 755 for this folder." >
+			    <ruleList>
+				<isTrue value="${is_not_traversable}" />
+			    </ruleList>
+			</throwError>
+		    </actionList>
+		    <ruleList>
+			<platformTest type="unix"/>
+			<compareText text="${installer_root_install}" logic="equals" value="1"/>
+		    </ruleList>
+		</actionGroup>
+                <actionGroup>
+                <actionList>
+                <checkForSymlinkRecursively directory="${installdir}" variable="contains_symlink" >
+                    <ruleList>
+                        <platformTest type="windows" />
+                    </ruleList>
+                </checkForSymlinkRecursively>
+                <throwError text="Please select a different installation directory. The installation directory cannot contain symbolic links" >
+                    <ruleList>
+                        <platformTest type="windows" />
+                        <isTrue value="${contains_symlink}" />
+                    </ruleList>
+                </throwError>
+                </actionList>
+                <ruleList>
+                    <isFalse value="${base_installdir_allow_symlink_on_windows_dir}" />
+                </ruleList>
+                </actionGroup>
+            </validationActionList>
+        </directoryParameter>
+    </parameterList>
+    <readyToInstallActionList>
+	<actionGroup>
+	    <actionList>
+		<checkDirectoryTraversableRecursively directory="${installdir}" variable="is_not_travesable" />
+		<throwError text="The current installation directory could not be accessed by non-root users. Please select a different installation directory or change the permissions to 755 for this folder." >
+		    <ruleList>
+			<isTrue value="${is_not_travesable}" />
+		    </ruleList>
+		</throwError>
+	    </actionList>
+	    <ruleList>
+		<platformTest type="unix"/>
+		<compareText text="${installer_root_install}" logic="equals" value="1"/>
+	    </ruleList>
+	</actionGroup>
+        <actionGroup>
+            <actionList>
+                <checkForSymlinkRecursively directory="${installdir}" variable="contains_symlink" >
+                    <ruleList>
+                        <platformTest type="windows" />
+                    </ruleList>
+                </checkForSymlinkRecursively>
+                <throwError text="Please select a different installation directory. The installation directory cannot contain symbolic links" >
+                    <ruleList>
+                        <platformTest type="windows" />
+                        <isTrue value="${contains_symlink}" />
+                    </ruleList>
+                </throwError>
+            </actionList>
+            <ruleList>
+                <isFalse value="${base_installdir_allow_symlink_on_windows_dir}" />
+            </ruleList>
+        </actionGroup>
+    </readyToInstallActionList>
+</component>
+

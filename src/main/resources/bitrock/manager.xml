@@ -1,0 +1,76 @@
+<component>
+    <name>manager</name>
+    <description>//Graphical Manager</description>
+    <detailedDescription></detailedDescription>
+    <canBeEdited>0</canBeEdited>
+    <selected>1</selected>
+    <show>0</show>
+    <folderList>
+        <folder>
+            <description>//Binary</description>
+            <destination>${manager_installation_directory}</destination>
+            <name>binary</name>
+            <platforms>linux linux-x64 osx windows</platforms>
+            <distributionFileList>
+                <distributionFile origin="${manager_distribution_folder}/manager-*" allowWildcards="1"/>
+            </distributionFileList>
+        </folder>
+    </folderList>
+    <startMenuShortcutList>
+        <startMenuShortcut>
+            <comment>Manager tool</comment>
+            <name>${product_shortname} manager tool</name>
+	    <runAsAdmin>1</runAsAdmin>
+            <windowsExec>${installdir}/manager-windows.exe</windowsExec>
+            <windowsPath>${installdir}/</windowsPath>
+	    <ruleList>
+		<compareVersions version1="${windows_os_version_number}" logic="greater_or_equal" version2="6.0" />
+	    </ruleList>
+        </startMenuShortcut>
+        <startMenuShortcut>
+            <comment>Manager tool</comment>
+            <name>${product_shortname} manager tool</name>
+            <windowsExec>${installdir}/manager-windows.exe</windowsExec>
+            <windowsPath>${installdir}/</windowsPath>
+	    <ruleList>
+		<compareVersions version1="${windows_os_version_number}" logic="less" version2="6.0" />
+	    </ruleList>
+        </startMenuShortcut>
+    </startMenuShortcutList>
+    <parameterList>
+	<directoryParameter>
+	    <name>manager_installation_directory</name>
+	    <ask>0</ask>
+	    <default/>
+	</directoryParameter>
+	<directoryParameter>
+	    <name>manager_distribution_folder</name>
+	    <ask>0</ask>
+	    <default>${build_project_directory}</default>
+	</directoryParameter>
+    </parameterList>
+    <readyToInstallActionList>
+        <setInstallerVariable>
+            <name>manager_installation_directory</name>
+            <value>${installdir}</value>
+        </setInstallerVariable>
+    </readyToInstallActionList>
+    <postInstallationActionList>
+	<changePermissions>
+	    <permissions>700</permissions>
+	    <files>${manager_installation_directory}/manager-${platform_name}.${platform_exec_suffix}</files>
+	    <ruleList>
+		<platformTest type="linux" />
+	    </ruleList>
+	</changePermissions>
+        <changePermissions permissions="700" files="${manager_installation_directory}/manager-osx.app/Contents/MacOS/osx-intel" >
+	    <ruleList>
+		<platformTest type="osx" />
+	    </ruleList>
+	</changePermissions>
+    </postInstallationActionList>
+    <postUninstallationActionList>
+	<deleteFile path="manager-${platform_name}.${platform_exec_suffix}" />
+    </postUninstallationActionList>
+</component>
+

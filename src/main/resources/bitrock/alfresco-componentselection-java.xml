@@ -1,0 +1,8 @@
+<component>
+    <name>javaalfresco</name>
+    <description>Java</description>
+    <canBeEdited>1</canBeEdited>
+    <detailedDescription>Java Component required to run the Alfresco server.</detailedDescription>
+    <selected>1</selected>
+    <show>1</show>
+</component>

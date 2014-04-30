@@ -1,0 +1,38 @@
+<component>
+    <name>javasettings</name>
+    <description>//JavaInitialSettings</description>
+    <canBeEdited>1</canBeEdited>
+    <show>0</show>
+    <selected>1</selected>
+    <parameterList>
+	<stringParameter name="java_osx_arch" value="x86" ask="0" />
+    </parameterList>
+    <initializationActionList>
+	<!-- Java component variables -->
+	<setInstallerVariable name="component(java).parameter(java_installation_type).ask" value="0"/>
+        <!-- this tag is modified automatically, please don't modified it manually -->
+        <setInstallerVariable name="component(java).parameter(java_installation_type).value" value="bundled"/>
+        <setInstallerVariable>
+            <name>component(java).parameter(java_installation_type).value</name>
+            <value>existing</value>
+            <ruleEvaluationLogic>or</ruleEvaluationLogic>
+            <ruleList>
+                <ruleGroup>
+                    <ruleEvaluationLogic>and</ruleEvaluationLogic>
+ 	            <ruleList>
+		        <compareText text="${java_osx_arch}" logic="equals" value="x86"/>
+                        <platformTest type="osx"/>
+                    </ruleList>
+                </ruleGroup>
+                <ruleGroup>
+                    <ruleEvaluationLogic>and</ruleEvaluationLogic>
+ 	            <ruleList>
+		        <compareVersions version1="${osx_version}" logic="less" version2="10.7.3"/>
+                        <platformTest type="osx"/>
+                    </ruleList>
+                </ruleGroup>
+            </ruleList>
+        </setInstallerVariable>
+    </initializationActionList>
+</component>
+

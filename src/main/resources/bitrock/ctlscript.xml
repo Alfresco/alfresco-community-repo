@@ -1,0 +1,182 @@
+<component>
+    <name>script</name>
+    <description>//Script for start/stop Services</description>
+    <canBeEdited>1</canBeEdited>
+    <show>0</show>
+    <selected>1</selected>
+    <parameterList>
+        <stringParameter>
+            <name>ctlscript_unix</name>
+            <default>ctlscript.sh</default>
+            <value>ctlscript.sh</value>
+            <ask>0</ask>
+        </stringParameter>
+        <booleanParameter name="ctlscript_windows_use_default_service_scripts" value="1" ask="0" />
+        <stringParameter>
+            <name>ctlscript_windows</name>
+            <default>servicerun.bat</default>
+            <value>servicerun.bat</value>
+            <ask>0</ask>
+        </stringParameter>
+        <stringParameter>
+            <name>ctlscript_install_script_windows</name>
+            <default>serviceinstall.bat</default>
+            <value>serviceinstall.bat</value>
+            <ask>0</ask>
+        </stringParameter>
+        <stringParameter>
+            <name>ctlscript_start_apache</name>
+            <default>1</default>
+            <value>1</value>
+            <ask>0</ask>
+        </stringParameter>
+        <stringParameter>
+            <name>ctlscript_allow_root</name>
+            <default>1</default>
+            <value>1</value>
+            <ask>0</ask>
+        </stringParameter>
+    </parameterList>
+    <readyToInstallActionList>
+        <setInstallerVariable name="component(script).parameter(ctlscript_allow_root).value" value="0">
+            <ruleList>
+                <compareText text="${installer_root_install}" logic="does_not_equal" value="1"/>
+            </ruleList>
+        </setInstallerVariable>
+    </readyToInstallActionList>
+    <folderList>
+        <folder>
+            <description>//Program Files Linux</description>
+            <destination>${installdir}</destination>
+            <name>scriptsunix</name>
+            <distributionFileList>
+                <distributionFile>
+                    <origin>${ctlscript_unix}</origin>
+                </distributionFile>
+            </distributionFileList>
+            <actionList>
+                <substitute>
+                    <files>${installdir}/${ctlscript_unix}</files>
+                    <substitutionList>
+                        <substitution>
+                            <pattern>@@BITROCK_INSTALLDIR@@</pattern>
+                            <value>${installdir}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>#!/bin/sh</pattern>
+                            <value>#!/bin/sh
+
+# Avoid root execution
+if [ `id|sed -e s/uid=//g -e s/\(.*//g` -eq 0 ]; then
+    echo "Execution by root not allowed"
+    exit 1
+fi
+</value>
+                            <ruleList>
+                                <compareText text="${ctlscript_allow_root}" logic="does_not_equal" value="1"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>#!/bin/sh</pattern>
+                            <value>#!/bin/sh
+
+# Allow only root execution
+if [ `id|sed -e s/uid=//g -e s/\(.*//g` -ne 0 ]; then
+    echo "This script requires root privileges"
+    exit 1
+fi
+</value>
+                            <ruleList>
+                                <compareText text="${ctlscript_allow_root}" logic="equals" value="1"/>
+                            </ruleList>
+                        </substitution>
+                    </substitutionList>
+                </substitute>
+            </actionList>
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+            <shouldPackRuleList>
+                <compareText text="${platform_name}" logic="does_not_equal" value="windows"  />
+            </shouldPackRuleList>
+        </folder>
+        <folder>
+            <description>//Program Files Windows</description>
+            <destination>${installdir}</destination>
+            <platforms>windows</platforms>
+            <name>scriptswindows</name>
+            <distributionFileList>
+                <distributionFile>
+                    <origin>${ctlscript_windows}</origin>
+                </distributionFile>
+                <distributionFile>
+                    <origin>${ctlscript_install_script_windows}</origin>
+                </distributionFile>
+            </distributionFileList>
+            <actionList>
+                <substitute>
+                    <files>${installdir}/${ctlscript_windows};${installdir}/${ctlscript_install_script_windows}</files>
+                    <substitutionList>
+                        <substitution>
+                            <pattern>@@BITROCK_INSTALLDIR@@</pattern>
+                            <value>${installdir.dos}</value>
+                        </substitution>
+                    </substitutionList>
+                </substitute>
+            </actionList>
+            <shouldPackRuleList>
+                <isTrue value="${ctlscript_windows_use_default_service_scripts}" />
+                <compareText text="${platform_name}" logic="equals" value="windows"  />
+            </shouldPackRuleList>
+        </folder>
+    </folderList>
+    <postInstallationActionList>
+        <actionGroup>
+            <actionList>
+                <changePermissions>
+                    <files>${installdir}/${ctlscript_unix}</files>
+                    <permissions>755</permissions>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>1</showMessageOnError>
+                </changePermissions>
+                <actionGroup>
+                    <actionList>
+                        <runProgram>
+                            <program>${installdir}/${ctlscript_unix}</program>
+                            <programArguments>start apache &amp; &gt; /dev/null</programArguments>
+                            <abortOnError>0</abortOnError>
+                            <showMessageOnError>1</showMessageOnError>
+                        </runProgram>
+                        <waitForPort>
+                            <port>${web_server_port}</port>
+                            <timeout>30000</timeout>
+                        </waitForPort>
+                    </actionList>
+                    <ruleList>
+                        <compareText text="${ctlscript_start_apache}" logic="equals" value="1"/>
+                    </ruleList>
+                </actionGroup>
+            </actionList>
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </actionGroup>
+
+<!--<actionGroup>
+	    <actionList>
+		<runProgram>
+			<program>${installdir}/${ctlscript_unix}</program>
+			<programArguments>start tomcat &amp; &gt; /dev/null</programArguments>
+		</runProgram>
+		<waitForPort>
+		        <port>${application_server_port}</port>
+			<timeout>30000</timeout>
+		</waitForPort>
+	    </actionList>
+	    <ruleList>
+		    <platformTest type="unix" />
+	    </ruleList>
+	</actionGroup>-->
+    </postInstallationActionList>
+</component>
+

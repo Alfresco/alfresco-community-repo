@@ -1,0 +1,905 @@
+<!-- base-functions
+Componentname: basefunctions
+
+Short Description:
+
+Created: 200911
+Modified: 200911
+Copyrighted by BitRock
+
+
+-->
+<component>
+    <name>basefunctions</name>
+    <description>//BaseFunctions</description>
+    <canBeEdited>1</canBeEdited>
+    <selected>1</selected>
+    <show>0</show>
+    <functionDefinitionList>
+
+      <actionDefinition name="countCharactersFromString">
+        <parameterList>
+          <stringParameter name="name" />
+          <stringParameter name="string" />
+        </parameterList>
+        <actionList>
+	    <setInstallerVariable name="string_var" value="${string}" />
+	    <setInstallerVariable name="counter" value="0" />
+	    <while>
+		<actionList>
+		    <mathExpression text="${counter}+1" variable="counter" />
+		    <setInstallerVariableFromRegEx text="${string_var}" name="string_var" substitution="" pattern="^." />
+		</actionList>
+		<conditionRuleList>
+		    <compareTextLength text="${string_var}" logic="does_not_equal" length="0"/>
+		</conditionRuleList>
+	    </while>
+	    <setInstallerVariable name="${name}" value="${counter}" />
+        </actionList>
+      </actionDefinition>
+
+      <actionDefinition name="generateRandomNumber">
+        <parameterList>
+          <stringParameter name="variable" />
+          <stringParameter name="length" />
+        </parameterList>
+	<actionList>
+	    <setInstallerVariable>
+		<name>randomdigit</name>
+		<value></value>
+	    </setInstallerVariable>
+	    <while>
+		<actionList>
+		    <mathExpression>
+			<text>int(rand() * 1000000000)</text>
+			<variable>randomdigit0</variable>
+		    </mathExpression>
+		    <setInstallerVariable>
+			<name>randomdigit</name>
+			<value>${randomdigit}${randomdigit0}</value>
+		    </setInstallerVariable>
+		</actionList>
+		<conditionRuleList>
+		    <compareTextLength>
+			<length>${length}</length>
+			<logic>less</logic>
+			<text>${randomdigit}</text>
+		    </compareTextLength>
+		</conditionRuleList>
+	    </while>
+	    <setInstallerVariable name="${variable}" value="${randomdigit}" />
+	    <globalVariables names="${variable}" />
+	</actionList>
+      </actionDefinition>
+
+      <actionDefinition name="baseRemoveLibstdcIfExists">
+        <parameterList>
+        </parameterList>
+        <actionList>
+          <actionGroup>
+            <actionList>
+              <setInstallerVariable name="libstdc_libs" value="" />
+              <findFile baseDirectory="/usr/lib" variable="libstdc_libs" pattern="libstdc++.*">
+                <ruleList>
+                  <fileTest path="/usr/lib" condition="exists"/>
+                </ruleList>            
+              </findFile>
+              <findFile baseDirectory="/usr/lib64" variable="libstdc_libs" pattern="libstdc++.*">
+                <ruleList>
+                  <fileTest path="/usr/lib64" condition="exists"/>
+                </ruleList>            
+              </findFile>
+              <deleteFile path="${installdir}/common/lib/libstdc++.*" >
+                <ruleList>
+                  <compareText text="${libstdc_libs}" logic="does_not_equal" value=""/>
+                </ruleList>
+              </deleteFile>
+            </actionList>
+            <ruleList>
+              <platformTest type="linux"/>
+            </ruleList>
+          </actionGroup>
+        </actionList>
+      </actionDefinition>
+
+      <actionDefinition name="baseBitnamiModuleBasicSubstitutions">
+        <parameterList>
+          <stringParameter name="appDir" />
+          <stringParameter name="appName" />
+        </parameterList>
+        <actionList>
+          <substitute>
+            <files>*/ctl.sh</files>
+            <type>exact</type>
+            <substitutionList>
+              <substitution>
+                <pattern>@@BITROCK_RUBY_APPLICATION_ROOTDIR@@</pattern>
+                <value>${appDir}</value>
+              </substitution>
+              <substitution>
+                <pattern>@@BITROCK_INSTALLDIR@@</pattern>
+                <value>${installdir}</value>
+              </substitution>
+              <substitution>
+                <pattern>ruby_application</pattern>
+                <value>${appName}</value>
+              </substitution>
+            </substitutionList>
+          </substitute>
+        </actionList>
+      </actionDefinition>
+
+        <actionDefinition name="baseLoadGeneralStackConfigurationFromFile">
+            <parameterList>
+                <stringParameter name="baseStackPropertiesFile" default="${installdir}/properties.ini" />
+		<stringParameter name="baseStackName" />
+		<stringParameter name="baseStackVersion" />
+		<stringParameter name="baseStackPlatform" />
+		<stringParameter name="baseStackInstallDir" />
+	    </parameterList>
+	    <actionList>
+	        <foreach variables="var" values="${baseStackName}
+${baseStackVersion}
+${baseStackInstallDir}
+${baseStackPlatform}">
+                    <actionList>
+		        <setInstallerVariable name="${var}" value="" persist="1"/>
+		    </actionList>
+                </foreach>
+		<actionGroup>
+		  <actionList>
+                    <iniFileGet>
+	              <file>${baseStackPropertiesFile}</file>
+		      <section>General</section>
+		      <key>installdir</key>
+		      <variable>${baseStackInstallDir}</variable>
+	            </iniFileGet>
+		    <iniFileGet>
+	              <file>${baseStackPropertiesFile}</file>
+		      <section>General</section>
+		      <key>base_stack_name</key>
+		      <variable>${baseStackName}</variable>
+	            </iniFileGet>
+		    <iniFileGet>
+	              <file>${baseStackPropertiesFile}</file>
+		      <section>General</section>
+		      <key>base_stack_version</key>
+		      <variable>${baseStackVersion}</variable>
+		    </iniFileGet>
+		    <iniFileGet>
+	              <file>${baseStackPropertiesFile}</file>
+		      <section>General</section>
+		      <key>base_stack_platform</key>
+		      <variable>${baseStackPlatform}</variable>
+	            </iniFileGet>
+		  </actionList>
+		  <ruleList>
+		    <fileExists path="${baseStackPropertiesFile}"/>
+		  </ruleList>
+		</actionGroup>
+	        <foreach variables="var" values="${baseStackName}
+${baseStackVersion}
+${baseStackInstallDir}
+${baseStackPlatform}">
+                    <actionList>
+		        <setInstallerVariable name="${var}" value="${${var}}" persist="1"/>
+		        <globalVariables names="${var}"/>
+		    </actionList>
+                </foreach>
+            </actionList>
+        </actionDefinition>
+
+        <actionDefinition name="baseSaveGeneralStackConfigurationToFile">
+            <parameterList>
+                <stringParameter name="baseStackPropertiesFile" default="${installdir}/properties.ini" />
+		<stringParameter name="baseStackName" />
+		<stringParameter name="baseStackVersion" />
+		<stringParameter name="baseStackPlatform" />
+		<stringParameter name="baseStackInstallDir" />
+                <stringParameter name="baseStackService" value="" />
+	    </parameterList>
+            <actionList>
+                <iniFileSet>
+	            <file>${baseStackPropertiesFile}</file>
+	            <section>General</section>
+		    <key>installdir</key>
+		    <value>${baseStackInstallDir}</value>
+		</iniFileSet>
+		<iniFileSet>
+	            <file>${baseStackPropertiesFile}</file>
+		    <section>General</section>
+		    <key>base_stack_name</key>
+		    <value>${baseStackName}</value>
+		</iniFileSet>
+		<iniFileSet>
+	            <file>${baseStackPropertiesFile}</file>
+		    <section>General</section>
+		    <key>base_stack_version</key>
+		    <value>${baseStackVersion}</value>
+	        </iniFileSet>
+		<iniFileSet>
+	            <file>${baseStackPropertiesFile}</file>
+		    <section>General</section>
+		    <key>base_stack_platform</key>
+		    <value>${baseStackPlatform}</value>
+		</iniFileSet>
+		<iniFileSet>
+	            <file>${baseStackPropertiesFile}</file>
+		    <section>General</section>
+		    <key>base_stack_service</key>
+		    <value>${baseStackService}</value>
+                    <ruleList>
+                        <platformTest type="unix" />
+                    </ruleList>
+		</iniFileSet>
+		<iniFileSet>
+	            <file>${baseStackPropertiesFile}</file>
+		    <section>General</section>
+		    <key>require_root_privileges</key>
+		    <value>1</value>
+                    <ruleList>
+			<compareText text="${installer_root_install}" logic="equals" value="1"/>
+                    </ruleList>
+		</iniFileSet>
+            </actionList>
+        </actionDefinition>
+
+        <actionDefinition name="baseLoadUserAccountConfigurationFromFile">
+            <parameterList>
+	        <stringParameter name="basePropertiesFile" default="${installdir}/properties.ini" />
+		<stringParameter name="baseUser" />
+		<stringParameter name="baseUserName" />
+		<stringParameter name="baseMail" />
+	    </parameterList>
+	    <actionList>
+	      <foreach variables="var" values="${baseUser} ${baseUserName} ${baseMail}">
+		<actionList>
+		  <setInstallerVariable name="${var}" value="" persist="1"/>
+		  <globalVariables names="${var}"/>
+		</actionList>
+	      </foreach>
+	      <actionGroup>
+		<actionList>
+	          <iniFileGet>
+                    <file>${basePropertiesFile}</file>
+		    <section>General</section>
+		    <key>base_user</key>
+		    <variable>${baseUser}</variable>
+		  </iniFileGet>
+		  <iniFileGet>
+                    <file>${basePropertiesFile}</file>
+		    <section>General</section>
+		    <key>base_user_name</key>
+		    <variable>${baseUserName}</variable>
+		  </iniFileGet>
+		  <iniFileGet>
+		    <file>${basePropertiesFile}</file>
+		    <section>General</section>
+		    <key>base_mail</key>
+		    <variable>${baseMail}</variable>
+	          </iniFileGet>
+		  </actionList>
+		  <ruleList>
+		    <fileExists path="${baseStackPropertiesFile}"/>
+		  </ruleList>
+		</actionGroup>
+		  
+		  <foreach variables="var" values="${baseUser} ${baseUserName} ${baseMail}">
+		    <actionList>
+		        <setInstallerVariable name="${var}" value="${${var}}" persist="1"/>
+			<globalVariables names="${var}"/>
+		    </actionList>
+	        </foreach>
+	    </actionList>
+        </actionDefinition>
+
+        <actionDefinition name="baseSaveUserAccountConfigurationToFile">
+            <parameterList>
+                <stringParameter name="basePropertiesFile" default="${installdir}/properties.ini"/>
+		<stringParameter name="baseUser" />
+		<stringParameter name="baseUserName" />
+		<stringParameter name="baseMail" />
+	    </parameterList>
+	    <actionList>
+	        <iniFileSet>
+                    <file>${basePropertiesFile}</file>
+		    <section>General</section>
+		    <key>base_user</key>
+		    <value>${baseUser}</value>
+	        </iniFileSet>
+		<iniFileSet>
+		    <file>${basePropertiesFile}</file>
+		    <section>General</section>
+		    <key>base_user_name</key>
+		    <value>${baseUserName}</value>
+		</iniFileSet>
+		<iniFileSet>
+		    <file>${basePropertiesFile}</file>
+		    <section>General</section>
+		    <key>base_mail</key>
+		    <value>${baseMail}</value>
+		</iniFileSet>
+            </actionList>
+        </actionDefinition>
+
+      <!-- Autogenerates PHP apps variables -->
+      <actionDefinition name="newPHPApp">
+        <parameterList>
+          <stringParameter name="applicationId" />
+	  <stringParameter name="applicationName" value =""/>
+          <stringParameter name="databasePassword" value=""/>
+          <stringParameter name="applicationPassword" value=""/>
+          <stringParameter name="databaseUser" value=""/>
+          <stringParameter name="databaseName" value=""/>
+          <stringParameter name="link" value=""/>
+          <stringParameter name="installationDirectory" value=""/>
+          <stringParameter name="site" value=""/>
+          <stringParameter name="url" value=""/>
+        </parameterList>
+        <actionList>
+          <!-- Set autogenerated values -->
+	  <setInstallerVariable name="applicationName" value="${applicationId}" >
+	      <ruleList>
+		  <compareText text="${applicationName}" logic="equals" value=""/>
+	      </ruleList>
+	  </setInstallerVariable>
+          <generateRandomValue variable="random_database_password" length="10"/>
+          <setInstallerVariable name="app(${applicationId}).database_password" value="${random_database_password}" persist="1"/>
+          <setInstallerVariable name="app(${applicationId}).application_password" value="${random_database_password}" persist="1"/>
+	  <setInstallerVariable name="app(${applicationId}).database_user" value="bn_${applicationName}" persist="1"/>
+	  <setInstallerVariable name="app(${applicationId}).database_name" value="bitnami_${applicationName}" persist="1"/>
+	  <setInstallerVariable name="app(${applicationId}).installdir" value="${installdir}/apps/${applicationName}" persist="1"/>
+	  <setInstallerVariable name="app(${applicationId}).link" value="${applicationName}" persist="1"/>
+	  <setInstallerVariable name="app(${applicationId}).site" value="127.0.0.1" persist="1"/>
+          
+          <foreach variables="setting parameter" values="database_password databasePassword application_password applicationPassword database_user databaseUser database_name databaseName link link installdir installationDirectory site site">
+            <actionList>
+              <!-- If any of the settings was provided, overwrite the default value -->
+              <setInstallerVariable name="app(${applicationId}).${setting}" value="${${parameter}}" persist="1" >
+                <ruleList>
+                  <compareText text="${${parameter}}" logic="does_not_equal" value=""/>
+                </ruleList>
+              </setInstallerVariable>
+              <!-- Set the variable as global -->
+              <globalVariables names="app(${applicationId}).${setting}"/>
+            </actionList>
+          </foreach>
+	  <actionGroup>
+	      <actionList>
+		  <logMessage text="MySQL database user name should be no longer than 16" />
+		  <setInstallerVariableFromRegEx>
+		      <text>${app(${applicationId}).database_user}</text>
+		      <pattern>(.{1,16}).*</pattern>
+		      <name>app(${applicationId}).database_user</name>
+		      <substitution>\1</substitution>
+		  </setInstallerVariableFromRegEx>
+		  <logMessage text="Database user name: ${app(${applicationId}).database_user}" />
+	      </actionList>
+	      <ruleList>
+		  <compareTextLength text="${app(${applicationId}).database_user}" logic="greater" length="16" />
+	      </ruleList>
+	  </actionGroup>
+	  <!-- We treat url differently, as its default value depends on site, which could be provided -->
+          <setInstallerVariable name="app(${applicationId}).url" value="${url}">
+            <ruleList>
+              <compareText text="${url}" logic="does_not_equal" value=""/>
+            </ruleList>
+          </setInstallerVariable>
+          <actionGroup>
+            <actionList>
+              <setInstallerVariable name="app(${applicationId}).url" value="http://${app(${applicationId}).site}:${web_server_port}/${app(${applicationId}).link}/" persist="1"/>
+              <setInstallerVariable name="app(${applicationId}).url" value="http://${app(${applicationId}).site}/${app(${applicationId}).link}/" persist="1">
+                <ruleList>
+                  <compareText text="${web_server_port}" logic="equals" value="80"/>
+                </ruleList>
+              </setInstallerVariable>
+            </actionList>
+            <ruleList>
+              <compareText text="${url}" logic="equals" value=""/>
+            </ruleList>
+          </actionGroup>
+          
+          <globalVariables names="app(${applicationId}).url"/>
+
+	  <md5 text="${app(${applicationId}).database_password}" variable="app(${applicationId}).database_password_md5"/>
+          <globalVariables names="app(${applicationId}).database_password_md5"/>
+
+	  <md5 text="${app(${applicationId}).application_password}" variable="app(${applicationId}).application_password_md5"/>
+          <globalVariables names="app(${applicationId}).application_password_md5"/>
+
+          <!-- Until we clean all the the code, define some variables that may still be used -->
+          <setInstallerVariable name="bitnamimodulelink_url" value="${applicationId}"/>
+          <globalVariables names="bitnamimodulelink_url"/>
+
+        </actionList>
+      </actionDefinition>
+        <actionDefinition>
+          <name>createApplicationDatabase</name>
+          <parameterList>
+            <stringParameter name="applicationId" default=""/>
+            <stringParameter name="collation" default="utf8_general_ci"/>
+          </parameterList>
+          <actionList>
+            <createDirectory path="${app(${applicationId}).installdir}/scripts" />
+            <writeFile>
+                <path>${app(${applicationId}).installdir}/scripts/createdb.php</path>
+                <text>&lt;?php
+
+//createdb.php
+//
+//script used to create the necessary databases to run ${project.shortName}
+//it won't overwrite any existent database
+
+if ($db=mysql_connect('${database_hostname}:${database_port}','root','${database_root_password}')) {
+        mysql_query("create database ${app(${applicationId}).database_name} collate ${collation}");
+        mysql_query("GRANT ALL PRIVILEGES ON ${app(${applicationId}).database_name}.* TO '${app(${applicationId}).database_user}'@'${database_client_hostname}' IDENTIFIED BY '${app(${applicationId}).database_password}'");
+        mysql_query("flush privileges");
+}
+else {
+        die("There was an error creating the database or setting the appropriate privileges");
+}
+?&gt;
+
+</text>
+                <ruleList>
+                    <fileTest path="${app(${applicationId}).installdir}/scripts/createdb.php" condition="not_exists" />
+                </ruleList>
+            </writeFile>
+            <runProgram>
+              <program>${php_binary_directory}/php</program>
+              <programArguments>-c "${php_configuration_directory}" "${app(${applicationId}).installdir.unix}/scripts/createdb.php"</programArguments>
+              <ruleList>
+                <platformTest type="unix"/>
+              </ruleList>
+            </runProgram>
+            <runProgram>
+              <program>${php_binary_directory}\php</program>
+              <programArguments>-c "${php_configuration_directory}" "${app(${applicationId}).installdir.dos}\scripts\createdb.php"</programArguments>
+              <ruleList>
+                <platformTest type="windows"/>
+              </ruleList>
+            </runProgram>            
+            <deleteFile path="${app(${applicationId}).installdir}/scripts/createdb.php" abortOnError="0" />
+          </actionList>
+        </actionDefinition>
+
+	<actionDefinition name="baseRecursiveChown" >
+	    <parameterList>
+		<stringParameter name="owner" value="" />
+		<stringParameter name="group" value="" />
+		<!-- Use quotes if the list components could have spaces -->
+		<stringParameter name="files" value="" />
+	    </parameterList>
+	    <actionList>
+		<foreach variables="file_path" values="${files}">
+		    <actionList>
+			<actionGroup>
+			    <actionList>
+				<runProgram>
+				    <program>chown</program>
+				    <programArguments>-R ${owner}:${group} ${file_path}</programArguments>
+				    <ruleList>
+					<fileExists path="${file_path}" />
+				<userTest username="${owner}" logic="exists" />
+				    </ruleList>
+				</runProgram>
+				<runProgram>
+				    <program>chown</program>
+				    <programArguments>-R root:${group} ${file_path}</programArguments>
+				    <ruleList>
+					<fileExists path="${file_path}" />
+					<userTest username="${owner}" logic="not_exists" />
+				    </ruleList>
+				</runProgram>
+			    </actionList>
+			    <ruleList>
+				<stringTest text="${group}" type="not_empty" />
+			    </ruleList>
+			</actionGroup>
+			<actionGroup>
+			    <actionList>
+				<runProgram>
+				    <program>chown</program>
+				    <programArguments>-R ${owner} ${file_path}</programArguments>
+				    <ruleList>
+					<fileExists path="${file_path}" />
+					<userTest username="${owner}" logic="exists" />
+				    </ruleList>
+				</runProgram>
+			    </actionList>
+			    <ruleList>
+				<stringTest text="${group}" type="empty" />
+			    </ruleList>
+			</actionGroup>
+		    </actionList>
+		    <ruleList>
+			<platformTest type="unix"/>
+			<compareText text="${installer_root_install}" logic="equals" value="1"/>
+		    </ruleList>
+		</foreach>
+	    </actionList>
+	</actionDefinition>
+
+	<actionDefinition name="baseRecursiveChmod" >
+	    <parameterList>
+		<stringParameter name="path" value="" />
+		<stringParameter name="pattern" value="" />
+		<stringParameter name="permissions" value="" />
+	    </parameterList>
+	    <actionList>
+		<actionGroup>
+		    <actionList>
+			<runProgram>
+			    <abortOnError>0</abortOnError>
+			    <showMessageOnError>0</showMessageOnError>
+			    <program>find</program>
+			    <programArguments>${path} -name ${pattern} -print0 | xargs -0 chmod ${permissions}</programArguments>
+			</runProgram>
+		    </actionList>
+		    <ruleList>
+			<platformTest type="unix" />
+		    </ruleList>
+		</actionGroup>
+	    </actionList>
+	</actionDefinition>
+
+        <actionDefinition name="baseServerSelection" >
+            <parameterList>
+                <stringParameter name="httpServer"  value="apache" />
+            </parameterList>
+            <actionList>
+                <componentSelection>
+                    <deselect>apache,apachephp,mysqlapache,apacheservice,apachewriteproperties,iis,iisphp,common,iisfastcgi</deselect>
+                </componentSelection>
+                <setInstallerVariable name="php_install_nts" value="1">
+                    <ruleList>
+                        <compareText text="${httpServer}" value="iis" logic="equals" />
+                    </ruleList>
+                </setInstallerVariable>
+                <componentSelection>
+                    <select>iis,iisfastcgi,iisphp</select>
+                    <ruleList>
+                        <compareText text="${httpServer}" value="iis" logic="equals" />
+                    </ruleList>
+                </componentSelection>
+                <componentSelection>
+                    <select>common,apache,apachephp,mysqlapache,apacheservice,apachewriteproperties</select>
+                    <ruleList>
+                        <compareText text="${httpServer}" value="apache" logic="equals" />
+                    </ruleList>
+                </componentSelection>
+                <setInstallerVariable name="php_install_nts" value="0">
+                    <ruleList>
+                        <compareText text="${httpServer}" value="apache" logic="equals" />
+                    </ruleList>
+                </setInstallerVariable>
+            </actionList>
+        </actionDefinition>
+
+	<actionDefinition name="createSystemUser">
+	    <parameterList>
+		<stringParameter name="username" value="" />
+		<stringParameter name="groupname" value="" />
+		<stringParameter name="createHome" value="0" />
+	    </parameterList>
+	    <actionList>
+		<setInstallerVariable name="create_home_option" value="" />
+		<setInstallerVariable name="create_home_option" value="-m" >
+		    <ruleList>
+			<isTrue value="${createHome}" />
+		    </ruleList>
+		</setInstallerVariable>
+		<setInstallerVariable name="groupname" value="${username}" >
+		    <ruleList>
+			<stringTest text="${groupname}" type="empty" />
+		    </ruleList>
+		</setInstallerVariable>
+		<actionGroup>
+		    <actionList>
+			<actionGroup>
+			    <actionList>
+				<runProgram>
+				    <program>useradd</program>
+				    <programArguments>-r ${username} ${create_home_option}</programArguments>
+				    <abortOnError>0</abortOnError>
+                                    <showMessageOnError>1</showMessageOnError>
+				    <ruleList>
+					<platformTest type="unix" />
+					<platformTest type="osx" negate="1" />
+				    </ruleList>
+				</runProgram>
+				<addUser>
+				    <username>${username}</username>
+				    <abortOnError>0</abortOnError>
+				    <showMessageOnError>1</showMessageOnError>
+				    <ruleList>
+					<platformTest type="osx" />
+				    </ruleList>
+				</addUser>
+				<runProgram>
+				    <program>defaults</program>
+				    <programArguments>write /Library/Preferences/com.apple.loginwindow HiddenUsersList -array-add '${username}'</programArguments>
+				    <abortOnError>0</abortOnError>
+				    <showMessageOnError>0</showMessageOnError>
+				    <ruleList>
+					<platformTest type="osx" />
+				    </ruleList>
+				</runProgram>
+			    </actionList>
+			    <ruleList>
+				<userTest username="${username}" logic="not_exists"/>
+			    </ruleList>
+			</actionGroup>
+			<readFile>
+			    <path>/etc/group</path>
+			    <name>groupFile</name>
+			    <abortOnError>0</abortOnError>
+			    <showMessageOnError>1</showMessageOnError>
+			</readFile>
+			<addGroup>
+			    <groupname>${groupname}</groupname>
+			    <abortOnError>0</abortOnError>
+			    <showMessageOnError>1</showMessageOnError>
+			    <ruleList>
+				<compareText text="${groupFile}" logic="does_not_contain" value="${groupname}"/>
+			    </ruleList>
+			</addGroup>
+			<addGroupToUser>
+			    <username>${username}</username>
+			    <groupname>${groupname}</groupname>
+			    <abortOnError>0</abortOnError>
+			    <showMessageOnError>0</showMessageOnError>
+			</addGroupToUser>		    
+		    </actionList>
+		    <ruleList>
+			<isTrue value="${installer_root_install}"/>
+			<platformTest type="unix" />
+		    </ruleList>
+		</actionGroup>
+	    </actionList>
+	</actionDefinition>
+
+        <actionDefinition>
+            <name>checkForSymlinkRecursively</name>
+            <parameterList>
+                <stringParameter name="directory"/>
+                <stringParameter name="variable"/>
+            </parameterList>
+            <actionList>
+                <globalVariables names="${variable}"/>
+                <setInstallerVariable name="${variable}" value="0" />
+                <while>
+                    <actionList>
+                        <setInstallerVariable name="${variable}" value="1"> 
+                            <ruleList>
+                                <fileTest condition="is_symlink" path="${directory}" />
+                            </ruleList>
+                        </setInstallerVariable>
+                        <setInstallerVariable name="previous_directory" value="${directory}" />
+                        <dirName path="${directory}" variable="directory" />
+                        <break>
+                            <ruleList>
+                                <compareText logic="equals" text="${directory}" value="${previous_directory}" />
+                            </ruleList>
+                        </break>
+                    </actionList>
+                </while>
+            </actionList>
+        </actionDefinition>
+
+        <actionDefinition>
+            <name>checkDirectoryTraversableRecursively</name>
+            <parameterList>
+                <stringParameter name="directory"/>
+                <stringParameter name="variable"/>
+            </parameterList>
+            <actionList>
+                <globalVariables names="${variable}"/>
+                <setInstallerVariable name="${variable}" value="0" />
+                <while>
+                    <actionList>
+			<actionGroup>
+			    <actionList>
+				<getPermissions file="${directory}" variable="permissions" />
+				<setInstallerVariable name="${variable}" value="1">
+				    <ruleList>
+                                        <regExMatch>
+                                            <logic>does_not_match</logic>
+                                            <pattern>[1357]$</pattern>
+                                            <text>${permissions}</text>
+					</regExMatch>
+				    </ruleList>
+				</setInstallerVariable>
+			    </actionList>
+			    <ruleList>
+				<fileExists path="${directory}" />
+			    </ruleList>
+			</actionGroup>
+			<setInstallerVariable name="previous_directory" value="${directory}" />
+                        <dirName path="${directory}" variable="directory" />
+			<break>
+			    <ruleList>
+				<compareText logic="equals" text="${directory}" value="${previous_directory}" />
+			    </ruleList>
+			</break>
+		    </actionList>
+		</while>
+	    </actionList>
+	</actionDefinition>
+
+        <actionDefinition>
+            <name>addServerToMainScript</name>
+            <parameterList>
+                <stringParameter name="serverName"/>
+                <stringParameter name="scriptPath"/>
+            </parameterList>
+            <actionList>
+		<stringModify text="${serverName}" variable="serverName_cap" logic="toupper" />
+		<substitute>
+		    <files>${installdir}/ctlscript.sh</files>
+                    <type>exact</type>
+                    <substitutionList>
+                        <substitution>
+                            <pattern>#RUBY_APPLICATION_SCRIPT</pattern>
+                            <value>#${serverName}_code_start
+${serverName_cap}_SCRIPT=${scriptPath}
+#${serverName}_code_end
+#RUBY_APPLICATION_SCRIPT</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>#RUBY_APPLICATION_HELP</pattern>
+                            <value>#${serverName}_code_start
+        if test -x $${serverName_cap}_SCRIPT; then	
+            echo "       $0 (start|stop|restart|status) ${serverName}"
+	fi
+        #${serverName}_code_end
+        #RUBY_APPLICATION_HELP</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>#RUBY_APPLICATION_START</pattern>
+                            <value>#${serverName}_code_start
+        elif [ "x$2" = "x${serverName}" ]; then
+        if test -x $${serverName_cap}_SCRIPT; then	
+            $${serverName_cap}_SCRIPT start  
+            ${serverName_cap}_ERROR=$?
+        fi
+        #${serverName}_code_end
+        #RUBY_APPLICATION_START</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>#RUBY_APPLICATION_GENERIC_START</pattern>
+                            <value>#${serverName}_code_start
+        if test -x $${serverName_cap}_SCRIPT; then	
+            $${serverName_cap}_SCRIPT start  
+            ${serverName_cap}_ERROR=$?
+        fi
+        #${serverName}_code_end
+        #RUBY_APPLICATION_GENERIC_START</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>#RUBY_APPLICATION_STOP</pattern>
+                            <value>#${serverName}_code_start
+        elif [ "x$2" = "x${serverName}" ]; then
+        if test -x $${serverName_cap}_SCRIPT; then
+            $${serverName_cap}_SCRIPT stop
+            ${serverName_cap}_ERROR=$?
+        fi
+        #${serverName}_code_end
+        #RUBY_APPLICATION_STOP</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>#RUBY_APPLICATION_GENERIC_STOP</pattern>
+                            <value>#${serverName}_code_start
+        if test -x $${serverName_cap}_SCRIPT; then	
+            $${serverName_cap}_SCRIPT stop  
+            ${serverName_cap}_ERROR=$?
+        fi
+        #${serverName}_code_end
+        #RUBY_APPLICATION_GENERIC_STOP</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>#RUBY_APPLICATION_RESTART</pattern>
+                            <value>#${serverName}_code_start
+        elif [ "x$2" = "x${serverName}" ]; then
+        if test -x $${serverName_cap}_SCRIPT; then	
+            $${serverName_cap}_SCRIPT stop  
+            sleep 2
+            $${serverName_cap}_SCRIPT start
+            ${serverName_cap}_ERROR=$?
+        fi
+        #${serverName}_code_end
+        #RUBY_APPLICATION_RESTART</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>#RUBY_APPLICATION_STATUS</pattern>
+                            <value>#${serverName}_code_start
+        elif [ "x$2" = "x${serverName}" ]; then
+        if test -x $${serverName_cap}_SCRIPT; then
+            $${serverName_cap}_SCRIPT status
+        fi
+        #${serverName}_code_end
+        #RUBY_APPLICATION_STATUS</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>#RUBY_APPLICATION_GENERIC_STATUS</pattern>
+                            <value>#${serverName}_code_start
+        if test -x $${serverName_cap}_SCRIPT; then
+            $${serverName_cap}_SCRIPT status
+        fi
+        #${serverName}_code_end
+        #RUBY_APPLICATION_GENERIC_STATUS</value>
+                        </substitution>
+                    </substitutionList>
+		    <ruleList>
+			<platformTest type="unix" />
+		    </ruleList>
+		</substitute>
+	    </actionList>
+	</actionDefinition>
+	<actionDefinition>
+            <name>removeServerFromMainScript</name>
+            <parameterList>
+                <stringParameter name="serverName"/>
+            </parameterList>
+            <actionList>
+		<actionGroup>
+		    <actionList>
+			<readFile path="${installdir}/ctlscript.sh" name="main_script"/>
+			<foreach values="1 2 3 4 5 6 7 8 9 10 11 12" variables="iteration" >
+			    <actionList>
+				<setInstallerVariableFromRegEx text="${main_script}" name="main_script" pattern="^(.*)\#${serverName}_code_start.*\#${serverName}_code_end\s*\n(.*)$" substitution="\1\2" />
+			    </actionList>
+			</foreach>
+			<writeFile path="${installdir}/ctlscript.sh" text="${main_script}"/>
+		    </actionList>
+		</actionGroup>
+	    </actionList>
+	</actionDefinition>
+	<actionDefinition>
+	    <name>addLogrotate</name>
+	    <parameterList>
+		<stringParameter name="name" default=""/>
+		<stringParameter name="logs" default=""/>
+		<stringParameter name="schedule" default="weekly"/>
+		<stringParameter name="rotate" default="150"/>
+		<stringParameter name="additionalOptions" default=""/>
+		<stringParameter name="text" default=""/>
+		<stringParameter name="logrotateDirectory" default="${installdir}/config/logrotate/logrotate.d" />
+	    </parameterList>
+	    <actionList>
+		<actionGroup>
+		    <actionList>
+			<writeFile>
+			    <path>${logrotateDirectory}/${name}</path>
+			    <text>${logs} {
+  ${schedule}
+  rotate ${rotate}
+  dateext
+  compress
+  copytruncate
+  missingok
+  ${additionalOptions}
+}
+</text>
+                                 <ruleList>
+				     <stringTest text="${text}" type="empty" />
+				     <platformTest type="linux" />
+				 </ruleList>
+			</writeFile>
+			<writeFile>
+			    <path>${logrotate_directory}/${name}</path>
+			    <text>${text}</text>
+			    <ruleList>
+				<stringTest text="${text}" type="not_empty" />
+				<platformTest type="linux" />
+			    </ruleList>
+			</writeFile>
+		    </actionList>
+		    <ruleList>
+			<componentTest name="logrotate" logic="exists"/>
+		    </ruleList>
+		</actionGroup>
+	    </actionList>
+	</actionDefinition>
+    </functionDefinitionList>
+</component>

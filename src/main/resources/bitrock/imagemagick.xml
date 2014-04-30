@@ -1,0 +1,236 @@
+
+<!-- IMAGEMAGICK 1.0
+Componentname: IMAGEMAGICK
+
+Short Description:
+This component is able to install and configure IMAGEMAGICK.
+
+Created: 200711
+Modified: 200711
+Copyrighted by BitRock
+
+System variables provided by this component:
+ * imagemagick_root_directory
+
+-->
+<component>
+    <name>imagemagick</name>
+    <description>//ImageMagick Component</description>
+    <canBeEdited>0</canBeEdited>
+    <show>0</show>
+    <selected>1</selected>
+    <preBuildActionList>
+        <setInstallerVariable name="component(imagemagick).parameter(imagemagick_ghostscriptwin_included).value" value="1">
+            <ruleList>
+                <fileTest path="${imagemagick_distribution_folder_windows}/lib/gs_init.ps" condition="exists" />
+            </ruleList>
+        </setInstallerVariable>
+    </preBuildActionList>
+    <initializationActionList/>
+    <parameterList>
+        <directoryParameter>
+            <ask>0</ask>
+            <!--description>ImageMagick installation directory</description-->
+            <name>imagemagick_root_directory</name>
+            <cliOptionName>imagemagick_root_directory</cliOptionName>
+        </directoryParameter>
+        <stringParameter>
+            <ask>0</ask>
+            <!--description>ImageMagick version</description-->
+            <name>imagemagick_version</name>
+            <value>6.8.6</value>
+            <default>6.8.6</default>
+        </stringParameter>
+        <booleanParameter name="imagemagick_ghostscriptwin_included" value="0" ask="0" />
+    </parameterList>
+    <readyToInstallActionList>
+        <setInstallerVariable name="imagemagick_root_directory" value="${installdir}/common">
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="imagemagick_root_directory" value="${installdir}\imagemagick">
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="IMAGEMAGICK_PATH" value="${imagemagick_root_directory}/bin"/>
+        <setInstallerVariable name="IMAGEMAGICK_PATH_WIN" value="${imagemagick_root_directory.dos}"/>
+        <setInstallerVariable name="PATH" value="${IMAGEMAGICK_PATH}:${PATH}">
+            <ruleList>
+                <compareText text="${PATH}" value="${IMAGEMAGICK_PATH}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="PATH_WIN" value="${IMAGEMAGICK_PATH_WIN};${PATH_WIN}">
+            <ruleList>
+                <compareText text="${PATH_WIN}" value="${IMAGEMAGICK_PATH_WIN}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="IMAGEMAGICK_LD_LIBRARY_PATH" value="${imagemagick_root_directory}/lib"/>
+        <setInstallerVariable name="LD_LIBRARY_PATH" value="${IMAGEMAGICK_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}">
+            <ruleList>
+                <compareText text="${LD_LIBRARY_PATH}" value="${IMAGEMAGICK_LD_LIBRARY_PATH}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="IMAGEMAGICK_DYLD_LIBRARY_PATH" value="${imagemagick_root_directory}/lib"/>
+        <setInstallerVariable name="DYLD_FALLBACK_LIBRARY_PATH" value="${IMAGEMAGICK_DYLD_LIBRARY_PATH}:${DYLD_FALLBACK_LIBRARY_PATH}">
+            <ruleList>
+                <compareText text="${DYLD_FALLBACK_LIBRARY_PATH}" value="${IMAGEMAGICK_DYLD_LIBRARY_PATH}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="IMAGEMAGICK_ENV_VAR">
+            <value>##### IMAGEMAGICK ENV #####
+MAGICK_HOME="${imagemagick_root_directory}"
+export MAGICK_HOME
+MAGICK_CONFIGURE_PATH="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16"
+export MAGICK_CONFIGURE_PATH
+MAGICK_CODER_MODULE_PATH="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/modules-Q16/coders"
+export MAGICK_CODER_MODULE_PATH
+
+</value>
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="IMAGEMAGICK_ENV_VAR">
+            <value>rem ##### IMAGEMAGICK ENV #####
+set MAGICK_HOME=${imagemagick_root_directory.dos}
+set MAGICK_CODER_MODULE_PATH=${imagemagick_root_directory.dos}\modules\coders
+set MAGICK_CONFIGURE_PATH=${imagemagick_root_directory.dos}
+</value>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="IMAGEMAGICK_ENV_VAR">
+            <value>${IMAGEMAGICK_ENV_VAR}
+set GS_LIB=${imagemagick_root_directory.dos}\lib
+</value>
+            <ruleList>
+                <platformTest type="windows"/>
+                <isTrue value="${imagemagick_ghostscriptwin_included}" />
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="IMAGEMAGICK_ENV_VAR">
+            <value>${IMAGEMAGICK_ENV_VAR}
+GS_LIB="${imagemagick_root_directory}/share/ghostscript/fonts"
+export GS_LIB
+</value>
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="ENV_VAR">
+            <value>${IMAGEMAGICK_ENV_VAR}${ENV_VAR}</value>
+        </setInstallerVariable>
+        <setInstallerVariable name="IMAGEMAGICK_WRAPPERS">
+            <value>			${imagemagick_root_directory}/bin/animate
+			${imagemagick_root_directory}/bin/compare 
+			${imagemagick_root_directory}/bin/composite 
+			${imagemagick_root_directory}/bin/conjure 
+			${imagemagick_root_directory}/bin/convert 
+			${imagemagick_root_directory}/bin/display 
+			${imagemagick_root_directory}/bin/identify 
+			${imagemagick_root_directory}/bin/import 
+			${imagemagick_root_directory}/bin/mogrify 
+			${imagemagick_root_directory}/bin/montage 
+			${imagemagick_root_directory}/bin/stream
+		    </value>
+        </setInstallerVariable>
+        <setInstallerVariable name="WRAPPERS" value="${IMAGEMAGICK_WRAPPERS};${WRAPPERS}"/>
+    </readyToInstallActionList>
+    <folderList>
+        <folder>
+            <description>//imagemagick windows files</description>
+            <name>imagemagickWindows</name>
+            <destination>${imagemagick_root_directory}</destination>
+            <platforms>windows</platforms>
+            <distributionFileList>
+		<distributionDirectory allowWildcards="1" origin="${imagemagick_distribution_folder_windows}/*"/>
+            </distributionFileList>
+	    <actionList>
+		<!-- Install vcruntime on Windows x32 -->
+		<runProgram>
+		    <workingDirectory>${imagemagick_root_directory}</workingDirectory>
+		    <program>vcredist_x86.exe</program>
+		    <programArguments>/q</programArguments>
+		    <abortOnError>0</abortOnError>
+		    <ruleList>
+			<fileTest condition="exists" path="${imagemagick_root_directory}/vcredist_x86.exe"/>
+		    </ruleList>
+		</runProgram>
+	    </actionList>
+        </folder>
+        <folder>
+            <description>//imagemagick unix files</description>
+            <name>imagemagickUnix</name>
+            <destination>${imagemagick_root_directory}</destination>
+            <platforms>linux linux-x64 osx</platforms>
+            <distributionFileList>
+                <distributionDirectory origin="${imagemagick_distribution_folder_unix}/bin" />
+                <distributionDirectory origin="${imagemagick_distribution_folder_unix}/lib" />
+                <distributionDirectory origin="${imagemagick_distribution_folder_unix}/include" />
+                <distributionDirectory origin="${imagemagick_distribution_folder_unix}/share" />
+            </distributionFileList>
+            <actionList>
+                <actionGroup>
+                    <actionList>
+                        <copyFile origin="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/type.xml" destination="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16/" >
+			    <ruleList>
+				<fileExists path="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/type.xml" />
+			    </ruleList>
+			</copyFile>
+                        <copyFile origin="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/type-ghostscript.xml" destination="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16/" >
+			    <ruleList>
+				<fileExists path="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/type-ghostscript.xml" />
+			    </ruleList>
+			</copyFile>
+                        <copyFile origin="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/delegates.xml" destination="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16/" >
+			    <ruleList>
+				<fileExists path="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/delegates.xml" />
+			    </ruleList>
+			</copyFile>
+                        <substitute>
+                            <files>${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16/type-ghostscript.xml</files>
+                             <substitutionList>
+                                 <substitution>
+                                     <pattern>/usr/share/fonts/default/Type1</pattern>
+                                     <value>${common_root_directory}/share/ghostscript/fonts</value>
+                                 </substitution>
+                             </substitutionList>
+                        </substitute>
+                    </actionList>
+                    <ruleList>
+                        <fileTest path="${common_root_directory}/share/ghostscript/fonts" condition="exists" />
+                    </ruleList>
+                </actionGroup>
+                <substitute>
+                    <type>exact</type>		    
+                    <files>*</files>
+                    <substitutionList>
+                        <substitution>
+                            <pattern>@@BITROCK_IMAGEMAGICK_ROOTDIR@@</pattern>
+                            <value>${imagemagick_root_directory}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_COMMON_ROOTDIR@@</pattern>
+                            <value>${common_root_directory}</value>
+                        </substitution>
+                    </substitutionList>
+                </substitute>
+                <substitute>
+                    <files>${IMAGEMAGICK_WRAPPERS}</files>
+                    <type>exact</type>
+                    <substitutionList>
+                        <substitution>
+                            <pattern>@@BITROCK_IMAGEMAGICK_ROOTDIR@@</pattern>
+                            <value>${imagemagick_root_directory}</value>
+                        </substitution>
+                    </substitutionList>
+                </substitute>
+            </actionList>
+        </folder>
+    </folderList>
+    <postInstallationActionList/>
+</component>
+

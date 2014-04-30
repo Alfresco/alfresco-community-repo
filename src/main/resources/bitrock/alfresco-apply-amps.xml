@@ -1,0 +1,67 @@
+<component>
+    <name>alfrescoapplyamps</name>
+    <description>//Alfresco Appy AMPs</description>
+    <canBeEdited>1</canBeEdited>
+    <selected>1</selected>
+    <show>0</show>
+    <parameterList>
+        <booleanParameter name="alfresco_apply_amps" value="0" ask="0" />
+        <booleanParameter name="alfresco_apply_amps_share" value="0" ask="0" />
+        <directoryParameter name="alfresco_amps_directory" value="${installdir}/amps" ask="0" />
+        <directoryParameter name="alfresco_amps_share_directory" value="${installdir}/amps_share" ask="0" />
+    </parameterList>
+    <folderList>
+        <folder>
+            <description>//applyamps</description>
+            <name>alfrescoapplyamps</name>
+            <destination>${installdir}</destination>
+            <platforms>all</platforms>
+            <actionList>
+                <createDirectory path="${alfresco_amps_directory}" />
+                <addFilesToUninstaller files="${alfresco_amps_directory}" />
+                <createDirectory path="${alfresco_amps_share_directory}" />
+                <addFilesToUninstaller files="${alfresco_amps_share_directory}" />
+            </actionList>
+        </folder>
+        <folder>
+            <description>//mmtjar</description>
+            <name>mmtjar</name>
+            <destination>${alfresco_commands_directory}</destination>
+            <distributionFileList>
+              <distributionFile origin="${alfresco_mmt_source_file}" allowWildcards="1" />
+            </distributionFileList>
+        </folder>
+    </folderList>
+    <postInstallationActionList>
+        <showProgressDialog progressText="Alfresco Module Packages" >
+            <actionList>
+                <runProgram>
+                    <progressText>Installing Alfresco Module Packages (AMPs)</progressText>
+                    <program>${java_home_directory}/bin/java</program>
+                    <programArguments>-jar ${alfresco_commands_directory.dos.unix}/alfresco-mmt.jar install ${alfresco_amps_directory.dos.unix} ${installdiralfresco.dos.unix}/alfresco.war -directory -nobackup -force</programArguments> 
+                    <ruleList>
+                        <isTrue value="${alfresco_apply_amps}" />
+                    </ruleList>
+                </runProgram>
+                <runProgram>
+                    <progressText>Installing Alfresco Module Packages (AMPs)</progressText>
+                    <program>${java_home_directory}/bin/java</program>
+                    <programArguments>-jar ${alfresco_commands_directory.dos.unix}/alfresco-mmt.jar install ${alfresco_amps_share_directory.dos.unix} ${installdiralfresco.dos.unix}/share.war -directory -nobackup -force</programArguments> 
+                    <ruleList>
+                        <isTrue value="${alfresco_apply_amps_share}" />
+                    </ruleList>
+                </runProgram>
+            </actionList>
+            <ruleEvaluationLogic>or</ruleEvaluationLogic>
+	    <ruleList>
+                <isTrue value="${alfresco_apply_amps}" />
+	        <isTrue value="${alfresco_apply_amps_share}" />
+            </ruleList>
+        </showProgressDialog>
+     </postInstallationActionList>
+        <!--/folder>
+    </folderList-->
+</component>
+
+
+

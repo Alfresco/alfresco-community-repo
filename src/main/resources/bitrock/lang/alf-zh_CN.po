@@ -1,0 +1,707 @@
+﻿msgid "${product_fullname} LibreOffice Service"
+msgstr "${product_fullname} LibreOffice 服务"
+
+msgid "${product_fullname} Service"
+msgstr "${product_fullname} 服务"
+
+msgid "${product_fullname} Virtual Server"
+msgstr "${product_fullname} 虚拟服务器"
+
+msgid "Admin Password"
+msgstr "管理密码"
+
+msgid "Admin Password:"
+msgstr "管理密码："
+
+msgid "Advanced - Configures server ports and service properties." 
+msgstr "高级 - 配置服务器端口和服务属性。"
+
+msgid "Also choose optional components to install."
+msgstr "还可以选择要安装的可选组件。"
+
+msgid "Alfresco"
+msgstr "Alfresco"
+
+msgid "Alfresco AVM Web Project Management for managing web site content."
+msgstr "用于管理网站内容的 Alfresco AVM Web Project Management。"
+
+msgid "Alfresco Community Edition Stack"
+msgstr "Alfresco Community Edition Stack"
+
+msgid "Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management and Image Management."
+msgstr "Alfresco Enterprise Content Management (ECM) 系统具有文档管理、合作管理和图像管理等功能。"
+
+msgid "Alfresco Explorer"
+msgstr "Alfresco Explorer"
+
+msgid "Alfresco FTP Port"
+msgstr "Alfresco FTP 端口"
+
+msgid "Alfresco Licenses"
+msgstr "Alfresco 许可证"
+
+msgid "Alfresco Module Packages"
+msgstr "Alfresco Module Package"
+
+msgid "Alfresco RMI Port"
+msgstr "Alfresco RMI 端口"
+
+msgid "Alfresco Share"
+msgstr "Alfresco Share"
+
+msgid "Alfresco SharePoint Port"
+msgstr "Alfresco SharePoint 端口"
+
+msgid "Alfresco Shortcuts"
+msgstr "Alfresco 快捷方式"
+
+msgid "Alfresco Website"
+msgstr "Alfresco 网站"
+
+msgid "Alfresco data directory"
+msgstr "Alfresco 数据目录"
+
+msgid "Allow to choose an already installed service name if it contains a call to installdir/ctlscript"
+msgstr "允许选择已安装的服务名称，如果此名称包含对 installdir/ctlscript 的调用"
+
+msgid "Apache Service"
+msgstr "Apache 服务"
+
+msgid "Auto - Configure servers to start automatically"
+msgstr "自动 - 将服务器配置为自动启动"
+
+msgid "Common Component"
+msgstr "公共组件"
+
+msgid "Common installation directory"
+msgstr "公共安装目录"
+
+msgid "Config Files"
+msgstr "配置文件"
+
+msgid "Couldn't check Apache Tomcat Version.\nTomcat 5.5 is recommended."
+msgstr "无法检查 Apache Tomcat 版本。\n建议使用 Tomcat 5.5。"
+
+msgid "Creating user and database"
+msgstr "创建用户和数据库"
+
+msgid "Database Configuration"
+msgstr "数据库配置"
+
+msgid "Database Installation"
+msgstr "数据库安装"
+
+msgid "Database Server Parameters"
+msgstr "数据库服务器参数"
+
+msgid "Database Server port"
+msgstr "数据库服务器端口"
+
+msgid "Database name"
+msgstr "数据库名称"
+
+msgid "Database name:"
+msgstr "数据库名称："
+
+msgid "Do you want to install PostgreSQL as a Windows service?"
+msgstr "是否要将 PostgreSQL 作为 Windows 服务安装？"
+
+msgid "Easy - Installs servers with the default configuration"
+msgstr "简单 - 使用默认配置安装服务器"
+
+msgid "Encoding"
+msgstr "编码"
+
+msgid "Extension Files"
+msgstr "扩展文件"
+
+msgid "I wish to use an existing PostgreSQL database"
+msgstr "我希望使用现有的 PostgreSQL 数据库"
+
+msgid "I wish to use an existing Tomcat"
+msgstr "我希望使用现有的 Tomcat"
+
+msgid "I wish to use the bundled PostgreSQL database"
+msgstr "我希望使用捆绑的 PostgreSQL 数据库"
+
+msgid "I wish to use the bundled Tomcat"
+msgstr "我希望使用捆绑的 Tomcat"
+
+msgid "IP / Hostname"
+msgstr "IP/主机名"
+
+msgid "ImageMagick Component"
+msgstr "ImageMagick 组件"
+
+msgid "ImageMagick installation directory"
+msgstr "ImageMagick 安装目录"
+
+msgid "ImageMagick version"
+msgstr "ImageMagick 版本"
+
+msgid "Include Alfresco Web Quick Start."
+msgstr "包括 Alfresco Web Quick Start。"
+
+msgid "Include system ld library path in environment"
+msgstr "将系统 ld 库路径包括在环境中"
+
+msgid "Include system path in environment"
+msgstr "将系统路径包括在环境中"
+
+msgid "Initializing database"
+msgstr "初始化数据库"
+
+msgid "Install ${product_fullname} as a service?"
+msgstr "将 ${product_fullname} 作为服务安装？"
+
+msgid "Install ${product_fullname} as service"
+msgstr "将 ${product_fullname} 作为服务安装"
+
+msgid "Install PostgreSQL as service?"
+msgstr "将 PostgreSQL 作为服务安装？"
+
+msgid "Install application as a service on Unix systems"
+msgstr "在 Unix 系统上将应用程序作为服务安装"
+
+msgid "Install as a service"
+msgstr "作为服务安装"
+
+msgid "Installation Type"
+msgstr "安装类型"
+
+msgid "Installation directory path is too long. The maximum number of characters allowed is ${base_installdir_max_characters}."
+msgstr "安装目录路径太长。 允许的最大字符数为 ${base_installdir_max_characters}。"
+
+msgid "Installation folder"
+msgstr "安装文件夹"
+
+msgid "Installation folder cannot contain spaces."
+msgstr "安装文件夹不得包含空格。"
+
+msgid "Installing Alfresco Module Packages (AMPs)"
+msgstr "安装 Alfresco Module Package (AMP)"
+
+msgid "Installing LibreOffice as a Windows service with name ${LibreOfficeUniqueServiceName}"
+msgstr "将 LibreOffice 作为名为 ${LibreOfficeUniqueServiceName} 的 Windows 服务安装"
+
+msgid "Installing PostgreSQL as a Windows service with name ${postgres_unique_service_name}"
+msgstr "将 PostgreSQL 作为名为 ${postgres_unique_service_name} 的 Windows 服务安装"
+
+msgid "Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}"
+msgstr "将 Tomcat 作为名为 ${tomcat_unique_service_name} 的 Windows 服务安装"
+
+msgid "It seems you do not have enough permissions to bind to the port or the port is already taken by another application. Please select another one."
+msgstr "您似乎没有足够的权限捆绑到端口，或端口已经被其他应用程序占用。 请选择其他端口。"
+
+msgid "JDBC Driver:"
+msgstr "JDBC 驱动程序："
+
+msgid "JDBC URL:"
+msgstr "JDBC URL："
+
+msgid "JDK configuration"
+msgstr "JDK 配置"
+
+msgid "JDK installation directory:"
+msgstr "JDK 安装目录："
+
+msgid "Java"
+msgstr "Java"
+
+msgid "Java Component required to run the Alfresco server."
+msgstr "运行 Alfresco 服务器所需的 Java 组件。"
+
+msgid "Launch ${product_fullname} Share"
+msgstr "启动 ${product_fullname} 共享"
+
+msgid "Libraries Files"
+msgstr "库文件"
+
+msgid "License Folder Component"
+msgstr "许可证文件夹组件"
+
+msgid "Licenses Files"
+msgstr "许可证文件"
+
+msgid "Licenses destination"
+msgstr "许可证目标"
+
+msgid "Manual - Configure servers to start services manually"
+msgstr "手动 - 将服务器配置为手动启动服务"
+
+msgid "New Component"
+msgstr "新建组件"
+
+msgid "New Folder"
+msgstr "新建文件夹"
+
+msgid "Not a PostgreSQL version 8.1.4 installation. PostgreSQL 8.1.4 recommended."
+msgstr "非 PostgreSQL 版本 8.1.4 安装。 建议使用 PostgreSQL 8.1.4。"
+
+msgid "Open SSL Component"
+msgstr "Open SSL 组件"
+
+msgid "LibreOffice"
+msgstr "LibreOffice"
+
+msgid "LibreOffice Server Port"
+msgstr "LibreOffice 服务器端口"
+
+msgid "LibreOffice Server port"
+msgstr "LibreOffice 服务器端口"
+
+msgid "LibreOffice installation directory"
+msgstr "LibreOffice 安装目录"
+
+msgid "LibreOffice.org is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
+msgstr "LibreOffice 是多平台、开源办公软件套件，适用于文字处理、电子表格、演示文稿、图形以及文档转换所需的数据库。"
+
+msgid "Parameters"
+msgstr "参数"
+
+msgid "Password"
+msgstr "密码"
+
+msgid "Password:"
+msgstr "密码："
+
+msgid "Please choose a port number for Alfresco to use to execute remote commands."
+msgstr "请选择 Alfresco 执行远程命令使用的端口号。"
+
+msgid "Please choose a port number for the SharePoint protocol."
+msgstr "请选择 SharePoint 协议的端口号。"
+
+msgid "Please choose a port number to use for the integrated Alfresco FTP server."
+msgstr "请选择集成式 Alfresco FTP 服务器使用的端口号。"
+
+msgid "Please enter a port in the range 1-65535."
+msgstr "请在 1-65535 范围内输入端口号"
+
+msgid "Please enter a valid IP address or hostname"
+msgstr "请输入有效的 IP 地址或主机名"
+
+msgid "Please enter a valid hostname or IP address"
+msgstr "请输入有效的主机名或 IP 地址"
+
+msgid "Please enter the IP address or hostname for your database"
+msgstr "请输入数据库的 IP 地址或主机名"
+
+msgid "Please enter the Tomcat configuration parameters you wish to use."
+msgstr "请输入要使用的 Tomcat 配置参数。"
+
+msgid "Please enter the port of your database."
+msgstr "请输入数据库端口。"
+
+msgid "Please enter the port that the Libreoffice Server will listen to by default."
+msgstr "请输入 LibreOffice 服务器默认情况下侦听的端口。"
+
+msgid "Please enter your database 'postgres' user password."
+msgstr "请输入数据库‘postgres’用户密码。"
+
+msgid "Please give a password to use for the Alfresco administrator account."
+msgstr "请提供 Alfresco 管理员帐户使用的密码。"
+
+msgid "Please give details of the Quickr server to use."
+msgstr "请提供要使用的 Quickr 服务器的详细信息。"
+
+msgid "Please select services startup type"
+msgstr "请选择服务启动类型"
+
+msgid "Please select the Tomcat configuration you wish to use"
+msgstr "请选择要使用的 Tomcat 配置"
+
+msgid "Please select which database configuration you wish to use"
+msgstr "请选择要使用的数据库配置"
+
+msgid "Please specify the directory where Tomcat is located."
+msgstr "请指定 Tomcat 所在的目录。"
+
+msgid "Please specify the directory where the psql, pg_restore and vacuumdb binaries are located"
+msgstr "请指定 psql、pg_restore 和 vacuumdb 二进制文件所在的目录"
+
+msgid "Please choose a folder to install ${product_fullname}"
+msgstr "请选择要安装 ${product_fullname} 的文件夹"
+
+msgid "Please, select the encoding type."
+msgstr "请选择编码类型。"
+
+msgid "Port:"
+msgstr "端口："
+
+msgid "PostgreSQL"
+msgstr "PostgreSQL"
+
+msgid "PostgreSQL Binary Directory"
+msgstr "PostgreSQL 二进制目录"
+
+msgid "PostgreSQL is a powerful, open source object-relational database system."
+msgstr "PostgreSQL 是一种强大的开源对象相关的数据库系统。"
+
+msgid "PostgreSQL postgres user password"
+msgstr "PostgreSQL postgres 用户密码"
+
+msgid "PostgreSQL_initdb"
+msgstr "PostgreSQL_initdb"
+
+msgid "Program Files"
+msgstr "Program Files"
+
+msgid "Program Files Linux"
+msgstr "Program Files Linux"
+
+msgid "Program Files Windows"
+msgstr "Program Files Windows"
+
+msgid "Quickr Connector Support"
+msgstr "Quickr 连接器支持"
+
+msgid "Quickr Content Services"
+msgstr "Quickr 内容服务"
+
+msgid "Quickr Server:"
+msgstr "Quickr 服务器："
+
+msgid "Quickr and Lotus Notes support for communication with Alfresco."
+msgstr "支持与 Alfresco 通信的 Quickr 和 Lotus Notes"
+
+msgid "README File"
+msgstr "README 文件"
+
+msgid "README Folder Component"
+msgstr "README 文件夹组件"
+
+msgid "README destination"
+msgstr "README 目标"
+
+msgid "Re-enter password"
+msgstr "重新输入密码"
+
+msgid "Records Management"
+msgstr "Records Management"
+
+msgid "Records Management support. This is a separately licensed component and should only be installed if licensed."
+msgstr "Records Management 支持。 这是一种单独许可的组件，应仅在许可的情况下安装。"
+
+msgid "Repeat Password:"
+msgstr "确认密码："
+
+msgid "SWFTOOLS Component"
+msgstr "SWFTOOLS 组件"
+
+msgid "SWFTOOLS installation directory"
+msgstr "SWFTOOLS 安装目录"
+
+msgid "Script for start/stop Services"
+msgstr "启动/停止服务的脚本"
+
+msgid "Select a folder"
+msgstr "选择文件夹"
+
+msgid "Service Startup Configuration"
+msgstr "服务启动配置"
+
+msgid "Service script name"
+msgstr "服务脚本名称"
+
+msgid "Service script name:"
+msgstr "服务脚本名称："
+
+msgid "Set Installer Variables Java"
+msgstr "设置 Java 安装程序变量"
+
+msgid "Set Installer Variables Tomcat"
+msgstr "设置 Tomcat 安装程序变量"
+
+msgid "Set the database name for the database that will be created."
+msgstr "设置要创建的数据库的数据库名称。"
+
+msgid "Set the password for the user that will use the database."
+msgstr "设置要使用数据库的用户的密码。"
+
+msgid "Set the user that will use the database."
+msgstr "设置要使用数据库的用户。"
+
+msgid "Setup will try to install new databases and will overwrite any existing duplicate. Do you wish you continue?"
+msgstr "安装程序将尝试安装新数据库，并覆盖任何现有的重复。 是否继续？"
+
+msgid "SharePoint"
+msgstr "SharePoint"
+
+msgid "SharePoint Protocol Support."
+msgstr "SharePoint 协议支持。"
+
+msgid "SharePoint Protocol support."
+msgstr "SharePoint 协议支持。"
+
+msgid "Shortcuts Images"
+msgstr "快捷方式图像"
+
+msgid "Sorry, we only support PostgreSQL as service."
+msgstr "抱歉，我们只支持 PostgreSQL 服务。"
+
+msgid "Sorry, you need to be administrator."
+msgstr "抱歉，您需要为管理员。"
+
+msgid "Stack Scripts Directory"
+msgstr "Stack Scripts Directory"
+
+msgid "Start ${product_fullname} service"
+msgstr "启动 ${product_fullname} 服务"
+
+msgid "Start Virtual Server"
+msgstr "启动虚拟服务器"
+
+msgid "Start tomcat service"
+msgstr "启动 tomcat 服务"
+
+msgid "Starting LibreOffice..."
+msgstr "正在启动 LibreOffice..."
+
+msgid "Starting servers ..."
+msgstr "正在启动服务器..."
+
+msgid "Starting servers. Please be patient"
+msgstr "启动服务器。 请耐心等待"
+
+msgid "Starting servers. Please be patient."
+msgstr "启动服务器。 请耐心等待。"
+
+msgid "Stop ${product_fullname} service"
+msgstr "停止 ${product_fullname} 服务"
+
+msgid "Stop Virtual Server"
+msgstr "停止虚拟服务器"
+
+msgid "Stopping PostgreSQL..."
+msgstr "正在停止 PostgreSQL..."
+
+msgid "Stopping servers"
+msgstr "停止服务器"
+
+msgid "Stopping services"
+msgstr "停止服务"
+
+msgid "The ${product_shortname} service script file exists. Please insert a different name for the service script."
+msgstr "${product_shortname} 服务脚本文件已存在。 请插入不同的服务脚本名称。"
+
+msgid "The Alfresco data directory tends to grow in size. Please choose where do you want to store it."
+msgstr "Alfresco 数据目录趋向于增大。 请选择存储位置。"
+
+msgid "The directory you selected does not seem to be a valid JDK directory. Please try again."
+msgstr "您所选的目录似乎是无效的 JDK 目录。 请重试。"
+
+msgid "The directory you selected does not seem to be a valid Tomcat directory. Please try again."
+msgstr "您所选的目录似乎是无效的 Tomcat 目录。 请重试。"
+
+msgid "The installer could not get the current free space on ${installdir}. Please check that there is free space enough to install ${product_fullname}"
+msgstr "安装程序目前无法在 ${installdir} 上获得可用空间。 请检查是否有足够的可用空间来安装 ${product_fullname}"
+
+msgid "The length of the password must be greater than 3 characters"
+msgstr "密码长度必须大于 3 个字符"
+
+msgid "The path ${postgres_binary_directory} does not seem to contain a pg_restore executable."
+msgstr "路径 ${postgres_binary_directory} 似乎不包含可执行的 pg_restore。"
+
+msgid "The path ${postgres_binary_directory} does not seem to contain a pg_vacuumdb executable."
+msgstr "路径 ${postgres_binary_directory} 似乎不包含可执行的 pg_vacuumdb。"
+
+msgid "The path ${postgres_binary_directory} seems to be invalid. Please check if the directory contains the required binaries."
+msgstr "路径 ${postgres_binary_directory} 似乎无效。 请检查目录是否包含所需的二进制文件。"
+
+msgid "The selected folder is not empty. Please select a different folder"
+msgstr "所选的文件夹为空。 请选择其他文件夹"
+
+msgid "The service script file exists. Please insert a different name for the service script."
+msgstr "服务脚本文件已存在。 请插入不同的服务脚本名称。"
+
+msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
+msgstr "${installdir} 上没有足够的可用空间。 您需要至少 ${base_needed_space} MB 才可安装 ${product_fullname}"
+
+msgid "This installer is for Windows 64 bit.  Please download the Windows 32 bit version."
+msgstr "此安装程序适用于 Windows 64 位。  请下载 Windows 32 位版本。"
+
+msgid "This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again."
+msgstr "此版本打包后在 J2SE ${java_min_version} 或更高版本上运行。 请安装兼容的 Java 版本并重试。"
+
+msgid "This release was packaged to run on J2SE ${java_min_version}. Please install a compatible Java version and try again."
+msgstr "此版本打包后在 J2SE ${java_min_version} 上运行。 请安装兼容的 Java 版本并重试。"
+
+msgid "This release was packaged to run on J2SE 7.0 or later. Please install a compatible Java version and try again."
+msgstr "此版本打包后在 J2SE 7.0 或更高版本上运行。 请安装兼容的 Java 版本并重试。"
+
+msgid "This release was packaged to run on J2SE 7.0. Please install a compatible Java version and try again."
+msgstr "此版本打包后在 J2SE 7.0 上运行。 请安装兼容的 Java 版本并重试。"
+
+msgid "Tomcat 5.5 Component"
+msgstr "Tomcat 5.5 组件"
+
+msgid "Tomcat AJP Port:"
+msgstr "Tomcat AJP 端口："
+
+msgid "Tomcat Directory"
+msgstr "Tomcat 目录"
+
+msgid "Tomcat JMX Port:"
+msgstr "Tomcat JMX 端口："
+
+msgid "Tomcat Port Configuration"
+msgstr "Tomcat 端口配置"
+
+msgid "Tomcat SSL Port"
+msgstr "Tomcat SSL 端口"
+
+msgid "Tomcat Server Port and Tomcat Shutdown Port cannot be the same port. Please select another Tomcat Shutdown Port."
+msgstr "Tomcat 服务器端口和 Tomcat 关闭端口不能为相同的端口。 请选择其他 Tomcat 关闭端口。"
+
+msgid "Tomcat Server Port:"
+msgstr "Tomcat 服务器端口："
+
+msgid "Tomcat Shutdown Port:"
+msgstr "Tomcat 关闭端口："
+
+msgid "Tomcat directory:"
+msgstr "Tomcat 目录："
+
+msgid "Tomcat installation:"
+msgstr "Tomcat 安装："
+
+msgid "Tomcat modifications due to java"
+msgstr "由 Java 导致的 Tomcat 修改"
+
+msgid "Unable to bind to the given port number. Please select another FTP Port."
+msgstr "无法捆绑到给定的端口号。 请选择其他 FTP 端口。"
+
+msgid "Unable to bind to the given port number. Please select another RMI Port."
+msgstr "无法捆绑到给定的端口号。 请选择其他 RMI 端口。"
+
+msgid "Unable to bind to the given port number. Please select another Tomcat AJP Port."
+msgstr "无法捆绑到给定的端口号。 请选择其他 Tomcat AJP 端口。"
+
+msgid "Unable to bind to the given port number. Please select another Tomcat Server Port."
+msgstr "无法捆绑到给定的端口号。 请选择其他 Tomcat 服务器端口。"
+
+msgid "Unable to bind to the given port number. Please select another Tomcat Shutdown Port."
+msgstr "无法捆绑到给定的端口号。 请选择其他 Tomcat 关闭端口。"
+
+msgid "Unable to bind to the given port number. Please select another Tomcat SSL Port."
+msgstr "无法捆绑到给定的端口号。 请选择其他 Tomcat SSL 端口。"
+
+msgid "Unable to bind to the given port number. Please select another Tomcat AJP Port."
+msgstr "无法捆绑到给定的端口号。 请选择其他 Tomcat AJP 端口。"
+
+msgid "Unable to bind to the given port number. Please select another port for the SharePoint Protocol."
+msgstr "无法捆绑到给定的端口号。 请选择其他 SharePoint 协议端口。"
+
+msgid "Unable to bind to the server port. Please make sure that Tomcat is not running."
+msgstr "无法捆绑到服务器端口。 请确保 Tomcat 没有在运行。"
+
+msgid "Unable to connect to database. Please check your configuration."
+msgstr "无法连接到数据库。 请检查配置。"
+
+msgid "Unable to find a server running at given port number. Please select another one."
+msgstr "找不到在给定端口号运行的服务器。 请选择其他端口。"
+
+msgid "Unable to find any server running at port ${postgres_port}. Please start your database server."
+msgstr "找不到在 ${postgres_port} 端口运行的任何服务器。 请启动数据库服务器。"
+
+msgid "Unable to get free disk space."
+msgstr "无法获得可用磁盘空间。"
+
+msgid "Uninstall ${product_fullname}"
+msgstr "卸载 ${product_fullname}"
+
+msgid "Uninstall ${product_fullname} service"
+msgstr "卸载 ${product_fullname} 服务"
+
+msgid "Uninstalling services"
+msgstr "卸载服务"
+
+msgid "Use to configure the destination of the content in commands folder"
+msgstr "用于配置命令文件夹中的内容目标"
+
+msgid "User"
+msgstr "用户"
+
+msgid "Username:"
+msgstr "用户名："
+
+msgid "Verify:"
+msgstr "验证："
+
+msgid "Waiting PostgreSQL to start."
+msgstr "等待 PostgreSQL 启动。"
+
+msgid "Waiting for Postmaster"
+msgstr "等待 Postmaster"
+
+msgid "War files"
+msgstr "War 文件"
+
+msgid "We have not been able to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later."
+msgstr "在系统中找不到合适的 JDK 安装。 ${product_fullname} 要求 JDK ${java_min_version} 或更高版本。"
+
+msgid "Web Project Management (AVM)"
+msgstr "Web Project Management (AVM)"
+
+msgid "Web Quick Start"
+msgstr "Web Quick Start"
+
+msgid "Web Server"
+msgstr "Web 服务器"
+
+msgid "Web Server domain:"
+msgstr "Web 服务器域："
+
+msgid "You can optionally register ${product_fullname} as a service. This way it will automatically be started every time the machine is started."
+msgstr "您可以选择将 ${product_fullname} 注册为一项服务。 这样，每次启动机器时，它将会自动启动。"
+
+msgid "You have chosen Tomcat as the existing installation. To use new installed applications you must restart Tomcat."
+msgstr "您已将 Tomcat 选为现有安装。 要使用新安装的应用程序，您必须重启 Tomcat。"
+
+msgid "applyamps"
+msgstr "applyamps"
+
+msgid "mmtjar"
+msgstr "mmtjar"
+
+msgid "Please provide a password for the service account (postgres). If this account does not exist, the installer will create it."
+msgstr "请提供此服务帐户 (postgres) 的密码。 如果此帐户不存在，安装程序将创建帐户。"
+
+msgid "The password specified was incorrect. Please enter the correct password for the postgres Windows user account."
+msgstr "指定的密码不正确。 请输入 postgres Windows 用户帐户的正确密码。"
+
+msgid "README"
+msgstr "README"
+
+msgid "Windows 2008 requires that the password meets the following requirements:\n\n- It must be at least six characters long.\n- It must contain uppercase and lowercase characters.\n- It must contain numbers.\n- It must contain at least one of these special characters: @#$%!^&+=\n"
+msgstr "Windows 2008 要求密码符合以下要求：\n\n- 必须至少为 6 个字符长。\n- 必须包含大小写字符。\n- 必须包含数字。\n- 必须包含至少 1 个特殊字符：@#$%!^&+=\n"
+
+msgid "Postgres service account password"
+msgstr "Postgres 服务帐户密码"
+
+msgid "Deploying Alfresco. Please be patient."
+msgstr "部署 Alfresco。 请耐心等待。"
+
+msgid "Java is not installed in your Stack. This module requires to have Java installed."
+msgstr "Java 未安装在堆栈中。 此模块要求安装 Java。"
+
+msgid "The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'."
+msgstr "安装目录必须为仅包含字母、数字和字符（‘/’、‘.’、‘-’和‘_’）的路径。"
+
+msgid "Show next steps"
+msgstr "显示后续步骤"
+
+msgid "Alfresco recommends at least 1024MB of memory.${machine_total_memory}MB detected."
+msgstr "Alfresco 建议使用至少 1024MB 的内存。 检测到 ${machine_total_memory}MB。"
+
+msgid "Google Docs Integration"
+msgstr "Google Docs 集成"
+
+msgid "Include Google Docs Integration Features."
+msgstr "包括 Google Docs 集成功能。"
+
+msgid "Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext\nYou are strongly advised to abort this installation and install them first using your package manager.\nFor more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
+msgstr "在您的系统中找不到支持 LibreOffice 所需的部分或全部资料库。 fontconfig libSM libICE libXrender libXext\n强烈建议您放弃本次安装，并首先使用您的安装包管理器进行安装。\n有关更多信息，请访问 http://docs.alfresco.com/4,2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
+
+msgid "Password must not contain leading or trailing spaces"
+msgstr "密码开头和结尾不应包含空格"

@@ -1,0 +1,95 @@
+<component>
+    <name>alfrescowcmqs</name>
+    <description>Web Quick Start</description>
+    <detailedDescription>Include Alfresco Web Quick Start.</detailedDescription>
+    <canBeEdited>1</canBeEdited>
+    <selected>0</selected>
+    <show>1</show>
+
+    <parameterList>
+    </parameterList>
+  
+    <folderList>
+        <folder>
+            <description>Program Files</description>
+            <destination>${alfresco_amps_directory}</destination>
+            <name>wcmqs</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+              <distributionFile origin="${alfresco_wcmqs_source_file}" allowWildcards="1"/>
+            </distributionFileList>
+            <actionList>
+                <setInstallerVariable name="alfresco_apply_amps" value="1" />
+            </actionList>
+        </folder>
+        <folder>
+            <description>Program Files</description>
+            <destination>${alfresco_amps_share_directory}</destination>
+            <name>wcmqsshare</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+              <distributionFile origin="${alfresco_wcmqs_share_source_file}" allowWildcards="1"/>
+            </distributionFileList>
+            <actionList>
+                <setInstallerVariable name="alfresco_apply_amps_share" value="1" />
+            </actionList>
+        </folder>
+        <folder>
+            <description>War files</description>
+            <name>warfiles</name>
+            <destination>${installdiralfresco}</destination>
+            <distributionFileList>
+                <distributionFile origin="${alfresco_wcmqs_war_source_file}" />
+                <distributionFile origin="${alfresco_awe_war_source_file}" />
+            </distributionFileList>
+        </folder>
+        <folder>
+            <description>Config Files</description>
+            <destination>${alfresco_shared_directory}/alfresco/web-extension</destination>
+            <name>awecustomwebextension</name>
+            <platforms>all</platforms>
+            <actionList>
+                <alfrescoConfigure alfrescoFiles="*/*" />
+            </actionList>
+            <distributionFileList>
+                <distributionFile origin="${alfresco_awe_config_source_file}/web-extension/*" allowWildcards="1"/>
+            </distributionFileList>
+        </folder>
+        <folder>
+            <description>Extension Files</description>
+            <destination>${alfresco_shared_directory}/alfresco/extension</destination>
+            <name>extensionfiles</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+                <distributionDirectory origin="${alfresco_wcmqs_config_source_file}/extension/*" allowWildcards="1" />
+            </distributionFileList>
+        </folder>
+    </folderList>
+    <postInstallationActionList>
+        <substitute>
+            <files>${alfresco_shared_directory}/alfresco/extension/*.properties</files>
+            <type>regexp</type>
+            <substitutionList>
+                <substitution>
+                    <pattern>#wcmqs.api.alfresco=http://localhost:8080/alfresco</pattern>
+                    <value>wcmqs.api.alfresco=http://127.0.0.1:${tomcat_server_port}/alfresco</value>
+                </substitution>
+                <substitution>
+                    <pattern>#wcmqs.api.password=admin</pattern>
+                    <value>wcmqs.api.password=${alfresco_admin_password}</value>
+                </substitution>
+            </substitutionList>
+        </substitute>
+    </postInstallationActionList>
+    <postUninstallationActionList> 
+        <actionGroup>
+            <actionList>
+                <deleteFile path="${installdir}/webquickstart.log" />
+            </actionList>
+            <ruleList>
+                <compareText text="${deleteConfirm}" logic="equals" value="yes" />
+            </ruleList>
+        </actionGroup>
+    </postUninstallationActionList>
+</component>
+

@@ -1,0 +1,108 @@
+
+<!-- POSTGRESINITDB
+Componentname: PostgreSQL_initdb
+
+Short Description:
+This component allows to create a database and to assign it to a user.
+
+Create: 20070403
+Copyrighted by BitRock
+
+System variables provided by this component:
+
+  
+  * database_name
+  * database_user
+  * database_user_password
+  * database_enconding (UTF-8)
+  * postgres_create_super_user
+
+- Changelog 02 Jul 2007:
+	* Add the choice to ask database parameters in installation time. (Backwards compatibility)
+- Changelog 14 Jun 2007:
+	* Add createsupersuer variable to handle if database user created has or not superuser privileges. It is value is set to 1 by default for compatibility.
+-->
+<component>
+    <name>postgresinitdb</name>
+    <description>//PostgreSQL_initdb</description>
+    <canBeEdited>1</canBeEdited>
+    <selected>1</selected>
+    <show>0</show>
+    <parameterList>
+        <stringParameter>
+            <title>Database Configuration</title>
+            <name>database_name</name>
+            <explanation>Set the database name for the database that will be created.</explanation>
+            <description>Database name</description>
+            <ask>0</ask>
+            <value/>
+            <default>bn_lappstack</default>
+        </stringParameter>
+        <stringParameter>
+            <name>database_user</name>
+            <title>Database Configuration</title>
+            <explanation>Set the user that will use the database.</explanation>
+            <description>User</description>
+            <ask>0</ask>
+            <value/>
+        </stringParameter>
+        <passwordParameter>
+            <name>database_user_password</name>
+            <title>Database Configuration</title>
+            <explanation>Set the password for the user that will use the database.</explanation>
+            <description>Password</description>
+            <descriptionRetype>Re-enter password</descriptionRetype>
+            <ask>0</ask>
+            <value/>
+        </passwordParameter>
+        <stringParameter>
+            <name>database_encoding</name>
+            <!--title>Database Configuration</title>
+            <explanation>Please, select the encoding type.</explanation>
+            <description>Encoding</description-->
+            <ask>0</ask>
+            <value/>
+            <default>UTF-8</default>
+        </stringParameter>
+        <booleanParameter>
+            <name>postgres_create_super_user</name>
+            <ask>0</ask>
+            <value>1</value>
+        </booleanParameter>
+    </parameterList>
+    <postInstallationActionList>
+        <setEnvironmentVariable name="PGPASSWORD" value="${postgres_root_password}"/>
+        <setEnvironmentVariable name="PGPORT" value="${postgres_port}"/>
+        <actionGroup>
+            <actionList>
+                <runProgram>
+                    <runAs>postgres</runAs>
+                    <progressText>Creating user and database</progressText>
+                    <program>${postgres_root_directory}/bin/pg_ctl</program>
+                    <programArguments>start</programArguments>
+                    <ruleList>
+                        <compareText logic="equals" text="${installer_root_install}" value="1"/>
+			<compareText text="${postgres_installation_type}" logic="equals" value="bundled"/>
+                    </ruleList>
+                </runProgram>
+                <runProgram>
+                    <program>${postgres_root_directory}/bin/pg_ctl</program>
+                    <programArguments>start</programArguments>
+                    <ruleList>
+                        <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
+			<compareText text="${postgres_installation_type}" logic="equals" value="bundled"/>
+                    </ruleList>
+                </runProgram>
+                <wait>
+                    <ms>3000</ms>
+                </wait>
+            </actionList>
+            <ruleList>
+                <platformTest>
+                    <type>unix</type>
+                </platformTest>
+            </ruleList>
+        </actionGroup>
+    </postInstallationActionList>
+</component>
+

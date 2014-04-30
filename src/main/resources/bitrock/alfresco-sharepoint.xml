@@ -1,0 +1,63 @@
+<component>
+    <name>alfrescosharepoint</name>
+    <description>SharePoint</description>
+    <detailedDescription>SharePoint Protocol support.</detailedDescription>
+    <canBeEdited>1</canBeEdited>
+    <selected>1</selected>
+    <show>1</show>
+
+    <parameterList>
+        <stringParameter>
+            <name>alfresco_sharepoint_port</name>
+            <title>Alfresco SharePoint Port</title>
+            <explanation>Please choose a port number for the SharePoint protocol.</explanation>
+            <default>7070</default>
+            <value/>
+            <ask>1</ask>
+            <description>Port:</description>
+            <ruleEvaluationLogic>or</ruleEvaluationLogic>
+            <ruleList>
+                <compareText text="${alfresco_show_ports}" value="yes"/>
+                <portTest condition="cannot_bind" port="${alfresco_sharepoint_port}"/>
+            </ruleList>
+            <validationActionList>
+                <throwError>
+                    <text>Unable to bind to the given port number. Please select another port for the SharePoint Protocol.</text>
+                    <ruleList>
+                        <portTest port="${alfresco_sharepoint_port}" condition="cannot_bind"/>
+                    </ruleList>
+                </throwError>
+            </validationActionList>
+        </stringParameter>
+
+    </parameterList>
+    <folderList>
+        <folder>
+            <description>Program Files</description>
+            <destination>${alfresco_shared_directory}/alfresco/extension</destination>
+            <name>alfrescocustomextensions</name>
+            <platforms>all</platforms>
+            <actionList>
+                <alfrescoConfigure alfrescoFiles="*/*" />
+            </actionList>
+            <distributionFileList>
+              <distributionFile origin="${alfresco_sharepoint_on_install_settings_directory}/shared/extension/*" allowWildcards="1" />
+            </distributionFileList>
+        </folder>
+        <folder>
+            <description>Program Files</description>
+            <destination>${alfresco_amps_directory}</destination>
+            <name>programfiles</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+              <distributionFile origin="${alfresco_sharepoint_source_file}" allowWildcards="1" />
+            </distributionFileList>
+            <actionList>
+                <setInstallerVariable name="alfresco_apply_amps" value="1" />
+            </actionList>
+        </folder>
+    </folderList>
+</component>
+
+
+

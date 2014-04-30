@@ -1,0 +1,270 @@
+Copyright (c) 2005-2013 Alfresco Software, Ltd. and others.
+All rights reserved.  This program and the accompanying materials are made available under the terms of the Alfresco 
+agreement located at www.alfresco.com/legal/agreements/ or other commercial agreement between Alfresco Software, Ltd. 
+("Alfresco") and the user of this program.
+Portions of this product distribution require certain copyright or other notices to 
+be included with the product distribution.  These notices may also appear in individual 
+source files.
+
+Below is the list of licenses and modules used under corresponding licenses,
+
+===Apache 1.1 variant License==
+Xpp3           	http://www.extreme.indiana.edu/dist/java-repository/xpp3/jars/
+
+===Apache 1.1 - License=== 	
+Avalon framework   http://avalon.apache.org/framework/
+
+===Apache 2.0 - License====
+Abdera		http://projects.apache.org/projects/abdera.html
+acegi		http://acegisecurity.org/ 
+activation	http://java.sun.com/products/javabeans/jaf/downloads/index.html 
+activiti    	http://www.activiti.org/index.html
+addressing	http://ws.apache.org/ 
+Alfresco Open CMIS 	http://code.google.com/a/apache-extras.org/p/alfresco-opencmis-extension/
+ant		http://ant.apache.org/ 
+Axiom		http://ws.apache.org/commons/axiom/
+axis		http://ws.apache.org/axis/ 
+Batik		http://xmlgraphics.apache.org/batik/faq.html
+bcel		http://jakarta.apache.org/bcel/license.html
+bsf		http://jakarta.apache.org/bsf/ 
+boilerpipe  	http://code.google.com/p/boilerpipe/
+catalina	http://tomcat.apache.org  
+cglib-*		http://cglib.sourceforge.net/ 
+Apache Chemistry	http://www.apache.org/
+Apache-mime 	http://james.apache.org/mime4j/index.html
+Framework	http://cxf.apache.org/
+ehcache		http://ehcache.sourceforge.net/ 
+Fast Infoset Project	http://www.apache.org/licenses/LICENSE-2.0
+fop		http://xmlgraphics.apache.org/fop/ 
+Google Data Java Client Library	http://code.google.com/p/gdata-java-client/
+Geronimo	http://geronimo.apache.org/
+Greenmail	http://www.icegreen.com/greenmail/readme.html
+Groovy 		http://groovy.codehaus.org/
+guessencoding	http://docs.codehaus.org/display/GUESSENC/Home 
+hazelcast  	http://www.hazelcast.com/index.jsp
+ibatis		http://ibatis.apache.org/license.html
+jakarta-oro	http://jakarta.apache.org/oro/ 
+Jackson 	http://wiki.fasterxml.com/JacksonDownload
+jcr		http://jackrabbit.apache.org/ 
+joda-time	http://joda-time.sourceforge.net/ 
+J2EE/jsp	Redistributed by Apache foundation.
+EHCache dependency jar	http://mirrors.ibiblio.org/pub/mirrors/maven/net.sf.jsr107cache/licenses/jsr107cache-1.0.license
+jstl		http://jakarta.apache.org/site/downloads/downloads_taglibs-standard.cgi 
+jayrock 	http://jayrock.berlios.de/
+livetribe   	http://livetribe.codehaus.org/
+log4j		http://logging.apache.org/log4j 
+lucene-*	http://lucene.apache.org 
+metadata-extractor  http://code.google.com/p/metadata-extractor/
+myfaces-*	http://myfaces.apache.org/ 
+naming-*	http://tomcat.apache.org 
+Neethi		http://ws.apache.org/commons/neethi/
+opensaml	http://www.opensaml.org/
+OpenSSL	    http://www.openssl.org/
+pdfbox		http://pdfbox.apache.org/
+POI		http://poi.apache.org/legal.html
+Spring Framework	http://www.springsource.com/download/community?sid=453581
+J2EE/Portlet	Redistributed by Apache foundation.
+resolver	http://xml.apache.org/commons/
+Rome       	 https://rome.dev.java.net/
+J2EE/servlet	Redistributed by Apache foundation.
+shale		http://shale.apache.org/license.html
+Spring.net 	http://www.springframework.net/
+SpringModules	https://springmodules.dev.java.net/
+standard	http://jakarta.apache.org/site/downloads/downloads_taglibs-standard.cgi
+STAX		http://www.apache.org/licenses/LICENSE-2.0
+SMTP		http://subethasmtp.tigris.org/project_license.html
+Apache Tika	http://lucene.apache.org/tika/license.html
+tm-extractors	http://www.textmining.org/
+tomcat-*	http://tomcat.apache.org
+TrueLicense 	https://truelicense.dev.java.net/
+truezip		https://truezip.dev.java.net/ 
+wss4j		http://ws.apache.org/wss4j/
+WoodStox	http://woodstox.codehaus.org/Download
+xalan		http://xml.apache.org/xalan-j/
+xercesImpl	http://xerces.apache.org/xerces2-j
+XMLBeans	http://xmlbeans.apache.org/news.html
+xmlgraphics	http://xmlgraphics.apache.org/
+commons-resolver	http://svn.apache.org/viewvc/xml/commons/tags/xml-commons-resolver-1_2/LICENSE?view=markup
+RPC		http://ws.apache.org/xmlrpc/project-info.html
+XML Schema	http://ws.apache.org/commons/XmlSchema/
+xmlsec		http://santuario.apache.org/
+Solr		http://lucene.apache.org/solr/
+vorbis 		https://github.com/Gagravarr/VorbisJava
+
+
+===BSD License ===
+Antlr v3	http://www.antlr.org
+dom4j		http://www.dom4j.org/ 
+fontbox		http://xmlgraphics.apache.org/fop/ 
+jibx-*		http://jibx.sourceforge.net
+jta		http://java.sun.com/products/jta/ 
+libfreetype http://www.freetype.org/
+libgif      http://giflib.sourceforge.net/
+libjpeg     http://libjpeg.sourceforge.net/
+libpng      http://www.libpng.org/
+libtiff     http://www.libtiff.org/
+libz        http://zlib.net/
+One-Jar		http://sourceforge.net/projects/one-jar
+PostgreSQL	http://www.postgresql.org
+STAX Utils	https://stax-utils.dev.java.net/
+Tuckey URL rewriter	http://tuckey.org/urlrewrite/manual/3.0/introduction.html
+xmpcore     http://www.adobe.com/devnet/xmp.html
+Xstream		http://xstream.codehaus.org/license.html
+  
+
+===CDDL===
+JaxB		https://jaxb.dev.java.net/
+jaxrpc		https://jax-rpc.dev.java.net/ 
+JAXWS		https://jax-ws.dev.java.net/
+mail		https://glassfish.dev.java.net/javaee5/mail/ 
+SAAJ		https://glassfish.dev.java.net/public/CDDL+GPL.html
+xml-apis	https://jaxp.dev.java.net/
+
+  
+=== Commercial license ===
+Bitrock installer   http://bitrock.com/
+
+===CPL 1.0 License===
+htmlparser	http://htmlparser.sourceforge.net/ 
+Junit		http://sourceforge.net/projects/junit/
+wsdl4j		http://sourceforge.net/projects/wsdl4j
+
+
+===Creative Commons Attribute License===
+JSTextReader AS3	http://creativecommons.org/licenses/by/3.0/us/legalcode
+
+
+===Dojo Licensing, BSD & Academic ===
+Dojotoolkit        http://dojotoolkit.org/
+
+
+===Eclipse Public License===
+Wikipedia	http://sourceforge.net/projects/plog4u/
+
+
+===Free Software===
+bcmail-jdk	http://www.bouncycastle.org/ 
+bcprov-jdk	http://www.bouncycastle.org/ 
+icu4j		http://icu-project.org/ 
+json		http://www.json.org/java/ 
+netcdf      	http://www.unidata.ucar.edu/software/netcdf/copyright.html  
+nunit           http://www.nunit.org/index.php?p=home
+              
+
+===GPL Affero GPL ===
+GhostScript	http://www.ghostscript.com/
+
+===GPL V2===
+ncurses     http://www.gnu.org/software/ncurses/
+libiconv    http://www.gnu.org/software/libiconv/
+libstdc++   http://gcc.gnu.org/libstdc++/
+
+===GPL V3===
+SWF Tools 	http://wiki.swftools.org
+
+===Imagemagick===
+Imagemagick 	http://www.imagemagick.org/script/license.php
+
+
+===LGPL 2.1===
+JBPM		http://www.opensource.org/licenses/lgpl-license.php
+jid3lib		https://jid3lib.dev.java.net/ http://www.gnu.org/copyleft/lesser.html
+jug-lgpl	http://jug.safehaus.org/ 
+libwmf      http://wvware.sourceforge.net/libwmf.html
+TinyMCE		http://tinymce.moxiecode.com/tinymce/docs/license.html
+
+                
+===LGPL 3.0===
+jayrock         http://jayrock.berlios.de/
+Jmagick		http://sourceforge.net/projects/jmagick/
+JBoss Virtual File System	http://www.jboss.org/community/wiki/JBoss5VirtualFileSystem
+JODConverter	http://www.artofsolving.com/node/20
+jTDS Project	http://jtds.sourceforge.net/license.html
+Jut.jar		http://www.openoffice.org/licenses/lgpl_license.html
+OpenOffice	http://www.openoffice.org/license.html
+
+                
+=== Microsoft Redistributable ===
+Microsoft Visual C++ 2008 Redistributable Package
+
+===MIT License===
+facebook	http://code.google.com/p/facebook-java-api/
+Jutf7		http://jutf7.sourceforge.net/license.html
+Mockito		http://www.opensource.org/licenses/mit-license.php
+SLF4J		http://www.slf4j.org/license.html
+Mootools	http://docs.mootools.net/ 
+
+                
+===MPL===
+rhino-js	http://www.mozilla.org/rhino/
+juniversalcharsetdet	http://juniversalchardet.googlecode.com/
+
+
+===ODMG 	Licnese===
+odmg	http://www.odmg.org/wrayjohnson.htm 
+
+
+===Oracle JDK===
+Oracle JDK 	http://www.oracle.com/technetwork/java/javase/downloads/jdk-6u21-license-159167.txt
+
+
+===Public Domain License===
+AOP Alliance	http://aopalliance.sourceforge.net/
+hrtlib		http://www.javaworld.com/javaqa/2003-01/01-qa-0110-timing.html
+XZ          http://tukaani.org/xz/java.html
+
+
+===Sun Public License===
+BSH		http://www.beanshell.org/
+
+
+===XAM===
+XAM Connector 	https://developer-content.emc.com/downloads/centera/download.htm
+
+
+===Zlib/libpng===
+Nunit		http://www.nunit.org/
+
+
+Alfresco has modified the source code of the following third party libraries.  Below is the list of modified modules and corresponding licenses.
+The svn diff files with the details of the changes can be found in the following location: root/projects/3rd-party/src.
+
+
+===Apache2===
+acegi		http://acegisecurity.org/ 
+commons-*	http://jakarta.apache.org/commons/ 
+Framework	http://cxf.apache.org/
+Greenmail	http://www.icegreen.com/greenmail/readme.html
+jslideshare  	http://code.google.com/p/jslideshare/
+pdfbox		http://pdfbox.apache.org/
+POI		http://poi.apache.org/legal.html
+mybatis  	http://code.google.com/p/mybatis/
+quartz		http://www.opensymphony.com/quartz/
+Apache Tika	http://lucene.apache.org/tika/license.html
+tm-extractors	http://www.textmining.org/
+TrueLicense 	https://truelicense.dev.java.net/
+wss4j		http://ws.apache.org/wss4j/
+Spring Surf	http://www.springsource.com/download/community
+
+
+===Artistic (BSD style)===
+chiba		http://sourceforge.net/projects/chiba
+
+
+===BSD===
+FreeMarker	http://freemarker.sourceforge.net/ 
+YUI		http://developer.yahoo.com/yui/
+jibx 	   	http://jibx.sourceforge.net/jibx-license.html
+
+
+===LGPL 3.0===
+JODConverter	http://www.artofsolving.com/node/20
+PDF Renderer	https://pdf-renderer.dev.java.net/
+
+
+===LGPL 2.1===
+hibernate	http://www.hibernate.org/
+PDF Renderer    http://java.net/projects/pdf-renderer
+
+
+

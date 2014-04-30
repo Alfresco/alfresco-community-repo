@@ -1,0 +1,86 @@
+<component>
+    <name>shortcuts</name>
+    <description>Alfresco Shortcuts</description>
+    <canBeEdited>0</canBeEdited>
+    <selected>1</selected>
+    <show>0</show>
+    <startMenuShortcutList>
+        <startMenuLinkShortcut>
+	    <comment>Alfresco Website</comment>
+	    <name>Alfresco Website</name>
+	    <url>http://www.alfresco.com</url>
+	    <windowsIcon></windowsIcon>
+	</startMenuLinkShortcut>
+        <startMenuLinkShortcut>
+            <comment>Alfresco Explorer</comment>
+            <name>Alfresco Explorer</name>
+            <url>http://${application_server_domain}:${application_server_port}/alfresco</url>
+            <windowsIcon/>
+        </startMenuLinkShortcut>
+        <startMenuLinkShortcut>
+            <comment>Alfresco Share</comment>
+            <name>Alfresco Share</name>
+            <url>http://${application_server_domain}:${application_server_port}/share</url>
+            <windowsIcon/>
+        </startMenuLinkShortcut>
+        <startMenuShortcut>
+            <comment>Uninstall ${product_fullname}</comment>
+            <name>Uninstall ${product_fullname}</name>
+            <windowsExec>${installdir}\uninstall.exe</windowsExec>
+            <windowsExecArgs/>
+            <windowsIcon/>
+            <windowsPath>${installdir}</windowsPath>
+        </startMenuShortcut>
+        <startMenuFolder>
+            <name>${product_fullname} Service</name>
+            <platforms>windows</platforms>
+            <startMenuShortcutList>
+                <startMenuShortcut>
+                    <comment>Install ${product_fullname} as service</comment>
+                    <name>Install ${product_fullname} as service</name>
+                    <windowsExec>${installdir}/serviceinstall.bat</windowsExec>
+                    <windowsExecArgs>INSTALL</windowsExecArgs>
+                    <windowsIcon>${installdir}/alfresco.ico</windowsIcon>
+                    <windowsPath>${installdir}/</windowsPath>
+                </startMenuShortcut>
+                <startMenuShortcut>
+		    <runAsAdmin>1</runAsAdmin>
+                    <comment>Start ${product_fullname} service</comment>
+                    <name>Start ${product_fullname} service</name>
+                    <windowsExec>${installdir}/servicerun.bat</windowsExec>
+                    <windowsExecArgs>START</windowsExecArgs>
+                    <windowsIcon>${installdir}/alfresco.ico</windowsIcon>
+                    <windowsPath>${installdir}/</windowsPath>
+                </startMenuShortcut>
+                <startMenuShortcut>
+		    <runAsAdmin>1</runAsAdmin>
+                    <comment>Stop ${product_fullname} service</comment>
+                    <name>Stop ${product_fullname} service</name>
+                    <windowsExec>${installdir}/servicerun.bat</windowsExec>
+                    <windowsExecArgs>STOP</windowsExecArgs>
+                    <windowsIcon>${installdir}/alfresco.ico</windowsIcon>
+                    <windowsPath>${installdir}/</windowsPath>
+                </startMenuShortcut>
+                <startMenuShortcut>
+                    <comment>Uninstall ${product_fullname} service</comment>
+                    <name>Uninstall ${product_fullname} service</name>
+                    <windowsExec>${installdir}/serviceinstall.bat</windowsExec>
+                    <windowsExecArgs>UNINSTALL</windowsExecArgs>
+                    <windowsIcon>${installdir}/alfresco.ico</windowsIcon>
+                    <windowsPath>${installdir}/</windowsPath>
+                </startMenuShortcut>
+            </startMenuShortcutList>
+        </startMenuFolder>
+    </startMenuShortcutList>
+    <folderList>
+        <folder>
+            <description>Shortcuts Images</description>
+            <destination>${installdir}</destination>
+            <name>alfrescoicon</name>
+            <distributionFileList>
+                <distributionDirectory origin="images/alfresco.ico"/>
+            </distributionFileList>
+        </folder>
+    </folderList>
+</component>
+

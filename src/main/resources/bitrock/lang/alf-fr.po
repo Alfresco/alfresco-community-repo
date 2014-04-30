@@ -1,0 +1,707 @@
+﻿msgid "${product_fullname} LibreOffice Service"
+msgstr "Service LibreOffice ${product_fullname}"
+
+msgid "${product_fullname} Service"
+msgstr "Service ${product_fullname}"
+
+msgid "${product_fullname} Virtual Server"
+msgstr "Serveur virtuel ${product_fullname}"
+
+msgid "Admin Password"
+msgstr "Mot de passe admin"
+
+msgid "Admin Password:"
+msgstr "Mot de passe admin :"
+
+msgid "Advanced - Configures server ports and service properties." 
+msgstr "Avancé - Configure les ports du serveur et les propriétés du service."
+
+msgid "Also choose optional components to install."
+msgstr "Choisissez également les composants optionnels à installer."
+
+msgid "Alfresco"
+msgstr "Alfresco"
+
+msgid "Alfresco AVM Web Project Management for managing web site content."
+msgstr "Alfresco AVM Web Project Management pour la gestion de contenus de site Web."
+
+msgid "Alfresco Community Edition Stack"
+msgstr "Alfresco Community Edition Stack"
+
+msgid "Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management and Image Management."
+msgstr "Système de gestion de contenu d'entreprise (ECM, Enterprise Content Management) Alfresco intégrant des services de gestion de documents (Document Management), de  collaboration (Collaboration Management) et d'images (Image Management)."
+
+msgid "Alfresco Explorer"
+msgstr "Alfresco Explorer"
+
+msgid "Alfresco FTP Port"
+msgstr "Port FTP Alfresco"
+
+msgid "Alfresco Licenses"
+msgstr "Licences Alfresco"
+
+msgid "Alfresco Module Packages"
+msgstr "Alfresco Module Package"
+
+msgid "Alfresco RMI Port"
+msgstr "Port RMI Alfresco"
+
+msgid "Alfresco Share"
+msgstr "Alfresco Share"
+
+msgid "Alfresco SharePoint Port"
+msgstr "Port SharePoint Alfresco"
+
+msgid "Alfresco Shortcuts"
+msgstr "Raccourcis Alfresco"
+
+msgid "Alfresco Website"
+msgstr "Site Web Alfresco"
+
+msgid "Alfresco data directory"
+msgstr "Répertoire de données Alfresco"
+
+msgid "Allow to choose an already installed service name if it contains a call to installdir/ctlscript"
+msgstr "Permettre de choisir un nom de service déjà installé si ce dernier inclut un appel à installdir/ctlscript"
+
+msgid "Apache Service"
+msgstr "Service Apache"
+
+msgid "Auto - Configure servers to start automatically"
+msgstr "Auto - Configure le démarrage automatique de serveurs"
+
+msgid "Common Component"
+msgstr "Composant commun"
+
+msgid "Common installation directory"
+msgstr "Répertoire d'installation commun"
+
+msgid "Config Files"
+msgstr "Fichiers de configuration"
+
+msgid "Couldn't check Apache Tomcat Version.\nTomcat 5.5 is recommended."
+msgstr "Impossible de vérifier la version d'Apache Tomcat.\nLa version Tomcat 5.5 est recommandée."
+
+msgid "Creating user and database"
+msgstr "Création de l'utilisateur et de la base de données"
+
+msgid "Database Configuration"
+msgstr "Configuration de la base de données"
+
+msgid "Database Installation"
+msgstr "Installation de la base de données"
+
+msgid "Database Server Parameters"
+msgstr "Paramètres du serveur de base de données"
+
+msgid "Database Server port"
+msgstr "Port du serveur de base de données"
+
+msgid "Database name"
+msgstr "Nom de la base de données"
+
+msgid "Database name:"
+msgstr "Nom de la base de données :"
+
+msgid "Do you want to install PostgreSQL as a Windows service?"
+msgstr "Voulez-vous installer PostgreSQL en tant que service Windows ?"
+
+msgid "Easy - Installs servers with the default configuration"
+msgstr "Facile - Installe les serveurs avec la configuration par défaut"
+
+msgid "Encoding"
+msgstr "Encodage"
+
+msgid "Extension Files"
+msgstr "Fichiers d'extension"
+
+msgid "I wish to use an existing PostgreSQL database"
+msgstr "Je souhaite utiliser une base de données PostgreSQL existante"
+
+msgid "I wish to use an existing Tomcat"
+msgstr "Je souhaite utiliser un Tomcat existant"
+
+msgid "I wish to use the bundled PostgreSQL database"
+msgstr "Je souhaite utiliser la base de données PostgreSQL incluse dans cet installeur"
+
+msgid "I wish to use the bundled Tomcat"
+msgstr "Je souhaite utiliser le Tomcat inclus dans cet installeur"
+
+msgid "IP / Hostname"
+msgstr "IP/Nom d'hôte"
+
+msgid "ImageMagick Component"
+msgstr "Composant ImageMagick"
+
+msgid "ImageMagick installation directory"
+msgstr "Répertoire d'installation ImageMagick"
+
+msgid "ImageMagick version"
+msgstr "Version d'ImageMagick"
+
+msgid "Include Alfresco Web Quick Start."
+msgstr "Inclure Alfresco Web Quick Start."
+
+msgid "Include system ld library path in environment"
+msgstr "Inclure le répertoire des bibliothèques dans les variables d'environnement"
+
+msgid "Include system path in environment"
+msgstr "Inclure le répertoire d'installation dans les variables d'environnement"
+
+msgid "Initializing database"
+msgstr "Initialisation de la base de données"
+
+msgid "Install ${product_fullname} as a service?"
+msgstr "Installer ${product_fullname} en tant que service ?"
+
+msgid "Install ${product_fullname} as service"
+msgstr "Installer ${product_fullname} en tant que service"
+
+msgid "Install PostgreSQL as service?"
+msgstr "Installer PostgreSQL en tant que service ?"
+
+msgid "Install application as a service on Unix systems"
+msgstr "Installer l'application en tant que service sur des systèmes Unix"
+
+msgid "Install as a service"
+msgstr "Installer en tant que service"
+
+msgid "Installation Type"
+msgstr "Type d'installation"
+
+msgid "Installation directory path is too long. The maximum number of characters allowed is ${base_installdir_max_characters}."
+msgstr "Le chemin du répertoire d'installation est trop long. Le nombre maximum de caractères autorisé s'élève à ${base_installdir_max_characters}."
+
+msgid "Installation folder"
+msgstr "Dossier d'installation"
+
+msgid "Installation folder cannot contain spaces."
+msgstr "Le nom du dossier d'installation ne doit pas comporter d'espace"
+
+msgid "Installing Alfresco Module Packages (AMPs)"
+msgstr "Installation des Alfresco Module Packages (AMP)"
+
+msgid "Installing LibreOffice as a Windows service with name ${LibreOfficeUniqueServiceName}"
+msgstr "Installation de LibreOffice en tant que service Windows de nom ${LibreOfficeUniqueServiceName}"
+
+msgid "Installing PostgreSQL as a Windows service with name ${postgres_unique_service_name}"
+msgstr "Installation de PostgreSQL en tant que service Windows de nom ${postgres_unique_service_name}"
+
+msgid "Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}"
+msgstr "Installation de Tomcat en tant que service Windows de nom ${tomcat_unique_service_name}"
+
+msgid "It seems you do not have enough permissions to bind to the port or the port is already taken by another application. Please select another one."
+msgstr "Il semble que vous ne disposez pas des permissions suffisantes pour établir une liaison avec le port, ou que le port est déjà occupé par une autre application. Veuillez en sélectionner un autre."
+
+msgid "JDBC Driver:"
+msgstr "Pilote JDBC :"
+
+msgid "JDBC URL:"
+msgstr "URL JDBC :"
+
+msgid "JDK configuration"
+msgstr "Configuration JDK"
+
+msgid "JDK installation directory:"
+msgstr "Répertoire d'installation JDK :"
+
+msgid "Java"
+msgstr "Java"
+
+msgid "Java Component required to run the Alfresco server."
+msgstr "Composant Java requis pour démarrer le serveur Alfresco."
+
+msgid "Launch ${product_fullname} Share"
+msgstr "Lancer ${product_fullname} Share"
+
+msgid "Libraries Files"
+msgstr "Fichiers de bibliothèques"
+
+msgid "License Folder Component"
+msgstr "Composant de dossier de licences"
+
+msgid "Licenses Files"
+msgstr "Fichiers de licence"
+
+msgid "Licenses destination"
+msgstr "Destination des licences"
+
+msgid "Manual - Configure servers to start services manually"
+msgstr "Manuel - Configure les serveurs pour un démarrage manuel des services"
+
+msgid "New Component"
+msgstr "Nouveau composant"
+
+msgid "New Folder"
+msgstr "Nouveau dossier"
+
+msgid "Not a PostgreSQL version 8.1.4 installation. PostgreSQL 8.1.4 recommended."
+msgstr "Le produit installé n'est pas PostgreSQL version 8.1.4. PostgreSQL 8.1.4 est la version recommandée."
+
+msgid "Open SSL Component"
+msgstr "Composant Open SSL"
+
+msgid "LibreOffice"
+msgstr "LibreOffice"
+
+msgid "LibreOffice Server Port"
+msgstr "Port du serveur LibreOffice"
+
+msgid "LibreOffice Server port"
+msgstr "Port du serveur LibreOffice"
+
+msgid "LibreOffice installation directory"
+msgstr "Répertoire d'installation de LibreOffice"
+
+msgid "LibreOffice.org is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
+msgstr "LibreOffice est une suite bureautique multiplateforme open source comportant un outil de traitement de texte, un tableur, un outil de conception de présentations, de graphiques et de bases de données, requis pour les transformations de documents."
+
+msgid "Parameters"
+msgstr "Paramètres"
+
+msgid "Password"
+msgstr "Mot de passe"
+
+msgid "Password:"
+msgstr "Mot de passe :"
+
+msgid "Please choose a port number for Alfresco to use to execute remote commands."
+msgstr "Veuillez choisir un numéro de port dédié aux commandes à distance exécutées par Alfresco."
+
+msgid "Please choose a port number for the SharePoint protocol."
+msgstr "Veuillez choisir un numéro de port pour le protocole SharePoint."
+
+msgid "Please choose a port number to use for the integrated Alfresco FTP server."
+msgstr "Veuillez choisir un numéro de port pour le serveur FTP Alfresco intégré."
+
+msgid "Please enter a port in the range 1-65535."
+msgstr "Veuillez indiquer un port compris entre 1 et 65535."
+
+msgid "Please enter a valid IP address or hostname"
+msgstr "Veuillez saisir une adresse IP ou un nom d'hôte valide"
+
+msgid "Please enter a valid hostname or IP address"
+msgstr "Veuillez saisir un nom d'hôte ou une adresse IP valide"
+
+msgid "Please enter the IP address or hostname for your database"
+msgstr "Veuillez saisir l'adresse IP ou le nom d'hôte de votre base de données"
+
+msgid "Please enter the Tomcat configuration parameters you wish to use."
+msgstr "Veuillez saisir les paramètres de configuration Tomcat que vous souhaitez utiliser."
+
+msgid "Please enter the port of your database."
+msgstr "Veuillez saisir le port de votre serveur de base de données."
+
+msgid "Please enter the port that the Libreoffice Server will listen to by default."
+msgstr "Veuillez saisir le port que le serveur LibreOffice écoutera par défaut."
+
+msgid "Please enter your database 'postgres' user password."
+msgstr "Veuillez saisir votre mot de passe d'utilisateur 'postgres' de base de données."
+
+msgid "Please give a password to use for the Alfresco administrator account."
+msgstr "Veuillez définir le mot de passe administrateur Alfresco."
+
+msgid "Please give details of the Quickr server to use."
+msgstr "Veuillez fournir des informations sur le serveur Quickr à utiliser."
+
+msgid "Please select services startup type"
+msgstr "Veuillez sélectionner le type de démarrage des services"
+
+msgid "Please select the Tomcat configuration you wish to use"
+msgstr "Veuillez sélectionner la configuration Tomcat que vous souhaitez utiliser"
+
+msgid "Please select which database configuration you wish to use"
+msgstr "Veuillez sélectionner la configuration de base de données que vous souhaitez utiliser"
+
+msgid "Please specify the directory where Tomcat is located."
+msgstr "Veuillez spécifier le répertoire dans lequel est situé Tomcat."
+
+msgid "Please specify the directory where the psql, pg_restore and vacuumdb binaries are located"
+msgstr "Veuillez spécifier le répertoire dans lequel sont situés les fichiers binaires psql, pg_restore et vacuumdb"
+
+msgid "Please, choose a folder to install ${product_fullname}"
+msgstr "Veuillez sélectionner un dossier d'installation de ${product_fullname}"
+
+msgid "Please, select the encoding type."
+msgstr "Veuillez sélectionner le type d'encodage."
+
+msgid "Port:"
+msgstr "Port :"
+
+msgid "PostgreSQL"
+msgstr "PostgreSQL"
+
+msgid "PostgreSQL Binary Directory"
+msgstr "Répertoire binaire PostgreSQL"
+
+msgid "PostgreSQL is a powerful, open source object-relational database system."
+msgstr "PostgreSQL est un puissant système de base de données relationnelle-objet open source."
+
+msgid "PostgreSQL postgres user password"
+msgstr "Mot de passe utilisateur postgres PostgreSQL"
+
+msgid "PostgreSQL_initdb"
+msgstr "PostgreSQL_initdb"
+
+msgid "Program Files"
+msgstr "Program Files"
+
+msgid "Program Files Linux"
+msgstr "Program Files (Linux)"
+
+msgid "Program Files Windows"
+msgstr "Program Files (Windows)"
+
+msgid "Quickr Connector Support"
+msgstr "Prise en charge du connecteur Quickr"
+
+msgid "Quickr Content Services"
+msgstr "Services de contenu Quickr"
+
+msgid "Quickr Server:"
+msgstr "Serveur Quickr :"
+
+msgid "Quickr and Lotus Notes support for communication with Alfresco."
+msgstr "Quickr et Lotus Notes prennent en charge la communication avec Alfresco."
+
+msgid "README File"
+msgstr "Fichier README"
+
+msgid "README Folder Component"
+msgstr "Composant de dossier README"
+
+msgid "README destination"
+msgstr "Destination README"
+
+msgid "Re-enter password"
+msgstr "Saisir à nouveau le mot de passe"
+
+msgid "Records Management"
+msgstr "Gestion des enregistrements"
+
+msgid "Records Management support. This is a separately licensed component and should only be installed if licensed."
+msgstr "Prise en charge de la gestion des enregistrements. Il s'agit d'un composant doté d'une licence distincte et qui doit être installé uniquement sous licence."
+
+msgid "Repeat Password:"
+msgstr "Répéter le mot de passe :"
+
+msgid "SWFTOOLS Component"
+msgstr "Composant SWFTOOLS"
+
+msgid "SWFTOOLS installation directory"
+msgstr "Répertoire d'installation SWFTOOLS"
+
+msgid "Script for start/stop Services"
+msgstr "Script pour le démarrage/l'arrêt des services"
+
+msgid "Select a folder"
+msgstr "Sélectionner un dossier"
+
+msgid "Service Startup Configuration"
+msgstr "Configuration du démarrage des services"
+
+msgid "Service script name"
+msgstr "Nom du script de service"
+
+msgid "Service script name:"
+msgstr "Nom du script de service :"
+
+msgid "Set Installer Variables Java"
+msgstr "Définir les variables Java du programme d'installation"
+
+msgid "Set Installer Variables Tomcat"
+msgstr "Définir les variables Tomcat du programme d'installation"
+
+msgid "Set the database name for the database that will be created."
+msgstr "Définir le nom de la base de données qui sera créée."
+
+msgid "Set the password for the user that will use the database."
+msgstr "Définir le mot de passe de l'utilisateur de la base de données."
+
+msgid "Set the user that will use the database."
+msgstr "Définir l'utilisateur de la base de données."
+
+msgid "Setup will try to install new databases and will overwrite any existing duplicate. Do you wish you continue?"
+msgstr "Le processus d'installation va tenter d'installer de nouvelles bases de données et écrasera les éventuels doublons. Souhaitez-vous continuer ?"
+
+msgid "SharePoint"
+msgstr "SharePoint"
+
+msgid "SharePoint Protocol Support."
+msgstr "Assistance du protocole SharePoint."
+
+msgid "SharePoint Protocol support."
+msgstr "Assistance du protocole SharePoint."
+
+msgid "Shortcuts Images"
+msgstr "Images des raccourcis"
+
+msgid "Sorry, we only support PostgreSQL as service."
+msgstr "Nous sommes désolés, nous ne prenons en charge PostgreSQL qu'en tant que service."
+
+msgid "Sorry, you need to be administrator."
+msgstr "Nous sommes désolés, vous devez être administrateur."
+
+msgid "Stack Scripts Directory"
+msgstr "Répertoire des scripts"
+
+msgid "Start ${product_fullname} service"
+msgstr "Démarrer le service ${product_fullname}"
+
+msgid "Start Virtual Server"
+msgstr "Démarrer le serveur virtuel"
+
+msgid "Start tomcat service"
+msgstr "Démarrer le service Tomcat"
+
+msgid "Starting LibreOffice..."
+msgstr "Démarrage de LibreOffice..."
+
+msgid "Starting servers ..."
+msgstr "Démarrage des serveurs..."
+
+msgid "Starting servers. Please be patient"
+msgstr "Démarrage des serveurs. Veuillez patienter."
+
+msgid "Starting servers. Please be patient."
+msgstr "Démarrage des serveurs. Veuillez patienter."
+
+msgid "Stop ${product_fullname} service"
+msgstr "Arrêter le service ${product_fullname}"
+
+msgid "Stop Virtual Server"
+msgstr "Arrêter le serveur virtuel"
+
+msgid "Stopping PostgreSQL..."
+msgstr "Arrêt de PostgreSQL…"
+
+msgid "Stopping servers"
+msgstr "Arrêt des serveurs"
+
+msgid "Stopping services"
+msgstr "Arrêt des services"
+
+msgid "The ${product_shortname} service script file exists. Please insert a different name for the service script."
+msgstr "Le fichier de script du service ${product_shortname} est déjà présent. Veuillez insérer un autre nom pour le script du service."
+
+msgid "The Alfresco data directory tends to grow in size. Please choose where do you want to store it."
+msgstr "La taille du répertoire de données Alfresco a tendance à augmenter. Veuillez sélectionner l'emplacement du répertoire de données."
+
+msgid "The directory you selected does not seem to be a valid JDK directory. Please try again."
+msgstr "Le répertoire sélectionné ne semble pas être un répertoire JDK valide. Veuillez réessayer."
+
+msgid "The directory you selected does not seem to be a valid Tomcat directory. Please try again."
+msgstr "Le répertoire sélectionné ne semble pas être un répertoire Tomcat valide. Veuillez réessayer."
+
+msgid "The installer could not get the current free space on ${installdir}. Please check that there is free space enough to install ${product_fullname}"
+msgstr "Le programme d'installation n'a pas pu obtenir l'espace libre actuel sur ${installdir}. Veuillez vérifier que l'espace libre est suffisant pour installer ${product_fullname}"
+
+msgid "The length of the password must be greater than 3 characters"
+msgstr "Le mot de passe doit comporter plus de 3 caractères"
+
+msgid "The path ${postgres_binary_directory} does not seem to contain a pg_restore executable."
+msgstr "Le chemin ${postgres_binary_directory} ne semble pas comporter de fichier exécutable pg_restore."
+
+msgid "The path ${postgres_binary_directory} does not seem to contain a pg_vacuumdb executable."
+msgstr "Le chemin ${postgres_binary_directory} ne semble pas comporter de fichier exécutable pg_vacuumdb."
+
+msgid "The path ${postgres_binary_directory} seems to be invalid. Please check if the directory contains the required binaries."
+msgstr "Le chemin ${postgres_binary_directory} semble invalide. Veuillez vérifier si le répertoire contient les fichiers binaires requis."
+
+msgid "The selected folder is not empty. Please select a different folder"
+msgstr "Le dossier sélectionné n'est pas vide. Veuillez sélectionner un autre dossier."
+
+msgid "The service script file exists. Please insert a different name for the service script."
+msgstr "Le fichier de script de service est déjà présent. Veuillez insérer un autre nom pour le script du service."
+
+msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
+msgstr "L'espace libre dans ${installdir} est insuffisant. Vous avez besoin d'au moins ${base_needed_space} Mo pour installer ${product_fullname}"
+
+msgid "This installer is for Windows 64 bit.  Please download the Windows 32 bit version."
+msgstr "Ce programme est conçu pour Windows 64 bits.  Veuillez télécharger la version Windows 32 bits."
+
+msgid "This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again."
+msgstr "Cette version a été conçue pour s'exécuter sur J2SE ${java_min_version} ou version ultérieure. Veuillez installer une version Java compatible et réessayer."
+
+msgid "This release was packaged to run on J2SE ${java_min_version}. Please install a compatible Java version and try again."
+msgstr "Cette version a été conçue pour s'exécuter sur J2SE ${java_min_version}. Veuillez installer une version Java compatible et réessayer."
+
+msgid "This release was packaged to run on J2SE 7.0 or later. Please install a compatible Java version and try again."
+msgstr "Cette version a été conçue pour s'exécuter sur J2SE 7.0 ou version ultérieure. Veuillez installer une version Java compatible et réessayer."
+
+msgid "This release was packaged to run on J2SE 7.0. Please install a compatible Java version and try again."
+msgstr "Cette version a été conçue pour s'exécuter sur J2SE 7.0. Veuillez installer une version Java compatible et réessayer."
+
+msgid "Tomcat 5.5 Component"
+msgstr "Composant Tomcat 5.5"
+
+msgid "Tomcat AJP Port:"
+msgstr "Port AJP Tomcat :"
+
+msgid "Tomcat Directory"
+msgstr "Répertoire Tomcat"
+
+msgid "Tomcat JMX Port:"
+msgstr "Port JMX Tomcat :"
+
+msgid "Tomcat Port Configuration"
+msgstr "Configuration du port Tomcat"
+
+msgid "Tomcat SSL Port"
+msgstr "Port SSL Tomcat"
+
+msgid "Tomcat Server Port and Tomcat Shutdown Port cannot be the same port. Please select another Tomcat Shutdown Port."
+msgstr "Le port de serveur Tomcat et le port d'arrêt Tomcat doivent être différents. Veuillez sélectionner un autre port d'arrêt Tomcat."
+
+msgid "Tomcat Server Port:"
+msgstr "Port de serveur Tomcat :"
+
+msgid "Tomcat Shutdown Port:"
+msgstr "Port d'arrêt Tomcat :"
+
+msgid "Tomcat directory:"
+msgstr "Répertoire Tomcat :"
+
+msgid "Tomcat installation:"
+msgstr "Installation de Tomcat :"
+
+msgid "Tomcat modifications due to java"
+msgstr "Modifications de Tomcat dues à Java"
+
+msgid "Unable to bind to the given port number. Please select another FTP Port."
+msgstr "Impossible d'établir une liaison avec le numéro de port indiqué. Veuillez sélectionner un autre port FTP."
+
+msgid "Unable to bind to the given port number. Please select another RMI Port."
+msgstr "Impossible d'établir une liaison avec le numéro de port indiqué. Veuillez sélectionner un autre port RMI."
+
+msgid "Unable to bind to the given port number. Please select another Tomcat AJP Port."
+msgstr "Impossible d'établir une liaison avec le numéro de port indiqué. Veuillez sélectionner un autre port AJP Tomcat."
+
+msgid "Unable to bind to the given port number. Please select another Tomcat Server Port."
+msgstr "Impossible d'établir une liaison avec le numéro de port indiqué. Veuillez sélectionner un autre port de serveur Tomcat."
+
+msgid "Unable to bind to the given port number. Please select another Tomcat Shutdown Port."
+msgstr "Impossible d'établir une liaison avec le numéro de port indiqué. Veuillez sélectionner un autre port d'arrêt Tomcat."
+
+msgid "Unable to bind to the given port number. Please select another Tomcat SSL Port."
+msgstr "Impossible d'établir une liaison avec le numéro de port indiqué. Veuillez sélectionner un autre port SSL Tomcat."
+
+msgid "Unable to bind to the given port number. Please select another Tomcat AJP Port."
+msgstr "Impossible d'établir une liaison avec le numéro de port indiqué. Veuillez sélectionner un autre port AJP Tomcat."
+
+msgid "Unable to bind to the given port number. Please select another port for the SharePoint Protocol."
+msgstr "Impossible d'établir une liaison avec le numéro de port indiqué. Veuillez sélectionner un autre port pour le protocole SharePoint."
+
+msgid "Unable to bind to the server port. Please make sure that Tomcat is not running."
+msgstr "Impossible d'établir une liaison avec le port du serveur. Veuillez vous assurer que Tomcat n'est pas en cours d'exécution."
+
+msgid "Unable to connect to database. Please check your configuration."
+msgstr "Impossible d'établir une connexion avec la base de données. Veuillez vérifier votre configuration."
+
+msgid "Unable to find a server running at given port number. Please select another one."
+msgstr "Aucun serveur n'est en cours d'exécution sur le numéro de port indiqué. Veuillez en sélectionner un autre."
+
+msgid "Unable to find any server running at port ${postgres_port}. Please start your database server."
+msgstr "Impossible de trouver un serveur s'exécutant sur le port ${postgres_port}. Veuillez démarrer votre serveur de base de données."
+
+msgid "Unable to get free disk space."
+msgstr "Impossible d'obtenir de l'espace libre sur le disque."
+
+msgid "Uninstall ${product_fullname}"
+msgstr "Désinstaller ${product_fullname}"
+
+msgid "Uninstall ${product_fullname} service"
+msgstr "Désinstaller le service ${product_fullname}"
+
+msgid "Uninstalling services"
+msgstr "Désinstallation des services"
+
+msgid "Use to configure the destination of the content in commands folder"
+msgstr "Permet de configurer la destination du contenu dans le dossier des commandes"
+
+msgid "User"
+msgstr "Utilisateur"
+
+msgid "Username:"
+msgstr "Nom d'utilisateur :"
+
+msgid "Verify:"
+msgstr "Vérifier :"
+
+msgid "Waiting PostgreSQL to start."
+msgstr "En attente du démarrage de PostgreSQL."
+
+msgid "Waiting for Postmaster"
+msgstr "En attente de Postmaster"
+
+msgid "War Files"
+msgstr "Fichiers War"
+
+msgid "We have not been able to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later."
+msgstr "Nous n'avons pas été en mesure de trouver une installation JDK adaptée dans votre système. ${product_fullname} nécessite JDK ${java_min_version} ou version ultérieure."
+
+msgid "Web Project Management (AVM)"
+msgstr "Web Project Management (AVM)"
+
+msgid "Web Quick Start"
+msgstr "Web Quick Start"
+
+msgid "Web Server"
+msgstr "Serveur Web"
+
+msgid "Web Server domain:"
+msgstr "Domaine du serveur Web :"
+
+msgid "You can optionally register ${product_fullname} as a service. This way it will automatically be started every time the machine is started."
+msgstr "Si vous le souhaitez, vous pouvez enregistrer ${product_fullname} en tant que service. Ainsi, le démarrage s'exécutera automatiquement à chaque démarrage de la machine."
+
+msgid "You have chosen Tomcat as the existing installation. To use new installed applications you must restart Tomcat."
+msgstr "Vous avez sélectionné Tomcat en tant qu'installation existante. Pour utiliser les nouvelles applications installées, vous devez redémarrer Tomcat."
+
+msgid "applyamps"
+msgstr "applyamps"
+
+msgid "mmtjar"
+msgstr "mmtjar"
+
+msgid "Please provide a password for the service account (postgres). If this account does not exist, the installer will create it."
+msgstr "Merci de définir un mot de passe pour le compte de service (postgres). Si ce compte n’existe pas, l’installeur le créera."
+
+msgid "The password specified was incorrect. Please enter the correct password for the postgres Windows user account."
+msgstr "Le mot de passe précisé était incorrect. Merci de saisir le mot de passe correct pour le compte d’utilisateur Windows postgres."
+
+msgid "README"
+msgstr "README"
+
+msgid "Windows 2008 requires that the password meets the following requirements:\n\n- It must be at least six characters long.\n- It must contain uppercase and lowercase characters.\n- It must contain numbers.\n- It must contain at least one of these special characters: @#$%!^&+=\n"
+msgstr "Windows 2008 impose que le mot de passe respecte les règles suivantes:\n\n- Il doit comporter au moins six caractères.\n- Il doit contenir des caractères majuscules et minuscules.\n- Il doit contenir des chiffres.\n- Il doit contenir au moins un de ces caractères spéciaux : @#$%!^&+=\n"
+
+msgid "Postgres service account password"
+msgstr "Mot de passe du compte de service Postgres"
+
+msgid "Deploying Alfresco. Please be patient."
+msgstr "Déploiement d'Alfresco. Merci de patienter."
+
+msgid "Java is not installed in your Stack. This module requires to have Java installed."
+msgstr "Java n'est pas installé dans votre environnement. Ce module nécessite que Java soit installé."
+
+msgid "The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'."
+msgstr "Le chemin du répertoire d'installation ne doit contenir que des lettres, des chiffres, et les caractères '/', '.', '-' et '_'."
+
+msgid "Show next steps"
+msgstr "Voir les prochaines étapes"
+
+msgid "Alfresco recommends at least 1024MB of memory.${machine_total_memory}MB detected."
+msgstr "Alfresco requiert au moins 1024 MB de mémoire. ${machine_total_memory} MB détectés."
+
+msgid "Google Docs Integration"
+msgstr "Intégration de Google Docs"
+
+msgid "Include Google Docs Integration Features."
+msgstr "Inclut les fonctions d'intégration de Google Docs."
+
+msgid "Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext\nYou are strongly advised to abort this installation and install them first using your package manager.\nFor more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
+msgstr "Les bibliothèques nécessaires à la prise en charge de LibreOffice sont introuvables sur votre système : fontconfig libSM libICE libXrender libXext\nNous vous recommandons vivement d'abandonner cette installation et de procéder aux installations d'abord à l'aide de votre gestionnaire de package.\nPour plus d'informations, veuillez consulter l'adresse http://docs.alfresco.com/4,2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nSouhaitez-vous poursuivre l'installation ?"
+
+msgid "Password must not contain leading or trailing spaces"
+msgstr "Le mot de passe ne doit pas contenir d'espaces de début ou de fin"

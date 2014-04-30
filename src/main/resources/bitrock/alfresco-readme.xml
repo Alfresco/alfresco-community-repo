@@ -1,0 +1,29 @@
+<component>
+    <name>readme</name>
+    <description>README Folder Component</description>
+    <canBeEdited>1</canBeEdited>
+    <show>0</show>
+    <selected>1</selected>
+    <parameterList>
+        <stringParameter name="alfresco_readme_filename" value="README.txt" ask="0" />
+        <directoryParameter ask="0" name="alfresco_readme_source_directory" value="${build_project_directory}" />
+    </parameterList>
+    <folderList>
+        <folder>
+            <description>README File</description>
+            <destination>${installdir}</destination>
+            <name>readmelogfile</name>
+            <distributionFileList>
+                <distributionFile origin="${alfresco_readme_source_directory}/${alfresco_readme_filename}"/>
+            </distributionFileList>
+        </folder>
+    </folderList>
+    <postInstallationActionList>
+        <dos2unix files="${installdir}/${alfresco_readme_filename}">
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </dos2unix>
+    </postInstallationActionList>
+</component>
+

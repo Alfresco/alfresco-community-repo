@@ -1,0 +1,293 @@
+<component>
+    <name>alfrescofunctions</name>
+    <description/>
+    <canBeEdited>0</canBeEdited>
+    <selected>1</selected>
+    <show>0</show>
+    <functionDefinitionList>
+        <actionDefinition name="alfrescoSetProperty">
+            <parameterList>
+                <stringParameter name="property" />
+                <stringParameter name="value" />
+                <fileParameter name="configurationFile" value="${tomcat_server_directory}/shared/classes/alfresco-global.properties" />
+            </parameterList>
+            <actionList>
+                <substitute>
+                    <files>${configurationFile}</files>
+                    <substitutionList>
+                        <substitution>
+                            <pattern>#\s*${property}\s*=</pattern>
+                            <value>${property}=</value>
+                        </substitution>
+                    </substitutionList>
+                </substitute>
+                <propertiesFileSet>
+                    <file>${configurationFile}</file>
+                    <key>${property}</key>
+                    <value>${value}</value>
+                </propertiesFileSet>
+            </actionList>
+        </actionDefinition>
+
+
+        <actionDefinition name="alfrescoConfigure">
+            <parameterList>
+                <stringParameter name="alfrescoFiles" />
+            </parameterList>
+            <actionList>
+            <setInstallerVariableFromRegEx>
+                <name>imagemagick_root_directory_windows</name>
+                <pattern>/</pattern>
+                <substitution>\</substitution>
+                <text>${imagemagick_root_directory}</text>
+                <ruleList>
+                    <platformTest type="windows"/>
+                </ruleList>
+             </setInstallerVariableFromRegEx>	
+	        <substitute>
+		    <files>${alfrescoFiles}</files>
+		    <substitutionList>
+		        <substitution>
+                            <pattern>@@BITROCK_INSTALLDIR@@</pattern>
+                            <value>${installdir}</value>
+                        </substitution>
+		        <substitution>
+                            <pattern>@@ALFRESCO_DATA_DIR@@</pattern>
+                            <value>${alfresco_data_directory}</value>
+                        </substitution>
+		        <substitution>
+                            <pattern>@@ALFRESCO_SOLR_DIR@@</pattern>
+                            <value>${alfresco_data_directory.dos.unix}/solr</value>
+                        </substitution>
+ 		        <substitution>
+                            <pattern>@@BITROCK_ALFRESCO_LICENSE_DIR@@</pattern>
+                            <value>${installdir.unix}</value>
+                            <ruleList>
+                                <platformTest type="unix"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_ALFRESCO_LICENSE_DIR@@</pattern>
+                            <value>${installdir.dos.unix}</value>
+                            <ruleList>
+                                <platformTest type="windows"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_ALFRESCO_IMAGEMAGICK_ENV@@</pattern>
+                            <value>img.root=${imagemagick_root_directory.unix}
+img.dyn=${'${img.root}'}/lib
+img.exe=${'${img.root}'}/bin/convert</value>
+                            <ruleList>
+                                <platformTest type="unix"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_ALFRESCO_IMAGEMAGICK_ENV@@</pattern>
+                            <value>img.root=${imagemagick_root_directory_windows.escape_backslashes}
+img.coders=${'${img.root}'}\\modules\\coders
+img.config=${'${img.root}'}\\config
+img.gslib=${'${img.root}'}\\lib
+img.exe=${'${img.root}'}\\convert.exe</value>
+                            <ruleList>
+                                <platformTest type="windows"/>
+                            </ruleList>
+                        </substitution>
+		        <substitution>
+                            <pattern>@@BITROCK_LO_ROOTDIR@@</pattern>
+                            <value>${libreoffice_directory.unix}</value>
+                            <ruleList>
+                                <platformTest type="unix"/>
+                            </ruleList>
+                        </substitution>
+		        <substitution>
+                            <pattern>@@BITROCK_LO_ROOTDIR@@</pattern>
+                            <value>${libreoffice_directory.dos.unix}</value>
+                            <ruleList>
+                                <platformTest type="windows"/>
+                            </ruleList>
+                        </substitution>
+		        <substitution>
+                            <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
+                            <value>${libreoffice_directory.dos.unix}/App/libreoffice/program/soffice.exe</value>
+                            <ruleList>
+                                <platformTest type="windows"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
+                            <value>${libreoffice_directory}/program/soffice.bin</value>
+                            <ruleList>
+                                <platformTest type="linux"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
+                            <value>${libreoffice_directory}/Contents/MacOS/soffice.bin</value>
+                            <ruleList>
+                                <platformTest type="osx"/>
+                            </ruleList>
+                        </substitution>
+		        <substitution>
+                            <pattern>@@BITROCK_LIBREOFFICE_JOD_DIR@@</pattern>
+                            <value>${libreoffice_directory.dos.unix}/App/libreoffice</value>
+                            <ruleList>
+                                <platformTest type="windows"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_LIBREOFFICE_JOD_DIR@@</pattern>
+                            <value>${libreoffice_directory}</value>
+                            <ruleList>
+                                <platformTest type="linux"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_LIBREOFFICE_JOD_DIR@@</pattern>
+                            <value>${libreoffice_directory}/Contents</value>
+                            <ruleList>
+                                <platformTest type="osx"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_LO_PORT@@</pattern>
+                            <value>${libreoffice_port}</value>
+                        </substitution>
+			<substitution>
+                            <pattern>@@BITROCK_PDF2SWF_PATH@@</pattern>
+                            <value>${installdir.dos.unix}/swftools/pdf2swf.exe</value>
+                            <ruleList>
+                                <platformTest type="windows"/>
+                            </ruleList>
+                        </substitution>
+			<substitution>
+                            <pattern>@@BITROCK_PDF2SWF_PATH@@</pattern>
+                            <value>${installdir.unix}/common/bin/pdf2swf</value>
+                            <ruleList>
+                                <platformTest type="unix"/>
+                            </ruleList>
+			</substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_PDF2SWF_LANGUAGEDIR@@</pattern>
+                            <value>${installdir.dos.unix}/swftools/japanese</value>
+                            <ruleList>
+                                <platformTest type="windows"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_PDF2SWF_LANGUAGEDIR@@</pattern>
+                            <value>${installdir.unix}/common/japanese</value>
+                            <ruleList>
+                                <platformTest type="unix"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_MYSQL_PORT@@</pattern>
+                            <value>${database_port}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_MYSQL_HOST@@</pattern>
+                            <value>${database_hostname}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_POSTGRESQL_PORT@@</pattern>
+                            <value>${database_port}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_POSTGRESQL_HOST@@</pattern>
+                            <value>${database_hostname}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_DATA_DIR@@</pattern>
+                            <value>${alfresco_data_directory.dos.unix}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_COMMON_ROOTDIR@@</pattern>
+                            <value>${installdir.dos.unix}/common/</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_DB_USER@@</pattern>
+                            <value>${alfresco_database_user}</value>
+                        </substitution>
+                        <substitution>
+                           <pattern>@@BITROCK_DB_PASSWORD@@</pattern>
+                            <value>${alfresco_database_password}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_DB_NAME@@</pattern>
+                            <value>${alfresco_database_name}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_ALFRESCO_ADMIN_USERNAME@@</pattern>
+                            <value>${alfresco_admin_username}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_ALFRESCO_ADMIN_PASSWORD@@</pattern>
+                            <value>${alfresco_admin_password_md4}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_ALFRESCO_PLAIN_ADMIN_PASSWORD@@</pattern>
+                            <value>${alfresco_admin_password}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_FTP_PORT@@</pattern>
+                            <value>${alfresco_ftp_port}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_RMI_PORT@@</pattern>
+                            <value>${alfresco_rmi_port}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_TOMCAT_PORT@@</pattern>
+                            <value>${application_server_port}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_TOMCAT_SSL_PORT@@</pattern>
+                            <value>${application_server_ssl_port}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_TOMCAT_SHUTDOWN_PORT@@</pattern>
+                            <value>${tomcat_server_shutdown_port}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_TOMCAT_AJP_PORT@@</pattern>
+                            <value>${tomcat_server_ajp_port}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_TOMCAT_HOST@@</pattern>
+                            <value>${application_server_domain}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_SHAREPOINT_PORT@@</pattern>
+                            <value>${alfresco_sharepoint_port}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_QUICKR_PORT@@</pattern>
+                            <value>${alfresco_quickr_port}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_QUICKR_HOST@@</pattern>
+                            <value>${alfresco_quickr_host}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_TOMCAT_DIRNAME@@</pattern>
+                            <value>${tomcat_dirname}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_TOMCAT_ROOTDIR@@</pattern>
+                            <value>${tomcat_server_home}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_JAVA_HOME_UNIX@@</pattern>
+                            <value>${java_home_directory.unix}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_JAVA_HOME_WIN@@</pattern>
+                            <value>${java_home_directory.dos}</value>
+                        </substitution>
+                    </substitutionList>
+		</substitute>
+            </actionList>
+        </actionDefinition>
+    </functionDefinitionList>
+</component>

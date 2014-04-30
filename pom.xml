@@ -14,11 +14,9 @@
     <properties>
         <binaries.folder>${user.home}/binaries</binaries.folder>
         <bitrock.folder>${binaries.folder}/bitrock/bitrock-8.5.1-20121129</bitrock.folder>
-        <bitrock.builder>${bitrock.folder}/linux/bin/builder</bitrock.builder>
     </properties>
 
     <dependencies>
-        <!-- WAR files -->
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-distribution</artifactId>
@@ -45,6 +43,14 @@
                                     <artifactId>alfresco-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/distribution</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-solr</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>config</classifier>
+                                    <outputDirectory>${project.build.directory}/solr</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -88,22 +94,25 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <executable>${bitrock.builder}</executable>
-                    <workingDirectory>${basedir}/../../installer/bitrock</workingDirectory>
+                    <executable>${bitrock.executable}</executable>
+                    <workingDirectory>${basedir}/src/main/resources/bitrock</workingDirectory>
                     <arguments>
                         <argument>build</argument>
                         <argument>project.xml</argument>
-                        <argument>linux-x64</argument>
+                        <argument>windows</argument>
                         <argument>--license</argument>
                         <argument>${binaries.folder}/build-classpath/license.xml</argument>
+                        <argument>--verbose</argument>
                         <argument>--setvars</argument>
                         <argument>project.outputDirectory=${project.build.directory}</argument>
                         <argument>project.version=${project.version}</argument>
                         <argument>project.fullName=Alfresco Community</argument>
                         <argument>alfresco_svn_rootdir=${basedir}/../..</argument>
                         <argument>alfresco_edition=community</argument>
-                        <argument>project.installerFilename=alfresco-community-${project.version}-linux-x64.bin</argument>
-                        <argument>binaries_folder=${binaries.folder}/bitrock/binaries-linux-x64</argument>
+                        <argument>project.installerFilename=alfresco-community-${project.version}-win-x64.exe</argument>
+                        <argument>binaries_folder=${binaries.folder}/bitrock/binaries-windows-x64</argument>
+                        <argument>distribution_folder=${project.build.directory}/distribution/alfresco-community-${project.version}</argument>
+                        <argument>solr_folder=${project.build.directory}/solr</argument>
                         <argument>alfresco_googledocs_source_file=${project.build.directory}/dependency/alfresco-googledocs-repo-${alfresco.googledocs.version}.amp</argument>
                         <argument>alfresco_googledocs_share_source_file=${project.build.directory}/dependency/alfresco-googledocs-share-${alfresco.googledocs.version}.amp</argument>
                     </arguments>
@@ -111,4 +120,31 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Profiles to set the right path to Bitrock Builder executable -->
+        <profile>
+            <id>win-bitrock</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <bitrock.executable>${bitrock.folder}/win/bin/builder-cli.exe</bitrock.executable>
+            </properties>
+        </profile>
+        <profile>
+            <id>linux-bitrock</id>
+            <activation>
+                <os>
+                    <family>linux</family>
+                </os>
+            </activation>
+            <properties>
+                <bitrock.executable>${bitrock.folder}/linux/bin/builder</bitrock.executable>
+            </properties>
+        </profile>
+    </profiles>
+
 </project>

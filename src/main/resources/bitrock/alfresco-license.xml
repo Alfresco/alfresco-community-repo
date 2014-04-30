@@ -1,0 +1,57 @@
+<component>
+    <name>alfrescolicense</name>
+    <description>//Alfresco License Component</description>
+    <canBeEdited>1</canBeEdited>
+    <selected>1</selected>
+    <show>0</show>
+    <initializationActionList>
+	<setInstallerVariable name="alfresco_license" value="0" persist="1" />
+	<setInstallerVariable name="alfresco_license" value="1" persist="1" >
+	    <ruleList>
+		<fileExists path="${installer_directory}/*-team.lic" />
+	    </ruleList>
+	</setInstallerVariable>
+	<logMessage text="Team license detected." >
+	    <ruleList>
+		<isTrue value="${alfresco_license}" />
+	    </ruleList>
+	</logMessage>
+	<logMessage text="No Team license detected." >
+	    <ruleList>
+		<isFalse value="${alfresco_license}" />
+	    </ruleList>
+	</logMessage>
+	<actionGroup>
+	    <actionList>
+		<setInstallerVariable name="component(alfrescocustomstacksettings).parameter(alfrescocustomstack_installation_type).ask" value="0" />
+		<setInstallerVariable name="component(alfrescocustomstacksettings).parameter(alfrescocustomstack_installation_type).value" value="easy" />
+		<setInstallerVariable name="project.allowComponentSelection" value="0" />
+	    </actionList>
+	    <ruleList>
+		<isTrue value="${alfresco_license}" />
+	    </ruleList>
+	</actionGroup>
+    </initializationActionList>
+    <postInstallationActionList>
+        <actionGroup>
+            <actionList>
+		<copyFile>
+		    <abortOnError>0</abortOnError>
+		    <showMessageOnError>0</showMessageOnError>
+		    <origin>${installer_directory}/*.lic</origin>
+		    <destination>${installdir}</destination>
+		</copyFile>
+            </actionList>
+	    <ruleList>
+		<isTrue value="${alfresco_license}" />
+	    </ruleList>
+        </actionGroup>
+    </postInstallationActionList>
+    <postUninstallationActionList>
+	<deleteFile path="${installdir}/*.lic" >
+	    <ruleList>
+		<isTrue value="${alfresco_license}" />
+	    </ruleList>
+	</deleteFile>
+    </postUninstallationActionList>
+</component>

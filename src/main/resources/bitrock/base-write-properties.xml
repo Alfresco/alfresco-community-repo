@@ -1,0 +1,66 @@
+<component>
+    <name>basewriteproperties</name>
+    <description>//Base Write Properties</description>
+    <canBeEdited>0</canBeEdited>
+    <show>0</show>
+    <selected>1</selected>
+    <postInstallationActionList>
+	<setInstallerVariable name="baseplatform_name" value="${platform_name}" />
+	<setInstallerVariable name="baseplatform_name" value="osx-x86_64" >
+	    <ruleList>
+		<compareText text="${project.installerFileName}" logic="contains" value="osx-x86_64" />
+	    </ruleList>
+	</setInstallerVariable>
+
+        <baseSaveGeneralStackConfigurationToFile>
+          <baseStackName>${project.fullName}</baseStackName>
+          <baseStackVersion>${project.version}</baseStackVersion>
+          <baseStackPlatform>${baseplatform_name}</baseStackPlatform>
+          <baseStackInstallDir>${installdir}</baseStackInstallDir>
+        </baseSaveGeneralStackConfigurationToFile>
+        <actionGroup>
+        <actionList>
+        <setInstallerVariable name="baseservice_name" value="${baseunixservice_script_name}"/>
+        <setInstallerVariable name="baseservice_name" value="${baseunixservice_osx_name}">
+            <ruleList>
+                <platformTest type="osx" />
+            </ruleList>
+        </setInstallerVariable>
+        <baseSaveGeneralStackConfigurationToFile>
+          <baseStackName>${project.fullName}</baseStackName>
+          <baseStackVersion>${project.version}</baseStackVersion>
+          <baseStackPlatform>${baseplatform_name}</baseStackPlatform>
+          <baseStackInstallDir>${installdir}</baseStackInstallDir>
+          <baseStackService>${baseservice_name}</baseStackService>
+        </baseSaveGeneralStackConfigurationToFile>
+        </actionList>
+        <ruleList>
+            <platformTest type="unix" />
+            <componentTest name="baseunixservice" logic="exists"/>
+            <componentTest name="baseunixservice" logic="selected"/>
+            <isTrue value="${baseunixservice_install_as_service}" />
+            <compareText text="${installer_root_install}" logic="equals" value="1"/>            
+        </ruleList>
+        </actionGroup>
+        <changePermissions>
+            <files>${installdir}/properties.ini</files>
+            <permissions>0700</permissions>
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </changePermissions>
+    </postInstallationActionList>
+    <postUninstallationActionList>
+        <deleteFile path="${installdir}/properties.ini" >
+            <ruleList>
+                <compareText text="deleteConfirm" value="no" logic="does_not_equal" />
+            </ruleList>
+        </deleteFile>
+        <deleteFile path="${installdir}">
+            <ruleList>
+                <fileTest path="${installdir}" condition="is_empty" />
+            </ruleList>
+        </deleteFile>
+    </postUninstallationActionList>
+</component>
+

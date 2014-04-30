@@ -1,0 +1,98 @@
+
+<!-- openssl 1.0
+Componentname: openssl
+
+Short Description:
+This component is able to proceed the most often used actions.
+
+Created: 200711
+Modified: 200711
+Copyrighted by BitRock
+
+
+-->
+<component>
+    <name>openssl</name>
+    <description>//Open SSL Component</description>
+    <canBeEdited>0</canBeEdited>
+    <show>0</show>
+    <selected>1</selected>
+    <preBuildActionList>
+        <setInstallerVariable name="component(openssl).parameter(curl_environment_wrapped).value" value="1" >
+            <ruleList>
+                <fileTest path="${build_project_directory}/common/bin/curl" condition="exists" />
+                <fileTest path="${build_project_directory}/common/bin/curl.bin" condition="exists" />
+                <fileTest path="${build_project_directory}/common/openssl/certs/curl-ca-bundle.crt" condition="exists" />
+            </ruleList>
+        </setInstallerVariable>
+    </preBuildActionList>
+    <parameterList>
+        <booleanParameter name="curl_environment_wrapped" value="0" ask="0" />
+    </parameterList>
+    <readyToInstallActionList>
+        <setInstallerVariable name="OPENSSL_COMMON_FILE_LIST">
+            <value>				${common_root_directory}/bin/openssl
+                                                ${common_root_directory}/openssl/openssl.cnf
+			</value>
+        </setInstallerVariable>
+        <setInstallerVariable name="CURL_COMMON_FILE_LIST">
+            <value>				${common_root_directory}/lib/libcurl.la
+						${common_root_directory}/lib/pkgconfig/libcurl.pc
+						${common_root_directory}/bin/curl-config
+             		</value>
+        </setInstallerVariable>  
+        <setInstallerVariable name="CURL_COMMON_FILE_LIST">
+            <value>${CURL_COMMON_FILE_LIST}				
+						${common_root_directory}/bin/curl
+             		</value>
+            <ruleList>
+                <isTrue value="${curl_environment_wrapped}" />
+            </ruleList>
+        </setInstallerVariable>  
+        <setInstallerVariable name="COMMON_FILE_LIST" value="${OPENSSL_COMMON_FILE_LIST};${CURL_COMMON_FILE_LIST};${COMMON_FILE_LIST}"/>
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="CURL_ENV_VAR">
+                    <value>##### CURL ENV #####
+CURL_CA_BUNDLE=${common_root_directory}/openssl/certs/curl-ca-bundle.crt
+export CURL_CA_BUNDLE
+</value>
+                </setInstallerVariable>
+                <setInstallerVariable name="ENV_VAR" value="${ENV_VAR}${CURL_ENV_VAR}" />
+            </actionList>
+            <ruleList>
+                <platformTest type="unix" />
+                <isTrue value="${curl_environment_wrapped}" />
+            </ruleList>
+        </actionGroup>
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="SSL_ENV_VAR">
+                    <value>##### SSL ENV #####
+SSL_CERT_FILE=${common_root_directory}/openssl/certs/curl-ca-bundle.crt
+export SSL_CERT_FILE
+</value>
+                </setInstallerVariable>
+                <setInstallerVariable name="ENV_VAR" value="${ENV_VAR}${SSL_ENV_VAR}" />
+            </actionList>
+            <ruleList>
+                <platformTest type="unix" />
+            </ruleList>
+        </actionGroup>
+    </readyToInstallActionList>
+    <postInstallationActionList>
+	<addTextToFile>
+	    <file>${php_configuration_directory}/php.ini</file>
+	    <text>
+;Curl ca bundle certificate
+curl.cainfo="${common_root_directory}/openssl/certs/curl-ca-bundle.crt"
+</text>
+	    <ruleList>
+		<componentTest name="php" logic="exists" />
+		<platformTest type="unix" />
+		<fileExists path="${php_configuration_directory}/php.ini" />
+	    </ruleList>
+	</addTextToFile>
+    </postInstallationActionList>
+</component>
+

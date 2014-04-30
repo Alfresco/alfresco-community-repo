@@ -1,0 +1,707 @@
+﻿msgid "${product_fullname} LibreOffice Service"
+msgstr "${product_fullname} LibreOffice-tjeneste"
+
+msgid "${product_fullname} Service"
+msgstr "${product_fullname}-tjeneste"
+
+msgid "${product_fullname} Virtual Server"
+msgstr "${product_fullname} virtuell server"
+
+msgid "Admin Password"
+msgstr "Admin.passord"
+
+msgid "Admin Password:"
+msgstr "Admin.passord:"
+
+msgid "Advanced - Configures server ports and service properties." 
+msgstr "Avansert — Konfigurerer serverporter og tjenesteegenskaper."
+
+msgid "Also choose optional components to install."
+msgstr "Du kan også velge alternative komponenter som skal installeres."
+
+msgid "Alfresco"
+msgstr "Alfresco"
+
+msgid "Alfresco AVM Web Project Management for managing web site content."
+msgstr "Alfresco AVM Webprosjektadministrasjon for behandling av Webområdeinnhold."
+
+msgid "Alfresco Community Edition Stack"
+msgstr "Alfresco Fellesskapsutgavestakk"
+
+msgid "Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management and Image Management."
+msgstr "Alfresco Enterprise Content Management (ECM)-system med dokumentbehandling, samarbeidsbehandling og bildebehandling."
+
+msgid "Alfresco Explorer"
+msgstr "Alfresco Utforsker"
+
+msgid "Alfresco FTP Port"
+msgstr "Alfresco FTP-port"
+
+msgid "Alfresco Licenses"
+msgstr "Alfresco Lisenser"
+
+msgid "Alfresco Module Packages"
+msgstr "Alfresco Modulpakker"
+
+msgid "Alfresco RMI Port"
+msgstr "Alfresco RMI-port"
+
+msgid "Alfresco Share"
+msgstr "Alfresco Deling"
+
+msgid "Alfresco SharePoint Port"
+msgstr "Alfresco SharePoint-port"
+
+msgid "Alfresco Shortcuts"
+msgstr "Alfresco Snarveier"
+
+msgid "Alfresco Website"
+msgstr "Alfresco Webområde"
+
+msgid "Alfresco data directory"
+msgstr "Alfresco-datakatalog"
+
+msgid "Allow to choose an already installed service name if it contains a call to installdir/ctlscript"
+msgstr "Tillat valg av et tjenestenavn som allerede er installert hvis det innbefatter et anrop til installdir/ctlscript"
+
+msgid "Apache Service"
+msgstr "Apache-tjeneste"
+
+msgid "Auto - Configure servers to start automatically"
+msgstr "Auto. — Konfigurer servere til å starte automatisk"
+
+msgid "Common Component"
+msgstr "Felles komponent"
+
+msgid "Common installation directory"
+msgstr "Felles installasjonskatalog"
+
+msgid "Config Files"
+msgstr "Konfig.filer"
+
+msgid "Couldn't check Apache Tomcat Version.\nTomcat 5.5 is recommended."
+msgstr "Kunne ikke kontrollere Apache Tomcat versjon.\nTomcat 5.5 anbefales"
+
+msgid "Creating user and database"
+msgstr "Opprette bruker og database"
+
+msgid "Database Configuration"
+msgstr "Databasekonfigurasjon"
+
+msgid "Database Installation"
+msgstr "Databaseinstallasjon"
+
+msgid "Database Server Parameters"
+msgstr "Serverparametre for database"
+
+msgid "Database Server port"
+msgstr "Serverport for database"
+
+msgid "Database name"
+msgstr "Databasenavn"
+
+msgid "Database name:"
+msgstr "Databasenavn:"
+
+msgid "Do you want to install PostgreSQL as a Windows service?"
+msgstr "Vil du installere PostgreSQL som en Windows-tjeneste?"
+
+msgid "Easy - Installs servers with the default configuration"
+msgstr "Enkel — Installerer servere med standardkonfigurasjon."
+
+msgid "Encoding"
+msgstr "Koding"
+
+msgid "Extension Files"
+msgstr "Utvidelsesfiler"
+
+msgid "I wish to use an existing PostgreSQL database"
+msgstr "Jeg vil bruke en eksisterende PostgreSQL-database"
+
+msgid "I wish to use an existing Tomcat"
+msgstr "Jeg vil bruke en eksisterende Tomcat"
+
+msgid "I wish to use the bundled PostgreSQL database"
+msgstr "Jeg vil bruke den buntede PostgreSQL-databasen"
+
+msgid "I wish to use the bundled Tomcat"
+msgstr "Jeg vil bruke buntet Tomcat"
+
+msgid "IP / Hostname"
+msgstr "IP/vertsnavn"
+
+msgid "ImageMagick Component"
+msgstr "ImageMagick-komponent"
+
+msgid "ImageMagick installation directory"
+msgstr "ImageMagick-installasjonskatalog"
+
+msgid "ImageMagick version"
+msgstr "ImageMagick-versjon"
+
+msgid "Include Alfresco Web Quick Start."
+msgstr "Inkluder Alfrescos Webhurtigstart."
+
+msgid "Include system ld library path in environment"
+msgstr "Inkluder bane for system-ID-bibliotek i miljøet"
+
+msgid "Include system path in environment"
+msgstr "Inkluder systembane i miljøet"
+
+msgid "Initializing database"
+msgstr "Initialiserer database"
+
+msgid "Install ${product_fullname} as a service?"
+msgstr "Installere ${product_fullname} som en tjeneste?"
+
+msgid "Install ${product_fullname} as service"
+msgstr "Installer ${product_fullname} som tjeneste"
+
+msgid "Install PostgreSQL as service?"
+msgstr "Installere PostgreSQL som en tjeneste?"
+
+msgid "Install application as a service on Unix systems"
+msgstr "Installer program som en tjeneste på Unix-systemer"
+
+msgid "Install as a service"
+msgstr "Installer som en tjeneste"
+
+msgid "Installation Type"
+msgstr "Installasjonstype"
+
+msgid "Installation directory path is too long. The maximum number of characters allowed is ${base_installdir_max_characters}."
+msgstr "Installasjonskatalogsti er for lang. Maks. antall tillatte tegn er ${base_installdir_max_characters}."
+
+msgid "Installation folder"
+msgstr "Installasjonsmappe"
+
+msgid "Installation folder cannot contain spaces."
+msgstr "Installasjonsmappen kan ikke inneholde mellomrom."
+
+msgid "Installing Alfresco Module Packages (AMPs)"
+msgstr "Installerer Alfresco Modulpakker (AMP)"
+
+msgid "Installing LibreOffice as a Windows service with name ${LibreOfficeUniqueServiceName}"
+msgstr "Installerer LibreOffice som en Windows-tjeneste med navnet ${LibreOfficeUniqueServiceName}"
+
+msgid "Installing PostgreSQL as a Windows service with name ${postgres_unique_service_name}"
+msgstr "Installerer PostgreSQL som en Windows-tjeneste med navnet ${postgres_unique_service_name}"
+
+msgid "Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}"
+msgstr "Installerer Tomcat som en Windows-tjeneste med navnet ${tomcat_unique_service_name}"
+
+msgid "It seems you do not have enough permissions to bind to the port or the port is already taken by another application. Please select another one."
+msgstr "Det ser ut til at du ikke har tillatelse til å binde til porten eller porten er allerede tatt av et annet program. Vennligst velg en annen."
+
+msgid "JDBC Driver:"
+msgstr "JDBC-driver:"
+
+msgid "JDBC URL:"
+msgstr "JDBC URL:"
+
+msgid "JDK configuration"
+msgstr "JDK-konfigurasjon"
+
+msgid "JDK installation directory:"
+msgstr "JDK-installasjonskatalog:"
+
+msgid "Java"
+msgstr "Java"
+
+msgid "Java Component required to run the Alfresco server."
+msgstr "Java-komponent kreves for å kjøre Alfresco-serveren."
+
+msgid "Launch ${product_fullname} Share"
+msgstr "Åpne ${product_fullname} Deling"
+
+msgid "Libraries Files"
+msgstr "Bibliotekfiler"
+
+msgid "License Folder Component"
+msgstr "Lisensmappekomponent"
+
+msgid "Licenses Files"
+msgstr "Lisensfiler"
+
+msgid "Licenses destination"
+msgstr "Lisensmål"
+
+msgid "Manual - Configure servers to start services manually"
+msgstr "Manuelt — Konfigurer servere til å starte tjenester manuelt"
+
+msgid "New Component"
+msgstr "Ny komponent"
+
+msgid "New Folder"
+msgstr "Ny mappe"
+
+msgid "Not a PostgreSQL version 8.1.4 installation. PostgreSQL 8.1.4 recommended."
+msgstr "Ikke en PostgreSQL versjon 8.1.4 installasjon. PostgreSQL 8.1.4 anbefalt."
+
+msgid "Open SSL Component"
+msgstr "Åpne SSL-komponent"
+
+msgid "LibreOffice"
+msgstr "LibreOffice"
+
+msgid "LibreOffice Server Port"
+msgstr "LibreOffice Server Port"
+
+msgid "LibreOffice Server port"
+msgstr "LibreOffice Server port"
+
+msgid "LibreOffice installation directory"
+msgstr "LibreOffice installasjonskatalog"
+
+msgid "LibreOffice.org is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
+msgstr "LibreOffice er en multiplattform, open-source office-programvare for tekstbehandling, regneark, presentasjoner, grafiske fremvisninger og databaser som er nødvendig for å transformere dokumenter."
+
+msgid "Parameters"
+msgstr "Parametre"
+
+msgid "Password"
+msgstr "Passord"
+
+msgid "Password:"
+msgstr "Passord:"
+
+msgid "Please choose a port number for Alfresco to use to execute remote commands."
+msgstr "Velg et portnummer som Alfresco skal bruke til å utføre eksterne kommandoer."
+
+msgid "Please choose a port number for the SharePoint protocol."
+msgstr "Velg et portnummer for SharePoint-protokollen."
+
+msgid "Please choose a port number to use for the integrated Alfresco FTP server."
+msgstr "Velg et portnummer som skal brukes for den integrerte Alfresco FTP-serveren."
+
+msgid "Please enter a port in the range 1-65535."
+msgstr "Velg en port i området 1-65535."
+
+msgid "Please enter a valid IP address or hostname"
+msgstr "Skriv inn gyldig IP-adresse eller vertsnavn"
+
+msgid "Please enter a valid hostname or IP address"
+msgstr "Skriv inn gyldig vertsnavn eller IP-adresse"
+
+msgid "Please enter the IP address or hostname for your database"
+msgstr "Skriv inn IP-adressen eller vertsnavnet til databasen"
+
+msgid "Please enter the Tomcat configuration parameters you wish to use."
+msgstr "Angi Tomcat-konfigurasjonsparametrene du vil bruke."
+
+msgid "Please enter the port of your database."
+msgstr "Angi porten til databasen."
+
+msgid "Please enter the port that the Libreoffice Server will listen to by default."
+msgstr "Skriv inn porten som LibreOffice-serveren skal lytte til som standard."
+
+msgid "Please enter your database 'postgres' user password."
+msgstr "Skriv inn databasens ""postgres""-brukerpassord."
+
+msgid "Please give a password to use for the Alfresco administrator account."
+msgstr "Angi et passord som skal brukes for Alfresco-administratorkontoen."
+
+msgid "Please give details of the Quickr server to use."
+msgstr "Angi detaljer om Quickr-serveren som skal brukes."
+
+msgid "Please select services startup type"
+msgstr "Velg oppstartstypen for tjenester."
+
+msgid "Please select the Tomcat configuration you wish to use"
+msgstr "Velg Tomcat-konfigurasjonen du vil bruke."
+
+msgid "Please select which database configuration you wish to use"
+msgstr "Velg hvilken databasekonfigurasjon du vil bruke"
+
+msgid "Please specify the directory where Tomcat is located."
+msgstr "Angi i hvilken katalog Tomcat er plassert."
+
+msgid "Please specify the directory where the psql, pg_restore and vacuumdb binaries are located"
+msgstr "Angi i hvilken katalog binærfilene for psql, pg_restore og vacuumdb er plassert"
+
+msgid "Please choose a folder to install ${product_fullname}"
+msgstr "Velg en mappe for installasjon av ${product_fullname}"
+
+msgid "Please, select the encoding type."
+msgstr "Velg kodingstypen."
+
+msgid "Port:"
+msgstr "Port:"
+
+msgid "PostgreSQL"
+msgstr "PostgreSQL"
+
+msgid "PostgreSQL Binary Directory"
+msgstr "PostgreSQL-binærfilkatalog"
+
+msgid "PostgreSQL is a powerful, open source object-relational database system."
+msgstr "PostgreSQL er et kraftig objektrelasjonsdatabasesystem med åpen kilde."
+
+msgid "PostgreSQL postgres user password"
+msgstr "PostgreSQL postgres-brukerpassord"
+
+msgid "PostgreSQL_initdb"
+msgstr "PostgreSQL_initdb"
+
+msgid "Program Files"
+msgstr "Programfiler"
+
+msgid "Program Files Linux"
+msgstr "Linux-programfiler"
+
+msgid "Program Files Windows"
+msgstr "Windows-programfiler"
+
+msgid "Quickr Connector Support"
+msgstr "Quickr-konnektorstøtte"
+
+msgid "Quickr Content Services"
+msgstr "Quickr-innholdstjenester"
+
+msgid "Quickr Server:"
+msgstr "Quickr-server:"
+
+msgid "Quickr and Lotus Notes support for communication with Alfresco."
+msgstr "Quickr- og Lotus Notes-støtte for kommunisering med Alfresco."
+
+msgid "README File"
+msgstr "VIKTIG-fil"
+
+msgid "README Folder Component"
+msgstr "VIKTIG-mappekomponent"
+
+msgid "README destination"
+msgstr "VIKTIG-mål"
+
+msgid "Re-enter password"
+msgstr "Skriv inn passordet på nytt"
+
+msgid "Records Management"
+msgstr "Dokumentbehandling"
+
+msgid "Records Management support. This is a separately licensed component and should only be installed if licensed."
+msgstr "Dokumentbehandlingstøtte. Dette er en komponent som lisensieres separat og bare skal installeres hvis den er lisensiert."
+
+msgid "Repeat Password:"
+msgstr "Gjenta passord:"
+
+msgid "SWFTOOLS Component"
+msgstr "SWFTOOLS-komponent"
+
+msgid "SWFTOOLS installation directory"
+msgstr "SWFTOOLS-installasjonskatalog"
+
+msgid "Script for start/stop Services"
+msgstr "Skript for start-/stopptjenester"
+
+msgid "Select a folder"
+msgstr "Velg en mappe"
+
+msgid "Service Startup Configuration"
+msgstr "Konfigurasjon av tjenesteoppstart"
+
+msgid "Service script name"
+msgstr "Tjenesteskriptnavn"
+
+msgid "Service script name:"
+msgstr "Tjenesteskriptnavn:"
+
+msgid "Set Installer Variables Java"
+msgstr "Konfigurer installasjonsvariabler for Java"
+
+msgid "Set Installer Variables Tomcat"
+msgstr "Konfigurer installasjonsvariabler for Tomcat"
+
+msgid "Set the database name for the database that will be created."
+msgstr "Angi databasenavn for databasen som skal opprettes."
+
+msgid "Set the password for the user that will use the database."
+msgstr "Angi passord for brukeren som skal bruke databasen."
+
+msgid "Set the user that will use the database."
+msgstr "Angi brukeren som skal bruke databasen."
+
+msgid "Setup will try to install new databases and will overwrite any existing duplicate. Do you wish you continue?"
+msgstr "Oppsettet vil forsøke å installere nye databaser og vil skrive over alle eksisterende duplikater. Vil du fortsette?"
+
+msgid "SharePoint"
+msgstr "SharePoint"
+
+msgid "SharePoint Protocol Support."
+msgstr "SharePoint-protokollstøtte."
+
+msgid "SharePoint Protocol support."
+msgstr "SharePoint-protokollstøtte."
+
+msgid "Shortcuts Images"
+msgstr "Bilder av snarveier"
+
+msgid "Sorry, we only support PostgreSQL as service."
+msgstr "Beklager, men vi støtter kun PostgreSQL som tjeneste."
+
+msgid "Sorry, you need to be administrator."
+msgstr "Beklager, men du må være en administrator."
+
+msgid "Stack Scripts Directory"
+msgstr "Stakkskriptkatalog"
+
+msgid "Start ${product_fullname} service"
+msgstr "Start ${product_fullname}-tjenesten"
+
+msgid "Start Virtual Server"
+msgstr "Start virtuell server"
+
+msgid "Start tomcat service"
+msgstr "Start Tomcat-tjenesten"
+
+msgid "Starting LibreOffice..."
+msgstr "Starter LibreOffice..."
+
+msgid "Starting servers ..."
+msgstr "Starter servere…"
+
+msgid "Starting servers. Please be patient"
+msgstr "Starter servere. Vennligst vent"
+
+msgid "Starting servers. Please be patient."
+msgstr "Starter servere. Vennligst vent."
+
+msgid "Stop ${product_fullname} service"
+msgstr "Stopp ${product_fullname}-tjenesten"
+
+msgid "Stop Virtual Server"
+msgstr "Stopp virtuell server"
+
+msgid "Stopping PostgreSQL..."
+msgstr "Stopper PostgreSQL..."
+
+msgid "Stopping servers"
+msgstr "Stoppe servere"
+
+msgid "Stopping services"
+msgstr "Stoppe tjenester"
+
+msgid "The ${product_shortname} service script file exists. Please insert a different name for the service script."
+msgstr "${product_shortname}-tjeneste-skriptfilen eksisterer. Vennligst skriv inn et annet navn for tjeneste-skriptet."
+
+msgid "The Alfresco data directory tends to grow in size. Please choose where do you want to store it."
+msgstr "Alfresco datakatalogen har en tendens til å øke i størrelse. Velg hvor du ønsker å lagre den."
+
+msgid "The directory you selected does not seem to be a valid JDK directory. Please try again."
+msgstr "Katalogen du har valgt ser ikke ut til å være en gyldig JDK-katalog. Prøv igjen."
+
+msgid "The directory you selected does not seem to be a valid Tomcat directory. Please try again."
+msgstr "Katalogen du har valgt ser ikke ut til å være en gyldig Tomcat-katalog. Prøv igjen."
+
+msgid "The installer could not get the current free space on ${installdir}. Please check that there is free space enough to install ${product_fullname}"
+msgstr "Installasjonsprogrammet kunne ikke finne gjeldende ledig plass på ${installdir}. Kontroller at det er nok ledig plass til å installere ${product_fullname}"
+
+msgid "The length of the password must be greater than 3 characters"
+msgstr "Passordet må inneholde mer enn tre tegn."
+
+msgid "The path ${postgres_binary_directory} does not seem to contain a pg_restore executable."
+msgstr "Banen ${postgres_binary_directory} ser ikke ut til å ha en pg_restore kjørbar fil."
+
+msgid "The path ${postgres_binary_directory} does not seem to contain a pg_vacuumdb executable."
+msgstr "Banen ${postgres_binary_directory} ser ikke ut til å ha en pg_vacuumdb kjørbar fil."
+
+msgid "The path ${postgres_binary_directory} seems to be invalid. Please check if the directory contains the required binaries."
+msgstr "Stien ${postgres_binary_directory} ser ut til å være ugyldig. Kontroller at katalogen inneholder de nødvendige binærfilene."
+
+msgid "The selected folder is not empty. Please select a different folder"
+msgstr "Den valgte mappen er ikke tom. Vennligst velg en annen mappe"
+
+msgid "The service script file exists. Please insert a different name for the service script."
+msgstr "Tjeneste-skriptfilen eksisterer. Vennligst skriv inn et annet navn for tjeneste-skriptet."
+
+msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
+msgstr "Det er ikke nok ledig plass på ${installdir}. Du trenger minst ${base_needed_space} MB for å installere ${product_fullname}"
+
+msgid "This installer is for Windows 64 bit.  Please download the Windows 32 bit version."
+msgstr "Dette installasjonsprogrammet er for Windows 64 bit.  Vennligst last ned Windows 32 bit versjonen."
+
+msgid "This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again."
+msgstr "Denne versjonen ble pakket til å kjøre på J2SE ${java_min_version} eller nyere. Vennligst installer en kompatibel Java-versjon og prøv igjen."
+
+msgid "This release was packaged to run on J2SE ${java_min_version}. Please install a compatible Java version and try again."
+msgstr "Denne versjonen ble pakket til å kjøre på J2SE ${java_min_version}. Vennligst installer en kompatibel Java-versjon og prøv igjen."
+
+msgid "This release was packaged to run on J2SE 7.0 or later. Please install a compatible Java version and try again."
+msgstr "Denne versjonen ble pakket til å kjøre på J2SE 7.0 eller nyere. Vennligst installer en kompatibel Java-versjon og prøv igjen."
+
+msgid "This release was packaged to run on J2SE 7.0. Please install a compatible Java version and try again."
+msgstr "Denne versjonen ble pakket til å kjøre på J2SE 7.0. Vennligst installer en kompatibel Java-versjon og prøv igjen."
+
+msgid "Tomcat 5.5 Component"
+msgstr "Tomcat 5.5 komponent"
+
+msgid "Tomcat AJP Port:"
+msgstr "Tomcat AJP-port:"
+
+msgid "Tomcat Directory"
+msgstr "Tomcat-katalog"
+
+msgid "Tomcat JMX Port:"
+msgstr "Tomcat JMX-port:"
+
+msgid "Tomcat Port Configuration"
+msgstr "Tomcat-portkonfigurasjon"
+
+msgid "Tomcat SSL Port"
+msgstr "Tomcat SSL-port"
+
+msgid "Tomcat Server Port and Tomcat Shutdown Port cannot be the same port. Please select another Tomcat Shutdown Port."
+msgstr "Tomcat Server Port og Tomcat Shutdown Port kan ikke være samme port. Vennligst velg en annen Tomcat Shutdown Port."
+
+msgid "Tomcat Server Port:"
+msgstr "Tomcat-serverport:"
+
+msgid "Tomcat Shutdown Port:"
+msgstr "Tomcat-avslutningsport:"
+
+msgid "Tomcat directory:"
+msgstr "Tomcat-katalog:"
+
+msgid "Tomcat installation:"
+msgstr "Tomcat-installasjon:"
+
+msgid "Tomcat modifications due to java"
+msgstr "Tomcat-modifikasjoner på grunn av Java"
+
+msgid "Unable to bind to the given port number. Please select another FTP Port."
+msgstr "Kunne ikke binde til det gitte portnummeret. Vennligst velg en annen FTP-port."
+
+msgid "Unable to bind to the given port number. Please select another RMI Port."
+msgstr "Kunne ikke binde til det gitte portnummeret. Vennligst velg en annen RMI-port."
+
+msgid "Unable to bind to the given port number. Please select another Tomcat AJP Port."
+msgstr "Kunne ikke binde til det gitte portnummeret. Vennligst velg en annen Tomcat AJP-port."
+
+msgid "Unable to bind to the given port number. Please select another Tomcat Server Port."
+msgstr "Kunne ikke binde til det gitte portnummeret. Vennligst velg en annen Tomcat Server Port."
+
+msgid "Unable to bind to the given port number. Please select another Tomcat Shutdown Port."
+msgstr "Kunne ikke binde til det gitte portnummeret. Vennligst velg en annen Tomcat Shutdown Port."
+
+msgid "Unable to bind to the given port number. Please select another Tomcat SSL Port."
+msgstr "Kunne ikke binde til det gitte portnummeret. Vennligst velg en annen Tomcat SSL Port."
+
+msgid "Unable to bind to the given port number. Please select another Tomcat AJP Port."
+msgstr "Kunne ikke binde til det gitte portnummeret. Vennligst velg en annen Tomcat AJP-port."
+
+msgid "Unable to bind to the given port number. Please select another port for the SharePoint Protocol."
+msgstr "Kunne ikke binde til det gitte portnummeret. Vennligst velg en annen port for SharePoint-protokollen."
+
+msgid "Unable to bind to the server port. Please make sure that Tomcat is not running."
+msgstr "Kunne ikke binde til serverporten. Kontroller at Tomcat ikke kjører."
+
+msgid "Unable to connect to database. Please check your configuration."
+msgstr "Kunne ikke koble til databasen. Kontroller konfigurasjonen din."
+
+msgid "Unable to find a server running at given port number. Please select another one."
+msgstr "Kunne ikke finne en server som kjører på det gitte portnummeret. Vennligst velg en annen."
+
+msgid "Unable to find any server running at port ${postgres_port}. Please start your database server."
+msgstr "Kunne ikke finne en server som kjører på port ${postgres_port}. Vennlist start databaseserveren din."
+
+msgid "Unable to get free disk space."
+msgstr "Får ingen ledig diskplass."
+
+msgid "Uninstall ${product_fullname}"
+msgstr "Avinstaller ${product_fullname}"
+
+msgid "Uninstall ${product_fullname} service"
+msgstr "Avinstaller ${product_fullname}-tjenesten"
+
+msgid "Uninstalling services"
+msgstr "Avinstallere tjenester"
+
+msgid "Use to configure the destination of the content in commands folder"
+msgstr "Brukes til å konfigurere målet til innholdet i kommandomappen."
+
+msgid "User"
+msgstr "Bruker"
+
+msgid "Username:"
+msgstr "Brukernavn:"
+
+msgid "Verify:"
+msgstr "Bekreft:"
+
+msgid "Waiting PostgreSQL to start."
+msgstr "Venter på at PostgreSQL starter."
+
+msgid "Waiting for Postmaster"
+msgstr "Venter på postmester"
+
+msgid "War files"
+msgstr "War-filer"
+
+msgid "We have not been able to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later."
+msgstr "Vi kunne ikke finne en egnet JDK-installasjon på systemet ditt. ${product_fullname} trenger JDK ${java_min_version} eller nyere."
+
+msgid "Web Project Management (AVM)"
+msgstr "Webprosjektadministrasjon (AVM)"
+
+msgid "Web Quick Start"
+msgstr "Hurtigstart for Web"
+
+msgid "Web Server"
+msgstr "Webserver"
+
+msgid "Web Server domain:"
+msgstr "Webserverdomene:"
+
+msgid "You can optionally register ${product_fullname} as a service. This way it will automatically be started every time the machine is started."
+msgstr "Du kan frivillig registrere ${product_fullname} som en tjeneste. På denne måten startes det automatisk hver gang datamaskinen startes."
+
+msgid "You have chosen Tomcat as the existing installation. To use new installed applications you must restart Tomcat."
+msgstr "Du har valgt Tomcat som den eksisterende installasjonen. For å bruke de installerte programmene må du starte Tomcat på nytt."
+
+msgid "applyamps"
+msgstr "applyamps"
+
+msgid "mmtjar"
+msgstr "mmtjar"
+
+msgid "Please provide a password for the service account (postgres). If this account does not exist, the installer will create it."
+msgstr "Vennligst angi et passord for tjeneste-kontoen (postgres). Hvis denne kontoen ikke eksisterer vil installasjonsprogrammet opprette den."
+
+msgid "The password specified was incorrect. Please enter the correct password for the postgres Windows user account."
+msgstr "Det angitte passordet er feil. Vennligst skriv inn det korrekte passordet for postgres Windows-brukerkonto."
+
+msgid "README"
+msgstr "README"
+
+msgid "Windows 2008 requires that the password meets the following requirements:\n\n- It must be at least six characters long.\n- It must contain uppercase and lowercase characters.\n- It must contain numbers.\n- It must contain at least one of these special characters: @#$%!^&+\n"
+msgstr "Windows 2008 krever at passordet oppfyller følgende forutsetninger:\n\n- Det må være minst seks tegn langt.\n- Det må inneholde store og små bokstaver.\n- Det må inneholde tall.\n- Det må inneholde minst et av følgende spesialtegn: @#$%!^&+\n"
+
+msgid "Postgres service account password"
+msgstr "Passord for postgres-tjenestekonto"
+
+msgid "Deploying Alfresco. Please be patient."
+msgstr "Distribuere Alfresco. Vennligst vent."
+
+msgid "Java is not installed in your Stack. This module requires to have Java installed."
+msgstr "Java er ikke installert på din stakk. Denne modulen forutsetter at du har installert Java."
+
+msgid "The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'."
+msgstr "Installasjonskatalogen må være en bane som kun inneholder bokstaver, numre og tegnene ""/"", ""."", ""-"" og ""_""."
+
+msgid "Show next steps"
+msgstr "Vis neste trinn"
+
+msgid "Alfresco recommends at least 1024MB of memory.${machine_total_memory}MB detected."
+msgstr "Alfresco anbefaler minst 1024MB minne. ${machine_total_memory}MB funnet."
+
+msgid "Google Docs Integration"
+msgstr "Google Docs-integrering"
+
+msgid "Include Google Docs Integration Features."
+msgstr "Inkluder Google Docs-integreringsfunksjoner."
+
+msgid "Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext\nYou are strongly advised to abort this installation and install them first using your package manager.\nFor more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
+msgstr "Noen eller alle bibliotekene som er nødvendig for å støtte LibreOffice ble ikke funnet i systemet ditt: fontconfig libSM libICE libXrender libXext\nDu rådes på det sterkeste til å avbryte denne installasjonen og installere de først ved å bruke pakkeadministratoren din.\nFor mer informasjon, se http://docs.alfresco.com/4,2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nVil du fortsette med installasjonen?"
+
+msgid "Password must not contain leading or trailing spaces"
+msgstr "Passordet kan ikke starte eller slutte med mellomrom"

@@ -1,0 +1,324 @@
+
+<!-- NOT FINISHED -->
+
+<!-- JAVA 1.0a
+Componentname: Java 
+
+Short Description:
+This component is able to install and configurate the bundled Java binaries it carries, or to find an existing Java installation.
+Copyrighted by BitRock
+-->
+<component>
+    <name>java</name>
+    <description>Java</description>
+    <canBeEdited>0</canBeEdited>
+    <detailedDescription/>
+    <selected>1</selected>
+    <show>0</show>
+    <initializationActionList>
+        <actionGroup>
+            <actionList>
+                <autodetectJava>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                    <customErrorMessage>This release was packaged to run on J2SE ${java_min_version}. Please install a compatible Java version and try again.</customErrorMessage>
+                    <promptUser>0</promptUser>
+                    <validVersionList>
+                        <validVersion>
+                            <requireJDK>${java_required_jdk}</requireJDK>
+                            <maxVersion/>
+                            <minVersion>${java_min_version}</minVersion>
+                        </validVersion>
+                    </validVersionList>
+                    <ruleList>
+                        <isFalse value="${java_required_or_abort}" />
+			<platformTest type="osx" negate="1" />
+                    </ruleList>
+                </autodetectJava>
+                <autodetectJava>
+                    <abortOnError>1</abortOnError>
+                    <showMessageOnError>1</showMessageOnError>
+                    <customErrorMessage>This release was packaged to run on J2SE ${java_min_version}. Please install a compatible Java version and try again.</customErrorMessage>
+                    <promptUser>0</promptUser>
+                    <validVersionList>
+                        <validVersion>
+                            <requireJDK>${java_required_jdk}</requireJDK>
+                            <maxVersion/>
+                            <minVersion>${java_min_version}</minVersion>
+                        </validVersion>
+                    </validVersionList>
+                    <ruleList>
+                        <isTrue value="${java_required_or_abort}" />
+			<platformTest type="osx" negate="1" />
+                    </ruleList>
+                </autodetectJava>
+
+<!-- Compatible java version -->
+<autodetectJava>
+                    <customErrorMessage>This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again.</customErrorMessage>
+                    <validVersionList>
+                        <validVersion>
+                            <maxVersion/>
+                            <minVersion>${java_min_version}</minVersion>
+                        </validVersion>
+                    </validVersionList>
+                    <ruleList>
+                        <platformTest type="osx"/>
+                    </ruleList>
+                </autodetectJava>
+                <setInstallerVariableFromRegEx>
+                    <name>java_home_directory</name>
+                    <text>${java_executable}</text>
+                    <pattern>/bin/java$</pattern>
+                    <ruleList>
+                        <compareText logic="does_not_equal" text="${java_executable}" value=""/>
+                        <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
+                    </ruleList>
+                </setInstallerVariableFromRegEx>
+                <setInstallerVariableFromRegEx>
+                    <name>java_home_directory</name>
+                    <substitution/>
+                    <text>${java_executable}</text>
+                    <pattern>/bin/java.exe$</pattern>
+                    <ruleList>
+                        <compareText logic="does_not_equal" text="${java_executable}" value=""/>
+                        <compareText logic="equals" text="${platform_name}" value="windows"/>
+                    </ruleList>
+                </setInstallerVariableFromRegEx>
+                <setInstallerVariableFromRegEx>
+                    <name>java_home_directory</name>
+                    <text>${java_home_directory}</text>
+                    <pattern>/jre$</pattern>
+                    <ruleList>
+                        <compareText logic="does_not_equal" text="${java_home_directory}" value=""/>
+                    </ruleList>
+                </setInstallerVariableFromRegEx>
+                <setInstallerVariable>
+                    <name>java_home_directory</name>
+                    <value>/usr/local/java</value>
+                    <ruleList>
+                        <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
+                        <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
+                    </ruleList>
+                </setInstallerVariable>
+                <setInstallerVariable>
+                    <name>java_home_directory</name>
+                    <value>${platform_install_prefix}\java</value>
+                    <ruleList>
+                        <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
+                        <compareText logic="equals" text="${platform_name}" value="windows"/>
+                    </ruleList>
+                </setInstallerVariable>
+                <actionGroup>
+                    <actionList>
+                        <setInstallerVariable name="component(java).parameter(java_home_directory).ask" value="1"/>
+                    </actionList>
+                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                    <ruleList>
+                        <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
+                        <compareText logic="equals" text="${java_executable}" value=""/>
+                    </ruleList>
+                </actionGroup>
+            </actionList>
+            <ruleList>
+                <compareText text="${component(java).parameter(java_installation_type).value}" logic="equals" value="existing"/>
+            </ruleList>
+        </actionGroup>
+
+<!--<addChoiceOptions>
+			<name>java_installation_type</name>
+			<optionList>
+				<option>
+					<text>I wish to use the bundled Java distribution</text>
+					<value>bundled</value>
+				</option>
+			</optionList>
+			<ruleList>
+				<compareText text="${component(java).parameter(java_installation_type_options).value}" logic="equals" value="bundled" />
+			</ruleList>
+		</addChoiceOptions>
+		<addChoiceOptions>
+			<name>java_installation_type</name>
+			<optionList>
+				<option>
+					<text>I wish to use an existing Java distribution</text>
+					<value>existing</value>
+				</option>
+			</optionList>
+			<ruleList>
+				<compareText text="${component(java).parameter(java_installation_type_options).value}" logic="equals" value="existing" />
+			</ruleList>
+		</addChoiceOptions>
+        	<addChoiceOptions>
+                	<name>java_installation_type</name>
+                	<optionList>
+                        	<option>
+                                	<text>I wish to use the bundled Java distribution</text>
+                                	<value>bundled</value>
+                        	</option>
+                        	<option>
+                                	<text>I wish to use an existing Java installation</text>
+                               	 	<value>existing</value>
+                        	</option>
+                	</optionList>
+                	<ruleList>
+                        	<compareText text="${component(java).parameter(java_installation_type_options).value}" logic="equals" value="bundledAndExisting" />
+                	</ruleList>
+		</addChoiceOptions>
+	</initializationActionList>
+
+        <initializationActionList>-->
+
+    </initializationActionList>
+    <parameterList>
+<!-- hidden parameter -->
+<directoryParameter name="java_distribution_folder" value="${build_project_directory}/java" ask="0" />
+<stringParameter>
+            <name>java_installation_type_options</name>
+            <ask>0</ask>
+            <default>bundledAndExisting</default>
+            <value>bundledAndExisting</value>
+        </stringParameter>
+        <choiceParameter>
+            <name>java_installation_type</name>
+            <cliOptionShow>0</cliOptionShow>
+            <optionList/>
+        </choiceParameter>
+        <stringParameter>
+            <name>java_min_version</name>
+            <value>1.6.0</value>
+            <ask>0</ask>
+        </stringParameter>
+        <stringParameter>
+            <name>java_max_version</name>
+            <value/>
+            <ask>0</ask>
+        </stringParameter>
+        <booleanParameter name="java_required_or_abort" value="0" ask="0" />
+        <booleanParameter name="java_required_jdk" value="1" ask="0" />
+        <directoryParameter>
+            <name>java_home_directory</name>
+            <value/>
+            <ask>0</ask>
+            <title>JDK configuration</title>
+            <explanation>We have not been able to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later.</explanation>
+            <description>JDK installation directory:</description>
+            <validationActionList>
+                <throwError>
+                    <text>The directory you selected does not seem to be a valid JDK directory. Please try again.</text>
+                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                    <ruleList>
+                        <fileTest path="${java_home_directory}/jre" condition="not_exists"/>
+                        <fileTest path="${java_home_directory}/bin" condition="not_exists"/>
+                    </ruleList>
+                </throwError>
+            </validationActionList>
+            <ruleList>
+                <compareText logic="equals" text="${java_installation_type}" value="existing"/> 
+                <isFalse value="${java_autodetected}"/>
+            </ruleList>
+        </directoryParameter>
+    </parameterList>
+
+    <readyToInstallActionList>
+        <setInstallerVariable name="java_execute_abort_action_list" value="1"/>
+
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="java_home_directory" value="${installdir}\java">
+                    <ruleList>
+                        <compareText logic="equals" text="${platform_name}" value="windows"/>
+                    </ruleList>
+                </setInstallerVariable>
+                <setInstallerVariable name="java_home_directory" value="${installdir}/java">
+                    <ruleList>
+                        <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
+                    </ruleList>
+                </setInstallerVariable>
+            </actionList>
+            <ruleList>
+                <compareText logic="equals" text="${java_installation_type}" value="bundled"/>
+            </ruleList>
+        </actionGroup>
+
+        <setInstallerVariable name="JAVA_PATH" value="${java_home_directory}/bin"/>
+        <setInstallerVariable name="PATH" value="${JAVA_PATH}:${PATH}">
+            <ruleList>
+                <compareText text="${PATH}" value="${JAVA_PATH}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="JAVA_PATH_WIN" value="${java_home_directory.dos}\bin"/>
+        <setInstallerVariable name="PATH_WIN" value="${JAVA_PATH_WIN};${PATH_WIN}">
+            <ruleList>
+                <compareText text="${PATH_WIN}" value="${JAVA_PATH_WIN}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="JAVA_ENV_VAR">
+            <value>##### JAVA ENV #####
+JAVA_HOME=${java_home_directory}
+export JAVA_HOME
+
+</value>
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="JAVA_ENV_VAR">
+            <value>${JAVA_ENV_VAR}
+JAVA_BINDIR=${java_home_directory}/bin
+export JAVA_BINDIR
+JAVA_ROOT=${java_home_directory}
+export JAVA_ROOT
+JRE_HOME=${java_home_directory}/jre
+export JRE_HOME
+
+</value>
+            <ruleList>
+                <platformTest type="unix"/>
+                <compareText text="${linux_distribution}" logic="equals" value="suse"/>
+            </ruleList>
+        </setInstallerVariable>
+
+
+        <setInstallerVariable name="JAVA_ENV_VAR">
+            <value>rem ##### JAVA ENV #####
+set JAVA_HOME=${java_home_directory}
+			
+</value>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="ENV_VAR">
+            <value>${JAVA_ENV_VAR}${ENV_VAR}</value>
+        </setInstallerVariable>
+    </readyToInstallActionList>
+
+    <folderList>
+        <folder>
+            <description>//Program Files</description>
+            <destination>${installdir}/java</destination>
+            <name>programfiles</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+                <distributionDirectory allowWildcards="1">
+                    <origin>${java_distribution_folder}/*</origin>
+                </distributionDirectory>
+            </distributionFileList>
+            <ruleList>
+                <compareText logic="equals" text="${java_installation_type}" value="bundled"/>
+            </ruleList>
+        </folder>
+    </folderList>
+    <installationAbortedActionList>
+        <deleteFile path="${installdir}/java" abortOnError="0" showMessageOnError="0">
+            <ruleList>
+                <compareText text="${java_execute_abort_action_list}" value="1" logic="equals"/>
+            </ruleList>
+        </deleteFile>
+    </installationAbortedActionList>
+
+    <postInstallationActionList>
+    </postInstallationActionList>
+</component>
+

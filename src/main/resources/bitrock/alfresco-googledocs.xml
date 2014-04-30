@@ -1,0 +1,35 @@
+<component>
+    <name>alfrescogoogledocs</name>
+    <description>Google Docs Integration</description>
+    <detailedDescription>Include Google Docs Integration Features.</detailedDescription>
+    <canBeEdited>1</canBeEdited>
+    <selected>1</selected>
+    <show>1</show>
+
+    <folderList>
+        <folder>
+            <description>Program Files</description>
+            <destination>${alfresco_amps_directory}</destination>
+            <name>googledocs</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+              <distributionFile origin="${alfresco_googledocs_source_file}" allowWildcards="1" />
+            </distributionFileList>
+            <actionList>
+                <setInstallerVariable name="alfresco_apply_amps" value="1" />
+            </actionList>
+        </folder>
+        <folder>
+            <description>Program Files</description>
+            <destination>${alfresco_amps_share_directory}</destination>
+            <name>googledocsshare</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+              <distributionFile origin="${alfresco_googledocs_share_source_file}" allowWildcards="1" />
+            </distributionFileList>
+            <actionList>
+                <setInstallerVariable name="alfresco_apply_amps_share" value="1" />
+            </actionList>
+        </folder>
+    </folderList>
+</component>

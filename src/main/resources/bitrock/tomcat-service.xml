@@ -1,0 +1,185 @@
+<component>
+    <name>tomcatservice</name>
+    <description>//Start tomcat service</description>
+    <canBeEdited>1</canBeEdited>
+    <show>0</show>
+    <selected>1</selected>
+    <parameterList>
+
+       <booleanParameter>
+            <name>tomcatservice_waittostart</name>
+            <ask>0</ask>
+            <default>1</default>
+            <value>1</value>
+            <cliOptionShow>0</cliOptionShow>
+       </booleanParameter>
+
+       <stringParameter>
+            <name>tomcatservice_username</name>
+            <ask>0</ask>
+            <default></default>
+            <value></value>
+            <cliOptionShow>0</cliOptionShow>
+       </stringParameter>
+
+       <stringParameter>
+            <name>tomcatservice_password</name>
+            <ask>0</ask>
+            <default></default>
+            <value></value>
+            <cliOptionShow>0</cliOptionShow>
+       </stringParameter>
+
+
+        <stringParameter>
+            <name>tomcatservice_service_name</name>
+            <title></title>
+            <explanation></explanation>
+            <value></value>
+            <default>${product_shortname}Tomcat</default>
+            <ask>0</ask>
+        </stringParameter>
+        <stringParameter>
+            <name>tomcatservice_service_display_name</name>
+            <title></title>
+            <explanation></explanation>
+            <value></value>
+            <default>${product_shortname} Tomcat Service</default>
+            <ask>0</ask>
+        </stringParameter>
+	<!-- boot, auto, system, demand, disabled-->
+	<stringParameter>
+	    <name>tomcatservice_startup</name>
+	    <ask>0</ask>
+	    <default>auto</default>
+	    <value>auto</value>
+	    <cliOptionShow>0</cliOptionShow>
+	</stringParameter>
+	<booleanParameter>
+	    <name>tomcatservice_notstart</name>
+	    <ask>0</ask>
+	    <default>0</default>
+	    <value>0</value>
+	    <cliOptionShow>0</cliOptionShow>
+	</booleanParameter>
+    </parameterList>
+    <readyToInstallActionList>
+        <getUniqueWindowsServiceName>
+            <separator>num</separator>
+            <serviceName>${tomcatservice_service_name}</serviceName>
+            <displayName>${tomcatservice_service_display_name}</displayName>
+            <selectedServiceNameVariable>tomcat_unique_service_name</selectedServiceNameVariable>
+            <selectedDisplayNameVariable>TomcatUniqueDisplayName</selectedDisplayNameVariable>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </getUniqueWindowsServiceName>
+    </readyToInstallActionList>
+
+    <postInstallationActionList>
+        <substitute>
+            <files>${application_server_directory}/scripts/serviceinstall.bat;${application_server_directory}/scripts/servicerun.bat</files>
+            <substitutionList>
+                <substitution>
+                    <pattern>@@BITROCK_TOMCAT_SERVICE_NAME@@</pattern>
+                    <value>${tomcat_unique_service_name}</value>
+                </substitution>
+            </substitutionList>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </substitute>
+        <substitute>
+            <files>${application_server_directory}/bin/service.bat</files>
+            <type>exact</type>
+            <substitutionList>
+                <substitution>
+                    <pattern>if not exist "%JAVA_HOME%\jre\bin\java.exe" goto noJavaHome</pattern>
+                    <value>rem if not exist "%JAVA_HOME%\jre\bin\java.exe" goto noJavaHome</value>
+                </substitution>
+                <substitution>
+                    <pattern>if not exist "%JAVA_HOME%\jre\bin\javaw.exe" goto noJavaHome</pattern>
+                    <value>rem if not exist "%JAVA_HOME%\jre\bin\javaw.exe" goto noJavaHome</value>
+                </substitution>
+                <substitution>
+                    <pattern>if not exist "%JAVA_HOME%\bin\javac.exe" goto noJavaHome</pattern>
+                    <value>rem if not exist "%JAVA_HOME%\bin\javac.exe" goto noJavaHome</value>
+                </substitution>
+                <substitution>
+                    <pattern>PR_JVM=%JAVA_HOME%\jre\bin\</pattern>
+                    <value>PR_JVM=%JAVA_HOME%\bin\</value>
+                </substitution>
+            </substitutionList>
+        </substitute>
+
+        <!-- System owner service installation -->
+        <actionGroup>
+        <actionList>
+
+	<logMessage text="START: Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}" >
+	    <ruleList>
+		<platformTest type="windows" />
+	    </ruleList>
+	</logMessage>
+        <runProgram abortOnError="0" showMessageOnError="0">
+            <progressText>Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}</progressText>
+            <program>${application_server_directory.dos}\scripts\serviceinstall.bat</program>
+            <programArguments>INSTALL</programArguments>
+            <ruleList>
+		<isFalse value="${tomcatservice_notstart}" />
+                <compareValues value1="${tomcatservice_username}" logic="equals" value2=""/>
+            </ruleList>
+        </runProgram>
+
+        <runProgram abortOnError="0" showMessageOnError="0">
+            <progressText>Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}</progressText>
+            <program>${application_server_directory.dos}\scripts\serviceinstall.bat</program>
+            <programArguments>INSTALL STOP</programArguments>
+            <ruleList>
+		<isTrue value="${tomcatservice_notstart}" />
+                <compareValues value1="${tomcatservice_username}" logic="equals" value2=""/>
+            </ruleList>
+        </runProgram>
+
+        <!-- User owner service installation -->
+        <runProgram abortOnError="0" showMessageOnError="0">
+            <progressText>Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}</progressText>
+            <program>${application_server_directory.dos}\scripts\serviceinstall.bat</program>
+            <programArguments>INSTALL ${tomcatservice_username} ${tomcatservice_password}</programArguments>
+            <ruleList>
+                <compareValues value1="${tomcatservice_username}" logic="does_not_equal" value2=""/>
+            </ruleList>
+        </runProgram>
+	<logMessage text="END: Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}" >
+	    <ruleList>
+		<platformTest type="windows" />
+	    </ruleList>
+	</logMessage>
+
+        </actionList>
+        <ruleList>
+            <platformTest type="windows"/>
+        </ruleList>
+        </actionGroup>
+
+        <logMessage text="START: wait for port ${application_server_port}" />
+        <waitForPort port="${application_server_port}" timeout="30000">
+            <ruleList>
+                <platformTest type="windows"/>
+		<isFalse value="${tomcatservice_notstart}" />
+                <isTrue value="${tomcatservice_waittostart}" />
+            </ruleList>
+        </waitForPort>
+        <logMessage text="END: wait for port ${application_server_port}" />
+
+	<runProgram>
+	    <program>sc</program>
+	    <programArguments>config ${tomcat_unique_service_name} start= ${tomcatservice_startup}</programArguments>
+	    <ruleList>
+		<platformTest type="windows"/>
+		<compareText text="${tomcatservice_startup}" logic="does_not_equal" value="auto" />
+	    </ruleList>
+	</runProgram>
+    </postInstallationActionList>
+</component>
+

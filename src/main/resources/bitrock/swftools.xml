@@ -1,0 +1,68 @@
+<component>
+    <name>swftools</name>
+    <description>SWFTOOLS Component</description>
+    <canBeEdited>0</canBeEdited>
+    <show>0</show>
+    <selected>1</selected>
+    <initializationActionList/>
+    <parameterList>
+        <directoryParameter>
+            <ask>0</ask>
+            <description>SWFTOOLS installation directory</description>
+            <name>swftools_root_directory</name>
+            <cliOptionName>swftools_root_directory</cliOptionName>
+        </directoryParameter>
+    </parameterList>
+    <readyToInstallActionList>
+        <setInstallerVariable name="swftools_root_directory" value="${installdir}/common"/>
+                 <setInstallerVariable name="SWFTOOLS_WRAPPERS">
+            <value>			${swftools_root_directory}/bin/as3compile
+			${swftools_root_directory}/bin/font2swf
+			${swftools_root_directory}/bin/jpeg2swf 
+			${swftools_root_directory}/bin/pdf2swf
+			${swftools_root_directory}/bin/png2swf 
+			${swftools_root_directory}/bin/swfbbox 
+			${swftools_root_directory}/bin/swfc 
+			${swftools_root_directory}/bin/swfcombine 
+			${swftools_root_directory}/bin/swfdump
+			${swftools_root_directory}/bin/swfextract 
+			${swftools_root_directory}/bin/swfrender
+                        ${swftools_root_directory}/bin/swfstrings 
+			${swftools_root_directory}/bin/wav2swf
+		    </value>
+        </setInstallerVariable>
+        <setInstallerVariable name="WRAPPERS" value="${SWFTOOLS_WRAPPERS};${WRAPPERS}"/>
+    </readyToInstallActionList>
+    <folderList>
+        <folder>
+            <name>swftoolsWindows</name>
+            <destination>${installdir}/swftools</destination>
+            <platforms>windows</platforms>
+            <distributionFileList>
+                <distributionDirectory allowWildcards="1" origin="${swftools_distribution_folder}/*"/>
+            </distributionFileList>
+        </folder>
+        <folder>
+            <name>swftoolsUnix</name>
+            <destination>${swftools_root_directory}</destination>
+            <platforms>linux linux-x64 osx</platforms>
+            <distributionFileList>
+                <distributionDirectory origin="${swftools_distribution_folder}/bin"/>
+                <distributionDirectory origin="${swftools_distribution_folder}/japanese"/>
+<!--                <distributionDirectory origin="swftools/share"/>-->
+            </distributionFileList>
+            <actionList>
+                <substitute>
+                    <files>${SWFTOOLS_WRAPPERS}</files>
+                    <type>exact</type>
+                    <substitutionList>
+                        <substitution>
+                            <pattern>@@BITROCK_SWFTOOLS_ROOTDIR@@</pattern>
+                            <value>${swftools_root_directory}</value>
+                        </substitution>
+                    </substitutionList>
+                </substitute>
+            </actionList>
+        </folder>
+    </folderList>
+</component>

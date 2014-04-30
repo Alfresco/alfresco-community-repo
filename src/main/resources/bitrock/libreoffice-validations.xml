@@ -1,0 +1,93 @@
+<component>
+    <name>libreofficevalidations</name>
+    <description></description>
+    <detailedDescription></detailedDescription>
+    <selected>1</selected>
+    <show>0</show>
+    <componentSelectionValidationActionList/>
+    <desktopShortcutList/>
+    <initializationActionList>
+	<actionGroup>
+	    <actionList>
+		<setInstallerVariable name="continue_installation" value="yes" />
+		<showQuestion>
+		    <text>Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext
+You are strongly advised to abort this installation and install them first using your package manager.
+For more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html
+
+Do you want to continue with the installation?</text>
+		    <variable>continue_installation</variable>
+		    <default>no</default>
+		    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+		    <ruleList>
+			<ruleGroup>
+			    <ruleEvaluationLogic>and</ruleEvaluationLogic>
+			    <ruleList>
+				<compareText value="${linux_distribution}" logic="equals" text="debian" nocase="1" />
+				<compareText value="${linux_distribution_id}" text="Ubuntu" nocase="1" logic="equals"/>
+				<compareText value="${linux_distribution_release}" text="10.04" nocase="1" logic="equals"/>
+				<ruleGroup>
+				    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+				    <ruleList>
+					<!-- Ubuntu 10.04 -->
+					<fileTest path="/usr/lib/libICE.so.6" condition="not_exists" />
+					<fileTest path="/usr/lib/libSM.so.6" condition="not_exists" />
+					<fileTest path="/usr/lib/libXext.so.6" condition="not_exists" />
+					<fileTest path="/usr/lib/libXrender.so.1" condition="not_exists" />
+					<fileTest path="/usr/lib/libfontconfig.so.1" condition="not_exists" />
+				    </ruleList>
+				</ruleGroup>
+			    </ruleList>
+			</ruleGroup>
+			<ruleGroup>
+			    <ruleEvaluationLogic>and</ruleEvaluationLogic>
+			    <ruleList>
+				<compareText value="${linux_distribution}" logic="equals" text="debian" nocase="1" />
+				<compareText value="${linux_distribution_id}" text="Ubuntu" nocase="1" logic="equals"/>
+				<compareText value="${linux_distribution_release}" text="10.04" nocase="1" logic="does_not_equal"/>
+				<ruleGroup>
+				    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+				    <ruleList>
+					<!-- Ubuntu > 10.04-->
+					<fileTest path="/usr/lib/x86_64-linux-gnu/libICE.so.6" condition="not_exists" />
+					<fileTest path="/usr/lib/x86_64-linux-gnu/libSM.so.6" condition="not_exists" />
+					<fileTest path="/usr/lib/x86_64-linux-gnu/libXext.so.6" condition="not_exists" />
+					<fileTest path="/usr/lib/x86_64-linux-gnu/libXrender.so.1" condition="not_exists" />
+					<fileTest path="/usr/lib/x86_64-linux-gnu/libfontconfig.so.1" condition="not_exists" />
+				    </ruleList>
+				</ruleGroup>
+			    </ruleList>
+			</ruleGroup>
+			<ruleGroup>
+			     <ruleEvaluationLogic>and</ruleEvaluationLogic>
+			    <ruleList>
+				<compareText value="${linux_distribution}" logic="does_not_equal" text="debian" nocase="1" />
+				<ruleGroup>
+				    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+				    <ruleList>
+					<!-- RedHat & SuSE & Fedora & Amazon linux -->
+					<fileTest path="/usr/lib64/libICE.so.6" condition="not_exists" />
+					<fileTest path="/usr/lib64/libSM.so.6" condition="not_exists" />
+					<fileTest path="/usr/lib64/libXext.so.6" condition="not_exists" />
+					<fileTest path="/usr/lib64/libXrender.so.1" condition="not_exists" />
+					<fileTest path="/usr/lib64/libfontconfig.so.1" condition="not_exists" />
+				    </ruleList>
+				</ruleGroup>
+			    </ruleList>
+			</ruleGroup>
+		    </ruleList>
+		</showQuestion>
+		<exit>
+		    <ruleList>
+			<compareText text="${continue_installation}" value="no"/>
+		    </ruleList>
+		</exit>
+	    </actionList>
+	    <ruleList>
+		<platformTest type="linux" />
+		<compareText text="${installer_ui}" logic="equals" value="text"/>
+	    </ruleList>
+	</actionGroup>
+    </initializationActionList>
+</component>
+

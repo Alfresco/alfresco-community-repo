@@ -1,0 +1,1195 @@
+
+<!-- POSTGRESQL
+Componentname: PostgreSQL
+
+Short Description:
+This component is able to install and configurate the bundled PostgreSQL binaries it carries, or to configure an existing PostgreSQL server.
+
+System variables provided by this component:
+
+* database_vendor (postgres)
+* database_language (sql)
+* database_port
+* database_hostname
+* database_root_user
+* database_root_password
+* database_binary_directory
+* database_root_directory
+* component(postgres).postgres_installation_type_options -> bundled / existing / bundledAndExisting (default if var is not set)
+
+IN MAIN XML PROJECT FILE:
+When installing bundled postgres on windows, add in <postUninstallationActionList>  <deleteFile path="${installdir}/postgresql" /> also delete start menu entries.
+    When installing bundled postgres check that data folder, if exist, is empty in ${installdir}/postgresql/data
+
+    * On Windows: We have only implemented PostgreSQL installation as service when user is administrator. Postgres user account  must not exist or must have the password requested in postgres_account_password. Installation as non administrator is not currently supported (it should work but it is not tested)
+    * Only postgres > 8.2 is supported. For older versions we need to install it using the msi 
+    -->
+<component>
+    <name>postgres</name>
+    <description>PostgreSQL</description>
+    <detailedDescription>PostgreSQL is a powerful, open source object-relational database system.</detailedDescription>
+    <canBeEdited>1</canBeEdited>
+    <selected>1</selected>
+    <initializationActionList>
+        <addChoiceOptions>
+            <name>postgres_installation_type</name>
+            <optionList>
+                <option>
+                    <text>I wish to use the bundled PostgreSQL database</text>
+                    <value>bundled</value>
+                </option>
+            </optionList>
+            <ruleList>
+                <compareText text="${component(postgres).parameter(postgres_installation_type_options).value}" logic="equals" value="bundled"/>
+            </ruleList>
+        </addChoiceOptions>
+        <addChoiceOptions>
+            <name>postgres_installation_type</name>
+            <optionList>
+                <option>
+                    <text>I wish to use an existing PostgreSQL database</text>
+                    <value>existing</value>
+                </option>
+            </optionList>
+            <ruleList>
+                <compareText text="${component(postgres).parameter(postgres_installation_type_options).value}" logic="equals" value="existing"/>
+            </ruleList>
+        </addChoiceOptions>
+        <addChoiceOptions>
+            <name>postgres_installation_type</name>
+            <optionList>
+                <option>
+                    <text>I wish to use the bundled PostgreSQL database</text>
+                    <value>bundled</value>
+                </option>
+                <option>
+                    <text>I wish to use an existing PostgreSQL database</text>
+                    <value>existing</value>
+                </option>
+            </optionList>
+            <ruleList>
+                <compareText text="${component(postgres).parameter(postgres_installation_type_options).value}" logic="equals" value="bundledAndExisting"/>
+            </ruleList>
+        </addChoiceOptions>
+    </initializationActionList>
+    <parameterList>
+<!-- hidden parameter -->
+        <booleanParameter name="postgres_execute_abort_action_list" value="0" ask="0" />
+        <stringParameter name="postgres_logminmessage_level" ask="0" default="default" explanation="//See postgresql.conf file for valid values. If leave as default we don't modify the default configuration." />
+        <stringParameter name="postgres_logminerrorstatement_level" ask="0" default="default" explanation="//See postgresql.conf file for valid values. If leave as default we don't modify the default configuration." />
+        <booleanParameter name="postgres_enable_silentmode" ask="0" default="0" explanation="//If enabled, the postmaster messages are redirected to the postmaster.log in the data folder.Only valid on Unix." />
+<stringParameter>
+            <name>postgres_installation_type_options</name>
+            <ask>0</ask>
+            <default>bundledAndExisting</default>
+            <value>bundledAndExisting</value>
+        </stringParameter>
+
+
+<!-- hidden parameter (needs to be directoryParameter so .unix works)-->
+<directoryParameter>
+            <name>postgres_root_directory</name>
+            <ask>0</ask>
+            <default/>
+            <value>${installdir}/postgresql</value>
+        </directoryParameter>
+        <directoryParameter name="postgres_data_directory" value="${postgres_root_directory}/data" ask="0" />
+        <booleanParameter>
+            <name>postgres_check_version</name>
+            <default>no</default>
+            <value>no</value>
+            <ask>0</ask>
+        </booleanParameter>
+        <choiceParameter>
+            <name>postgres_installation_type</name>
+            <title>Database Installation</title>
+            <explanation>Please select which database configuration you wish to use</explanation>
+            <cliOptionShow>0</cliOptionShow>
+            <description/>
+            <displayType>radiobuttons</displayType>
+            <optionList/>
+            <validationActionList>
+                <showQuestion>
+                    <variable>continue</variable>
+                    <text>Setup will try to install new databases and will overwrite any existing duplicate. Do you wish you continue?</text>
+                    <ruleList>
+                        <compareText text="${postgres_installation_type}" logic="equals" value="existing"/>
+                    </ruleList>
+                </showQuestion>
+            </validationActionList>
+            <postShowPageActionList>
+                <exit>
+                    <ruleList>
+                        <compareText text="${continue}" logic="equals" value="no"/>
+                    </ruleList>
+                </exit>
+                <setInstallerVariable name="postgres_hostname" value="127.0.0.1">
+                    <ruleList>
+                        <compareText text="${postgres_installation_type}" logic="equals" value="existing"/>
+                    </ruleList>
+                </setInstallerVariable>
+            </postShowPageActionList>
+        </choiceParameter>
+        <booleanParameter>
+            <name>initialize_postgres_database</name>
+            <default>1</default>
+            <value>1</value>
+            <ask>0</ask>
+        </booleanParameter>
+        <booleanParameter name="postgres_show_ports" value="0" ask="0" />
+
+<!-- Database clients information -->
+<directoryParameter>
+            <name>postgres_binary_directory</name>
+            <description>PostgreSQL Binary Directory</description>
+            <explanation>Please specify the directory where the psql, pg_restore and vacuumdb binaries are located</explanation>
+            <value/>
+            <default>${postgres_root_directory}/bin</default>
+            <allowEmptyValue>0</allowEmptyValue>
+            <ask>yes</ask>
+            <cliOptionShow>0</cliOptionShow>
+            <mustBeWritable>0</mustBeWritable>
+            <mustExist>1</mustExist>
+            <ruleEvaluationLogic>or</ruleEvaluationLogic>
+            <width>35</width>
+            <ruleList>
+                <compareText text="${postgres_installation_type}" logic="equals" value="existing"/>
+            </ruleList>
+            <validationActionList>
+                <throwError>
+                    <text>The path ${postgres_binary_directory} seems to be invalid. Please check if the directory contains the required binaries.</text>
+                    <ruleList>
+                        <fileTest condition="not_exists" path="${postgres_binary_directory}/psql.exe"/>
+                        <fileTest condition="not_exists" path="${postgres_binary_directory}/psql"/>
+                    </ruleList>
+                </throwError>
+                <throwError>
+                    <text>The path ${postgres_binary_directory} does not seem to contain a pg_restore executable.</text>
+                    <ruleList>
+                        <fileTest condition="not_exists" path="${postgres_binary_directory}/pg_restore.exe"/>
+                        <fileTest condition="not_exists" path="${postgres_binary_directory}/pg_restore"/>
+                    </ruleList>
+                </throwError>
+                <throwError>
+                    <text>The path ${postgres_binary_directory} does not seem to contain a pg_vacuumdb executable.</text>
+                    <ruleList>
+                        <fileTest condition="not_exists" path="${postgres_binary_directory}/vacuumdb.exe"/>
+                        <fileTest condition="not_exists" path="${postgres_binary_directory}/vacuumdb"/>
+                    </ruleList>
+                </throwError>
+                <setInstallerVariableFromScriptOutput>
+                    <name>postgres_version</name>
+                    <exec>${postgres_binary_directory}/psql</exec>
+                    <execArgs>--version</execArgs>
+                </setInstallerVariableFromScriptOutput>
+                <showInfo>
+                    <text>Not a PostgreSQL version 8.1.4 installation. PostgreSQL 8.1.4 recommended.</text>
+                    <ruleList>
+                        <compareText value="${postgres_version}" logic="does_not_equal" text="psql (PostgreSQL) 8.1.4"/>
+                        <compareText value="${postgres_check_version}" logic="equals" text="yes"/>
+                    </ruleList>
+                </showInfo>
+            </validationActionList>
+            <preShowPageActionList>
+                <actionGroup>
+                    <actionList>
+                        <registryGet>
+                            <variable>postgres_root_directory</variable>
+                            <key>HKEY_LOCAL_MACHINE\SOFTWARE\PostgreSQL\Installations\{${pgversionid}}</key>
+                            <name>Base Directory</name>
+                        </registryGet>
+                        <setInstallerVariable name="postgres_root_directory" value="${platform_install_prefix}\postgresql">
+                            <ruleList>
+                                <compareText logic="equals" text="${postgres_root_directory}" value=""/>
+                            </ruleList>
+                        </setInstallerVariable>
+                    </actionList>
+                    <ruleList>
+                        <compareText logic="equals" text="${platform_name}" value="windows"/>
+                    </ruleList>
+                </actionGroup>
+                <actionGroup>
+                    <actionList>
+                        <setInstallerVariable name="postgres_root_directory" value="/usr/local/pgsql"/>
+                    </actionList>
+                    <ruleList>
+                        <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
+                    </ruleList>
+                </actionGroup>
+            </preShowPageActionList>
+        </directoryParameter>
+
+<!-- Database network information -->
+<parameterGroup>
+            <name>postgres_serverconf</name>
+            <title>Database Server Parameters</title>
+            <parameterList>
+                <stringParameter>
+                    <name>postgres_hostname</name>
+                    <description>IP / Hostname</description>
+                    <explanation>Please enter the IP address or hostname for your database</explanation>
+
+<!-- localhost != 127.0.0.1 on Unix (127.0.0.1 means listen on TCP, localhost in socket) -->
+<value>localhost</value>
+                    <default>localhost</default>
+                    <allowEmptyValue>1</allowEmptyValue>
+                    <ask>0</ask>
+                    <cliOptionShow>0</cliOptionShow>
+                    <width>20</width>
+                    <validationActionList>
+                        <throwError>
+                            <text>Please enter a valid IP address or hostname</text>
+                            <ruleList>
+                                <regExMatch text="${postgres_hostname}" pattern="^(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$" logic="does_not_match"/>
+                                <regExMatch text="${postgres_hostname}" pattern="^([a-zA-Z]([a-zA-Z0-9\-]*[a-zA-Z0-9])*\.)*[a-zA-Z]([a-zA-Z0-9\-]*[a-zA-Z0-9])*$" logic="does_not_match"/>
+                            </ruleList>
+                        </throwError>
+                    </validationActionList>
+
+<!--ruleList>
+                        <compareText text="${postgres_installation_type}" logic="equals" value="existing" />
+                    </ruleList-->
+                </stringParameter>
+                <stringParameter>
+                    <name>postgres_port</name>
+                    <description>Database Server port</description>
+                    <explanation>Please enter the port of your database.</explanation>
+                    <value>5432</value>
+                    <default>5432</default>
+                    <allowEmptyValue>1</allowEmptyValue>
+                    <ask>1</ask>
+                    <width>10</width>
+                    <validationActionList>
+                        <throwError>
+                            <text>It seems you do not have enough permissions to bind to the port or the port is already taken by another application. Please select another one.</text>
+                            <ruleList>
+                                <!-- DO NOT MODIDY THIS LINE --> <portTest condition="cannot_bind" port="${postgres_port}"/>
+                                <compareText text="${postgres_installation_type}" logic="equals" value="bundled"/>
+                            </ruleList>
+                        </throwError>
+                        <throwError>
+                            <text>Unable to find any server running at port ${postgres_port}. Please start your database server.</text>
+                            <ruleList>
+                                <portTest condition="can_bind" port="${postgres_port}"/>
+                                <compareText text="${postgres_installation_type}" logic="equals" value="existing"/>
+                            </ruleList>
+                        </throwError>
+                    </validationActionList>
+                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                    <ruleList>
+                        <compareText logic="equals" value="1" text="${postgres_show_ports}"/>
+                        <compareText text="${postgres_installation_type}" logic="equals" value="existing"/>
+                        <portTest condition="cannot_bind" port="${postgres_port}"/>
+                        <compareText logic="equals" value="1" text="${server_port_show}"/>
+                    </ruleList>
+                </stringParameter>
+            </parameterList>
+            <ruleEvaluationLogic>or</ruleEvaluationLogic>
+            <ruleList>
+                <compareText logic="equals" value="1" text="${postgres_show_ports}"/>
+                <compareText text="${postgres_installation_type}" logic="equals" value="existing"/>
+                <portTest condition="cannot_bind" port="${postgres_port}"/>
+                <compareText logic="equals" value="1" text="${server_port_show}"/>
+            </ruleList>
+        </parameterGroup>
+        <booleanParameter>
+            <name>postgres_install_service</name>
+            <description>Install PostgreSQL as service?</description>
+            <explanation>Do you want to install PostgreSQL as a Windows service?</explanation>
+            <value>1</value>
+            <ask>0</ask>
+            <validationActionList>
+                <throwError>
+                    <text>Sorry, you need to be administrator.</text>
+                    <ruleList>
+                        <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
+                    </ruleList>
+                </throwError>
+                <throwError>
+                    <text>Sorry, we only support PostgreSQL as service.</text>
+                    <ruleList>
+                        <compareText logic="does_not_equal" text="${postgres_install_service}" value="1"/>
+                    </ruleList>
+                </throwError>
+            </validationActionList>
+            <ruleList>
+                <platformTest type="windows"/>
+                <compareText logic="equals" text="${postgres_installation_type}" value="bundled"/>
+            </ruleList>
+        </booleanParameter>
+
+<!-- Database Credentials -->
+<passwordParameter>
+            <name>postgres_root_password</name>
+            <explanation>Please enter your database 'postgres' user password.</explanation>
+            <description>PostgreSQL postgres user password</description>
+            <cliOptionName>postgres_password</cliOptionName>
+            <allowEmptyValue>0</allowEmptyValue>
+            <ask>yes</ask>
+            <descriptionRetype>Re-enter password</descriptionRetype>
+            <postShowPageActionList>
+                <setInstallerVariable name="next_page" value=""/>
+                <actionGroup>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>1</showMessageOnError>
+                    <actionList>
+                        <setInstallerVariable name="next_page" value="postgres_serverconf"/>
+                        <setInstallerVariable name="postgres_client_binary" value="psql">
+                            <ruleList>
+                                <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
+                            </ruleList>
+                        </setInstallerVariable>
+                        <setInstallerVariable name="postgres_client_binary" value="psql.exe">
+                            <ruleList>
+                                <compareText logic="equals" text="${platform_name}" value="windows"/>
+                            </ruleList>
+                        </setInstallerVariable>
+                        <setEnvironmentVariable name="PGPASSWORD" value="${postgres_root_password}"/>
+                        <runProgram>
+                            <showMessageOnError>1</showMessageOnError>
+                            <program>${postgres_binary_directory}/${postgres_client_binary}</program>
+                            <programArguments>-U postgres -p ${postgres_port} -h ${postgres_hostname} -c "\q"</programArguments>
+                        </runProgram>
+                        <setInstallerVariable name="next_page" value=""/>
+                    </actionList>
+                    <ruleList>
+                        <compareText text="${postgres_installation_type}" logic="equals" value="existing"/>
+                    </ruleList>
+                </actionGroup>
+                <throwError>
+                    <abortOnError>0</abortOnError>
+                    <text>Unable to connect to database. Please check your configuration.</text>
+                    <ruleList>
+                        <compareText text="${next_page}" logic="does_not_equal" value=""/>
+                    </ruleList>
+                </throwError>
+            </postShowPageActionList>
+        </passwordParameter>
+
+        <stringParameter name="shmmax_error_message" value="" ask="0"/>
+    </parameterList>
+    <readyToInstallActionList>
+        <setInstallerVariable name="database_vendor" value="postgres"/>
+        <setInstallerVariable name="database_language" value="sql"/>
+        <setInstallerVariable name="database_root_user" value="postgres"/>
+        <setInstallerVariable name="database_root_password" value="${postgres_root_password}"/>
+        <setInstallerVariable name="database_hostname" value="${postgres_hostname}"/>
+        <setInstallerVariable name="database_port" value="${postgres_port}"/>
+        <setInstallerVariable name="database_binary_directory" value="${postgres_binary_directory}"/>
+        <setInstallerVariable name="database_installation_type" value="${postgres_installation_type}"/>
+        <setInstallerVariable name="database_root_directory" value="${postgres_root_directory}">
+            <ruleList>
+                <compareText text="${postgres_installation_type}" logic="equals" value="bundled"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="database_root_directory" value="${postgres_binary_directory}/..">
+            <ruleList>
+                <compareText text="${postgres_installation_type}" logic="equals" value="existing"/>
+            </ruleList>
+        </setInstallerVariable>
+
+        <setInstallerVariable name="POSTGRES_PATH" value="${postgres_binary_directory}"/>
+        <setInstallerVariable name="PATH" value="${POSTGRES_PATH}:${PATH}">
+            <ruleList>
+                <compareText text="${PATH}" value="${POSTGRES_PATH}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="POSTGRES_PATH_WIN" value="${postgres_binary_directory.dos}"/>
+        <setInstallerVariable name="PATH_WIN" value="${POSTGRES_PATH_WIN};${PATH_WIN}">
+            <ruleList>
+                <compareText text="${PATH_WIN}" value="${POSTGRES_PATH_WIN}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="POSTGRES_LD_LIBRARY_PATH" value="${postgres_root_directory}/lib"/>
+        <setInstallerVariable name="LD_LIBRARY_PATH" value="${POSTGRES_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}">
+            <ruleList>
+                <compareText text="${LD_LIBRARY_PATH}" value="${POSTGRES_LD_LIBRARY_PATH}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="POSTGRES_DYLD_LIBRARY_PATH" value="${postgres_root_directory}/lib"/>
+        <setInstallerVariable name="DYLD_FALLBACK_LIBRARY_PATH" value="${POSTGRES_DYLD_LIBRARY_PATH}:${DYLD_FALLBACK_LIBRARY_PATH}">
+            <ruleList>
+                <compareText text="${DYLD_FALLBACK_LIBRARY_PATH}" value="${POSTGRES_DYLD_LIBRARY_PATH}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="POSTGRES_ENV_VAR">
+            <value>##### POSTGRES ENV #####
+
+        </value>
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="POSTGRES_ENV_VAR">
+            <value>rem ##### POSTGRES ENV #####
+
+        </value>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="ENV_VAR">
+            <value>${POSTGRES_ENV_VAR}${ENV_VAR}</value>
+        </setInstallerVariable>
+   
+        <setInstallerVariable name="postgres_execute_abort_action_list" value="1" />
+    </readyToInstallActionList>
+
+    <installationAbortedActionList>
+        <!-- WINDOWS -->
+        <actionGroup>
+            <actionList>
+                <runProgram>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                    <program>sc</program>
+                    <programArguments>stop ${postgres_unique_service_name}</programArguments>
+                </runProgram>
+                <runProgram>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                    <program>sc</program>
+                    <programArguments>delete ${postgres_unique_service_name}</programArguments>
+                </runProgram>
+                <deleteFile path="${postgres_data_directory}" />
+                <deleteFile path="${postgres_root_directory}" />
+            </actionList>
+            <ruleList>
+                <compareText text="${postgres_installation_type}" logic="equals" value="bundled"/>
+                <compareText text="${postgres_execute_abort_action_list}" value="1" logic="equals"/>
+                <platformTest type="windows"/>
+            </ruleList>
+        </actionGroup>
+
+        <!-- LINUX -->
+        <actionGroup>
+            <actionList>
+                <deleteFile path="${postgres_data_directory}" />
+                <deleteFile path="${postgres_root_directory}" />
+            </actionList>
+            <ruleList>
+                <compareText text="${postgres_installation_type}" logic="equals" value="bundled"/>
+                <compareText text="${postgres_execute_abort_action_list}" value="1" logic="equals"/>
+                <platformTest type="unix"/>
+            </ruleList>
+        </actionGroup>
+    </installationAbortedActionList>
+
+
+
+    <folderList>
+<!-- Bundled PostgresSQL Subcomponent -->
+<folder>
+            <description>Program Files</description>
+            <destination>${installdir}/postgresql</destination>
+            <name>programfiles</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+                <distributionDirectory allowWildcards="1">
+                    <origin>${postgres_distribution_folder}/*</origin>
+                </distributionDirectory>
+            </distributionFileList>
+            <actionList>
+                <actionGroup>
+                    <actionList>
+                    <setEnvironmentVariable name="PGDATA" value="${postgres_data_directory}"/>
+<!-- Not listed */bin/postgres  */bin/postmaster-->
+
+<!-- We add environment variables to setenv.sh to make easier to start the server and to user client tools avoiding long command line options. Anyway, user can overwrite these values with command line options. -->
+<substitute>
+                            <files>*/bin/*;*/scripts/*;*/Readme.txt</files>
+                            <substitutionList>
+                                <substitution>
+                                    <pattern>@@BITROCK_POSTGRESQL_ROOTDIR@@</pattern>
+                                    <value>${postgres_root_directory}</value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>@@BITROCK_POSTGRESQL_HOST@@</pattern>
+                                    <value>${postgres_hostname}</value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>@@BITROCK_POSTGRESQL_PORT@@</pattern>
+                                    <value>${postgres_port}</value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>@@BITROCK_POSTGRESQL_USER@@</pattern>
+                                    <value>postgres</value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>@@BITROCK_POSTGRESQL_DATADIR@@</pattern>
+                                    <value>${postgres_data_directory}</value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>@@BITROCK_POSTGRESQL_LOGFILE@@</pattern>
+                                    <value>${postgres_root_directory}/postgresql.log</value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>@@BITROCK_COMMON_ROOTDIR@@</pattern>
+                                    <value>${installdir}/common</value>
+                                </substitution>
+                            </substitutionList>
+                            <ruleList>
+                                <platformTest type="unix" />
+                            </ruleList>
+                        </substitute>
+                        <!-- We add environment variables to setenv.sh to make easier to start the server and to user client tools avoiding long command line options. Anyway, user can overwrite these values with command line options. -->
+<substitute>
+                            <files>*/Readme.txt;*/scripts/*</files>
+                            <substitutionList>
+                                <substitution>
+                                    <pattern>@@BITROCK_POSTGRESQL_ROOTDIR@@</pattern>
+                                    <value>${postgres_root_directory}</value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>@@BITROCK_POSTGRESQL_HOST@@</pattern>
+                                    <value>${postgres_hostname}</value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>@@BITROCK_POSTGRESQL_PORT@@</pattern>
+                                    <value>${postgres_port}</value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>@@BITROCK_POSTGRESQL_USER@@</pattern>
+                                    <value>postgres</value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>@@BITROCK_POSTGRESQL_DATADIR@@</pattern>
+                                    <value>${postgres_data_directory}</value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>@@BITROCK_POSTGRESQL_LOGFILE@@</pattern>
+                                    <value>${postgres_root_directory}/postgresql.log</value>
+                                </substitution>
+                            </substitutionList>
+                        </substitute>
+                        <substitute>
+                            <files>                            */share/conversion_create.sql
+                        </files>
+                            <type>exact</type>
+                            <substitutionList>
+                                <substitution>
+                                    <pattern>$libdir</pattern>
+                                    <value>${postgres_root_directory.unix}/lib</value>
+                                </substitution>
+                            </substitutionList>
+                        </substitute>
+                    </actionList>
+                  </actionGroup>
+                  <!-- postgres user generation in OSX -->
+                    <actionGroup>
+                        <actionList>
+                            <setInstallerVariable name="postgres_user_exists" value="0"/>
+                            <setInstallerVariableFromScriptOutput>
+                                <abortOnError>0</abortOnError>
+                                <showMessageOnError>0</showMessageOnError>
+                                <workingDirectory>/</workingDirectory>
+                                <exec>dscl</exec>
+                                <execArgs>. -list /Users | grep postgres</execArgs>
+                                <name>usercreation_osx_user_exists</name>
+                            </setInstallerVariableFromScriptOutput>
+                            <setInstallerVariable name="postgres_user_exists" value="1">
+                                <ruleList>
+                                    <compareText text="${usercreation_osx_user_exists}" logic="equals" value="postgres"/>
+                                </ruleList>
+                            </setInstallerVariable>
+                            <actionGroup>
+                                <actionList>
+                                    <setInstallerVariableFromScriptOutput>
+                                        <workingDirectory>/</workingDirectory>
+                                        <exec>dscl</exec>
+                                        <execArgs>. read /Users/postgres UserShell | awk '{print $NF}'</execArgs>
+                                        <name>postgres_user_shell</name>
+                                    </setInstallerVariableFromScriptOutput>
+                                    <runProgram>
+                                        <workingDirectory>/</workingDirectory>
+                                        <program>dscl</program>
+                                        <programArguments>. -change /Users/postgres UserShell ${postgres_user_shell} /bin/bash</programArguments>
+                                        <ruleList>
+                                            <compareText text="${postgres_user_shell}" logic="does_not_equal" value="/bin/bash"/>
+                                        </ruleList>
+                                    </runProgram>
+                                </actionList>
+                                <ruleList>
+                                    <compareText value="${postgres_user_exists}"/>
+                                </ruleList>
+                            </actionGroup>
+                            <actionGroup>
+                                <actionList>
+                                <!-- Script to obtain an unique uid -->
+                                    <setInstallerVariableFromScriptOutput>
+                                        <workingDirectory>/</workingDirectory>
+                                        <exec>dscl</exec>
+                                        <execArgs>. -list /Users UniqueID | awk '{print $2}' | sort -n | tail -1 | awk '{print $1+1}'</execArgs>
+                                        <name>usercreation_osx_user_id</name>
+                                    </setInstallerVariableFromScriptOutput>
+                                    <runProgram>
+                                        <workingDirectory>/</workingDirectory>
+                                        <program>dscl</program>
+                                        <programArguments>. create /Users/postgres uid ${usercreation_osx_user_id}</programArguments>
+                                    </runProgram>
+                                    <runProgram>
+                                        <workingDirectory>/</workingDirectory>
+                                        <program>dscl</program>
+                                        <programArguments>. -create /Users/postgres UserShell /bin/bash</programArguments>
+                                    </runProgram>
+                                    <createDirectory>
+                                        <path>/usr/local/pgsql</path>
+                                    </createDirectory>
+                                    <runProgram>
+                                        <workingDirectory>/</workingDirectory>
+                                        <program>dscl</program>
+                                        <programArguments>. -create /Users/postgres NFSHomeDirectory /usr/local/pgsql</programArguments>
+                                    </runProgram>
+                                    <runProgram>
+                                        <workingDirectory>/</workingDirectory>
+                                        <program>dscl</program>
+                                        <programArguments>. create /Groups/postgres gid ${usercreation_osx_user_id}</programArguments>
+                                    </runProgram>
+                                    <runProgram>
+                                        <workingDirectory>/</workingDirectory>
+                                        <program>dscl</program>
+                                        <programArguments>. merge /Groups/postgres users "postgres"</programArguments>
+                                    </runProgram>
+				    # OS X 10.8 requies a primary group to be defined
+				    <runProgram>
+				      <workingDirectory>/</workingDirectory>
+				      <program>dscl</program>
+				      <programArguments>. -create /Users/postgres PrimaryGroupID ${usercreation_osx_user_id}</programArguments>
+				    </runProgram>
+                                </actionList>
+                                <ruleList>
+                                    <compareValues value1="${postgres_user_exists}" logic="equals" value2="0" />
+                                </ruleList>
+                            </actionGroup>
+                        </actionList>
+                        <ruleList>
+                            <compareText text="${installer_root_install}" logic="equals" value="1"/>
+                            <platformTest type="osx"/>
+                        </ruleList>
+                    </actionGroup>
+                  <actionGroup>
+                  <actionList>
+		      <actionGroup>
+			  <actionList>
+			      <addUser>
+				  <username>postgres</username>
+				  <abortOnError>0</abortOnError>
+				  <showMessageOnError>0</showMessageOnError>
+			      </addUser>
+			      <substitute>
+				  <type>exact</type>
+				  <files>/etc/shadow</files>
+				  <substitutionList>
+				      <substitution>
+					  <pattern>postgres:!:</pattern>
+					  <value>postgres:*:</value>
+				      </substitution>
+				  </substitutionList>
+				  <ruleList>
+				      <compareText text="${linux_distribution}" logic="equals" value="suse"/>
+				  </ruleList>
+			      </substitute>
+			  </actionList>
+			  <ruleList>
+			      <userTest username="postgres" logic="not_exists" />
+			  </ruleList>
+		      </actionGroup>
+                        <createDirectory path="${postgres_data_directory}" />
+                        <changeOwnerAndGroup>
+                            <files>${postgres_root_directory};${postgres_root_directory}/*;${postgres_root_directory}/*/*;${postgres_data_directory};${postgres_data_directory}/*;${postgres_root_directory}/*/*</files>
+                            <owner>postgres</owner>
+                            <abortOnError>0</abortOnError>
+                            <showMessageOnError>0</showMessageOnError>
+                        </changeOwnerAndGroup>
+                        <actionGroup>
+                            <actionList>
+				<deleteFile path="${postgres_root_directory}/bin/postmaster" />
+				<createSymLink target="postgres" linkName="${postgres_root_directory}/bin/postmaster" >
+				    <ruleList>
+					<fileTest path="${postgres_root_directory}/bin/postgres" condition="exists" />
+				    </ruleList>
+				</createSymLink>
+				<runProgram>
+				    <abortOnError>0</abortOnError>
+				    <showMessageOnError>0</showMessageOnError>
+				    <program>chmod</program>
+				    <programArguments>755 ${postgres_root_directory}/bin/*</programArguments>
+				</runProgram>
+                                <runProgram abortOnError="0" showMessageOnError="0">
+                                    <runAs>postgres</runAs>
+                                    <program>${postgres_root_directory}/bin/initdb</program>
+                                    <programArguments>-E UTF8 -U postgres</programArguments>
+                                    <ruleList>
+                                        <compareText logic="equals" text="${installer_root_install}" value="1"/>
+                                    </ruleList>
+                                </runProgram>
+                                <runProgram abortOnError="0" showMessageOnError="0">
+                                    <program>${postgres_root_directory}/bin/initdb</program>
+                                    <programArguments>-E UTF8 -U postgres</programArguments>
+                                    <ruleList>
+                                        <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
+                                    </ruleList>
+                                </runProgram>
+                                <throwError>
+                                    <text>${component(postgres).parameter(shmmax_error_message).value}</text>
+                                    <ruleList>
+                                        <compareText text="${program_exit_code}"    logic="does_not_equal" value="0"/>
+                                        <compareText text="${component(postgres).parameter(shmmax_error_message).value}" logic="does_not_equal" value=""/>
+                                        <compareText text="${program_stderr}"       logic="contains"       value="Cannot allocate memory"/>
+                                    </ruleList>
+                                </throwError>
+                                <throwError>
+                                    <text>${program_stderr}</text>
+                                    <ruleList>
+                                        <compareText text="${program_exit_code}" logic="does_not_equal" value="0"/>
+                                    </ruleList>
+                                </throwError>
+
+                                <substitute>
+                                    <files>${postgres_data_directory}/postgresql.conf</files>
+                                    <substitutionList>
+<!-- listen_addresses and the related entry in pg_hba.conf allow use the database in a network. By default this will not 
+                            be performed as by default parameter(postgres_hostname).ask is set to 0 -->
+                                        <substitution>
+                                            <pattern>#listen_addresses = 'localhost'</pattern>
+                                            <value>listen_addresses = 'localhost, ${postgres_hostname}'</value>
+                                            <ruleList>
+                                                <compareText logic="does_not_equal" text="${postgres_hostname}" value="localhost"/>
+                                            </ruleList>
+                                        </substitution>
+
+<!--substitution>
+                            <pattern>#port = 5432</pattern>
+                            <value>port = ${postgres_port}</value>
+                        </substitution-->
+                                        <substitution>
+                                            <pattern>#unix_socket_directory = ''</pattern>
+                                            <value>unix_socket_directory = '${postgres_root_directory}'</value>
+                                        </substitution>
+
+<!-- Even if we set data_directory parameter we would have to pass -D option to pg_ctl and psql, that's why we set it in 
+                        PGDATA environment variable on setenv.sh file -->
+
+<!--substitution>
+                        <pattern>#data_directory = 'ConfigDir'</pattern>
+                        <value>data_directory = '${postgres_root_directory}/data'</value>
+                    </substitution-->
+                                        <substitution>
+                                            <pattern>#log_min_messages = warning</pattern>
+                                            <value>log_min_messages = ${postgres_logminmessage_level}</value>
+                                            <ruleList>
+                                                <compareText logic="does_not_equal" text="${postgres_logminmessage_level}" value="default"/>
+                                            </ruleList>
+                                        </substitution>
+                                        <substitution>
+                                            <pattern>#log_min_error_statement = error</pattern>
+                                            <value>log_min_error_statement = ${postgres_logminerrorstatement_level}</value>
+                                            <ruleList>
+                                                <compareText logic="does_not_equal" text="${postgres_logminerrorstatement_level}" value="default"/>
+                                            </ruleList>
+                                        </substitution>
+                                        <substitution>
+                                            <pattern>#silent_mode = off</pattern>
+                                            <value>silent_mode = on</value>
+                                            <ruleList>
+                                                <isTrue value="${postgres_enable_silentmode}" />
+                                            </ruleList>
+                                        </substitution>
+                                    </substitutionList>
+                                </substitute>
+                                <addTextToFile>
+                                    <file>${postgres_data_directory}/pg_hba.conf</file>
+                                    <text>host all all ${postgres_hostname} 255.255.255.255 trust</text>
+                                    <ruleList>
+                                        <compareText logic="does_not_equal" text="${postgres_hostname}" value="localhost"/>
+                                    </ruleList>
+                                </addTextToFile>
+                                <addTextToFile>
+                                    <file>${postgres_data_directory}/postgresql.conf</file>
+                                    <text>                    #---------------------------------------------------------------------------
+                    #Other configuration parameters are set on ${postgres_root_directory}/bin/setenv.sh</text>
+                #---------------------------------------------------------------------------
+                                                            </addTextToFile>
+
+<!-- We change authentication from trust (no authentication) to password. Before changing this in pg_hba.conf file, 
+            we need to set a password for postgres user. -->
+
+<!-- Maybe this change is not needed if we only use unix socket connection -->
+                                <runProgram>
+                                    <runAs>postgres</runAs>
+                                    <program>${postgres_root_directory}/bin/pg_ctl</program>
+                                    <programArguments>start</programArguments>
+                                    <ruleList>
+                                        <compareText logic="equals" text="${installer_root_install}" value="1"/>
+                                    </ruleList>
+                                </runProgram>
+                                <runProgram>
+                                    <program>${postgres_root_directory}/bin/pg_ctl</program>
+                                    <programArguments>start</programArguments>
+                                    <ruleList>
+                                        <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
+                                    </ruleList>
+                                </runProgram>
+                                <runProgram>
+                                    <program>sleep</program>
+                                    <programArguments>10</programArguments>
+                                    <progressText>Waiting for Postmaster</progressText>
+                                </runProgram>
+
+        <!-- We use runProgram sleep becuase with wait it fails -->
+
+        <!--wait>30000</wait-->
+                                <runProgram>
+                                    <runAs>postgres</runAs>
+                                    <program>${postgres_root_directory}/bin/psql</program>
+                                    <programArguments> -c "ALTER USER postgres PASSWORD '\''${postgres_root_password.password}'\''" </programArguments>
+                                    <ruleList>
+                                        <compareText logic="equals" text="${installer_root_install}" value="1"/>
+                                    </ruleList>
+                                </runProgram>
+                                <runProgram>
+                                    <program>${postgres_root_directory}/bin/psql</program>
+                                    <programArguments>-c "ALTER USER postgres PASSWORD '${postgres_root_password.password}'"</programArguments>
+                                    <ruleList>
+                                        <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
+                                    </ruleList>
+                                </runProgram>
+                                <runProgram>
+                                    <runAs>postgres</runAs>
+                                    <program>${postgres_root_directory}/bin/pg_ctl</program>
+                                    <programArguments>stop</programArguments>
+                                    <ruleList>
+                                        <compareText logic="equals" text="${installer_root_install}" value="1"/>
+                                    </ruleList>
+                                </runProgram>
+                                <runProgram>
+                                    <program>${postgres_root_directory}/bin/pg_ctl</program>
+                                    <programArguments>stop</programArguments>
+                                    <ruleList>
+                                        <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
+                                    </ruleList>
+                                </runProgram>
+                                <substitute>
+                                    <files>${postgres_data_directory}/pg_hba.conf</files>
+                                    <substitutionList>
+                                        <substitution>
+                                            <pattern>trust$</pattern>
+                                            <value>md5</value>
+                                        </substitution>
+                                    </substitutionList>
+                                </substitute>
+                            </actionList>
+                            <ruleList>
+                                <isTrue value="${initialize_postgres_database}"/>
+                            </ruleList>
+                        </actionGroup>
+                    </actionList>
+                    <ruleList>
+                        <compareText text="${platform_name}" logic="does_not_equal" value="windows"/>
+                    </ruleList>
+                </actionGroup>
+
+<!-- Bundled Postgres on Windows -->
+
+                <actionGroup>
+                  <actionList>
+		      <logMessage text="Creating ${postgres_data_directory}" />
+		      <createDirectory path="${postgres_data_directory}" />
+		      <logMessage text="${postgres_data_directory} OK" >
+			  <ruleList>
+			      <fileTest path="${postgres_data_directory}" condition="exists" />
+			  </ruleList>
+		      </logMessage>
+		      <logMessage text="Before running cacls" />
+		      <getWindowsACL>
+			  <abortOnError>0</abortOnError>
+			  <showMessageOnError>0</showMessageOnError>
+			  <username>${env(USERNAME)}</username>
+			  <file>${postgres_data_directory}</file>
+			  <grantedPermissions>postgres_grantedPermissions</grantedPermissions>
+			  <deniedPermissions>postgres_deniedPermissions</deniedPermissions>
+		      </getWindowsACL>
+		      <logMessage text="postgres_grantedPermissions = ${postgres_grantedPermissions}" />
+		      <logMessage text="postgres_deniedPermissions = ${postgres_deniedPermissions}" />
+		      <logMessage text="Running cacls" />
+		      <runProgram abortOnError="0" showMessageOnError="0" >
+			  <program>cacls</program>
+			  <programArguments>"${postgres_data_directory}" /e /c /t /p ${env(USERNAME)}:c</programArguments>
+			  <workingDirectory>${postgres_data_directory}</workingDirectory>
+		      </runProgram>
+		      <logMessage>
+			  <text>cacls "${postgres_data_directory}" /e /c /t /p ${env(USERNAME)}:c"</text>
+		      </logMessage>
+		      <getWindowsACL>
+			  <abortOnError>0</abortOnError>
+			  <showMessageOnError>0</showMessageOnError>
+			  <username>${env(USERNAME)}</username>
+			  <file>${postgres_data_directory}</file>
+			  <grantedPermissions>postgres_grantedPermissions</grantedPermissions>
+			  <deniedPermissions>postgres_deniedPermissions</deniedPermissions>
+		      </getWindowsACL>
+		      <logMessage text="postgres_grantedPermissions = ${postgres_grantedPermissions}" />
+		      <logMessage text="postgres_deniedPermissions = ${postgres_deniedPermissions}" />
+		      <logMessage text="Running setWindowsACL" />
+		      <setWindowsACL>
+			  <abortOnError>0</abortOnError>
+			  <showMessageOnError>0</showMessageOnError>
+			  <files>${postgres_data_directory}</files>
+			  <users>${env(USERNAME)}</users>
+			  <recurseObjects>1</recurseObjects>
+			  <recurseContainers>1</recurseContainers>
+		      </setWindowsACL>
+		      <logMessage text="postgres_grantedPermissions = ${postgres_grantedPermissions}" />
+		      <logMessage text="postgres_deniedPermissions = ${postgres_deniedPermissions}" />
+		      <logMessage text="Initializing database" />
+		      
+		      <showProgressDialog title="Initializing database" >
+                          <actionList>
+                              <!--writeFile progressText="Initializing database">
+                                  <path>${postgres_root_directory}/bin/runinitdb.bat</path>
+                                  <text>@echo off
+start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\initdb.exe -U postgres -E UTF8 -D ${postgres_root_directory.dos.unix}/data"</text>
+                              </writeFile>
+                              <runProgram>
+                                  <program>${postgres_root_directory}/bin/runinitdb.bat</program>
+                                  <programArguments></programArguments>
+                                  <workingDirectory>${postgres_root_directory}/bin</workingDirectory>
+                              </runProgram>
+                              <deleteFile path="${postgres_root_directory}/bin/runinitdb.bat" /-->
+			      <!-- Install vcruntime on Windows x64 -->
+			      <runProgram>
+				  <workingDirectory>${postgres_root_directory}/bin</workingDirectory>
+				  <program>vcredist_x64.exe</program>
+				  <programArguments>/q</programArguments>
+				  <abortOnError>0</abortOnError>
+				  <ruleList>
+                                      <fileTest condition="exists" path="${postgres_root_directory}/bin/vcredist_x64.exe"/>
+				      <platformTest type="windows-x64" />
+				  </ruleList>
+			      </runProgram>
+			      <!-- add -d to debug this action -->
+                              <runProgram>
+                                  <program>initdb.exe</program>
+                                  <programArguments>-U SYSTEM -E UTF8 -D ${postgres_data_directory.dos.unix}</programArguments>
+                                  <workingDirectory>${postgres_root_directory}/bin</workingDirectory>
+                                  <ruleList>
+                                      <compareText logic="equals" text="${installer_root_install}" value="1"/>
+                                  </ruleList>
+                              </runProgram>
+                              <runProgram>
+                                  <program>initdb.exe</program>
+                                  <programArguments>-U postgres -E UTF8 -D ${postgres_data_directory.dos.unix}</programArguments>
+                                  <workingDirectory>${postgres_root_directory}/bin</workingDirectory>
+                                  <ruleList>
+                                      <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
+                                  </ruleList>
+                              </runProgram>
+                          </actionList>
+                      </showProgressDialog>
+		      <logMessage text="${program_stdout}" />
+		      <logMessage text="${program_stderr}" />
+		      <logMessage text="Database initialized OK" >
+			  <ruleList>
+			      <fileExists path="${postgres_data_directory}/base" />
+			  </ruleList>
+		      </logMessage>
+		      <substitute>
+			  <files>${postgres_data_directory}/postgresql.conf</files>
+			  <substitutionList>
+<!-- listen_addresses and the related entry in pg_hba.conf allow use the database in a network. By default this will not 
+                            be performed as by default parameter(postgres_hostname).ask is set to 0 -->
+                              <substitution>
+                                  <pattern>#listen_addresses = 'localhost'</pattern>
+                                  <value>listen_addresses = 'localhost, ${postgres_hostname}'</value>
+                                  <ruleList>
+                                      <compareText logic="does_not_equal" text="${postgres_hostname}" value="localhost"/>
+                                  </ruleList>
+                              </substitution>
+
+                              <substitution>
+                                  <pattern>#port = 5432</pattern>
+                                  <value>port = ${postgres_port}</value>
+                              </substitution>
+                              <substitution>
+                                  <pattern>#log_destination</pattern>
+                                  <value>log_destination </value>
+                              </substitution>
+                              <substitution>
+                                  <pattern>#logging_collector = off</pattern>
+                                  <value>logging_collector = on</value>
+                              </substitution>
+                              <substitution>
+                                  <pattern>#log_directory</pattern>
+                                  <value>log_directory</value>
+                              </substitution>
+                              <substitution>
+                                  <pattern>#log_filename</pattern>
+                                  <value>log_filename</value>
+                              </substitution>
+                              <substitution>
+                                  <pattern>#log_min_messages = warning</pattern>
+                                  <value>log_min_messages = ${postgres_logminmessage_level}</value>
+                                  <ruleList>
+                                      <compareText logic="does_not_equal" text="${postgres_logminmessage_level}" value="default"/>
+                                  </ruleList>
+                              </substitution>
+			      <substitution>
+			          <pattern>#log_min_error_statement = error</pattern>
+				  <value>log_min_error_statement = ${postgres_logminerrorstatement_level}</value>
+				  <ruleList>
+				      <compareText logic="does_not_equal" text="${postgres_logminerrorstatement_level}" value="default"/>
+                                  </ruleList>
+                              </substitution>
+                          </substitutionList>
+                      </substitute>
+                      <addTextToFile>
+                          <file>${postgres_data_directory}/pg_hba.conf</file>
+                          <text>host all all ${postgres_hostname} 255.255.255.255 trust</text>
+                          <ruleList>
+                              <compareText logic="does_not_equal" text="${postgres_hostname}" value="localhost"/>
+                          </ruleList>
+                      </addTextToFile>
+                        
+
+<!-- We change authentication from trust (no authentication) to password. Before changing this in pg_hba.conf file, 
+            we need to set a password for postgres user. -->
+
+
+                      <actionGroup>
+                          <actionList>
+ 
+                              <!--  As administrator, we need to start postgres as service, so we need the service 
+                              to be created at this point. If the variable postgres_unique_service_name is empty
+                              we consider that the service has been already created. --> 
+                              <actionGroup>
+                                  <actionList>
+                                        
+                                      <getUniqueWindowsServiceName>
+                                          <serviceName>${postgres_service_name}</serviceName>
+                                          <displayName>${postgres_displayName}</displayName>
+                                          <selectedServiceNameVariable>postgres_unique_service_name</selectedServiceNameVariable>
+                                          <selectedDisplayNameVariable>PostgreSQLUniqueDisplayName</selectedDisplayNameVariable>                            
+                                      </getUniqueWindowsServiceName>
+                                      <writeFile>
+                                          <path>${postgres_root_directory}/bin/registerservice.bat</path>
+                                          <text>@echo off
+start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\pg_ctl.exe register -N ${postgres_unique_service_name} -D ${postgres_data_directory.dos.unix} -w"</text>
+                                      </writeFile>
+                                      <runProgram>
+                                          <program>${postgres_root_directory}/bin/registerservice.bat</program>
+                                          <programArguments></programArguments>
+                                          <workingDirectory>${postgres_root_directory}/bin</workingDirectory>
+                                      </runProgram>
+                                      <deleteFile path="${postgres_root_directory}/bin/registerservice.bat" />
+                                  </actionList>
+                                  <ruleList>
+                                      <compareText text="${postgres_unique_service_name}" logic="equals" value="" />
+                                  </ruleList>
+                              </actionGroup>
+
+                              <runProgram>
+                                  <program>cmd</program>
+                                  <programArguments>/C start /MIN /WAIT net start ${postgres_unique_service_name}</programArguments>
+                              </runProgram>
+                          </actionList>
+                          <ruleList>
+                              <compareText logic="equals" text="${installer_root_install}" value="1"/>
+                          </ruleList>
+                      </actionGroup>
+ 
+                         
+                      <runProgram>
+                          <program>pg_ctl.exe</program>
+                          <programArguments>-U postgres -w start -D ${postgres_data_directory.dos.unix}</programArguments>
+                          <workingDirectory>${postgres_root_directory}/bin</workingDirectory>
+                          <ruleList>
+                              <compareText logic="equals" text="${installer_root_install}" value="0"/>
+                          </ruleList>
+                      </runProgram>
+		      <logMessage text="Wait for Postmaster" />
+		      <waitForPort state="in_use" port="${postgres_port}" progressText="Waiting for Postmaster" timeout="30000" />
+		      <wait ms="7000"/>
+		      
+		      <logMessage text="Port ${postgres_port} free" >
+			  <ruleList>
+			      <portTest port="${postgres_port}" condition="can_bind" />
+			  </ruleList>
+		      </logMessage>
+		      <logMessage text="Port ${postgres_port} in use" >
+			  <ruleList>
+			      <portTest port="${postgres_port}" condition="cannot_bind" />
+			  </ruleList>
+		      </logMessage>
+
+                      <runProgram>
+                          <program>${postgres_root_directory}/bin/psql.exe</program>
+                          <programArguments>-U SYSTEM -d postgres -p ${postgres_port} -h ${postgres_hostname} -c "CREATE USER postgres SUPERUSER PASSWORD '${postgres_root_password.password}'"</programArguments>
+                          <ruleList>
+                              <compareText logic="equals" text="${installer_root_install}" value="1"/>
+                          </ruleList>
+                      </runProgram>
+
+                      <runProgram>
+                          <program>${postgres_root_directory}/bin/psql.exe</program>
+                          <programArguments>-U postgres -p ${postgres_port} -h ${postgres_hostname} -c "ALTER USER postgres PASSWORD '${postgres_root_password.password}'"</programArguments>
+                          <ruleList>
+                              <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
+                          </ruleList>
+                      </runProgram>
+
+                      <runProgram>
+                          <program>cmd</program>
+                          <programArguments>/C start /MIN /WAIT net stop ${postgres_unique_service_name}</programArguments>
+                          <ruleList>
+                              <compareText logic="equals" text="${installer_root_install}" value="1"/>
+                          </ruleList>
+                      </runProgram>
+
+                      <runProgram>
+                          <program>${postgres_root_directory}/bin/pg_ctl.exe</program>
+                          <programArguments>stop</programArguments>
+                          <ruleList>
+                              <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
+                          </ruleList>
+                      </runProgram>
+                        
+                      <substitute>
+                          <files>${postgres_data_directory}/pg_hba.conf</files>
+                          <substitutionList>
+                              <substitution>
+                                  <pattern>trust$</pattern>
+                                  <value>md5</value>
+                              </substitution>
+                          </substitutionList>
+                      </substitute>
+                  </actionList>
+                  <ruleList>
+                      <compareText text="${platform_name}" logic="equals" value="windows"/>
+                  </ruleList>
+              </actionGroup>
+                              
+                
+          </actionList>
+          <ruleList>
+              <compareText text="${postgres_installation_type}" logic="equals" value="bundled"/>
+          </ruleList>
+      </folder>
+  </folderList>
+
+  <postInstallationActionList>
+  </postInstallationActionList>
+
+  <preUninstallationActionList>
+      <actionGroup>
+          <actionList>
+              <deleteFile path="${postgres_data_directory}" />
+              <deleteFile path="${installdir}/postgresql/postgresql.log" />
+          </actionList>
+          <ruleList>
+              <isTrue value="${deleteConfirm}" />
+          </ruleList>
+      </actionGroup>
+  </preUninstallationActionList>
+
+</component>
+

@@ -556,7 +556,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
      */
     public Scriptable getPeople(String filter, int maxResults, String sortBy, boolean sortAsc)
     {
-        return getPeoplePaging(filter, new ScriptPagingDetails(maxResults, 0), null, null);
+        return getPeoplePaging(filter, new ScriptPagingDetails(maxResults, 0), sortBy, Boolean.valueOf(sortBy));
     }
     
     public Scriptable getPeoplePaging(String filter, ScriptPagingDetails pagingRequest, String sortBy, Boolean sortAsc)
@@ -894,13 +894,18 @@ public class People extends BaseScopableProcessorExtension implements Initializi
             @Override
             public int compare(NodeRef n1, NodeRef n2)
             {
-                String p1 = getProperty(n1);
-                String p2 = getProperty(n2);
+                Serializable  p1 = getProperty(n1);
+                Serializable  p2 = getProperty(n2);
 
-                return col.compare(p1, p2) * orderMultiplicator;
+                if ((p1 instanceof Long) && (p2 instanceof Long))
+                {
+                    return Long.compare((Long)p1, (Long)p2) * orderMultiplicator;
+                }
+
+                return col.compare(p1.toString(), p2) * orderMultiplicator;
             }
 
-            public String getProperty(NodeRef nodeRef)
+            public Serializable getProperty(NodeRef nodeRef)
             {
                 Serializable result;
 
@@ -943,7 +948,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
                     result = "";
                 }
 
-                return result.toString();
+                return result;
             }
 
         });

@@ -35,7 +35,9 @@
         where 
             node.type_qname_id &lt;&gt; #{sysDeletedType}
             AND node.store_id = #{storeId}
-            AND node.transaction_id &gt; #{sinceTxId}
+            <if test="sinceTxId != null">
+                AND node.transaction_id &gt; #{sinceTxId}
+            </if>
             <if test="hasPredicate">
                 AND
                 <foreach item="item" index="index" collection="predicateParts">

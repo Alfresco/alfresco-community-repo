@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.webdav;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -322,7 +321,6 @@ public class LockMethod extends WebDAVMethod
                                             {
                                                 public String execute() throws Throwable
                                                 {
-                                                    getNodeService().removeAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT);
                                                     getNodeService().deleteNode(nodeRef);
                                                     if (logger.isDebugEnabled())
                                                     {

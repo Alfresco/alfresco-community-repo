@@ -26,6 +26,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.Serializable;
 import java.util.Collections;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -81,14 +83,11 @@ public class LockMethodTest
      * Types and properties used by the tests
      */
     private static final String CONTENT_1 = "This is some content";
-    private static final String TEST_STORE_IDENTIFIER = "test_store-" + System.currentTimeMillis();
-    private static final String TEST_FILE_NAME = "file";
+    private static final String TEST_FILE_NAME = "file" + GUID.generate();
 
     /**
      * Data used by the tests
      */
-    private StoreRef storeRef;
-    private NodeRef rootNodeRef;
     private NodeRef folderNodeRef;
     private NodeRef fileNodeRef;
     
@@ -120,13 +119,7 @@ public class LockMethodTest
             @Override
             public Void execute() throws Throwable
             {
-                // Create the store and get the root node reference
-                storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, TEST_STORE_IDENTIFIER);
-                if (!nodeService.exists(storeRef))
-                {
-                    storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, TEST_STORE_IDENTIFIER);
-                }
-                rootNodeRef = nodeService.getRootNode(storeRef);
+                NodeRef rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
 
                 // Create and authenticate the user
                 userName = "webdavLockTest" + GUID.generate();
@@ -162,19 +155,19 @@ public class LockMethodTest
 
         // delete test store as system user
         this.authenticationComponent.setSystemUserAsCurrentUser();
-        RetryingTransactionCallback<Void> deleteStoreCallback = new RetryingTransactionCallback<Void>()
+        RetryingTransactionCallback<Void> deleteTestFolderCallback = new RetryingTransactionCallback<Void>()
         {
             @Override
             public Void execute() throws Throwable
             {
-                if (nodeService.exists(storeRef))
+                if (nodeService.exists(folderNodeRef))
                 {
-                    nodeService.deleteStore(storeRef);
+                    nodeService.deleteNode(folderNodeRef);
                 }
                 return null;
             }
         };
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(deleteStoreCallback);
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(deleteTestFolderCallback);
     }
     
     @Test
@@ -288,5 +281,61 @@ public class LockMethodTest
         
         // check that lock information is not there for expired lock
         assertTrue("Propfind response should not conatain information about expired lock", response.indexOf("lockdiscovery") == -1);
+    }
+    
+    @Test
+    public void testMNT_10873() throws Exception
+    {
+        String fileName = TEST_FILE_NAME + GUID.generate();
+        final MockHttpServletRequest lockRequest = new MockHttpServletRequest();
+        MockHttpServletResponse lockResponse = new MockHttpServletResponse();
+        lockRequest.addHeader(WebDAV.HEADER_TIMEOUT, WebDAV.SECOND + 5);
+        // set request uri to point to non-existent file
+        lockRequest.setRequestURI("/" + fileName);
+        
+        String content = "<?xml version=\"1.0\" encoding=\"utf-8\" ?><D:lockinfo xmlns:D=\"DAV:\"><D:lockscope xmlns:D=\"DAV:\">" +
+                "<D:exclusive xmlns:D=\"DAV:\"/></D:lockscope><D:locktype xmlns:D=\"DAV:\"><D:write xmlns:D=\"DAV:\"/></D:locktype>" +
+                "<D:owner xmlns:D=\"DAV:\">" + userName + "</D:owner></D:lockinfo>";
+
+        lockRequest.setContent(content.getBytes("UTF-8"));
+
+        lockMethod.setDetails(lockRequest, lockResponse, davHelper, folderNodeRef);
+        lockMethod.parseRequestHeaders();
+        lockMethod.parseRequestBody();
+        
+        RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                lockMethod.executeImpl();
+                return null;
+            }
+        };
+        
+        // lock node for 5 seconds
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(lockExecuteImplCallBack);
+        
+        assertEquals("Unexpected response status code.", HttpServletResponse.SC_CREATED, lockResponse.getStatus());
+        
+        RetryingTransactionCallback<NodeRef> getNodeRefCallback = new RetryingTransactionCallback<NodeRef>()
+        {
+            @Override
+            public NodeRef execute() throws Throwable
+            {
+                return lockMethod.getNodeForPath(folderNodeRef, lockRequest.getRequestURI()).getNodeRef();
+            }
+        };
+        
+        NodeRef nodeRef = this.transactionService.getRetryingTransactionHelper().doInTransaction(getNodeRefCallback);
+        
+        assertTrue("NodeRef should exists.", nodeService.exists(nodeRef));        
+        assertTrue("sys:webdavNoContent aspect should be applied on node.", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT));
+        
+        // sleep for 6 seconds to ensure that timer was triggered
+        Thread.sleep(6000);
+        
+        assertFalse("File should note exist in repo any more.", nodeService.exists(nodeRef));
+        assertFalse("File should note exist in trashcan.", nodeService.exists(new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, nodeRef.getId())));
     }
 }

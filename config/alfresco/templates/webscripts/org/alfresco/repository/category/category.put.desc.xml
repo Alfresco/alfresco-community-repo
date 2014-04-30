@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Category Management</shortname>
+   <shortname>Update category</shortname>
    <description><![CDATA[
    Update the details of the specified category.
    ]]></description>

@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Submit modified assets from within the specified author sandbox.</shortname>
+  <shortname>Submit modified assets from within the specified author sandbox</shortname>
   <description>
   <![CDATA[
   Submit the modified (added, deleted, updated) assets contained within an author's sandbox. 

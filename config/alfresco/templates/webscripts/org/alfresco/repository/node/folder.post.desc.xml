@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Create Child Folder</shortname>
+  <shortname>Create child folder</shortname>
   <description><![CDATA[
   Creates a Child Folder in the specified Site Container or existing Folder.
   <BR>

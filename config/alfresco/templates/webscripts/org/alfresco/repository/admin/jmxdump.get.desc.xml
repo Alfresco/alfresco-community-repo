@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>JMXDump</shortname>
+  <shortname>JMX dump</shortname>
   <description>
   <![CDATA[Stream the JMX property dump as a .zip content file]]>
   </description>

@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Category Management</shortname>
+   <shortname>Delete category</shortname>
    <description><![CDATA[
    Deletes the specified category. 
    ]]></description>

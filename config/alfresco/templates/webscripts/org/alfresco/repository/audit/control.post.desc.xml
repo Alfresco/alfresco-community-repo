@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Alfresco Audit Service Control</shortname>
+  <shortname>Alfresco audit service control</shortname>
   <description>Change the audit status for a given application and path</description>
   <url>/api/audit/control?enable={enable}</url>
   <url>/api/audit/control/{application}/{path}?enable={enable}</url>

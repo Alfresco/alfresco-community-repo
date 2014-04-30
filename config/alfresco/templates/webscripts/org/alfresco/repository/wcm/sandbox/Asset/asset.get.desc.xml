@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Get the details of the specified asset within the specified web project and sandbox.</shortname>
+  <shortname>Get the details of the specified asset within the specified web project and sandbox</shortname>
   <description>
   <![CDATA[
   Get the details of the specified asset.    

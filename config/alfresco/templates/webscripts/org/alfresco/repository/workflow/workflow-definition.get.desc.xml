@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Get Workflow Definition</shortname>
+  <shortname>Get workflow definition</shortname>
   <description>
   Returns a detailed representation of the workflow definitions.
   </description>

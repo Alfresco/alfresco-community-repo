@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Get Workflow Instance Collection for NodeRef</shortname>
+   <shortname>Get workflow instance collection for nodeRef</shortname>
    <description>Retrieves all active workflow instances that the given node is part of.</description>
    <url>/api/node/{store_type}/{store_id}/{id}/workflow-instances</url>
    <format default="json"/>

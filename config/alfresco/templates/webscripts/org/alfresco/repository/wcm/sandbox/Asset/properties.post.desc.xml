@@ -1,5 +1,10 @@
 <webscript>
-   <shortname>Update a  WCM asset</shortname>  
+   <shortname>Update a WCM asset</shortname>
+   <description>
+   <![CDATA[
+   You can update a WCM asset.
+   ]]>
+   </description>
    <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/properties/{path}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>

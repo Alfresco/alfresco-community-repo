@@ -2,7 +2,7 @@
   <shortname>QuickShare - "share" some content => enable public/unauthenticated access</shortname>
   <description>
   <![CDATA[
-  Note: Authenticated - you must have read access to the content in order to "share" it.
+  Authenticated - you must have read access to the content in order to "share" it.
   
   Returns {shared_id}
   

@@ -1,7 +1,7 @@
 <webscript>
-  <shortname>Create a new WCM asset.</shortname>
+  <shortname>Create a new WCM asset</shortname>
   <description>
-    <![CDATA[
+  <![CDATA[
   Create a new WCM Asset in the specified path and sandbox.
   <BR>
   If the optional webApp argument is specified then the path is relative to the webapp.   
@@ -12,8 +12,8 @@
   <dl>
   <dt>name</dt><dd>mandatory name of this asset</dd>
   <dt>type</dt><dd>mandatory "file" or "folder"</dd>
-  <dt>content/dt><dd>optional, string content of the new file,  this is a convenience method, normally content is added via 
-  the file upload which gives greater control over the content.</dd>
+  <dt>content/dt><dd>optional, string content of the new file,  this is a convenience method, normally content is added
+  by using the file upload which gives greater control over the content.</dd>
   </dl>
   
   JSON Return value:

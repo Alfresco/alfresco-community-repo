@@ -1,7 +1,7 @@
 <webscript>
-   <shortname>Information on Creating Users via CSV</shortname>
+   <shortname>Information on Creating Users by using CSV</shortname>
    <description>
-      Gives information on creating users via CSV upload, and provides
+      Gives information on creating users by using CSV upload, and provides
       the form through which to upload.
    </description>
    <url>/api/people/upload</url>

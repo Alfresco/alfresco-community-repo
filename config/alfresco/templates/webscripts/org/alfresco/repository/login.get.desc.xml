@@ -1,20 +1,20 @@
 <webscript>
-  <shortname>Login</shortname>
+  <shortname>Log in</shortname>
   <description>  
   <![CDATA[
-  Login and establish a ticket.
+  Log in and establish a ticket.
   <BR>
   Input
   <dl>
-  <dt>u</dt><dd>cleartext username (must be URL encoded)</dd>
+  <dt>u</dt><dd>cleartext user name (must be URL encoded)</dd>
   <dt>pw</dt><dd>cleartext password (must be URL encoded)</dd>
   </dl>
   <BR>
   Returns the new authentication ticket.
   <BR>
-  The username and password are provided as URL arguments which may be<br>
+  The user name and password are provided as URL arguments which may be<br>
   logged by proxies or the Alfresco server. The alternative POST method<br>
-  of login is recommended instead of GET.
+  of log in is recommended instead of GET.
   ]]>
   </description>
   <url>/api/login?u={username}&amp;pw={password?}</url>

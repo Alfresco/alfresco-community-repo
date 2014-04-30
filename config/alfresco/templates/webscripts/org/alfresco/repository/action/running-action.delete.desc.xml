@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Cancel a Running Action</shortname>
+  <shortname>Cancel a running action</shortname>
   <description>Requests the cancellation of a currently running action.</description>
   <url>/api/running-action/{action_tracking_id}</url>
   <format default="json"/>

@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Category Management</shortname>
+   <shortname>Create category</shortname>
    <description><![CDATA[
    Create new category in specified category or as a root category.
    ]]></description>

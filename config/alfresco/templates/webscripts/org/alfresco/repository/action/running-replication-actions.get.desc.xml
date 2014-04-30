@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>List Running Replication Actions</shortname>
+  <shortname>List running replication actions</shortname>
   <description>
   Returns (limited) details on all currently running replication actions.
   </description>

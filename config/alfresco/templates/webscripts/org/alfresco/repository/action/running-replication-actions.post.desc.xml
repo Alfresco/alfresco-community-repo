@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Start a new Replication Action Executing</shortname>
+  <shortname>Start a new replication action executing</shortname>
   <description>
    Starts the execution of a replication action, and returns its running details
   </description>

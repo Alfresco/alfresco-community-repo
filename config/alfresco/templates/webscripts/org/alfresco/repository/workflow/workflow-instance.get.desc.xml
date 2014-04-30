@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Get Workflow Instance</shortname>
+   <shortname>Get workflow instance</shortname>
    <description>Retrieves a specific workflow instance, optionally with all the tasks.</description>
    <url>/api/workflow-instances/{workflow_instance_id}?includeTasks={includeTasks?}</url>
    <format default="json"/>

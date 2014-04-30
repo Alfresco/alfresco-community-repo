@@ -1,10 +1,9 @@
 <webscript>
-   <shortname>DELETE permanently (purge) a node or nodes from the archive.</shortname>
-   <description><![CDATA[
-   TODO.<br/>
+   <shortname>DELETE permanently (purge) a node or nodes from the archive</shortname>
+   <description>
+   <![CDATA[
    DELETE /api/archive/{store_type}/{store_id} purges all items from the archive store which were<br/>
    originally located in the specified Store. e.g. workspace://SpacesStore<br/>
-   TODO.<br/>
    DELETE /api/archive/{store_type}/{store_id}/{id} purges the specified item from the archive store.<br/>
    For this call, the URL should identify the Node's current NodeRef e.g. archive://SpacesStore/1234-5678-90<br/>
    ]]>

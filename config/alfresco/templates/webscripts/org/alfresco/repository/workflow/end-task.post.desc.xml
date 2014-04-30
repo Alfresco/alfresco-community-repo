@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>End Workflow Task</shortname>
+  <shortname>End workflow task</shortname>
   <description>Ends a task for an in-flight workflow with the passed-in transition or the default</description>
   <url>/api/workflow/task/end/{taskId}/{transitionId}</url>
   <url>/api/workflow/task/end/{taskId}</url>

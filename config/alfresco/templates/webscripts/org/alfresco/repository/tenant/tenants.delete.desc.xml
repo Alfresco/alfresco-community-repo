@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Delete Tenant</shortname>
+   <shortname>Delete tenant</shortname>
    <description><![CDATA[
       Delete a tenant.
       

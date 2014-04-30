@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Revert modified assets within the specified author sandbox.</shortname>
+  <shortname>Revert modified assets within the specified author sandbox</shortname>
   <description>
   <![CDATA[
   Revert the modified (added, deleted, updated) assets contained within an author's sandbox. 

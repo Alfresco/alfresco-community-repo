@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Get Running Action Details</shortname>
+  <shortname>Get running action details</shortname>
   <description>
   Returns (limited) details on a currently running actions.
   </description>

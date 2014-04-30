@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Get Workflow Instance Collection</shortname>
+   <shortname>Get workflow instance collection</shortname>
    <description>Retrieves all workflow instances, the returned list can also be optionally filtered.</description>
    <url>/api/workflow-instances?state={state?}&amp;initiator={initiator?}&amp;priority={priority?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;definitionId={definitionId?}&amp;definitionName={definitionName?}&amp;startedBefore={startedBefore?}&amp;startedAfter={startedAfter?}&amp;completedBefore={completedBefore?}&amp;completedAfter={completedAfter?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
    <url>/api/workflow-definitions/{workflow_definition_id}/workflow-instances?state={state?}&amp;initiator={initiator?}&amp;priority={priority?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;startedBefore={startedBefore?}&amp;startedAfter={startedAfter?}&amp;completedBefore={completedBefore?}&amp;completedAfter={completedAfter?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>

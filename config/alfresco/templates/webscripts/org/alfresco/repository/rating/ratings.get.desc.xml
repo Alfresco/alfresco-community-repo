@@ -30,9 +30,9 @@
    with the following meanings:<br/>
    nodeRef: the nodeRef whose ratings are requested.<br/>
    ratings/ratingScheme: the rating scheme name<br/>
-   ratings/rating: the rating applied to the named noderef in the above scheme by the current user<br/>
-   ratings/appliedAt: the datetime when the above rating was applied<br/>
-   ratings/appliedBy: the user who applied the above rating (the current user)<br/>
+   ratings/rating: the rating applied to the named noderef in the scheme by the current user<br/>
+   ratings/appliedAt: the datetime when the rating was applied<br/>
+   ratings/appliedBy: the user who applied the rating (the current user)<br/>
    nodeStatistics/averageRating: the average (mean) rating on this node in the named rating scheme for all users<br/>
    nodeStatistics/ratingsTotal: the total score (sum) of all ratings on this node in the named rating scheme<br/>
    nodeStatistics/ratingsCount: the total number of applied ratings on this node in the named rating scheme.<br/>

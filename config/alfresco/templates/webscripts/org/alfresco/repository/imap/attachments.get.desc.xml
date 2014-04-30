@@ -1,6 +1,6 @@
 <webscript>
-  <shortname>Node Attachments Info</shortname>
-  <description>Node Attachments Info</description>
+  <shortname>Node attachments info</shortname>
+  <description>Node attachments info</description>
   <url>/api/attachments?nodeRef={noderef}</url>
   <format default="json" />
   <authentication>user</authentication>

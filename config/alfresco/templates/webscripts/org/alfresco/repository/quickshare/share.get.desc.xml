@@ -2,7 +2,7 @@
 <shortname>Get some node context (nodeRef, tenantDomain, siteId) for given shared_id</shortname>
   <description>
   <![CDATA[
-  Note: authenticated script
+  Authenticated script.
   ]]>
   </description>
   <url>/api/internal/shared/share/{shared_id}</url>

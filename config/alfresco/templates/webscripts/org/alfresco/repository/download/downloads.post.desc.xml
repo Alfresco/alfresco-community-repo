@@ -1,6 +1,6 @@
 <webscript>
-   <shortname>Create Download</shortname>
-   <description>Create Download</description>
+   <shortname>Create download</shortname>
+   <description>Create download</description>
    <url>/api/internal/downloads</url>
    <format default="json">argument</format>
    <authentication>user</authentication>

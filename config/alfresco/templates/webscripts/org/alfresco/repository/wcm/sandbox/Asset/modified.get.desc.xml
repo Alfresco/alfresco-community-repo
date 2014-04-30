@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Get modified assets within the specified sandbox.</shortname>
+  <shortname>Get modified assets within the specified sandbox</shortname>
   <description>
   <![CDATA[
   Get the modified (added, deleted, updated) details of an asset within an author's sandbox. 

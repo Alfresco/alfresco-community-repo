@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Alfresco Audit Service Query</shortname>
+  <shortname>Alfresco audit service query</shortname>
   <description>
     <![CDATA[
     Query to retrieve audit events.

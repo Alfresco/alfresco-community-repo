@@ -2,7 +2,7 @@
 <shortname>QuickShare - get some limited metadata for "shared" content (including thumbnail defs)</shortname>
   <description>
   <![CDATA[
-  Note: Unauthenticated => if QuickShare exists then gets the limited metadata for the specified document
+  Unauthenticated: if QuickShare exists then gets the limited metadata for the specified document.
   ]]>
   </description>
   <url>/api/internal/shared/node/{shared_id}/read</url>

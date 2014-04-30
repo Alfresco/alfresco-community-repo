@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Alfresco Audit Service Control</shortname>
+  <shortname>Alfresco audit service control</shortname>
   <description>Get audit status for a given application and path</description>
   <url>/api/audit/control</url>
   <url>/api/audit/control/{application}/{path}</url>

@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Start a new Action Executing</shortname>
+  <shortname>Start a new action executing</shortname>
   <description>
    Starts the execution of a new action, and returns its running details
   </description>

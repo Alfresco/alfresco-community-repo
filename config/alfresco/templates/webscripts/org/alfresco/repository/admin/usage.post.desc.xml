@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Alfresco Repo Usage Update</shortname>
+  <shortname>Alfresco repo usage update</shortname>
   <description>Update and retrieve repository usage</description>
   <url>/api/admin/usage</url>
   <format default="json" />

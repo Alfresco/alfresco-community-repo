@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Alfresco Audit Service Entry Delete</shortname>
+  <shortname>Alfresco audit service entry delete</shortname>
   <description>Delete audit entry with the specified id</description>
   <url>/api/audit/entries/{id}</url>
   <format default="json" />

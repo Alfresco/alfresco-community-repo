@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Create Users via uploading of a CSV</shortname>
+   <shortname>Create Users by using uploading of a CSV</shortname>
    <description>
       Allows an administrator to upload a CSV describing new users,
       who will then have accounts created for them.

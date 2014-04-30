@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>For all known Mime Types, return their descriptions</shortname>
+  <shortname>Return descriptions of all known mime types</shortname>
   <description>
   Returns a list of all mime types, along with their descriptions, such as
   "MS Project" for "application/vnd.ms-project", and their normal file

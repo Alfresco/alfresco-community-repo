@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Alfresco Audit Service Clear</shortname>
+  <shortname>Alfresco audit service clear</shortname>
   <description>Delete audit entries for a given application and time range</description>
   <url>/api/audit/clear/{application}?fromTime={fromTime}&amp;toTime={toTime}</url>
   <format default="json" />

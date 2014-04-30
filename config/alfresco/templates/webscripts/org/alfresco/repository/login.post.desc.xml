@@ -1,14 +1,14 @@
 <webscript>
-  <shortname>Login (POST)</shortname>
+  <shortname>Log in (POST)</shortname>
   <description>  
   <![CDATA[
-  Login and establish a ticket.
+  Log in and establish a ticket.
   <BR />
   Input
   <BR />
   JSON Data Object.
   <dl>
-  <dt>username</dt><dd>cleartext username</dd>
+  <dt>username</dt><dd>cleartext user name</dd>
   <dt>password</dt><dd>cleartext password</dd>
   </dl>
   <BR>

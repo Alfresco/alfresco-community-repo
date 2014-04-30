@@ -3,7 +3,7 @@
   <description>  <![CDATA[
   Creates a new Web site based on the site preset and details provided.
   <br />
-  Please note: this method only creates a site at the repository level, it does not create a fully functional site.
+  Note: this method only creates a site at the repository level, it does not create a fully functional site.
   It should be considered for internal use only at the moment.
   Currently, creating a site programmatically needs to be done in the Share context, using the create-site module.
   Further information can be found at the address http://your_domain:8080/share/page/index/uri/modules/create-site.post

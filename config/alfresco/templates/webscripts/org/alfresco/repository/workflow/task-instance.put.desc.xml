@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Updates Workflow Task Instance</shortname>
+   <shortname>Updates workflow task instance</shortname>
    <description>Updates the properties of a specific task and returns a detailed representation of the updated task instance.</description>
    <url>/api/task-instances/{task_instance_id}</url>
    <format default="json"/>

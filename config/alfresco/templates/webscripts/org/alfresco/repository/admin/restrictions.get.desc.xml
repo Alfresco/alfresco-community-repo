@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Alfresco Repo Restrictions</shortname>
+  <shortname>Alfresco repo restrictions</shortname>
   <description>Get repository restrictions</description>
   <url>/api/admin/restrictions</url>
   <format default="json" />

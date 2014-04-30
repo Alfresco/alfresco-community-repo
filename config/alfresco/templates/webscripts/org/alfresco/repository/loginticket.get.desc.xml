@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Validate Login Ticket</shortname>
+  <shortname>Validate log in ticket</shortname>
   <description><![CDATA[
   Validates the specified ticket is still valid.
   <BR>

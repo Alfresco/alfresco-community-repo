@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>List Deployed Workflow Definitions</shortname>
+   <shortname>List deployed workflow definitions</shortname>
    <description>
       Returns a simple representation of all deployed workflow definitions.
    </description>

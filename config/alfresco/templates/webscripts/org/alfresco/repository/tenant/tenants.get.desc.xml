@@ -1,5 +1,5 @@
 <webscript>
-  <shortname>Get Tenants</shortname>
+  <shortname>Get tenants</shortname>
   <description><![CDATA[
       Get list of tenants.
       

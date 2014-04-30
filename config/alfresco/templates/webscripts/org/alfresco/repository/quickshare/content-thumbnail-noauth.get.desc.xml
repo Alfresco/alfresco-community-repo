@@ -2,7 +2,7 @@
   <shortname>QuickShare - get some "shared" thumbnail content</shortname>
   <description>
   <![CDATA[
-  Note: Unauthenticated => if QuickShare exists then gets the content stream for the specified document thumbnail/rendition
+  Unauthenticated: if QuickShare exists then gets the content stream for the specified document thumbnail/rendition.
   ]]>
   </description>
   

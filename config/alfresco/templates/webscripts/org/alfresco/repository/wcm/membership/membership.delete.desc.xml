@@ -3,7 +3,7 @@
   <description><![CDATA[
   Delete (uninvite) the membership for a user.   
   <BR>
-  Please note that the user's sandboxes are deleted even if they have unsubmitted content.
+  Note that the user's sandboxes are deleted even if they have unsubmitted content.
   <BR>
   Returns 200, STATUS_OK on success.
   ]]>

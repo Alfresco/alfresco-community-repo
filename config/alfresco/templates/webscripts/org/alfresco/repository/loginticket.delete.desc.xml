@@ -1,7 +1,7 @@
 <webscript>
-  <shortname>Logout</shortname>
+  <shortname>Log out</shortname>
   <description><![CDATA[
-  Logout,  Delete Login Ticket.  
+  Log out, delete log in ticket.
   <BR>After the user has logged out the ticket is no longer valid and subsequent attempts to use it will fail.
   ]]>
   </description>

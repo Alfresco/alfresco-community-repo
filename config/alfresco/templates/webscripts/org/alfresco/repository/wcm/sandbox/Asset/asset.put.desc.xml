@@ -1,8 +1,8 @@
 <webscript>
-  <shortname>Update a WCM asset.</shortname>
+  <shortname>Update a WCM asset</shortname>
   <description>
     <![CDATA[
-	Update a WCM Asset, you can rename or move an asset.
+	You can update a WCM asset by renaming or moving the asset.
 	
 	<BR>
 	JSON Input properties

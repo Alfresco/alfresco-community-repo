@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>Gets Workflow Task Instance</shortname>
+   <shortname>Gets workflow task instance</shortname>
    <description>Gets the details of a task.</description>
    <url>/api/task-instances/{task_instance_id}</url>
    <format default="json"/>

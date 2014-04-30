@@ -1,5 +1,5 @@
 <webscript>
-   <shortname>List Workflow Tasks</shortname>
+   <shortname>List workflow tasks</shortname>
    <description>
       Lists all Workflow Task Instances associated with an authority and of a given State.
       The list of returned tasks also includes pooled tasks which the specified authority is eligible to claim.

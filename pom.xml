@@ -275,10 +275,6 @@
 
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-					<attachClasses>true</attachClasses>
-                    <archiveClasses>false</archiveClasses>
-                </configuration>
                 <!-- This allows overlays to be prepared on the FS for minification and faster run -->
 				<executions>
 					<execution>

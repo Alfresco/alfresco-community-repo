@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -43,6 +43,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
@@ -94,6 +95,7 @@ public class AuditComponentTest extends TestCase
     private AuditService auditService;
     private ServiceRegistry serviceRegistry;
     private TransactionService transactionService;
+    private TransactionServiceImpl transactionServiceImpl;
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     
@@ -113,6 +115,7 @@ public class AuditComponentTest extends TestCase
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         auditService = serviceRegistry.getAuditService();
         transactionService = serviceRegistry.getTransactionService();
+        transactionServiceImpl = (TransactionServiceImpl) ctx.getBean("transactionService");
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();
         
@@ -263,7 +266,7 @@ public class AuditComponentTest extends TestCase
                 return auditComponent.recordAuditValues(actionPath, adjustedValues);
             }
         };
-        return transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback);
+        return transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback, true, false);
     }
     
     /**
@@ -986,5 +989,23 @@ public class AuditComponentTest extends TestCase
             }
         };
         AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminRoleName());
+    }
+    
+    /**
+     * Test for <a href="https://issues.alfresco.com/jira/browse/MNT-11072">MNT-11072</a>
+     * @throws Exception 
+     */
+    public void testAuditInReadOnly() throws Exception
+    {
+        QName veto = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "TestVeto");
+        transactionServiceImpl.setAllowWrite(false, veto);
+        try
+        {
+            auditAction02("action-02");
+        }
+        finally
+        {
+            transactionServiceImpl.setAllowWrite(true, veto);   
+        }
     }
 }

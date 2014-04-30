@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -42,6 +42,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
@@ -247,16 +248,8 @@ public class AuditComponentImpl implements AuditComponent
      */
     public boolean areAuditValuesRequired()
     {
-        if (transactionService.isReadOnly())
-        {
-            return false;
-        }
-        else
-        {
-            return
-                (loggerInbound.isDebugEnabled()) ||
+        return (loggerInbound.isDebugEnabled()) ||
                 (isAuditEnabled() && !auditModelRegistry.getAuditPathMapper().isEmpty());
-        }
     }
 
     /**
@@ -580,7 +573,9 @@ public class AuditComponentImpl implements AuditComponent
                     return recordAuditValuesImpl(mappedValues);
                 }
             };
-            return transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+            txnHelper.setForceWritable(true);
+            return txnHelper.doInTransaction(callback, false, true);
         case TXN_READ_WRITE:
             return recordAuditValuesImpl(mappedValues);
         default:

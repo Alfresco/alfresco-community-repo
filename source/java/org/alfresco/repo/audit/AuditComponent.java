@@ -75,8 +75,6 @@ public interface AuditComponent
      * this method might return <tt>false</tt> are: auditing is disabled; no audit applications
      * have been registered.  Sometimes, depending on the log level, this method may always
      * return <tt>true</tt>.
-     * <p/>
-     * <tt>false</tt> will always be returned if the server is read-only.
      * 
      * 
      * @return                  Returns <code>true</code> if the calling code (data producers)

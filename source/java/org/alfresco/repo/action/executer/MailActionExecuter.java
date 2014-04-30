@@ -703,8 +703,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 
                 final String currentUserName = authService.getCurrentUserName();
                 
-                final List<String> usersNotToBeUsedInFromField = Arrays.asList(new String[] {AuthenticationUtil.getAdminUserName(),
-                                                                                             AuthenticationUtil.getSystemUserName(),
+                final List<String> usersNotToBeUsedInFromField = Arrays.asList(new String[] {AuthenticationUtil.getSystemUserName(),
                                                                                              AuthenticationUtil.getGuestUserName()});
                 if ( !usersNotToBeUsedInFromField.contains(currentUserName))
                 {

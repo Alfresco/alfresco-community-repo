@@ -183,6 +183,8 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
         fieldDef.setMandatory(propDef.isMandatory());
         fieldDef.setRepeating(propDef.isMultiValued());
 
+        fieldDef.setIndexTokenisationMode(propDef.getIndexTokenisationMode());
+
         // any property from the system model (sys prefix) should be protected
         // the model doesn't
         // currently enforce this so make sure they are not editable

@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -42,6 +43,7 @@ public class PropertyFieldDefinition extends FieldDefinition
     protected DataTypeParameters dataTypeParams;
     protected boolean mandatory = false;
     protected boolean repeats = false;
+    protected IndexTokenisationMode indexTokenisationMode = IndexTokenisationMode.TRUE;
     protected List<FieldConstraint> constraints;
     
     /**
@@ -147,6 +149,26 @@ public class PropertyFieldDefinition extends FieldDefinition
     public void setConstraints(List<FieldConstraint> constraints)
     {
         this.constraints = constraints;
+    }
+
+    /**
+     * Returns a IndexTokenisationMode the property
+     * 
+     * @return IndexTokenisationMode objects or null
+     */
+    public IndexTokenisationMode getIndexTokenisationMode()
+    {
+        return indexTokenisationMode;
+    }
+
+    /**
+     * Sets the IndexTokenisationMode objects for the property
+     * 
+     * @param indexTokenisationMode objects
+     */
+    public void setIndexTokenisationMode(IndexTokenisationMode indexTokenisationMode)
+    {
+        this.indexTokenisationMode = indexTokenisationMode;
     }
 
     /*

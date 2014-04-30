@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,21 +29,23 @@ import org.alfresco.api.AlfrescoPublicApi;
 public enum LockType
 {
     /**
-     * NODE_LOCK - no-one can update or delete the locked node.
+     * No-one can update or delete the locked node. No one can add children to the locked node.
      * 
      * @deprecated Deprecated in 4.1.6.  Will be replaced by a more descriptive name.
      */
     @Deprecated
     READ_ONLY_LOCK,
+
     /**
-     * READ_ONLY_LOCK - no-one can update or delete the locked node. No one can add children to the locked node.
+     * Only the owner can update or delete the locked node. The owner can add children to the locked node.
      * 
      * @deprecated Deprecated in 4.1.6.  Will be replaced by a more descriptive name.
      */
     @Deprecated
     WRITE_LOCK,
+
     /**
-     * WRITE_LOCK - the owner can update or delete the locked node. The owner can add children to the locked node.
+     * No-one can update or delete the locked node. The owner and non-owner can create children to the locked node.
      * 
      * @deprecated Deprecated in 4.1.6.  Will be replaced by a more descriptive name.
      */

@@ -19,8 +19,10 @@
 package org.alfresco.repo.web.scripts.invite;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.template.TemplateNode;
@@ -36,6 +38,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -163,7 +167,7 @@ public class InviteByTicket extends DeclarativeWebScript
         
         // get the site info
         SiteInfo siteInfo = siteService.getSite(invitation.getResourceName());
-        String invitationStatus = InviteInfo.INVITATION_STATUS_PENDING;
+        String invitationStatus = getInvitationStatus(invitation);
         
         NodeRef inviterRef = personService.getPerson(invitation.getInviterUserName());
         TemplateNode inviterPerson = null;
@@ -193,5 +197,31 @@ public class InviteByTicket extends DeclarativeWebScript
          
          return ret;
     }
-
+    
+    private String getInvitationStatus(NominatedInvitation invitation)
+    {
+        String invitee = invitation.getInviteeUserName();
+        String site = invitation.getResourceName();
+        // check is invitee is site member
+        boolean isUserMember = serviceRegistry.getSiteService().isMember(site, invitee);
+        
+        WorkflowTaskQuery query = new WorkflowTaskQuery();
+        query.setTaskName(WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
+        query.setProcessId(invitation.getInviteId());
+        // query current workflow's task activitiInvitePendingTask 
+        List<WorkflowTask> pendingInvitationTasks = serviceRegistry.getWorkflowService().queryTasks(query, false);
+        // if it's here - pending invitation
+        if (!pendingInvitationTasks.isEmpty())
+        {
+            return InviteInfo.INVITATION_STATUS_PENDING;
+        }
+        else if (isUserMember)
+        {
+            return InviteInfo.INVITATION_STATUS_ACCEPTED;
+        }
+        else
+        {
+            return InviteInfo.INVITATION_STATUS_REJECTED;
+        }
+    }
 }

@@ -26,6 +26,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
+import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -521,6 +522,17 @@ public class InviteServiceTest extends BaseWebScriptTest
         return result;
     }
 
+    private JSONObject getInviteInfo(String inviteId, String inviteTicket, String inviteeUid) throws Exception
+    {
+        String url = "/api/invite/" + inviteId + "/" + inviteTicket + "?inviteeUserName=" + inviteeUid;
+        
+        Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
+
+        JSONObject result = new JSONObject(response.getContentAsString());
+
+        return result;
+    }
+
     public void testStartInvite() throws Exception
     {
         JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_SITE_ROLE,
@@ -687,6 +699,50 @@ public class InviteServiceTest extends BaseWebScriptTest
         // assertEquals(0, getInvitesResult.getJSONArray("invites").length());
         
         
+    }
+
+    public void testGetInvitationStatus() throws Exception
+    {
+        for (String invitationStatus : new String[]{ 
+                InviteInfo.INVITATION_STATUS_REJECTED, 
+                InviteInfo.INVITATION_STATUS_ACCEPTED
+            })
+        {
+            // inviter starts invite (sends out invitation)
+            JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_SITE_ROLE,
+                    SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+            
+            String inviteId = result.getString("inviteId");
+            String inviteTicket = result.getString("inviteTicket");
+            String inviteeUserName = result.getString("inviteeUserName");
+            // get inviteInfo about invitation
+            result = getInviteInfo(inviteId, inviteTicket, inviteeUserName);
+            // get status of current invitation
+            String status = result.getJSONObject("invite").getString("invitationStatus");
+            // it should be peding
+            assertEquals(status, InviteInfo.INVITATION_STATUS_PENDING);
+            // accept/reject invitation
+            if (invitationStatus.equals(InviteInfo.INVITATION_STATUS_REJECTED))
+            {
+                rejectInvite(inviteId, inviteTicket, Status.STATUS_OK);
+            }
+            else if (invitationStatus.equals(InviteInfo.INVITATION_STATUS_ACCEPTED))
+            {
+                // Invitee accepts invitation to a Site from Inviter
+                String acceptInviteUrl = URL_INVITE + "/" + inviteId + "/" + inviteTicket + "/accept";
+                sendRequest(new PutRequest(acceptInviteUrl, (byte[])null, null), Status.STATUS_OK);
+            }
+            else
+            {
+                fail();
+            }
+            // get inviteInfo about invitation
+            result = getInviteInfo(inviteId, inviteTicket, inviteeUserName);
+            
+            status = result.getJSONObject("invite").getString("invitationStatus");
+            // invitation status should be accepted/rejected
+            assertEquals(status, invitationStatus);
+        }
     }
 
     public void testGetInvitesByInviteId() throws Exception

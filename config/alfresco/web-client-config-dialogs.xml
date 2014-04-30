@@ -595,10 +595,6 @@
                  icon="/images/icons/users_large.gif" title-id="manage_users" 
                  description-id="manageusers_description"
                  actions-config-id="create_user_menu" show-ok-button="false"/>
-         
-         <dialog name="createProject" page="/jsp/projects/create-project-details.jsp" managed-bean="CreateProjectDialog"
-                 icon="/images/icons/create_project_large.gif" title-id="create_project_title" 
-                 description-id="create_project_desc" />
                  
          <dialog name="addTranslation" page="/jsp/ml/add-translation-dialog.jsp" managed-bean="AddTranslationDialog"
                  icon="/images/icons/add_tranlsation_large.gif" title-id="add_translation" description-id="add_translation_description"/>

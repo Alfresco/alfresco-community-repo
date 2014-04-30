@@ -32,6 +32,7 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
@@ -81,6 +82,15 @@ public class AuditLogPost extends BaseAuditRetrievalWebScript
             }
 
             String destinationParam = json.getString(PARAM_DESTINATION);
+            if (StringUtils.isBlank(destinationParam))
+            {
+                status.setCode(HttpServletResponse.SC_BAD_REQUEST,
+                        "Please select a record folder.");
+                Map<String, Object> templateModel = createTemplateParameters(req, res, model);
+                sendStatus(req, res, status, cache, format, templateModel);
+                return;
+            }
+
             NodeRef destination = new NodeRef(destinationParam);
 
             if (!this.nodeService.exists(destination))

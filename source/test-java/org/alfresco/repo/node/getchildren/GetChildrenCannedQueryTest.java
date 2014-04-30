@@ -75,6 +75,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
@@ -83,6 +84,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * GetChildren canned query - simple unit tests
@@ -1051,7 +1053,7 @@ public class GetChildrenCannedQueryTest extends TestCase
             logger.info("testSorting: "+count+" items ["+sortPropQName+","+(sortAscending ? " ascending" : " descending")+"]");
         }
         
-        Collator collator = Collator.getInstance();
+        Collator collator = AlfrescoCollator.getInstance(I18NUtil.getContentLocale());
         
         // check order
         Serializable prevVal = null;

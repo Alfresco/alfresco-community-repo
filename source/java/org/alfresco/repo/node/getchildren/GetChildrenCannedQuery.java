@@ -20,8 +20,6 @@ package org.alfresco.repo.node.getchildren;
 
 import java.io.Serializable;
 import java.text.Collator;
-import java.text.ParseException;
-import java.text.RuleBasedCollator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -61,6 +59,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
@@ -374,7 +373,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         {
             this.sortProps = sortProps;
             // try to overrider collator comparison rules
-            this.collator = updateCollatorRules(Collator.getInstance(I18NUtil.getContentLocale())); 
+            this.collator = AlfrescoCollator.getInstance(I18NUtil.getContentLocale()); 
         }
         
         public int compare(FilterSortNode n1, FilterSortNode n2)
@@ -450,32 +449,6 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             
             return result;
         }
-    }
-    
-    // update RuleBasedCollator rules to change order of characters during comparison
-    // MNT-10169 fix
-    private Collator updateCollatorRules(Collator collator)
-    {
-        if (collator instanceof RuleBasedCollator)
-        {
-            try
-            {
-                // get current collator rules
-                String collatorRules = ((RuleBasedCollator)collator).getRules();
-                // we shoudn't ignore space character in character comparison - put it before u0021 character
-                String newCollatorRules = collatorRules.replaceAll("<'\u0021'", "<'\u0020'<'\u0021'");
-                // create new collator with overridden rules
-                return new RuleBasedCollator(newCollatorRules);
-            }
-            catch(ParseException e)
-            {
-                if (logger.isWarnEnabled())
-                {
-                    logger.warn("Error on overwriting RuleBasedCollator rules " + e.getMessage());
-                }
-            }
-        }
-        return collator;
     }
     
     private boolean includeAspects(NodeRef nodeRef, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)

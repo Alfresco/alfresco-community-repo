@@ -247,7 +247,7 @@
     <bean id="defaultDataSource" parent="baseDefaultDataSource" />
     
     <!-- Datasource bean -->
-    <bean id="baseDefaultDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <bean id="baseDefaultDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" abstract="true">
         <property name="driverClassName">
             <value>${db.driver}</value>
         </property>

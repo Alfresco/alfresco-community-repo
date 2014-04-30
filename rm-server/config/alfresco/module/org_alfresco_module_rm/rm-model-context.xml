@@ -3,8 +3,11 @@
 
 <beans>
 
+   <!-- Ensure backwards compatibility with 4.2 and 4.2.1 -->
+   <bean class="org.alfresco.module.org_alfresco_module_rm.model.compatibility.DictionaryBootstrapPostProcessor"/>
+
    <!-- Bootstrap Records Management Models -->
-   <bean id="org_alfresco_module_rm_dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="siteService_dictionaryBootstrap">
+   <bean id="org_alfresco_module_rm_dictionaryBootstrap" parent="dictionaryModelBootstrap">
       <property name="models">
          <list>
             <value>alfresco/module/org_alfresco_module_rm/model/recordsModel.xml</value>

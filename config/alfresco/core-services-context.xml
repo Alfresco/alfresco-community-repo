@@ -491,7 +491,7 @@
             <ref bean="nodeService" />
         </property>
         <property name="contentService">
-            <ref bean="ContentService"/>
+            <ref bean="contentService"/>
         </property>
         <property name="resourceBundleBaseNamesCache">
             <ref bean="resourceBundleBaseNamesCache"/>
@@ -744,7 +744,7 @@
                 <property name="targetSource">
                     <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
                         <property name="targetBeanName">
-                            <idref bean="messageService" />
+                            <idref bean="MessageService" />
                         </property>
                     </bean>
                 </property> 

@@ -257,7 +257,13 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     
     private String getBaseDir()
     {
-    	return getPath(getBaseNodeRef());
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>()
+        {
+            public String doWork() throws Exception
+            {
+                return getPath(getBaseNodeRef());
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
         
     /* (non-Javadoc)

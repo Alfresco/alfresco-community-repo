@@ -299,26 +299,16 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         // Now listen for future license changes
         licenseService.registerOnLicenseChange(this);
         
-        // load the license
-        RetryingTransactionCallback<Void> loadLicenseCallback = new RetryingTransactionCallback<Void>()
+        try
+        {   
+            // Verify license has side effect of loading any new licenses
+            licenseService.verifyLicense();
+        }
+        catch (LicenseException e)
         {
-            public Void execute() 
-            {
-                try
-                {   
-                    // Verify license has side effect of loading any new licenses
-                    licenseService.verifyLicense();
-                    return null;
-                }
-                catch (LicenseException e)
-                {
-                    // Swallow Licence Exception Here
-                    // Don't log error: It'll be reported later and the logging fails
-                    return null;
-                }
-            }
+            // Swallow Licence Exception Here
+            // Don't log error: It'll be reported by other means
         };
-        helper.doInTransaction(loadLicenseCallback, false, false);
     }
 
     @Override

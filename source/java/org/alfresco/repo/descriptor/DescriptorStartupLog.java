@@ -149,7 +149,8 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
         }
         
         // Log Repository Descriptors
-        if (logger.isInfoEnabled())
+        // MER - work around for currentRepositoryDescriptor == null
+        if (logger.isInfoEnabled() && descriptorService.getCurrentRepositoryDescriptor() != null)
         {
             Descriptor serverDescriptor = descriptorService.getServerDescriptor();
             Descriptor currentDescriptor = descriptorService.getCurrentRepositoryDescriptor();
@@ -176,7 +177,7 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
         }
         
         // Issue a warning if the system is in read-only mode
-        if (!transactionService.getAllowWrite())
+        if (logger.isWarnEnabled() && !transactionService.getAllowWrite())
         {
             logger.warn(I18NUtil.getMessage(SYSTEM_WARN_READONLY));
         }

@@ -22,6 +22,9 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Map;
 
+import org.alfresco.repo.audit.AuditComponent;
+import org.alfresco.repo.audit.AuditServiceImpl;
+import org.alfresco.repo.audit.UserAuditFilter;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -66,6 +69,14 @@ public class AuditWebScriptTest extends BaseWebScriptTest
     {
         super.setUp();
         ctx = getServer().getApplicationContext();
+        //MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
+        UserAuditFilter userAuditFilter = new UserAuditFilter();
+        userAuditFilter.setUserFilterPattern("System;.*");
+        userAuditFilter.afterPropertiesSet();
+        AuditComponent auditComponent = (AuditComponent) ctx.getBean("auditComponent");
+        auditComponent.setUserAuditFilter(userAuditFilter);
+        AuditServiceImpl auditServiceImpl = (AuditServiceImpl) ctx.getBean("auditService");
+        auditServiceImpl.setAuditComponent(auditComponent);
         authenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
         auditService = (AuditService) ctx.getBean("AuditService");
         admin = AuthenticationUtil.getAdminUserName();

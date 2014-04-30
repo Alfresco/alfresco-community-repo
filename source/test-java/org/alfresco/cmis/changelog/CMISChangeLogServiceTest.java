@@ -38,6 +38,9 @@ import org.alfresco.cmis.CMISChangeType;
 import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.audit.AuditComponent;
+import org.alfresco.repo.audit.AuditServiceImpl;
+import org.alfresco.repo.audit.UserAuditFilter;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -433,6 +436,14 @@ public class CMISChangeLogServiceTest extends TestCase
         transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
+        //MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
+        UserAuditFilter userAuditFilter = new UserAuditFilter();
+        userAuditFilter.setUserFilterPattern("System;.*");
+        userAuditFilter.afterPropertiesSet();
+        AuditComponent auditComponent = (AuditComponent) applicationContext.getBean("auditComponent");
+        auditComponent.setUserAuditFilter(userAuditFilter);
+        AuditServiceImpl auditServiceImpl = (AuditServiceImpl) applicationContext.getBean("auditService");
+        auditServiceImpl.setAuditComponent(auditComponent);
         auditSubsystem = (AuditModelRegistryImpl) applicationContext.getBean("Audit");
         
         // initialise audit subsystem

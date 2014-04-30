@@ -375,9 +375,11 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             if(tenantService.isEnabled()) {
                 query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
             }
-            
-            // Add involvment filtering if user is not admin
-            if(processInstanceId == null && !authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) {
+
+            // Add involvement filtering if user is not admin
+            if(processInstanceId == null && !authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()) &&
+                    candidateUser == null && candidateGroup == null)
+            {
                 query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
             }
             
@@ -558,8 +560,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
             
             // Add involvement filtering if user is not admin
-            if(processInstanceId == null && !authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()) &&
-                    candidateUser == null && candidateGroup == null)
+            if(processInstanceId == null && !authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()))
             {
                 query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
             }

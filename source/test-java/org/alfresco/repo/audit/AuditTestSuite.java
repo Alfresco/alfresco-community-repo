@@ -40,6 +40,7 @@ public class AuditTestSuite extends TestSuite
         suite.addTestSuite(AuditableAspectTest.class);
         suite.addTestSuite(AuditBootstrapTest.class);
         suite.addTestSuite(AuditComponentTest.class);
+        suite.addTestSuite(UserAuditFilterTest.class);
         
         suite.addTest(new JUnit4TestAdapter(PropertyAuditFilterTest.class));
         suite.addTest(new JUnit4TestAdapter(AccessAuditorTest.class));

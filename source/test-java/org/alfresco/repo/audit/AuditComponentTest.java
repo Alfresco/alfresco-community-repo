@@ -932,8 +932,6 @@ public class AuditComponentTest extends TestCase
         AuthenticationUtil.runAs(testRunAs, "SomeOtherUser");
     }
     
-    
-    
     /**
      * Clearn the audit log as 'admin'
      */

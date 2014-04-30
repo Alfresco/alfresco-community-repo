@@ -75,6 +75,7 @@ public class AuditComponentImpl implements AuditComponent
     private AuditDAO auditDAO;
     private TransactionService transactionService;
     private AuditFilter auditFilter;
+    private UserAuditFilter userAuditFilter;
     
     /**
      * Default constructor
@@ -124,6 +125,11 @@ public class AuditComponentImpl implements AuditComponent
     public void setAuditFilter(AuditFilter auditFilter)
     {
         this.auditFilter = auditFilter;
+    }
+
+    public void setUserAuditFilter(UserAuditFilter userAuditFilter)
+    {
+        this.userAuditFilter = userAuditFilter;
     }
 
     /**
@@ -499,7 +505,8 @@ public class AuditComponentImpl implements AuditComponent
         ParameterCheck.mandatory("rootPath", rootPath);
         AuditApplication.checkPathFormat(rootPath);
         
-        if (values == null || values.isEmpty() || !areAuditValuesRequired() || !auditFilter.accept(rootPath, values))
+        String username = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (values == null || values.isEmpty() || !areAuditValuesRequired() || !userAuditFilter.acceptUser(username) || !auditFilter.accept(rootPath, values))
         {
             return Collections.emptyMap();
         }

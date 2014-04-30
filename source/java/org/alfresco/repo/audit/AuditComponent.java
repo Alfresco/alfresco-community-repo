@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -53,6 +53,13 @@ public interface AuditComponent
      */
     public void setAuditEnabled(boolean enable);
 
+    /**
+     * @param userAuditFilter
+     * 
+     * @since 4.2
+     */
+    public void setUserAuditFilter(UserAuditFilter userAuditFilter);
+    
     /**
      * Get all registered audit applications, whether active or not.
      * 

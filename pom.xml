@@ -54,12 +54,6 @@
             <groupId>org.springframework.extensions.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
             <version>${dependency.surf.version}</version>
-            <exclusions>
-                <exclusion>
-                  <groupId>org.freemarker</groupId>
-                  <artifactId>freemarker</artifactId>
-                </exclusion>            
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.extensions.surf</groupId>
@@ -173,12 +167,6 @@
             <version>${dependency.surf.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                  <groupId>org.freemarker</groupId>
-                  <artifactId>freemarker</artifactId>
-                </exclusion>   
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>

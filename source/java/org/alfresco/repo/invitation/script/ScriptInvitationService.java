@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,12 +22,16 @@ import java.util.List;
 
 import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria.InvitationType;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.util.ParameterCheck;
 import org.mozilla.javascript.Scriptable;
 import org.springframework.beans.factory.InitializingBean;
@@ -55,6 +59,8 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
 
     /** The Script Invitation Factory */
     private ScriptInvitationFactory scriptInvitationFactory;
+
+    private SiteService siteService;
 
     /**
      * Set the invitation service
@@ -84,6 +90,11 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
+    }
+    
+    public void setSiteService(SiteService siteService) 
+    {
+        this.siteService = siteService;
     }
     
     /**
@@ -120,7 +131,30 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
             crit.setInvitationType(InvitationType.valueOf(invitationType));
         }
     
-        List<Invitation> invitations = invitationService.searchInvitation(crit);
+        //MNT-9905 Pending Invites created by one site manager aren't visible to other site managers
+        String currentUser = AuthenticationUtil.getRunAsUser();
+        String siteShortName = crit.getResourceName();
+        List<Invitation> invitations;
+
+        if (siteShortName != null && (SiteModel.SITE_MANAGER).equals(siteService.getMembersRole(siteShortName, currentUser)))
+        {
+            final InvitationSearchCriteriaImpl criteria = crit;
+
+            RunAsWork<List<Invitation>> runAsSystem = new RunAsWork<List<Invitation>>()
+            {
+                public List<Invitation> doWork() throws Exception
+                {
+                    return invitationService.searchInvitation(criteria);
+                }
+            };
+
+            invitations = AuthenticationUtil.runAs(runAsSystem, AuthenticationUtil.getSystemUserName());
+        }
+        else
+        {
+            invitations = invitationService.searchInvitation(crit);
+        }
+        
         ScriptInvitation<?>[] ret = new ScriptInvitation[invitations.size()];
         int i = 0;
         for(Invitation item : invitations)

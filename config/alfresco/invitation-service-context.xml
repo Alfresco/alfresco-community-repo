@@ -72,6 +72,7 @@
         <property name="invitationService" ref="InvitationService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="personService" ref="PersonService"/>
+        <property name="siteService" ref="SiteService"/>
     </bean>
    
    <bean id="InviteHelper" class="org.alfresco.repo.invitation.InviteHelper">

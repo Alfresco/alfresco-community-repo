@@ -248,6 +248,7 @@
         <property name="contentService" ref="ContentService" />
         <property name="userPermissions">
             <list>
+                <value>Unlock</value>
                 <value>CancelCheckOut</value>
                 <value>ChangePermissions</value>
                 <value>CreateChildren</value>

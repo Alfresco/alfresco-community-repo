@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -261,7 +262,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         {
             public Descriptor execute() 
             {
-                    return installedRepoDescriptorDAO.getDescriptor();
+                return installedRepoDescriptorDAO.getDescriptor();
             }
         };
         Descriptor installed =  helper.doInTransaction(getDescriptorCallback, false, false);
@@ -299,15 +300,34 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         // Now listen for future license changes
         licenseService.registerOnLicenseChange(this);
         
+        // load the license
+        RetryingTransactionCallback<Void> loadLicenseCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                // Verify license has side effect of loading any new licenses
+                licenseService.verifyLicense();
+                return null;
+            }
+        };
         try
-        {   
-            // Verify license has side effect of loading any new licenses
-            licenseService.verifyLicense();
+        {
+            helper.doInTransaction(loadLicenseCallback, false, false);
         }
-        catch (LicenseException e)
+        catch (Exception e)
         {
             // Swallow Licence Exception Here
-            // Don't log error: It'll be reported by other means
+            if (ExceptionStackUtil.getCause(e, LicenseException.class) != null)
+            {
+                // We found a LicenseException in the bowels
+                // Don't log error: It'll be reported by other means
+            }
+            else
+            {
+                // The error here is something else unforeseen
+                throw e;
+            }
         };
     }
 
@@ -385,8 +405,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             {
                 if (currentRepoDescriptor == null)
                 {
-                    currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor,
-                            LicenseMode.UNKNOWN);
+                    currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor, LicenseMode.UNKNOWN);
                 }
             }
         }

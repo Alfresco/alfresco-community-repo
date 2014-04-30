@@ -219,14 +219,15 @@ function main()
             return;
          }
          
-         if (updateNode.isLocked)
+         var workingcopy = updateNode.hasAspect("cm:workingcopy");
+         if (!workingcopy && updateNode.isLocked)
          {
-            // We cannot update a locked document
+            // We cannot update a locked document (except working copy as per MNT-8736)
             exitUpload(404, "Cannot update locked document '" + updateNodeRef + "', supply a reference to its working copy instead.");
             return;
          }
 
-         if (!updateNode.hasAspect("cm:workingcopy"))
+         if (!workingcopy)
          {
             // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)
             updateNode.ensureVersioningEnabled(true, false);

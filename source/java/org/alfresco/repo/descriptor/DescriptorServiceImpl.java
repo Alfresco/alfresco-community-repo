@@ -300,34 +300,15 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         // Now listen for future license changes
         licenseService.registerOnLicenseChange(this);
         
-        // load the license
-        RetryingTransactionCallback<Void> loadLicenseCallback = new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                // Verify license has side effect of loading any new licenses
-                licenseService.verifyLicense();
-                return null;
-            }
-        };
         try
-        {
-            helper.doInTransaction(loadLicenseCallback, false, false);
+        {   
+            // Verify license has side effect of loading any new licenses
+            licenseService.verifyLicense();
         }
-        catch (Exception e)
+        catch (LicenseException e)
         {
             // Swallow Licence Exception Here
-            if (ExceptionStackUtil.getCause(e, LicenseException.class) != null)
-            {
-                // We found a LicenseException in the bowels
-                // Don't log error: It'll be reported by other means
-            }
-            else
-            {
-                // The error here is something else unforeseen
-                throw e;
-            }
+            // Don't log error: It'll be reported by other means
         };
     }
 
@@ -405,7 +386,19 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             {
                 if (currentRepoDescriptor == null)
                 {
-                    currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor, LicenseMode.UNKNOWN);
+                	final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                	
+                	RetryingTransactionCallback<Void> nopLoadLicense = new RetryingTransactionCallback<Void>()
+                	{
+						@Override
+						public Void execute() 
+						{
+		                    currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor, LicenseMode.UNKNOWN);
+		                    return null;
+						}
+                	};
+                	            
+                 	txnHelper.doInTransaction(nopLoadLicense, false, false);
                 }
             }
         }
@@ -736,8 +729,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             };
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
             txnHelper.setForceWritable(true);
-            // ALF-19629 - Need to sort out trnsaction retry and do we need to Job Lock?
-            //txnHelper.doInTransaction(updateLicenseCallback, false, true);
             txnHelper.doInTransaction(updateLicenseCallback);
         }
     }
@@ -756,9 +747,19 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             // Make sure that the repo descriptor is updated the first time
             if (currentRepoDescriptor == null)
             {
-                currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(
-                        serverDescriptor,
-                        LicenseMode.UNKNOWN);
+               	final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+            	RetryingTransactionCallback<Void> nopLoadLicense = new RetryingTransactionCallback<Void>()
+                {
+            		@Override
+            		public Void execute() 
+            		{
+                         currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor, LicenseMode.UNKNOWN);
+                         return null;
+            		}
+                };
+                txnHelper.setForceWritable(true);        
+                txnHelper.doInTransaction(nopLoadLicense, false, false);
+
             }
         }
     }

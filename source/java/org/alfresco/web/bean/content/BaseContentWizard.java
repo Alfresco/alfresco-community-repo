@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,6 +30,7 @@ import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -38,6 +39,7 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
@@ -74,6 +76,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
    protected NodeRef createdNode;
    protected List<SelectItem> objectTypes;
    transient private ContentService contentService;
+   transient private TransactionService transactionService;
    
    protected static final String MSG_NODE_LOCKED = "node_locked_dialog_closed";
    
@@ -291,11 +294,23 @@ public abstract class BaseContentWizard extends BaseWizardBean
    {
       return UICharsetSelector.getCharsetEncodingList();
    }
-   
+
    /**
     * @return Returns a list of object types to allow the user to select from
     */
    public List<SelectItem> getObjectTypes()
+   {
+      return getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<SelectItem>>()
+      {
+         @Override
+         public List<SelectItem> execute() throws Throwable
+         {
+            return getObjectTypesImpl();
+         }
+      }, true);
+   }
+
+   private List<SelectItem> getObjectTypesImpl()
    {
       if ((this.objectTypes == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
@@ -442,7 +457,17 @@ public abstract class BaseContentWizard extends BaseWizardBean
       }
       return contentService;
    }
-   
+
+   protected TransactionService getTransactionService()
+   {
+      if (null == transactionService)
+      {
+          transactionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getTransactionService();
+      }
+
+      return transactionService;
+   }
+
    
    // ------------------------------------------------------------------------------
    // Helper methods

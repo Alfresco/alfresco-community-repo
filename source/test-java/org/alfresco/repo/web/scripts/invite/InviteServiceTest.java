@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,6 +26,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
+import org.alfresco.repo.invitation.script.ScriptInvitationService;
 import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -55,6 +56,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.lang.RandomStringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
@@ -138,6 +140,10 @@ public class InviteServiceTest extends BaseWebScriptTest
         this.transactionService = (TransactionService) getServer().getApplicationContext()
                 .getBean("TransactionService");
         this.nodeArchiveService = (NodeArchiveService)getServer().getApplicationContext().getBean("nodeArchiveService");
+        ScriptInvitationService scriptInvitationService = (ScriptInvitationService) getServer().getApplicationContext().getBean("invitationServiceScript");
+        scriptInvitationService.setSiteService(this.siteService);
+        Invite invite = (Invite) getServer().getApplicationContext().getBean("webscript.org.alfresco.repository.invite.invite.get");
+        invite.setSiteService(this.siteService);
         
         configureMailExecutorForTestMode(this.getServer());
         
@@ -443,12 +449,15 @@ public class InviteServiceTest extends BaseWebScriptTest
                 expectedStatus);
     }
     
-    private JSONObject cancelInvite(String inviteId, int expectedStatus) throws Exception
+    private JSONObject cancelInvite(String inviteId, String siteShortName, int expectedStatus) throws Exception
     {
-        String cancelInviteUrl = URL_INVITE + "/"
-        + INVITE_ACTION_CANCEL + "?inviteId=" + inviteId;
-        
-        Response response = sendRequest(new GetRequest(cancelInviteUrl), expectedStatus);;
+        String cancelInviteUrl = URL_INVITE + "/" + INVITE_ACTION_CANCEL + "?inviteId=" + inviteId;
+        if (siteShortName != null && !siteShortName.isEmpty())
+        {
+            cancelInviteUrl = cancelInviteUrl + "&siteShortName=" + siteShortName;
+        }
+        Response response = sendRequest(new GetRequest(cancelInviteUrl), expectedStatus);
+        ;
         JSONObject result = new JSONObject(response.getContentAsString());
         
         return result;
@@ -513,6 +522,19 @@ public class InviteServiceTest extends BaseWebScriptTest
         // construct get invites URL
         String getInvitesUrl = URL_INVITES + "?siteShortName="
                 + siteShortName;
+
+        // invoke get invites web script
+        Response response = sendRequest(new GetRequest(getInvitesUrl), expectedStatus);
+
+        JSONObject result = new JSONObject(response.getContentAsString());
+
+        return result;
+    }
+
+    private JSONObject listInvitations(String siteShortName, String userNameSearch, int expectedStatus) throws Exception
+    {
+        // construct get invites URL
+        String getInvitesUrl = "/api/sites/" + siteShortName + "/potentialmembers?authorityType=USER&sortBy=fullName&dir=asc&filter=" + userNameSearch + "&maxResults=250";
 
         // invoke get invites web script
         Response response = sendRequest(new GetRequest(getInvitesUrl), expectedStatus);
@@ -633,7 +655,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         String inviteId = result.getString("inviteId");
 
         // Inviter cancels pending invitation
-        cancelInvite(inviteId, Status.STATUS_OK);
+        cancelInvite(inviteId, null, Status.STATUS_OK);
     }
 
     public void testAcceptInvite() throws Exception
@@ -855,7 +877,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         // when inviter 2 (who is not Site Manager of the given site) tries to cancel invite
         // http status FORBIDDEN must be returned
         AuthenticationUtil.setFullyAuthenticatedUser(USER_INVITER_2);
-        cancelInvite(inviteId, Status.STATUS_FORBIDDEN);
+        cancelInvite(inviteId, null, Status.STATUS_FORBIDDEN);
     }
     
     public void testInviteeResourcesDeletedUponRejectWhenNoInvitePending() throws Exception
@@ -966,5 +988,86 @@ public class InviteServiceTest extends BaseWebScriptTest
         // Try and add an existing person to the site with no email address
         // Should return bad request since the email address has not been provided
         startInvite(PERSON_FIRSTNAME, PERSON_LASTNAME, emailAddress, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_1, 400);
+    }
+
+    public void testMNT9905() throws Exception
+    {
+        String[] managerUsersArr = { "user1", "user2" };
+        String[] allUsersArr = { "user1", "user2", "user3", "user4" };
+        String collaborator = "user3";
+
+        try
+        {
+            // create users
+            for (String user : allUsersArr)
+            {
+                final String userName = user;
+                ;
+
+                // Create a person with a blank email address and
+                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        createPerson(userName, userName, userName, " ");
+                        return null;
+                    }
+
+                }, AuthenticationUtil.getSystemUserName());
+            }
+
+            // add manager to site
+            for (String manager : managerUsersArr)
+            {
+                String manag = manager;
+
+                startInvite(manag, manag, SiteModel.SITE_MANAGER, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+                siteService.setMembership(SITE_SHORT_NAME_INVITE_1, manag, SiteModel.SITE_MANAGER);
+            }
+
+            InviteServiceTest.this.authenticationComponent.setCurrentUser(managerUsersArr[0]);
+            JSONObject collInv = startInvite(collaborator, collaborator, SiteModel.SITE_COLLABORATOR, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+            siteService.setMembership(SITE_SHORT_NAME_INVITE_1, collaborator, SiteModel.SITE_COLLABORATOR);
+
+            // get pending invites matching inviter user name used in invite started
+            InviteServiceTest.this.authenticationComponent.setCurrentUser(managerUsersArr[1]);
+            JSONObject getInvitesResult = getInvitesBySiteShortName(SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+            assertEquals(true, getInvitesResult.length() == 1);
+
+            // get site member
+            JSONObject userList = listInvitations(SITE_SHORT_NAME_INVITE_1, "user", Status.STATUS_OK);
+            JSONArray inviteJSONArr = userList.getJSONArray("people");
+            List<String> siteUsers = new ArrayList<String>();
+            for (int i = 0; i < inviteJSONArr.length(); i++)
+            {
+                String userName = (String) inviteJSONArr.getJSONObject(i).get("userName");
+
+                if (userName != null)
+                {
+                    String role = siteService.getMembersRole(SITE_SHORT_NAME_INVITE_1, userName);
+                    if (role != null)
+                    {
+                        siteUsers.add(userName);
+                    }
+                }
+            }
+            assertEquals(3, siteUsers.size());
+
+            // cancel invite different manager
+            String inviteId = (String) collInv.get("inviteId");
+            cancelInvite(inviteId, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+        }
+        finally
+        {
+            AuthenticationUtil.setRunAsUserSystem();
+
+            // delete users
+            for (String user : allUsersArr)
+            {
+                deletePersonByUserName(user);
+            }
+
+            deletePersonByUserName(collaborator);
+        }
     }
 }

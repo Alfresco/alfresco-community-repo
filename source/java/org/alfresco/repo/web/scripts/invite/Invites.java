@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,6 +27,7 @@ import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
 import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.invitation.Invitation;
@@ -214,7 +215,29 @@ public class Invites extends DeclarativeWebScript
                 criteria.setResourceName(siteShortName);
             }
             
-            List<Invitation> invitations = invitationService.searchInvitation(criteria);
+            //MNT-9905 Pending Invites created by one site manager aren't visible to other site managers
+            String currentUser = AuthenticationUtil.getRunAsUser();
+            List<Invitation> invitations;
+
+            if (siteShortNameProvided == true && (SiteModel.SITE_MANAGER).equals(siteService.getMembersRole(siteShortName, currentUser)) && inviterUserNameProvided == false && inviteeUserNameProvided == false)
+            {
+                final InvitationSearchCriteriaImpl crit = criteria;
+
+                RunAsWork<List<Invitation>> runAsSystem = new RunAsWork<List<Invitation>>()
+                {
+                    @Override
+                    public List<Invitation> doWork() throws Exception
+                    {
+                        return invitationService.searchInvitation(crit);
+                    }
+                };
+
+                invitations = AuthenticationUtil.runAs(runAsSystem, AuthenticationUtil.getSystemUserName());
+            }
+            else
+            {
+                invitations = invitationService.searchInvitation(criteria);
+            }
 
             // Put InviteInfo objects (containing workflow path properties
             // wf:inviterUserName, wf:inviteeUserName, wf:siteShortName,

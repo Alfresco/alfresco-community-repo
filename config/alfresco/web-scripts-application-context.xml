@@ -713,6 +713,7 @@
          class="org.alfresco.repo.web.scripts.invite.Invite"
          parent="webscript">
       <property name="invitationService" ref="InvitationService"/>
+      <property name="siteService" ref="SiteService"/>
    </bean>
    
    <!--                                                                                                       -->

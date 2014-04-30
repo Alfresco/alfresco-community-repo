@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,13 +21,16 @@ package org.alfresco.repo.web.scripts.invite;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
-import org.alfresco.util.UrlUtil;
+import org.alfresco.service.cmr.site.SiteService;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -70,12 +73,17 @@ public class Invite extends DeclarativeWebScript
     
     // services
     private InvitationService invitationService;
+    private SiteService siteService;
     
     public void setInvitationService(InvitationService invitationService)
     {
         this.invitationService = invitationService;
     }
     
+    public void setSiteService(SiteService siteService) 
+    {
+        this.siteService = siteService;
+    }
     
     /*
      * (non-Javadoc)
@@ -260,7 +268,31 @@ public class Invite extends DeclarativeWebScript
             // process action 'cancel' with provided parameters
             try
             {
-                invitationService.cancel(inviteId);
+                //MNT-9905 Pending Invites created by one site manager aren't visible to other site managers
+                String currentUser = AuthenticationUtil.getRunAsUser();
+                String siteShortName = req.getParameter(PARAM_SITE_SHORT_NAME);
+
+                if (siteShortName != null && (SiteModel.SITE_MANAGER).equals(siteService.getMembersRole(siteShortName, currentUser)))
+                {
+                    final String invId = inviteId;
+
+                    RunAsWork<Void> runAsSystem = new RunAsWork<Void>()
+                    {
+                        @Override
+                        public Void doWork() throws Exception
+                        {
+                            invitationService.cancel(invId);
+                            return null;
+                        }
+                    };
+
+                    AuthenticationUtil.runAs(runAsSystem, AuthenticationUtil.getSystemUserName());
+                }
+                else
+                {
+                    invitationService.cancel(inviteId);
+                }
+                
                 // add model properties for template to render
                 model.put(MODEL_PROP_KEY_ACTION, ACTION_CANCEL);
                 model.put(MODEL_PROP_KEY_INVITE_ID, inviteId);

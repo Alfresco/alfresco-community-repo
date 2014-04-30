@@ -27,17 +27,26 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.permissions.ACLType;
+import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.solr.Acl;
 import org.alfresco.repo.solr.AclChangeSet;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.Transaction;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.PropertyMap;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -51,8 +60,12 @@ public class SOLRDAOTest extends TestCase
 {
     private ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
 
-    private TransactionService transactionService;
     private AuthenticationComponent authenticationComponent;
+    private MutableAuthenticationService authenticationService;
+    private PersonService personService;
+    private TransactionService transactionService;
+    private NodeService nodeService;
+    private AclDAO aclDaoComponent;
     private SOLRDAO solrDAO;
     
     @Override
@@ -60,7 +73,12 @@ public class SOLRDAOTest extends TestCase
     {
         solrDAO = (SOLRDAO)ctx.getBean("solrDAO");
         authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
-        transactionService = (TransactionService) ctx.getBean("TransactionService");
+        
+        authenticationService = (MutableAuthenticationService)ctx.getBean("authenticationService");
+        personService = (PersonService)ctx.getBean("PersonService");
+        transactionService = (TransactionService)ctx.getBean("transactionComponent");
+        nodeService = (NodeService) ctx.getBean("NodeService");
+        aclDaoComponent = (AclDAO) ctx.getBean("aclDAO");
         
         authenticationComponent.setSystemUserAsCurrentUser();
     }
@@ -341,5 +359,87 @@ public class SOLRDAOTest extends TestCase
         }
         
         return txnIds;
+    }
+
+    private boolean containsAclId(List<Acl> acls, Long id)
+    {
+        for (Acl acl : acls)
+        {
+            if (acl.getId().equals(id))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * MNT-11107: during User Home creation Shared Acl is created that is inherited from Acl
+     * which is assigned to User Home folder node. This Shared Acl is not assigned to any node.
+     * However, solrDAO should be able to find it so that it can be indexed.
+     */
+    public void testInheritedAclIndexing() throws Exception
+    {
+        final String USER_MNT11107 = "TestUserMNT11107";
+
+        Long sharedAclId = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Long>()
+        {
+            @Override
+            public Long execute() throws Throwable
+            {
+                // Create a user
+                if (authenticationService.authenticationExists(USER_MNT11107))
+                    authenticationService.deleteAuthentication(USER_MNT11107);
+                if (personService.personExists(USER_MNT11107))
+                    personService.deletePerson(USER_MNT11107);
+
+                authenticationService.createAuthentication(USER_MNT11107, "PWD".toCharArray());
+                PropertyMap personProperties = new PropertyMap();
+                personProperties.put(ContentModel.PROP_USERNAME, USER_MNT11107);
+                personProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, "title" + USER_MNT11107);
+                personProperties.put(ContentModel.PROP_FIRSTNAME, "firstName");
+                personProperties.put(ContentModel.PROP_LASTNAME, "lastName");
+                personProperties.put(ContentModel.PROP_EMAIL, USER_MNT11107 + "@example.com");
+                personProperties.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+                NodeRef person = personService.createPerson(personProperties);
+
+                NodeRef testUserHomeFolder = (NodeRef) nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
+                assertNotNull("testUserHomeFolder is null", testUserHomeFolder);
+
+                Long aclIdForUserHomeFolder = nodeService.getNodeAclId(testUserHomeFolder);
+                Long inheritedAclId = aclDaoComponent.getInheritedAccessControlList(aclIdForUserHomeFolder);
+
+                return inheritedAclId;
+            }
+        });
+
+        try
+        {
+            assertNotNull("Acl for User Home folder should have inherited Acl", sharedAclId);
+            AccessControlListProperties aclProps = aclDaoComponent.getAccessControlListProperties(sharedAclId);
+            assertEquals("Inherited Acl should be of SHARED type", aclProps.getAclType(), ACLType.SHARED);
+            assertTrue("Acl should inherit", aclProps.getInherits());
+            assertNotNull("AclChangeSet for inherited Acl should not be NULL", aclProps.getAclChangeSetId());
+
+            List<Long> aclChangeSetIds = new ArrayList<Long>();
+            aclChangeSetIds.add(aclProps.getAclChangeSetId());
+            List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, null, 1000);
+            assertTrue("Shared Acl should be found by solrDAO so that it can be indexed", containsAclId(acls, sharedAclId));
+        }
+        finally
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    // Tidy up
+                    authenticationComponent.setSystemUserAsCurrentUser();
+                    authenticationService.deleteAuthentication(USER_MNT11107);
+                    personService.deletePerson(USER_MNT11107);
+                    return null;
+                }
+            });
+        }
     }
 }

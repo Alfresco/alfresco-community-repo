@@ -61,7 +61,7 @@
    
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.email}"/>
-   <h:inputText id="email" value="#{WizardManager.bean.email}" disabled="#{WizardManager.bean.personPropertiesImmutability.email == true}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
+    <h:inputText id="email" value="#{WizardManager.bean.email}" validator="#{WizardManager.bean.validateEmail}" disabled="#{WizardManager.bean.personPropertiesImmutability.email == true}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"

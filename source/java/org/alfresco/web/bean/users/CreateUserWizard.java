@@ -60,6 +60,7 @@ import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.validator.routines.EmailValidator;
 
 /**
  * @author Kevin Roast
@@ -73,6 +74,7 @@ public class CreateUserWizard extends BaseWizardBean
     protected static final String ERROR_DOMAIN_MISMATCH = "error_domain_mismatch";
     
     private static final String MSG_ERROR_NEWUSER_HOME_SPACE = "error_newuser_home_space";
+    private static final String MSG_ERROR_MAIL_NOT_VALID = "email_format_is_not_valid";
     
     protected static final String QUOTA_UNITS_KB = "kilobyte";
     protected static final String QUOTA_UNITS_MB = "megabyte";
@@ -617,6 +619,24 @@ public class CreateUserWizard extends BaseWizardBean
         {
             String err = MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(),
                     ERROR_DOMAIN_MISMATCH), e.getTenantA(), e.getTenantB());
+            throw new ValidatorException(new FacesMessage(err));
+        }
+    }
+
+    /**
+     * Validate Email field data is acceptable
+     *
+     * @param context
+     * @param component
+     * @param value
+     * @throws ValidatorException
+     */
+    public void validateEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException
+    {
+        EmailValidator emailValidator = EmailValidator.getInstance();
+        if (!emailValidator.isValid((String) value))
+        {
+            String err = Application.getMessage(context, MSG_ERROR_MAIL_NOT_VALID);
             throw new ValidatorException(new FacesMessage(err));
         }
     }

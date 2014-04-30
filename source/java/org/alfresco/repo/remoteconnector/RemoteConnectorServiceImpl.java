@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,6 +39,7 @@ import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.ProxyHost;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
@@ -181,8 +182,21 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
             {
                 logger.debug("Header: " + hdr );
             }
-            StringRequestEntity re = (StringRequestEntity)request.getRequestBody();
-            logger.debug("Payload: " + re.getContent());
+            Object requestBody = request.getRequestBody();
+            if (requestBody instanceof StringRequestEntity)
+            {
+                StringRequestEntity re = (StringRequestEntity)request.getRequestBody();
+                logger.debug("Payload (string): " + re.getContent());
+            }
+            else if (requestBody instanceof ByteArrayRequestEntity)
+            {
+                ByteArrayRequestEntity re = (ByteArrayRequestEntity)request.getRequestBody();
+                logger.debug("Payload (byte array): " + re.getContent().toString());
+            }
+            else
+            {
+                logger.debug("Payload is not of a readable type.");
+            }
         }
         
         // Perform the request, and wrap the response

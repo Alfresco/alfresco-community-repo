@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1316,8 +1316,6 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
      * Return the system container for the specified assoc name.
      * The containers are cached in a thread safe Tenant aware cache.
      *
-     * @param assocQName
-     *
      * @return System container, <b>which must exist</b>
      */
     private NodeRef getSystemContainer(QName assocQName)
@@ -1556,8 +1554,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
 
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        boolean isAuthority = dictionaryService.isSubClass(nodeService.getType(nodeRef),
-                ContentModel.TYPE_AUTHORITY_CONTAINER);
+        boolean isAuthority = dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_AUTHORITY_CONTAINER);
         QName idProp = isAuthority ? ContentModel.PROP_AUTHORITY_NAME  : ContentModel.PROP_USERNAME;
         String authBefore = DefaultTypeConverter.INSTANCE.convert(String.class, before.get(idProp));
         if (authBefore == null)
@@ -1728,9 +1725,6 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.cache.RefreshableCacheListener#onRefreshableCacheEvent(org.alfresco.repo.cache.RefreshableCacheEvent)
-     */
     @Override
     public void onRefreshableCacheEvent(RefreshableCacheEvent refreshableCacheEvent)
     {
@@ -1741,20 +1735,12 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         userAuthorityCache.clear();
     }
 
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.cache.RefreshableCacheListener#getCacheId()
-     */
     @Override
     public String getCacheId()
     {
         return AuthorityDAOImpl.class.getName();
     }
 
-
-    /* (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
     @Override
     public void afterPropertiesSet() throws Exception
     {

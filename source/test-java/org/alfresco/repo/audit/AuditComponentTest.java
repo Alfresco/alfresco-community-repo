@@ -104,7 +104,12 @@ public class AuditComponentTest extends TestCase
     public void setUp() throws Exception
     {
         auditModelRegistry = (AuditModelRegistryImpl) ctx.getBean("auditModel.modelRegistry");
+        //MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
+        UserAuditFilter userAuditFilter = new UserAuditFilter();
+        userAuditFilter.setUserFilterPattern("System;.*");
+        userAuditFilter.afterPropertiesSet();
         auditComponent = (AuditComponent) ctx.getBean("auditComponent");
+        auditComponent.setUserAuditFilter(userAuditFilter);
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         auditService = serviceRegistry.getAuditService();
         transactionService = serviceRegistry.getTransactionService();

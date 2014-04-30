@@ -33,6 +33,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies;
 import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute;
+import org.alfresco.repo.audit.AuditComponent;
+import org.alfresco.repo.audit.AuditServiceImpl;
+import org.alfresco.repo.audit.UserAuditFilter;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -146,6 +149,14 @@ public class TaggingServiceImplTest extends TestCase
         this.checkOutCheckInService = (CheckOutCheckInService) ctx.getBean("CheckoutCheckinService");
         this.actionService = (ActionService)ctx.getBean("ActionService");
         this.transactionService = (TransactionService)ctx.getBean("transactionComponent");
+        //MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
+        UserAuditFilter userAuditFilter = new UserAuditFilter();
+        userAuditFilter.setUserFilterPattern("System;.*");
+        userAuditFilter.afterPropertiesSet();
+        AuditComponent auditComponent = (AuditComponent) ctx.getBean("auditComponent");
+        auditComponent.setUserAuditFilter(userAuditFilter);
+        AuditServiceImpl auditServiceImpl = (AuditServiceImpl) ctx.getBean("auditService");
+        auditServiceImpl.setAuditComponent(auditComponent);
         this.auditService = (AuditService)ctx.getBean("auditService");
         this.scriptService = (ScriptService)ctx.getBean("scriptService");        
         this.actionTrackingService = (ActionTrackingService)ctx.getBean("actionTrackingService");

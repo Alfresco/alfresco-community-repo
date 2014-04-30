@@ -118,11 +118,17 @@ public class DifferrentMimeTypeTest extends TestCase
         contentReader.setMimetype(sourceMimeType);
         outputWriter.setMimetype(targetMimeType);
 
+        // verify that there is a desired transformer for actual file MIME type
+        ContentTransformer actualTransformer = this.registry.getTransformer(mimetypeService.getMimetypeIfNotMatches(contentReader),contentReader.getSize(), targetMimeType, options);
+        String assertMessageActualTransformer = "Transformer not found for converting " + mimetypeService.getMimetypeIfNotMatches(contentReader) + " to " + targetMimeType;
+        assertNotNull(assertMessageActualTransformer, actualTransformer);
+
         contentTransformer = this.registry.getTransformer(sourceMimeType, contentReader.getSize(), targetMimeType, options);
-        assertNotNull("contentTransformer not present", contentTransformer);
+        String assertMessageContentTransformer = "Transformer not found for converting " +sourceMimeType + " to " + targetMimeType;
+        assertNotNull(assertMessageContentTransformer, contentTransformer);
 
         // Try to transform file with inaccurate MIME type
-        contentTransformer.transform(contentReader.getReader(), outputWriter, options);
+        contentTransformer.transform(contentReader, outputWriter, options);
         
         // After successful transformation image size should be grater than 0
         assertTrue("File transformation failed. Output file size is '0'", outputWriter.getSize() > 0);

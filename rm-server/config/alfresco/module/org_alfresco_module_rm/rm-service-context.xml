@@ -303,6 +303,7 @@
                       "searchparams" :
                       {
                          "records" : true,
+                         "recordfolders" : false,
                          "vitalrecords" : true
                       }
                    },

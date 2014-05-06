@@ -26,7 +26,9 @@ import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -52,6 +54,9 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
 
     /** Capability service */
     private CapabilityService capabilityService;
+    
+    /** dictionary service */
+    private DictionaryService dictionaryService;
 
     /** Indicators */
     private List<BaseEvaluator> indicators = new ArrayList<BaseEvaluator>();
@@ -82,6 +87,14 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     {
         this.capabilityService = capabilityService;
     }
+    
+    /**
+     * @param dictionaryService dictionary service
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
 
     /**
      * @param indicator registered indicator
@@ -107,35 +120,44 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     @Override
     protected void setRootValues(FileInfo nodeInfo, JSONObject rootJSONObject, boolean useShortQNames)
     {
-        // Set the base root values
-        super.setRootValues(nodeInfo, rootJSONObject, useShortQNames);
-
-        // Get the node reference for convenience
-        NodeRef nodeRef = nodeInfo.getNodeRef();
-
-        if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef,
-                RMPermissionModel.VIEW_RECORDS)))
+        if (nodeInfo != null)
         {
-            // Indicate whether the node is a RM object or not
-            boolean isFilePlanComponent = filePlanService.isFilePlanComponent(nodeInfo.getNodeRef());
-            rootJSONObject.put("isRmNode", isFilePlanComponent);
-
-            if (isFilePlanComponent)
+            // Set the base root values
+            super.setRootValues(nodeInfo, rootJSONObject, useShortQNames);
+    
+            // Get the node reference for convenience
+            NodeRef nodeRef = nodeInfo.getNodeRef();
+    
+            if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef,
+                    RMPermissionModel.VIEW_RECORDS)))
             {
-                rootJSONObject.put("rmNode", setRmNodeValues(nodeRef, useShortQNames));
-
-                // FIXME: Is this the right place to add the information?
-                addInfo(nodeInfo, rootJSONObject);
+                // Indicate whether the node is a RM object or not
+                boolean isFilePlanComponent = filePlanService.isFilePlanComponent(nodeInfo.getNodeRef());
+                rootJSONObject.put("isRmNode", isFilePlanComponent);
+    
+                if (isFilePlanComponent)
+                {
+                    rootJSONObject.put("rmNode", setRmNodeValues(nodeRef, useShortQNames));
+    
+                    // FIXME: Is this the right place to add the information?
+                    addInfo(nodeInfo, rootJSONObject);
+                }
             }
         }
     }
 
+    /**
+     * Helper method to add information about node
+     * 
+     * @param nodeInfo          node information
+     * @param rootJSONObject    root JSON object
+     */
     @SuppressWarnings("unchecked")
     private void addInfo(FileInfo nodeInfo, JSONObject rootJSONObject)
     {
         String itemType = (String) rootJSONObject.get("type");
-        String typeContent = ContentModel.TYPE_CONTENT.toPrefixString(namespaceService);
-        if (itemType.equals(typeContent))
+        QName itemTypeQName = QName.createQName(itemType, namespaceService);
+        if (dictionaryService.isSubClass(itemTypeQName, ContentModel.TYPE_CONTENT))
         {
             NodeRef nodeRef = nodeInfo.getNodeRef();
             List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
@@ -147,7 +169,15 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                 if (!parent.isPrimary())
                 {
                     originatingLocation = parent.getParentRef();
-                    break;
+                    
+                    // only consider the non-RM parent otherwise we can
+                    // run into issues with frozen or transferring records
+                    if (!nodeService.hasAspect(originatingLocation, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+                    {
+                        // assume we have found the correct in-place location
+                        // FIXME when we support multiple in-place locations
+                        break;
+                    }
                 }
             }
 

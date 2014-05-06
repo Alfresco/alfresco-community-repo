@@ -19,6 +19,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.constraint;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,8 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.action.constraint.BaseParameterConstraint;
 import org.alfresco.repo.i18n.StaticMessageLookup;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -81,24 +84,35 @@ public class RecordTypeParameterConstraint extends BaseParameterConstraint
      */
     protected Map<String, String> getAllowableValuesImpl()
     {   
-        // get the file plan
-        // TODO we will likely have to re-implement as a custom control so that context of the file
-        //      plan can be correctly determined when setting the rule up
-        NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-        
-        Set<QName> recordTypes = recordService.getRecordMetadataAspects(filePlan);
-
-        Map<String, String> result = new HashMap<String, String>(recordTypes.size());
-        for (QName recordType : recordTypes)
+        return AuthenticationUtil.runAsSystem(new RunAsWork<Map<String, String>>()
         {
-            AspectDefinition aspectDefinition = dictionaryService.getAspect(recordType);
-            if (aspectDefinition != null)
+            @SuppressWarnings("unchecked")
+            public Map<String, String> doWork() throws Exception
             {
-                result.put(aspectDefinition.getName().getLocalName(), aspectDefinition.getTitle(new StaticMessageLookup()));
+                Map<String, String> result = Collections.EMPTY_MAP;
+                
+                // get the file plan
+                // TODO we will likely have to re-implement as a custom control so that context of the file
+                //      plan can be correctly determined when setting the rule up
+                NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                
+                if (filePlan != null)
+                {
+                    Set<QName> recordTypes = recordService.getRecordMetadataAspects(filePlan);
+    
+                    result = new HashMap<String, String>(recordTypes.size());
+                    for (QName recordType : recordTypes)
+                    {
+                        AspectDefinition aspectDefinition = dictionaryService.getAspect(recordType);
+                        if (aspectDefinition != null)
+                        {
+                            result.put(aspectDefinition.getName().getLocalName(), aspectDefinition.getTitle(new StaticMessageLookup()));
+                        }
+                    }
+                }
+                
+                return result;
             }
-        }        
-        return result;
-    }    
-    
-    
+        });
+    }      
 }

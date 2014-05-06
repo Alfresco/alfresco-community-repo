@@ -279,7 +279,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             if(create)
             {
                 creating = true;
-                boolean lastAsFolder = lastPathElement && (ContentModel.TYPE_CONTENT.equals(nodeService.getType(actionedUponNodeRef)) || RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(actionedUponNodeRef)));
+                boolean lastAsFolder = lastPathElement && (dictionaryService.isSubClass(nodeService.getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT) || RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(actionedUponNodeRef)));
                 nodeRef = createChild(action, parent, childName, targetisUnfiledRecords, lastAsFolder);
             }
             else

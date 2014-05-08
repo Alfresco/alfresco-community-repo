@@ -44,7 +44,7 @@
         </property>
     </bean>
 
-    <bean id="ExtendedPermissionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+    <bean id="ExtendedPermissionService_security" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
@@ -246,7 +246,7 @@
 
    </bean>
 
-    <bean id="FormService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+    <bean id="FormService_security" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>

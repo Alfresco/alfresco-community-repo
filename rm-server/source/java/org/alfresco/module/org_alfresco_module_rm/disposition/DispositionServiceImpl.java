@@ -971,10 +971,11 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 // apply cut off
                 applyCutoff(nodeRef);
 
-                if (recordFolderService.isRecordFolder(nodeRef))
+                // close the record folder if it isn't already closed!
+                if (recordFolderService.isRecordFolder(nodeRef) && 
+                    !recordFolderService.isRecordFolderClosed(nodeRef))
                 {
-                    // close folder (manually since we can't normall close a folder that is cut off!!
-                    nodeService.setProperty(nodeRef, PROP_IS_CLOSED, true);
+                    recordFolderService.closeRecordFolder(nodeRef);
                 }
             }
         }
@@ -984,11 +985,24 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
     }
 
-    private void applyCutoff(NodeRef nodeRef)
+    /**
+     * Helper method to apply the cut off
+     * 
+     * @param nodeRef   node to cut off
+     */
+    private void applyCutoff(final NodeRef nodeRef)
     {
-        // Apply the cut off aspect and set cut off date
-        Map<QName, Serializable> cutOffProps = new HashMap<QName, Serializable>(1);
-        cutOffProps.put(PROP_CUT_OFF_DATE, new Date());
-        nodeService.addAspect(nodeRef, ASPECT_CUT_OFF, cutOffProps);
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                // Apply the cut off aspect and set cut off date
+                Map<QName, Serializable> cutOffProps = new HashMap<QName, Serializable>(1);
+                cutOffProps.put(PROP_CUT_OFF_DATE, new Date());
+                nodeService.addAspect(nodeRef, ASPECT_CUT_OFF, cutOffProps);
+                
+                return null;
+            }
+        });
     }
 }

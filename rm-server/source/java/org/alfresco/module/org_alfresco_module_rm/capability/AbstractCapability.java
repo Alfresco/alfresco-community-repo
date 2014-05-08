@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.capability;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.apache.commons.lang.StringUtils;
@@ -196,21 +197,24 @@ public abstract class AbstractCapability extends RMSecurityCommon
     {
         String prefix = "hasPermissionRaw" + getName();
         int result = getTransactionCache(prefix, nodeRef);
-        if (result != NOSET_VALUE)
+        if (result == NOSET_VALUE)
         {
-            return result;
+            if (checkRmRead(nodeRef) == AccessDecisionVoter.ACCESS_DENIED)
+            {
+                result = AccessDecisionVoter.ACCESS_DENIED;
+            }
+            else
+            {
+                result = hasPermissionImpl(nodeRef);
+            }
+    
+            result = setTransactionCache(prefix, nodeRef, result);
         }
-
-        if (checkRmRead(nodeRef) == AccessDecisionVoter.ACCESS_DENIED)
-        {
-            result = AccessDecisionVoter.ACCESS_DENIED;
-        }
-        else
-        {
-            result = hasPermissionImpl(nodeRef);
-        }
-
-        return setTransactionCache(prefix, nodeRef, result);
+        
+        // Log information about evaluated capability
+        RMMethodSecurityInterceptor.reportCapabilityStatus(getName(), result);
+        
+        return result;
     }
 
     /**

@@ -29,6 +29,7 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -78,27 +79,26 @@ public class VitalRecordDefinitionAspect extends    BaseBehaviourBean
             kind = BehaviourKind.CLASS,
             notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
-    public void onUpdateProperties(final NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
     {
-        if (nodeService.exists(nodeRef) &&
-            nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT))
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
-            // check that vital record definition has been changed in the first place
-            Map<QName, Serializable> changedProps = PropertyMap.getChangedProperties(before, after);
-            if (changedProps.containsKey(PROP_VITAL_RECORD_INDICATOR) ||
-                changedProps.containsKey(PROP_REVIEW_PERIOD))
+            public Void doWork() throws Exception
             {
-                filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>()
+                if (nodeService.exists(nodeRef) &&
+                    nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT))
                 {
-                    @Override
-                    public Void doWork() throws Exception
+                    // check that vital record definition has been changed in the first place
+                    Map<QName, Serializable> changedProps = PropertyMap.getChangedProperties(before, after);
+                    if (changedProps.containsKey(PROP_VITAL_RECORD_INDICATOR) ||
+                        changedProps.containsKey(PROP_REVIEW_PERIOD))
                     {
                         recordsManagementActionService.executeRecordsManagementAction(nodeRef, "broadcastVitalRecordDefinition");
-                        return null;
-                    }}
-                );
+                    }
+                }
+                return null;
             }
-        }
+        });               
     }
 
 }

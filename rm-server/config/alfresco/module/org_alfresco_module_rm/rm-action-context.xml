@@ -156,7 +156,7 @@
       </property>
    </bean>
 
-   <bean id="actionSecurity" abstract="true">
+   <bean id="actionSecurity" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor">
       <property name="authenticationManager">
          <ref bean="authenticationManager"/>
       </property>
@@ -171,7 +171,7 @@
    <bean id="actionProxy" abstract="true"/>
 
    <!--  Base security intercepter bean for action 'allow' -->
-   <bean id="allow_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="allow_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
@@ -194,7 +194,7 @@
       </property>
    </bean>
 
-   <bean id="cutoff_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="cutoff_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ApproveRecordsScheduledForCutoff
@@ -219,7 +219,7 @@
       </property>
    </bean>
 
-   <bean id="unCutoff_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="unCutoff_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ApproveRecordsScheduledForCutoff
@@ -244,7 +244,7 @@
       </property>
    </bean>
 
-   <bean id="destroy_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="destroy_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.Destroy
@@ -292,7 +292,7 @@
       </property>
    </bean>
 
-   <bean id="openRecordFolder_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="openRecordFolder_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ReOpenFolders
@@ -319,7 +319,7 @@
       </property>
    </bean>
 
-   <bean id="closeRecordFolder_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="closeRecordFolder_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.CloseFolders
@@ -346,7 +346,7 @@
       </property>
    </bean>
 
-   <bean id="reviewed_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="reviewed_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.CycleVitalRecords
@@ -371,7 +371,7 @@
       </property>
    </bean>
 
-   <bean id="declareRecord_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="declareRecord_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM.Declare.0
@@ -398,7 +398,7 @@
       </property>
    </bean>
 
-   <bean id="undeclareRecord_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="undeclareRecord_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.UndeclareRecords
@@ -425,7 +425,7 @@
       </property>
    </bean>
 
-   <bean id="freeze_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="freeze_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ExtendRetentionPeriodOrFreeze
@@ -452,7 +452,7 @@
       </property>
    </bean>
 
-   <bean id="unfreeze_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="unfreeze_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.Unfreeze
@@ -496,7 +496,7 @@
       </property>
    </bean>
 
-   <bean id="editHoldReason_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="editHoldReason_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ViewUpdateReasonsForFreeze
@@ -521,7 +521,7 @@
       </property>
    </bean>
 
-   <bean id="editReviewAsOfDate_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="editReviewAsOfDate_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.PlanningReviewCycles
@@ -546,7 +546,7 @@
       </property>
    </bean>
 
-   <bean id="editDispositionActionAsOfDate_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="editDispositionActionAsOfDate_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ManuallyChangeDispositionDates
@@ -572,7 +572,7 @@
       </property>
    </bean>
 
-   <bean id="broadcastVitalRecordDefinition_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="broadcastVitalRecordDefinition_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
@@ -603,7 +603,7 @@
       </property>
    </bean>
 
-   <bean id="broadcastDispositionActionDefinitionUpdate_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="broadcastDispositionActionDefinitionUpdate_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
@@ -634,7 +634,7 @@
       </property>
    </bean>
 
-   <bean id="completeEvent_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="completeEvent_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.AddModifyEventDates
@@ -661,7 +661,7 @@
       </property>
    </bean>
 
-   <bean id="undoEvent_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="undoEvent_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.AddModifyEventDates
@@ -687,7 +687,7 @@
       </property>
    </bean>
 
-   <bean id="transfer_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="transfer_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.AuthorizeAllTransfers
@@ -733,7 +733,7 @@
       </property>
    </bean>
 
-   <bean id="accession_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="accession_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.AuthorizeNominatedTransfers
@@ -786,7 +786,7 @@
       </property>
    </bean>
 
-   <bean id="createDispositionSchedule_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="createDispositionSchedule_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.CreateModifyDestroyFileplanMetadata
@@ -813,7 +813,7 @@
       </property>
    </bean>
 
-   <bean id="reject_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="reject_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.RejectRecords
@@ -838,7 +838,7 @@
          </property>
    </bean>
 
-   <bean id="fileTo_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="fileTo_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.FileUnfiledRecords
@@ -866,7 +866,7 @@
          </property>
    </bean>
 
-   <bean id="copyTo_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="copyTo_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.rmCopy
@@ -894,7 +894,7 @@
          </property>
    </bean>
 
-   <bean id="moveTo_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="moveTo_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.rmMove
@@ -922,7 +922,7 @@
          </property>
    </bean>
 
-   <bean id="linkTo_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="linkTo_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.LinkToRecords
@@ -1041,7 +1041,7 @@
       </property>
    </bean>
 
-   <bean id="addRecordTypes_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="addRecordTypes_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
@@ -1075,7 +1075,7 @@
       </property>
    </bean>
  
-   <bean id="fileReport_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+   <bean id="fileReport_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
